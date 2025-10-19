@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "about": {
+      "label": "Conócenos",
+      "whatIs": "¿Qué es CREUP?",
+      "members": "Miembros",
+      "team": "Equipo",
+      "structure": "Estructura organizativa"
+    },
+    "policy": {
+      "label": "Política Universitaria",
+      "positions": "Posicionamientos",
+      "resolutions": "Resoluciones",
+      "reports": "Informes Ejecutivos"
+    },
+    "events": {
+      "label": "Eventos",
+      "generalAssemblies": "Asambleas Generales",
+      "trainingStages": "Stages Formativos",
+      "meetingsCongresses": "Encuentros y Congresos"
+    },
+    "press": {
+      "label": "Prensa",
+      "newsletter": "Newsletter",
+      "pressContact": "Contacto de prensa",
+      "pressReleases": "Notas de prensa",
+      "statements": "Comunicados",
+      "inMedia": "En los medios",
+      "pressKit": "Dossier de prensa"
+    },
+    "transparency": {
+      "label": "Transparencia",
+      "agreements": "Convenios",
+      "regulations": "Normativa",
+      "financialReports": "Informes económicos",
+      "publicAgenda": "Agenda pública",
+      "corporateIdentity": "Identidad Corporativa"
+    },
+    "contact": "Contacto"
+  },
+  "footer": {
+    "tagline": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
+    "legal": "Aviso legal y condiciones generales"
+  },
+  "social": {
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "x": "X",
+    "linkedin": "LinkedIn",
+    "facebook": "Facebook",
+    "telegram": "Telegram"
+  },
+  "home": {
+    "greeting": "Hola caracola"
+  },
+  "meta": {
+    "title": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
+    "description": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) es la asociación estatal que representa a más de 1.000.000 de estudiantes de toda España."
+  }
+}

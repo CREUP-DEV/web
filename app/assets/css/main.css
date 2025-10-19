@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  --font-sans: "Raleway";
+  --font-serif: "Red Rose";
+  --font-mono: "Fira Code";
+
+  --color-creup-red-50: #fdf3f3;
+  --color-creup-red-100: #fde3e4;
+  --color-creup-red-200: #fbcdcf;
+  --color-creup-red-300: #f7aaad;
+  --color-creup-red-400: #f1787c;
+  --color-creup-red-500: #e64d52;
+  --color-creup-red-600: #d23036;
+  --color-creup-red-700: #b12429;
+  --color-creup-red-800: #922226;
+  --color-creup-red-900: #792225; /* Original */
+  --color-creup-red-950: #420d0f;
+
+  --color-creup-blue-50: #eef9ff;
+  --color-creup-blue-100: #d9f1ff;
+  --color-creup-blue-200: #bbe8ff;
+  --color-creup-blue-300: #8cdbff;
+  --color-creup-blue-400: #56c5ff;
+  --color-creup-blue-500: #2fa8ff;
+  --color-creup-blue-600: #188af8;
+  --color-creup-blue-700: #1171e4;
+  --color-creup-blue-800: #145bb9;
+  --color-creup-blue-900: #174f91;
+  --color-creup-blue-950: #163866; /* Original */
+
+  --color-creup-beige-50: #faf6f2;
+  --color-creup-beige-100: #f5eee6; /* Original */
+  --color-creup-beige-200: #e6d4c2;
+  --color-creup-beige-300: #d6b79b;
+  --color-creup-beige-400: #c49473;
+  --color-creup-beige-500: #b87b57;
+  --color-creup-beige-600: #ab684b;
+  --color-creup-beige-700: #8e5440;
+  --color-creup-beige-800: #734539;
+  --color-creup-beige-900: #5e3a30;
+  --color-creup-beige-950: #321d18;
+
+  --color-creup-dark-gray-50: #f6f6f6;
+  --color-creup-dark-gray-100: #e7e7e7;
+  --color-creup-dark-gray-200: #d1d1d1;
+  --color-creup-dark-gray-300: #b0b0b0;
+  --color-creup-dark-gray-400: #888888;
+  --color-creup-dark-gray-500: #6d6d6d;
+  --color-creup-dark-gray-600: #5d5d5d;
+  --color-creup-dark-gray-700: #4f4f4f;
+  --color-creup-dark-gray-800: #424242; /* Original */
+  --color-creup-dark-gray-900: #3d3d3d;
+  --color-creup-dark-gray-950: #262626;
+
+  --color-creup-light-gray-50: #f7f7f7;
+  --color-creup-light-gray-100: #ededed;
+  --color-creup-light-gray-200: #dfdfdf;
+  --color-creup-light-gray-300: #c8c8c8;
+  --color-creup-light-gray-400: #a6a6a6; /* Original */
+  --color-creup-light-gray-500: #999999;
+  --color-creup-light-gray-600: #888888;
+  --color-creup-light-gray-700: #7b7b7b;
+  --color-creup-light-gray-800: #676767;
+  --color-creup-light-gray-900: #545454;
+  --color-creup-light-gray-950: #363636;
+}
+
+:root {
+  --ui-primary: var(--color-creup-red-900);
+  --ui-secondary: var(--color-creup-blue-950);
+}
+
+.dark {
+  --ui-primary: var(--color-creup-red-400);
+  --ui-secondary: var(--color-creup-blue-400);
+}
