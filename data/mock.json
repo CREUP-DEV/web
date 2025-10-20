@@ -1,0 +1,40 @@
+{
+  "carousel": [
+    {
+      "image": "https://www.creup.es/documentos/feae/i/banner-i-feae.jpg",
+      "href": "/eventos/feae/1",
+      "title": {
+        "es": "Primera edición del Foro de Estudiantes y Alianzas Europeas",
+        "en": "First Edition of the Forum of Students and European Alliances"
+      },
+      "buttonText": {
+        "es": "Ver más",
+        "en": "See more"
+      }
+    },
+    {
+      "image": "https://www.creup.es/documentos/asambleas/lxxviii-ago/banner-78-ago.jpg",
+      "href": "/eventos/asambleas/ago/78/",
+      "title": {
+        "es": "Abiertas las inscripciones a la 78ª Asamblea General Ordinaria",
+        "en": "Registrations open for the 78th Ordinary General Assembly"
+      },
+      "buttonText": {
+        "es": "Ver más",
+        "en": "See more"
+      }
+    },
+    {
+      "image": "https://www.creup.es/documentos/stages/xii/banner-xii-stage.jpg",
+      "href": "/eventos/stages/12",
+      "title": {
+        "es": "¡Ven a formarte con nosotros en el XII Stage Formativo!",
+        "en": "Join us for the XII Training Stage!"
+      },
+      "buttonText": {
+        "es": "Inscribirse",
+        "en": "Join now"
+      }
+    }
+  ]
+}
