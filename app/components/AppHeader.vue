@@ -145,7 +145,12 @@ const items = computed<NavigationMenuItem[]>(() => [
     }"
   >
     <template #title>
-      <NuxtImg src="/img/creup-imagotipo.svg" alt="CREUP" class="h-8 w-auto" />
+      <UColorModeImage
+        light="/img/creup-imagotipo.svg"
+        dark="/img/creup-imagotipo-dark.svg"
+        alt="CREUP"
+        class="h-8 w-auto"
+      />
     </template>
 
     <UNavigationMenu content-orientation="vertical" :items="items" />
