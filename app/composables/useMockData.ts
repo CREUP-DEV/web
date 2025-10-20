@@ -1,10 +1,3 @@
-export interface MockDataMeta {
-  requestedLocale: string
-  resolvedLocale: string
-  fallbackApplied: boolean
-  availableLocales: string[]
-}
-
 export interface MockDataItem {
   image: string
   href: string
@@ -14,7 +7,6 @@ export interface MockDataItem {
 
 export interface MockDataResponse {
   carousel: MockDataItem[]
-  meta: MockDataMeta
 }
 
 export function useMockData() {
@@ -22,10 +14,7 @@ export function useMockData() {
 
   return useAsyncData<MockDataResponse>(
     'mock-data',
-    () =>
-      $fetch<MockDataResponse>('/api/mock-data', {
-        query: { locale: locale.value },
-      }),
+    () => $fetch<MockDataResponse>('/api/mock-data'),
     {
       // Do not fetch during SSR to avoid blocking the initial HTML
       server: false,
