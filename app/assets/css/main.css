@@ -1,10 +1,10 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
+@import 'tailwindcss';
+@import '@nuxt/ui';
 
 @theme {
-  --font-sans: "Raleway";
-  --font-serif: "Red Rose";
-  --font-mono: "Fira Code";
+  --font-sans: 'Raleway';
+  --font-serif: 'Red Rose';
+  --font-mono: 'Fira Code';
 
   --color-creup-red-50: #fdf3f3;
   --color-creup-red-100: #fde3e4;

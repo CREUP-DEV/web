@@ -1,8 +1,8 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: "creup-red",
-      secondary: "creup-blue",
+      primary: 'creup-red',
+      secondary: 'creup-blue',
     },
   },
-});
+})
