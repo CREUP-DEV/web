@@ -1,41 +1,41 @@
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: "2025-07-15",
+  compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   vite: {
     plugins: [tailwindcss()],
   },
   alias: {
-    "@/composables": "./app/composables",
-    "@/data": "./data",
+    '@/composables': './app/composables',
+    '@/data': './data',
   },
   modules: [
-    "@nuxt/ui",
-    "@nuxt/eslint",
-    "@nuxtjs/i18n",
-    "@nuxt/icon",
-    "@nuxt/image",
-    "@vueuse/nuxt",
+    '@nuxt/ui',
+    '@nuxt/eslint',
+    '@nuxtjs/i18n',
+    '@nuxt/icon',
+    '@nuxt/image',
+    '@vueuse/nuxt',
   ],
 
-  css: ["~/assets/css/main.css"],
+  css: ['~/assets/css/main.css'],
 
   i18n: {
     locales: [
       {
-        code: "es",
-        language: "es-ES",
-        file: "es.json",
+        code: 'es',
+        language: 'es-ES',
+        file: 'es.json',
       },
       {
-        code: "en",
-        language: "en-US",
-        file: "en.json",
+        code: 'en',
+        language: 'en-US',
+        file: 'en.json',
       },
     ],
-    defaultLocale: "es",
-    strategy: "no_prefix",
+    defaultLocale: 'es',
+    strategy: 'no_prefix',
   },
-});
+})
