@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui";
+import type { NavigationMenuItem } from '@nuxt/ui'
 
-const { t, locale } = useI18n();
+const { t } = useI18n()
 
 const items = computed<NavigationMenuItem[]>(() => [
   {
-    label: t("footer.legal"),
-    to: "/aviso-legal-y-condiciones-generales",
+    label: t('footer.legal'),
+    to: '/aviso-legal-y-condiciones-generales',
   },
-]);
+])
 
-const socials = useSocials();
+const socials = useSocials()
 </script>
 
 <template>
   <UFooter>
     <template #left>
-      <p class="text-muted text-sm text-center sm:text-left">
-        {{ $t("footer.tagline") }} - {{ new Date().getFullYear() }}
+      <p class="text-muted text-center text-sm sm:text-left">
+        {{ $t('footer.tagline') }} - {{ new Date().getFullYear() }}
       </p>
     </template>
 
