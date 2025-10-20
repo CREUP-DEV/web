@@ -157,7 +157,7 @@ const stackedStyle = computed<CSSProperties>(() => ({
     <div v-if="isDesktop" class="absolute" :style="imgBoxStyle">
       <div class="absolute" :style="overlayStyle">
         <div
-          class="bg-muted/75 flex w-full max-h-full flex-col gap-3 p-4 shadow-lg backdrop-blur-sm overflow-y-auto"
+          class="bg-muted/75 flex max-h-full w-full flex-col gap-3 overflow-y-auto p-4 shadow-lg backdrop-blur-sm"
           :class="overlayRadiusClass"
         >
           <h3 class="oc-title line-clamp-3 leading-snug font-semibold">
