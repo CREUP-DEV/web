@@ -10,7 +10,6 @@ interface Props {
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
   /** Percentages (0-100) of the ANCHOR area (image) the overlay should occupy */
   widthPct?: number
-  heightPct?: number
   /** Rounded class to match the parent corners (e.g., 'rounded-xl'). Parent should clip (overflow-hidden). */
   radiusClass?: string
   /** CSS selector to find the element that represents the image area to anchor to. Defaults to the first <img> */
@@ -26,7 +25,6 @@ const props = withDefaults(defineProps<Props>(), {
   href: undefined,
   position: 'bottom-right',
   widthPct: 45,
-  heightPct: 45,
   radiusClass: 'rounded-xl',
   anchorSelector: 'img',
   inset: 12,
@@ -122,11 +120,14 @@ const offsetStyle = computed<CSSProperties>(() => {
   }
 })
 
-const overlayStyle = computed<CSSProperties>(() => ({
-  width: `${props.widthPct}%`,
-  height: `${props.heightPct}%`,
-  ...offsetStyle.value,
-}))
+const overlayStyle = computed<CSSProperties>(() => {
+  const insetTotal = props.inset * 2
+  return {
+    width: `${props.widthPct}%`,
+    maxHeight: `calc(100% - ${insetTotal}px)`,
+    ...offsetStyle.value,
+  }
+})
 
 const imgBoxStyle = computed(() => ({
   top: `${bounds.value.top}px`,
@@ -156,19 +157,19 @@ const stackedStyle = computed<CSSProperties>(() => ({
     <div v-if="isDesktop" class="absolute" :style="imgBoxStyle">
       <div class="absolute" :style="overlayStyle">
         <div
-          class="bg-muted/75 flex h-full w-full flex-col justify-between p-4 shadow-lg backdrop-blur-sm"
+          class="bg-muted/75 flex w-full max-h-full flex-col gap-3 p-4 shadow-lg backdrop-blur-sm overflow-y-auto"
           :class="overlayRadiusClass"
         >
           <h3 class="oc-title line-clamp-3 leading-snug font-semibold">
             {{ title }}
           </h3>
-          <div class="mt-3 flex justify-center">
+          <div class="flex justify-center">
             <UButton
               v-if="href"
               class="oc-btn"
               color="primary"
               variant="soft"
-              size="xl"
+              size="lg"
               :to="href"
               rel="noopener noreferrer"
             >
@@ -182,20 +183,20 @@ const stackedStyle = computed<CSSProperties>(() => ({
     <!-- Mobile/Tablet: overlay under image -->
     <div v-else>
       <div
-        class="bg-muted/75 flex flex-col justify-between p-4 shadow-lg backdrop-blur-sm"
+        class="bg-muted/75 flex flex-col gap-3 p-4 shadow-lg backdrop-blur-sm"
         :class="[overlayRadiusClass, 'rounded-t-none']"
         :style="stackedStyle"
       >
         <h3 class="oc-title line-clamp-3 leading-snug font-semibold">
           {{ title }}
         </h3>
-        <div class="mt-3 flex justify-center">
+        <div class="flex justify-center">
           <UButton
             v-if="href"
             class="oc-btn"
             color="primary"
             variant="soft"
-            size="lg"
+            size="md"
             :to="href"
             rel="noopener noreferrer"
           >
@@ -210,12 +211,12 @@ const stackedStyle = computed<CSSProperties>(() => ({
 <style scoped>
 /* Fluid typography and button sizing based on the measured image width */
 .oc-title {
-  /* Between ~15px and ~20px, scale with image width */
-  font-size: clamp(0.95rem, calc(var(--oc-img-w) / 18), 1.25rem);
+  /* Slightly smaller: ~14px to ~18px, scale with image width */
+  font-size: clamp(0.875rem, calc(var(--oc-img-w) / 20), 1.125rem);
 }
 
 .oc-btn {
-  /* Tweak text size a bit with image width */
-  font-size: clamp(0.85rem, calc(var(--oc-img-w) / 28), 1rem);
+  /* Slightly smaller button text */
+  font-size: clamp(0.8125rem, calc(var(--oc-img-w) / 32), 0.9375rem);
 }
 </style>
