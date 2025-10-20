@@ -6,14 +6,16 @@ import { useMockData, useI18nField } from "@/composables/useMockData";
 const { width } = useWindowSize();
 
 // Load test/mock data
-const mock = useMockData();
-const carousel = computed(() => mock.value.carousel);
+const { data: mock, pending } = useMockData();
+const carousel = computed(() => mock.value?.carousel ?? []);
 const images = computed(() => carousel.value.map((i) => i.image));
 const getEntry = (img: string) => carousel.value.find((i) => i.image === img);
 </script>
 
 <template>
+  <USkeleton v-if="pending" class="mt-5 w-full max-w-6xl mx-auto h-[320px]" />
   <UCarousel
+    v-else
     v-slot="{ item }"
     loop
     :arrows="width >= 1280"

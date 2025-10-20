@@ -1,5 +1,4 @@
 import { computed } from "vue";
-import mock from "../../data/mock.json";
 
 export interface MockData {
   carousel: Array<{
@@ -11,7 +10,7 @@ export interface MockData {
 }
 
 export function useMockData() {
-  return computed<MockData>(() => mock as MockData);
+  return useAsyncData<MockData>("mock-data", () => $fetch("/api/mock-data"));
 }
 
 /** Selects a localized field with fallback to 'es' then first available. */
