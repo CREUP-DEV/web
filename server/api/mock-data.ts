@@ -1,18 +1,17 @@
 import { defineEventHandler } from 'h3'
 import mockData from '../../data/mock.json'
-import { getLocale, getDefaultLocale } from '../utils/locale'
 
 export default defineEventHandler(async (event) => {
-  const requestedLocale = getLocale(event)
-  const defaultLocale = getDefaultLocale()
+  const locale = event.context.requestLocale
 
   const payload = {
     carousel: mockData.carousel.map((item) => {
       const title =
-        item.title[requestedLocale as keyof typeof item.title] || item.title[defaultLocale]
+        item.title[locale as keyof typeof item.title] ||
+        item.title[locale as keyof typeof item.title]
       const buttonText =
-        item.buttonText[requestedLocale as keyof typeof item.buttonText] ||
-        item.buttonText[defaultLocale]
+        item.buttonText[locale as keyof typeof item.buttonText] ||
+        item.buttonText[locale as keyof typeof item.buttonText]
 
       return {
         image: item.image,

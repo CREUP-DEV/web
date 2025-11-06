@@ -3,9 +3,14 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
 import * as uiLocales from '@nuxt/ui/locale'
 
-const { locale, locales, setLocale, t } = useI18n()
+const { locale, locales, setLocale, t, setLocaleCookie } = useI18n()
 
 const availableLocales = locales.value.map((loc) => uiLocales[loc.code])
+
+const switchLocale = (newLocale: Locale) => {
+  setLocale(newLocale)
+  setLocaleCookie(newLocale)
+}
 
 const route = useRoute()
 
@@ -140,8 +145,8 @@ const items = computed<NavigationMenuItem[]>(() => [
 <template>
   <UHeader
     :ui="{
-      center: 'lg:!hidden xl:!flex',
-      toggle: 'lg:!inline-flex xl:!hidden',
+      center: 'lg:hidden! xl:flex!',
+      toggle: 'lg:inline-flex! xl:hidden!',
     }"
   >
     <template #title>
@@ -165,7 +170,7 @@ const items = computed<NavigationMenuItem[]>(() => [
       <ULocaleSelect
         v-model="locale"
         :locales="availableLocales"
-        @update:model-value="setLocale($event as Locale)"
+        @update:model-value="switchLocale($event as Locale)"
       />
     </template>
   </UHeader>

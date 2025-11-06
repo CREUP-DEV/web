@@ -15,7 +15,7 @@ const getEntry = (img: string): MockDataItem | undefined =>
 </script>
 
 <template>
-  <USkeleton v-if="pending || !images.length" class="mx-auto mt-5 h-[320px] w-full max-w-6xl" />
+  <USkeleton v-if="pending || !images.length" class="mx-auto mt-5 h-80 w-full max-w-6xl" />
 
   <UCarousel
     v-else
@@ -34,7 +34,7 @@ const getEntry = (img: string): MockDataItem | undefined =>
       :href="getEntry(String(item))?.href"
       :link-text="getEntry(String(item))?.buttonText ?? ''"
     >
-      <NuxtImg :src="String(item)" height="320" class="mx-auto max-h-[320px] rounded-lg" />
+      <NuxtImg :src="String(item)" height="320" class="mx-auto max-h-80 rounded-lg" />
     </OverlayCaption>
   </UCarousel>
 </template>

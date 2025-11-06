@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   overlayRadiusClass: 'rounded-lg',
 })
 
-const rootRef = ref<HTMLElement | null>(null)
+const rootRef = ref<Element | null>(null)
 const bounds = ref({
   top: 0,
   left: 0,
@@ -73,10 +73,11 @@ onMounted(() => {
   updateBounds()
   // Observe size changes on the root – covers window resizes and layout shifts
   ro = new ResizeObserver(() => updateBounds())
-  if (rootRef.value) ro.observe(rootRef.value)
+  const root = rootRef.value
+  if (root) ro.observe(root as unknown as Element)
   // Also try to observe the image if present initially
-  const img = rootRef.value?.querySelector(props.anchorSelector!) as Element | null
-  if (img) ro.observe(img as Element)
+  const img = root?.querySelector(props.anchorSelector!) as Element | null
+  if (img) ro.observe(img as unknown as Element)
   // Update when viewport width changes
   watch(
     width,
