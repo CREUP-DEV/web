@@ -1,12 +1,26 @@
-export interface MockDataItem {
+export interface MockDataCarouselItem {
   image: string
   href: string
   title: string
   buttonText: string
 }
 
+export interface MockDataFeaturedNewsItem {
+  image: string
+  to: string
+  title: string
+}
+
+export interface MockDataFeaturedLinkItem {
+  image: string
+  to: string
+  title: string
+}
+
 export interface MockDataResponse {
-  carousel: MockDataItem[]
+  carousel: MockDataCarouselItem[]
+  featuredNews: MockDataFeaturedNewsItem[]
+  featuredLinks: MockDataFeaturedLinkItem[]
 }
 
 export function useMockData() {
@@ -16,12 +30,9 @@ export function useMockData() {
     'mock-data',
     () => $fetch<MockDataResponse>('/api/mock-data'),
     {
-      // Do not fetch during SSR to avoid blocking the initial HTML
-      server: false,
-      // Start with pending=true and fetch on client after mount
-      lazy: true,
-      // Refetch whenever the active locale changes
-      watch: [locale],
+      server: false, // client only
+      lazy: true, // fetch after mount
+      watch: [locale], // refetch on locale change
     }
   )
 }

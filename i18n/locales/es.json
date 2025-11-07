@@ -54,5 +54,9 @@
   "meta": {
     "title": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
     "description": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) es la asociación estatal que representa a más de 1.000.000 de estudiantes de toda España."
+  },
+  "home": {
+    "latestNews": "Últimas noticias",
+    "featuredLinks": "Enlaces destacados"
   }
 }

@@ -36,5 +36,89 @@
         "en": "Join now"
       }
     }
+  ],
+  "featuredNews": [
+    {
+      "image": "/img/news-1.jpg",
+      "to": "/noticias/portal-datos",
+      "title": {
+        "es": "Lanzamos el nuevo portal de datos",
+        "en": "We launch the new data portal"
+      }
+    },
+    {
+      "image": "/img/news-2.jpg",
+      "to": "/noticias/app-movil",
+      "title": {
+        "es": "Actualización de la app móvil",
+        "en": "Mobile app update"
+      }
+    },
+    {
+      "image": "/img/news-3.jpg",
+      "to": "/noticias/voluntariado",
+      "title": {
+        "es": "Convocatoria de voluntariado",
+        "en": "Volunteer call"
+      }
+    },
+    {
+      "image": "/img/news-4.jpg",
+      "to": "/noticias/informe-t1",
+      "title": {
+        "es": "Informe trimestral disponible",
+        "en": "Quarterly report available"
+      }
+    }
+  ],
+  "featuredLinks": [
+    {
+      "image": "/img/link-1.jpg",
+      "to": "https://sede.example.com",
+      "title": {
+        "es": "Sede electrónica",
+        "en": "Electronic office"
+      }
+    },
+    {
+      "image": "/img/link-2.jpg",
+      "to": "/transparencia",
+      "title": {
+        "es": "Transparencia",
+        "en": "Transparency"
+      }
+    },
+    {
+      "image": "/img/link-3.jpg",
+      "to": "/cita-previa",
+      "title": {
+        "es": "Cita previa",
+        "en": "Appointment"
+      }
+    },
+    {
+      "image": "/img/link-4.jpg",
+      "to": "/tablon",
+      "title": {
+        "es": "Tablón de anuncios",
+        "en": "Notice board"
+      }
+    },
+    {
+      "image": "/img/link-5.jpg",
+      "to": "/empleo",
+      "title": {
+        "es": "Empleo público",
+        "en": "Public employment"
+      }
+    },
+    {
+      "image": "/img/link-6.jpg",
+      "to": "/turismo",
+      "title": {
+        "es": "Turismo",
+        "en": "Tourism"
+      }
+    }
   ]
 }

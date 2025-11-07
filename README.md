@@ -14,6 +14,8 @@ Como gestor de paquetes, el proyecto utiliza [pnpm](https://pnpm.io/).
 - Crear el resto de páginas con información de ejemplo.
 - Plantear y desarrollar el _backend_.
 
+**Rama de pruebas: `testing`**
+
 ## Tareas pendientes
 
 - **Fix:** Al ejecutar `pnpm build` y `pnpm preview`, el imagotipo de la cabecera carga debido a un error 500.
