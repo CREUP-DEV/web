@@ -19,3 +19,4 @@ Como gestor de paquetes, el proyecto utiliza [pnpm](https://pnpm.io/).
 ## Tareas pendientes
 
 - **Fix:** Al ejecutar `pnpm build` y `pnpm preview`, el imagotipo de la cabecera carga debido a un error 500.
+- El skeleton del carousel debe estar hasta que cargue la imagen, no solo hasta que se reciba la respuesta.

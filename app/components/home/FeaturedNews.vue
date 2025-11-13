@@ -32,6 +32,9 @@ const props = defineProps<{
         </h2>
       </header>
 
+      <!-- Tag selector sits between the heading and the news grid -->
+      <HomeTagSelector class="mb-4 sm:mb-6" />
+
       <!-- Loading skeleton grid -->
       <div
         v-if="!props.items.length"
