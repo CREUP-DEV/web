@@ -17,7 +17,7 @@ const socials = useSocials()
   <UFooter>
     <template #left>
       <p class="text-muted text-center text-sm sm:text-left">
-        {{ $t('footer.tagline') }} - {{ new Date().getFullYear() }}
+        {{ t('footer.tagline') }} - {{ new Date().getFullYear() }}
       </p>
     </template>
 

@@ -18,9 +18,80 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxt/image',
     '@vueuse/nuxt',
+    '@nuxtjs/seo',
+    '@nuxt/a11y',
   ],
 
   css: ['~/assets/css/main.css'],
+
+  // Nuxt SEO Configuration
+  site: {
+    url: 'https://www.creup.es',
+    name: 'CREUP',
+    description:
+      'Coordinadora de Representantes de Estudiantes de Universidades Públicas - Representing over 1,000,000 students across Spain',
+    defaultLocale: 'es',
+    identity: {
+      type: 'Organization',
+    },
+    twitter: '@CREUPCREUP',
+  },
+
+  // OG Image configuration
+  ogImage: {
+    enabled: true,
+    defaults: {
+      component: 'OgImageDefault',
+      width: 1200,
+      height: 630,
+    },
+  },
+
+  // Sitemap configuration
+  sitemap: {
+    enabled: true,
+    autoLastmod: true,
+    xsl: false,
+  },
+
+  // Robots configuration
+  robots: {
+    enabled: true,
+    allow: ['/'],
+    disallow: ['/api/', '/_nuxt/'],
+    sitemap: 'https://www.creup.es/sitemap.xml',
+  },
+
+  // Schema.org configuration
+  schemaOrg: {
+    enabled: true,
+    identity: {
+      type: 'Organization',
+      name: 'CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas',
+      url: 'https://www.creup.es',
+      logo: 'https://www.creup.es/favicon.svg',
+      description:
+        'Asociación estatal que representa a más de 1.000.000 de estudiantes de universidades públicas de toda España.',
+      sameAs: [
+        'https://www.instagram.com/CREUPCREUP',
+        'https://x.com/CREUPCREUP',
+        'https://www.linkedin.com/company/creup',
+        'https://www.facebook.com/CREUPCREUP',
+        'https://www.tiktok.com/@creupestudiantes',
+        'https://telegram.me/CREUP',
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'Press',
+        email: 'prensa@creup.es',
+      },
+    },
+  },
+
+  // Link checker (disabled in dev for performance)
+  linkChecker: {
+    enabled: false,
+  },
 
   i18n: {
     locales: [
@@ -28,11 +99,13 @@ export default defineNuxtConfig({
         code: 'es',
         language: 'es-ES',
         file: 'es.json',
+        name: 'Español',
       },
       {
         code: 'en',
         language: 'en-US',
         file: 'en.json',
+        name: 'English',
       },
     ],
     defaultLocale: 'es',
@@ -41,5 +114,42 @@ export default defineNuxtConfig({
       useCookie: true,
       cookieKey: 'user-locale',
     },
+  },
+
+  // Performance optimizations
+  experimental: {
+    payloadExtraction: true,
+    renderJsonPayloads: true,
+    componentIslands: true,
+  },
+
+  // Nitro optimizations
+  nitro: {
+    compressPublicAssets: true,
+    prerender: {
+      crawlLinks: false,
+      failOnError: false,
+    },
+  },
+
+  // Image optimization
+  image: {
+    quality: 80,
+    format: ['webp', 'avif', 'png', 'jpg'],
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      '2xl': 1536,
+    },
+  },
+
+  // Accessibility testing (dev only)
+  a11y: {
+    enabled: true,
+    defaultHighlight: false,
+    logIssues: true,
   },
 })

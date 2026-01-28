@@ -57,6 +57,36 @@
   },
   "home": {
     "latestNews": "Últimas noticias",
-    "featuredLinks": "Enlaces destacados"
+    "featuredLinks": "Enlaces destacados",
+    "publicAgenda": "Agenda pública",
+    "carousel": {
+      "label": "Carrusel de anuncios destacados",
+      "previous": "Diapositiva anterior",
+      "next": "Siguiente diapositiva"
+    },
+    "calendar": {
+      "label": "Calendario de eventos",
+      "previousMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "hasEvents": "Hay eventos este día",
+      "noEvents": "No hay eventos programados para este día.",
+      "selectDay": "Selecciona un día para ver los eventos programados.",
+      "upcomingEvents": "Próximos eventos",
+      "noUpcomingEvents": "No hay eventos próximos programados."
+    }
+  },
+  "accessibility": {
+    "skipToMain": "Saltar al contenido principal",
+    "mainNavigation": "Navegación principal",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "externalLink": "Se abre en una nueva pestaña",
+    "loading": "Cargando..."
+  },
+  "common": {
+    "readMore": "Leer más",
+    "viewAll": "Ver todo",
+    "back": "Volver",
+    "close": "Cerrar"
   }
 }

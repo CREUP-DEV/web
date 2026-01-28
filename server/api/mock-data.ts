@@ -5,10 +5,12 @@ type Localized = Record<string, string>
 type CarouselItem = { image: string; href: string; title: Localized; buttonText: Localized }
 type FeaturedNewsItem = { image: string; to: string; title: Localized }
 type FeaturedLinkItem = { image: string; to: string; title: Localized }
+type EventItem = { date: string; title: Localized; timeSlot: Localized }
 type MockData = {
   carousel: CarouselItem[]
   featuredNews: FeaturedNewsItem[]
   featuredLinks: FeaturedLinkItem[]
+  events: EventItem[]
 }
 
 export default defineEventHandler(async (event) => {
@@ -33,6 +35,11 @@ export default defineEventHandler(async (event) => {
       image: item.image,
       to: item.to,
       title: pick(item.title),
+    })),
+    events: data.events.map((item) => ({
+      date: item.date,
+      title: pick(item.title),
+      timeSlot: pick(item.timeSlot),
     })),
   }
 

@@ -57,6 +57,36 @@
   },
   "home": {
     "latestNews": "Latest News",
-    "featuredLinks": "Featured Links"
+    "featuredLinks": "Featured Links",
+    "publicAgenda": "Public Agenda",
+    "carousel": {
+      "label": "Featured announcements carousel",
+      "previous": "Previous slide",
+      "next": "Next slide"
+    },
+    "calendar": {
+      "label": "Event calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "hasEvents": "There are events on this day",
+      "noEvents": "No events scheduled for this day.",
+      "selectDay": "Select a day to see scheduled events.",
+      "upcomingEvents": "Upcoming events",
+      "noUpcomingEvents": "No upcoming events scheduled."
+    }
+  },
+  "accessibility": {
+    "skipToMain": "Skip to main content",
+    "mainNavigation": "Main navigation",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "externalLink": "Opens in a new tab",
+    "loading": "Loading..."
+  },
+  "common": {
+    "readMore": "Read more",
+    "viewAll": "View all",
+    "back": "Back",
+    "close": "Close"
   }
 }

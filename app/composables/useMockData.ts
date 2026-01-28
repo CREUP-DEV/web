@@ -17,10 +17,17 @@ export interface MockDataFeaturedLinkItem {
   title: string
 }
 
+export interface MockDataEventItem {
+  date: string
+  title: string
+  timeSlot: string
+}
+
 export interface MockDataResponse {
   carousel: MockDataCarouselItem[]
   featuredNews: MockDataFeaturedNewsItem[]
   featuredLinks: MockDataFeaturedLinkItem[]
+  events: MockDataEventItem[]
 }
 
 export function useMockData() {

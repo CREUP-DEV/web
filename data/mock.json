@@ -1,123 +1,268 @@
 {
   "carousel": [
     {
-      "image": "https://www.creup.es/documentos/feae/i/banner-i-feae.jpg",
-      "href": "/eventos/feae/1",
+      "image": "/test/Banner_2024.png",
+      "href": "/que-es",
       "title": {
-        "es": "Primera edición del Foro de Estudiantes y Alianzas Europeas",
-        "en": "First Edition of the Forum of Students and European Alliances"
+        "es": "Conoce a la asociación que representa a más de 1.000.000 de estudiantes.",
+        "en": "The voice of 1,000,000 students.\nWe work for a public, free, quality, and inclusive university. We are the main interlocutor with the Ministry and society."
       },
       "buttonText": {
-        "es": "Ver más",
-        "en": "See more"
+        "es": "¿Qué es CREUP?",
+        "en": "What is CREUP?"
       }
     },
     {
-      "image": "https://www.creup.es/documentos/asambleas/lxxviii-ago/banner-78-ago.jpg",
-      "href": "/eventos/asambleas/ago/78/",
+      "image": "https://www.creup.es/documentos/encuentros/xiv/banner-xiv-encuentro.jpg",
+      "href": "/eventos/congreso-crue",
       "title": {
-        "es": "Abiertas las inscripciones a la 78ª Asamblea General Ordinaria",
-        "en": "Registrations open for the 78th Ordinary General Assembly"
+        "es": "VI Congreso CREUP-CRUE.\nEl espacio de diálogo entre el estudiantado y los rectores. Madrid, 27 y 28 de febrero de 2025.",
+        "en": "VI CREUP-CRUE Congress.\nThe space for dialogue between students and rectors. Madrid, February 27-28, 2025."
       },
       "buttonText": {
-        "es": "Ver más",
-        "en": "See more"
+        "es": "Consultar Programa",
+        "en": "View Program"
       }
     },
     {
-      "image": "https://www.creup.es/documentos/stages/xii/banner-xii-stage.jpg",
-      "href": "/eventos/stages/12",
+      "image": "/test/Vivienda-acceso-jovenes.jpg",
+      "href": "/noticias/vivienda",
       "title": {
-        "es": "¡Ven a formarte con nosotros en el XII Stage Formativo!",
-        "en": "Join us for the XII Training Stage!"
+        "es": "Emergencia Habitacional.\nEl precio de las habitaciones ha subido un 14%. Exigimos un plan urgente de residencias públicas y regulación de precios.",
+        "en": "Housing Emergency.\nRoom prices have risen by 14%. We demand an urgent plan for public residences and price regulation."
       },
       "buttonText": {
-        "es": "Inscribirse",
-        "en": "Join now"
+        "es": "Leer Posicionamiento",
+        "en": "Read Statement"
       }
     }
   ],
   "featuredNews": [
     {
-      "image": "/img/news-1.jpg",
-      "to": "/noticias/portal-datos",
+      "image": "/test/primer-plano-persona-pensando-comprar-o-vender-casa-1024x683.jpg",
+      "to": "/noticias/alquiler-expulsion",
       "title": {
-        "es": "Lanzamos el nuevo portal de datos",
-        "en": "We launch the new data portal"
+        "es": "CREUP denuncia que el alquiler expulsa a miles de estudiantes",
+        "en": "CREUP reports that rent is pushing thousands of students out"
       }
     },
     {
-      "image": "/img/news-2.jpg",
-      "to": "/noticias/app-movil",
+      "image": "/test/salud-menta-y-atractivo.webp",
+      "to": "/noticias/salud-mental",
       "title": {
-        "es": "Actualización de la app móvil",
-        "en": "Mobile app update"
+        "es": "Exigimos una Estrategia Nacional de Salud Mental Universitaria",
+        "en": "We demand a National Strategy for University Mental Health"
       }
     },
     {
-      "image": "/img/news-3.jpg",
-      "to": "/noticias/voluntariado",
+      "image": "/test/practicas-bien.png",
+      "to": "/noticias/estatuto-becario",
       "title": {
-        "es": "Convocatoria de voluntariado",
-        "en": "Volunteer call"
+        "es": "Estatuto del Becario: Riesgo para las prácticas",
+        "en": "Intern's Statute: Risk for internships"
       }
     },
     {
-      "image": "/img/news-4.jpg",
-      "to": "/noticias/informe-t1",
+      "image": "/test/14870650189751.jpg",
+      "to": "/noticias/nueva-pau",
       "title": {
-        "es": "Informe trimestral disponible",
-        "en": "Quarterly report available"
+        "es": "Posicionamiento sobre la nueva Prueba de Acceso",
+        "en": "Position on the new University Access Test"
       }
     }
   ],
   "featuredLinks": [
     {
-      "image": "/img/link-1.jpg",
-      "to": "https://sede.example.com",
+      "image": "https://www.creup.es/documentos/imagen/MIC/vertical-beige-preview.jpg",
+      "to": "https://www.creup.es/mic/",
       "title": {
-        "es": "Sede electrónica",
-        "en": "Electronic office"
+        "es": "Manual de Identidad Corporativa",
+        "en": "Corporate Identity Manual"
       }
     },
     {
-      "image": "/img/link-2.jpg",
-      "to": "/transparencia",
+      "image": "https://www.creup.es/contenido/2025/01/IMG_1127.jpg",
+      "to": "https://www.creup.es/comunicacion/newsletter/",
       "title": {
-        "es": "Transparencia",
-        "en": "Transparency"
+        "es": "Suscríbete a nuestra Newsletter",
+        "en": "Subscribe to our Newsletter"
       }
     },
     {
-      "image": "/img/link-3.jpg",
-      "to": "/cita-previa",
+      "image": "/test/portadas-periodicos.jpg",
+      "to": "/prensa/en-los-medios",
       "title": {
-        "es": "Cita previa",
-        "en": "Appointment"
+        "es": "Apariciones en los medios",
+        "en": "Media Appearances"
       }
     },
     {
-      "image": "/img/link-4.jpg",
-      "to": "/tablon",
+      "image": "/test/2025-11-16_00-24.png",
+      "to": "/documentos/estatuto-estudiante",
       "title": {
-        "es": "Tablón de anuncios",
-        "en": "Notice board"
+        "es": "Estatuto del Estudiante",
+        "en": "Student's Statute"
       }
     },
     {
-      "image": "/img/link-5.jpg",
-      "to": "/empleo",
+      "image": "/test/ministerio-de-educacion-y-formacion-profesional.jpg",
+      "to": "https://www.becaseducacion.gob.es/",
       "title": {
-        "es": "Empleo público",
-        "en": "Public employment"
+        "es": "Becas del Ministerio",
+        "en": "Ministry Scholarships"
       }
     },
     {
-      "image": "/img/link-6.jpg",
-      "to": "/turismo",
+      "image": "/test/311349431_10160184702654334_1325144449828067008_n.jpg",
+      "to": "https://www.esu-online.org/",
       "title": {
-        "es": "Turismo",
-        "en": "Tourism"
+        "es": "European Students' Union (ESU)",
+        "en": "European Students' Union (ESU)"
+      }
+    }
+  ],
+  "events": [
+    {
+      "date": "2025-12-31",
+      "title": {
+        "es": "Cierre administrativo de fin de año",
+        "en": "Year-end administrative closure"
+      },
+      "timeSlot": {
+        "es": "Todo el día",
+        "en": "All day"
+      }
+    },
+    {
+      "date": "2026-01-10",
+      "title": {
+        "es": "Reunión Comisión de Política Universitaria",
+        "en": "University Policy Commission Meeting"
+      },
+      "timeSlot": {
+        "es": "10:00 - 12:00",
+        "en": "10:00 AM - 12:00 PM"
+      }
+    },
+    {
+      "date": "2026-01-10",
+      "title": {
+        "es": "Taller de Formación para Delegados",
+        "en": "Training Workshop for Delegates"
+      },
+      "timeSlot": {
+        "es": "16:00 - 18:30",
+        "en": "4:00 PM - 6:30 PM"
+      }
+    },
+    {
+      "date": "2026-01-15",
+      "title": {
+        "es": "Asamblea General Ordinaria",
+        "en": "Ordinary General Assembly"
+      },
+      "timeSlot": {
+        "es": "09:00 - 14:00",
+        "en": "9:00 AM - 2:00 PM"
+      }
+    },
+    {
+      "date": "2026-01-18",
+      "title": {
+        "es": "Jornada de Soberanía Digital",
+        "en": "Digital Sovereignty Conference"
+      },
+      "timeSlot": {
+        "es": "11:00 - 13:00",
+        "en": "11:00 AM - 1:00 PM"
+      }
+    },
+    {
+      "date": "2026-01-22",
+      "title": {
+        "es": "Reunión con el Ministerio de Universidades",
+        "en": "Meeting with the Ministry of Universities"
+      },
+      "timeSlot": {
+        "es": "12:00 - 14:00",
+        "en": "12:00 PM - 2:00 PM"
+      }
+    },
+    {
+      "date": "2026-01-25",
+      "title": {
+        "es": "Stage Formativo de Invierno",
+        "en": "Winter Training Stage"
+      },
+      "timeSlot": {
+        "es": "Todo el día",
+        "en": "All day"
+      }
+    },
+    {
+      "date": "2026-01-25",
+      "title": {
+        "es": "Mesa redonda: Becas y Ayudas al Estudio",
+        "en": "Round Table: Scholarships and Study Grants"
+      },
+      "timeSlot": {
+        "es": "17:00 - 19:00",
+        "en": "5:00 PM - 7:00 PM"
+      }
+    },
+    {
+      "date": "2026-01-28",
+      "title": {
+        "es": "Comisión de Internacionalización",
+        "en": "Internationalization Commission"
+      },
+      "timeSlot": {
+        "es": "10:00 - 11:30",
+        "en": "10:00 AM - 11:30 AM"
+      }
+    },
+    {
+      "date": "2026-02-05",
+      "title": {
+        "es": "Reunión Junta Directiva",
+        "en": "Board Meeting"
+      },
+      "timeSlot": {
+        "es": "16:00 - 18:00",
+        "en": "4:00 PM - 6:00 PM"
+      }
+    },
+    {
+      "date": "2026-02-14",
+      "title": {
+        "es": "Encuentro ESU en Bruselas",
+        "en": "ESU Meeting in Brussels"
+      },
+      "timeSlot": {
+        "es": "09:00 - 18:00",
+        "en": "9:00 AM - 6:00 PM"
+      }
+    },
+    {
+      "date": "2026-02-27",
+      "title": {
+        "es": "VI Congreso CREUP-CRUE (Día 1)",
+        "en": "VI CREUP-CRUE Congress (Day 1)"
+      },
+      "timeSlot": {
+        "es": "09:00 - 20:00",
+        "en": "9:00 AM - 8:00 PM"
+      }
+    },
+    {
+      "date": "2026-02-28",
+      "title": {
+        "es": "VI Congreso CREUP-CRUE (Día 2)",
+        "en": "VI CREUP-CRUE Congress (Day 2)"
+      },
+      "timeSlot": {
+        "es": "09:00 - 15:00",
+        "en": "9:00 AM - 3:00 PM"
       }
     }
   ]

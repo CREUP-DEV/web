@@ -4,10 +4,14 @@ type Localized = Record<string, string>
 
 const TAGS: Localized[] = [
   { es: 'Todas', en: 'All' },
-  { es: 'Calidad', en: 'Quality' },
-  { es: 'Prácticas', en: 'Internships' },
-  { es: 'Vida Universitaria', en: 'University Life' },
-  { es: 'Política Universitaria', en: 'University Politics' },
+  { es: 'Política Universitaria', en: 'University Policy' },
+  { es: 'Soberanía Digital', en: 'Digital Sovereignty' },
+  { es: 'Financiación y Becas', en: 'Funding & Scholarships' },
+  { es: 'Derechos y Convivencia', en: 'Rights & Coexistence' },
+  { es: 'Calidad Docente', en: 'Teaching Quality' },
+  { es: 'Vida Universitaria y Salud', en: 'University Life & Health' },
+  { es: 'Inclusión e Igualdad', en: 'Inclusion & Equality' },
+  { es: 'Internacional', en: 'International' },
 ]
 
 export default defineEventHandler(async (event) => {

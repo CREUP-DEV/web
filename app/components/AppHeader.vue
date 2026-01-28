@@ -61,24 +61,6 @@ const items = computed<NavigationMenuItem[]>(() => [
     ],
   },
   {
-    label: t('nav.events.label'),
-    active: route.path.startsWith('/eventos'),
-    children: [
-      {
-        label: t('nav.events.generalAssemblies'),
-        to: '/eventos/asambleas/',
-      },
-      {
-        label: t('nav.events.trainingStages'),
-        to: '/eventos/stages-formativos/',
-      },
-      {
-        label: t('nav.events.meetingsCongresses'),
-        to: '/eventos/encuentros-congresos/',
-      },
-    ],
-  },
-  {
     label: t('nav.press.label'),
     active: route.path.startsWith('/prensa'),
     children: [
@@ -105,6 +87,24 @@ const items = computed<NavigationMenuItem[]>(() => [
       {
         label: t('nav.press.pressKit'),
         to: '/prensa/dossier/',
+      },
+    ],
+  },
+  {
+    label: t('nav.events.label'),
+    active: route.path.startsWith('/eventos'),
+    children: [
+      {
+        label: t('nav.events.generalAssemblies'),
+        to: '/eventos/asambleas/',
+      },
+      {
+        label: t('nav.events.trainingStages'),
+        to: '/eventos/stages-formativos/',
+      },
+      {
+        label: t('nav.events.meetingsCongresses'),
+        to: '/eventos/encuentros-congresos/',
       },
     ],
   },

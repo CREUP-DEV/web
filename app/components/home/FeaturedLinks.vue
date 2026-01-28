@@ -1,29 +1,35 @@
 <script setup lang="ts">
 /**
- * UsefulLinksRow
+ * FeaturedLinksRow
  * Renders a row of "links of interest" (image + title).
  * - Auto-wraps to multiple rows on small screens.
  * - Each card is a compact tile; good for 4–8 links.
  */
 
 type LinkItem = {
-  title: string // Localized already
-  image: string // Thumbnail or small banner
-  to: string // Internal or external link
+  /** Localized title */
+  title: string
+  /** Thumbnail or small banner */
+  image: string
+  /** Internal or external link */
+  to: string
+  /** Optional alt text for accessibility */
   alt?: string
 }
 
 const props = defineProps<{
   items: LinkItem[]
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
   <section aria-labelledby="featured-links-heading" class="py-4 sm:py-6">
     <UContainer>
       <header class="mb-3 flex items-center justify-between sm:mb-5">
-        <h2 id="featured-links-heading" class="text-lg font-semibold sm:text-xl">
-          {{ $t('home.featuredLinks') }}
+        <h2 id="featured-links-heading" class="text-xl font-semibold sm:text-2xl">
+          {{ t('home.featuredLinks') }}
         </h2>
       </header>
 
@@ -46,13 +52,15 @@ const props = defineProps<{
       </div>
 
       <!-- Responsive tiles: 2 / 3 / 6 columns depending on width -->
-      <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6">
+      <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6" role="list">
         <NuxtLink
           v-for="(item, idx) in props.items"
           :key="idx"
           :to="item.to"
           class="group focus-visible:ring-primary/60 overflow-hidden rounded-xl bg-white/5 ring-1 ring-black/5 hover:ring-black/10 focus:outline-none focus-visible:ring-2"
-          :aria-label="item.title"
+          role="listitem"
+          :target="item.to.startsWith('http') ? '_blank' : undefined"
+          :rel="item.to.startsWith('http') ? 'noopener noreferrer' : undefined"
         >
           <div class="aspect-square bg-neutral-200 dark:bg-neutral-800">
             <img
@@ -70,6 +78,7 @@ const props = defineProps<{
             <UIcon
               name="i-tabler-external-link"
               class="mt-0.5 shrink-0 opacity-60 transition-opacity group-hover:opacity-100"
+              aria-hidden="true"
             />
           </div>
         </NuxtLink>

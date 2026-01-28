@@ -1,41 +1,57 @@
 <script setup lang="ts">
+/**
+ * TagSelector
+ * Horizontal scrollable tag filter buttons.
+ * Allows filtering news/content by category.
+ */
+const { t } = useI18n()
 const { data: tagsData } = useTags()
 
 const tagList = computed(() => tagsData.value?.tags ?? [])
 
-const selected = ref<string>('')
-watch(
-  tagList,
-  (list) => {
-    if (!list.length) return
-    if (!list.includes(selected.value)) selected.value = list[0] ?? ''
-  },
-  { immediate: true }
-)
+const selectedIndex = ref<number>(-1)
 
-const onSelect = (tag: string) => {
-  selected.value = tag
+const onSelectIndex = (idx: number) => {
+  selectedIndex.value = idx
 }
+
+// Move all logic to client mount (avoids SSR/Hydration discrepancies)
+onMounted(() => {
+  watch(
+    tagList,
+    (list) => {
+      if (!list.length) {
+        selectedIndex.value = -1
+        return
+      }
+      if (selectedIndex.value < 0 || selectedIndex.value >= list.length) {
+        selectedIndex.value = 0
+      }
+    },
+    { immediate: true }
+  )
+})
 </script>
 
 <template>
-  <div class="w-full">
+  <div class="w-full overflow-x-auto">
     <div
-      class="flex flex-wrap items-center gap-2 sm:gap-3"
+      class="flex flex-nowrap items-center gap-2 pb-2 sm:flex-wrap sm:gap-2 sm:pb-0"
       role="tablist"
-      aria-label="Filtrar por etiqueta"
+      :aria-label="t('home.latestNews')"
     >
       <UButton
-        v-for="tag in tagList"
-        :key="tag"
-        class="rounded-full"
+        v-for="(tag, idx) in tagList"
+        :key="`${tag}-${idx}`"
+        class="shrink-0 rounded-full whitespace-nowrap"
         size="sm"
         color="secondary"
-        :variant="tag === selected ? 'solid' : 'outline'"
+        :variant="idx === selectedIndex ? 'solid' : 'outline'"
         role="tab"
-        :aria-selected="tag === selected"
+        :aria-selected="idx === selectedIndex"
+        :tabindex="idx === selectedIndex ? 0 : -1"
         type="button"
-        @click="onSelect(tag)"
+        @click="onSelectIndex(idx)"
       >
         {{ tag }}
       </UButton>
