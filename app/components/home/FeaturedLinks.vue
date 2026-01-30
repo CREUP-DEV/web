@@ -72,17 +72,14 @@ const { t } = useI18n()
               loading="lazy"
             />
           </div>
-          <div class="flex items-start justify-between gap-2 p-2.5 sm:p-3">
-            <p
-              class="group-hover:text-primary line-clamp-2 text-sm leading-tight font-medium transition-colors"
-            >
-              {{ item.title }}
-            </p>
-            <UIcon
-              name="i-tabler-external-link"
-              class="mt-0.5 shrink-0 opacity-60 transition-opacity group-hover:opacity-100"
-              aria-hidden="true"
-            />
+          <div class="p-2.5 sm:p-3">
+            <UTooltip :text="item.title">
+              <p
+                class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
+              >
+                {{ item.title }}
+              </p>
+            </UTooltip>
           </div>
         </NuxtLink>
       </div>

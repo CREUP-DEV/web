@@ -258,11 +258,11 @@ const handleDelete = async () => {
         <div class="drag-handle cursor-grab active:cursor-grabbing">
           <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
         </div>
-        <div class="flex-1">
-          <h3 class="font-medium">{{ item.translations[0]?.name }}</h3>
-          <p class="text-muted text-sm">Slug: {{ item.slug }}</p>
+        <div class="min-w-0 flex-1">
+          <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.name }}</h3>
+          <p class="text-muted text-sm break-all">Slug: {{ item.slug }}</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex shrink-0 gap-2">
           <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
           <UButton
             icon="i-tabler-trash"
@@ -280,37 +280,38 @@ const handleDelete = async () => {
     <!-- Edit/Create Modal -->
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">
       <template #content>
-        <div class="max-h-[80vh] overflow-y-auto p-6">
-          <h2 class="mb-4 text-lg font-bold">
-            {{ editingItem ? 'Editar etiqueta' : 'Nueva etiqueta' }}
-          </h2>
+        <div class="flex max-h-[80vh] flex-col">
+          <div class="overflow-y-auto p-6">
+            <h2 class="mb-4 text-lg font-bold">
+              {{ editingItem ? 'Editar etiqueta' : 'Nueva etiqueta' }}
+            </h2>
 
-          <form class="space-y-4" @submit.prevent="handleSubmit">
-            <UFormField label="Slug (identificador único)">
-              <UInput v-model="form.slug" placeholder="mi-etiqueta" class="w-full" />
-            </UFormField>
-
-            <div
-              v-for="trans in form.translations"
-              :key="trans.locale"
-              class="rounded-lg border p-4"
-            >
-              <h4 class="mb-2 flex items-center gap-2 font-medium">
-                <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
-                {{ getLocaleName(trans.locale) }}
-              </h4>
-              <UFormField :label="`Nombre ${trans.locale !== 'es' ? '(opcional)' : ''}`">
-                <UInput v-model="trans.name" class="w-full" />
+            <form id="tags-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <UFormField label="Slug (identificador único)">
+                <UInput v-model="form.slug" placeholder="mi-etiqueta" class="w-full" />
               </UFormField>
-            </div>
 
-            <div class="flex justify-end gap-2 pt-4">
-              <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
-              <UButton type="submit" :loading="isSubmitting">
-                {{ editingItem ? 'Guardar' : 'Crear' }}
-              </UButton>
-            </div>
-          </form>
+              <div
+                v-for="trans in form.translations"
+                :key="trans.locale"
+                class="rounded-lg border p-4"
+              >
+                <h4 class="mb-2 flex items-center gap-2 font-medium">
+                  <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
+                  {{ getLocaleName(trans.locale) }}
+                </h4>
+                <UFormField :label="`Nombre ${trans.locale !== 'es' ? '(opcional)' : ''}`">
+                  <UInput v-model="trans.name" class="w-full" />
+                </UFormField>
+              </div>
+            </form>
+          </div>
+          <div class="flex justify-end gap-2 border-t p-4">
+            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="submit" form="tags-form" :loading="isSubmitting">
+              {{ editingItem ? 'Guardar' : 'Crear' }}
+            </UButton>
+          </div>
         </div>
       </template>
     </UModal>

@@ -114,17 +114,14 @@ const onTagSelect = (tagSlug: string) => {
               loading="lazy"
             />
           </div>
-          <div class="flex items-start justify-between gap-2 p-3">
-            <h3
-              class="group-hover:text-primary line-clamp-2 text-sm leading-snug font-medium transition-colors sm:text-base"
-            >
-              {{ item.title }}
-            </h3>
-            <UIcon
-              name="i-tabler-arrow-up-right"
-              class="mt-0.5 shrink-0 opacity-60 transition-opacity group-hover:opacity-100"
-              aria-hidden="true"
-            />
+          <div class="p-3">
+            <UTooltip :text="item.title">
+              <h3
+                class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-2 sm:text-base"
+              >
+                {{ item.title }}
+              </h3>
+            </UTooltip>
           </div>
         </NuxtLink>
       </div>

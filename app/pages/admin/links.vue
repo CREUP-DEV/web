@@ -257,40 +257,80 @@ const handleDelete = async () => {
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
       >
-        <div class="drag-handle cursor-grab active:cursor-grabbing">
-          <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
+        <!-- Desktop layout -->
+        <div class="hidden items-center gap-4 md:flex">
+          <div class="drag-handle cursor-grab active:cursor-grabbing">
+            <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
+          </div>
+          <NuxtImg
+            :src="item.image"
+            alt=""
+            aria-hidden="true"
+            width="128"
+            height="128"
+            class="h-16 w-16 rounded-lg object-cover"
+          />
+          <div class="flex-1 overflow-hidden">
+            <h3 class="truncate font-medium">{{ item.translations[0]?.title }}</h3>
+            <p class="text-muted truncate text-sm">{{ item.to }}</p>
+            <div class="mt-1 flex items-center gap-2">
+              <span
+                :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
+                class="rounded-full px-2 py-0.5 text-xs"
+              >
+                {{ item.active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+            <UButton
+              icon="i-tabler-trash"
+              variant="ghost"
+              color="error"
+              size="sm"
+              @click="confirmDelete(item)"
+            />
+          </div>
         </div>
-        <NuxtImg
-          :src="item.image"
-          alt=""
-          aria-hidden="true"
-          width="128"
-          height="128"
-          class="h-16 w-16 rounded-lg object-cover"
-        />
-        <div class="flex-1 overflow-hidden">
-          <h3 class="truncate font-medium">{{ item.translations[0]?.title }}</h3>
-          <p class="text-muted truncate text-sm">{{ item.to }}</p>
-          <div class="mt-1 flex items-center gap-2">
+
+        <!-- Mobile layout -->
+        <div class="space-y-3 md:hidden">
+          <div class="flex justify-center">
+            <div class="drag-handle cursor-grab active:cursor-grabbing">
+              <UIcon name="i-tabler-grip-horizontal" class="text-muted size-5" />
+            </div>
+          </div>
+          <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.title }}</h3>
+          <NuxtImg
+            :src="item.image"
+            alt=""
+            aria-hidden="true"
+            width="128"
+            height="128"
+            class="mx-auto h-32 w-32 rounded-lg object-cover"
+          />
+          <p class="text-muted text-sm break-all">{{ item.to }}</p>
+          <div class="flex items-center justify-between">
             <span
               :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
               class="rounded-full px-2 py-0.5 text-xs"
             >
               {{ item.active ? 'Activo' : 'Inactivo' }}
             </span>
+            <div class="flex gap-2">
+              <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+              <UButton
+                icon="i-tabler-trash"
+                variant="ghost"
+                color="error"
+                size="sm"
+                @click="confirmDelete(item)"
+              />
+            </div>
           </div>
-        </div>
-        <div class="flex gap-2">
-          <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
-          <UButton
-            icon="i-tabler-trash"
-            variant="ghost"
-            color="error"
-            size="sm"
-            @click="confirmDelete(item)"
-          />
         </div>
       </div>
 
@@ -302,59 +342,60 @@ const handleDelete = async () => {
     <!-- Edit/Create Modal -->
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">
       <template #content>
-        <div class="max-h-[80vh] overflow-y-auto p-6">
-          <h2 class="mb-4 text-lg font-bold">
-            {{ editingItem ? 'Editar enlace' : 'Nuevo enlace' }}
-          </h2>
+        <div class="flex max-h-[80vh] flex-col">
+          <div class="overflow-y-auto p-6">
+            <h2 class="mb-4 text-lg font-bold">
+              {{ editingItem ? 'Editar enlace' : 'Nuevo enlace' }}
+            </h2>
 
-          <form class="space-y-4" @submit.prevent="handleSubmit">
-            <UFormField label="Imagen (URL)">
-              <UInput v-model="form.image" placeholder="/test/imagen.jpg" class="w-full" />
-            </UFormField>
+            <form id="links-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <UFormField label="Imagen (URL)">
+                <UInput v-model="form.image" placeholder="/test/imagen.jpg" class="w-full" />
+              </UFormField>
 
-            <UFormField label="Enlace (URL)">
-              <UInput v-model="form.to" placeholder="https://..." class="w-full" />
-            </UFormField>
+              <UFormField label="Enlace (URL)">
+                <UInput v-model="form.to" placeholder="https://..." class="w-full" />
+              </UFormField>
 
-            <UFormField label="Estado">
-              <div class="flex items-center gap-2">
-                <USwitch v-model="form.active" />
-                <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+              <UFormField label="Estado">
+                <div class="flex items-center gap-2">
+                  <USwitch v-model="form.active" />
+                  <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+                </div>
+              </UFormField>
+
+              <div
+                v-for="trans in form.translations"
+                :key="trans.locale"
+                class="rounded-lg border p-4"
+              >
+                <h4 class="mb-3 flex items-center gap-2 font-medium">
+                  <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
+                  {{ getLocaleName(trans.locale) }}
+                </h4>
+                <div class="space-y-3">
+                  <UFormField :label="`Título ${trans.locale !== 'es' ? '(opcional)' : ''}`">
+                    <UInput v-model="trans.title" class="w-full" />
+                  </UFormField>
+                  <UFormField
+                    :label="`Texto alternativo ${trans.locale !== 'es' ? '(opcional)' : ''}`"
+                  >
+                    <UInput
+                      v-model="trans.alt"
+                      :placeholder="trans.title || 'Descripción de la imagen'"
+                      class="w-full"
+                    />
+                  </UFormField>
+                </div>
               </div>
-            </UFormField>
-
-            <div
-              v-for="trans in form.translations"
-              :key="trans.locale"
-              class="rounded-lg border p-4"
-            >
-              <h4 class="mb-3 flex items-center gap-2 font-medium">
-                <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
-                {{ getLocaleName(trans.locale) }}
-              </h4>
-              <div class="space-y-3">
-                <UFormField :label="`Título ${trans.locale !== 'es' ? '(opcional)' : ''}`">
-                  <UInput v-model="trans.title" class="w-full" />
-                </UFormField>
-                <UFormField
-                  :label="`Texto alternativo ${trans.locale !== 'es' ? '(opcional)' : ''}`"
-                >
-                  <UInput
-                    v-model="trans.alt"
-                    :placeholder="trans.title || 'Descripción de la imagen'"
-                    class="w-full"
-                  />
-                </UFormField>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-4">
-              <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
-              <UButton type="submit" :loading="isSubmitting">
-                {{ editingItem ? 'Guardar' : 'Crear' }}
-              </UButton>
-            </div>
-          </form>
+            </form>
+          </div>
+          <div class="flex justify-end gap-2 border-t p-4">
+            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="submit" form="links-form" :loading="isSubmitting">
+              {{ editingItem ? 'Guardar' : 'Crear' }}
+            </UButton>
+          </div>
         </div>
       </template>
     </UModal>

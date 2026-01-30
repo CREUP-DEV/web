@@ -38,7 +38,7 @@ const sidebarOpen = ref(false)
     <!-- Sidebar -->
     <aside
       :class="[
-        'bg-surface fixed inset-y-0 left-0 z-50 flex w-64 flex-col shadow-lg transition-transform duration-200 lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white shadow-lg transition-transform duration-200 lg:translate-x-0 dark:bg-gray-900',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
     >

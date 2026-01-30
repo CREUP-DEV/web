@@ -313,29 +313,71 @@ const getTagName = (tag: Tag) => {
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
       >
-        <div class="drag-handle cursor-grab active:cursor-grabbing">
-          <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
+        <!-- Desktop layout -->
+        <div class="hidden items-center gap-4 md:flex">
+          <div class="drag-handle cursor-grab active:cursor-grabbing">
+            <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
+          </div>
+          <NuxtImg
+            :src="item.image"
+            alt=""
+            aria-hidden="true"
+            width="160"
+            height="90"
+            class="h-20 w-36 rounded-lg object-cover"
+          />
+          <div class="flex-1 overflow-hidden">
+            <h3 class="truncate font-medium">{{ item.translations[0]?.title }}</h3>
+            <p class="text-muted truncate text-sm">{{ item.to }}</p>
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+              <span
+                :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
+                class="rounded-full px-2 py-0.5 text-xs"
+              >
+                {{ item.active ? 'Activo' : 'Inactivo' }}
+              </span>
+              <span
+                v-for="newsTag in item.tags"
+                :key="newsTag.id"
+                class="bg-secondary/10 text-secondary rounded-full px-2 py-0.5 text-xs"
+              >
+                {{ getTagName(newsTag.tag) }}
+              </span>
+              <span v-if="!item.tags.length" class="text-muted text-xs italic">Sin etiquetas</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+            <UButton
+              icon="i-tabler-trash"
+              variant="ghost"
+              color="error"
+              size="sm"
+              @click="confirmDelete(item)"
+            />
+          </div>
         </div>
-        <NuxtImg
-          :src="item.image"
-          alt=""
-          aria-hidden="true"
-          width="160"
-          height="90"
-          class="h-20 w-36 rounded-lg object-cover"
-        />
-        <div class="flex-1 overflow-hidden">
-          <h3 class="truncate font-medium">{{ item.translations[0]?.title }}</h3>
-          <p class="text-muted truncate text-sm">{{ item.to }}</p>
-          <div class="mt-1 flex flex-wrap items-center gap-2">
-            <span
-              :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
-              class="rounded-full px-2 py-0.5 text-xs"
-            >
-              {{ item.active ? 'Activo' : 'Inactivo' }}
-            </span>
+
+        <!-- Mobile layout -->
+        <div class="space-y-3 md:hidden">
+          <div class="flex justify-center">
+            <div class="drag-handle cursor-grab active:cursor-grabbing">
+              <UIcon name="i-tabler-grip-horizontal" class="text-muted size-5" />
+            </div>
+          </div>
+          <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.title }}</h3>
+          <NuxtImg
+            :src="item.image"
+            alt=""
+            aria-hidden="true"
+            width="160"
+            height="90"
+            class="w-full rounded-lg object-cover"
+          />
+          <p class="text-muted text-sm break-all">{{ item.to }}</p>
+          <div class="flex flex-wrap items-center gap-2">
             <span
               v-for="newsTag in item.tags"
               :key="newsTag.id"
@@ -345,16 +387,24 @@ const getTagName = (tag: Tag) => {
             </span>
             <span v-if="!item.tags.length" class="text-muted text-xs italic">Sin etiquetas</span>
           </div>
-        </div>
-        <div class="flex gap-2">
-          <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
-          <UButton
-            icon="i-tabler-trash"
-            variant="ghost"
-            color="error"
-            size="sm"
-            @click="confirmDelete(item)"
-          />
+          <div class="flex items-center justify-between">
+            <span
+              :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
+              class="rounded-full px-2 py-0.5 text-xs"
+            >
+              {{ item.active ? 'Activo' : 'Inactivo' }}
+            </span>
+            <div class="flex gap-2">
+              <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+              <UButton
+                icon="i-tabler-trash"
+                variant="ghost"
+                color="error"
+                size="sm"
+                @click="confirmDelete(item)"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -364,94 +414,99 @@ const getTagName = (tag: Tag) => {
     <!-- Edit/Create Modal -->
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">
       <template #content>
-        <div class="max-h-[80vh] overflow-y-auto p-6">
-          <h2 class="mb-4 text-lg font-bold">
-            {{ editingItem ? 'Editar noticia' : 'Nueva noticia' }}
-          </h2>
+        <div class="flex max-h-[80vh] flex-col">
+          <div class="overflow-y-auto p-6">
+            <h2 class="mb-4 text-lg font-bold">
+              {{ editingItem ? 'Editar noticia' : 'Nueva noticia' }}
+            </h2>
 
-          <form class="space-y-4" @submit.prevent="handleSubmit">
-            <UFormField label="Imagen (URL)">
-              <UInput v-model="form.image" placeholder="/test/imagen.jpg" class="w-full" />
-            </UFormField>
-
-            <UFormField label="Enlace">
-              <UInput v-model="form.to" placeholder="/noticias/slug" class="w-full" />
-            </UFormField>
-
-            <UFormField label="Etiquetas">
-              <USelectMenu
-                v-model="form.tagIds"
-                :items="tagSelectItems"
-                value-key="value"
-                multiple
-                class="w-full"
-                placeholder="Selecciona etiquetas..."
-              />
-            </UFormField>
-
-            <div class="grid grid-cols-2 gap-4">
-              <UFormField label="Fecha publicación">
-                <UInputDate ref="inputDate" v-model="publishedAt" class="w-full">
-                  <template #trailing>
-                    <UPopover
-                      :reference="inputDate?.inputsRef[3]?.$el"
-                      :popper="{ strategy: 'fixed' }"
-                    >
-                      <UButton
-                        color="neutral"
-                        variant="link"
-                        size="sm"
-                        icon="i-tabler-calendar"
-                        aria-label="Seleccionar fecha"
-                        class="px-0"
-                      />
-
-                      <template #content>
-                        <UCalendar v-model="publishedAt" class="p-2" />
-                      </template>
-                    </UPopover>
-                  </template>
-                </UInputDate>
+            <form id="news-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <UFormField label="Imagen (URL)">
+                <UInput v-model="form.image" placeholder="/test/imagen.jpg" class="w-full" />
               </UFormField>
-              <UFormField label="Estado">
-                <div class="flex items-center gap-2">
-                  <USwitch v-model="form.active" />
-                  <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
-                </div>
-              </UFormField>
-            </div>
 
-            <div
-              v-for="trans in form.translations"
-              :key="trans.locale"
-              class="rounded-lg border p-4"
-            >
-              <h4 class="mb-3 flex items-center gap-2 font-medium">
-                <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
-                {{ getLocaleName(trans.locale) }}
-                <span v-if="trans.locale !== 'es'" class="text-muted text-xs"> (opcional) </span>
-              </h4>
-              <div class="space-y-3">
-                <UFormField :label="trans.locale === 'es' ? 'Título *' : 'Título'">
-                  <UInput v-model="trans.title" class="w-full" :required="trans.locale === 'es'" />
+              <UFormField label="Enlace">
+                <UInput v-model="form.to" placeholder="/noticias/slug" class="w-full" />
+              </UFormField>
+
+              <UFormField label="Etiquetas">
+                <USelectMenu
+                  v-model="form.tagIds"
+                  :items="tagSelectItems"
+                  value-key="value"
+                  multiple
+                  class="w-full"
+                  placeholder="Selecciona etiquetas..."
+                />
+              </UFormField>
+
+              <div class="grid grid-cols-2 gap-4">
+                <UFormField label="Fecha publicación">
+                  <UInputDate ref="inputDate" v-model="publishedAt" class="w-full">
+                    <template #trailing>
+                      <UPopover
+                        :reference="inputDate?.inputsRef[3]?.$el"
+                        :popper="{ strategy: 'fixed' }"
+                      >
+                        <UButton
+                          color="neutral"
+                          variant="link"
+                          size="sm"
+                          icon="i-tabler-calendar"
+                          aria-label="Seleccionar fecha"
+                          class="px-0"
+                        />
+
+                        <template #content>
+                          <UCalendar v-model="publishedAt" class="p-2" />
+                        </template>
+                      </UPopover>
+                    </template>
+                  </UInputDate>
                 </UFormField>
-                <UFormField label="Texto alternativo (descripción de la imagen)">
-                  <UInput
-                    v-model="trans.alt"
-                    :placeholder="trans.title || 'Descripción de la imagen'"
-                    class="w-full"
-                  />
+                <UFormField label="Estado">
+                  <div class="flex items-center gap-2">
+                    <USwitch v-model="form.active" />
+                    <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+                  </div>
                 </UFormField>
               </div>
-            </div>
 
-            <div class="flex justify-end gap-2 pt-4">
-              <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
-              <UButton type="submit" :loading="isSubmitting">
-                {{ editingItem ? 'Guardar' : 'Crear' }}
-              </UButton>
-            </div>
-          </form>
+              <div
+                v-for="trans in form.translations"
+                :key="trans.locale"
+                class="rounded-lg border p-4"
+              >
+                <h4 class="mb-3 flex items-center gap-2 font-medium">
+                  <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
+                  {{ getLocaleName(trans.locale) }}
+                  <span v-if="trans.locale !== 'es'" class="text-muted text-xs"> (opcional) </span>
+                </h4>
+                <div class="space-y-3">
+                  <UFormField :label="trans.locale === 'es' ? 'Título *' : 'Título'">
+                    <UInput
+                      v-model="trans.title"
+                      class="w-full"
+                      :required="trans.locale === 'es'"
+                    />
+                  </UFormField>
+                  <UFormField label="Texto alternativo (descripción de la imagen)">
+                    <UInput
+                      v-model="trans.alt"
+                      :placeholder="trans.title || 'Descripción de la imagen'"
+                      class="w-full"
+                    />
+                  </UFormField>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="flex justify-end gap-2 border-t p-4">
+            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="submit" form="news-form" :loading="isSubmitting">
+              {{ editingItem ? 'Guardar' : 'Crear' }}
+            </UButton>
+          </div>
         </div>
       </template>
     </UModal>
