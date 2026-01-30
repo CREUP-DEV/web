@@ -9,7 +9,6 @@ export default defineNuxtConfig({
   },
   alias: {
     '@/composables': './app/composables',
-    '@/data': './data',
   },
   modules: [
     '@nuxt/ui',
@@ -29,7 +28,7 @@ export default defineNuxtConfig({
     url: 'https://www.creup.es',
     name: 'CREUP',
     description:
-      'Coordinadora de Representantes de Estudiantes de Universidades Públicas - Representing over 1,000,000 students across Spain',
+      'Coordinadora de Representantes de Estudiantes de Universidades Públicas - Representando a más de 1.000.000 de estudiantes en toda España.',
     defaultLocale: 'es',
     identity: {
       type: 'Organization',
@@ -58,7 +57,7 @@ export default defineNuxtConfig({
   robots: {
     enabled: true,
     allow: ['/'],
-    disallow: ['/api/', '/_nuxt/'],
+    disallow: ['/api/', '/_nuxt/', '/admin/'],
     sitemap: 'https://www.creup.es/sitemap.xml',
   },
 
@@ -103,7 +102,7 @@ export default defineNuxtConfig({
       },
       {
         code: 'en',
-        language: 'en-US',
+        language: 'en-GB',
         file: 'en.json',
         name: 'English',
       },

@@ -24,16 +24,16 @@ const socials = useSocials()
     <UNavigationMenu :items="items" variant="link" />
 
     <template #right>
-      <UButton
-        v-for="social in socials"
-        :key="social.label"
-        :icon="social.icon"
-        color="neutral"
-        variant="ghost"
-        :to="social.to"
-        target="_blank"
-        :aria-label="social.label"
-      />
+      <UTooltip v-for="social in socials" :key="social.label" :text="social.label">
+        <UButton
+          :icon="social.icon"
+          color="neutral"
+          variant="ghost"
+          :to="social.to"
+          target="_blank"
+          :aria-label="social.label"
+        />
+      </UTooltip>
     </template>
   </UFooter>
 </template>

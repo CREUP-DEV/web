@@ -1,5 +1,10 @@
+export interface Tag {
+  slug: string
+  name: string
+}
+
 export interface TagsResponse {
-  tags: string[]
+  tags: Tag[]
 }
 
 export function useTags() {

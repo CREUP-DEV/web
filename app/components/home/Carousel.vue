@@ -2,14 +2,14 @@
 /**
  * HomeCarousel
  * Displays a hero carousel with images and captions.
- * - Expects images of 1920 × 550 px (aspect ratio ~3.49:1).
+ * - Expects images of 1925 × 550 px (aspect ratio 3.5:1).
  * - Navigation buttons inside the carousel, hidden on mobile, visible on desktop.
  * - Caption with CTA button always positioned below the image.
  * - Uses NuxtImg for optimized image loading.
  */
-import type { MockDataCarouselItem } from '@/composables/useMockData'
+import type { CarouselItem } from '@/composables/useHomeData'
 
-const props = defineProps<{ items: MockDataCarouselItem[] }>()
+const props = defineProps<{ items: CarouselItem[] }>()
 
 const { t } = useI18n()
 </script>
@@ -20,17 +20,20 @@ const { t } = useI18n()
 
     <UContainer>
       <!-- Loading skeleton -->
-      <USkeleton v-if="!props.items.length" class="mt-5 h-62 w-full rounded-xl sm:h-80" />
+      <USkeleton
+        v-if="!props.items.length"
+        class="mt-5 mb-10 h-62 w-full rounded-xl sm:mb-20 sm:h-100"
+      />
 
       <UCarousel
         v-else
         v-slot="{ item }"
         :key="props.items.length"
-        loop
-        dots
-        arrows
+        :loop="props.items.length > 1"
+        :dots="props.items.length > 1"
+        :arrows="props.items.length > 1"
         auto-height
-        :autoplay="{ delay: 10000 }"
+        :autoplay="props.items.length > 1 ? { delay: 10000 } : false"
         :items="props.items"
         :ui="{
           container: 'transition-[height]',
@@ -42,14 +45,12 @@ const { t } = useI18n()
         class="mt-5 w-full pb-6"
       >
         <article class="flex h-full flex-col sm:h-auto">
-          <!-- Image container with 1920×550 aspect ratio -->
-          <div
-            class="relative aspect-192/55 w-full overflow-hidden rounded-t-xl bg-neutral-200 dark:bg-neutral-800"
-          >
+          <!-- Image container with 1925×550 aspect ratio -->
+          <div class="bg-muted relative aspect-1925/550 w-full overflow-hidden rounded-t-xl">
             <NuxtImg
-              :src="item.image"
-              :alt="item.title"
-              width="1920"
+              :src="item.image || '/img/carousel/default.jpg'"
+              :alt="item.alt || item.title"
+              width="1925"
               height="550"
               class="size-full object-cover"
               loading="lazy"
@@ -61,11 +62,11 @@ const { t } = useI18n()
 
           <!-- Caption always below the image - grows to fill available space -->
           <div
-            class="flex min-h-28 grow flex-col justify-end rounded-b-xl bg-neutral-100 p-4 transition-[height] duration-300 ease-in-out sm:min-h-0 sm:grow-0 sm:p-5 dark:bg-neutral-800"
+            class="bg-surface/70 flex min-h-28 grow flex-col justify-end rounded-b-xl border border-gray-200/70 p-4 ring-1 ring-gray-200/40 transition-[height] duration-300 ease-in-out sm:min-h-0 sm:grow-0 sm:p-5 dark:border-gray-800/70 dark:ring-gray-800/40"
           >
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p
-                class="text-base leading-relaxed font-medium whitespace-pre-line text-neutral-800 sm:text-lg dark:text-neutral-100"
+                class="text-foreground text-base leading-relaxed font-medium whitespace-pre-line sm:text-lg"
               >
                 {{ item.title }}
               </p>

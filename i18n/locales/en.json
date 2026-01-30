@@ -1,6 +1,7 @@
 {
   "nav": {
     "home": "Home",
+    "admin": "Admin panel",
     "about": {
       "label": "About",
       "whatIs": "What is CREUP?",
@@ -56,9 +57,11 @@
     "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain."
   },
   "home": {
+    "newsAndEventsLabel": "News and events",
     "latestNews": "Latest News",
     "featuredLinks": "Featured Links",
     "publicAgenda": "Public Agenda",
+    "noNews": "No news available for this tag",
     "carousel": {
       "label": "Featured announcements carousel",
       "previous": "Previous slide",
@@ -72,7 +75,9 @@
       "noEvents": "No events scheduled for this day.",
       "selectDay": "Select a day to see scheduled events.",
       "upcomingEvents": "Upcoming events",
-      "noUpcomingEvents": "No upcoming events scheduled."
+      "noUpcomingEvents": "No upcoming events scheduled.",
+      "multiDay": "Multi-day",
+      "allDay": "All day"
     }
   },
   "accessibility": {
@@ -88,5 +93,45 @@
     "viewAll": "View all",
     "back": "Back",
     "close": "Close"
+  },
+  "language": {
+    "toggle": "Change language",
+    "locales": {
+      "es": "Spanish",
+      "en": "English"
+    }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light mode",
+    "dark": "Dark mode"
+  },
+  "error": {
+    "notFound": "Page not found",
+    "generic": "An error occurred",
+    "message": "Sorry, something went wrong. Please try again later.",
+    "backHome": "Back to home"
+  },
+  "admin": {
+    "errors": {
+      "slugExists": "A tag with this slug already exists",
+      "tagOrderSaveFailed": "Could not save tag order",
+      "tagSaveFailed": "Could not save the tag",
+      "tagDeleteFailed": "Could not delete the tag",
+      "saveFailed": "Error saving",
+      "deleteFailed": "Error deleting",
+      "loadFailed": "Error loading data"
+    },
+    "messages": {
+      "tagOrderSaved": "Tag order saved",
+      "tagUpdated": "Tag updated",
+      "tagCreated": "Tag created",
+      "tagDeleted": "Tag deleted"
+    },
+    "success": {
+      "saved": "Saved successfully",
+      "deleted": "Deleted successfully",
+      "orderSaved": "Order saved successfully"
+    }
   }
 }

@@ -6,6 +6,7 @@
  * - Uses NuxtLink for navigation and UIcon for subtle affordances.
  * - Section title comes from i18n.
  */
+import { useNews } from '@/composables/useNews'
 
 type NewsItem = {
   /** Localized title (already in the current locale) */
@@ -19,19 +20,51 @@ type NewsItem = {
 }
 
 const props = defineProps<{
-  items: NewsItem[]
+  items?: NewsItem[]
   /** Whether to show inline (without container wrapper) */
   inline?: boolean
 }>()
 
 const { t } = useI18n()
+
+const hasProvidedItems = computed(() => Array.isArray(props.items))
+
+// Selected tag for filtering
+const selectedTag = ref<string>('all')
+
+// Fetch news filtered by tag
+const { data: newsData, pending } = useNews(selectedTag)
+
+// Use props.items if provided, otherwise use filtered news from API
+const displayItems = computed(() => {
+  if (props.items && props.items.length > 0) {
+    return props.items
+  }
+  return (
+    newsData.value?.news.map((n) => ({
+      title: n.title,
+      image: n.image,
+      to: n.to,
+    })) ?? []
+  )
+})
+
+const isLoading = computed(() => {
+  if (hasProvidedItems.value) return false
+  return pending.value || newsData.value == null
+})
+
+const onTagSelect = (tagSlug: string) => {
+  selectedTag.value = tagSlug
+}
 </script>
 
 <template>
   <section aria-labelledby="featured-news-heading" class="h-full">
     <div
       :class="{
-        'rounded-2xl bg-white/5 p-4 ring-1 ring-black/5 sm:p-5 dark:bg-neutral-900/50': inline,
+        'bg-surface/50 rounded-2xl p-4 ring-1 ring-gray-200/50 sm:p-5 dark:ring-gray-800/50':
+          inline,
       }"
       class="flex h-full flex-col"
     >
@@ -42,38 +75,49 @@ const { t } = useI18n()
       </header>
 
       <!-- Tag selector sits between the heading and the news grid -->
-      <HomeTagSelector class="mb-4" />
+      <HomeTagSelector class="mb-4" @select="onTagSelect" />
 
       <!-- Loading skeleton grid -->
       <div
-        v-if="!props.items.length"
+        v-if="isLoading"
         aria-hidden="true"
         class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4"
       >
-        <USkeleton v-for="n in 4" :key="n" class="h-48 rounded-xl sm:h-52" />
+        <USkeleton v-for="n in 4" :key="n" class="h-48 rounded-xl sm:h-72" />
+      </div>
+
+      <!-- No results message -->
+      <div
+        v-else-if="!displayItems.length"
+        class="text-muted flex flex-1 items-center justify-center py-12 text-center"
+      >
+        <p>{{ t('home.noNews') }}</p>
       </div>
 
       <!-- Responsive grid: 1 / 2 columns -->
       <div v-else class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4" role="list">
         <NuxtLink
-          v-for="(item, idx) in props.items"
+          v-for="(item, idx) in displayItems"
           :key="idx"
           :to="item.to"
-          class="group focus-visible:ring-primary/60 overflow-hidden rounded-xl bg-white/5 ring-1 ring-black/5 transition-shadow hover:ring-black/10 focus:outline-none focus-visible:ring-2 dark:bg-neutral-800/50"
+          class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
           role="listitem"
         >
           <!-- Cover -->
-          <div class="aspect-video bg-neutral-200 dark:bg-neutral-800">
-            <img
+          <div class="bg-muted aspect-video">
+            <NuxtImg
               :src="item.image"
-              :alt="item.alt || item.title"
+              :alt="item.title"
+              width="640"
+              height="360"
               class="size-full object-cover"
               loading="lazy"
-              decoding="async"
             />
           </div>
           <div class="flex items-start justify-between gap-2 p-3">
-            <h3 class="line-clamp-2 text-sm leading-snug font-medium sm:text-base">
+            <h3
+              class="group-hover:text-primary line-clamp-2 text-sm leading-snug font-medium transition-colors sm:text-base"
+            >
               {{ item.title }}
             </h3>
             <UIcon

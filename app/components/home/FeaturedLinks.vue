@@ -42,7 +42,7 @@ const { t } = useI18n()
         <div
           v-for="n in 6"
           :key="n"
-          class="overflow-hidden rounded-xl bg-white/5 ring-1 ring-black/5"
+          class="bg-surface/50 overflow-hidden rounded-xl ring-1 ring-gray-200/50 dark:ring-gray-800/50"
         >
           <USkeleton class="aspect-square" />
           <div class="p-2.5 sm:p-3">
@@ -57,22 +57,25 @@ const { t } = useI18n()
           v-for="(item, idx) in props.items"
           :key="idx"
           :to="item.to"
-          class="group focus-visible:ring-primary/60 overflow-hidden rounded-xl bg-white/5 ring-1 ring-black/5 hover:ring-black/10 focus:outline-none focus-visible:ring-2"
+          class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
           role="listitem"
           :target="item.to.startsWith('http') ? '_blank' : undefined"
           :rel="item.to.startsWith('http') ? 'noopener noreferrer' : undefined"
         >
-          <div class="aspect-square bg-neutral-200 dark:bg-neutral-800">
-            <img
+          <div class="bg-muted aspect-square">
+            <NuxtImg
               :src="item.image"
               :alt="item.alt || item.title"
+              width="288"
+              height="288"
               class="size-full object-cover"
               loading="lazy"
-              decoding="async"
             />
           </div>
           <div class="flex items-start justify-between gap-2 p-2.5 sm:p-3">
-            <p class="line-clamp-2 text-sm leading-tight font-medium">
+            <p
+              class="group-hover:text-primary line-clamp-2 text-sm leading-tight font-medium transition-colors"
+            >
               {{ item.title }}
             </p>
             <UIcon

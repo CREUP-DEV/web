@@ -1,16 +1,36 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
-import * as uiLocales from '@nuxt/ui/locale'
+import { useAuth } from '@/composables/useAuth'
 
-const { locale, locales, setLocale, t, setLocaleCookie } = useI18n()
+const { locale, setLocale, t, setLocaleCookie } = useI18n()
+const { session } = useAuth()
 
-const availableLocales = locales.value.map((loc) => uiLocales[loc.code])
+const { localeConfigs } = useLocales()
 
-const switchLocale = (newLocale: Locale) => {
-  setLocale(newLocale)
-  setLocaleCookie(newLocale)
-}
+const localeItems = computed(() =>
+  localeConfigs.value.map((config) => ({
+    value: config.code as Locale,
+    label: t(`language.locales.${config.code}`),
+    icon: config.flag,
+  }))
+)
+
+const selectedLocale = computed({
+  get: () => locale.value,
+  set: (newLocale: string) => {
+    if (!newLocale) return
+    setLocale(newLocale as Locale)
+    setLocaleCookie(newLocale as Locale)
+  },
+})
+
+const currentLocale = computed(
+  () => localeItems.value.find((l) => l.value === locale.value) ?? localeItems.value[0]
+)
+
+// Check if user is logged in
+const isLoggedIn = computed(() => !!session.value?.data?.user)
 
 const route = useRoute()
 
@@ -165,13 +185,57 @@ const items = computed<NavigationMenuItem[]>(() => [
     </template>
 
     <template #right>
-      <UColorModeButton />
+      <!-- Admin panel button (only when logged in) -->
+      <UTooltip v-if="isLoggedIn" :text="t('nav.admin')">
+        <UButton
+          to="/admin"
+          icon="i-tabler-settings-2"
+          color="neutral"
+          variant="ghost"
+          :aria-label="t('nav.admin')"
+        />
+      </UTooltip>
 
-      <ULocaleSelect
-        v-model="locale"
-        :locales="availableLocales"
-        @update:model-value="switchLocale($event as Locale)"
-      />
+      <UTooltip :text="t('theme.toggle')">
+        <UColorModeButton />
+      </UTooltip>
+
+      <!-- Desktop locale selector -->
+      <USelect
+        v-model="selectedLocale"
+        :items="localeItems"
+        value-key="value"
+        class="hidden w-36 sm:block"
+        :aria-label="t('language.toggle')"
+      >
+        <template #leading="{ modelValue }">
+          <UIcon
+            v-if="modelValue"
+            :name="localeItems.find((l) => l.value === modelValue)?.icon || ''"
+            class="size-5"
+          />
+        </template>
+      </USelect>
+
+      <!-- Mobile locale dropdown -->
+      <UDropdownMenu
+        :items="
+          localeItems.map((item) => ({
+            label: item.label,
+            icon: item.icon,
+            onSelect: () => (selectedLocale = item.value as Locale),
+          }))
+        "
+        class="sm:hidden"
+      >
+        <UButton
+          :icon="currentLocale!.icon"
+          color="neutral"
+          variant="ghost"
+          size="lg"
+          :aria-label="t('language.toggle')"
+        />
+      </UDropdownMenu>
     </template>
   </UHeader>
 </template>

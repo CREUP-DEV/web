@@ -1,22 +1,54 @@
-# Web CREUP
+
+# CREUP Web
 
 Proyecto de la nueva web de CREUP.
 
-## Descripción del proyecto
+---
 
-La nueva _web_ está hecha con [Nuxt](https://nuxt.com/) y utiliza como librería de componentes gráficos [Nuxt UI](https://ui.nuxt.com/).
+## Descripción
 
-Como gestor de paquetes, el proyecto utiliza [pnpm](https://pnpm.io/).
+Proyecto basado en [Nuxt 4](https://nuxt.com/) con SSR, panel de administración y base de datos PostgreSQL gestionada con Drizzle ORM. Permite gestionar el contenido de la página de inicio (carrusel, noticias, enlaces, etiquetas) y sincroniza la agenda pública con Google Calendar. La interfaz utiliza [Nuxt UI](https://ui.nuxt.com/) y Tailwind CSS.
 
-## Plan de desarrollo
+---
 
-- Finalizar la página principal con información de ejemplo.
-- Crear el resto de páginas con información de ejemplo.
-- Plantear y desarrollar el _backend_.
+## Características principales
 
-**Rama de pruebas: `testing`**
+- **Base de datos**: PostgreSQL + Drizzle ORM
+- **Panel de administración**: Modificación de carrusel, noticias, enlaces y etiquetas
+- **Integración Google Calendar**: Sincronización de eventos
+- **Internacionalización**: Español (por defecto) y soporte para inglés
+- **Accesibilidad y SEO**: Cumple buenas prácticas
 
-## Tareas pendientes
+---
 
-- **Fix:** Al ejecutar `pnpm build` y `pnpm preview`, el imagotipo de la cabecera carga debido a un error 500.
-- El skeleton del carousel debe estar hasta que cargue la imagen, no solo hasta que se reciba la respuesta.
+## Desarrollo local
+
+1. Instala dependencias:
+	```sh
+	pnpm install
+	```
+2. Copia y configura las variables de entorno necesarias (`.env`)
+3. Ejecuta el entorno de desarrollo:
+	```sh
+	pnpm dev
+	```
+4. Para aplicar cambios en la base de datos:
+	```sh
+	pnpm db:generate
+	pnpm db:migrate
+	pnpm db:seed
+	```
+
+---
+
+## Estructura del proyecto
+
+- `app/` — Componentes Vue, layouts, páginas y composables
+- `server/api/` — Endpoints públicos y de administración (Nitro)
+- `server/db/` — Esquema Drizzle y cliente de base de datos
+- `i18n/locales/` — Archivos de traducción
+- `drizzle/` — Migraciones y seeds
+
+---
+
+**Rama de pruebas:** `testing`

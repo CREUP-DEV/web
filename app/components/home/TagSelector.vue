@@ -5,14 +5,20 @@
  * Allows filtering news/content by category.
  */
 const { t } = useI18n()
-const { data: tagsData } = useTags()
+const { data: tagsData, pending } = useTags()
 
 const tagList = computed(() => tagsData.value?.tags ?? [])
+const isLoading = computed(() => pending.value || tagsData.value == null)
 
-const selectedIndex = ref<number>(-1)
+const emit = defineEmits<{
+  (e: 'select', tagSlug: string): void
+}>()
 
-const onSelectIndex = (idx: number) => {
-  selectedIndex.value = idx
+const selectedSlug = ref<string>('all')
+
+const onSelectTag = (slug: string) => {
+  selectedSlug.value = slug
+  emit('select', slug)
 }
 
 // Move all logic to client mount (avoids SSR/Hydration discrepancies)
@@ -21,11 +27,12 @@ onMounted(() => {
     tagList,
     (list) => {
       if (!list.length) {
-        selectedIndex.value = -1
+        selectedSlug.value = 'all'
         return
       }
-      if (selectedIndex.value < 0 || selectedIndex.value >= list.length) {
-        selectedIndex.value = 0
+      // Default to first tag (which should be "all")
+      if (!list.find((t) => t.slug === selectedSlug.value)) {
+        selectedSlug.value = list[0]?.slug ?? 'all'
       }
     },
     { immediate: true }
@@ -40,21 +47,26 @@ onMounted(() => {
       role="tablist"
       :aria-label="t('home.latestNews')"
     >
-      <UButton
-        v-for="(tag, idx) in tagList"
-        :key="`${tag}-${idx}`"
-        class="shrink-0 rounded-full whitespace-nowrap"
-        size="sm"
-        color="secondary"
-        :variant="idx === selectedIndex ? 'solid' : 'outline'"
-        role="tab"
-        :aria-selected="idx === selectedIndex"
-        :tabindex="idx === selectedIndex ? 0 : -1"
-        type="button"
-        @click="onSelectIndex(idx)"
-      >
-        {{ tag }}
-      </UButton>
+      <template v-if="isLoading">
+        <USkeleton v-for="n in 5" :key="n" class="h-8 w-20 rounded-full" aria-hidden="true" />
+      </template>
+      <template v-else>
+        <UButton
+          v-for="tag in tagList"
+          :key="tag.slug"
+          class="shrink-0 rounded-full whitespace-nowrap"
+          size="sm"
+          color="secondary"
+          :variant="tag.slug === selectedSlug ? 'solid' : 'outline'"
+          role="tab"
+          :aria-selected="tag.slug === selectedSlug"
+          :tabindex="tag.slug === selectedSlug ? 0 : -1"
+          type="button"
+          @click="onSelectTag(tag.slug)"
+        >
+          {{ tag.name }}
+        </UButton>
+      </template>
     </div>
   </div>
 </template>
