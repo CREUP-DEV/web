@@ -54,7 +54,7 @@ useSchemaOrg([
 </script>
 
 <template>
-  <UApp :locale="locales[locale]">
+    <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
