@@ -52,37 +52,36 @@ const { t } = useI18n()
       </div>
 
       <!-- Responsive tiles: 2 / 3 / 6 columns depending on width -->
-      <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6" role="list">
-        <NuxtLink
-          v-for="(item, idx) in props.items"
-          :key="idx"
-          :to="item.to"
-          class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
-          role="listitem"
-          :target="item.to.startsWith('http') ? '_blank' : undefined"
-          :rel="item.to.startsWith('http') ? 'noopener noreferrer' : undefined"
-        >
-          <div class="bg-muted aspect-square">
-            <NuxtImg
-              :src="item.image"
-              :alt="item.alt || item.title"
-              width="288"
-              height="288"
-              class="size-full object-cover"
-              loading="lazy"
-            />
-          </div>
-          <div class="p-2.5 sm:p-3">
-            <UTooltip :text="item.title">
-              <p
-                class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
-              >
-                {{ item.title }}
-              </p>
-            </UTooltip>
-          </div>
-        </NuxtLink>
-      </div>
+      <ul v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6" role="list">
+        <li v-for="(item, idx) in props.items" :key="idx">
+          <a
+            :href="item.to"
+            class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+            :target="item.to.startsWith('http') ? '_blank' : undefined"
+            :rel="item.to.startsWith('http') ? 'noopener noreferrer' : undefined"
+          >
+            <div class="bg-muted aspect-square">
+              <NuxtImg
+                :src="item.image"
+                alt=""
+                width="288"
+                height="288"
+                class="size-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div class="p-2.5 sm:p-3">
+              <UTooltip :text="item.title">
+                <p
+                  class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
+                >
+                  {{ item.title }}
+                </p>
+              </UTooltip>
+            </div>
+          </a>
+        </li>
+      </ul>
     </UContainer>
   </section>
 </template>

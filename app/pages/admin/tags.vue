@@ -42,13 +42,13 @@ const isSavingOrder = ref(false)
 // Computed: detect if order changed from original
 const hasOrderChanges = computed(() => {
   if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some((item, index) => item.id !== items.value[index]?.id)
+  return localItems.value.some((item: Tag, index: number) => item.id !== items.value[index]?.id)
 })
 
 // Sync local items with server data
 watch(
   items,
-  (newItems) => {
+  (newItems: Tag[]) => {
     localItems.value = [...newItems]
   },
   { immediate: true }
@@ -103,7 +103,7 @@ onUnmounted(() => {
 const saveOrder = async () => {
   isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item, index) => ({
+    const updates = localItems.value.map((item: Tag, index: number) => ({
       id: item.id,
       order: index,
     }))

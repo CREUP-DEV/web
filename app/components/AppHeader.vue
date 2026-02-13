@@ -3,13 +3,24 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 
+type LocaleConfig = {
+  code: string
+  flag: string
+}
+
+type LocaleItem = {
+  value: Locale
+  label: string
+  icon: string
+}
+
 const { locale, setLocale, t, setLocaleCookie } = useI18n()
 const { session } = useAuth()
 
 const { localeConfigs } = useLocales()
 
-const localeItems = computed(() =>
-  localeConfigs.value.map((config) => ({
+const localeItems = computed<LocaleItem[]>(() =>
+  (localeConfigs.value as LocaleConfig[]).map((config) => ({
     value: config.code as Locale,
     label: t(`language.locales.${config.code}`),
     icon: config.flag,
@@ -26,7 +37,22 @@ const selectedLocale = computed({
 })
 
 const currentLocale = computed(
-  () => localeItems.value.find((l) => l.value === locale.value) ?? localeItems.value[0]
+  () =>
+    localeItems.value.find((item: LocaleItem) => item.value === locale.value) ??
+    localeItems.value[0]
+)
+
+const getLocaleIcon = (value?: Locale | string) =>
+  localeItems.value.find((item: LocaleItem) => item.value === value)?.icon ?? ''
+
+const mobileLocaleItems = computed(() =>
+  localeItems.value.map((item: LocaleItem) => ({
+    label: item.label,
+    icon: item.icon,
+    onSelect: () => {
+      selectedLocale.value = item.value
+    },
+  }))
 )
 
 // Check if user is logged in
@@ -173,15 +199,23 @@ const items = computed<NavigationMenuItem[]>(() => [
       <UColorModeImage
         light="/img/creup-imagotipo.svg"
         dark="/img/creup-imagotipo-dark.svg"
-        alt="CREUP"
+        alt="CREUP logo"
         class="h-8 w-auto"
       />
     </template>
 
-    <UNavigationMenu content-orientation="vertical" :items="items" />
+    <UNavigationMenu
+      content-orientation="vertical"
+      :items="items"
+      :aria-label="t('accessibility.mainNavigation')"
+    />
 
     <template #body>
-      <UNavigationMenu orientation="vertical" :items="items" />
+      <UNavigationMenu
+        orientation="vertical"
+        :items="items"
+        :aria-label="t('accessibility.mobileNavigation')"
+      />
     </template>
 
     <template #right>
@@ -209,25 +243,12 @@ const items = computed<NavigationMenuItem[]>(() => [
         :aria-label="t('language.toggle')"
       >
         <template #leading="{ modelValue }">
-          <UIcon
-            v-if="modelValue"
-            :name="localeItems.find((l) => l.value === modelValue)?.icon || ''"
-            class="size-5"
-          />
+          <UIcon v-if="modelValue" :name="getLocaleIcon(modelValue)" class="size-5" />
         </template>
       </USelect>
 
       <!-- Mobile locale dropdown -->
-      <UDropdownMenu
-        :items="
-          localeItems.map((item) => ({
-            label: item.label,
-            icon: item.icon,
-            onSelect: () => (selectedLocale = item.value as Locale),
-          }))
-        "
-        class="sm:hidden"
-      >
+      <UDropdownMenu :items="mobileLocaleItems" class="sm:hidden">
         <UButton
           :icon="currentLocale!.icon"
           color="neutral"

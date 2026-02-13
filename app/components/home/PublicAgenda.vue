@@ -6,7 +6,6 @@
  * - Upcoming events listed below the calendar.
  * - Fixed-size date badges for consistent alignment.
  */
-import { computed, ref } from 'vue'
 import type { CalendarEvent } from '@/composables/useGoogleCalendar'
 
 const props = defineProps<{
@@ -95,13 +94,13 @@ const calendarDays = computed(() => {
 // Check if a day has events
 const hasEvents = (day: number): boolean => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  return props.events.some((event) => event.date === dateStr)
+  return props.events.some((event: CalendarEvent) => event.date === dateStr)
 }
 
 // Get events for a specific day
 const getEventsForDay = (day: number): CalendarEvent[] => {
   const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  return props.events.filter((event) => event.date === dateStr)
+  return props.events.filter((event: CalendarEvent) => event.date === dateStr)
 }
 
 // Upcoming events (next 4 events from today)
@@ -316,7 +315,6 @@ const onTouchEnd = (event: TouchEvent) => {
       <!-- Calendar grid -->
       <div
         class="relative grid grid-cols-7 gap-1"
-        role="grid"
         :aria-label="t('home.calendar.label')"
         @touchstart.passive="onTouchStart"
         @touchend.passive="onTouchEnd"
@@ -325,27 +323,32 @@ const onTouchEnd = (event: TouchEvent) => {
           v-for="(day, idx) in calendarDays"
           :key="idx"
           :open="day !== null && day === selectedDay"
-          @update:open="(open) => onPopoverClose(open, day)"
+          @update:open="(open: boolean) => onPopoverClose(open, day)"
         >
           <template #default="{ open }">
+            <div
+              v-if="day === null"
+              aria-hidden="true"
+              class="relative flex aspect-square items-center justify-center rounded-lg"
+            />
             <button
+              v-else
               type="button"
-              :disabled="day === null"
-              :aria-label="day ? `${day} ${monthName}` : undefined"
+              :aria-label="`${day} ${monthName}`"
               :aria-expanded="open"
               class="focus-visible:ring-primary-500 relative flex aspect-square items-center justify-center rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2"
               :class="[
-                day === null ? 'cursor-default' : 'hover:bg-muted cursor-pointer',
-                day !== null && selectedDay === day ? 'ring-primary bg-primary/10 ring-2' : '',
-                day !== null && isToday(day) && selectedDay === -1 && !isSelectingDay
+                'hover:bg-muted cursor-pointer',
+                selectedDay === day ? 'ring-primary bg-primary/10 ring-2' : '',
+                isToday(day) && selectedDay === -1 && !isSelectingDay
                   ? 'ring-primary bg-primary/10 ring-2'
                   : '',
-                day !== null && hasEvents(day) ? 'text-primary font-bold' : '',
+                hasEvents(day) ? 'text-primary font-bold' : '',
               ]"
               @click="onDayClick(day)"
               @pointerdown="onDayPointerDown(day)"
             >
-              <span v-if="day">{{ day }}</span>
+              <span>{{ day }}</span>
             </button>
           </template>
           <template #content>

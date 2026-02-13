@@ -26,7 +26,11 @@ export default defineEventHandler(async (event) => {
       ).map((nt) => nt.newsItemId)
 
       if (newsItemIds.length > 0) {
-        whereClause = and(eq(newsItems.active, true), inArray(newsItems.id, newsItemIds))
+        const filteredWhereClause = and(
+          eq(newsItems.active, true),
+          inArray(newsItems.id, newsItemIds)
+        )
+        whereClause = filteredWhereClause ?? eq(newsItems.active, true)
       } else {
         // No news items with this tag
         return { news: [] }

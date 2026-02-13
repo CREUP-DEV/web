@@ -41,7 +41,7 @@ const displayItems = computed(() => {
     return props.items
   }
   return (
-    newsData.value?.news.map((n) => ({
+    newsData.value?.news.map((n: { title: string; image: string; to: string }) => ({
       title: n.title,
       image: n.image,
       to: n.to,
@@ -95,36 +95,35 @@ const onTagSelect = (tagSlug: string) => {
       </div>
 
       <!-- Responsive grid: 1 / 2 columns -->
-      <div v-else class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4" role="list">
-        <NuxtLink
-          v-for="(item, idx) in displayItems"
-          :key="idx"
-          :to="item.to"
-          class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
-          role="listitem"
-        >
-          <!-- Cover -->
-          <div class="bg-muted aspect-video">
-            <NuxtImg
-              :src="item.image"
-              :alt="item.title"
-              width="640"
-              height="360"
-              class="size-full object-cover"
-              loading="lazy"
-            />
-          </div>
-          <div class="p-3">
-            <UTooltip :text="item.title">
-              <h3
-                class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-2 sm:text-base"
-              >
-                {{ item.title }}
-              </h3>
-            </UTooltip>
-          </div>
-        </NuxtLink>
-      </div>
+      <ul v-else class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4" role="list">
+        <li v-for="(item, idx) in displayItems" :key="idx">
+          <a
+            :href="item.to"
+            class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+          >
+            <!-- Cover -->
+            <div class="bg-muted aspect-video">
+              <NuxtImg
+                :src="item.image"
+                alt=""
+                width="640"
+                height="360"
+                class="size-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div class="p-3">
+              <UTooltip :text="item.title">
+                <h3
+                  class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-2 sm:text-base"
+                >
+                  {{ item.title }}
+                </h3>
+              </UTooltip>
+            </div>
+          </a>
+        </li>
+      </ul>
     </div>
   </section>
 </template>

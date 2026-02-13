@@ -284,6 +284,102 @@ export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
 }))
 
+// ============================================================================
+// Team Areas (Areas of the organization)
+// ============================================================================
+
+export const teamAreas = pgTable('team_areas', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  slug: text('slug').notNull().unique(),
+  order: integer('order').default(0).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
+
+export const teamAreaTranslations = pgTable(
+  'team_area_translations',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    locale: text('locale').notNull(),
+    name: text('name').notNull(),
+    teamAreaId: text('team_area_id')
+      .notNull()
+      .references(() => teamAreas.id, { onDelete: 'cascade' }),
+  },
+  (table) => [unique().on(table.teamAreaId, table.locale)]
+)
+
+// Team Areas relations
+export const teamAreasRelations = relations(teamAreas, ({ many }) => ({
+  translations: many(teamAreaTranslations),
+  members: many(teamMembers),
+}))
+
+export const teamAreaTranslationsRelations = relations(teamAreaTranslations, ({ one }) => ({
+  teamArea: one(teamAreas, {
+    fields: [teamAreaTranslations.teamAreaId],
+    references: [teamAreas.id],
+  }),
+}))
+
+// ============================================================================
+// Team Members
+// ============================================================================
+
+export const teamMembers = pgTable('team_members', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  slug: text('slug').notNull().unique(),
+  email: text('email').notNull(),
+  photo: text('photo'),
+  calendarId: text('calendar_id'),
+  order: integer('order').default(0).notNull(),
+  active: boolean('active').default(true).notNull(),
+  teamAreaId: text('team_area_id')
+    .notNull()
+    .references(() => teamAreas.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
+
+export const teamMemberTranslations = pgTable(
+  'team_member_translations',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    locale: text('locale').notNull(),
+    title: text('title').notNull(),
+    fullName: text('full_name').notNull(),
+    university: text('university'),
+    degree: text('degree'),
+    description: text('description'),
+    teamMemberId: text('team_member_id')
+      .notNull()
+      .references(() => teamMembers.id, { onDelete: 'cascade' }),
+  },
+  (table) => [unique().on(table.teamMemberId, table.locale)]
+)
+
+// Team Members relations
+export const teamMembersRelations = relations(teamMembers, ({ one, many }) => ({
+  teamArea: one(teamAreas, {
+    fields: [teamMembers.teamAreaId],
+    references: [teamAreas.id],
+  }),
+  translations: many(teamMemberTranslations),
+}))
+
+export const teamMemberTranslationsRelations = relations(teamMemberTranslations, ({ one }) => ({
+  teamMember: one(teamMembers, {
+    fields: [teamMemberTranslations.teamMemberId],
+    references: [teamMembers.id],
+  }),
+}))
+
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
     fields: [sessions.userId],
@@ -297,3 +393,57 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
     references: [users.id],
   }),
 }))
+
+// ============================================================================
+// Organization Members (Universities / Student Councils)
+// ============================================================================
+
+export const organizationMembers = pgTable('organization_members', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  slug: text('slug').notNull().unique(),
+  logo: text('logo'),
+  website: text('website'),
+  email: text('email'),
+  instagram: text('instagram'),
+  twitter: text('twitter'),
+  facebook: text('facebook'),
+  linkedin: text('linkedin'),
+  tiktok: text('tiktok'),
+  autonomousCommunity: text('autonomous_community').notNull(),
+  order: integer('order').default(0).notNull(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
+
+export const organizationMemberTranslations = pgTable(
+  'organization_member_translations',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    locale: text('locale').notNull(),
+    name: text('name').notNull(),
+    university: text('university').notNull(),
+    organizationMemberId: text('organization_member_id')
+      .notNull()
+      .references(() => organizationMembers.id, { onDelete: 'cascade' }),
+  },
+  (table) => [unique().on(table.organizationMemberId, table.locale)]
+)
+
+// Organization Members relations
+export const organizationMembersRelations = relations(organizationMembers, ({ many }) => ({
+  translations: many(organizationMemberTranslations),
+}))
+
+export const organizationMemberTranslationsRelations = relations(
+  organizationMemberTranslations,
+  ({ one }) => ({
+    organizationMember: one(organizationMembers, {
+      fields: [organizationMemberTranslations.organizationMemberId],
+      references: [organizationMembers.id],
+    }),
+  })
+)

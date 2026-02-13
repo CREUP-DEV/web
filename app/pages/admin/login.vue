@@ -14,13 +14,13 @@ const error = ref<string | null>(null)
 
 // Redirect if already logged in
 watch(
-  session,
-  (s) => {
-    if (s.data?.user) {
+  () => session.value.data?.user,
+  (user) => {
+    if (user) {
       navigateTo('/admin')
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
 
 const handleLogin = async () => {

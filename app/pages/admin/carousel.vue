@@ -3,6 +3,7 @@
  * Admin Carousel Management with drag-and-drop reordering
  */
 import Sortable from 'sortablejs'
+import type { LocaleConfig } from '~/composables/useLocales'
 
 definePageMeta({
   layout: 'admin',
@@ -45,13 +46,15 @@ const isSavingOrder = ref(false)
 // Computed to check if order has changed by comparing IDs
 const hasOrderChanges = computed(() => {
   if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some((item, index) => item.id !== items.value[index]?.id)
+  return localItems.value.some(
+    (item: CarouselItem, index: number) => item.id !== items.value[index]?.id
+  )
 })
 
 // Sync local items with server data
 watch(
   items,
-  (newItems) => {
+  (newItems: CarouselItem[]) => {
     localItems.value = [...newItems]
   },
   { immediate: true }
@@ -77,7 +80,10 @@ const form = reactive({
   href: '',
   order: 0,
   active: true,
-  translations: localeConfigs.value.map((l) => ({ locale: l.code, ...emptyTranslation })),
+  translations: localeConfigs.value.map((localeConfig: LocaleConfig) => ({
+    locale: localeConfig.code,
+    ...emptyTranslation,
+  })),
 })
 
 // Sortable setup
@@ -109,7 +115,7 @@ onUnmounted(() => {
 const saveOrder = async () => {
   isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item, index) => ({
+    const updates = localItems.value.map((item: CarouselItem, index: number) => ({
       id: item.id,
       order: index,
     }))
@@ -146,8 +152,8 @@ const openCreate = () => {
   form.order = items.value.length
   form.active = true
   // Create empty translations for all available locales
-  form.translations = localeConfigs.value.map((l) => ({
-    locale: l.code,
+  form.translations = localeConfigs.value.map((localeConfig: LocaleConfig) => ({
+    locale: localeConfig.code,
     title: '',
     buttonText: '',
     alt: '',
@@ -162,10 +168,12 @@ const openEdit = (item: CarouselItem) => {
   form.order = item.order
   form.active = item.active
   // Map existing translations to form, ensuring all locales are present
-  form.translations = localeConfigs.value.map((l) => {
-    const existing = item.translations.find((t) => t.locale === l.code)
+  form.translations = localeConfigs.value.map((localeConfig: LocaleConfig) => {
+    const existing = item.translations.find(
+      (translation) => translation.locale === localeConfig.code
+    )
     return {
-      locale: l.code,
+      locale: localeConfig.code,
       title: existing?.title ?? '',
       buttonText: existing?.buttonText ?? '',
       alt: existing?.alt ?? '',
@@ -309,7 +317,7 @@ const handleDelete = async () => {
               <UIcon name="i-tabler-grip-horizontal" class="text-muted size-5" />
             </div>
           </div>
-          <h3 class="font-medium break-words">{{ item.translations[0]?.title }}</h3>
+          <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.title }}</h3>
           <div class="bg-muted aspect-1925/550 w-full overflow-hidden rounded-lg">
             <NuxtImg
               :src="item.image || defaultCarouselImage"

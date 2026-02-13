@@ -31,7 +31,7 @@ const { t } = useI18n()
         :key="props.items.length"
         :loop="props.items.length > 1"
         :dots="props.items.length > 1"
-        :arrows="props.items.length > 1"
+        :arrows="false"
         auto-height
         :autoplay="props.items.length > 1 ? { delay: 10000 } : false"
         :items="props.items"
@@ -70,16 +70,16 @@ const { t } = useI18n()
               >
                 {{ item.title }}
               </p>
-              <UButton
+              <a
                 v-if="item.href"
-                :to="item.href"
-                color="primary"
-                size="md"
-                class="w-full justify-center sm:w-auto sm:shrink-0"
+                :href="item.href"
+                class="bg-primary text-inverted ring-primary/60 hover:bg-primary/90 inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 sm:w-auto sm:shrink-0"
+                :target="item.href.startsWith('http') ? '_blank' : undefined"
+                :rel="item.href.startsWith('http') ? 'noopener noreferrer' : undefined"
               >
                 {{ item.buttonText }}
                 <UIcon name="i-tabler-arrow-right" class="ml-1" aria-hidden="true" />
-              </UButton>
+              </a>
             </div>
           </div>
         </article>

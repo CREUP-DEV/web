@@ -31,6 +31,8 @@ useSeoMeta({
 
 <template>
   <div>
+    <h1 class="sr-only">{{ t('meta.title') }}</h1>
+
     <HomeCarousel :items="carouselItems" />
 
     <!-- News and Agenda side by side -->
@@ -42,9 +44,9 @@ useSeoMeta({
             <HomeFeaturedNews inline />
           </div>
           <!-- Agenda column (1/3 width on desktop) -->
-          <aside class="lg:col-span-1">
+          <div class="lg:col-span-1">
             <HomePublicAgenda :events="events" :pending="eventsLoading" />
-          </aside>
+          </div>
         </div>
       </UContainer>
     </section>

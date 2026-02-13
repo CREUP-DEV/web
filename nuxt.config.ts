@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss() as never],
   },
   alias: {
     '@/composables': './app/composables',
@@ -20,6 +20,10 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@nuxt/a11y',
   ],
+
+  runtimeConfig: {
+    externalMembersApiBaseUrl: process.env.EXTERNAL_MEMBERS_API_BASE_URL || '',
+  },
 
   css: ['~/assets/css/main.css'],
 

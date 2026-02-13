@@ -63,13 +63,15 @@ const isSavingOrder = ref(false)
 // Computed to check if order has changed by comparing IDs
 const hasOrderChanges = computed(() => {
   if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some((item, index) => item.id !== items.value[index]?.id)
+  return localItems.value.some(
+    (item: NewsItem, index: number) => item.id !== items.value[index]?.id
+  )
 })
 
 // Sync local items with server data
 watch(
   items,
-  (newItems) => {
+  (newItems: NewsItem[]) => {
     localItems.value = [...newItems]
   },
   { immediate: true }
@@ -100,7 +102,7 @@ const form = reactive({
   order: 0,
   active: true,
   tagIds: [] as string[],
-  translations: localeConfigs.value.map((l) => ({
+  translations: localeConfigs.value.map((l: { code: string }) => ({
     locale: l.code,
     title: '',
     alt: '',
@@ -109,7 +111,7 @@ const form = reactive({
 
 // Tag select items
 const tagSelectItems = computed(() =>
-  tags.value.map((t) => ({
+  tags.value.map((t: Tag) => ({
     value: t.id,
     label: getTagName(t),
   }))
@@ -144,7 +146,7 @@ onUnmounted(() => {
 const saveOrder = async () => {
   isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item, index) => ({
+    const updates = localItems.value.map((item: NewsItem, index: number) => ({
       id: item.id,
       order: index,
     }))
@@ -194,7 +196,7 @@ const openCreate = () => {
   form.tagIds = []
   const now = new Date()
   publishedAt.value = new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
-  form.translations = localeConfigs.value.map((l) => ({
+  form.translations = localeConfigs.value.map((l: { code: string }) => ({
     locale: l.code,
     title: '',
     alt: '',
@@ -211,7 +213,7 @@ const openEdit = (item: NewsItem) => {
   form.tagIds = item.tags.map((nt) => nt.tagId)
   publishedAt.value = isoToCalendarDate(item.publishedAt)
   // Map existing translations to form, ensuring all locales are present
-  form.translations = localeConfigs.value.map((l) => {
+  form.translations = localeConfigs.value.map((l: { code: string }) => {
     const existing = item.translations.find((t) => t.locale === l.code)
     return {
       locale: l.code,

@@ -99,6 +99,65 @@ export const updateOrderSchema = z.object({
   ),
 })
 
+// External members API schemas
+export const externalAssociatedMemberSocialSchema = z.object({
+  network: z.string().nullable().optional(),
+  value: z.string().nullable().optional(),
+})
+
+export const externalAssociatedMemberSchema = z.object({
+  order: z.coerce.number().int().default(0),
+  denomination: z.string().nullable().optional(),
+  initials: z.string().nullable().optional(),
+  university: z.string().nullable().optional(),
+  autonomous_community: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  web_logo_light: z.string().nullable().optional(),
+  web_logo_dark: z.string().nullable().optional(),
+  social_networks: z.array(externalAssociatedMemberSocialSchema).nullable().optional().default([]),
+})
+
+export const externalAssociatedMembersResponseSchema = z.object({
+  data: z.array(externalAssociatedMemberSchema),
+  generated_at: z.string().nullable().optional(),
+})
+
+export const membersLogoQuerySchema = z.object({
+  src: z.string().trim().min(1),
+})
+
+// External organigrama (org chart) API schemas
+export const externalOrganigramaMemberSocialSchema = z.object({
+  network: z.string().nullable().optional(),
+  value: z.string().nullable().optional(),
+})
+
+export const externalOrganigramaMemberSchema = z.object({
+  order: z.coerce.number().int().default(0),
+  denomination: z.string().nullable().optional(),
+  web_photo: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  name: z.string().nullable().optional(),
+  surname: z.string().nullable().optional(),
+  university: z.string().nullable().optional(),
+  degree: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  social_networks: z.array(externalOrganigramaMemberSocialSchema).nullable().optional().default([]),
+})
+
+export const externalOrganigramaAreaSchema = z.object({
+  area_id: z.coerce.number().int(),
+  area_name: z.string(),
+  area_name_translations: z.record(z.string(), z.string()).optional().default({}),
+  area_order: z.coerce.number().int(),
+  members: z.array(externalOrganigramaMemberSchema),
+})
+
+export const externalOrganigramaResponseSchema = z.object({
+  data: z.array(externalOrganigramaAreaSchema),
+  generated_at: z.string().nullable().optional(),
+})
+
 // Helper function to validate and parse body
 export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): T {
   const result = schema.safeParse(body)

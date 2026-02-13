@@ -53,7 +53,7 @@
     "telegram": "Telegram"
   },
   "meta": {
-    "title": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
+    "title": "Inicio",
     "description": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) es la asociación estatal que representa a más de 1.000.000 de estudiantes de toda España."
   },
   "home": {
@@ -83,6 +83,7 @@
   "accessibility": {
     "skipToMain": "Saltar al contenido principal",
     "mainNavigation": "Navegación principal",
+    "mobileNavigation": "Navegación móvil",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
     "externalLink": "Se abre en una nueva pestaña",
@@ -92,7 +93,10 @@
     "readMore": "Leer más",
     "viewAll": "Ver todo",
     "back": "Volver",
-    "close": "Cerrar"
+    "comingSoon": "Contenido disponible próximamente.",
+    "close": "Cerrar",
+    "copyEmail": "Copiar correo",
+    "emailCopied": "Correo copiado al portapapeles"
   },
   "language": {
     "toggle": "Cambiar idioma",
@@ -111,6 +115,78 @@
     "generic": "Ha ocurrido un error",
     "message": "Lo sentimos, algo salió mal. Por favor, inténtalo de nuevo más tarde.",
     "backHome": "Volver al inicio"
+  },
+  "team": {
+    "title": "Equipo",
+    "description": "Conoce a las personas que forman parte del equipo de CREUP.",
+    "viewProfile": "Ver perfil",
+    "email": "Correo electrónico",
+    "university": "Universidad",
+    "degree": "Titulación",
+    "publicAgenda": "Agenda pública",
+    "publicAgendaOf": "Agenda pública de {name}",
+    "memberModalDescription": "Detalles del perfil de la persona seleccionada.",
+    "agendaModalDescription": "Próximos eventos de la agenda pública de la persona seleccionada.",
+    "noEvents": "No hay eventos programados próximamente.",
+    "about": "Sobre {name}",
+    "hierarchyView": "Por jerarquía",
+    "areaView": "Por área",
+    "executiveCommission": "Comisión Ejecutiva",
+    "extendedCommission": "Comisión Ejecutiva Ampliada",
+    "loadError": "No se ha podido cargar el equipo en este momento."
+  },
+  "members": {
+    "title": "Miembros",
+    "description": "Conoce las organizaciones que forman parte de CREUP.",
+    "allMembers": "Todos los miembros",
+    "showAll": "Mostrar todos",
+    "loadError": "No se han podido cargar los miembros en este momento.",
+    "noMembers": "No hay miembros asociados en esta comunidad.",
+    "unknownUniversity": "Universidad no especificada",
+    "unknownDenomination": "Designación no especificada",
+    "viewDetails": "Ver detalles",
+    "memberModalDescription": "Detalles de la organización seleccionada.",
+    "website": "Página web",
+    "email": "Correo electrónico",
+    "socialNetworks": "Redes sociales",
+    "networks": {
+      "website": "Página web",
+      "email": "Correo de contacto",
+      "instagram": "Instagram",
+      "twitter": "Twitter / X",
+      "tiktok": "TikTok",
+      "bluesky": "Bluesky",
+      "linkedin": "LinkedIn",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "facebook": "Facebook",
+      "github": "GitHub"
+    },
+    "membersIn": "Miembros en {community}",
+    "selectCommunity": "Selecciona una comunidad autónoma en el mapa para ver sus miembros.",
+    "mapAccessibleHelp": "Si no puedes usar el mapa, puedes saltar directamente al listado de miembros.",
+    "skipMap": "Ir al listado",
+    "communities": {
+      "andalucia": "Andalucía",
+      "aragon": "Aragón",
+      "asturias": "Principado de Asturias",
+      "baleares": "Illes Balears",
+      "canarias": "Canarias",
+      "cantabria": "Cantabria",
+      "castilla-la-mancha": "Castilla-La Mancha",
+      "castilla-y-leon": "Castilla y León",
+      "cataluna": "Cataluña",
+      "ceuta": "Ceuta",
+      "extremadura": "Extremadura",
+      "galicia": "Galicia",
+      "la-rioja": "La Rioja",
+      "madrid": "Comunidad de Madrid",
+      "melilla": "Melilla",
+      "murcia": "Región de Murcia",
+      "navarra": "Comunidad Foral de Navarra",
+      "pais-vasco": "País Vasco",
+      "valencia": "Comunitat Valenciana"
+    }
   },
   "admin": {
     "errors": {

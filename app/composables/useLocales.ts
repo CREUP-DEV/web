@@ -31,7 +31,7 @@ export function useLocales() {
     LOCALE_CONFIGS.find((l) => l.code === code)
 
   // Get flag icon for a locale
-  const getLocaleFlag = (code: string): string => getLocaleConfig(code)?.flag ?? 'i-lucide-globe'
+  const getLocaleFlag = (code: string): string => getLocaleConfig(code)?.flag ?? 'i-tabler-world'
 
   // Get locale name
   const getLocaleName = (code: string): string => getLocaleConfig(code)?.name ?? code.toUpperCase()
@@ -63,7 +63,7 @@ export function useLocales() {
   const createEmptyTranslations = <T extends Record<string, unknown>>(
     template: Omit<T, 'locale'>
   ): (T & { locale: string })[] =>
-    localeConfigs.value.map((config) => ({
+    localeConfigs.value.map((config: LocaleConfig) => ({
       ...template,
       locale: config.code,
     })) as (T & { locale: string })[]
@@ -73,7 +73,7 @@ export function useLocales() {
     existingTranslations: T[],
     template: Omit<T, 'locale'>
   ): T[] =>
-    localeConfigs.value.map((config) => {
+    localeConfigs.value.map((config: LocaleConfig) => {
       const existing = existingTranslations.find((t) => t.locale === config.code)
       if (existing) return existing
       return { ...template, locale: config.code } as T
@@ -83,13 +83,13 @@ export function useLocales() {
   // Only Spanish is required, others are optional
   const filterNonEmptyTranslations = <T extends { locale: string }>(
     translations: T[],
-    requiredField: keyof Omit<T, 'locale'>
+    requiredField: string
   ): T[] => {
     return translations.filter((t) => {
       // Always include default locale (Spanish)
       if (t.locale === DEFAULT_LOCALE) return true
       // For other locales, only include if the required field has content
-      const value = t[requiredField]
+      const value = t[requiredField as keyof T]
       return typeof value === 'string' && value.trim() !== ''
     })
   }

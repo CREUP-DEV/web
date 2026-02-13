@@ -25,13 +25,13 @@ const onSelectTag = (slug: string) => {
 onMounted(() => {
   watch(
     tagList,
-    (list) => {
+    (list: Array<{ slug: string; name: string }>) => {
       if (!list.length) {
         selectedSlug.value = 'all'
         return
       }
       // Default to first tag (which should be "all")
-      if (!list.find((t) => t.slug === selectedSlug.value)) {
+      if (!list.find((tag: { slug: string }) => tag.slug === selectedSlug.value)) {
         selectedSlug.value = list[0]?.slug ?? 'all'
       }
     },

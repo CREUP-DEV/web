@@ -53,7 +53,7 @@
     "telegram": "Telegram"
   },
   "meta": {
-    "title": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
+    "title": "Home",
     "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain."
   },
   "home": {
@@ -83,6 +83,7 @@
   "accessibility": {
     "skipToMain": "Skip to main content",
     "mainNavigation": "Main navigation",
+    "mobileNavigation": "Mobile navigation",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "externalLink": "Opens in a new tab",
@@ -92,7 +93,10 @@
     "readMore": "Read more",
     "viewAll": "View all",
     "back": "Back",
-    "close": "Close"
+    "comingSoon": "Content coming soon.",
+    "close": "Close",
+    "copyEmail": "Copy email",
+    "emailCopied": "Email copied to clipboard"
   },
   "language": {
     "toggle": "Change language",
@@ -111,6 +115,78 @@
     "generic": "An error occurred",
     "message": "Sorry, something went wrong. Please try again later.",
     "backHome": "Back to home"
+  },
+  "team": {
+    "title": "Team",
+    "description": "Meet the people who are part of the CREUP team.",
+    "viewProfile": "View profile",
+    "email": "Email",
+    "university": "University",
+    "degree": "Degree",
+    "publicAgenda": "Public agenda",
+    "publicAgendaOf": "{name}'s public agenda",
+    "memberModalDescription": "Profile details for the selected person.",
+    "agendaModalDescription": "Upcoming events in the selected person's public agenda.",
+    "noEvents": "No upcoming events scheduled.",
+    "about": "About {name}",
+    "hierarchyView": "By hierarchy",
+    "areaView": "By area",
+    "executiveCommission": "Executive Committee",
+    "extendedCommission": "Extended Executive Committee",
+    "loadError": "Team data could not be loaded right now."
+  },
+  "members": {
+    "title": "Members",
+    "description": "Discover the organizations that are part of CREUP.",
+    "allMembers": "All members",
+    "showAll": "Show all",
+    "loadError": "Members could not be loaded right now.",
+    "noMembers": "No members associated in this community.",
+    "unknownUniversity": "University not specified",
+    "unknownDenomination": "Designation not specified",
+    "viewDetails": "View details",
+    "memberModalDescription": "Details of the selected organization.",
+    "website": "Website",
+    "email": "Email",
+    "socialNetworks": "Social networks",
+    "networks": {
+      "website": "Website",
+      "email": "Contact email",
+      "instagram": "Instagram",
+      "twitter": "Twitter / X",
+      "tiktok": "TikTok",
+      "bluesky": "Bluesky",
+      "linkedin": "LinkedIn",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "facebook": "Facebook",
+      "github": "GitHub"
+    },
+    "membersIn": "Members in {community}",
+    "selectCommunity": "Select an autonomous community on the map to see its members.",
+    "mapAccessibleHelp": "If you cannot use the map, you can jump directly to the members list.",
+    "skipMap": "Go to list",
+    "communities": {
+      "andalucia": "Andalusia",
+      "aragon": "Aragon",
+      "asturias": "Asturias",
+      "baleares": "Balearic Islands",
+      "canarias": "Canary Islands",
+      "cantabria": "Cantabria",
+      "castilla-la-mancha": "Castile-La Mancha",
+      "castilla-y-leon": "Castile and León",
+      "cataluna": "Catalonia",
+      "ceuta": "Ceuta",
+      "extremadura": "Extremadura",
+      "galicia": "Galicia",
+      "la-rioja": "La Rioja",
+      "madrid": "Madrid",
+      "melilla": "Melilla",
+      "murcia": "Murcia",
+      "navarra": "Navarre",
+      "pais-vasco": "Basque Country",
+      "valencia": "Valencian Community"
+    }
   },
   "admin": {
     "errors": {
