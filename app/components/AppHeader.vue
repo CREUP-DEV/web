@@ -52,16 +52,8 @@ const mobileLocaleItems = computed(() =>
   }))
 )
 
-const isLoggedIn = ref(false)
-
-onMounted(async () => {
-  try {
-    await $fetch('/api/admin/session')
-    isLoggedIn.value = true
-  } catch {
-    isLoggedIn.value = false
-  }
-})
+const { session } = useAuth()
+const isLoggedIn = computed(() => Boolean(session.value.data?.user))
 
 const route = useRoute()
 
