@@ -3,12 +3,17 @@
  * Root App Component
  * Sets up global head attributes, SEO meta, and wraps the app with UApp.
  */
-import * as locales from '@nuxt/ui/locale'
+import { en, es } from '@nuxt/ui/locale'
 
 const { locale, t } = useI18n()
 
-const lang = computed(() => locales[locale.value].code)
-const dir = computed(() => locales[locale.value].dir)
+const nuxtUiLocales = { es, en } as const
+const currentLocale = computed(
+  () => nuxtUiLocales[locale.value as keyof typeof nuxtUiLocales] ?? nuxtUiLocales.es
+)
+
+const lang = computed(() => currentLocale.value.code)
+const dir = computed(() => currentLocale.value.dir)
 
 // SEO and Head configuration
 useHead({
@@ -54,6 +59,7 @@ useSchemaOrg([
 </script>
 
 <template>
+  <UApp :locale="currentLocale">
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />

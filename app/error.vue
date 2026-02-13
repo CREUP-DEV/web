@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
-import * as locales from '@nuxt/ui/locale'
+import { en, es } from '@nuxt/ui/locale'
 
 const { error } = defineProps<{
   error: NuxtError
@@ -8,8 +8,13 @@ const { error } = defineProps<{
 
 const { locale, t } = useI18n({ useScope: 'global' })
 
-const lang = computed(() => locales[locale.value].code)
-const dir = computed(() => locales[locale.value].dir)
+const nuxtUiLocales = { es, en } as const
+const currentLocale = computed(
+  () => nuxtUiLocales[locale.value as keyof typeof nuxtUiLocales] ?? nuxtUiLocales.es
+)
+
+const lang = computed(() => currentLocale.value.code)
+const dir = computed(() => currentLocale.value.dir)
 
 useHead({
   htmlAttrs: {
@@ -38,7 +43,7 @@ const handleError = async () => {
 </script>
 
 <template>
-  <UApp :locale="locales[locale]">
+  <UApp :locale="currentLocale">
     <div class="bg-background flex min-h-screen flex-col">
       <AppHeader />
 

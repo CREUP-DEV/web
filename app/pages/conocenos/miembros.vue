@@ -336,7 +336,7 @@ const getMemberAnimationStyle = (index: number, _total: number) => {
         <div
           class="bg-surface/50 rounded-xl p-4 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
         >
-          <MembersSpainMap
+          <LazyMembersSpainMap
             :selected-community="selectedCommunity"
             :member-counts="memberCounts"
             @select="handleCommunitySelect"

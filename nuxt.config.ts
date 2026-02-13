@@ -6,6 +6,44 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   vite: {
     plugins: [tailwindcss() as never],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) {
+              return
+            }
+
+            if (
+              id.includes('node_modules/.pnpm/@iconify') ||
+              id.includes('node_modules/@iconify/')
+            ) {
+              return 'vendor_icons'
+            }
+
+            if (
+              id.includes('node_modules/.pnpm/reka-ui') ||
+              id.includes('node_modules/reka-ui/') ||
+              id.includes('node_modules/.pnpm/@floating-ui') ||
+              id.includes('node_modules/@floating-ui/')
+            ) {
+              return 'vendor_reka'
+            }
+
+            if (
+              id.includes('node_modules/.pnpm/tailwind-variants') ||
+              id.includes('node_modules/tailwind-variants/') ||
+              id.includes('node_modules/.pnpm/tailwind-merge') ||
+              id.includes('node_modules/tailwind-merge/') ||
+              id.includes('node_modules/.pnpm/class-variance-authority') ||
+              id.includes('node_modules/class-variance-authority/')
+            ) {
+              return 'vendor_ui_styles'
+            }
+          },
+        },
+      },
+    },
   },
   alias: {
     '@/composables': './app/composables',
@@ -20,6 +58,16 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@nuxt/a11y',
   ],
+
+  icon: {
+    provider: 'server',
+    mode: 'css',
+    collections: ['tabler', 'circle-flags', 'lucide'],
+    serverBundle: {
+      collections: ['tabler', 'circle-flags', 'lucide'],
+    },
+    fallbackToApi: false,
+  },
 
   runtimeConfig: {
     externalMembersApiBaseUrl: process.env.EXTERNAL_MEMBERS_API_BASE_URL || '',
@@ -151,7 +199,7 @@ export default defineNuxtConfig({
 
   // Accessibility testing (dev only)
   a11y: {
-    enabled: true,
+    enabled: process.env.NODE_ENV !== 'production',
     defaultHighlight: false,
     logIssues: true,
   },

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
-import { useAuth } from '@/composables/useAuth'
 
 type LocaleConfig = {
   code: string
@@ -15,8 +14,6 @@ type LocaleItem = {
 }
 
 const { locale, setLocale, t, setLocaleCookie } = useI18n()
-const { session } = useAuth()
-
 const { localeConfigs } = useLocales()
 
 const localeItems = computed<LocaleItem[]>(() =>
@@ -55,8 +52,16 @@ const mobileLocaleItems = computed(() =>
   }))
 )
 
-// Check if user is logged in
-const isLoggedIn = computed(() => !!session.value?.data?.user)
+const isLoggedIn = ref(false)
+
+onMounted(async () => {
+  try {
+    await $fetch('/api/admin/session')
+    isLoggedIn.value = true
+  } catch {
+    isLoggedIn.value = false
+  }
+})
 
 const route = useRoute()
 
