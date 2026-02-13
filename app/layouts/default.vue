@@ -24,5 +24,7 @@ const { t } = useI18n()
     </UMain>
 
     <AppFooter />
+
+    <CookieConsent />
   </div>
 </template>

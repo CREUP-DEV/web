@@ -63,7 +63,7 @@ const { t } = useI18n()
             <div class="bg-muted aspect-square">
               <NuxtImg
                 :src="item.image"
-                alt=""
+                :alt="item.alt || ''"
                 width="288"
                 height="288"
                 class="size-full object-cover"

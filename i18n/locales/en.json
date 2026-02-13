@@ -35,14 +35,14 @@
       "agreements": "Agreements",
       "regulations": "Regulations",
       "financialReports": "Financial reports",
-      "publicAgenda": "Public agenda",
       "corporateIdentity": "Corporate Identity"
     },
     "contact": "Contact"
   },
   "footer": {
     "tagline": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
-    "legal": "Legal notice and general terms"
+    "legal": "Legal notice and general terms",
+    "legalNav": "Legal and cookies"
   },
   "social": {
     "instagram": "Instagram",
@@ -187,6 +187,78 @@
       "pais-vasco": "Basque Country",
       "valencia": "Valencian Community"
     }
+  },
+  "mic": {
+    "title": "Corporate Identity Manual",
+    "description": "Core elements of CREUP's visual identity: logos, corporate colors, and the full brand manual.",
+    "introTitle": "Introduction",
+    "introParagraph1": "This Visual Identity Manual contains the core elements of the visual identity of the Coordinadora de Representantes de Estudiantes de Universidades Públicas, hereinafter CREUP.",
+    "introParagraph2": "These elements establish the construction guidelines, typography usage, and chromatic applications of the brand. Consolidating the brand image requires special attention to the recommendations set out in this manual, as a document that ensures consistency in public communication and outreach.",
+    "introParagraph3": "The manual should therefore be a dynamic tool, present in all corporate image applications. It remains, however, open to the creativity of the person using it.",
+    "logosTitle": "Logo Downloads",
+    "logosDescription": "Below you can view and download all CREUP logo variants. The brand must always be reproduced following the corporate standards set out in this manual. Therefore, ",
+    "logosWarning": "colors and proportions must never be altered.",
+    "logoAlt": "CREUP Logo — {version}",
+    "downloadSvg": "SVG",
+    "downloadPng": "PNG",
+    "logos": {
+      "horizontalFull": "Full horizontal version",
+      "horizontalShort": "Short horizontal version",
+      "vertical": "Vertical version",
+      "downloadAllHorizontalFull": "Download all, full horizontal version (zip)",
+      "downloadAllHorizontalShort": "Download all, short horizontal version (zip)",
+      "downloadAllVertical": "Download all, vertical version (zip)"
+    },
+    "variants": {
+      "granate": "Garnet",
+      "grisOscuro": "Dark Grey",
+      "grisClaro": "Light Grey",
+      "azul": "Blue",
+      "beige": "Beige",
+      "blancoPuro": "Pure White"
+    },
+    "colorsTitle": "Corporate Colors",
+    "colorsDescription": "In addition to white, these are the corporate colors and their codes.",
+    "colorsTable": {
+      "color": "Color",
+      "preview": "Preview"
+    },
+    "colors": {
+      "burgundy": "Corporate Burgundy",
+      "blue": "Corporate Blue",
+      "beige": "Corporate Beige",
+      "darkGray": "Dark Grey",
+      "lightGray": "Light Grey"
+    },
+    "copied": "Copied: {value}",
+    "downloadTitle": "Download the Corporate Identity Manual",
+    "downloadDescription": "Here you can download the full manual in PDF format.",
+    "downloadButton": "Download MIC"
+  },
+  "cookies": {
+    "banner": {
+      "title": "We respect your privacy",
+      "description": "We use essential cookies for the site to function and optional analytics cookies to understand usage and improve the experience. We do not collect personally identifiable data.",
+      "acceptAll": "Accept all",
+      "essentialOnly": "Essential only",
+      "customize": "Customize",
+      "learnMore": "Cookie policy"
+    },
+    "settings": {
+      "title": "Cookie preferences",
+      "description": "Choose which types of cookies you accept. You can change these preferences at any time from the link in the footer.",
+      "save": "Save preferences",
+      "essential": {
+        "title": "Essential cookies",
+        "description": "Required for basic site functionality: language, admin session, and interface preferences. These cannot be disabled.",
+        "always": "Always active"
+      },
+      "analytics": {
+        "title": "Analytics cookies",
+        "description": "We use Umami, a privacy-focused analytics tool. No third-party tracking cookies are used and no personal data is collected. The information is anonymous and helps us improve the site."
+      }
+    },
+    "editPreferences": "Cookie preferences"
   },
   "admin": {
     "errors": {

@@ -57,6 +57,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxtjs/seo',
     '@nuxt/a11y',
+    'nuxt-umami',
   ],
 
   icon: {
@@ -202,5 +203,13 @@ export default defineNuxtConfig({
     enabled: process.env.NODE_ENV !== 'production',
     defaultHighlight: false,
     logIssues: true,
+  },
+
+  // Umami Analytics — consent-gated, no auto-tracking until accepted
+  // Set NUXT_UMAMI_HOST and NUXT_UMAMI_ID in .env when ready
+  umami: {
+    autoTrack: false,
+    ignoreLocalhost: true,
+    proxy: 'cloak',
   },
 })

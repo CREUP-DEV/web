@@ -168,10 +168,6 @@ const items = computed<NavigationMenuItem[]>(() => [
         to: '/transparencia/informes-economicos/',
       },
       {
-        label: t('nav.transparency.publicAgenda'),
-        to: '/transparencia/agenda-publica/',
-      },
-      {
         label: t('nav.transparency.corporateIdentity'),
         to: '/transparencia/mic/',
       },

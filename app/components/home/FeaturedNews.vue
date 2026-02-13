@@ -105,7 +105,7 @@ const onTagSelect = (tagSlug: string) => {
             <div class="bg-muted aspect-video">
               <NuxtImg
                 :src="item.image"
-                alt=""
+                :alt="'alt' in item ? (item as NewsItem).alt || '' : ''"
                 width="640"
                 height="360"
                 class="size-full object-cover"

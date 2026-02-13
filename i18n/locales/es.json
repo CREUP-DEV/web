@@ -35,14 +35,14 @@
       "agreements": "Convenios",
       "regulations": "Normativa",
       "financialReports": "Informes económicos",
-      "publicAgenda": "Agenda pública",
       "corporateIdentity": "Identidad Corporativa"
     },
     "contact": "Contacto"
   },
   "footer": {
     "tagline": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
-    "legal": "Aviso legal y condiciones generales"
+    "legal": "Aviso legal y condiciones generales",
+    "legalNav": "Legal y cookies"
   },
   "social": {
     "instagram": "Instagram",
@@ -187,6 +187,78 @@
       "pais-vasco": "País Vasco",
       "valencia": "Comunitat Valenciana"
     }
+  },
+  "mic": {
+    "title": "Manual de Identidad Corporativa",
+    "description": "Elementos constitutivos de la identidad visual de CREUP: imagotipos, colores corporativos y manual completo.",
+    "introTitle": "Introducción",
+    "introParagraph1": "El presente Manual de Identidad Visual recoge los elementos constitutivos de la identidad visual de la Coordinadora de Representantes de Estudiantes de Universidades Públicas, de ahora en adelante CREUP.",
+    "introParagraph2": "Como elementos constitutivos establecen las pautas de construcción, el uso de tipografías y las aplicaciones cromáticas de la marca. La consolidación de la imagen de marca necesita una atención especial a las recomendaciones expuestas en este manual, como documento que garantiza una unidad de criterios en la comunicación y difusión pública.",
+    "introParagraph3": "El manual debe ser por tanto una herramienta dinámica y presente en todas las aplicaciones de la imagen corporativa. No obstante, se mantiene abierto a la creatividad de la persona que lo utilice.",
+    "logosTitle": "Descarga del Imagotipo",
+    "logosDescription": "A continuación podrás ver y descargar todas las variantes del imagotipo de CREUP. La marca debe reproducirse siempre siguiendo los estándares corporativos recogidos en este manual. Así, ",
+    "logosWarning": "nunca podrán alterarse los colores o las proporciones explicadas.",
+    "logoAlt": "Logo CREUP — {version}",
+    "downloadSvg": "SVG",
+    "downloadPng": "PNG",
+    "logos": {
+      "horizontalFull": "Versión horizontal completa",
+      "horizontalShort": "Versión horizontal corta",
+      "vertical": "Versión vertical",
+      "downloadAllHorizontalFull": "Descargar todo, versión horizontal completa (zip)",
+      "downloadAllHorizontalShort": "Descargar todo, versión horizontal corta (zip)",
+      "downloadAllVertical": "Descargar todo, versión vertical (zip)"
+    },
+    "variants": {
+      "granate": "Granate",
+      "grisOscuro": "Gris Oscuro",
+      "grisClaro": "Gris Claro",
+      "azul": "Azul",
+      "beige": "Beige",
+      "blancoPuro": "Blanco Puro"
+    },
+    "colorsTitle": "Colores corporativos",
+    "colorsDescription": "Además del blanco, estos son los colores corporativos y sus códigos.",
+    "colorsTable": {
+      "color": "Color",
+      "preview": "Vista previa"
+    },
+    "colors": {
+      "burgundy": "Burdeos corporativo",
+      "blue": "Azul corporativo",
+      "beige": "Beige corporativo",
+      "darkGray": "Gris oscuro",
+      "lightGray": "Gris claro"
+    },
+    "copied": "Copiado: {value}",
+    "downloadTitle": "Descarga el Manual de Identidad Corporativa",
+    "downloadDescription": "Aquí puedes descargar el manual completo en PDF.",
+    "downloadButton": "Descargar MIC"
+  },
+  "cookies": {
+    "banner": {
+      "title": "Respetamos tu privacidad",
+      "description": "Usamos cookies esenciales para el funcionamiento del sitio y cookies analíticas opcionales para entender cómo se usa y poder mejorarlo. No recopilamos datos personales identificables.",
+      "acceptAll": "Aceptar todas",
+      "essentialOnly": "Solo esenciales",
+      "customize": "Configurar",
+      "learnMore": "Política de cookies"
+    },
+    "settings": {
+      "title": "Preferencias de cookies",
+      "description": "Elige qué tipos de cookies aceptas. Puedes cambiar estas preferencias en cualquier momento desde el enlace en el pie de página.",
+      "save": "Guardar preferencias",
+      "essential": {
+        "title": "Cookies esenciales",
+        "description": "Necesarias para el funcionamiento básico del sitio: idioma, sesión de administración y preferencias de interfaz. No se pueden desactivar.",
+        "always": "Siempre activas"
+      },
+      "analytics": {
+        "title": "Cookies analíticas",
+        "description": "Utilizamos Umami, una herramienta de analítica respetuosa con la privacidad. No se utilizan cookies de seguimiento de terceros ni se recopilan datos personales. La información es anónima y nos ayuda a mejorar el sitio."
+      }
+    },
+    "editPreferences": "Preferencias de cookies"
   },
   "admin": {
     "errors": {
