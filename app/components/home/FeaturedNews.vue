@@ -54,6 +54,24 @@ const isLoading = computed(() => {
   return pending.value || newsData.value == null
 })
 
+const visibleNewsCount = computed(() => displayItems.value.length)
+
+const newsGridClass = computed(() => {
+  if (visibleNewsCount.value <= 1) {
+    return 'grid-cols-1 sm:mx-auto sm:max-w-2xl'
+  }
+
+  return 'grid-cols-1 sm:grid-cols-2'
+})
+
+const newsItemClass = (index: number) => {
+  if (visibleNewsCount.value === 3 && index === 2) {
+    return 'sm:col-span-2'
+  }
+
+  return ''
+}
+
 const onTagSelect = (tagSlug: string) => {
   selectedTag.value = tagSlug
 }
@@ -94,9 +112,9 @@ const onTagSelect = (tagSlug: string) => {
         <p>{{ t('home.noNews') }}</p>
       </div>
 
-      <!-- Responsive grid: 1 / 2 columns -->
-      <ul v-else class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4" role="list">
-        <li v-for="(item, idx) in displayItems" :key="idx">
+      <!-- Responsive grid with special handling for 1 and 3 visible items -->
+      <ul v-else class="grid flex-1 gap-3 sm:gap-4" :class="newsGridClass" role="list">
+        <li v-for="(item, idx) in displayItems" :key="idx" :class="newsItemClass(idx)">
           <a
             :href="item.to"
             class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"

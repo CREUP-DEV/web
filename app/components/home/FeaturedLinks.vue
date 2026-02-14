@@ -37,7 +37,7 @@ const { t } = useI18n()
       <div
         v-if="!props.items.length"
         aria-hidden="true"
-        class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6"
+        class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
       >
         <div
           v-for="n in 6"
@@ -51,8 +51,12 @@ const { t } = useI18n()
         </div>
       </div>
 
-      <!-- Responsive tiles: 2 / 3 / 6 columns depending on width -->
-      <ul v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6" role="list">
+      <!-- Responsive tiles: 2 / 3 / 4 / 5 / 6 columns depending on width -->
+      <ul
+        v-else
+        class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+        role="list"
+      >
         <li v-for="(item, idx) in props.items" :key="idx">
           <a
             :href="item.to"

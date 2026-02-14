@@ -38,13 +38,13 @@ useSeoMeta({
     <!-- News and Agenda side by side -->
     <section class="py-4 sm:py-0" :aria-label="t('home.newsAndEventsLabel')">
       <UContainer>
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
-          <!-- News column (2/3 width on desktop) -->
-          <div class="lg:col-span-2">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-6 lg:gap-8">
+          <!-- News column (2/3 width on desktop/tablet) -->
+          <div class="md:col-span-2">
             <HomeFeaturedNews inline />
           </div>
-          <!-- Agenda column (1/3 width on desktop) -->
-          <div class="lg:col-span-1">
+          <!-- Agenda column (1/3 width on desktop/tablet) -->
+          <div class="md:col-span-1">
             <HomePublicAgenda :events="events" :pending="eventsLoading" />
           </div>
         </div>
