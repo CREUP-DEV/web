@@ -1,8 +1,8 @@
 services:
   postgres:
     image: postgres:18-alpine
-    container_name: creup-postgres
-    restart: unless-stopped
+    container_name: creup-web-postgres
+    restart: no
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -19,8 +19,8 @@ services:
 
   adminer:
     image: adminer:latest
-    container_name: creup-adminer
-    restart: unless-stopped
+    container_name: creup-web-adminer
+    restart: no
     ports:
       - "${ADMINER_PORT:-8080}:8080"
     depends_on:
