@@ -54,6 +54,14 @@
   },
   "meta": {
     "title": "Home",
+    "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain.",
+    "legal": {
+      "description": "Legal notice, terms of use, privacy, cookies and links policy of CREUP.",
+      "ogDescription": "Read the legal notice and general terms of use for the CREUP website."
+    }
+  },
+  "nuxtSiteConfig": {
+    "name": "CREUP",
     "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain."
   },
   "home": {

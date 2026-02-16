@@ -82,16 +82,11 @@ export default defineNuxtConfig({
     name: 'CREUP',
     description:
       'Coordinadora de Representantes de Estudiantes de Universidades Públicas - Representando a más de 1.000.000 de estudiantes en toda España.',
-    defaultLocale: 'es',
-    identity: {
-      type: 'Organization',
-    },
     twitter: '@CREUPCREUP',
   },
 
   // OG Image configuration
   ogImage: {
-    enabled: true,
     defaults: {
       component: 'OgImageDefault',
       width: 1200,
@@ -101,43 +96,14 @@ export default defineNuxtConfig({
 
   // Sitemap configuration
   sitemap: {
-    enabled: true,
     autoLastmod: true,
     xsl: false,
   },
 
   // Robots configuration
   robots: {
-    enabled: true,
     allow: ['/'],
     disallow: ['/api/', '/_nuxt/', '/admin/'],
-    sitemap: 'https://www.creup.es/sitemap.xml',
-  },
-
-  // Schema.org configuration
-  schemaOrg: {
-    enabled: true,
-    identity: {
-      type: 'Organization',
-      name: 'CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas',
-      url: 'https://www.creup.es',
-      logo: 'https://www.creup.es/favicon.svg',
-      description:
-        'Asociación estatal que representa a más de 1.000.000 de estudiantes de universidades públicas de toda España.',
-      sameAs: [
-        'https://www.instagram.com/CREUPCREUP',
-        'https://x.com/CREUPCREUP',
-        'https://www.linkedin.com/company/creup',
-        'https://www.facebook.com/CREUPCREUP',
-        'https://www.tiktok.com/@creupestudiantes',
-        'https://telegram.me/CREUP',
-      ],
-      contactPoint: {
-        '@type': 'ContactPoint',
-        contactType: 'Press',
-        email: 'prensa@creup.es',
-      },
-    },
   },
 
   // Link checker (disabled in dev for performance)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Root App Component
- * Sets up global head attributes, SEO meta, and wraps the app with UApp.
+ * Root App component.
+ * Sets global document attributes and wraps pages with UApp.
  */
 import { en, es } from '@nuxt/ui/locale'
 
@@ -15,31 +15,26 @@ const currentLocale = computed(
 const lang = computed(() => currentLocale.value.code)
 const dir = computed(() => currentLocale.value.dir)
 
-// SEO and Head configuration
+// Global document head configuration
 useHead({
   htmlAttrs: {
     lang,
     dir,
   },
-  title: () => t('meta.title'),
   meta: [
-    { name: 'description', content: () => t('meta.description') },
     { name: 'theme-color', content: '#792225' },
     { name: 'author', content: 'CREUP' },
   ],
-  link: [
-    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-    { rel: 'canonical', href: 'https://www.creup.es' },
-  ],
+  link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
 })
 
-// Schema.org for Organization
 useSchemaOrg([
   defineOrganization({
+    '@id': 'https://www.creup.es/#organization',
     name: 'CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas',
     url: 'https://www.creup.es',
     logo: 'https://www.creup.es/favicon.svg',
-    description: () => t('meta.description'),
+    description: () => t('nuxtSiteConfig.description'),
     sameAs: [
       'https://www.instagram.com/CREUPCREUP',
       'https://x.com/CREUPCREUP',
@@ -48,12 +43,11 @@ useSchemaOrg([
       'https://www.tiktok.com/@creupestudiantes',
       'https://telegram.me/CREUP',
     ],
-  }),
-  defineWebSite({
-    name: 'CREUP',
-    url: 'https://www.creup.es',
-    description: () => t('meta.description'),
-    inLanguage: ['es-ES', 'en-US'],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'Press',
+      email: 'prensa@creup.es',
+    },
   }),
 ])
 </script>
