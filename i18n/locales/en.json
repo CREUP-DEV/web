@@ -7,7 +7,7 @@
       "whatIs": "What is CREUP?",
       "members": "Members",
       "team": "Team",
-      "structure": "Organisational structure"
+      "committees": "Committees"
     },
     "policy": {
       "label": "University Politics",
@@ -35,7 +35,11 @@
       "agreements": "Agreements",
       "regulations": "Regulations",
       "financialReports": "Financial reports",
-      "corporateIdentity": "Corporate Identity"
+      "corporateIdentity": "Corporate Identity",
+      "equality": {
+        "label": "Equality",
+        "overview": "General information"
+      }
     },
     "contact": "Contact"
   },
@@ -141,11 +145,87 @@
     "areaView": "By area",
     "executiveCommission": "Executive Committee",
     "extendedCommission": "Extended Executive Committee",
-    "loadError": "Team data could not be loaded right now."
+    "loadError": "Team data could not be loaded right now.",
+    "viewHistory": "Position history"
+  },
+  "mandates": {
+    "title": "Position History",
+    "description": "Browse past and current mandate terms at CREUP.",
+    "detailDescription": "Details of positions held during a CREUP mandate.",
+    "mandateOf": "Mandate of",
+    "backToTeam": "Back to team",
+    "backToMandates": "Back to mandates",
+    "current": "Current",
+    "present": "Present",
+    "ended": "Ended",
+    "noMandates": "No mandates on record.",
+    "noAreas": "No areas on record for this mandate.",
+    "noAssignments": "No positions assigned in this area.",
+    "loadError": "Mandate information could not be loaded.",
+    "durationDays": "{count} day | {count} days",
+    "durationMonths": "{count} month | {count} months",
+    "disambiguateTitle": "Mandates of {year}",
+    "disambiguateDescription": "There are several mandates for this year. Select the one you want to view."
+  },
+  "aboutPage": {
+    "title": "What is CREUP?",
+    "description": "CREUP is the leading voice of students at public universities in Spain.",
+    "lead": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) brings together student councils and delegations from 37 public universities, representing more than 1,000,000 students.",
+    "intro": "As a national reference body, CREUP channels students' needs and interests to public institutions and authorities, helping improve the university system.",
+    "activityTitle": "How we work",
+    "activityParagraph1": "To fulfill its mission, CREUP holds two General Assemblies each year where members agree on priorities, positions, and shared strategic lines.",
+    "activityParagraph2": "It also promotes training events and spaces for exchanging experiences among student representatives, strengthening coordination and shared learning.",
+    "collaborationTitle": "Institutional collaboration",
+    "collaborationParagraph": "CREUP maintains agreements and collaborative relationships with Higher Education organizations, such as CEDU, CRUE, and alumni associations, to reinforce the impact of student representation.",
+    "purposeTitle": "Commitment to society",
+    "purposeParagraph": "This work makes CREUP an essential actor for public universities: an organization that gives students a voice and works every day for a fairer, more participatory, and higher-quality Higher Education system.",
+    "missionTitle": "Mission",
+    "missionText": "Give students a voice to build and improve the university system.",
+    "visionTitle": "Vision",
+    "visionText": "Become the leading student representation body at the national level, serving as a bridge with associations and institutions.",
+    "valuesTitle": "Values",
+    "values": {
+      "independence": "Independence",
+      "cooperation": "Cooperation",
+      "nonDiscrimination": "Non-discrimination",
+      "socialCommitment": "Social commitment",
+      "participation": "Participation"
+    },
+    "sectionsTitle": "Learn more about CREUP",
+    "sectionsDescription": "If you want to go deeper into how we are organized and who is part of CREUP, visit these sections:",
+    "sections": {
+      "members": {
+        "title": "Members",
+        "description": "See the student organizations and partner entities that actively participate in CREUP.",
+        "cta": "Go to Members"
+      },
+      "team": {
+        "title": "Team",
+        "description": "Meet the people who take on representation and coordination responsibilities within CREUP.",
+        "cta": "Go to Team"
+      },
+      "committees": {
+        "title": "Committees",
+        "description": "Discover working committees and their members, who drive the technical and policy activity of the organization.",
+        "cta": "Go to Committees"
+      },
+      "events": {
+        "title": "Events",
+        "description": "Browse assemblies, meetings, and training activities organized by CREUP.",
+        "cta": "Go to Events"
+      }
+    }
   },
   "members": {
     "title": "Members",
-    "description": "Discover the organizations that are part of CREUP.",
+    "description": "Discover the organizations that actively participate in CREUP.",
+    "introText": "Two types of entities actively participate in CREUP:",
+    "introAssociated": "Student councils from public universities, acting as associated members.",
+    "introSectoriales": "National sectorial associations representing students from specific fields of knowledge, as partner entities.",
+    "introAssociatedCta": "View associated members",
+    "introSectorialesCta": "View partner sectorials",
+    "associatedTitle": "Associated members",
+    "associatedDescription": "Student councils from public universities.",
     "allMembers": "All members",
     "showAll": "Show all",
     "loadError": "Members could not be loaded right now.",
@@ -154,8 +234,7 @@
     "unknownDenomination": "Designation not specified",
     "viewDetails": "View details",
     "memberModalDescription": "Details of the selected organization.",
-    "website": "Website",
-    "email": "Email",
+    "info": "Information and contact",
     "socialNetworks": "Social networks",
     "networks": {
       "website": "Website",
@@ -194,6 +273,14 @@
       "navarra": "Navarre",
       "pais-vasco": "Basque Country",
       "valencia": "Valencian Community"
+    },
+    "sectoriales": {
+      "title": "Sectorial associations",
+      "description": "Associations representing students from specific fields of knowledge.",
+      "allSectoriales": "All sectorial associations",
+      "noSectoriales": "No sectorial associations available.",
+      "loadError": "Sectorial associations could not be loaded right now.",
+      "viewDetails": "View details"
     }
   },
   "mic": {
@@ -243,6 +330,47 @@
     "downloadDescription": "Here you can download the full manual in PDF format.",
     "downloadButton": "Download MIC"
   },
+  "events": {
+    "title": "Events",
+    "description": "Browse assemblies, meetings, and training activities organized by CREUP.",
+    "loadError": "Events could not be loaded right now.",
+    "noEvents": "No events available.",
+    "allTypes": "All",
+    "filterByType": "Filter by event type",
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "backToEvents": "Back to events",
+    "notFound": "Event not found.",
+    "documents": "Documents",
+    "document": "Document",
+    "organizers": "Organizer | Organizers",
+    "venues": "Venue | Venues",
+    "collaborators": "Collaborator | Collaborators",
+    "visitWebsite": "Visit website",
+    "bannerAlt": "{event} banner",
+    "gallery": "Gallery",
+    "galleryPhotoAlt": "Photo {number} of {event}",
+    "galleryPrevious": "Previous photo",
+    "galleryNext": "Next photo",
+    "galleryClose": "Close viewer",
+    "galleryCounter": "{current} of {total}",
+    "galleryLoading": "Loading image…",
+    "galleryZoomIn": "Zoom in",
+    "galleryZoomOut": "Zoom out",
+    "galleryResetZoom": "Reset zoom"
+  },
+  "committees": {
+    "title": "Committees",
+    "description": "Beyond the Extended Executive Committee, CREUP has specialized committees that focus their work on specific areas of representation or the internal functioning of the association.",
+    "email": "Email",
+    "viewProfile": "View profile",
+    "memberModalDescription": "Profile details for the person.",
+    "noMembers": "This committee currently has no assigned members.",
+    "loadError": "Committees could not be loaded right now.",
+    "copyEmail": "Copy email",
+    "university": "University",
+    "degree": "Degree"
+  },
   "cookies": {
     "banner": {
       "title": "We respect your privacy",
@@ -267,6 +395,51 @@
       }
     },
     "editPreferences": "Cookie preferences"
+  },
+  "contactPage": {
+    "seo": {
+      "title": "Contact",
+      "description": "Get in touch with CREUP. Send us a message or email us at info{'@'}creup.es."
+    },
+    "title": "Contact",
+    "subtitle": "Have a question or proposal? Write to us and we'll get back to you as soon as possible.",
+    "email": "You can also email us directly at",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you{'@'}email.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "Message subject",
+      "message": "Message",
+      "messagePlaceholder": "Write your message here...",
+      "submit": "Send message",
+      "sending": "Sending...",
+      "success": "Message sent successfully. We'll get back to you as soon as possible.",
+      "errorGeneric": "Could not send the message. Please try again later.",
+      "privacyInfoTitle": "Basic data protection information",
+      "privacyInfoController": "Website owner (art. 10 LSSI-CE) and data controller: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP), NIF G95324281, Callejón de Sta. María, s/n, 28801 Alcalá de Henares (Madrid), Spain.",
+      "privacyInfoPurpose": "Purpose: manage and respond to inquiries sent through this form.",
+      "privacyInfoLegalBasis": "Legal basis: the data subject's consent (art. 6(1)(a) GDPR).",
+      "privacyInfoRecipients": "Recipients: data will not be shared with third parties except where legally required and with providers strictly necessary to manage email communications.",
+      "privacyInfoRetention": "Retention: data is not added to a website database; it is kept in the corporate mailbox only for the time needed to manage your inquiry and, where applicable, for legally required periods.",
+      "privacyInfoRights": "Rights: you may access, rectify and erase your data, and exercise other rights by writing to info{'@'}creup.es. You may also lodge a complaint with the Spanish Data Protection Authority (www.aepd.es).",
+      "privacyInfoMorePrefix": "Additional information:",
+      "privacyInfoMoreLink": "Legal notice and privacy policy",
+      "errors": {
+        "nameRequired": "Name is required",
+        "nameMin": "Name must be at least 2 characters",
+        "nameMax": "Name must be 100 characters or less",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email address",
+        "subjectRequired": "Subject is required",
+        "subjectMin": "Subject must be at least 3 characters",
+        "subjectMax": "Subject must be 200 characters or less",
+        "messageRequired": "Message is required",
+        "messageMin": "Message must be at least 10 characters",
+        "messageMax": "Message must be 5000 characters or less"
+      }
+    }
   },
   "admin": {
     "errors": {

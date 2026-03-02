@@ -65,6 +65,7 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
   {
     label: t('nav.about.label'),
+    to: '/conocenos/que-es',
     active: route.path.startsWith('/conocenos'),
     children: [
       {
@@ -80,8 +81,12 @@ const items = computed<NavigationMenuItem[]>(() => [
         to: '/conocenos/equipo',
       },
       {
-        label: t('nav.about.structure'),
-        to: '/conocenos/estructura',
+        label: t('nav.about.committees'),
+        to: '/conocenos/comites',
+      },
+      {
+        label: t('nav.events.label'),
+        to: '/conocenos/eventos',
       },
     ],
   },
@@ -134,24 +139,6 @@ const items = computed<NavigationMenuItem[]>(() => [
     ],
   },
   {
-    label: t('nav.events.label'),
-    active: route.path.startsWith('/eventos'),
-    children: [
-      {
-        label: t('nav.events.generalAssemblies'),
-        to: '/eventos/asambleas/',
-      },
-      {
-        label: t('nav.events.trainingStages'),
-        to: '/eventos/stages-formativos/',
-      },
-      {
-        label: t('nav.events.meetingsCongresses'),
-        to: '/eventos/encuentros-congresos/',
-      },
-    ],
-  },
-  {
     label: t('nav.transparency.label'),
     active: route.path.startsWith('/transparencia'),
     children: [
@@ -170,6 +157,10 @@ const items = computed<NavigationMenuItem[]>(() => [
       {
         label: t('nav.transparency.corporateIdentity'),
         to: '/transparencia/mic/',
+      },
+      {
+        label: t('nav.transparency.equality.label'),
+        to: '/transparencia/igualdad/',
       },
     ],
   },

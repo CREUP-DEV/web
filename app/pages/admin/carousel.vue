@@ -418,7 +418,7 @@ const handleDelete = async () => {
                     />
                   </UFormField>
                   <UFormField label="Texto alternativo (descripción de la imagen)">
-                    <UInput v-model="trans.alt" :placeholder="trans.title" class="w-full" />
+                    <UInput v-model="trans.alt" class="w-full" />
                   </UFormField>
                 </div>
               </div>

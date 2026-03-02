@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
       href: item.href,
       title: translation.title,
       buttonText: translation.buttonText,
-      alt: (translation as { alt?: string | null }).alt || translation.title,
+      alt: (translation as { alt?: string | null }).alt ?? '',
     }
   })
 
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
       image: item.image,
       to: item.to,
       title: translation.title,
-      alt: (translation as { alt?: string | null }).alt || translation.title,
+      alt: (translation as { alt?: string | null }).alt ?? '',
     }
   })
 
@@ -76,7 +76,7 @@ export default defineEventHandler(async (event) => {
       image: item.image,
       to: item.to,
       title: translation.title,
-      alt: (translation as { alt?: string | null }).alt || translation.title,
+      alt: (translation as { alt?: string | null }).alt ?? '',
     }
   })
 

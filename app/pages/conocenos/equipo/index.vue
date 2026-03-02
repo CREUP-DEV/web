@@ -10,9 +10,9 @@ import { useAutoAnimate } from '@formkit/auto-animate/vue'
 const { t, locale } = useI18n()
 
 useSeoMeta({
-  title: () => `${t('team.title')}`,
+  title: () => t('team.title'),
   description: () => t('team.description'),
-  ogTitle: () => `${t('team.title')}`,
+  ogTitle: () => t('team.title'),
   ogDescription: () => t('team.description'),
 })
 
@@ -48,6 +48,7 @@ interface OrgMember {
   university: string | null
   degree: string | null
   description: string | null
+  publicAgenda: boolean
   socialNetworks: SocialNetwork[]
 }
 
@@ -196,12 +197,14 @@ const getSocialButtons = (member: OrgMember): SocialButton[] => {
 
 const getContactEmail = (member: OrgMember) => {
   const contactEmail = member.socialNetworks.find((sn) => sn.network === 'email')
-  return contactEmail?.value || member.email
+  return (contactEmail?.value || member.email).replace(/^mailto:/i, '').trim()
 }
 
 const getFullName = (member: Pick<OrgMember, 'name' | 'surname'>) => {
   return [member.name, member.surname].filter(Boolean).join(' ').trim()
 }
+const getMemberDisplayName = (member: Pick<OrgMember, 'name' | 'surname' | 'email'>) =>
+  getFullName(member) || member.email
 
 const getViewProfileAriaLabel = (fullName: string) => `${t('team.viewProfile')}: ${fullName}`
 const getCopyEmailAriaLabel = (email: string) => `${t('common.copyEmail')}: ${email}`
@@ -217,6 +220,17 @@ const modalOpen = ref(false)
 const openMemberModal = (member: EnrichedMember) => {
   selectedMember.value = member
   modalOpen.value = true
+}
+
+const onMemberCardKeydown = (event: KeyboardEvent, member: EnrichedMember) => {
+  if (event.target !== event.currentTarget) {
+    return
+  }
+
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    openMemberModal(member)
+  }
 }
 
 const toEnrichedMember = (member: OrgMember, area: OrgArea, isLeader: boolean): EnrichedMember => ({
@@ -362,6 +376,16 @@ const tabItems = computed(() => [
       <header class="mb-8 text-center sm:mb-12">
         <h1 class="text-3xl font-bold sm:text-4xl">{{ t('team.title') }}</h1>
         <p class="text-muted mt-3 text-lg">{{ t('team.description') }}</p>
+        <div class="mt-4">
+          <UButton
+            to="/conocenos/equipo/historico"
+            variant="soft"
+            icon="i-tabler-history"
+            size="sm"
+          >
+            {{ t('team.viewHistory') }}
+          </UButton>
+        </div>
       </header>
 
       <!-- Error -->
@@ -402,8 +426,11 @@ const tabItems = computed(() => [
               <article
                 v-for="member in executiveMembers"
                 :key="`exec-${member.areaId}`"
-                class="group bg-surface/50 hover:bg-surface w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+                class="group bg-surface/50 hover:bg-surface focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+                tabindex="0"
+                :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 @click="openMemberModal(member)"
+                @keydown="onMemberCardKeydown($event, member)"
               >
                 <!-- Photo -->
                 <div class="mb-4 flex justify-center">
@@ -413,7 +440,7 @@ const tabItems = computed(() => [
                     <img
                       v-if="member.photo"
                       :src="member.photo"
-                      :alt="getFullName(member)"
+                      :alt="getMemberDisplayName(member)"
                       class="size-full object-cover"
                     />
                     <div
@@ -430,35 +457,28 @@ const tabItems = computed(() => [
                   <p v-if="member.denomination" class="text-primary text-sm font-medium">
                     {{ member.denomination }}
                   </p>
-                  <p class="text-foreground mt-1 font-semibold">{{ getFullName(member) }}</p>
+                  <p class="text-foreground mt-1 font-semibold">
+                    {{ getMemberDisplayName(member) }}
+                  </p>
                   <p class="text-muted mt-1 text-xs">{{ member.areaName }}</p>
 
-                  <button
-                    type="button"
-                    class="sr-only"
-                    :aria-label="getViewProfileAriaLabel(getFullName(member))"
-                    @click.stop="openMemberModal(member)"
-                  >
-                    {{ t('team.viewProfile') }}
-                  </button>
+                  <div class="mt-3 flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
+                      :aria-label="getCopyEmailAriaLabel(member.email)"
+                      @click.stop="copyEmail(member.email)"
+                    >
+                      <UIcon name="i-tabler-mail" class="size-4" />
+                      <span>{{ member.email }}</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    class="text-muted hover:text-primary mt-2 inline-flex items-center gap-1 text-sm transition-colors"
-                    :aria-label="getCopyEmailAriaLabel(member.email)"
-                    @click.stop="copyEmail(member.email)"
-                  >
-                    <UIcon name="i-tabler-mail" class="size-4" />
-                    <span>{{ member.email }}</span>
-                  </button>
-
-                  <!-- Public agenda button for leaders -->
-                  <div class="mt-3">
                     <UButton
+                      v-if="member.publicAgenda"
                       size="xs"
                       variant="soft"
                       icon="i-tabler-calendar"
-                      :aria-label="getPublicAgendaAriaLabel(getFullName(member))"
+                      :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
                       @click.stop="openAgenda(member)"
                     >
                       {{ t('team.publicAgenda') }}
@@ -482,8 +502,11 @@ const tabItems = computed(() => [
               <article
                 v-for="(member, idx) in extendedMembers"
                 :key="`ext-${member.areaId}-${idx}`"
-                class="group bg-surface/50 hover:bg-surface w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+                class="group bg-surface/50 hover:bg-surface focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+                tabindex="0"
+                :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 @click="openMemberModal(member)"
+                @keydown="onMemberCardKeydown($event, member)"
               >
                 <!-- Photo -->
                 <div class="mb-4 flex justify-center">
@@ -493,7 +516,7 @@ const tabItems = computed(() => [
                     <img
                       v-if="member.photo"
                       :src="member.photo"
-                      :alt="getFullName(member)"
+                      :alt="getMemberDisplayName(member)"
                       class="size-full object-cover"
                     />
                     <div
@@ -510,27 +533,33 @@ const tabItems = computed(() => [
                   <p v-if="member.denomination" class="text-primary text-sm font-medium">
                     {{ member.denomination }}
                   </p>
-                  <p class="text-foreground mt-1 font-semibold">{{ getFullName(member) }}</p>
+                  <p class="text-foreground mt-1 font-semibold">
+                    {{ getMemberDisplayName(member) }}
+                  </p>
                   <p class="text-muted mt-1 text-xs">{{ member.areaName }}</p>
 
-                  <button
-                    type="button"
-                    class="sr-only"
-                    :aria-label="getViewProfileAriaLabel(getFullName(member))"
-                    @click.stop="openMemberModal(member)"
-                  >
-                    {{ t('team.viewProfile') }}
-                  </button>
+                  <div class="mt-3 flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
+                      :aria-label="getCopyEmailAriaLabel(member.email)"
+                      @click.stop="copyEmail(member.email)"
+                    >
+                      <UIcon name="i-tabler-mail" class="size-4" />
+                      <span>{{ member.email }}</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    class="text-muted hover:text-primary mt-2 inline-flex items-center gap-1 text-sm transition-colors"
-                    :aria-label="getCopyEmailAriaLabel(member.email)"
-                    @click.stop="copyEmail(member.email)"
-                  >
-                    <UIcon name="i-tabler-mail" class="size-4" />
-                    <span>{{ member.email }}</span>
-                  </button>
+                    <UButton
+                      v-if="member.publicAgenda"
+                      size="xs"
+                      variant="soft"
+                      icon="i-tabler-calendar"
+                      :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                      @click.stop="openAgenda(member)"
+                    >
+                      {{ t('team.publicAgenda') }}
+                    </UButton>
+                  </div>
                 </div>
               </article>
             </div>
@@ -557,8 +586,11 @@ const tabItems = computed(() => [
               <article
                 v-for="(member, idx) in area.members"
                 :key="`area-${area.id}-member-${idx}`"
-                class="group bg-surface/50 hover:bg-surface w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+                class="group bg-surface/50 hover:bg-surface focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+                tabindex="0"
+                :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 @click="openMemberModal(toEnrichedMember(member, area, idx === 0))"
+                @keydown="onMemberCardKeydown($event, toEnrichedMember(member, area, idx === 0))"
               >
                 <!-- Photo -->
                 <div class="mb-4 flex justify-center">
@@ -568,7 +600,7 @@ const tabItems = computed(() => [
                     <img
                       v-if="member.photo"
                       :src="member.photo"
-                      :alt="getFullName(member)"
+                      :alt="getMemberDisplayName(member)"
                       class="size-full object-cover"
                     />
                     <div
@@ -585,35 +617,28 @@ const tabItems = computed(() => [
                   <p v-if="member.denomination" class="text-primary text-sm font-medium">
                     {{ member.denomination }}
                   </p>
-                  <p class="text-foreground mt-1 font-semibold">{{ getFullName(member) }}</p>
+                  <p class="text-foreground mt-1 font-semibold">
+                    {{ getMemberDisplayName(member) }}
+                  </p>
 
-                  <button
-                    type="button"
-                    class="sr-only"
-                    :aria-label="getViewProfileAriaLabel(getFullName(member))"
-                    @click.stop="openMemberModal(toEnrichedMember(member, area, idx === 0))"
-                  >
-                    {{ t('team.viewProfile') }}
-                  </button>
+                  <div class="mt-3 flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
+                      :aria-label="getCopyEmailAriaLabel(member.email)"
+                      @click.stop="copyEmail(member.email)"
+                    >
+                      <UIcon name="i-tabler-mail" class="size-4" />
+                      <span>{{ member.email }}</span>
+                    </button>
 
-                  <button
-                    type="button"
-                    class="text-muted hover:text-primary mt-2 inline-flex items-center gap-1 text-sm transition-colors"
-                    :aria-label="getCopyEmailAriaLabel(member.email)"
-                    @click.stop="copyEmail(member.email)"
-                  >
-                    <UIcon name="i-tabler-mail" class="size-4" />
-                    <span>{{ member.email }}</span>
-                  </button>
-
-                  <!-- Public agenda button for area leaders (idx === 0) -->
-                  <div v-if="idx === 0" class="mt-3">
                     <UButton
+                      v-if="member.publicAgenda"
                       size="xs"
                       variant="soft"
                       icon="i-tabler-calendar"
-                      :aria-label="getPublicAgendaAriaLabel(getFullName(member))"
-                      @click.stop="openAgenda(toEnrichedMember(member, area, true))"
+                      :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                      @click.stop="openAgenda(toEnrichedMember(member, area, idx === 0))"
                     >
                       {{ t('team.publicAgenda') }}
                     </UButton>
@@ -645,7 +670,7 @@ const tabItems = computed(() => [
               <img
                 v-if="selectedMember.photo"
                 :src="selectedMember.photo"
-                :alt="getFullName(selectedMember)"
+                :alt="getMemberDisplayName(selectedMember)"
                 class="size-full object-cover"
               />
               <div
@@ -660,7 +685,9 @@ const tabItems = computed(() => [
               <p v-if="selectedMember.denomination" class="text-primary text-lg font-medium">
                 {{ selectedMember.denomination }}
               </p>
-              <p class="text-foreground text-xl font-bold">{{ getFullName(selectedMember) }}</p>
+              <p class="text-foreground text-xl font-bold">
+                {{ getMemberDisplayName(selectedMember) }}
+              </p>
               <UBadge size="sm" color="neutral" variant="soft" class="mt-1">
                 {{ selectedMember.areaName }}
               </UBadge>
@@ -669,7 +696,7 @@ const tabItems = computed(() => [
               <button
                 type="button"
                 class="text-muted hover:text-primary mt-2 flex items-center gap-1.5 text-sm transition-colors"
-                :aria-label="t('common.copyEmail')"
+                :aria-label="getCopyEmailAriaLabel(getContactEmail(selectedMember))"
                 @click="copyEmail(getContactEmail(selectedMember))"
               >
                 <UIcon name="i-tabler-mail" class="size-4" />
@@ -716,6 +743,7 @@ const tabItems = computed(() => [
                 :key="`${sn.network}-${sn.href}`"
                 :to="sn.href"
                 target="_blank"
+                rel="noopener noreferrer"
                 :icon="networkIcons[sn.network]"
                 color="neutral"
                 variant="soft"
@@ -729,11 +757,14 @@ const tabItems = computed(() => [
       </template>
 
       <template #footer>
-        <div v-if="selectedMember?.isLeader" class="flex w-full items-center justify-center gap-2">
+        <div
+          v-if="selectedMember?.publicAgenda"
+          class="flex w-full items-center justify-center gap-2"
+        >
           <UButton
             variant="soft"
             icon="i-tabler-calendar"
-            :aria-label="getPublicAgendaAriaLabel(getFullName(selectedMember))"
+            :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(selectedMember))"
             @click="openSelectedMemberAgenda"
           >
             {{ t('team.publicAgenda') }}
@@ -760,7 +791,7 @@ const tabItems = computed(() => [
               <img
                 v-if="agendaMember.photo"
                 :src="agendaMember.photo"
-                :alt="getFullName(agendaMember)"
+                :alt="getMemberDisplayName(agendaMember)"
                 class="size-full object-cover"
               />
               <div
@@ -771,8 +802,10 @@ const tabItems = computed(() => [
               </div>
             </div>
             <div>
-              <p class="text-foreground font-semibold">{{ getFullName(agendaMember) }}</p>
-              <p class="text-muted text-sm">{{ agendaMember.areaName }}</p>
+              <p class="text-foreground font-semibold">{{ getMemberDisplayName(agendaMember) }}</p>
+              <p class="text-muted text-sm">
+                {{ agendaMember.denomination || agendaMember.areaName }}
+              </p>
             </div>
           </div>
 

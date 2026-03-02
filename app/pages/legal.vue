@@ -14,7 +14,8 @@ useSeoMeta({
 
 <template>
   <UContainer class="py-12">
-    <LegalEs v-if="locale === 'es'" :title="t('footer.legal')" />
-    <LegalEn v-else :title="t('footer.legal')" />
+    <!-- Spanish is the default locale, so for now render English only when not 'es' -->
+    <LegalEn v-if="locale !== 'es'" :title="t('footer.legal')" />
+    <LegalEs v-else :title="t('footer.legal')" />
   </UContainer>
 </template>

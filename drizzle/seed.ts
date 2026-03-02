@@ -117,7 +117,7 @@ async function main() {
   const carouselData = [
     {
       image: '/img/carousel/default.jpg',
-      href: '/que-es',
+      href: '/conocenos/que-es',
       translations: [
         {
           locale: 'es',

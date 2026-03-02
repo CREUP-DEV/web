@@ -72,6 +72,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     externalMembersApiBaseUrl: process.env.EXTERNAL_MEMBERS_API_BASE_URL || '',
+    smtpHost: process.env.SMTP_HOST || '',
+    smtpPort: process.env.SMTP_PORT || '587',
+    smtpSecure: process.env.SMTP_SECURE || 'false',
+    smtpUser: process.env.SMTP_USER || '',
+    smtpPass: process.env.SMTP_PASS || '',
+    smtpFromEmail: process.env.SMTP_FROM_EMAIL || '',
+    smtpToEmail: process.env.SMTP_TO_EMAIL || 'info@creup.es',
   },
 
   css: ['~/assets/css/main.css'],

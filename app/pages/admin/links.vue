@@ -382,11 +382,7 @@ const handleDelete = async () => {
                   <UFormField
                     :label="`Texto alternativo ${trans.locale !== 'es' ? '(opcional)' : ''}`"
                   >
-                    <UInput
-                      v-model="trans.alt"
-                      :placeholder="trans.title || 'Descripción de la imagen'"
-                      class="w-full"
-                    />
+                    <UInput v-model="trans.alt" class="w-full" />
                   </UFormField>
                 </div>
               </div>

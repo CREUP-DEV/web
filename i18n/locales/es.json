@@ -7,7 +7,7 @@
       "whatIs": "¿Qué es CREUP?",
       "members": "Miembros",
       "team": "Equipo",
-      "structure": "Estructura organizativa"
+      "committees": "Comités"
     },
     "policy": {
       "label": "Política Universitaria",
@@ -35,7 +35,11 @@
       "agreements": "Convenios",
       "regulations": "Normativa",
       "financialReports": "Informes económicos",
-      "corporateIdentity": "Identidad Corporativa"
+      "corporateIdentity": "Identidad Corporativa",
+      "equality": {
+        "label": "Igualdad",
+        "overview": "Información general"
+      }
     },
     "contact": "Contacto"
   },
@@ -141,11 +145,87 @@
     "areaView": "Por área",
     "executiveCommission": "Comisión Ejecutiva",
     "extendedCommission": "Comisión Ejecutiva Ampliada",
-    "loadError": "No se ha podido cargar el equipo en este momento."
+    "loadError": "No se ha podido cargar el equipo en este momento.",
+    "viewHistory": "Histórico de cargos"
+  },
+  "mandates": {
+    "title": "Histórico de cargos",
+    "description": "Consulta los cargos de mandatos anteriores y actuales de CREUP.",
+    "detailDescription": "Detalle de los cargos de un mandato de CREUP.",
+    "mandateOf": "Mandato de",
+    "backToTeam": "Volver al equipo",
+    "backToMandates": "Volver a mandatos",
+    "current": "Actual",
+    "present": "Actualidad",
+    "ended": "Cesado",
+    "noMandates": "No hay mandatos registrados.",
+    "noAreas": "No hay áreas registradas para este mandato.",
+    "noAssignments": "Sin cargos asignados en esta área.",
+    "loadError": "No se ha podido cargar la información de mandatos.",
+    "durationDays": "{count} día | {count} días",
+    "durationMonths": "{count} mes | {count} meses",
+    "disambiguateTitle": "Mandatos de {year}",
+    "disambiguateDescription": "Hay varios mandatos en este año. Selecciona el que quieras consultar."
+  },
+  "aboutPage": {
+    "title": "¿Qué es CREUP?",
+    "description": "CREUP es la principal voz del estudiantado universitario de las universidades públicas en España.",
+    "lead": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) agrupa a consejos de estudiantes y delegaciones de 37 universidades públicas, representando a más de 1.000.000 de estudiantes.",
+    "intro": "Como entidad estatal de referencia, CREUP traslada las necesidades e intereses del estudiantado ante instituciones y administraciones públicas para contribuir a la mejora continua del sistema universitario.",
+    "activityTitle": "Cómo trabajamos",
+    "activityParagraph1": "Para cumplir sus fines, CREUP celebra dos Asambleas Generales al año en las que sus miembros acuerdan prioridades, posicionamientos y líneas estratégicas comunes.",
+    "activityParagraph2": "Además, impulsa encuentros formativos y espacios de intercambio de experiencias entre representantes estudiantiles, fortaleciendo la coordinación y el aprendizaje compartido.",
+    "collaborationTitle": "Colaboración institucional",
+    "collaborationParagraph": "CREUP mantiene convenios y relaciones de colaboración con entidades vinculadas a la Educación Superior, como CEDU, CRUE o asociaciones de egresados y egresadas, para reforzar el impacto de la representación estudiantil.",
+    "purposeTitle": "Compromiso con la sociedad",
+    "purposeParagraph": "Esta labor convierte a CREUP en un actor imprescindible para la universidad pública: una organización que da voz al estudiantado y trabaja, de forma constante, por una educación superior más justa, participativa y de calidad.",
+    "missionTitle": "Misión",
+    "missionText": "Dar voz al estudiantado para la construcción y mejora del sistema universitario.",
+    "visionTitle": "Visión",
+    "visionText": "Consolidarse como el principal agente de representación del estudiantado a nivel estatal, actuando como enlace con asociaciones e instituciones.",
+    "valuesTitle": "Valores",
+    "values": {
+      "independence": "Independencia",
+      "cooperation": "Cooperación",
+      "nonDiscrimination": "No discriminación",
+      "socialCommitment": "Compromiso social",
+      "participation": "Participación"
+    },
+    "sectionsTitle": "Conoce mejor CREUP",
+    "sectionsDescription": "Si quieres profundizar en cómo nos organizamos y quiénes formamos parte de la Coordinadora, visita estas secciones:",
+    "sections": {
+      "members": {
+        "title": "Miembros",
+        "description": "Consulta las organizaciones estudiantiles y entidades que participan activamente en CREUP.",
+        "cta": "Ir a Miembros"
+      },
+      "team": {
+        "title": "Equipo",
+        "description": "Conoce a las personas que asumen responsabilidades de representación y coordinación en CREUP.",
+        "cta": "Ir a Equipo"
+      },
+      "committees": {
+        "title": "Comités",
+        "description": "Descubre los comités de trabajo y a sus integrantes, que desarrollan la actividad técnica y política de la organización.",
+        "cta": "Ir a Comités"
+      },
+      "events": {
+        "title": "Eventos",
+        "description": "Consulta las asambleas, encuentros y actividades formativas organizadas por CREUP.",
+        "cta": "Ir a Eventos"
+      }
+    }
   },
   "members": {
     "title": "Miembros",
-    "description": "Conoce las organizaciones que forman parte de CREUP.",
+    "description": "Conoce las organizaciones que participan activamente en CREUP.",
+    "introText": "En CREUP participan activamente dos tipos de entidades:",
+    "introAssociated": "Consejos de Estudiantes de universidades públicas, que actúan como miembros asociados.",
+    "introSectoriales": "Asociaciones sectoriales de ámbito estatal que representan al estudiantado de áreas específicas del conocimiento, como entidades con convenio.",
+    "introAssociatedCta": "Ver miembros asociados",
+    "introSectorialesCta": "Ver sectoriales con convenio",
+    "associatedTitle": "Miembros asociados",
+    "associatedDescription": "Consejos de Estudiantes de universidades públicas.",
     "allMembers": "Todos los miembros",
     "showAll": "Mostrar todos",
     "loadError": "No se han podido cargar los miembros en este momento.",
@@ -154,8 +234,7 @@
     "unknownDenomination": "Designación no especificada",
     "viewDetails": "Ver detalles",
     "memberModalDescription": "Detalles de la organización seleccionada.",
-    "website": "Página web",
-    "email": "Correo electrónico",
+    "info": "Información y contacto",
     "socialNetworks": "Redes sociales",
     "networks": {
       "website": "Página web",
@@ -194,6 +273,14 @@
       "navarra": "Comunidad Foral de Navarra",
       "pais-vasco": "País Vasco",
       "valencia": "Comunitat Valenciana"
+    },
+    "sectoriales": {
+      "title": "Asociaciones sectoriales",
+      "description": "Asociaciones que representan al estudiantado de ámbitos específicos del conocimiento.",
+      "allSectoriales": "Todas las sectoriales",
+      "noSectoriales": "No hay asociaciones sectoriales disponibles.",
+      "loadError": "No se han podido cargar las sectoriales en este momento.",
+      "viewDetails": "Ver detalles"
     }
   },
   "mic": {
@@ -243,6 +330,47 @@
     "downloadDescription": "Aquí puedes descargar el manual completo en PDF.",
     "downloadButton": "Descargar MIC"
   },
+  "events": {
+    "title": "Eventos",
+    "description": "Consulta las asambleas, encuentros y actividades formativas organizadas por CREUP.",
+    "loadError": "No se han podido cargar los eventos en este momento.",
+    "noEvents": "No hay eventos disponibles.",
+    "allTypes": "Todos",
+    "filterByType": "Filtrar por tipo de evento",
+    "upcoming": "Próximo",
+    "ongoing": "En curso",
+    "backToEvents": "Volver a eventos",
+    "notFound": "Evento no encontrado.",
+    "documents": "Documentos",
+    "document": "Documento",
+    "organizers": "Organizador | Organizadores",
+    "venues": "Sede | Sedes",
+    "collaborators": "Colaborador | Colaboradores",
+    "visitWebsite": "Visitar web",
+    "bannerAlt": "Banner de {event}",
+    "gallery": "Galería",
+    "galleryPhotoAlt": "Foto {number} de {event}",
+    "galleryPrevious": "Foto anterior",
+    "galleryNext": "Siguiente foto",
+    "galleryClose": "Cerrar visor",
+    "galleryCounter": "{current} de {total}",
+    "galleryLoading": "Cargando imagen…",
+    "galleryZoomIn": "Ampliar",
+    "galleryZoomOut": "Reducir",
+    "galleryResetZoom": "Restablecer zoom"
+  },
+  "committees": {
+    "title": "Comités",
+    "description": "Más allá de la Comisión Ejecutiva Ampliada, CREUP cuenta con comités especializados que centran su trabajo en areas específicas de la representación o del funcionamiento interno de la asociación.",
+    "email": "Correo electrónico",
+    "viewProfile": "Ver perfil",
+    "memberModalDescription": "Detalles del perfil de la persona.",
+    "noMembers": "Este comité no tiene miembros asignados actualmente.",
+    "loadError": "No se han podido cargar los comités en este momento.",
+    "copyEmail": "Copiar correo",
+    "university": "Universidad",
+    "degree": "Titulación"
+  },
   "cookies": {
     "banner": {
       "title": "Respetamos tu privacidad",
@@ -267,6 +395,51 @@
       }
     },
     "editPreferences": "Preferencias de cookies"
+  },
+  "contactPage": {
+    "seo": {
+      "title": "Contacto",
+      "description": "Ponte en contacto con CREUP. Envíanos un mensaje o escríbenos a info{'@'}creup.es."
+    },
+    "title": "Contacto",
+    "subtitle": "¿Tienes alguna pregunta o propuesta? Escríbenos y te responderemos lo antes posible.",
+    "email": "También puedes escribirnos directamente a",
+    "form": {
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "tu{'@'}correo.com",
+      "subject": "Asunto",
+      "subjectPlaceholder": "Asunto del mensaje",
+      "message": "Mensaje",
+      "messagePlaceholder": "Escribe tu mensaje aquí...",
+      "submit": "Enviar mensaje",
+      "sending": "Enviando...",
+      "success": "Mensaje enviado correctamente. Te responderemos lo antes posible.",
+      "errorGeneric": "No se ha podido enviar el mensaje. Por favor, inténtalo de nuevo más tarde.",
+      "privacyInfoTitle": "Información básica sobre protección de datos",
+      "privacyInfoController": "Titular del sitio (art. 10 LSSI-CE) y responsable del tratamiento: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP), NIF G95324281, Callejón de Sta. María, s/n, 28801 Alcalá de Henares (Madrid), España.",
+      "privacyInfoPurpose": "Finalidad: gestionar y responder las consultas enviadas mediante este formulario.",
+      "privacyInfoLegalBasis": "Base jurídica: consentimiento de la persona interesada (art. 6.1.a del RGPD).",
+      "privacyInfoRecipients": "Destinatarios: no se cederán datos a terceros salvo obligación legal y proveedores necesarios para la gestión del correo electrónico.",
+      "privacyInfoRetention": "Conservación: no se incorporan a una base de datos del sitio web; se conservan en el correo corporativo solo durante el tiempo necesario para gestionar la consulta y, en su caso, durante los plazos legalmente exigibles.",
+      "privacyInfoRights": "Derechos: puedes acceder, rectificar y suprimir tus datos, además de ejercer otros derechos, escribiendo a info{'@'}creup.es. También puedes presentar reclamación ante la AEPD (www.aepd.es).",
+      "privacyInfoMorePrefix": "Información adicional:",
+      "privacyInfoMoreLink": "Aviso legal y política de privacidad",
+      "errors": {
+        "nameRequired": "El nombre es obligatorio",
+        "nameMin": "El nombre debe tener al menos 2 caracteres",
+        "nameMax": "El nombre no puede tener más de 100 caracteres",
+        "emailRequired": "El correo electrónico es obligatorio",
+        "emailInvalid": "Introduce un correo electrónico válido",
+        "subjectRequired": "El asunto es obligatorio",
+        "subjectMin": "El asunto debe tener al menos 3 caracteres",
+        "subjectMax": "El asunto no puede tener más de 200 caracteres",
+        "messageRequired": "El mensaje es obligatorio",
+        "messageMin": "El mensaje debe tener al menos 10 caracteres",
+        "messageMax": "El mensaje no puede tener más de 5000 caracteres"
+      }
+    }
   },
   "admin": {
     "errors": {

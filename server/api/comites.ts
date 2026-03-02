@@ -1,10 +1,10 @@
 /**
- * Organigrama (Org Chart) API endpoint
- * Proxies org-chart data from the external CREUP intranet API.
+ * Committees API endpoint
+ * Proxies committee data from the external CREUP intranet API.
  */
 
 import { createError, defineEventHandler } from 'h3'
-import { externalOrganigramaResponseSchema } from '../utils/validation'
+import { externalCommitteesResponseSchema } from '../utils/validation'
 
 const supportedNetworks = [
   'website',
@@ -27,7 +27,7 @@ interface MemberSocialOutput {
   value: string
 }
 
-interface OrgMemberOutput {
+interface CommitteeMemberOutput {
   order: number
   denomination: string | null
   photo: string | null
@@ -41,12 +41,14 @@ interface OrgMemberOutput {
   socialNetworks: MemberSocialOutput[]
 }
 
-interface OrgAreaOutput {
+interface CommitteeOutput {
   id: number
   name: string
   nameTranslations: Record<string, string>
+  description: string | null
+  descriptionTranslations: Record<string, string>
   order: number
-  members: OrgMemberOutput[]
+  members: CommitteeMemberOutput[]
 }
 
 const networkAliasMap: Record<string, SupportedNetwork> = {
@@ -142,32 +144,32 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const endpoint = new URL('/api/organigrama', configuredBaseUrl).toString()
+  const endpoint = new URL('/api/comites', configuredBaseUrl).toString()
 
   let payload: unknown
   try {
     payload = await $fetch(endpoint)
   } catch (error) {
-    console.error('Failed to fetch external organigrama API:', error)
+    console.error('Failed to fetch external committees API:', error)
     throw createError({
       statusCode: 502,
-      statusMessage: 'Organigrama data is temporarily unavailable.',
+      statusMessage: 'Committees data is temporarily unavailable.',
     })
   }
 
-  const parsedPayload = externalOrganigramaResponseSchema.safeParse(payload)
+  const parsedPayload = externalCommitteesResponseSchema.safeParse(payload)
   if (!parsedPayload.success) {
-    console.error('Invalid payload from external organigrama API:', parsedPayload.error.flatten())
+    console.error('Invalid payload from external committees API:', parsedPayload.error.flatten())
     throw createError({
       statusCode: 502,
-      statusMessage: 'Organigrama data is temporarily unavailable.',
+      statusMessage: 'Committees data is temporarily unavailable.',
     })
   }
 
-  const areas: OrgAreaOutput[] = parsedPayload.data.data
-    .sort((a, b) => a.area_order - b.area_order)
-    .map((area) => {
-      const members: OrgMemberOutput[] = area.members
+  const committees: CommitteeOutput[] = parsedPayload.data.data
+    .sort((a, b) => a.committee_order - b.committee_order)
+    .map((committee) => {
+      const members: CommitteeMemberOutput[] = committee.members
         .sort((a, b) => a.order - b.order)
         .map((member) => {
           const socialMap = new Map<SupportedNetwork, string>()
@@ -207,8 +209,11 @@ export default defineEventHandler(async (event) => {
           }
         })
 
+      // Build name translations
       const nameTranslations: Record<string, string> = {}
-      for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
+      for (const [locale, translation] of Object.entries(
+        committee.committee_name_translations ?? {}
+      )) {
         const normalizedLocale = normalizeText(locale)
         const normalizedTranslation = normalizeText(translation)
 
@@ -220,20 +225,42 @@ export default defineEventHandler(async (event) => {
       }
 
       if (!nameTranslations.es) {
-        nameTranslations.es = area.area_name
+        nameTranslations.es = committee.committee_name
+      }
+
+      // Build description translations
+      const descriptionTranslations: Record<string, string> = {}
+      for (const [locale, translation] of Object.entries(
+        committee.committee_description_translations ?? {}
+      )) {
+        const normalizedLocale = normalizeText(locale)
+        const normalizedTranslation = normalizeText(translation)
+
+        if (!normalizedLocale || !normalizedTranslation) {
+          continue
+        }
+
+        descriptionTranslations[normalizedLocale] = normalizedTranslation
+      }
+
+      const rawDescription = normalizeText(committee.committee_description)
+      if (!descriptionTranslations.es && rawDescription) {
+        descriptionTranslations.es = rawDescription
       }
 
       return {
-        id: area.area_id,
-        name: area.area_name,
+        id: committee.committee_id,
+        name: committee.committee_name,
         nameTranslations,
-        order: area.area_order,
+        description: rawDescription || null,
+        descriptionTranslations,
+        order: committee.committee_order,
         members,
       }
     })
 
   return {
-    areas,
+    committees,
     generatedAt: parsedPayload.data.generated_at ?? null,
   }
 })

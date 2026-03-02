@@ -21,9 +21,15 @@ import { defineEventHandler, getQuery, createError } from 'h3'
 
 interface GoogleCalendarEvent {
   id: string
+  recurringEventId?: string
   summary?: string
   description?: string
   location?: string
+  originalStartTime?: {
+    dateTime?: string
+    date?: string
+    timeZone?: string
+  }
   start: {
     dateTime?: string
     date?: string
@@ -108,6 +114,18 @@ function getDateRange(startDate: string, endDate: string): string[] {
   return dates
 }
 
+// Build a stable identifier per occurrence.
+// For recurring events, each occurrence should be handled independently.
+function getOccurrenceSeriesId(item: GoogleCalendarEvent): string {
+  const originalStart = item.originalStartTime?.dateTime || item.originalStartTime?.date
+
+  if (item.recurringEventId && originalStart) {
+    return `${item.recurringEventId}::${originalStart}`
+  }
+
+  return item.id
+}
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const locale = (query.locale as string) || 'es'
@@ -137,35 +155,49 @@ export default defineEventHandler(async (event) => {
     const threeMonthsLater = new Date(now)
     threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
 
-    const params = new URLSearchParams({
+    const baseParams = new URLSearchParams({
       key: apiKey,
       timeMin: threeMonthsAgo.toISOString(),
       timeMax: threeMonthsLater.toISOString(),
       singleEvents: 'true',
       orderBy: 'startTime',
-      maxResults: '100',
+      // Google Calendar API supports up to 2500 items per page.
+      // We still paginate to avoid truncating dense calendars.
+      maxResults: '2500',
     })
 
-    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`
+    const allItems: GoogleCalendarEvent[] = []
+    let nextPageToken: string | undefined
 
-    const response = await fetch(url)
+    do {
+      const params = new URLSearchParams(baseParams)
+      if (nextPageToken) {
+        params.set('pageToken', nextPageToken)
+      }
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Google Calendar API error:', errorData)
-      throw createError({
-        statusCode: response.status,
-        message: errorData.error?.message || 'Error fetching calendar events',
-      })
-    }
+      const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`
+      const response = await fetch(url)
 
-    const data: GoogleCalendarResponse = await response.json()
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Google Calendar API error:', errorData)
+        throw createError({
+          statusCode: response.status,
+          message: errorData.error?.message || 'Error fetching calendar events',
+        })
+      }
+
+      const data: GoogleCalendarResponse = await response.json()
+      allItems.push(...(data.items || []))
+      nextPageToken = data.nextPageToken
+    } while (nextPageToken)
 
     // Transform events to our format, expanding multi-day events
     const events: CalendarEventOutput[] = []
 
-    for (const item of data.items) {
+    for (const item of allItems) {
       const isAllDay = !item.start.dateTime
+      const seriesId = getOccurrenceSeriesId(item)
       const title = item.summary || (locale === 'es' ? 'Sin título' : 'Untitled')
 
       if (isAllDay) {
@@ -192,8 +224,8 @@ export default defineEventHandler(async (event) => {
             const timeSlot = `${t.day} ${dayNumber} ${t.of} ${totalDays}`
 
             events.push({
-              id: `${item.id}-day-${dayNumber}`,
-              seriesId: item.id,
+              id: `${seriesId}-day-${dayNumber}`,
+              seriesId,
               title,
               date,
               startDate,
@@ -209,7 +241,7 @@ export default defineEventHandler(async (event) => {
           // Single all-day event
           events.push({
             id: item.id,
-            seriesId: item.id,
+            seriesId,
             title,
             date: startDate,
             startDate,
@@ -245,8 +277,8 @@ export default defineEventHandler(async (event) => {
 
           // First day
           events.push({
-            id: `${item.id}-day-1`,
-            seriesId: item.id,
+            id: `${seriesId}-day-1`,
+            seriesId,
             title,
             date: startDateStr,
             startDate: startDateStr,
@@ -268,8 +300,8 @@ export default defineEventHandler(async (event) => {
           while (current < endD) {
             const dateStr = formatUTCDate(current)
             events.push({
-              id: `${item.id}-day-${dayIndex}`,
-              seriesId: item.id,
+              id: `${seriesId}-day-${dayIndex}`,
+              seriesId,
               title,
               date: dateStr,
               startDate: startDateStr,
@@ -288,8 +320,8 @@ export default defineEventHandler(async (event) => {
 
           // Last day
           events.push({
-            id: `${item.id}-day-${totalDays}`,
-            seriesId: item.id,
+            id: `${seriesId}-day-${totalDays}`,
+            seriesId,
             title,
             date: endDateStr,
             startDate: startDateStr,
@@ -306,7 +338,7 @@ export default defineEventHandler(async (event) => {
           // Same-day timed event
           events.push({
             id: item.id,
-            seriesId: item.id,
+            seriesId,
             title,
             date: startDateStr,
             startDate: startDateStr,

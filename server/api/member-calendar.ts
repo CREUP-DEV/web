@@ -8,9 +8,15 @@ import { defineEventHandler, getQuery } from 'h3'
 
 interface GoogleCalendarEvent {
   id: string
+  recurringEventId?: string
   summary?: string
   description?: string
   location?: string
+  originalStartTime?: {
+    dateTime?: string
+    date?: string
+    timeZone?: string
+  }
   start: {
     dateTime?: string
     date?: string
@@ -83,6 +89,18 @@ function getDateRange(startDate: string, endDate: string): string[] {
   return dates
 }
 
+// Build a stable identifier per occurrence.
+// For recurring events, each occurrence should be treated independently.
+function getOccurrenceSeriesId(item: GoogleCalendarEvent): string {
+  const originalStart = item.originalStartTime?.dateTime || item.originalStartTime?.date
+
+  if (item.recurringEventId && originalStart) {
+    return `${item.recurringEventId}::${originalStart}`
+  }
+
+  return item.id
+}
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const locale = (query.locale as string) || 'es'
@@ -129,7 +147,7 @@ export default defineEventHandler(async (event) => {
 
     for (const item of data.items || []) {
       const isAllDay = !item.start.dateTime && !!item.start.date
-      const seriesId = item.id.split('_')[0] || item.id
+      const seriesId = getOccurrenceSeriesId(item)
 
       if (isAllDay && item.start.date && item.end.date) {
         const dateRange = getDateRange(item.start.date, item.end.date)
