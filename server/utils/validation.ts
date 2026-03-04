@@ -314,14 +314,48 @@ export const externalEventsResponseSchema = z.object({
   generated_at: z.string().nullable().optional(),
 })
 
-// Contact form schema (public endpoint)
-export const contactFormSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email().max(254),
-  subject: z.string().min(3).max(200),
-  message: z.string().min(10).max(5000),
-  website: z.string().optional(), // Honeypot field — should always be empty
+// External policy document API schemas (posicionamientos, resoluciones, informes ejecutivos)
+export const externalPolicyDocumentFileSchema = z.object({
+  name: z.string().nullable().optional(),
+  url: z.string().nullable().optional(),
 })
+
+export const externalPolicyDocumentSchema = z.object({
+  order: z.coerce.number().int().default(0),
+  name: z.string(),
+  date: z.string(),
+  assembly: z.string().nullable().optional(),
+  file: externalPolicyDocumentFileSchema.nullable().optional(),
+})
+
+export const externalPolicyDocumentsResponseSchema = z.object({
+  data: z.array(externalPolicyDocumentSchema),
+  generated_at: z.string().nullable().optional(),
+})
+
+// Contact form schema (public endpoint)
+export const contactFormSchema = z
+  .object({
+    contactType: z.enum(['general', 'press']).default('general'),
+    name: z.string().min(2).max(100),
+    email: z.string().email().max(254),
+    phone: z.string().max(30).optional(), // Required for press, optional otherwise
+    mediaName: z.string().max(200).optional(), // Required for press
+    subject: z.string().min(3).max(200),
+    message: z.string().min(10).max(5000),
+    website: z.string().optional(), // Honeypot field — should always be empty
+  })
+  .superRefine((data, ctx) => {
+    if (data.contactType === 'press') {
+      if (!data.mediaName || data.mediaName.trim().length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'El nombre del medio es obligatorio para contacto de prensa',
+          path: ['mediaName'],
+        })
+      }
+    }
+  })
 
 // Helper function to validate and parse body
 export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): T {

@@ -78,10 +78,14 @@ export default defineEventHandler(async (event) => {
   }
 
   // Sanitize values after validation
+  const contactType = body.contactType || 'general'
   const name = sanitize(body.name, 100)
   const email = sanitize(body.email, 254)
+  const phone = body.phone ? sanitize(body.phone, 30) : ''
+  const mediaName = body.mediaName ? sanitize(body.mediaName, 200) : ''
   const subject = sanitize(body.subject, 200)
   const message = sanitize(body.message, 5000)
+  const isPress = contactType === 'press'
 
   // Spam check
   if (hasSpamPatterns(`${name} ${subject} ${message}`)) {
@@ -113,16 +117,20 @@ export default defineEventHandler(async (event) => {
     socketTimeout: 30_000,
   })
 
-  const toEmail = (config.smtpToEmail as string) || 'info@creup.es'
+  const toEmail = isPress
+    ? (config.smtpPressEmail as string) || 'prensa@creup.es'
+    : (config.smtpToEmail as string) || 'info@creup.es'
   const fromEmail = (config.smtpFromEmail as string) || toEmail
 
   const sentAt = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })
 
+  const contactLabel = isPress ? 'prensa' : 'contacto'
+
   const textBody = `
-Nuevo mensaje de contacto desde la web de CREUP
+Nuevo mensaje de ${contactLabel} desde la web de CREUP
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-De: ${name} <${email}>
+De: ${name} <${email}>${isPress ? `\nTeléfono: ${phone || '(no indicado)'}\nMedio: ${mediaName}` : ''}
 Asunto: ${subject}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -138,11 +146,11 @@ Fecha: ${sentAt}
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nuevo mensaje de contacto</title>
+  <title>Nuevo mensaje de ${contactLabel}</title>
 </head>
 <body style="margin:0; padding:0; background-color:#eaeaea;">
   <div style="display:none; font-size:1px; color:#eaeaea; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
-    Mensaje de <b>${name}</b> — ${subject}
+    Mensaje de <b>${name}</b>${isPress ? ` (${mediaName})` : ''} — ${subject}
   </div>
   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#eaeaea">
     <tr>
@@ -153,7 +161,7 @@ Fecha: ${sentAt}
           <tr>
             <td align="center" style="padding: 20px 8px 8px 8px;">
               <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:700; font-family: Georgia, serif; color:#2c2c2c;">
-                Nuevo mensaje de contacto
+                Nuevo mensaje de ${contactLabel}
               </h1>
             </td>
           </tr>
@@ -178,7 +186,25 @@ Fecha: ${sentAt}
                   <td style="padding: 6px 16px 0 16px; font-family: Arial, sans-serif; font-size:14px; color:#666666;">
                     <strong style="color:#2c2c2c;">Asunto:</strong> ${subject}
                   </td>
+                </tr>${
+                  isPress
+                    ? `
+
+                <!-- Phone row -->
+                <tr>
+                  <td style="padding: 6px 16px 0 16px; font-family: Arial, sans-serif; font-size:14px; color:#666666;">
+                    <strong style="color:#2c2c2c;">Teléfono:</strong> ${phone || '(no indicado)'}
+                  </td>
                 </tr>
+
+                <!-- Media name row -->
+                <tr>
+                  <td style="padding: 6px 16px 0 16px; font-family: Arial, sans-serif; font-size:14px; color:#666666;">
+                    <strong style="color:#2c2c2c;">Medio:</strong> ${mediaName}
+                  </td>
+                </tr>`
+                    : ''
+                }
 
                 <!-- Divider -->
                 <tr>
@@ -231,10 +257,10 @@ Fecha: ${sentAt}
 
   try {
     await transporter.sendMail({
-      from: `"CREUP Contacto" <${fromEmail}>`,
+      from: `"CREUP ${isPress ? 'Prensa' : 'Contacto'}" <${fromEmail}>`,
       to: toEmail,
       replyTo: email,
-      subject: `[CREUP Web] ${subject}`,
+      subject: `[CREUP ${isPress ? 'Prensa' : 'Web'}] ${subject}`,
       text: textBody,
       html: htmlBody,
     })

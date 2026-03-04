@@ -24,7 +24,6 @@
     "press": {
       "label": "Prensa",
       "newsletter": "Newsletter",
-      "pressContact": "Contacto de prensa",
       "pressReleases": "Notas de prensa",
       "statements": "Comunicados",
       "inMedia": "En los medios",
@@ -371,6 +370,27 @@
     "university": "Universidad",
     "degree": "Titulación"
   },
+  "policy": {
+    "download": "Descargar",
+    "positions": {
+      "title": "Posicionamientos",
+      "description": "Los posicionamientos expresan la posición política de la Asamblea General frente a temáticas relacionadas con los fines de la Asociación.",
+      "loadError": "No se han podido cargar los posicionamientos en este momento.",
+      "empty": "No hay posicionamientos disponibles."
+    },
+    "resolutions": {
+      "title": "Resoluciones",
+      "description": "Las resoluciones son documentos mediante los cuales la Asamblea General expresa su parecer frente a cualquier situación que expongan los miembros.",
+      "loadError": "No se han podido cargar las resoluciones en este momento.",
+      "empty": "No hay resoluciones disponibles."
+    },
+    "reports": {
+      "title": "Informes Ejecutivos",
+      "description": "Los informes ejecutivos se realizan en relación a una normativa donde se indican los mínimos que debe contener, o las modificaciones que desde CREUP se quieren realizar.",
+      "loadError": "No se han podido cargar los informes ejecutivos en este momento.",
+      "empty": "No hay informes ejecutivos disponibles."
+    }
+  },
   "cookies": {
     "banner": {
       "title": "Respetamos tu privacidad",
@@ -404,11 +424,22 @@
     "title": "Contacto",
     "subtitle": "¿Tienes alguna pregunta o propuesta? Escríbenos y te responderemos lo antes posible.",
     "email": "También puedes escribirnos directamente a",
+    "contactType": {
+      "label": "Tipo de contacto",
+      "general": "Contacto general",
+      "generalDescription": "Preguntas, propuestas o cualquier otra consulta.",
+      "press": "Contacto de prensa",
+      "pressDescription": "Solicitudes de medios de comunicación, entrevistas y notas de prensa."
+    },
     "form": {
       "name": "Nombre",
       "namePlaceholder": "Tu nombre",
       "email": "Correo electrónico",
       "emailPlaceholder": "tu{'@'}correo.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+34 600 000 000",
+      "mediaName": "Nombre del medio",
+      "mediaNamePlaceholder": "Nombre del medio de comunicación",
       "subject": "Asunto",
       "subjectPlaceholder": "Asunto del mensaje",
       "message": "Mensaje",
@@ -432,6 +463,9 @@
         "nameMax": "El nombre no puede tener más de 100 caracteres",
         "emailRequired": "El correo electrónico es obligatorio",
         "emailInvalid": "Introduce un correo electrónico válido",
+        "phoneInvalid": "Introduce un número de teléfono válido",
+        "mediaNameRequired": "El nombre del medio es obligatorio",
+        "mediaNameMax": "El nombre del medio no puede tener más de 200 caracteres",
         "subjectRequired": "El asunto es obligatorio",
         "subjectMin": "El asunto debe tener al menos 3 caracteres",
         "subjectMax": "El asunto no puede tener más de 200 caracteres",

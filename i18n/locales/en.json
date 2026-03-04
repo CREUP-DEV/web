@@ -24,7 +24,6 @@
     "press": {
       "label": "Press",
       "newsletter": "Newsletter",
-      "pressContact": "Press contact",
       "pressReleases": "Press releases",
       "statements": "Statements",
       "inMedia": "In the media",
@@ -371,6 +370,27 @@
     "university": "University",
     "degree": "Degree"
   },
+  "policy": {
+    "download": "Download",
+    "positions": {
+      "title": "Positions",
+      "description": "Positions express the political stance of the General Assembly on topics related to the Association's purposes.",
+      "loadError": "Positions could not be loaded right now.",
+      "empty": "No positions available."
+    },
+    "resolutions": {
+      "title": "Resolutions",
+      "description": "Resolutions are documents through which the General Assembly expresses its opinion on any situation raised by its members.",
+      "loadError": "Resolutions could not be loaded right now.",
+      "empty": "No resolutions available."
+    },
+    "reports": {
+      "title": "Executive Reports",
+      "description": "Executive reports are prepared in relation to regulations, indicating either the minimum requirements they must include or the amendments CREUP wishes to propose.",
+      "loadError": "Executive reports could not be loaded right now.",
+      "empty": "No executive reports available."
+    }
+  },
   "cookies": {
     "banner": {
       "title": "We respect your privacy",
@@ -404,11 +424,22 @@
     "title": "Contact",
     "subtitle": "Have a question or proposal? Write to us and we'll get back to you as soon as possible.",
     "email": "You can also email us directly at",
+    "contactType": {
+      "label": "Contact type",
+      "general": "General contact",
+      "generalDescription": "Questions, proposals, or any other inquiry.",
+      "press": "Press contact",
+      "pressDescription": "Media requests, interviews, and press releases."
+    },
     "form": {
       "name": "Name",
       "namePlaceholder": "Your name",
       "email": "Email",
       "emailPlaceholder": "you{'@'}email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+34 600 000 000",
+      "mediaName": "Media outlet",
+      "mediaNamePlaceholder": "Name of the media outlet",
       "subject": "Subject",
       "subjectPlaceholder": "Message subject",
       "message": "Message",
@@ -432,6 +463,9 @@
         "nameMax": "Name must be 100 characters or less",
         "emailRequired": "Email is required",
         "emailInvalid": "Enter a valid email address",
+        "phoneInvalid": "Enter a valid phone number",
+        "mediaNameRequired": "Media outlet name is required",
+        "mediaNameMax": "Media outlet name must be 200 characters or less",
         "subjectRequired": "Subject is required",
         "subjectMin": "Subject must be at least 3 characters",
         "subjectMax": "Subject must be 200 characters or less",

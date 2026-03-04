@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /**
  * Public contact page with form and direct email link.
+ * Supports general contact (info@creup.es) and press contact (prensa@creup.es).
  * Uses Nuxt i18n for all user-facing text.
  */
 const { t } = useI18n()
@@ -15,10 +16,35 @@ useSeoMeta({
   ogDescription: () => t('contactPage.seo.description'),
 })
 
+// Contact type: general or press
+const contactType = ref<'general' | 'press'>('general')
+const isPress = computed(() => contactType.value === 'press')
+const displayEmail = computed(() => (isPress.value ? 'prensa@creup.es' : 'info@creup.es'))
+const mailtoHref = computed(() => `mailto:${displayEmail.value}`)
+
+const contactTypeItems = computed(() => [
+  {
+    label: t('contactPage.contactType.general'),
+    value: 'general' as const,
+  },
+  {
+    label: t('contactPage.contactType.press'),
+    value: 'press' as const,
+  },
+])
+
+const contactTypeDescription = computed(() =>
+  isPress.value
+    ? t('contactPage.contactType.pressDescription')
+    : t('contactPage.contactType.generalDescription')
+)
+
 // Form state
 const form = reactive({
   name: '',
   email: '',
+  phone: '',
+  mediaName: '',
   subject: '',
   message: '',
   website: '', // Honeypot — hidden from real users
@@ -28,12 +54,17 @@ const form = reactive({
 const touched = reactive({
   name: false,
   email: false,
+  phone: false,
+  mediaName: false,
   subject: false,
   message: false,
 })
 
 const isSubmitting = ref(false)
 const formSubmitted = ref(false)
+
+// Phone validation — optional but must be valid if filled (digits, spaces, +, -, parens)
+const phoneRegex = /^[+\d][\d\s()-]{5,29}$/
 
 // Field-level validation rules
 const validations = computed(() => ({
@@ -52,6 +83,18 @@ const validations = computed(() => ({
       form.email.trim().length === 0
         ? t('contactPage.form.errors.emailRequired')
         : t('contactPage.form.errors.emailInvalid'),
+  },
+  phone: {
+    valid: !isPress.value || form.phone.trim().length === 0 || phoneRegex.test(form.phone.trim()),
+    error: t('contactPage.form.errors.phoneInvalid'),
+  },
+  mediaName: {
+    valid:
+      !isPress.value || (form.mediaName.trim().length >= 1 && form.mediaName.trim().length <= 200),
+    error:
+      form.mediaName.trim().length === 0
+        ? t('contactPage.form.errors.mediaNameRequired')
+        : t('contactPage.form.errors.mediaNameMax'),
   },
   subject: {
     valid: form.subject.trim().length >= 3 && form.subject.trim().length <= 200,
@@ -73,11 +116,13 @@ const validations = computed(() => ({
   },
 }))
 
-function shouldShowError(field: keyof typeof touched): boolean {
+type ValidatedField = 'name' | 'email' | 'phone' | 'mediaName' | 'subject' | 'message'
+
+function shouldShowError(field: ValidatedField): boolean {
   return (touched[field] || formSubmitted.value) && !validations.value[field].valid
 }
 
-function getFieldError(field: keyof typeof touched): string | undefined {
+function getFieldError(field: ValidatedField): string | undefined {
   return shouldShowError(field) ? validations.value[field].error : undefined
 }
 
@@ -88,9 +133,9 @@ async function handleSubmit() {
 
   if (!isFormValid.value || isSubmitting.value) {
     // Focus first invalid field for a11y
-    const firstInvalid = (
-      Object.keys(validations.value) as (keyof typeof validations.value)[]
-    ).find((k) => !validations.value[k].valid)
+    const firstInvalid = (Object.keys(validations.value) as ValidatedField[]).find(
+      (k) => !validations.value[k].valid
+    )
     if (firstInvalid) {
       document.getElementById(`contact-${firstInvalid}`)?.focus()
     }
@@ -103,8 +148,13 @@ async function handleSubmit() {
     await $fetch('/api/contact', {
       method: 'POST',
       body: {
+        contactType: contactType.value,
         name: form.name.trim(),
         email: form.email.trim(),
+        ...(isPress.value && {
+          phone: form.phone.trim() || undefined,
+          mediaName: form.mediaName.trim(),
+        }),
         subject: form.subject.trim(),
         message: form.message.trim(),
         website: form.website,
@@ -120,6 +170,8 @@ async function handleSubmit() {
     // Reset
     form.name = ''
     form.email = ''
+    form.phone = ''
+    form.mediaName = ''
     form.subject = ''
     form.message = ''
     formSubmitted.value = false
@@ -160,12 +212,18 @@ async function handleSubmit() {
         </p>
       </div>
 
+      <!-- Contact type selector -->
+      <div class="mb-8">
+        <UTabs v-model="contactType" :items="contactTypeItems" class="w-full" />
+        <p class="text-muted mt-2 text-sm">{{ contactTypeDescription }}</p>
+      </div>
+
       <!-- Direct email -->
       <p class="text-muted mb-8 text-center">
         {{ t('contactPage.email') }}
-        <a href="mailto:info@creup.es" class="text-primary font-semibold hover:underline"
-          >info@creup.es</a
-        >
+        <a :href="mailtoHref" class="text-primary font-semibold hover:underline">{{
+          displayEmail
+        }}</a>
       </p>
 
       <!-- Contact form -->
@@ -221,6 +279,41 @@ async function handleSubmit() {
               @blur="touched.email = true"
             />
           </UFormField>
+
+          <!-- Press-only fields -->
+          <template v-if="isPress">
+            <!-- Phone -->
+            <UFormField :label="t('contactPage.form.phone')" :error="getFieldError('phone')">
+              <UInput
+                id="contact-phone"
+                v-model="form.phone"
+                type="tel"
+                :placeholder="t('contactPage.form.phonePlaceholder')"
+                :disabled="isSubmitting"
+                :color="shouldShowError('phone') ? 'error' : undefined"
+                class="w-full"
+                @blur="touched.phone = true"
+              />
+            </UFormField>
+
+            <!-- Media name -->
+            <UFormField
+              :label="`${t('contactPage.form.mediaName')} *`"
+              :error="getFieldError('mediaName')"
+            >
+              <UInput
+                id="contact-mediaName"
+                v-model="form.mediaName"
+                type="text"
+                :placeholder="t('contactPage.form.mediaNamePlaceholder')"
+                required
+                :disabled="isSubmitting"
+                :color="shouldShowError('mediaName') ? 'error' : undefined"
+                class="w-full"
+                @blur="touched.mediaName = true"
+              />
+            </UFormField>
+          </template>
 
           <!-- Subject -->
           <UFormField

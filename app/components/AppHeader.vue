@@ -117,10 +117,6 @@ const items = computed<NavigationMenuItem[]>(() => [
         to: '/prensa/newsletter/',
       },
       {
-        label: t('nav.press.pressContact'),
-        to: '/prensa/contacto/',
-      },
-      {
         label: t('nav.press.pressReleases'),
         to: '/prensa/notas-prensa/',
       },
