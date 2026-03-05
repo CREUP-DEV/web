@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
  * FeaturedNewsRow
- * Renders featured news (title + cover) as clickable cards.
+ * Renders the latest press articles (all types combined) as clickable cards.
  * - Images are constrained with a 16:9 ratio and object-cover.
  * - Uses NuxtLink for navigation and UIcon for subtle affordances.
  * - Section title comes from i18n.
  */
-import { useNews } from '@/composables/useNews'
+import type { PressArticle, PressArticleType } from '@/composables/usePress'
 
 type NewsItem = {
   /** Localized title (already in the current locale) */
@@ -17,6 +17,12 @@ type NewsItem = {
   to: string
   /** Optional alt text for accessibility */
   alt?: string
+  /** Optional description */
+  description?: string
+  /** Optional media outlet name */
+  mediaOutletName?: string
+  /** Optional media outlet logo */
+  mediaOutletLogo?: string
 }
 
 const props = defineProps<{
@@ -32,26 +38,36 @@ const hasProvidedItems = computed(() => Array.isArray(props.items))
 // Selected tag for filtering
 const selectedTag = ref<string>('all')
 
-// Fetch news filtered by tag
-const { data: newsData, pending } = useNews(selectedTag)
+// Fetch all press articles (all types combined) filtered by tag
+const { data: pressData, pending } = usePress(null, selectedTag, 4)
 
-// Use props.items if provided, otherwise use filtered news from API
-const displayItems = computed(() => {
+const typeUrlPrefix: Record<PressArticleType, string> = {
+  press_release: '/prensa/notas-prensa',
+  statement: '/prensa/comunicados',
+  media_appearance: '/prensa/en-los-medios',
+}
+
+// Use props.items if provided, otherwise use press articles from API
+const displayItems = computed<NewsItem[]>(() => {
   if (props.items && props.items.length > 0) {
     return props.items
   }
   return (
-    newsData.value?.news.map((n: { title: string; image: string; to: string }) => ({
-      title: n.title,
-      image: n.image,
-      to: n.to,
+    pressData.value?.articles.map((a: PressArticle) => ({
+      title: a.title,
+      image: a.image,
+      to: `${typeUrlPrefix[a.type]}/${a.slug}`,
+      alt: a.alt || undefined,
+      description: a.description || undefined,
+      mediaOutletName: a.mediaOutlet?.name,
+      mediaOutletLogo: a.mediaOutlet?.logo,
     })) ?? []
   )
 })
 
 const isLoading = computed(() => {
   if (hasProvidedItems.value) return false
-  return pending.value || newsData.value == null
+  return pending.value || pressData.value == null
 })
 
 const visibleNewsCount = computed(() => displayItems.value.length)
@@ -115,12 +131,12 @@ const onTagSelect = (tagSlug: string) => {
       <!-- Responsive grid with special handling for 1 and 3 visible items -->
       <ul v-else class="grid flex-1 gap-3 sm:gap-4" :class="newsGridClass" role="list">
         <li v-for="(item, idx) in displayItems" :key="idx" :class="newsItemClass(idx)">
-          <a
-            :href="item.to"
+          <NuxtLink
+            :to="item.to"
             class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
           >
             <!-- Cover -->
-            <div class="bg-muted aspect-video">
+            <div class="bg-muted relative aspect-video">
               <NuxtImg
                 :src="item.image"
                 :alt="item.alt ?? ''"
@@ -129,6 +145,17 @@ const onTagSelect = (tagSlug: string) => {
                 class="size-full object-cover"
                 loading="lazy"
               />
+              <!-- Media outlet logo overlay -->
+              <div
+                v-if="item.mediaOutletLogo"
+                class="absolute right-2 bottom-2 rounded bg-white/70 p-1 backdrop-blur-sm"
+              >
+                <img
+                  :src="item.mediaOutletLogo"
+                  :alt="item.mediaOutletName ?? ''"
+                  class="block h-4 w-auto"
+                />
+              </div>
             </div>
             <div class="p-3">
               <UTooltip :text="item.title">
@@ -139,7 +166,7 @@ const onTagSelect = (tagSlug: string) => {
                 </h3>
               </UTooltip>
             </div>
-          </a>
+          </NuxtLink>
         </li>
       </ul>
     </div>

@@ -88,7 +88,7 @@ export const tagTranslations = pgTable(
 // Tags relations
 export const tagsRelations = relations(tags, ({ many }) => ({
   translations: many(tagTranslations),
-  news: many(newsItems),
+  pressArticles: many(pressArticleTags),
 }))
 
 export const tagTranslationsRelations = relations(tagTranslations, ({ one }) => ({
@@ -99,14 +99,19 @@ export const tagTranslationsRelations = relations(tagTranslations, ({ one }) => 
 }))
 
 // ============================================================================
-// News Items
+// Press Articles (notas de prensa, comunicados, en los medios)
 // ============================================================================
 
-export const newsItems = pgTable('news_items', {
+export const pressArticles = pgTable('press_articles', {
   id: text('id').primaryKey().$defaultFn(cuid),
+  type: text('type').notNull(), // 'press_release' | 'statement' | 'media_appearance'
+  slug: text('slug').notNull().unique(),
   image: text('image').notNull(),
-  to: text('to').notNull(),
-  order: integer('order').default(0).notNull(),
+  pdfUrl: text('pdf_url'), // For press_release and statement
+  externalUrl: text('external_url'), // For media_appearance
+  mediaOutletId: text('media_outlet_id').references(() => mediaOutlets.id, {
+    onDelete: 'set null',
+  }),
   active: boolean('active').default(true).notNull(),
   publishedAt: timestamp('published_at', { mode: 'date' }).defaultNow().notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
@@ -116,56 +121,61 @@ export const newsItems = pgTable('news_items', {
     .$onUpdate(() => new Date()),
 })
 
-// Junction table for News Items to Tags (many-to-many)
-export const newsTags = pgTable(
-  'news_tags',
-  {
-    id: text('id').primaryKey().$defaultFn(cuid),
-    newsItemId: text('news_item_id')
-      .notNull()
-      .references(() => newsItems.id, { onDelete: 'cascade' }),
-    tagId: text('tag_id')
-      .notNull()
-      .references(() => tags.id, { onDelete: 'cascade' }),
-  },
-  (table) => [unique().on(table.newsItemId, table.tagId)]
-)
-
-export const newsItemTranslations = pgTable(
-  'news_item_translations',
+export const pressArticleTranslations = pgTable(
+  'press_article_translations',
   {
     id: text('id').primaryKey().$defaultFn(cuid),
     locale: text('locale').notNull(),
     title: text('title').notNull(),
+    description: text('description'),
     alt: text('alt'),
-    newsItemId: text('news_item_id')
+    pressArticleId: text('press_article_id')
       .notNull()
-      .references(() => newsItems.id, { onDelete: 'cascade' }),
+      .references(() => pressArticles.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.newsItemId, table.locale)]
+  (table) => [unique().on(table.pressArticleId, table.locale)]
 )
 
-// News relations
-export const newsItemsRelations = relations(newsItems, ({ many }) => ({
-  tags: many(newsTags),
-  translations: many(newsItemTranslations),
-}))
+// Junction table for Press Articles to Tags (many-to-many)
+export const pressArticleTags = pgTable(
+  'press_article_tags',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    pressArticleId: text('press_article_id')
+      .notNull()
+      .references(() => pressArticles.id, { onDelete: 'cascade' }),
+    tagId: text('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => [unique().on(table.pressArticleId, table.tagId)]
+)
 
-export const newsItemTranslationsRelations = relations(newsItemTranslations, ({ one }) => ({
-  newsItem: one(newsItems, {
-    fields: [newsItemTranslations.newsItemId],
-    references: [newsItems.id],
+// Press Articles relations
+export const pressArticlesRelations = relations(pressArticles, ({ one, many }) => ({
+  translations: many(pressArticleTranslations),
+  tags: many(pressArticleTags),
+  mediaOutlet: one(mediaOutlets, {
+    fields: [pressArticles.mediaOutletId],
+    references: [mediaOutlets.id],
   }),
 }))
 
-// News Tags (junction) relations
-export const newsTagsRelations = relations(newsTags, ({ one }) => ({
-  newsItem: one(newsItems, {
-    fields: [newsTags.newsItemId],
-    references: [newsItems.id],
+export const pressArticleTranslationsRelations = relations(pressArticleTranslations, ({ one }) => ({
+  pressArticle: one(pressArticles, {
+    fields: [pressArticleTranslations.pressArticleId],
+    references: [pressArticles.id],
+  }),
+}))
+
+// Press Article Tags (junction) relations
+export const pressArticleTagsRelations = relations(pressArticleTags, ({ one }) => ({
+  pressArticle: one(pressArticles, {
+    fields: [pressArticleTags.pressArticleId],
+    references: [pressArticles.id],
   }),
   tag: one(tags, {
-    fields: [newsTags.tagId],
+    fields: [pressArticleTags.tagId],
     references: [tags.id],
   }),
 }))
@@ -447,3 +457,25 @@ export const organizationMemberTranslationsRelations = relations(
     }),
   })
 )
+
+// ============================================================================
+// Media Outlets (Medios de comunicación)
+// ============================================================================
+
+export const mediaOutlets = pgTable('media_outlets', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  name: text('name').notNull(),
+  website: text('website').notNull(),
+  logo: text('logo').notNull(),
+  order: integer('order').default(0).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
+
+// Media Outlets relations
+export const mediaOutletsRelations = relations(mediaOutlets, ({ many }) => ({
+  pressArticles: many(pressArticles),
+}))

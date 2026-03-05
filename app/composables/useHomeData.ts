@@ -1,5 +1,6 @@
 /**
  * Composable for fetching home page data from the database
+ * Press articles are fetched separately via usePress composable
  */
 
 export interface CarouselItem {
@@ -7,13 +8,6 @@ export interface CarouselItem {
   href: string
   title: string
   buttonText: string
-  alt?: string
-}
-
-export interface FeaturedNewsItem {
-  image: string
-  to: string
-  title: string
   alt?: string
 }
 
@@ -26,7 +20,6 @@ export interface FeaturedLinkItem {
 
 export interface HomeDataResponse {
   carousel: CarouselItem[]
-  featuredNews: FeaturedNewsItem[]
   featuredLinks: FeaturedLinkItem[]
 }
 

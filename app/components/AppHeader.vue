@@ -92,19 +92,19 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
   {
     label: t('nav.policy.label'),
-    active: route.path.startsWith('/pu'),
+    active: route.path.startsWith('/politica'),
     children: [
       {
         label: t('nav.policy.positions'),
-        to: '/pu/posicionamientos/',
+        to: '/politica/posicionamientos/',
       },
       {
         label: t('nav.policy.resolutions'),
-        to: '/pu/resoluciones/',
+        to: '/politica/resoluciones/',
       },
       {
         label: t('nav.policy.reports'),
-        to: '/pu/informes-ejecutivos/',
+        to: '/politica/informes-ejecutivos/',
       },
     ],
   },

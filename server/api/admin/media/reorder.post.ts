@@ -1,11 +1,11 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
-import { newsItems } from '../../../db/schema'
+import { mediaOutlets } from '../../../db/schema'
 import { requireAuth } from '../../../utils/requireAuth'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
-// POST - Reorder news items
+// POST - Reorder media outlets
 export default defineEventHandler(async (event) => {
   if (event.method !== 'POST') {
     throw createError({ statusCode: 405, message: 'Método no permitido' })
@@ -17,10 +17,9 @@ export default defineEventHandler(async (event) => {
   try {
     const validated = validateBody(updateOrderSchema, body)
 
-    // Update all items in a transaction
     await db.transaction(async (tx) => {
       for (const item of validated.items) {
-        await tx.update(newsItems).set({ order: item.order }).where(eq(newsItems.id, item.id))
+        await tx.update(mediaOutlets).set({ order: item.order }).where(eq(mediaOutlets.id, item.id))
       }
     })
 

@@ -1,13 +1,13 @@
 /**
  * Home Data API endpoint
- * Returns data for the home page (carousel, featured news, featured links)
- * Events are now fetched separately from Google Calendar
+ * Returns data for the home page (carousel, featured links)
+ * Press articles are now fetched separately via /api/press
  */
 
 import { defineEventHandler } from 'h3'
-import { eq, asc, desc } from 'drizzle-orm'
+import { eq, asc } from 'drizzle-orm'
 import { db } from '../db'
-import { carouselItems, newsItems, featuredLinks } from '../db/schema'
+import { carouselItems, featuredLinks } from '../db/schema'
 
 export default defineEventHandler(async (event) => {
   // Get locale from middleware context
@@ -17,14 +17,6 @@ export default defineEventHandler(async (event) => {
   const carouselItemsList = await db.query.carouselItems.findMany({
     where: eq(carouselItems.active, true),
     orderBy: asc(carouselItems.order),
-    with: { translations: true },
-  })
-
-  // Fetch featured news (latest 4)
-  const newsItemsList = await db.query.newsItems.findMany({
-    where: eq(newsItems.active, true),
-    orderBy: desc(newsItems.publishedAt),
-    limit: 4,
     with: { translations: true },
   })
 
@@ -52,20 +44,6 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  const featuredNews = newsItemsList.map((item) => {
-    const translation = item.translations.find((t) => t.locale === locale) ||
-      item.translations.find((t) => t.locale === 'es') || {
-        title: '',
-        alt: null,
-      }
-    return {
-      image: item.image,
-      to: item.to,
-      title: translation.title,
-      alt: (translation as { alt?: string | null }).alt ?? '',
-    }
-  })
-
   const featuredLinksList = linkItemsList.map((item) => {
     const translation = item.translations.find((t) => t.locale === locale) ||
       item.translations.find((t) => t.locale === 'es') || {
@@ -82,7 +60,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     carousel,
-    featuredNews,
     featuredLinks: featuredLinksList,
   }
 })

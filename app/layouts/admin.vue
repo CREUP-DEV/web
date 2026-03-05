@@ -18,9 +18,10 @@ if (locale.value !== defaultLocale) {
 const navigation = [
   { name: 'Panel', to: '/admin', icon: 'i-tabler-layout-dashboard' },
   { name: 'Carrusel', to: '/admin/carousel', icon: 'i-tabler-photo' },
-  { name: 'Noticias', to: '/admin/news', icon: 'i-tabler-news' },
+  { name: 'Prensa', to: '/admin/press', icon: 'i-tabler-news' },
   { name: 'Enlaces', to: '/admin/links', icon: 'i-tabler-link' },
   { name: 'Etiquetas', to: '/admin/tags', icon: 'i-tabler-tags' },
+  { name: 'Medios', to: '/admin/media', icon: 'i-tabler-broadcast' },
 ]
 
 const sidebarOpen = ref(false)

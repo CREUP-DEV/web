@@ -17,8 +17,9 @@ async function main() {
   console.log('🗑️ Clearing existing data...')
   await db.delete(schema.carouselItemTranslations)
   await db.delete(schema.carouselItems)
-  await db.delete(schema.newsItemTranslations)
-  await db.delete(schema.newsItems)
+  await db.delete(schema.pressArticleTags)
+  await db.delete(schema.pressArticleTranslations)
+  await db.delete(schema.pressArticles)
   await db.delete(schema.featuredLinkTranslations)
   await db.delete(schema.featuredLinks)
   await db.delete(schema.tagTranslations)
@@ -87,6 +88,13 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Internacional' },
         { locale: 'en', name: 'International' },
+      ],
+    },
+    {
+      slug: 'internships',
+      translations: [
+        { locale: 'es', name: 'Prácticas' },
+        { locale: 'en', name: 'Internships' },
       ],
     },
   ]
@@ -171,148 +179,267 @@ async function main() {
     )
   }
 
-  console.log('📰 Creating news items...')
-  const newsData = [
+  console.log('📰 Creating press articles...')
+  const pressData = [
     {
+      type: 'press_release' as const,
       image: '/img/news/vivienda-estudiantes.jpg',
-      to: '/noticias/crisis-vivienda-septiembre-2025',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['university-life-health', 'funding-scholarships', 'inclusion-equality'],
       translations: [
         {
           locale: 'es',
           title: 'Emergencia habitacional: los precios expulsan al estudiantado de la universidad',
+          description:
+            'Nota de prensa sobre la crisis de vivienda que afecta al estudiantado universitario en toda España.',
         },
-        { locale: 'en', title: 'Housing emergency: prices are driving students out of university' },
+        {
+          locale: 'en',
+          title: 'Housing emergency: prices are driving students out of university',
+          description:
+            'Press release on the housing crisis affecting university students across Spain.',
+        },
       ],
     },
     {
+      type: 'press_release' as const,
       image: '/img/news/huelga-madrid-pancarta.jpg',
-      to: '/noticias/huelga-universidades-madrid',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['funding-scholarships', 'university-policy'],
       translations: [
         {
           locale: 'es',
           title: 'Huelga universitaria en Madrid: movilizaciones por la financiación educativa',
+          description:
+            'Nota de prensa sobre las movilizaciones estudiantiles en Madrid en defensa de la financiación de la educación pública.',
         },
         {
           locale: 'en',
           title: 'University strike in Madrid: protests over education funding',
+          description:
+            'Press release on student protests in Madrid defending public education funding.',
         },
       ],
     },
     {
+      type: 'statement' as const,
       image: '/img/news/soberania-digital.jpg',
-      to: '/noticias/resolucion-soberania-digital',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['digital-sovereignty', 'university-policy', 'rights-coexistence'],
       translations: [
-        { locale: 'es', title: 'Resolución por la soberanía digital en las universidades' },
-        { locale: 'en', title: 'Resolution on digital sovereignty in universities' },
+        {
+          locale: 'es',
+          title: 'Resolución por la soberanía digital en las universidades',
+          description:
+            'Comunicado oficial de CREUP sobre la necesidad de garantizar la soberanía digital en el ámbito universitario.',
+        },
+        {
+          locale: 'en',
+          title: 'Resolution on digital sovereignty in universities',
+          description:
+            'Official CREUP statement on the need to ensure digital sovereignty in the university sphere.',
+        },
       ],
     },
     {
+      type: 'statement' as const,
       image: '/img/news/estatuto-becario-firma.jpg',
-      to: '/noticias/entrada-vigor-estatuto-becario',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['rights-coexistence', 'university-policy'],
       translations: [
-        { locale: 'es', title: 'Entrada en vigor del Estatuto del Becario' },
-        { locale: 'en', title: "Intern's Statute comes into force" },
+        {
+          locale: 'es',
+          title: 'Entrada en vigor del Estatuto del Becario',
+          description:
+            'Comunicado sobre la entrada en vigor del Estatuto del Becario y su impacto en el estudiantado.',
+        },
+        {
+          locale: 'en',
+          title: "Intern's Statute comes into force",
+          description:
+            "Statement on the Intern's Statute coming into force and its impact on students.",
+        },
       ],
     },
     {
+      type: 'media_appearance' as const,
       image: '/img/news/medicina-practicas.jpg',
-      to: '/noticias/acuerdo-practicas-sanitarias-valencia',
+      pdfUrl: null,
+      externalUrl: 'https://example.com/practicas-sanitarias',
+      mediaOutletId: null,
       tagSlugs: ['teaching-quality', 'university-policy'],
       translations: [
         {
           locale: 'es',
           title:
             'Acuerdo en Valencia para blindar la prioridad pública en las prácticas sanitarias',
+          description:
+            'Cobertura mediática del acuerdo alcanzado en Valencia sobre prácticas sanitarias universitarias.',
         },
         {
           locale: 'en',
           title: 'Agreement in Valencia to shield public priority in health internships',
+          description:
+            'Media coverage of the agreement reached in Valencia on university health internships.',
         },
       ],
     },
     {
+      type: 'statement' as const,
       image: '/img/news/fundacion-once-acuerdo.jpg',
-      to: '/noticias/convenio-fundacion-once',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['inclusion-equality', 'rights-coexistence'],
       translations: [
         {
           locale: 'es',
           title: 'Nueva alianza con Fundación ONCE para la inclusión plena en los campus',
+          description:
+            'Comunicado sobre el acuerdo de colaboración con Fundación ONCE para mejorar la inclusión en las universidades.',
         },
-        { locale: 'en', title: 'New alliance with ONCE Foundation for full inclusion on campuses' },
+        {
+          locale: 'en',
+          title: 'New alliance with ONCE Foundation for full inclusion on campuses',
+          description:
+            'Statement on the collaboration agreement with ONCE Foundation to improve inclusion in universities.',
+        },
       ],
     },
     {
+      type: 'press_release' as const,
       image: '/img/news/calidad-universitaria.jpg',
-      to: '/noticias/apoyo-decreto-calidad',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['teaching-quality', 'university-policy'],
       translations: [
-        { locale: 'es', title: 'Apoyo al decreto de garantía de calidad universitaria' },
-        { locale: 'en', title: 'Support for the university quality decree' },
+        {
+          locale: 'es',
+          title: 'Apoyo al decreto de garantía de calidad universitaria',
+          description:
+            'Nota de prensa en la que CREUP muestra su apoyo al nuevo decreto de calidad universitaria.',
+        },
+        {
+          locale: 'en',
+          title: 'Support for the university quality decree',
+          description:
+            'Press release in which CREUP shows its support for the new university quality decree.',
+        },
       ],
     },
     {
+      type: 'media_appearance' as const,
       image: '/img/news/comedores-ugr.jpg',
-      to: '/noticias/protesta-comedores-granada',
+      pdfUrl: null,
+      externalUrl: 'https://example.com/comedores-granada',
+      mediaOutletId: null,
       tagSlugs: ['university-life-health', 'funding-scholarships'],
       translations: [
         {
           locale: 'es',
           title: 'Protestas por el precio de los comedores: alimentarse no es un lujo',
+          description:
+            'Aparición en medios sobre las protestas estudiantiles por el precio de los comedores universitarios.',
         },
-        { locale: 'en', title: 'Canteen price protests: eating is not a luxury' },
+        {
+          locale: 'en',
+          title: 'Canteen price protests: eating is not a luxury',
+          description: 'Media appearance about student protests over university canteen prices.',
+        },
       ],
     },
     {
+      type: 'press_release' as const,
       image: '/img/news/canarias-parlamento.jpg',
-      to: '/noticias/recurso-inconstitucionalidad-canarias',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['university-policy'],
       translations: [
-        { locale: 'es', title: 'Recurso de inconstitucionalidad contra normativa en Canarias' },
-        { locale: 'en', title: 'Constitutional challenge against regulation in Canarias' },
+        {
+          locale: 'es',
+          title: 'Recurso de inconstitucionalidad contra normativa en Canarias',
+          description:
+            'Nota de prensa sobre el recurso de inconstitucionalidad presentado contra una normativa autonómica en Canarias.',
+        },
+        {
+          locale: 'en',
+          title: 'Constitutional challenge against regulation in Canarias',
+          description:
+            'Press release on the constitutional challenge filed against a regional regulation in Canarias.',
+        },
       ],
     },
     {
+      type: 'statement' as const,
       image: '/img/news/asamblea-sevilla.jpg',
-      to: '/noticias/conclusiones-77-asamblea',
+      pdfUrl: null,
+      externalUrl: null,
+      mediaOutletId: null,
       tagSlugs: ['university-policy', 'university-life-health'],
       translations: [
-        { locale: 'es', title: 'Conclusiones de la 77ª Asamblea: prioridades y acuerdos' },
-        { locale: 'en', title: 'Conclusions of the 77th Assembly: priorities and agreements' },
+        {
+          locale: 'es',
+          title: 'Conclusiones de la 77ª Asamblea: prioridades y acuerdos',
+          description:
+            'Comunicado con las conclusiones y acuerdos alcanzados durante la 77ª Asamblea General de CREUP.',
+        },
+        {
+          locale: 'en',
+          title: 'Conclusions of the 77th Assembly: priorities and agreements',
+          description:
+            'Statement with the conclusions and agreements reached during the 77th CREUP General Assembly.',
+        },
       ],
     },
   ]
 
-  for (let i = 0; i < newsData.length; i++) {
-    const item = newsData[i]
-    const [newsItem] = await db
-      .insert(schema.newsItems)
+  // Import slug utility
+  const { generatePressSlug } = await import('../server/utils/slug')
+
+  for (let i = 0; i < pressData.length; i++) {
+    const item = pressData[i]
+    const esTranslation = item.translations.find((t) => t.locale === 'es')!
+    const publishedAt = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+    const slug = await generatePressSlug(esTranslation.title, publishedAt)
+
+    const [article] = await db
+      .insert(schema.pressArticles)
       .values({
+        type: item.type,
+        slug,
         image: item.image,
-        to: item.to,
-        order: i,
-        publishedAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000), // Each news 1 day older
+        pdfUrl: item.pdfUrl,
+        externalUrl: item.externalUrl,
+        mediaOutletId: item.mediaOutletId,
+        active: true,
+        publishedAt,
       })
       .returning()
 
-    await db.insert(schema.newsItemTranslations).values(
+    await db.insert(schema.pressArticleTranslations).values(
       item.translations.map((t) => ({
         locale: t.locale,
         title: t.title,
-        newsItemId: newsItem.id,
+        description: t.description,
+        pressArticleId: article.id,
       }))
     )
 
-    // Add all tag relationships
     if (item.tagSlugs && item.tagSlugs.length > 0) {
       for (const tagSlug of item.tagSlugs) {
         if (tags[tagSlug]) {
-          await db.insert(schema.newsTags).values({
-            newsItemId: newsItem.id,
+          await db.insert(schema.pressArticleTags).values({
+            pressArticleId: article.id,
             tagId: tags[tagSlug],
           })
         }

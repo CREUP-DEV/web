@@ -68,8 +68,8 @@
     "description": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) es la asociación estatal que representa a más de 1.000.000 de estudiantes de toda España."
   },
   "home": {
-    "newsAndEventsLabel": "Noticias y eventos",
-    "latestNews": "Últimas noticias",
+    "newsAndEventsLabel": "Prensa y eventos",
+    "latestNews": "Última hora",
     "featuredLinks": "Enlaces destacados",
     "publicAgenda": "Agenda pública",
     "noNews": "No hay noticias para esta etiqueta",
@@ -389,6 +389,38 @@
       "description": "Los informes ejecutivos se realizan en relación a una normativa donde se indican los mínimos que debe contener, o las modificaciones que desde CREUP se quieren realizar.",
       "loadError": "No se han podido cargar los informes ejecutivos en este momento.",
       "empty": "No hay informes ejecutivos disponibles."
+    }
+  },
+  "press": {
+    "downloadPdf": "Descargar PDF",
+    "readOriginal": "Leer artículo original",
+    "readFull": "Leer el artículo completo",
+    "share": "Compartir",
+    "copy": {
+      "success": "Enlace copiado",
+      "error": "No se pudo copiar el enlace"
+    },
+    "notFound": "No se ha encontrado el artículo solicitado.",
+    "releases": {
+      "title": "Notas de prensa",
+      "description": "Notas de prensa oficiales de CREUP dirigidas a medios de comunicación.",
+      "empty": "No hay notas de prensa disponibles.",
+      "loadError": "No se han podido cargar las notas de prensa en este momento.",
+      "backToList": "Volver a notas de prensa"
+    },
+    "statements": {
+      "title": "Comunicados de prensa",
+      "description": "Comunicados oficiales de CREUP sobre temas de actualidad universitaria.",
+      "empty": "No hay comunicados disponibles.",
+      "loadError": "No se han podido cargar los comunicados en este momento.",
+      "backToList": "Volver a comunicados"
+    },
+    "inMedia": {
+      "title": "En los medios",
+      "description": "Apariciones y menciones de CREUP en medios de comunicación.",
+      "empty": "No hay apariciones en medios disponibles.",
+      "loadError": "No se han podido cargar las apariciones en medios en este momento.",
+      "backToList": "Volver a en los medios"
     }
   },
   "cookies": {

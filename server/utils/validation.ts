@@ -28,26 +28,91 @@ export const updateCarouselItemSchema = createCarouselItemSchema.partial().exten
   translations: z.array(carouselTranslationSchema).min(1),
 })
 
-// News Item schemas
-export const newsTranslationSchema = z.object({
+// Press Article schemas
+export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string(), // Not required for non-Spanish locales
+  description: z.string().optional(),
   alt: z.string().optional(),
 })
 
-export const createNewsItemSchema = z.object({
-  image: z.string().min(1, 'La imagen es requerida'),
-  to: z.string().min(1, 'El enlace es requerido'),
-  order: z.number().int().min(0).default(0),
-  active: z.boolean().default(true),
-  tagIds: z.array(z.string()).optional().default([]),
-  publishedAt: z.string().datetime().optional(),
-  translations: z.array(newsTranslationSchema).min(1, 'Se requiere al menos una traducción'),
-})
+export const pressArticleTypeSchema = z.enum(['press_release', 'statement', 'media_appearance'])
 
-export const updateNewsItemSchema = createNewsItemSchema.partial().extend({
-  translations: z.array(newsTranslationSchema).min(1),
-})
+export const createPressArticleSchema = z
+  .object({
+    type: pressArticleTypeSchema,
+    image: z.string().min(1, 'La imagen es requerida'),
+    pdfUrl: z.string().optional().nullable(),
+    externalUrl: z.string().url('La URL externa no es válida').optional().nullable(),
+    mediaOutletId: z.string().optional().nullable(),
+    active: z.boolean().default(true),
+    tagIds: z.array(z.string()).optional().default([]),
+    publishedAt: z.string().datetime().optional(),
+    translations: z
+      .array(pressArticleTranslationSchema)
+      .min(1, 'Se requiere al menos una traducción'),
+  })
+  .superRefine((data, ctx) => {
+    if ((data.type === 'press_release' || data.type === 'statement') && !data.pdfUrl) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El PDF es obligatorio para notas de prensa y comunicados',
+        path: ['pdfUrl'],
+      })
+    }
+    if (data.type === 'media_appearance' && !data.externalUrl) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La URL externa es obligatoria para apariciones en medios',
+        path: ['externalUrl'],
+      })
+    }
+    if (data.type === 'media_appearance' && !data.mediaOutletId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El medio de comunicación es obligatorio para apariciones en medios',
+        path: ['mediaOutletId'],
+      })
+    }
+  })
+
+export const updatePressArticleSchema = z
+  .object({
+    type: pressArticleTypeSchema,
+    image: z.string().min(1, 'La imagen es requerida'),
+    pdfUrl: z.string().optional().nullable(),
+    externalUrl: z.string().url('La URL externa no es válida').optional().nullable(),
+    mediaOutletId: z.string().optional().nullable(),
+    active: z.boolean().default(true),
+    tagIds: z.array(z.string()).optional().default([]),
+    publishedAt: z.string().datetime().optional(),
+    translations: z
+      .array(pressArticleTranslationSchema)
+      .min(1, 'Se requiere al menos una traducción'),
+  })
+  .superRefine((data, ctx) => {
+    if ((data.type === 'press_release' || data.type === 'statement') && !data.pdfUrl) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El PDF es obligatorio para notas de prensa y comunicados',
+        path: ['pdfUrl'],
+      })
+    }
+    if (data.type === 'media_appearance' && !data.externalUrl) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La URL externa es obligatoria para apariciones en medios',
+        path: ['externalUrl'],
+      })
+    }
+    if (data.type === 'media_appearance' && !data.mediaOutletId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El medio de comunicación es obligatorio para apariciones en medios',
+        path: ['mediaOutletId'],
+      })
+    }
+  })
 
 // Featured Link schemas
 export const featuredLinkTranslationSchema = z.object({
@@ -332,6 +397,16 @@ export const externalPolicyDocumentsResponseSchema = z.object({
   data: z.array(externalPolicyDocumentSchema),
   generated_at: z.string().nullable().optional(),
 })
+
+// Media Outlet schemas
+export const createMediaOutletSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido'),
+  website: z.string().url('La URL no es válida'),
+  logo: z.string().min(1, 'El logo es requerido'),
+  order: z.number().int().min(0).default(0),
+})
+
+export const updateMediaOutletSchema = createMediaOutletSchema
 
 // Contact form schema (public endpoint)
 export const contactFormSchema = z

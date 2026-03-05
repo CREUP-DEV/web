@@ -68,7 +68,7 @@
     "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain."
   },
   "home": {
-    "newsAndEventsLabel": "News and events",
+    "newsAndEventsLabel": "Press and events",
     "latestNews": "Latest News",
     "featuredLinks": "Featured Links",
     "publicAgenda": "Public Agenda",
@@ -389,6 +389,38 @@
       "description": "Executive reports are prepared in relation to regulations, indicating either the minimum requirements they must include or the amendments CREUP wishes to propose.",
       "loadError": "Executive reports could not be loaded right now.",
       "empty": "No executive reports available."
+    }
+  },
+  "press": {
+    "downloadPdf": "Download PDF",
+    "readOriginal": "Read original article",
+    "readFull": "Read full article",
+    "share": "Share",
+    "copy": {
+      "success": "Link copied",
+      "error": "Could not copy the link"
+    },
+    "notFound": "The requested article was not found.",
+    "releases": {
+      "title": "Press Releases",
+      "description": "Official CREUP press releases for media outlets.",
+      "empty": "No press releases available.",
+      "loadError": "Press releases could not be loaded right now.",
+      "backToList": "Back to press releases"
+    },
+    "statements": {
+      "title": "Press Statements",
+      "description": "Official CREUP statements on current university affairs.",
+      "empty": "No statements available.",
+      "loadError": "Statements could not be loaded right now.",
+      "backToList": "Back to statements"
+    },
+    "inMedia": {
+      "title": "In the Media",
+      "description": "CREUP appearances and mentions in the media.",
+      "empty": "No media appearances available.",
+      "loadError": "Media appearances could not be loaded right now.",
+      "backToList": "Back to media appearances"
     }
   },
   "cookies": {
