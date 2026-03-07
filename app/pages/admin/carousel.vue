@@ -369,7 +369,7 @@ const handleDelete = async () => {
               <UFormField label="Imagen (URL, opcional)">
                 <UInput
                   v-model="form.image"
-                  placeholder="/img/carousel/ejemplo.jpg"
+                  placeholder="/inicio/imagenes/carousel-default.jpg"
                   class="w-full"
                 />
                 <p class="text-muted mt-1 text-xs">
