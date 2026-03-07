@@ -7,8 +7,9 @@
 
 import type { CREUPEvent } from '~/composables/useEvents'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const localePath = useLocalePath()
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 useSeoMeta({
   title: () => t('events.title'),
@@ -44,8 +45,7 @@ const filteredEvents = computed(() => {
 // ============================================================================
 
 const formatShortDate = (dateStr: string): string => {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-GB', {
+  return formatLocaleDate(`${dateStr}T00:00:00`, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

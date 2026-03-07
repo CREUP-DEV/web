@@ -127,9 +127,10 @@ const getAreaName = (area: AreaTerm) =>
 // Date formatting helpers
 // ============================================================================
 
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
+
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+  return formatLocaleDate(`${dateStr}T00:00:00`, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -137,16 +138,14 @@ function formatDate(dateStr: string): string {
 }
 
 function formatShortDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+  return formatLocaleDate(`${dateStr}T00:00:00`, {
     month: 'short',
     year: 'numeric',
   })
 }
 
 function formatCompactDate(dateStr: string): string {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+  return formatLocaleDate(`${dateStr}T00:00:00`, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -369,7 +368,7 @@ const closeMemberModal = () => {
                 <div
                   class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                 >
-                  <img
+                  <NuxtImg
                     v-if="assignment.member.photo"
                     :src="assignment.member.photo"
                     :alt="getFullName(assignment.member)"
@@ -432,7 +431,7 @@ const closeMemberModal = () => {
             <div
               class="ring-primary/30 size-28 shrink-0 overflow-hidden rounded-full ring-2 sm:size-32"
             >
-              <img
+              <NuxtImg
                 v-if="selectedAssignment.member.photo"
                 :src="selectedAssignment.member.photo"
                 :alt="getFullName(selectedAssignment.member)"

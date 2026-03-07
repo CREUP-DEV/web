@@ -4,11 +4,18 @@
  */
 
 import { createError, defineEventHandler, getRouterParam } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+} from '../../../utils/externalApiCache'
 import { fetchMandateDetail } from '../../../utils/mandateDetail'
 
 export default defineEventHandler(async (event) => {
   const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const cacheOptions = getExternalApiCacheOptions(event)
+
+  setExternalApiCacheHeaders(event, cacheOptions)
 
   if (!configuredBaseUrl) {
     throw createError({
@@ -25,5 +32,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return fetchMandateDetail(configuredBaseUrl, Number(mandateId))
+  return fetchMandateDetail(configuredBaseUrl, Number(mandateId), cacheOptions, event)
 })

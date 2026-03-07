@@ -117,9 +117,7 @@ export default defineEventHandler(async (event) => {
     socketTimeout: 30_000,
   })
 
-  const toEmail = isPress
-    ? (config.smtpPressEmail as string) || 'prensa@creup.es'
-    : (config.smtpToEmail as string) || 'info@creup.es'
+  const toEmail = isPress ? (config.smtpPressEmail as string) : (config.smtpToEmail as string)
   const fromEmail = (config.smtpFromEmail as string) || toEmail
 
   const sentAt = new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })

@@ -7,10 +7,11 @@
 
 import type { EventOrganization } from '~/composables/useEvents'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
 const slug = computed(() => String(route.params.slug))
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 // ============================================================================
 // Data fetching
@@ -37,8 +38,7 @@ useSeoMeta({
 // ============================================================================
 
 const formatShortDate = (dateStr: string): string => {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-GB', {
+  return formatLocaleDate(`${dateStr}T00:00:00`, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -409,7 +409,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleLightboxKeydown))
             <UButton
               v-for="doc in event.documents"
               :key="doc.order"
-              :to="doc.url ?? undefined"
+              :href="doc.url ?? undefined"
+              external
               target="_blank"
               rel="noopener noreferrer"
               variant="soft"

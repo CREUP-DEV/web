@@ -19,7 +19,8 @@ const props = defineProps<{
   errorMessage: string
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 const selectedTag = ref<string>('all')
 
@@ -35,7 +36,7 @@ const typeUrlPrefix: Record<PressArticleType, string> = {
 }
 
 const formatDate = (iso: string) => {
-  return new Date(iso).toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-GB', {
+  return formatLocaleDate(iso, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -109,7 +110,7 @@ const onTagSelect = (tagSlug: string) => {
                 <template v-if="article.mediaOutlet">
                   <span aria-hidden="true">&middot;</span>
                   <span class="flex items-center gap-1">
-                    <img
+                    <NuxtImg
                       :src="article.mediaOutlet.logo"
                       :alt="article.mediaOutlet.name"
                       class="inline-block h-3.5 w-auto"

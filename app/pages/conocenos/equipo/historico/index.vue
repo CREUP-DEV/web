@@ -5,7 +5,7 @@
  * Handles URL-driven disambiguation when a year maps to more than one mandate.
  */
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
 
@@ -94,22 +94,20 @@ const closeDisambiguateModal = () => {
 // Date formatting helpers
 // ============================================================================
 
-const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
+
+const formatDate = (dateStr: string): string =>
+  formatLocaleDate(`${dateStr}T00:00:00`, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
-}
 
-const formatShortDate = (dateStr: string): string => {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+const formatShortDate = (dateStr: string): string =>
+  formatLocaleDate(`${dateStr}T00:00:00`, {
     month: 'short',
     year: 'numeric',
   })
-}
 
 const getDurationText = (startDate: string, endDate: string | null): string => {
   const start = new Date(startDate + 'T00:00:00')

@@ -285,7 +285,7 @@ const copyEmail = async (email: string) => {
                 <div
                   class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                 >
-                  <img
+                  <NuxtImg
                     v-if="member.photo"
                     :src="member.photo"
                     :alt="getMemberDisplayName(member)"
@@ -350,7 +350,7 @@ const copyEmail = async (email: string) => {
             <div
               class="ring-primary/30 size-28 shrink-0 overflow-hidden rounded-full ring-2 sm:size-32"
             >
-              <img
+              <NuxtImg
                 v-if="selectedMember.photo"
                 :src="selectedMember.photo"
                 :alt="getMemberDisplayName(selectedMember)"

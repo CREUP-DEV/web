@@ -36,7 +36,8 @@ const props = defineProps<{
   emptyKey: string
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 const { data, error } = await useFetch<PolicyDocumentsResponse>(props.apiEndpoint)
 
@@ -47,8 +48,7 @@ const documents = computed(() => data.value?.documents ?? [])
  */
 function formatDate(dateStr: string): string {
   try {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-GB', {
+    return formatLocaleDate(dateStr, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -113,7 +113,8 @@ function formatDate(dateStr: string): string {
 
               <UButton
                 v-if="doc.file?.url"
-                :to="doc.file.url"
+                :href="doc.file.url"
+                external
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="soft"

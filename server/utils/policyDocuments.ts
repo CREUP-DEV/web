@@ -5,7 +5,15 @@
 
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+  withExternalApiSWRCache,
+} from './externalApiCache'
+import { toPolicyDocumentPublicPdfPathAsync } from './policyDocumentDownloads'
 import { externalPolicyDocumentsResponseSchema } from './validation'
+
+const POLICY_DOCUMENTS_CACHE_VERSION = 2
 
 interface PolicyDocumentFile {
   name: string | null
@@ -33,6 +41,9 @@ export async function fetchPolicyDocuments(
 ): Promise<{ documents: PolicyDocumentOutput[]; generatedAt: string | null }> {
   const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const cacheOptions = getExternalApiCacheOptions(event)
+
+  setExternalApiCacheHeaders(event, cacheOptions)
 
   if (!configuredBaseUrl) {
     throw createError({
@@ -41,45 +52,53 @@ export async function fetchPolicyDocuments(
     })
   }
 
-  const endpoint = new URL(apiPath, configuredBaseUrl).toString()
+  return withExternalApiSWRCache(
+    `external-api:policy-documents:v${POLICY_DOCUMENTS_CACHE_VERSION}:${configuredBaseUrl}:${apiPath}`,
+    async () => {
+      const endpoint = new URL(apiPath, configuredBaseUrl).toString()
 
-  let payload: unknown
-  try {
-    payload = await $fetch(endpoint)
-  } catch (error) {
-    console.error(`Failed to fetch external ${label} API:`, error)
-    throw createError({
-      statusCode: 502,
-      statusMessage: `${label} data is temporarily unavailable.`,
-    })
-  }
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        console.error(`Failed to fetch external ${label} API:`, error)
+        throw createError({
+          statusCode: 502,
+          statusMessage: `${label} data is temporarily unavailable.`,
+        })
+      }
 
-  const parsedPayload = externalPolicyDocumentsResponseSchema.safeParse(payload)
-  if (!parsedPayload.success) {
-    console.error(`Invalid payload from external ${label} API:`, parsedPayload.error.flatten())
-    throw createError({
-      statusCode: 502,
-      statusMessage: `${label} data is temporarily unavailable.`,
-    })
-  }
+      const parsedPayload = externalPolicyDocumentsResponseSchema.safeParse(payload)
+      if (!parsedPayload.success) {
+        console.error(`Invalid payload from external ${label} API:`, parsedPayload.error.flatten())
+        throw createError({
+          statusCode: 502,
+          statusMessage: `${label} data is temporarily unavailable.`,
+        })
+      }
 
-  const documents: PolicyDocumentOutput[] = parsedPayload.data.data
-    .sort((a, b) => a.order - b.order)
-    .map((doc) => ({
-      order: doc.order,
-      name: doc.name,
-      date: doc.date,
-      assembly: doc.assembly ?? null,
-      file: doc.file
-        ? {
-            name: doc.file.name ?? null,
-            url: doc.file.url ?? null,
-          }
-        : null,
-    }))
+      const sortedDocuments = [...parsedPayload.data.data].sort((a, b) => a.order - b.order)
 
-  return {
-    documents,
-    generatedAt: parsedPayload.data.generated_at ?? null,
-  }
+      const documents: PolicyDocumentOutput[] = await Promise.all(
+        sortedDocuments.map(async (doc) => ({
+          order: doc.order,
+          name: doc.name,
+          date: doc.date,
+          assembly: doc.assembly ?? null,
+          file: doc.file
+            ? {
+                name: doc.file.name ?? null,
+                url: await toPolicyDocumentPublicPdfPathAsync(event, apiPath, doc.file.url ?? null),
+              }
+            : null,
+        }))
+      )
+
+      return {
+        documents,
+        generatedAt: parsedPayload.data.generated_at ?? null,
+      }
+    },
+    cacheOptions
+  )
 }

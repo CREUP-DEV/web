@@ -97,6 +97,7 @@
     "mobileNavigation": "Mobile navigation",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
+    "siteLogo": "CREUP logo",
     "externalLink": "Opens in a new tab",
     "loading": "Loading..."
   },
@@ -111,6 +112,7 @@
   },
   "language": {
     "toggle": "Change language",
+    "openMenu": "Open language selector",
     "locales": {
       "es": "Spanish",
       "en": "English"
@@ -396,6 +398,18 @@
     "readOriginal": "Read original article",
     "readFull": "Read full article",
     "share": "Share",
+    "shareActions": {
+      "copy": "Copy link",
+      "whatsapp": "Share on WhatsApp",
+      "instagram": "Share on Instagram",
+      "tiktok": "Share on TikTok",
+      "x": "Share on X",
+      "linkedin": "Share on LinkedIn",
+      "facebook": "Share on Facebook",
+      "telegram": "Share on Telegram",
+      "email": "Share by email",
+      "print": "Print"
+    },
     "copy": {
       "success": "Link copied",
       "error": "Could not copy the link"
@@ -483,8 +497,8 @@
       "privacyInfoTitle": "Basic data protection information",
       "privacyInfoController": "Website owner (art. 10 LSSI-CE) and data controller: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP).",
       "privacyInfoPurpose": "Purpose: manage and respond to inquiries sent through this form.",
-      "privacyInfoLegalBasis": "Legal basis: the data subject's consent (art. 6(1)(a) GDPR).",
-      "privacyInfoRecipients": "Recipients: data will not be shared with third parties except where legally required and with providers strictly necessary to manage email communications.",
+      "privacyInfoLegalBasis": "Legal basis: handling the request sent by the data subject and, where applicable, taking steps requested by the data subject prior to entering into a relationship.",
+      "privacyInfoRecipients": "Recipients: data will not be disclosed to third parties, except where legally required.",
       "privacyInfoRetention": "Retention: data is not added to a website database; it is kept in the corporate mailbox only for the time needed to manage your inquiry and, where applicable, for legally required periods.",
       "privacyInfoRights": "Rights: you may access, rectify and erase your data, and exercise other rights by writing to info{'@'}creup.es. You may also lodge a complaint with the Spanish Data Protection Authority (www.aepd.es).",
       "privacyInfoMorePrefix": "Additional information:",
@@ -505,6 +519,58 @@
         "messageMin": "Message must be at least 10 characters",
         "messageMax": "Message must be 5000 characters or less"
       }
+    }
+  },
+  "newsletterPage": {
+    "seo": {
+      "title": "Newsletter",
+      "description": "Subscribe to the CREUP newsletter and download previous issues."
+    },
+    "title": "Newsletter",
+    "subtitle": "Stay up to date with the latest CREUP news. Receive our monthly newsletter directly in your inbox.",
+    "dateLocale": "en-GB",
+    "confirmed": {
+      "title": "Subscription confirmed",
+      "description": "Your address is now active for receiving the CREUP newsletter."
+    },
+    "unsubscribe": {
+      "title": "You have unsubscribed from the newsletter",
+      "description": "You will no longer receive CREUP newsletter emails at this address."
+    },
+    "form": {
+      "ariaLabel": "Newsletter subscription form",
+      "heading": "Subscribe to the newsletter",
+      "email": "Email",
+      "emailPlaceholder": "you{'@'}email.com",
+      "submit": "Subscribe",
+      "sending": "Subscribing...",
+      "pendingConfirmation": "We have sent you an email to confirm your subscription.",
+      "errorGeneric": "Could not complete the subscription. Please try again later.",
+      "consentPrefix": "I accept the processing of my data to manage the newsletter subscription in accordance with the ",
+      "consentLink": "legal notice and privacy policy",
+      "consentSuffix": ".",
+      "ageConfirmedLabel": "I confirm that I am at least 14 years old or that I have authorisation from my legal representatives.",
+      "privacyInfoTitle": "Basic data protection information",
+      "privacyInfoController": "Website owner (art. 10 LSSI-CE) and data controller: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP).",
+      "privacyInfoPurpose": "Purpose: manage the newsletter subscription and send periodic communications about CREUP's activities.",
+      "privacyInfoLegalBasis": "Legal basis: the data subject's consent (art. 6(1)(a) GDPR).",
+      "privacyInfoRecipients": "Recipients: data will not be disclosed to third parties, except where legally required.",
+      "privacyInfoRetention": "Retention: data will be kept while the subscription is active. After unsubscribing, a minimal suppression record will be retained to prevent unwanted future mailings and to handle potential incidents or complaints.",
+      "privacyInfoRights": "Rights: you may access, rectify and erase your data, and exercise other rights by writing to info{'@'}creup.es. You may also lodge a complaint with the Spanish Data Protection Authority (www.aepd.es).",
+      "privacyInfoMorePrefix": "Additional information:",
+      "privacyInfoMoreLink": "Legal notice and privacy policy",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email address",
+        "consentRequired": "You must accept the privacy policy to subscribe",
+        "ageConfirmedRequired": "You must confirm that you are at least 14 or have legal authorisation"
+      }
+    },
+    "archive": {
+      "ariaLabel": "Newsletter archive",
+      "title": "Previous issues",
+      "empty": "No newsletters have been published yet.",
+      "download": "Download PDF"
     }
   },
   "admin": {

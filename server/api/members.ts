@@ -4,6 +4,12 @@
  */
 
 import { createError, defineEventHandler } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+  withExternalApiSWRCache,
+} from '../utils/externalApiCache'
+import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
 import { externalAssociatedMembersResponseSchema } from '../utils/validation'
 
 const supportedNetworks = [
@@ -177,17 +183,12 @@ const inferNetwork = (networkValue: string, value: string): SupportedNetwork | n
   return null
 }
 
-const toProxyLogoUrl = (logoValue: string) => {
-  if (!logoValue) {
-    return null
-  }
-
-  return `/api/members/logo?src=${encodeURIComponent(logoValue)}`
-}
-
 export default defineEventHandler(async (event) => {
   const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const cacheOptions = getExternalApiCacheOptions(event)
+
+  setExternalApiCacheHeaders(event, cacheOptions)
 
   if (!configuredBaseUrl) {
     throw createError({
@@ -196,81 +197,95 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const endpoint = new URL('/api/usuarios/asociados', configuredBaseUrl).toString()
+  return withExternalApiSWRCache(
+    `external-api:members:${configuredBaseUrl}`,
+    async () => {
+      const endpoint = new URL('/api/usuarios/asociados', configuredBaseUrl).toString()
 
-  let payload: unknown
-  try {
-    payload = await $fetch(endpoint)
-  } catch (error) {
-    console.error('Failed to fetch external members API:', error)
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Members data is temporarily unavailable.',
-    })
-  }
-
-  const parsedPayload = externalAssociatedMembersResponseSchema.safeParse(payload)
-  if (!parsedPayload.success) {
-    console.error('Invalid payload from external members API:', parsedPayload.error.flatten())
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Members data is temporarily unavailable.',
-    })
-  }
-
-  const members: OrganizationMemberOutput[] = parsedPayload.data.data.map((member, index) => {
-    const socialMap = new Map<SupportedNetwork, string>()
-
-    for (const socialNetwork of member.social_networks ?? []) {
-      const value = normalizeText(socialNetwork.value)
-      const network = inferNetwork(normalizeText(socialNetwork.network), value)
-
-      if (!network || !value || socialMap.has(network)) {
-        continue
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        console.error('Failed to fetch external members API:', error)
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Members data is temporarily unavailable.',
+        })
       }
 
-      socialMap.set(network, value)
-    }
-
-    const socialNetworks: MemberSocialOutput[] = supportedNetworks.flatMap((network) => {
-      const value = socialMap.get(network)
-      if (!value) {
-        return []
+      const parsedPayload = externalAssociatedMembersResponseSchema.safeParse(payload)
+      if (!parsedPayload.success) {
+        console.error('Invalid payload from external members API:', parsedPayload.error.flatten())
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Members data is temporarily unavailable.',
+        })
       }
 
-      return [{ network, value }]
-    })
+      const members: OrganizationMemberOutput[] = parsedPayload.data.data.map((member, index) => {
+        const socialMap = new Map<SupportedNetwork, string>()
 
-    const denomination = normalizeText(member.denomination)
-    const initials = normalizeText(member.initials)
-    const university = normalizeText(member.university)
-    const autonomousCommunityName = normalizeText(member.autonomous_community)
+        for (const socialNetwork of member.social_networks ?? []) {
+          const value = normalizeText(socialNetwork.value)
+          const network = inferNetwork(normalizeText(socialNetwork.network), value)
 
-    const identifierSeed = initials || denomination || university || `member-${index + 1}`
-    const rawIdentifier = `${member.order}-${identifierSeed}`
-    const fallbackSlug = `member-${index + 1}`
-    const slug = slugify(rawIdentifier) || fallbackSlug
+          if (!network || !value || socialMap.has(network)) {
+            continue
+          }
 
-    return {
-      id: slug,
-      slug,
-      order: member.order,
-      denomination,
-      initials,
-      university,
-      autonomousCommunity: normalizeCommunity(autonomousCommunityName),
-      autonomousCommunityName,
-      description: normalizeText(member.description) || null,
-      logoLight: toProxyLogoUrl(normalizeText(member.web_logo_light)),
-      logoDark: toProxyLogoUrl(normalizeText(member.web_logo_dark)),
-      socialNetworks,
-    }
-  })
+          socialMap.set(network, value)
+        }
 
-  members.sort((a, b) => a.order - b.order)
+        const socialNetworks: MemberSocialOutput[] = supportedNetworks.flatMap((network) => {
+          const value = socialMap.get(network)
+          if (!value) {
+            return []
+          }
 
-  return {
-    members,
-    generatedAt: parsedPayload.data.generated_at ?? null,
-  }
+          return [{ network, value }]
+        })
+
+        const denomination = normalizeText(member.denomination)
+        const initials = normalizeText(member.initials)
+        const university = normalizeText(member.university)
+        const autonomousCommunityName = normalizeText(member.autonomous_community)
+
+        const identifierSeed = initials || denomination || university || `member-${index + 1}`
+        const rawIdentifier = `${member.order}-${identifierSeed}`
+        const fallbackSlug = `member-${index + 1}`
+        const slug = slugify(rawIdentifier) || fallbackSlug
+
+        return {
+          id: slug,
+          slug,
+          order: member.order,
+          denomination,
+          initials,
+          university,
+          autonomousCommunity: normalizeCommunity(autonomousCommunityName),
+          autonomousCommunityName,
+          description: normalizeText(member.description) || null,
+          logoLight: toExternalImageProxyUrl(normalizeText(member.web_logo_light), {
+            event,
+            forceProxyRelative: true,
+            publicPathBase: '/conocenos/imagenes',
+          }),
+          logoDark: toExternalImageProxyUrl(normalizeText(member.web_logo_dark), {
+            event,
+            forceProxyRelative: true,
+            publicPathBase: '/conocenos/imagenes',
+          }),
+          socialNetworks,
+        }
+      })
+
+      members.sort((a, b) => a.order - b.order)
+
+      return {
+        members,
+        generatedAt: parsedPayload.data.generated_at ?? null,
+      }
+    },
+    cacheOptions
+  )
 })

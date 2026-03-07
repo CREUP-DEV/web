@@ -6,6 +6,15 @@
  */
 import type { PressArticle, PressArticleType } from '@/composables/usePress'
 
+type ShareAction = {
+  key: string
+  label: string
+  icon: string
+  class?: string
+  to?: string
+  onClick?: () => void | Promise<void>
+}
+
 const props = defineProps<{
   article: PressArticle
   /** Back link URL */
@@ -14,11 +23,17 @@ const props = defineProps<{
   backLabel: string
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const toast = useToast()
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
+const canNativeShare = ref(false)
+
+onMounted(() => {
+  canNativeShare.value = typeof navigator.share === 'function'
+})
 
 const formatDate = (iso: string) => {
-  return new Date(iso).toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-GB', {
+  return formatLocaleDate(iso, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -94,6 +109,82 @@ const printPage = () => {
   window.print()
 }
 
+const shareActions = computed<ShareAction[]>(() => {
+  const actions: ShareAction[] = [
+    {
+      key: 'copy',
+      label: t('press.shareActions.copy'),
+      icon: 'i-tabler-link',
+      onClick: copyLink,
+    },
+    {
+      key: 'whatsapp',
+      label: t('press.shareActions.whatsapp'),
+      icon: 'i-tabler-brand-whatsapp',
+      to: whatsappShareUrl.value,
+    },
+    {
+      key: 'x',
+      label: t('press.shareActions.x'),
+      icon: 'i-tabler-brand-x',
+      to: twitterShareUrl.value,
+    },
+    {
+      key: 'linkedin',
+      label: t('press.shareActions.linkedin'),
+      icon: 'i-tabler-brand-linkedin',
+      to: linkedinShareUrl.value,
+    },
+    {
+      key: 'facebook',
+      label: t('press.shareActions.facebook'),
+      icon: 'i-tabler-brand-facebook',
+      to: facebookShareUrl.value,
+    },
+    {
+      key: 'telegram',
+      label: t('press.shareActions.telegram'),
+      icon: 'i-tabler-brand-telegram',
+      to: telegramShareUrl.value,
+    },
+    {
+      key: 'email',
+      label: t('press.shareActions.email'),
+      icon: 'i-tabler-mail',
+      to: emailShareUrl.value,
+    },
+    {
+      key: 'print',
+      label: t('press.shareActions.print'),
+      icon: 'i-tabler-printer',
+      onClick: printPage,
+    },
+  ]
+
+  if (canNativeShare.value) {
+    actions.splice(
+      2,
+      0,
+      {
+        key: 'instagram',
+        label: t('press.shareActions.instagram'),
+        icon: 'i-tabler-brand-instagram',
+        class: 'sm:hidden',
+        onClick: shareNative,
+      },
+      {
+        key: 'tiktok',
+        label: t('press.shareActions.tiktok'),
+        icon: 'i-tabler-brand-tiktok',
+        class: 'sm:hidden',
+        onClick: shareNative,
+      }
+    )
+  }
+
+  return actions
+})
+
 const externalLinkLabel = computed(() => {
   if (props.article.type === 'media_appearance') {
     return t('press.readOriginal')
@@ -150,7 +241,7 @@ useHead({
               rel="noopener noreferrer"
               class="hover:text-primary inline-flex items-center gap-1.5 transition-colors"
             >
-              <img
+              <NuxtImg
                 :src="article.mediaOutlet.logo"
                 :alt="article.mediaOutlet.name"
                 class="inline-block h-4 w-auto"
@@ -204,7 +295,8 @@ useHead({
         <!-- PDF download for press releases and statements -->
         <UButton
           v-if="article.pdfUrl"
-          :to="article.pdfUrl"
+          :href="article.pdfUrl"
+          external
           target="_blank"
           icon="i-tabler-download"
           size="lg"
@@ -229,108 +321,17 @@ useHead({
       <div class="no-print mt-8 border-t pt-6">
         <p class="text-muted mb-3 text-sm font-medium">{{ t('press.share') }}</p>
         <div class="flex flex-wrap gap-2">
-          <UTooltip text="Copiar enlace">
+          <UTooltip v-for="action in shareActions" :key="action.key" :text="action.label">
             <UButton
-              icon="i-tabler-link"
+              :to="action.to"
+              :icon="action.icon"
               variant="outline"
               size="sm"
-              aria-label="Copiar enlace"
-              @click="copyLink"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir en WhatsApp">
-            <UButton
-              :to="whatsappShareUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon="i-tabler-brand-whatsapp"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir en WhatsApp"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir en Instagram">
-            <UButton
-              class="sm:hidden"
-              icon="i-tabler-brand-instagram"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir en Instagram"
-              @click="shareNative"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir en TikTok">
-            <UButton
-              class="sm:hidden"
-              icon="i-tabler-brand-tiktok"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir en TikTok"
-              @click="shareNative"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir en X (Twitter)">
-            <UButton
-              :to="twitterShareUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon="i-tabler-brand-x"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir en X (Twitter)"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir en LinkedIn">
-            <UButton
-              :to="linkedinShareUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon="i-tabler-brand-linkedin"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir en LinkedIn"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir en Facebook">
-            <UButton
-              :to="facebookShareUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon="i-tabler-brand-facebook"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir en Facebook"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir en Telegram">
-            <UButton
-              :to="telegramShareUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon="i-tabler-brand-telegram"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir en Telegram"
-            />
-          </UTooltip>
-          <UTooltip text="Compartir por correo">
-            <UButton
-              :to="emailShareUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon="i-tabler-mail"
-              variant="outline"
-              size="sm"
-              aria-label="Compartir por correo"
-            />
-          </UTooltip>
-          <UTooltip text="Imprimir">
-            <UButton
-              icon="i-tabler-printer"
-              variant="outline"
-              size="sm"
-              aria-label="Imprimir"
-              @click="printPage"
+              :class="action.class"
+              :target="action.to ? '_blank' : undefined"
+              :rel="action.to ? 'noopener noreferrer' : undefined"
+              :aria-label="action.label"
+              @click="action.onClick?.()"
             />
           </UTooltip>
         </div>

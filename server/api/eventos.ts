@@ -3,7 +3,14 @@
  * Proxies event data from the external CREUP intranet API.
  */
 
+import type { H3Event } from 'h3'
 import { createError, defineEventHandler } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+  withExternalApiSWRCache,
+} from '../utils/externalApiCache'
+import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
 import { externalEventsResponseSchema } from '../utils/validation'
 
 interface EventBannerOutput {
@@ -52,21 +59,31 @@ const normalizeText = (value: string | null | undefined): string | null => {
   return trimmed || null
 }
 
-const mapOrganization = (org: {
-  order: number
-  name?: string | null
-  link?: string | null
-  web_logo_light?: string | null
-}): EventOrganizationOutput => ({
+const mapOrganization = (
+  org: {
+    order: number
+    name?: string | null
+    link?: string | null
+    web_logo_light?: string | null
+  },
+  event: H3Event
+): EventOrganizationOutput => ({
   order: org.order,
   name: normalizeText(org.name),
   link: normalizeText(org.link),
-  logoLight: normalizeText(org.web_logo_light),
+  logoLight: toExternalImageProxyUrl(normalizeText(org.web_logo_light), {
+    event,
+    forceProxyRelative: true,
+    publicPathBase: '/eventos/imagenes',
+  }),
 })
 
 export default defineEventHandler(async (event) => {
   const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const cacheOptions = getExternalApiCacheOptions(event)
+
+  setExternalApiCacheHeaders(event, cacheOptions)
 
   if (!configuredBaseUrl) {
     throw createError({
@@ -75,65 +92,86 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const endpoint = new URL('/api/eventos', configuredBaseUrl).toString()
+  return withExternalApiSWRCache(
+    `external-api:eventos:${configuredBaseUrl}`,
+    async () => {
+      const endpoint = new URL('/api/eventos', configuredBaseUrl).toString()
 
-  let payload: unknown
-  try {
-    payload = await $fetch(endpoint)
-  } catch (error) {
-    console.error('Failed to fetch external events API:', error)
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Events data is temporarily unavailable.',
-    })
-  }
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        console.error('Failed to fetch external events API:', error)
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Events data is temporarily unavailable.',
+        })
+      }
 
-  const parsedPayload = externalEventsResponseSchema.safeParse(payload)
-  if (!parsedPayload.success) {
-    console.error('Invalid payload from external events API:', parsedPayload.error.flatten())
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Events data is temporarily unavailable.',
-    })
-  }
+      const parsedPayload = externalEventsResponseSchema.safeParse(payload)
+      if (!parsedPayload.success) {
+        console.error('Invalid payload from external events API:', parsedPayload.error.flatten())
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Events data is temporarily unavailable.',
+        })
+      }
 
-  const events: EventOutput[] = parsedPayload.data.data
-    .sort((a, b) => a.order - b.order)
-    .map((ev) => ({
-      id: ev.event_id,
-      name: ev.event_name,
-      slug: ev.event_slug,
-      type: normalizeText(ev.event_type),
-      location: normalizeText(ev.event_location),
-      description: normalizeText(ev.event_description),
-      banner: {
-        url: normalizeText(ev.event_banner?.url),
-      },
-      startDate: ev.event_start_date,
-      endDate: normalizeText(ev.event_end_date),
-      documents: (ev.documents ?? [])
+      const events: EventOutput[] = parsedPayload.data.data
         .sort((a, b) => a.order - b.order)
-        .map((doc) => ({
-          order: doc.order,
-          title: normalizeText(doc.title),
-          url: normalizeText(doc.url),
-        })),
-      organizers: (ev.organizers ?? []).sort((a, b) => a.order - b.order).map(mapOrganization),
-      venues: (ev.venues ?? []).sort((a, b) => a.order - b.order).map(mapOrganization),
-      collaborators: (ev.collaborators ?? [])
-        .sort((a, b) => a.order - b.order)
-        .map(mapOrganization),
-      galleryImages: (ev.gallery_images ?? [])
-        .sort((a, b) => a.order - b.order)
-        .map((img) => ({
-          order: img.order,
-          url: normalizeText(img.url),
-        })),
-      order: ev.order,
-    }))
+        .map((ev) => ({
+          id: ev.event_id,
+          name: ev.event_name,
+          slug: ev.event_slug,
+          type: normalizeText(ev.event_type),
+          location: normalizeText(ev.event_location),
+          description: normalizeText(ev.event_description),
+          banner: {
+            url: toExternalImageProxyUrl(normalizeText(ev.event_banner?.url), {
+              event,
+              forceProxyRelative: true,
+              publicPathBase: '/eventos/imagenes',
+            }),
+          },
+          startDate: ev.event_start_date,
+          endDate: normalizeText(ev.event_end_date),
+          documents: (ev.documents ?? [])
+            .sort((a, b) => a.order - b.order)
+            .map((doc) => ({
+              order: doc.order,
+              title: normalizeText(doc.title),
+              url: toExternalPdfProxyUrl(normalizeText(doc.url), {
+                forceProxyRelative: true,
+                publicPathBase: '/eventos/documentos',
+              }),
+            })),
+          organizers: (ev.organizers ?? [])
+            .sort((a, b) => a.order - b.order)
+            .map((org) => mapOrganization(org, event)),
+          venues: (ev.venues ?? [])
+            .sort((a, b) => a.order - b.order)
+            .map((org) => mapOrganization(org, event)),
+          collaborators: (ev.collaborators ?? [])
+            .sort((a, b) => a.order - b.order)
+            .map((org) => mapOrganization(org, event)),
+          galleryImages: (ev.gallery_images ?? [])
+            .sort((a, b) => a.order - b.order)
+            .map((img) => ({
+              order: img.order,
+              url: toExternalImageProxyUrl(normalizeText(img.url), {
+                event,
+                forceProxyRelative: true,
+                publicPathBase: '/eventos/imagenes',
+              }),
+            })),
+          order: ev.order,
+        }))
 
-  return {
-    events,
-    generatedAt: parsedPayload.data.generated_at ?? null,
-  }
+      return {
+        events,
+        generatedAt: parsedPayload.data.generated_at ?? null,
+      }
+    },
+    cacheOptions
+  )
 })

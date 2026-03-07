@@ -351,13 +351,13 @@ const upcomingAgendaEvents = computed(() => {
     .slice(0, 8)
 })
 
-const formatShortDate = (dateStr: string): string => {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
+
+const formatShortDate = (dateStr: string): string =>
+  formatLocaleDate(`${dateStr}T00:00:00`, {
     day: 'numeric',
     month: 'short',
   })
-}
 
 // ============================================================================
 // Tab items for UTabs
@@ -437,7 +437,7 @@ const tabItems = computed(() => [
                   <div
                     class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                   >
-                    <img
+                    <NuxtImg
                       v-if="member.photo"
                       :src="member.photo"
                       :alt="getMemberDisplayName(member)"
@@ -513,7 +513,7 @@ const tabItems = computed(() => [
                   <div
                     class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                   >
-                    <img
+                    <NuxtImg
                       v-if="member.photo"
                       :src="member.photo"
                       :alt="getMemberDisplayName(member)"
@@ -597,7 +597,7 @@ const tabItems = computed(() => [
                   <div
                     class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                   >
-                    <img
+                    <NuxtImg
                       v-if="member.photo"
                       :src="member.photo"
                       :alt="getMemberDisplayName(member)"
@@ -667,7 +667,7 @@ const tabItems = computed(() => [
             <div
               class="ring-primary/30 size-28 shrink-0 overflow-hidden rounded-full ring-2 sm:size-32"
             >
-              <img
+              <NuxtImg
                 v-if="selectedMember.photo"
                 :src="selectedMember.photo"
                 :alt="getMemberDisplayName(selectedMember)"
@@ -788,7 +788,7 @@ const tabItems = computed(() => [
           <!-- Member info -->
           <div class="flex items-center gap-3">
             <div class="ring-primary/20 size-12 overflow-hidden rounded-full ring-2">
-              <img
+              <NuxtImg
                 v-if="agendaMember.photo"
                 :src="agendaMember.photo"
                 :alt="getMemberDisplayName(agendaMember)"

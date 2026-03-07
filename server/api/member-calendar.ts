@@ -5,6 +5,11 @@
  */
 
 import { defineEventHandler, getQuery } from 'h3'
+import {
+  normalizeLocaleDefinitions,
+  resolveConfiguredLocaleCode,
+  resolveLocaleCode,
+} from '../../shared/utils/locale'
 
 interface GoogleCalendarEvent {
   id: string
@@ -103,7 +108,14 @@ function getOccurrenceSeriesId(item: GoogleCalendarEvent): string {
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const locale = (query.locale as string) || 'es'
+  const runtimeI18n = useRuntimeConfig(event).public.i18n as {
+    defaultLocale?: unknown
+    locales?: unknown
+  }
+  const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
+  const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
+  const locale = resolveLocaleCode(query.locale as string | undefined, locales, defaultLocale)
+  const languageTag = locales.find((item) => item.code === locale)?.language ?? 'es-ES'
   const calendarId = query.calendarId as string
   const t = translations[locale as keyof typeof translations] || translations.es
 
@@ -177,12 +189,12 @@ export default defineEventHandler(async (event) => {
         const endDate = new Date(item.end.dateTime)
 
         const dateStr = startDate.toISOString().split('T')[0]!
-        const startTime = startDate.toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-GB', {
+        const startTime = startDate.toLocaleTimeString(languageTag, {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
         })
-        const endTime = endDate.toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-GB', {
+        const endTime = endDate.toLocaleTimeString(languageTag, {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,

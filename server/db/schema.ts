@@ -459,6 +459,56 @@ export const organizationMemberTranslationsRelations = relations(
 )
 
 // ============================================================================
+// Newsletters
+// ============================================================================
+
+export const newsletters = pgTable('newsletters', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  /** Stable year-month key (YYYY-MM) used to prevent duplicates */
+  monthKey: text('month_key').notNull(),
+  /** Month the newsletter covers (stored as first day of month) */
+  month: timestamp('month', { mode: 'date' }).notNull(),
+  coverImage: text('cover_image').notNull(),
+  pdfUrl: text('pdf_url').notNull(),
+  active: boolean('active').default(true).notNull(),
+  sending: boolean('sending').default(false).notNull(),
+  sentAt: timestamp('sent_at', { mode: 'date' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
+
+// ============================================================================
+// Newsletter Subscribers
+// ============================================================================
+
+export const newsletterSubscribers = pgTable('newsletter_subscribers', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  email: text('email').notNull().unique(),
+  active: boolean('active').default(false).notNull(),
+  subscribedAt: timestamp('subscribed_at', { mode: 'date' }).defaultNow().notNull(),
+  confirmedAt: timestamp('confirmed_at', { mode: 'date' }),
+  unsubscribedAt: timestamp('unsubscribed_at', { mode: 'date' }),
+  /** Pending double opt-in confirmation token */
+  confirmToken: text('confirm_token'),
+  /** Token for one-click unsubscribe links */
+  unsubscribeToken: text('unsubscribe_token').notNull().$defaultFn(cuid),
+  /** Minimal evidence to demonstrate the consent request */
+  consentIp: text('consent_ip'),
+  consentUserAgent: text('consent_user_agent'),
+  consentSource: text('consent_source').default('web_form').notNull(),
+  consentTextVersion: text('consent_text_version').default('2026-03-06').notNull(),
+  ageConfirmed: boolean('age_confirmed').default(false).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
+
+// ============================================================================
 // Media Outlets (Medios de comunicación)
 // ============================================================================
 

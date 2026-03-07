@@ -4,6 +4,10 @@
  */
 
 import type { externalOrganigramaMemberSocialSchema } from './validation'
+import type { ExternalApiCacheOptions } from './externalApiCache'
+import type { H3Event } from 'h3'
+import { withExternalApiSWRCache } from './externalApiCache'
+import { toExternalImageProxyUrl } from './externalAssetProxy'
 import { externalMandatesResponseSchema, externalMandateDetailResponseSchema } from './validation'
 
 // ============================================================================
@@ -161,37 +165,46 @@ const transformMemberSocials = (socialNetworks: ExternalMember[]): MemberSocialO
  * Fetches the mandates list from the external API and returns normalised
  * mandate summaries sorted newest-first.
  */
-export async function fetchMandatesList(externalBaseUrl: string): Promise<MandateInfoOutput[]> {
-  const endpoint = new URL('/api/organigrama/mandatos', externalBaseUrl).toString()
+export async function fetchMandatesList(
+  externalBaseUrl: string,
+  cacheOptions: ExternalApiCacheOptions
+): Promise<MandateInfoOutput[]> {
+  return withExternalApiSWRCache(
+    `external-api:organigrama-mandates:${externalBaseUrl}`,
+    async () => {
+      const endpoint = new URL('/api/organigrama/mandatos', externalBaseUrl).toString()
 
-  let payload: unknown
-  try {
-    payload = await $fetch(endpoint)
-  } catch (error) {
-    console.error('Failed to fetch external mandates list:', error)
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Mandates data is temporarily unavailable.',
-    })
-  }
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        console.error('Failed to fetch external mandates list:', error)
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Mandates data is temporarily unavailable.',
+        })
+      }
 
-  const parsed = externalMandatesResponseSchema.safeParse(payload)
-  if (!parsed.success) {
-    console.error('Invalid payload from external mandates API:', parsed.error.flatten())
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Mandates data is temporarily unavailable.',
-    })
-  }
+      const parsed = externalMandatesResponseSchema.safeParse(payload)
+      if (!parsed.success) {
+        console.error('Invalid payload from external mandates API:', parsed.error.flatten())
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Mandates data is temporarily unavailable.',
+        })
+      }
 
-  return parsed.data.data
-    .sort((a, b) => b.start_date.localeCompare(a.start_date))
-    .map((m) => ({
-      id: m.id,
-      startDate: m.start_date,
-      endDate: m.end_date,
-      isCurrent: m.is_current,
-    }))
+      return parsed.data.data
+        .sort((a, b) => b.start_date.localeCompare(a.start_date))
+        .map((m) => ({
+          id: m.id,
+          startDate: m.start_date,
+          endDate: m.end_date,
+          isCurrent: m.is_current,
+        }))
+    },
+    cacheOptions
+  )
 }
 
 /**
@@ -200,89 +213,101 @@ export async function fetchMandatesList(externalBaseUrl: string): Promise<Mandat
  */
 export async function fetchMandateDetail(
   externalBaseUrl: string,
-  mandateId: number
+  mandateId: number,
+  cacheOptions: ExternalApiCacheOptions,
+  event?: H3Event
 ): Promise<MandateDetailOutput> {
-  const endpoint = new URL(`/api/organigrama/mandatos/${mandateId}`, externalBaseUrl).toString()
+  return withExternalApiSWRCache(
+    `external-api:organigrama-mandate-detail:${externalBaseUrl}:${mandateId}`,
+    async () => {
+      const endpoint = new URL(`/api/organigrama/mandatos/${mandateId}`, externalBaseUrl).toString()
 
-  let payload: unknown
-  try {
-    payload = await $fetch(endpoint)
-  } catch (error) {
-    console.error(`Failed to fetch mandate detail for id ${mandateId}:`, error)
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Mandate detail data is temporarily unavailable.',
-    })
-  }
-
-  const parsed = externalMandateDetailResponseSchema.safeParse(payload)
-  if (!parsed.success) {
-    console.error('Invalid mandate detail payload:', parsed.error.flatten())
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Mandate detail data is temporarily unavailable.',
-    })
-  }
-
-  const mandate: MandateInfoOutput = {
-    id: parsed.data.mandate.id,
-    startDate: parsed.data.mandate.start_date,
-    endDate: parsed.data.mandate.end_date,
-    isCurrent: parsed.data.mandate.is_current,
-  }
-
-  const areas: AreaTermOutput[] = parsed.data.data
-    .sort((a, b) => a.area_order - b.area_order)
-    .map((area) => {
-      const nameTranslations: Record<string, string> = {}
-      for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
-        const nl = normalizeText(locale)
-        const nt = normalizeText(translation)
-        if (!nl || !nt) continue
-        nameTranslations[nl] = nt
-      }
-      if (!nameTranslations.es) {
-        nameTranslations.es = area.area_name
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        console.error(`Failed to fetch mandate detail for id ${mandateId}:`, error)
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Mandate detail data is temporarily unavailable.',
+        })
       }
 
-      const assignments: AssignmentOutput[] = area.assignments
-        .sort((a, b) => a.order - b.order || a.start_date.localeCompare(b.start_date))
-        .map((assignment) => {
-          const member = assignment.member
+      const parsed = externalMandateDetailResponseSchema.safeParse(payload)
+      if (!parsed.success) {
+        console.error('Invalid mandate detail payload:', parsed.error.flatten())
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Mandate detail data is temporarily unavailable.',
+        })
+      }
+
+      const mandate: MandateInfoOutput = {
+        id: parsed.data.mandate.id,
+        startDate: parsed.data.mandate.start_date,
+        endDate: parsed.data.mandate.end_date,
+        isCurrent: parsed.data.mandate.is_current,
+      }
+
+      const areas: AreaTermOutput[] = parsed.data.data
+        .sort((a, b) => a.area_order - b.area_order)
+        .map((area) => {
+          const nameTranslations: Record<string, string> = {}
+          for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
+            const nl = normalizeText(locale)
+            const nt = normalizeText(translation)
+            if (!nl || !nt) continue
+            nameTranslations[nl] = nt
+          }
+          if (!nameTranslations.es) {
+            nameTranslations.es = area.area_name
+          }
+
+          const assignments: AssignmentOutput[] = area.assignments
+            .sort((a, b) => a.order - b.order || a.start_date.localeCompare(b.start_date))
+            .map((assignment) => {
+              const member = assignment.member
+              return {
+                id: assignment.id,
+                role: assignment.role ?? null,
+                order: assignment.order,
+                startDate: assignment.start_date,
+                endDate: assignment.end_date,
+                member: {
+                  order: member.order,
+                  denomination: normalizeText(member.denomination) || null,
+                  photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
+                    event,
+                    forceProxyRelative: true,
+                    publicPathBase: '/conocenos/imagenes',
+                  }),
+                  email: normalizeText(member.email) || '',
+                  name: normalizeText(member.name) || '',
+                  surname: normalizeText(member.surname) || '',
+                  university: normalizeText(member.university) || null,
+                  degree: normalizeText(member.degree) || null,
+                  description: normalizeText(member.description) || null,
+                  socialNetworks: transformMemberSocials(member.social_networks ?? []),
+                },
+              }
+            })
+
           return {
-            id: assignment.id,
-            role: assignment.role ?? null,
-            order: assignment.order,
-            startDate: assignment.start_date,
-            endDate: assignment.end_date,
-            member: {
-              order: member.order,
-              denomination: normalizeText(member.denomination) || null,
-              photo: normalizeText(member.web_photo) || null,
-              email: normalizeText(member.email) || '',
-              name: normalizeText(member.name) || '',
-              surname: normalizeText(member.surname) || '',
-              university: normalizeText(member.university) || null,
-              degree: normalizeText(member.degree) || null,
-              description: normalizeText(member.description) || null,
-              socialNetworks: transformMemberSocials(member.social_networks ?? []),
-            },
+            areaTermId: area.area_term_id,
+            areaId: area.area_id,
+            name: area.area_name,
+            nameTranslations,
+            order: area.area_order,
+            assignments,
           }
         })
 
       return {
-        areaTermId: area.area_term_id,
-        areaId: area.area_id,
-        name: area.area_name,
-        nameTranslations,
-        order: area.area_order,
-        assignments,
+        mandate,
+        areas,
+        generatedAt: parsed.data.generated_at ?? null,
       }
-    })
-
-  return {
-    mandate,
-    areas,
-    generatedAt: parsed.data.generated_at ?? null,
-  }
+    },
+    cacheOptions
+  )
 }

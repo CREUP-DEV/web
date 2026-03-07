@@ -3,10 +3,11 @@ import { writeFile, mkdir } from 'node:fs/promises'
 import { join, extname } from 'node:path'
 import { createId } from '@paralleldrive/cuid2'
 import { requireAuth } from '../../../utils/requireAuth'
+import { toExternalImageProxyUrl } from '../../../utils/externalAssetProxy'
 
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-const UPLOAD_DIR = 'public/img/media'
+const UPLOAD_DIR = 'public/prensa/imagenes'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
@@ -39,5 +40,10 @@ export default defineEventHandler(async (event) => {
   await mkdir(uploadPath, { recursive: true })
   await writeFile(join(uploadPath, filename), file.data)
 
-  return { path: `/img/media/${filename}` }
+  const storagePath = `/prensa/imagenes/${filename}`
+
+  return {
+    path: toExternalImageProxyUrl(storagePath) ?? storagePath,
+    storagePath,
+  }
 })

@@ -13,7 +13,8 @@ const props = defineProps<{
   pending?: boolean
 }>()
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
+const { currentLanguageTag, formatDate: formatLocaleDate } = useLocaleFormatting()
 
 // Current date state
 const today = new Date()
@@ -28,16 +29,18 @@ const touchStartY = ref(0)
 
 // Days of week labels
 const weekDays = computed(() => {
-  if (locale.value === 'es') {
-    return ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-  }
-  return ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+  const formatter = new Intl.DateTimeFormat(currentLanguageTag.value, { weekday: 'narrow' })
+  const monday = Date.UTC(2024, 0, 1)
+
+  return Array.from({ length: 7 }, (_, index) =>
+    formatter.format(new Date(monday + index * 86400000))
+  )
 })
 
 // Month name
 const monthName = computed(() => {
   const date = new Date(currentYear.value, currentMonth.value, 1)
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+  return formatLocaleDate(date, {
     month: 'long',
     year: 'numeric',
   })
@@ -145,8 +148,7 @@ const upcomingEvents = computed(() => {
 
 // Format date for upcoming events (shorter format)
 const formatShortDate = (dateStr: string): string => {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+  return formatLocaleDate(`${dateStr}T00:00:00`, {
     day: 'numeric',
     month: 'short',
   })
@@ -207,8 +209,7 @@ const onDayClick = (day: number | null) => {
 
 // Format date for display
 const formatEventDate = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-GB', {
+  return formatLocaleDate(dateStr, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -307,7 +308,7 @@ const onTouchEnd = (event: TouchEvent) => {
 
       <!-- Week days header -->
       <div class="text-muted mb-2 grid grid-cols-7 gap-1 text-center text-xs font-medium">
-        <div v-for="(day, index) in weekDays" :key="`${locale}-${index}`" class="py-1">
+        <div v-for="(day, index) in weekDays" :key="`${currentLanguageTag}-${index}`" class="py-1">
           {{ day }}
         </div>
       </div>

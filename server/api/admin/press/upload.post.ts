@@ -3,13 +3,14 @@ import { writeFile, mkdir } from 'node:fs/promises'
 import { join, extname } from 'node:path'
 import { createId } from '@paralleldrive/cuid2'
 import { requireAuth } from '../../../utils/requireAuth'
+import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../../utils/externalAssetProxy'
 
 const ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif']
 const ALLOWED_PDF_EXTENSIONS = ['.pdf']
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_PDF_SIZE = 20 * 1024 * 1024 // 20MB
-const IMAGE_UPLOAD_DIR = 'public/img/press'
-const PDF_UPLOAD_DIR = 'public/docs/press'
+const IMAGE_UPLOAD_DIR = 'public/prensa/imagenes'
+const PDF_UPLOAD_DIR = 'public/prensa/documentos'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
@@ -44,7 +45,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const uploadDir = isPdf ? PDF_UPLOAD_DIR : IMAGE_UPLOAD_DIR
-  const publicPath = isPdf ? '/docs/press' : '/img/press'
+  const publicPath = isPdf ? '/prensa/documentos' : '/prensa/imagenes'
 
   const filename = `${createId()}${ext}`
   const uploadPath = join(process.cwd(), uploadDir)
@@ -52,5 +53,14 @@ export default defineEventHandler(async (event) => {
   await mkdir(uploadPath, { recursive: true })
   await writeFile(join(uploadPath, filename), file.data)
 
-  return { path: `${publicPath}/${filename}`, type: isPdf ? 'pdf' : 'image' }
+  const storagePath = `${publicPath}/${filename}`
+  const path =
+    (isPdf ? toExternalPdfProxyUrl(storagePath) : toExternalImageProxyUrl(storagePath)) ??
+    storagePath
+
+  return {
+    path,
+    storagePath,
+    type: isPdf ? 'pdf' : 'image',
+  }
 })

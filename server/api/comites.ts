@@ -4,6 +4,12 @@
  */
 
 import { createError, defineEventHandler } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+  withExternalApiSWRCache,
+} from '../utils/externalApiCache'
+import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
 import { externalCommitteesResponseSchema } from '../utils/validation'
 
 const supportedNetworks = [
@@ -136,6 +142,9 @@ const inferNetwork = (networkValue: string, value: string): SupportedNetwork | n
 export default defineEventHandler(async (event) => {
   const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const cacheOptions = getExternalApiCacheOptions(event)
+
+  setExternalApiCacheHeaders(event, cacheOptions)
 
   if (!configuredBaseUrl) {
     throw createError({
@@ -144,123 +153,136 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const endpoint = new URL('/api/comites', configuredBaseUrl).toString()
+  return withExternalApiSWRCache(
+    `external-api:comites:${configuredBaseUrl}`,
+    async () => {
+      const endpoint = new URL('/api/comites', configuredBaseUrl).toString()
 
-  let payload: unknown
-  try {
-    payload = await $fetch(endpoint)
-  } catch (error) {
-    console.error('Failed to fetch external committees API:', error)
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Committees data is temporarily unavailable.',
-    })
-  }
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        console.error('Failed to fetch external committees API:', error)
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Committees data is temporarily unavailable.',
+        })
+      }
 
-  const parsedPayload = externalCommitteesResponseSchema.safeParse(payload)
-  if (!parsedPayload.success) {
-    console.error('Invalid payload from external committees API:', parsedPayload.error.flatten())
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Committees data is temporarily unavailable.',
-    })
-  }
+      const parsedPayload = externalCommitteesResponseSchema.safeParse(payload)
+      if (!parsedPayload.success) {
+        console.error(
+          'Invalid payload from external committees API:',
+          parsedPayload.error.flatten()
+        )
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Committees data is temporarily unavailable.',
+        })
+      }
 
-  const committees: CommitteeOutput[] = parsedPayload.data.data
-    .sort((a, b) => a.committee_order - b.committee_order)
-    .map((committee) => {
-      const members: CommitteeMemberOutput[] = committee.members
-        .sort((a, b) => a.order - b.order)
-        .map((member) => {
-          const socialMap = new Map<SupportedNetwork, string>()
+      const committees: CommitteeOutput[] = parsedPayload.data.data
+        .sort((a, b) => a.committee_order - b.committee_order)
+        .map((committee) => {
+          const members: CommitteeMemberOutput[] = committee.members
+            .sort((a, b) => a.order - b.order)
+            .map((member) => {
+              const socialMap = new Map<SupportedNetwork, string>()
 
-          for (const socialNetwork of member.social_networks ?? []) {
-            const value = normalizeText(socialNetwork.value)
-            const network = inferNetwork(normalizeText(socialNetwork.network), value)
+              for (const socialNetwork of member.social_networks ?? []) {
+                const value = normalizeText(socialNetwork.value)
+                const network = inferNetwork(normalizeText(socialNetwork.network), value)
 
-            if (!network || !value || socialMap.has(network)) {
+                if (!network || !value || socialMap.has(network)) {
+                  continue
+                }
+
+                socialMap.set(network, value)
+              }
+
+              const socialNetworks: MemberSocialOutput[] = supportedNetworks.flatMap((network) => {
+                const value = socialMap.get(network)
+                if (!value) {
+                  return []
+                }
+
+                return [{ network, value }]
+              })
+
+              return {
+                order: member.order,
+                denomination: normalizeText(member.denomination) || null,
+                photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
+                  event,
+                  forceProxyRelative: true,
+                  publicPathBase: '/conocenos/imagenes',
+                }),
+                email: normalizeText(member.email) || '',
+                name: normalizeText(member.name) || '',
+                surname: normalizeText(member.surname) || '',
+                university: normalizeText(member.university) || null,
+                degree: normalizeText(member.degree) || null,
+                description: normalizeText(member.description) || null,
+                publicAgenda: member.public_agenda ?? false,
+                socialNetworks,
+              }
+            })
+
+          // Build name translations
+          const nameTranslations: Record<string, string> = {}
+          for (const [locale, translation] of Object.entries(
+            committee.committee_name_translations ?? {}
+          )) {
+            const normalizedLocale = normalizeText(locale)
+            const normalizedTranslation = normalizeText(translation)
+
+            if (!normalizedLocale || !normalizedTranslation) {
               continue
             }
 
-            socialMap.set(network, value)
+            nameTranslations[normalizedLocale] = normalizedTranslation
           }
 
-          const socialNetworks: MemberSocialOutput[] = supportedNetworks.flatMap((network) => {
-            const value = socialMap.get(network)
-            if (!value) {
-              return []
+          if (!nameTranslations.es) {
+            nameTranslations.es = committee.committee_name
+          }
+
+          // Build description translations
+          const descriptionTranslations: Record<string, string> = {}
+          for (const [locale, translation] of Object.entries(
+            committee.committee_description_translations ?? {}
+          )) {
+            const normalizedLocale = normalizeText(locale)
+            const normalizedTranslation = normalizeText(translation)
+
+            if (!normalizedLocale || !normalizedTranslation) {
+              continue
             }
 
-            return [{ network, value }]
-          })
+            descriptionTranslations[normalizedLocale] = normalizedTranslation
+          }
+
+          const rawDescription = normalizeText(committee.committee_description)
+          if (!descriptionTranslations.es && rawDescription) {
+            descriptionTranslations.es = rawDescription
+          }
 
           return {
-            order: member.order,
-            denomination: normalizeText(member.denomination) || null,
-            photo: normalizeText(member.web_photo) || null,
-            email: normalizeText(member.email) || '',
-            name: normalizeText(member.name) || '',
-            surname: normalizeText(member.surname) || '',
-            university: normalizeText(member.university) || null,
-            degree: normalizeText(member.degree) || null,
-            description: normalizeText(member.description) || null,
-            publicAgenda: member.public_agenda ?? false,
-            socialNetworks,
+            id: committee.committee_id,
+            name: committee.committee_name,
+            nameTranslations,
+            description: rawDescription || null,
+            descriptionTranslations,
+            order: committee.committee_order,
+            members,
           }
         })
 
-      // Build name translations
-      const nameTranslations: Record<string, string> = {}
-      for (const [locale, translation] of Object.entries(
-        committee.committee_name_translations ?? {}
-      )) {
-        const normalizedLocale = normalizeText(locale)
-        const normalizedTranslation = normalizeText(translation)
-
-        if (!normalizedLocale || !normalizedTranslation) {
-          continue
-        }
-
-        nameTranslations[normalizedLocale] = normalizedTranslation
-      }
-
-      if (!nameTranslations.es) {
-        nameTranslations.es = committee.committee_name
-      }
-
-      // Build description translations
-      const descriptionTranslations: Record<string, string> = {}
-      for (const [locale, translation] of Object.entries(
-        committee.committee_description_translations ?? {}
-      )) {
-        const normalizedLocale = normalizeText(locale)
-        const normalizedTranslation = normalizeText(translation)
-
-        if (!normalizedLocale || !normalizedTranslation) {
-          continue
-        }
-
-        descriptionTranslations[normalizedLocale] = normalizedTranslation
-      }
-
-      const rawDescription = normalizeText(committee.committee_description)
-      if (!descriptionTranslations.es && rawDescription) {
-        descriptionTranslations.es = rawDescription
-      }
-
       return {
-        id: committee.committee_id,
-        name: committee.committee_name,
-        nameTranslations,
-        description: rawDescription || null,
-        descriptionTranslations,
-        order: committee.committee_order,
-        members,
+        committees,
+        generatedAt: parsedPayload.data.generated_at ?? null,
       }
-    })
-
-  return {
-    committees,
-    generatedAt: parsedPayload.data.generated_at ?? null,
-  }
+    },
+    cacheOptions
+  )
 })

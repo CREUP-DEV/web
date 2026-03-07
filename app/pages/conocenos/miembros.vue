@@ -520,7 +520,7 @@ const getMemberAnimationStyle = (index: number) => {
                   <div
                     class="ring-primary/20 group-hover:ring-primary/40 flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-2 transition-all dark:bg-gray-800"
                   >
-                    <img
+                    <NuxtImg
                       v-if="getEntityLogo(member)"
                       :src="getEntityLogo(member)!"
                       :alt="getMemberImageAlt(member)"
@@ -613,7 +613,7 @@ const getMemberAnimationStyle = (index: number) => {
               <div
                 class="ring-primary/20 group-hover:ring-primary/40 flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-2 transition-all dark:bg-gray-800"
               >
-                <img
+                <NuxtImg
                   v-if="getEntityLogo(sectorial)"
                   :src="getEntityLogo(sectorial)!"
                   :alt="getSectorialImageAlt(sectorial)"
@@ -663,7 +663,7 @@ const getMemberAnimationStyle = (index: number) => {
               <div
                 class="mx-auto flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white ring-2 ring-gray-200 md:h-52 md:w-52 dark:bg-gray-800 dark:ring-gray-700"
               >
-                <img
+                <NuxtImg
                   v-if="getEntityLogo(selectedMember)"
                   :src="getEntityLogo(selectedMember)!"
                   :alt="getMemberImageAlt(selectedMember)"
@@ -789,7 +789,7 @@ const getMemberAnimationStyle = (index: number) => {
               <div
                 class="mx-auto flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white ring-2 ring-gray-200 md:h-52 md:w-52 dark:bg-gray-800 dark:ring-gray-700"
               >
-                <img
+                <NuxtImg
                   v-if="getEntityLogo(selectedSectorial)"
                   :src="getEntityLogo(selectedSectorial)!"
                   :alt="getSectorialImageAlt(selectedSectorial)"

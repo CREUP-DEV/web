@@ -34,6 +34,7 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const hasProvidedItems = computed(() => Array.isArray(props.items))
+const loadedImageKeys = reactive<Record<string, boolean>>({})
 
 // Selected tag for filtering
 const selectedTag = ref<string>('all')
@@ -88,6 +89,14 @@ const newsItemClass = (index: number) => {
   return ''
 }
 
+const getItemKey = (item: NewsItem) => `${item.to}::${item.image}`
+
+const markItemImageAsLoaded = (item: NewsItem) => {
+  loadedImageKeys[getItemKey(item)] = true
+}
+
+const isItemImageLoaded = (item: NewsItem) => loadedImageKeys[getItemKey(item)] === true
+
 const onTagSelect = (tagSlug: string) => {
   selectedTag.value = tagSlug
 }
@@ -130,7 +139,7 @@ const onTagSelect = (tagSlug: string) => {
 
       <!-- Responsive grid with special handling for 1 and 3 visible items -->
       <ul v-else class="grid flex-1 gap-3 sm:gap-4" :class="newsGridClass" role="list">
-        <li v-for="(item, idx) in displayItems" :key="idx" :class="newsItemClass(idx)">
+        <li v-for="(item, idx) in displayItems" :key="getItemKey(item)" :class="newsItemClass(idx)">
           <NuxtLink
             :to="item.to"
             class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
@@ -144,10 +153,11 @@ const onTagSelect = (tagSlug: string) => {
                 height="360"
                 class="size-full object-cover"
                 loading="lazy"
+                @load="markItemImageAsLoaded(item)"
               />
               <!-- Media outlet logo overlay -->
               <div
-                v-if="item.mediaOutletLogo"
+                v-if="item.mediaOutletLogo && isItemImageLoaded(item)"
                 class="absolute right-2 bottom-2 rounded bg-white/70 p-1 backdrop-blur-sm"
               >
                 <img

@@ -2,13 +2,26 @@ import { defineEventHandler, getQuery } from 'h3'
 import { eq, desc, and, inArray, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, tags, pressArticleTags } from '../db/schema'
+import {
+  normalizeLocaleDefinitions,
+  pickLocalizedEntry,
+  resolveConfiguredLocaleCode,
+  resolveLocaleCode,
+} from '../../shared/utils/locale'
+import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
 
 /**
  * Public press articles API
  * Supports filtering by type and tag, with locale-aware translations
  */
 export default defineEventHandler(async (event) => {
-  const locale: string = event.context.requestLocale || 'es'
+  const runtimeI18n = useRuntimeConfig(event).public.i18n as {
+    defaultLocale?: unknown
+    locales?: unknown
+  }
+  const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
+  const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
+  const locale = resolveLocaleCode(event.context.requestLocale, locales, defaultLocale)
   const query = getQuery(event)
   const type = query.type as string | undefined
   const tagSlug = query.tag as string | undefined
@@ -64,15 +77,9 @@ export default defineEventHandler(async (event) => {
   })
 
   const articles = articlesList.map((item) => {
-    const trans =
-      item.translations.find((t) => t.locale === locale) ||
-      item.translations.find((t) => t.locale === 'es') ||
-      item.translations[0]
+    const trans = pickLocalizedEntry(item.translations, locale, locales, defaultLocale)
     const articleTags = item.tags.map((pt) => {
-      const tagTrans =
-        pt.tag.translations.find((t) => t.locale === locale) ||
-        pt.tag.translations.find((t) => t.locale === 'es') ||
-        pt.tag.translations[0]
+      const tagTrans = pickLocalizedEntry(pt.tag.translations, locale, locales, defaultLocale)
       return {
         slug: pt.tag.slug,
         name: tagTrans?.name ?? pt.tag.slug,
@@ -83,8 +90,14 @@ export default defineEventHandler(async (event) => {
       id: item.id,
       type: item.type,
       slug: item.slug,
-      image: item.image,
-      pdfUrl: item.pdfUrl,
+      image:
+        toExternalImageProxyUrl(item.image, {
+          publicPathBase: '/prensa/imagenes',
+        }) ?? item.image,
+      pdfUrl:
+        toExternalPdfProxyUrl(item.pdfUrl, {
+          publicPathBase: '/prensa/documentos',
+        }) ?? item.pdfUrl,
       externalUrl: item.externalUrl,
       title: trans?.title ?? '',
       description: trans?.description ?? '',
@@ -94,7 +107,10 @@ export default defineEventHandler(async (event) => {
       mediaOutlet: item.mediaOutlet
         ? {
             name: item.mediaOutlet.name,
-            logo: item.mediaOutlet.logo,
+            logo:
+              toExternalImageProxyUrl(item.mediaOutlet.logo, {
+                publicPathBase: '/prensa/imagenes',
+              }) ?? item.mediaOutlet.logo,
             website: item.mediaOutlet.website,
           }
         : null,

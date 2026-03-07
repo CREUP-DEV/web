@@ -11,7 +11,7 @@ defineProps<{
       <h1 class="text-3xl font-bold sm:text-4xl">
         {{ title }}
       </h1>
-      <p class="text-muted text-sm">Last updated: February 13, 2026</p>
+      <p class="text-muted text-sm">Last updated: March 6, 2026</p>
     </header>
 
     <!-- I. GENERAL INFORMATION -->
@@ -177,8 +177,9 @@ defineProps<{
 
       <p class="text-sm leading-relaxed">
         Personal data collected by CREUP through website forms are processed under the controller's
-        responsibility for managing requests, maintaining relationship with users and fulfilling
-        obligations. Information about the Spanish supervisory authority is available at
+        responsibility to handle inquiries, manage newsletter subscriptions, maintain the
+        relationship with users and comply with applicable obligations. Information about the
+        Spanish supervisory authority is available at
         <a
           href="https://www.aepd.es"
           target="_blank"
@@ -222,30 +223,36 @@ defineProps<{
       <h3 class="text-base font-semibold">Legal basis for processing</h3>
 
       <p class="text-sm leading-relaxed">
-        The legal basis for processing personal data is consent. Users may withdraw consent at any
-        time. Withdrawal of consent will not generally affect use of the Website, except where
-        processing is strictly required for a requested action.
+        The legal basis depends on the specific purpose. For the newsletter, the legal basis is the
+        data subject's consent, obtained through a clear affirmative action and confirmed through a
+        double opt-in process. For the contact form, the legal basis is handling the request sent by
+        the data subject and, where applicable, taking steps requested by the data subject before
+        entering into a relationship.
       </p>
 
       <h3 class="text-base font-semibold">Processing purposes</h3>
 
       <p class="text-sm leading-relaxed">
-        Personal data are collected and managed to facilitate, streamline and fulfill commitments
-        between the Website and the User, or to respond to requests and inquiries.
+        Personal data are collected and managed to respond to requests and inquiries, facilitate the
+        relationship with users and, where explicit consent exists, manage newsletter subscriptions
+        and send related communications.
       </p>
 
       <h3 class="text-base font-semibold">Retention periods</h3>
 
       <p class="text-sm leading-relaxed">
-        Personal data are retained only for the minimum time necessary for the processing purposes
-        and, in general terms, for up to 3 months unless deletion is requested or legal obligations
-        require otherwise.
+        Personal data are retained only for the time necessary for the relevant purpose. Messages
+        sent through the contact form are kept in the corporate mailbox for the time needed to
+        handle the inquiry and, where applicable, for legally required periods. Newsletter data are
+        retained while the subscription remains active. After unsubscribing, CREUP keeps a minimal
+        suppression record to prevent unwanted future mailings and to handle potential incidents or
+        complaints.
       </p>
 
       <h3 class="text-base font-semibold">Recipients of personal data</h3>
 
       <p class="text-sm leading-relaxed">
-        Personal data are not shared with third parties as a general rule.
+        Personal data are not disclosed to third parties, except where legally required.
       </p>
 
       <h3 class="text-base font-semibold">Data of minors</h3>

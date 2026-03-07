@@ -1,0 +1,258 @@
+<script setup lang="ts">
+/**
+ * Admin Newsletter Subscribers Management
+ * View, edit, add and remove newsletter subscribers.
+ */
+definePageMeta({ layout: 'admin' })
+
+const { error: authError } = await useFetch('/api/admin/session')
+if (authError.value) {
+  navigateTo('/admin/login')
+}
+
+interface Subscriber {
+  id: string
+  email: string
+  active: boolean
+  subscribedAt: string
+  unsubscribedAt: string | null
+}
+
+const toast = useToast()
+
+// Fetch subscribers
+const { data, refresh } = await useFetch<{ items: Subscriber[] }>(
+  '/api/admin/newsletter/subscribers'
+)
+const allItems = computed(() => data.value?.items ?? [])
+
+// Filter
+const showActiveOnly = ref(false)
+const items = computed(() =>
+  showActiveOnly.value ? allItems.value.filter((s) => s.active) : allItems.value
+)
+
+const activeCount = computed(() => allItems.value.filter((s) => s.active).length)
+const totalCount = computed(() => allItems.value.length)
+
+// Search
+const search = ref('')
+const filteredItems = computed(() => {
+  if (!search.value.trim()) return items.value
+  const q = search.value.trim().toLowerCase()
+  return items.value.filter((s) => s.email.toLowerCase().includes(q))
+})
+
+// Add subscriber modal
+const showAddModal = ref(false)
+const newEmail = ref('')
+const isAdding = ref(false)
+
+async function handleAdd() {
+  if (!newEmail.value.trim() || isAdding.value) return
+  isAdding.value = true
+  try {
+    await $fetch('/api/admin/newsletter/subscribers', {
+      method: 'POST',
+      body: { email: newEmail.value.trim(), active: true },
+    })
+    toast.add({ title: 'Suscriptor añadido', color: 'success' })
+    showAddModal.value = false
+    newEmail.value = ''
+    await refresh()
+  } catch (e: unknown) {
+    const err = e as { data?: { message?: string } }
+    toast.add({
+      title: err.data?.message || 'No se pudo añadir el suscriptor',
+      color: 'error',
+    })
+  } finally {
+    isAdding.value = false
+  }
+}
+
+// Toggle active
+async function toggleActive(item: Subscriber) {
+  try {
+    await $fetch(`/api/admin/newsletter/subscriber/${item.id}`, {
+      method: 'PUT',
+      body: { email: item.email, active: !item.active },
+    })
+    await refresh()
+    toast.add({
+      title: item.active ? 'Suscriptor desactivado' : 'Suscriptor reactivado',
+      color: 'success',
+    })
+  } catch {
+    toast.add({ title: 'No se pudo actualizar el suscriptor', color: 'error' })
+  }
+}
+
+// Delete
+const showDeleteModal = ref(false)
+const itemToDelete = ref<Subscriber | null>(null)
+const isDeleting = ref(false)
+
+function confirmDelete(item: Subscriber) {
+  itemToDelete.value = item
+  showDeleteModal.value = true
+}
+
+async function handleDelete() {
+  if (!itemToDelete.value) return
+  isDeleting.value = true
+  try {
+    await $fetch(`/api/admin/newsletter/subscriber/${itemToDelete.value.id}`, {
+      method: 'DELETE',
+    })
+    showDeleteModal.value = false
+    itemToDelete.value = null
+    await refresh()
+    toast.add({ title: 'Suscriptor eliminado', color: 'success' })
+  } catch {
+    toast.add({ title: 'No se pudo eliminar el suscriptor', color: 'error' })
+  } finally {
+    isDeleting.value = false
+  }
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+</script>
+
+<template>
+  <div>
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <UButton to="/admin/newsletter" icon="i-tabler-arrow-left" variant="ghost" size="sm" />
+          <h1 class="text-2xl font-bold">Suscriptores</h1>
+        </div>
+        <p class="text-muted mt-1 text-sm">
+          {{ activeCount }} activos de {{ totalCount }} en total
+        </p>
+      </div>
+      <UButton icon="i-tabler-plus" @click="showAddModal = true">Añadir</UButton>
+    </div>
+
+    <!-- Filter and search bar -->
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+      <UInput
+        v-model="search"
+        icon="i-tabler-search"
+        placeholder="Buscar por correo…"
+        aria-label="Buscar suscriptores por correo electrónico"
+        class="w-full max-w-xs"
+      />
+      <UButton
+        :variant="showActiveOnly ? 'solid' : 'outline'"
+        size="sm"
+        :aria-pressed="showActiveOnly"
+        @click="showActiveOnly = !showActiveOnly"
+      >
+        Solo activos
+      </UButton>
+    </div>
+
+    <!-- Subscribers list -->
+    <div v-if="filteredItems.length === 0" class="text-muted py-12 text-center">
+      No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
+    </div>
+
+    <div class="space-y-2">
+      <div
+        v-for="item in filteredItems"
+        :key="item.id"
+        class="bg-surface flex items-center gap-4 rounded-lg px-4 py-3 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+      >
+        <div class="flex-1 overflow-hidden">
+          <p class="truncate font-medium">{{ item.email }}</p>
+          <p class="text-muted text-xs">
+            Suscrito {{ formatDate(item.subscribedAt) }}
+            <template v-if="item.unsubscribedAt">
+              · Baja {{ formatDate(item.unsubscribedAt) }}
+            </template>
+          </p>
+        </div>
+        <span
+          :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
+          class="shrink-0 rounded-full px-2 py-0.5 text-xs"
+        >
+          {{ item.active ? 'Activo' : 'Inactivo' }}
+        </span>
+        <div class="flex gap-1">
+          <UTooltip :text="item.active ? 'Desactivar' : 'Reactivar'">
+            <UButton
+              :icon="item.active ? 'i-tabler-user-minus' : 'i-tabler-user-plus'"
+              variant="ghost"
+              size="sm"
+              @click="toggleActive(item)"
+            />
+          </UTooltip>
+          <UTooltip text="Eliminar">
+            <UButton
+              icon="i-tabler-trash"
+              variant="ghost"
+              color="error"
+              size="sm"
+              @click="confirmDelete(item)"
+            />
+          </UTooltip>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add subscriber modal -->
+    <UModal v-model:open="showAddModal">
+      <template #header>
+        <h2 class="text-lg font-semibold">Añadir suscriptor</h2>
+      </template>
+      <template #body>
+        <form class="space-y-4" @submit.prevent="handleAdd">
+          <p class="text-dimmed text-sm">
+            Añade suscriptores manualmente solo si ya dispones de una base legítima y puedes
+            acreditar el consentimiento.
+          </p>
+          <UFormField label="Correo electrónico *">
+            <UInput
+              v-model="newEmail"
+              type="email"
+              placeholder="correo@ejemplo.com"
+              required
+              class="w-full"
+            />
+          </UFormField>
+          <div class="flex justify-end gap-2">
+            <UButton variant="outline" @click="showAddModal = false">Cancelar</UButton>
+            <UButton type="submit" :loading="isAdding" :disabled="!newEmail.trim()">
+              Añadir
+            </UButton>
+          </div>
+        </form>
+      </template>
+    </UModal>
+
+    <!-- Delete confirmation modal -->
+    <UModal v-model:open="showDeleteModal">
+      <template #header>
+        <h2 class="text-lg font-semibold">Eliminar suscriptor</h2>
+      </template>
+      <template #body>
+        <p>
+          ¿Seguro que quieres eliminar permanentemente a
+          <strong>{{ itemToDelete?.email }}</strong
+          >?
+        </p>
+        <div class="mt-4 flex justify-end gap-2">
+          <UButton variant="outline" @click="showDeleteModal = false">Cancelar</UButton>
+          <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+        </div>
+      </template>
+    </UModal>
+  </div>
+</template>

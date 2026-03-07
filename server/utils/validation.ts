@@ -187,9 +187,20 @@ export const externalAssociatedMembersResponseSchema = z.object({
   generated_at: z.string().nullable().optional(),
 })
 
-export const membersLogoQuerySchema = z.object({
+export const externalAssetQuerySchema = z.object({
   src: z.string().trim().min(1),
 })
+
+export const externalAssetPublicPathParamSchema = z.object({
+  path: z
+    .string()
+    .trim()
+    .min(1)
+    .max(2048)
+    .regex(/^[A-Za-z0-9%/:._-]+$/),
+})
+
+export const membersLogoQuerySchema = externalAssetQuerySchema
 
 // External sectorial members API schemas
 export const externalSectorialMemberSocialSchema = z.object({
@@ -398,6 +409,21 @@ export const externalPolicyDocumentsResponseSchema = z.object({
   generated_at: z.string().nullable().optional(),
 })
 
+export const policyDocumentRouteTypeSchema = z.enum([
+  'posicionamiento',
+  'resolucion',
+  'informe-ejecutivo',
+])
+
+export const policyDocumentFileNameParamSchema = z.object({
+  fileName: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .regex(/^[A-Za-z0-9%._-]+$/),
+})
+
 // Media Outlet schemas
 export const createMediaOutletSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -407,6 +433,49 @@ export const createMediaOutletSchema = z.object({
 })
 
 export const updateMediaOutletSchema = createMediaOutletSchema
+
+// Newsletter schemas
+export const createNewsletterSchema = z.object({
+  /** ISO date string for the first day of the month this newsletter covers */
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
+  coverImage: z.string().min(1, 'La imagen de portada es requerida'),
+  pdfUrl: z.string().min(1, 'El PDF es requerido'),
+  active: z.boolean().default(true),
+})
+
+export const updateNewsletterSchema = createNewsletterSchema
+
+// Newsletter subscriber schemas (admin)
+export const updateSubscriberSchema = z.object({
+  email: z.string().email('El email no es válido'),
+  active: z.boolean(),
+})
+
+// Newsletter subscription schema (public endpoint)
+export const newsletterSubscribeSchema = z
+  .object({
+    email: z.string().email().max(254),
+    consent: z.boolean(),
+    ageConfirmed: z.boolean(),
+    website: z.string().optional(), // Honeypot
+  })
+  .superRefine((data, ctx) => {
+    if (!data.consent) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes aceptar la política de privacidad',
+        path: ['consent'],
+      })
+    }
+
+    if (!data.ageConfirmed) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes confirmar que tienes al menos 14 años o autorización legal',
+        path: ['ageConfirmed'],
+      })
+    }
+  })
 
 // Contact form schema (public endpoint)
 export const contactFormSchema = z

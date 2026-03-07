@@ -4,6 +4,11 @@
  */
 
 import { createError, defineEventHandler } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+  withExternalApiSWRCache,
+} from '../../utils/externalApiCache'
 import { externalMandatesResponseSchema } from '../../utils/validation'
 
 interface MandateOutput {
@@ -16,6 +21,9 @@ interface MandateOutput {
 export default defineEventHandler(async (event) => {
   const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const cacheOptions = getExternalApiCacheOptions(event)
+
+  setExternalApiCacheHeaders(event, cacheOptions)
 
   if (!configuredBaseUrl) {
     throw createError({
@@ -24,39 +32,45 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const endpoint = new URL('/api/organigrama/mandatos', configuredBaseUrl).toString()
+  return withExternalApiSWRCache(
+    `external-api:organigrama-mandatos-route:${configuredBaseUrl}`,
+    async () => {
+      const endpoint = new URL('/api/organigrama/mandatos', configuredBaseUrl).toString()
 
-  let payload: unknown
-  try {
-    payload = await $fetch(endpoint)
-  } catch (error) {
-    console.error('Failed to fetch external mandates API:', error)
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Mandates data is temporarily unavailable.',
-    })
-  }
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        console.error('Failed to fetch external mandates API:', error)
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Mandates data is temporarily unavailable.',
+        })
+      }
 
-  const parsed = externalMandatesResponseSchema.safeParse(payload)
-  if (!parsed.success) {
-    console.error('Invalid payload from external mandates API:', parsed.error.flatten())
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Mandates data is temporarily unavailable.',
-    })
-  }
+      const parsed = externalMandatesResponseSchema.safeParse(payload)
+      if (!parsed.success) {
+        console.error('Invalid payload from external mandates API:', parsed.error.flatten())
+        throw createError({
+          statusCode: 502,
+          statusMessage: 'Mandates data is temporarily unavailable.',
+        })
+      }
 
-  const mandates: MandateOutput[] = parsed.data.data
-    .sort((a, b) => b.start_date.localeCompare(a.start_date))
-    .map((m) => ({
-      id: m.id,
-      startDate: m.start_date,
-      endDate: m.end_date,
-      isCurrent: m.is_current,
-    }))
+      const mandates: MandateOutput[] = parsed.data.data
+        .sort((a, b) => b.start_date.localeCompare(a.start_date))
+        .map((m) => ({
+          id: m.id,
+          startDate: m.start_date,
+          endDate: m.end_date,
+          isCurrent: m.is_current,
+        }))
 
-  return {
-    mandates,
-    generatedAt: parsed.data.generated_at ?? null,
-  }
+      return {
+        mandates,
+        generatedAt: parsed.data.generated_at ?? null,
+      }
+    },
+    cacheOptions
+  )
 })

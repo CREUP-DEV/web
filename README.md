@@ -16,6 +16,7 @@ Proyecto basado en [Nuxt 4](https://nuxt.com/) con SSR, panel de administración
 - **Base de datos**: PostgreSQL + Drizzle ORM
 - **Panel de administración**: Modificación de carrusel, noticias, enlaces y etiquetas
 - **Integración Google Calendar**: Sincronización de eventos
+- **Correo en desarrollo**: Mailpit para capturar y revisar emails locales
 - **Internacionalización**: Español (por defecto) y soporte para inglés
 - **Accesibilidad y SEO**: Cumple buenas prácticas
 
@@ -28,16 +29,23 @@ Proyecto basado en [Nuxt 4](https://nuxt.com/) con SSR, panel de administración
 	pnpm install
 	```
 2. Copia y configura las variables de entorno necesarias (`.env`)
-3. Ejecuta el entorno de desarrollo:
+   En local, define `SITE_URL=http://localhost:3000` para que los enlaces absolutos de los correos apunten a la instancia correcta.
+3. Levanta los servicios auxiliares:
+	```sh
+	docker compose up -d postgres adminer mailpit
+	```
+4. Ejecuta el entorno de desarrollo:
 	```sh
 	pnpm dev
 	```
-4. Para aplicar cambios en la base de datos:
+5. Para aplicar cambios en la base de datos:
 	```sh
 	pnpm db:generate
 	pnpm db:migrate
 	pnpm db:seed
 	```
+
+Mailpit queda disponible en `http://localhost:8025` y expone el servidor SMTP en `localhost:1025` para pruebas de envío de correo.
 
 ---
 

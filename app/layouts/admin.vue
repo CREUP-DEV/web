@@ -18,6 +18,7 @@ if (locale.value !== defaultLocale) {
 const navigation = [
   { name: 'Panel', to: '/admin', icon: 'i-tabler-layout-dashboard' },
   { name: 'Carrusel', to: '/admin/carousel', icon: 'i-tabler-photo' },
+  { name: 'Newsletter', to: '/admin/newsletter', icon: 'i-tabler-mail' },
   { name: 'Prensa', to: '/admin/press', icon: 'i-tabler-news' },
   { name: 'Enlaces', to: '/admin/links', icon: 'i-tabler-link' },
   { name: 'Etiquetas', to: '/admin/tags', icon: 'i-tabler-tags' },
@@ -29,15 +30,24 @@ const sidebarOpen = ref(false)
 
 <template>
   <div class="bg-background min-h-screen">
+    <a
+      href="#admin-main-content"
+      class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
+    >
+      Saltar al contenido principal
+    </a>
+
     <!-- Mobile sidebar backdrop -->
     <div
       v-if="sidebarOpen"
       class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+      aria-hidden="true"
       @click="sidebarOpen = false"
     />
 
     <!-- Sidebar -->
     <aside
+      aria-label="Navegación de administración"
       :class="[
         'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white shadow-lg transition-transform duration-200 lg:translate-x-0 dark:bg-gray-900',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
@@ -48,11 +58,17 @@ const sidebarOpen = ref(false)
         <NuxtLink to="/admin" class="flex items-center gap-2">
           <span class="text-lg font-bold">Administración</span>
         </NuxtLink>
-        <UButton icon="i-tabler-x" variant="ghost" class="lg:hidden" @click="sidebarOpen = false" />
+        <UButton
+          icon="i-tabler-x"
+          variant="ghost"
+          class="lg:hidden"
+          aria-label="Cerrar menú lateral"
+          @click="sidebarOpen = false"
+        />
       </div>
 
       <!-- Navigation -->
-      <nav class="flex-1 space-y-1 overflow-y-auto p-4">
+      <nav class="flex-1 space-y-1 overflow-y-auto p-4" aria-label="Secciones de administración">
         <NuxtLink
           v-for="item in navigation"
           :key="item.to"
@@ -72,8 +88,12 @@ const sidebarOpen = ref(false)
           <img
             v-if="session.data?.user?.image"
             :src="session.data.user.image"
-            alt="Avatar"
+            :alt="
+              session.data.user.name ? `Avatar de ${session.data.user.name}` : 'Avatar de usuario'
+            "
             class="size-8 rounded-full text-xs"
+            loading="lazy"
+            decoding="async"
           />
           <div class="flex-1 truncate">
             <p class="truncate text-sm font-medium">{{ session.data?.user?.name }}</p>
@@ -100,6 +120,7 @@ const sidebarOpen = ref(false)
           icon="i-tabler-menu"
           variant="ghost"
           class="lg:hidden"
+          aria-label="Abrir menú lateral"
           @click="sidebarOpen = true"
         />
         <div class="flex-1" />
@@ -112,7 +133,7 @@ const sidebarOpen = ref(false)
       </header>
 
       <!-- Page content -->
-      <main class="p-4 sm:p-6 lg:p-8">
+      <main id="admin-main-content" tabindex="-1" class="p-4 sm:p-6 lg:p-8">
         <slot />
       </main>
     </div>

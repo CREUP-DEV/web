@@ -2,12 +2,25 @@ import { defineEventHandler, createError } from 'h3'
 import { eq, and } from 'drizzle-orm'
 import { db } from '../../db'
 import { pressArticles } from '../../db/schema'
+import {
+  normalizeLocaleDefinitions,
+  pickLocalizedEntry,
+  resolveConfiguredLocaleCode,
+  resolveLocaleCode,
+} from '../../../shared/utils/locale'
+import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../utils/externalAssetProxy'
 
 /**
  * Public press article detail API — resolves by slug
  */
 export default defineEventHandler(async (event) => {
-  const locale: string = event.context.requestLocale || 'es'
+  const runtimeI18n = useRuntimeConfig(event).public.i18n as {
+    defaultLocale?: unknown
+    locales?: unknown
+  }
+  const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
+  const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
+  const locale = resolveLocaleCode(event.context.requestLocale, locales, defaultLocale)
   const slug = getRouterParam(event, 'slug')
 
   if (!slug) {
@@ -33,16 +46,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Artículo no encontrado' })
   }
 
-  const trans =
-    article.translations.find((t) => t.locale === locale) ||
-    article.translations.find((t) => t.locale === 'es') ||
-    article.translations[0]
+  const trans = pickLocalizedEntry(article.translations, locale, locales, defaultLocale)
 
   const articleTags = article.tags.map((pt) => {
-    const tagTrans =
-      pt.tag.translations.find((t) => t.locale === locale) ||
-      pt.tag.translations.find((t) => t.locale === 'es') ||
-      pt.tag.translations[0]
+    const tagTrans = pickLocalizedEntry(pt.tag.translations, locale, locales, defaultLocale)
     return {
       slug: pt.tag.slug,
       name: tagTrans?.name ?? pt.tag.slug,
@@ -54,8 +61,14 @@ export default defineEventHandler(async (event) => {
       id: article.id,
       type: article.type,
       slug: article.slug,
-      image: article.image,
-      pdfUrl: article.pdfUrl,
+      image:
+        toExternalImageProxyUrl(article.image, {
+          publicPathBase: '/prensa/imagenes',
+        }) ?? article.image,
+      pdfUrl:
+        toExternalPdfProxyUrl(article.pdfUrl, {
+          publicPathBase: '/prensa/documentos',
+        }) ?? article.pdfUrl,
       externalUrl: article.externalUrl,
       title: trans?.title ?? '',
       description: trans?.description ?? '',
@@ -65,7 +78,10 @@ export default defineEventHandler(async (event) => {
       mediaOutlet: article.mediaOutlet
         ? {
             name: article.mediaOutlet.name,
-            logo: article.mediaOutlet.logo,
+            logo:
+              toExternalImageProxyUrl(article.mediaOutlet.logo, {
+                publicPathBase: '/prensa/imagenes',
+              }) ?? article.mediaOutlet.logo,
             website: article.mediaOutlet.website,
           }
         : null,

@@ -2,11 +2,6 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
 
-type LocaleConfig = {
-  code: string
-  flag: string
-}
-
 type LocaleItem = {
   value: Locale
   label: string
@@ -14,12 +9,12 @@ type LocaleItem = {
 }
 
 const { locale, setLocale, t, setLocaleCookie } = useI18n()
-const { localeConfigs } = useLocales()
+const { defaultLocale, getLocaleName, localeConfigs } = useLocales()
 
 const localeItems = computed<LocaleItem[]>(() =>
-  (localeConfigs.value as LocaleConfig[]).map((config) => ({
+  localeConfigs.value.map((config) => ({
     value: config.code as Locale,
-    label: t(`language.locales.${config.code}`),
+    label: getLocaleName(config.code),
     icon: config.flag,
   }))
 )
@@ -36,6 +31,7 @@ const selectedLocale = computed({
 const currentLocale = computed(
   () =>
     localeItems.value.find((item: LocaleItem) => item.value === locale.value) ??
+    localeItems.value.find((item: LocaleItem) => item.value === defaultLocale) ??
     localeItems.value[0]
 )
 
@@ -179,7 +175,7 @@ const items = computed<NavigationMenuItem[]>(() => [
       <UColorModeImage
         light="/img/creup-imagotipo.svg"
         dark="/img/creup-imagotipo-dark.svg"
-        alt="CREUP logo"
+        :alt="t('accessibility.siteLogo')"
         class="h-8 w-auto"
       />
     </template>
@@ -234,7 +230,7 @@ const items = computed<NavigationMenuItem[]>(() => [
           color="neutral"
           variant="ghost"
           size="lg"
-          :aria-label="t('language.toggle')"
+          :aria-label="t('language.openMenu')"
         />
       </UDropdownMenu>
     </template>

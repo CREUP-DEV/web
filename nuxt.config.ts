@@ -1,5 +1,13 @@
 import tailwindcss from '@tailwindcss/vite'
 
+const siteImageHostname = (() => {
+  try {
+    return new URL(process.env.SITE_URL || 'https://www.creup.es').hostname
+  } catch {
+    return 'www.creup.es'
+  }
+})()
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -72,20 +80,29 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     externalMembersApiBaseUrl: process.env.EXTERNAL_MEMBERS_API_BASE_URL || '',
+    externalAssetProxySecret: process.env.EXTERNAL_ASSET_PROXY_SECRET || '',
+    externalAssetProxyAllowedOrigins: process.env.EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS || '',
+    externalAssetProxyTimeoutMs: process.env.EXTERNAL_ASSET_PROXY_TIMEOUT_MS || '12000',
+    externalAssetProxyImageMaxBytes: process.env.EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES || '',
+    externalAssetProxyPdfMaxBytes: process.env.EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES || '',
+    externalApiCacheMaxAgeSeconds: process.env.EXTERNAL_API_CACHE_MAX_AGE_SECONDS || '300',
+    externalApiCacheStaleSeconds: process.env.EXTERNAL_API_CACHE_STALE_SECONDS || '900',
+    siteUrl: process.env.SITE_URL || 'https://www.creup.es',
     smtpHost: process.env.SMTP_HOST || '',
     smtpPort: process.env.SMTP_PORT || '587',
     smtpSecure: process.env.SMTP_SECURE || 'false',
     smtpUser: process.env.SMTP_USER || '',
     smtpPass: process.env.SMTP_PASS || '',
     smtpFromEmail: process.env.SMTP_FROM_EMAIL || '',
-    smtpToEmail: process.env.SMTP_TO_EMAIL || 'info@creup.es',
+    smtpToEmail: process.env.SMTP_TO_EMAIL,
+    smtpPressEmail: process.env.SMTP_PRESS_EMAIL || '',
   },
 
   css: ['~/assets/css/main.css'],
 
   // Nuxt SEO Configuration
   site: {
-    url: 'https://www.creup.es',
+    url: process.env.SITE_URL || 'https://www.creup.es',
     name: 'CREUP',
     description:
       'Coordinadora de Representantes de Estudiantes de Universidades Públicas - Representando a más de 1.000.000 de estudiantes en toda España.',
@@ -125,15 +142,18 @@ export default defineNuxtConfig({
         language: 'es-ES',
         file: 'es.json',
         name: 'Español',
+        flag: 'i-circle-flags-es',
       },
       {
         code: 'en',
         language: 'en-GB',
         file: 'en.json',
         name: 'English',
+        flag: 'i-circle-flags-gb',
       },
     ],
     defaultLocale: 'es',
+    fallbackLocale: 'es',
     strategy: 'no_prefix',
     detectBrowserLanguage: {
       useCookie: true,
@@ -161,6 +181,7 @@ export default defineNuxtConfig({
   image: {
     quality: 80,
     format: ['webp', 'avif', 'png', 'jpg'],
+    domains: Array.from(new Set([siteImageHostname, 'localhost', '127.0.0.1'])),
     screens: {
       xs: 320,
       sm: 640,

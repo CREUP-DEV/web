@@ -259,11 +259,11 @@ const handleImageSelect = async (event: Event) => {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    const result = await $fetch<{ path: string }>('/api/admin/press/upload', {
+    const result = await $fetch<{ path: string; storagePath: string }>('/api/admin/press/upload', {
       method: 'POST',
       body: formData,
     })
-    form.image = result.path
+    form.image = result.storagePath
     toast.add({ title: 'Imagen subida correctamente', color: 'success' })
   } catch {
     imagePreview.value = null
@@ -289,11 +289,11 @@ const handlePdfSelect = async (event: Event) => {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    const result = await $fetch<{ path: string }>('/api/admin/press/upload', {
+    const result = await $fetch<{ path: string; storagePath: string }>('/api/admin/press/upload', {
       method: 'POST',
       body: formData,
     })
-    form.pdfUrl = result.path
+    form.pdfUrl = result.storagePath
     toast.add({ title: 'PDF subido correctamente', color: 'success' })
   } catch {
     pdfName.value = null

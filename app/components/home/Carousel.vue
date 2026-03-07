@@ -48,7 +48,7 @@ const { t } = useI18n()
           <!-- Image container with 1925×550 aspect ratio -->
           <div class="bg-muted relative aspect-1925/550 w-full overflow-hidden rounded-t-xl">
             <NuxtImg
-              :src="item.image || '/img/carousel/default.jpg'"
+              :src="item.image || '/inicio/imagenes/carousel-default.jpg'"
               :alt="item.alt || item.title"
               width="1925"
               height="550"

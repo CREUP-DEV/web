@@ -146,12 +146,12 @@ const handleFileSelect = async (event: Event) => {
     const formData = new FormData()
     formData.append('file', file)
 
-    const result = await $fetch<{ path: string }>('/api/admin/media/upload', {
+    const result = await $fetch<{ path: string; storagePath: string }>('/api/admin/media/upload', {
       method: 'POST',
       body: formData,
     })
 
-    form.logo = result.path
+    form.logo = result.storagePath
     toast.add({ title: 'Logo subido correctamente', color: 'success' })
   } catch (e) {
     console.error('Error uploading file:', e)

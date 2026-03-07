@@ -124,7 +124,7 @@ async function main() {
   console.log('🎠 Creating carousel items...')
   const carouselData = [
     {
-      image: '/img/carousel/default.jpg',
+      image: '/inicio/imagenes/carousel-default.jpg',
       href: '/conocenos/que-es',
       translations: [
         {
@@ -140,7 +140,7 @@ async function main() {
       ],
     },
     {
-      image: '/img/carousel/vivienda.jpg',
+      image: '/inicio/imagenes/carousel-vivienda.jpg',
       href: '/noticias/vivienda',
       translations: [
         {
@@ -183,7 +183,7 @@ async function main() {
   const pressData = [
     {
       type: 'press_release' as const,
-      image: '/img/news/vivienda-estudiantes.jpg',
+      image: '/prensa/imagenes/news-vivienda-estudiantes.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -205,7 +205,7 @@ async function main() {
     },
     {
       type: 'press_release' as const,
-      image: '/img/news/huelga-madrid-pancarta.jpg',
+      image: '/prensa/imagenes/news-huelga-madrid-pancarta.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -227,7 +227,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/img/news/soberania-digital.jpg',
+      image: '/prensa/imagenes/news-soberania-digital.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -249,7 +249,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/img/news/estatuto-becario-firma.jpg',
+      image: '/prensa/imagenes/news-estatuto-becario-firma.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -271,7 +271,7 @@ async function main() {
     },
     {
       type: 'media_appearance' as const,
-      image: '/img/news/medicina-practicas.jpg',
+      image: '/prensa/imagenes/news-medicina-practicas.jpg',
       pdfUrl: null,
       externalUrl: 'https://example.com/practicas-sanitarias',
       mediaOutletId: null,
@@ -294,7 +294,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/img/news/fundacion-once-acuerdo.jpg',
+      image: '/prensa/imagenes/news-fundacion-once-acuerdo.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -316,7 +316,7 @@ async function main() {
     },
     {
       type: 'press_release' as const,
-      image: '/img/news/calidad-universitaria.jpg',
+      image: '/prensa/imagenes/news-calidad-universitaria.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -338,7 +338,7 @@ async function main() {
     },
     {
       type: 'media_appearance' as const,
-      image: '/img/news/comedores-ugr.jpg',
+      image: '/prensa/imagenes/news-comedores-ugr.jpg',
       pdfUrl: null,
       externalUrl: 'https://example.com/comedores-granada',
       mediaOutletId: null,
@@ -359,7 +359,7 @@ async function main() {
     },
     {
       type: 'press_release' as const,
-      image: '/img/news/canarias-parlamento.jpg',
+      image: '/prensa/imagenes/news-canarias-parlamento.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -381,7 +381,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/img/news/asamblea-sevilla.jpg',
+      image: '/prensa/imagenes/news-asamblea-sevilla.jpg',
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -450,7 +450,7 @@ async function main() {
   console.log('🔗 Creating featured links...')
   const featuredLinksData = [
     {
-      image: '/img/links/mic.jpg',
+      image: '/inicio/imagenes/links-mic.jpg',
       to: 'https://www.creup.es/mic/',
       translations: [
         { locale: 'es', title: 'Manual de Identidad Corporativa' },
@@ -458,7 +458,7 @@ async function main() {
       ],
     },
     {
-      image: '/img/links/newsletter.jpg',
+      image: '/inicio/imagenes/links-newsletter.jpg',
       to: 'https://www.creup.es/comunicacion/newsletter/',
       translations: [
         { locale: 'es', title: 'Suscríbete a nuestra Newsletter' },
@@ -466,7 +466,7 @@ async function main() {
       ],
     },
     {
-      image: '/img/links/apariciones.jpg',
+      image: '/inicio/imagenes/links-apariciones.jpg',
       to: '/prensa/en-los-medios',
       translations: [
         { locale: 'es', title: 'Apariciones en los medios' },
@@ -474,7 +474,7 @@ async function main() {
       ],
     },
     {
-      image: '/img/links/estatuto.jpg',
+      image: '/inicio/imagenes/links-estatuto.jpg',
       to: '/documentos/estatuto-estudiante',
       translations: [
         { locale: 'es', title: 'Estatuto del Estudiante' },
@@ -482,7 +482,7 @@ async function main() {
       ],
     },
     {
-      image: '/img/links/becas.jpg',
+      image: '/inicio/imagenes/links-becas.jpg',
       to: 'https://www.becaseducacion.gob.es/',
       translations: [
         { locale: 'es', title: 'Becas del Ministerio' },
@@ -490,7 +490,7 @@ async function main() {
       ],
     },
     {
-      image: '/img/links/esu.jpg',
+      image: '/inicio/imagenes/links-esu.jpg',
       to: 'https://www.esu-online.org/',
       translations: [
         { locale: 'es', title: "European Students' Union (ESU)" },

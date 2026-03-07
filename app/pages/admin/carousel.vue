@@ -33,7 +33,7 @@ interface CarouselItem {
 
 const toast = useToast()
 
-const defaultCarouselImage = '/img/carousel/default.jpg'
+const defaultCarouselImage = '/inicio/imagenes/carousel-default.jpg'
 
 const { data, refresh } = await useFetch<{ items: CarouselItem[] }>('/api/admin/carousel')
 

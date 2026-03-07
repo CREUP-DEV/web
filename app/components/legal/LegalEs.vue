@@ -11,7 +11,7 @@ defineProps<{
       <h1 class="text-3xl font-bold sm:text-4xl">
         {{ title }}
       </h1>
-      <p class="text-muted text-sm">Última actualización: 13 de febrero de 2026</p>
+      <p class="text-muted text-sm">Última actualización: 6 de marzo de 2026</p>
     </header>
 
     <!-- I. INFORMACIÓN GENERAL -->
@@ -182,9 +182,9 @@ defineProps<{
 
       <p class="text-sm leading-relaxed">
         Los datos personales recogidos por CREUP mediante los formularios del sitio web se tratan
-        bajo la responsabilidad del responsable para la gestión de solicitudes, el mantenimiento de
-        la relación con los usuarios y el cumplimiento de las obligaciones. La información sobre la
-        autoridad de control española está disponible en
+        bajo la responsabilidad del responsable para atender consultas, gestionar suscripciones a la
+        newsletter, mantener la relación con las personas usuarias y cumplir las obligaciones
+        aplicables. La información sobre la autoridad de control española está disponible en
         <a
           href="https://www.aepd.es"
           target="_blank"
@@ -230,31 +230,37 @@ defineProps<{
       <h3 class="text-base font-semibold">Base jurídica del tratamiento</h3>
 
       <p class="text-sm leading-relaxed">
-        La base jurídica para el tratamiento de los datos personales es el consentimiento. Los
-        usuarios podrán revocar su consentimiento en cualquier momento. La revocación del
-        consentimiento no afectará, con carácter general, al uso del Sitio Web, excepto cuando el
-        tratamiento sea estrictamente necesario para una acción solicitada.
+        La base jurídica depende de la finalidad concreta. En la newsletter, la base jurídica es el
+        consentimiento de la persona interesada, recabado mediante una acción afirmativa clara y
+        confirmado mediante un procedimiento de doble opt-in. En el formulario de contacto, la base
+        jurídica es la atención de la solicitud remitida por la persona interesada y, en su caso, la
+        aplicación de medidas precontractuales solicitadas por esta.
       </p>
 
       <h3 class="text-base font-semibold">Finalidades del tratamiento</h3>
 
       <p class="text-sm leading-relaxed">
-        Los datos personales se recogen y gestionan para facilitar, agilizar y cumplir los
-        compromisos entre el Sitio Web y el Usuario, o para atender solicitudes y consultas.
+        Los datos personales se recogen y gestionan para atender solicitudes y consultas, facilitar
+        la relación con las personas usuarias y, cuando exista consentimiento expreso, gestionar la
+        suscripción a la newsletter y remitir sus comunicaciones.
       </p>
 
       <h3 class="text-base font-semibold">Plazos de conservación</h3>
 
       <p class="text-sm leading-relaxed">
-        Los datos personales se conservarán únicamente durante el tiempo mínimo necesario para los
-        fines del tratamiento y, con carácter general, durante un máximo de 3 meses, salvo que se
-        solicite su supresión o existan obligaciones legales que requieran otro plazo.
+        Los datos personales se conservarán únicamente durante el tiempo necesario para la finalidad
+        correspondiente. Los mensajes enviados por el formulario de contacto se conservarán en el
+        correo corporativo durante el tiempo necesario para gestionar la consulta y, en su caso,
+        durante los plazos legalmente exigibles. Los datos de la newsletter se conservarán mientras
+        la suscripción permanezca activa. Tras la baja, CREUP conservará un registro mínimo de
+        supresión para evitar nuevos envíos no deseados y atender posibles incidencias o
+        reclamaciones.
       </p>
 
       <h3 class="text-base font-semibold">Destinatarios de los datos personales</h3>
 
       <p class="text-sm leading-relaxed">
-        Los datos personales no se comparten con terceros como regla general.
+        Los datos personales no se ceden a terceros, salvo obligación legal.
       </p>
 
       <h3 class="text-base font-semibold">Datos de menores</h3>

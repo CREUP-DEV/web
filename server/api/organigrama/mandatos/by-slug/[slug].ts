@@ -13,6 +13,10 @@
  */
 
 import { createError, defineEventHandler, getRouterParam } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+} from '../../../../utils/externalApiCache'
 import { fetchMandatesList, fetchMandateDetail } from '../../../../utils/mandateDetail'
 
 const SLUG_RE = /^\d{4}(-\d{2}(-\d{2})?)?$/
@@ -20,6 +24,9 @@ const SLUG_RE = /^\d{4}(-\d{2}(-\d{2})?)?$/
 export default defineEventHandler(async (event) => {
   const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const cacheOptions = getExternalApiCacheOptions(event)
+
+  setExternalApiCacheHeaders(event, cacheOptions)
 
   if (!configuredBaseUrl) {
     throw createError({
@@ -37,7 +44,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const mandates = await fetchMandatesList(configuredBaseUrl)
+  const mandates = await fetchMandatesList(configuredBaseUrl, cacheOptions)
   const matches = mandates.filter((m) => m.startDate.startsWith(slug))
 
   if (matches.length === 0) {
@@ -56,7 +63,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Single match — return full detail
-  const detail = await fetchMandateDetail(configuredBaseUrl, matches[0]!.id)
+  const detail = await fetchMandateDetail(configuredBaseUrl, matches[0]!.id, cacheOptions, event)
 
   return {
     ambiguous: false as const,

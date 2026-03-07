@@ -8,10 +8,22 @@ import { defineEventHandler } from 'h3'
 import { eq, asc } from 'drizzle-orm'
 import { db } from '../db'
 import { carouselItems, featuredLinks } from '../db/schema'
+import {
+  normalizeLocaleDefinitions,
+  pickLocalizedEntry,
+  resolveConfiguredLocaleCode,
+  resolveLocaleCode,
+} from '../../shared/utils/locale'
+import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
 
 export default defineEventHandler(async (event) => {
-  // Get locale from middleware context
-  const locale = event.context.requestLocale || 'es'
+  const runtimeI18n = useRuntimeConfig(event).public.i18n as {
+    defaultLocale?: unknown
+    locales?: unknown
+  }
+  const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
+  const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
+  const locale = resolveLocaleCode(event.context.requestLocale, locales, defaultLocale)
 
   // Fetch carousel items
   const carouselItemsList = await db.query.carouselItems.findMany({
@@ -29,14 +41,16 @@ export default defineEventHandler(async (event) => {
 
   // Transform data with locale-specific translations
   const carousel = carouselItemsList.map((item) => {
-    const translation = item.translations.find((t) => t.locale === locale) ||
-      item.translations.find((t) => t.locale === 'es') || {
-        title: '',
-        buttonText: '',
-        alt: null,
-      }
+    const translation = pickLocalizedEntry(item.translations, locale, locales, defaultLocale) || {
+      title: '',
+      buttonText: '',
+      alt: null,
+    }
     return {
-      image: item.image,
+      image:
+        toExternalImageProxyUrl(item.image, {
+          publicPathBase: '/inicio/imagenes',
+        }) ?? item.image,
       href: item.href,
       title: translation.title,
       buttonText: translation.buttonText,
@@ -45,13 +59,15 @@ export default defineEventHandler(async (event) => {
   })
 
   const featuredLinksList = linkItemsList.map((item) => {
-    const translation = item.translations.find((t) => t.locale === locale) ||
-      item.translations.find((t) => t.locale === 'es') || {
-        title: '',
-        alt: null,
-      }
+    const translation = pickLocalizedEntry(item.translations, locale, locales, defaultLocale) || {
+      title: '',
+      alt: null,
+    }
     return {
-      image: item.image,
+      image:
+        toExternalImageProxyUrl(item.image, {
+          publicPathBase: '/inicio/imagenes',
+        }) ?? item.image,
       to: item.to,
       title: translation.title,
       alt: (translation as { alt?: string | null }).alt ?? '',
