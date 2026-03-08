@@ -23,5 +23,5 @@ logs
 .env.*
 !.env.example
 
-# PDFs in public/documents
-public/documents/**/*.pdf
+# PDFs
+public/documentos/**/*.pdf
