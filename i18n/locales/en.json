@@ -71,6 +71,10 @@
     "newsAndEventsLabel": "Press and events",
     "latestNews": "Latest News",
     "featuredLinks": "Featured Links",
+    "equalityLink": {
+      "title": "Equality and harassment prevention",
+      "alt": "Illustration linking to the equality section"
+    },
     "publicAgenda": "Public Agenda",
     "noNews": "No news available for this tag",
     "carousel": {
@@ -216,6 +220,94 @@
         "cta": "Go to Events"
       }
     }
+  },
+  "equalityPage": {
+    "title": "Equality and harassment prevention",
+    "description": "Public CREUP space bringing together documents, commitments, and resources on equality, diversity, inclusive communication, and harassment prevention.",
+    "eyebrow": "Equality and Social Dimension",
+    "lead": "A single place to consult CREUP's position, its response protocol, and supporting materials on equality and social dimension.",
+    "ctaDocuments": "View key documents",
+    "ctaContact": "Contact us",
+    "heroPoints": {
+      "centralize": "Resources gathered in one place",
+      "access": "Clear access from the public website",
+      "support": "Documentation to prevent, respond, and support"
+    },
+    "commitmentsTitle": "What this page brings together",
+    "commitments": {
+      "policy": {
+        "title": "Policy framework and principles",
+        "description": "Explains CREUP's position on equality, diversity, and discrimination within the university environment."
+      },
+      "protocol": {
+        "title": "Prevention and response",
+        "description": "Includes guidance on prevention, reporting, support, and response in situations of harassment or discrimination."
+      },
+      "communication": {
+        "title": "Inclusive communication",
+        "description": "Provides practical criteria on language, visual representation, and accessibility for non-discriminatory communication."
+      },
+      "visibility": {
+        "title": "Transparency and access",
+        "description": "Concentrates key resources in a stable location that is easy to find from public navigation."
+      }
+    },
+    "resourcesTitle": "Available documents",
+    "openDocument": "Open document",
+    "resources": {
+      "motion": {
+        "title": "Internal motion on the inclusion of a comprehensive Equality and Social Dimension section on the website",
+        "description": "Document approved at the 75th Ordinary General Assembly that drives the creation of this space and defines its goals of centralization, visibility, and accessibility.",
+        "meta": "75th Ordinary General Assembly · April 26, 2024"
+      },
+      "position": {
+        "title": "Policy position on Equality and Diversity",
+        "description": "CREUP's policy framework on discrimination in universities, equality plans, protocols, and demands addressed to public institutions.",
+        "meta": "Policy document · Equality and diversity"
+      },
+      "guide": {
+        "title": "Inclusive Communication Guide",
+        "description": "Practical recommendations on language, visual resources, and accessibility criteria for more inclusive communication in the university context.",
+        "meta": "Practical guide · Language, visuals, and accessibility"
+      },
+      "protocol": {
+        "title": "Protocol for prevention and response to harassment and discrimination cases in CREUP",
+        "description": "Procedure for prevention, reporting, support, and response in situations of harassment or discrimination during CREUP activities.",
+        "meta": "Internal protocol · Prevention and response"
+      }
+    },
+    "actionTitle": "How to act in a situation of harassment or discrimination",
+    "actionSteps": {
+      "safety": {
+        "title": "Prioritize safety",
+        "description": "If there is an immediate risk, leave the situation, seek support from a trusted person, and in urgent cases contact 112 or emergency services."
+      },
+      "notify": {
+        "title": "Report what happened",
+        "description": "In CREUP activities, any participant can report the facts to the Equality and Social Dimension Officer, the Guarantees Committee, or the Executive Committee."
+      },
+      "details": {
+        "title": "Gather relevant information",
+        "description": "Write down dates, places, people involved, and any available evidence to facilitate assessment and later support."
+      },
+      "support": {
+        "title": "Read the protocol and ask for support",
+        "description": "The protocol explains the steps, safeguards, and specific measures for different cases, including situations related to gender, sexual orientation, disability, or ethnicity."
+      }
+    },
+    "scopeTitle": "Areas covered",
+    "scopeItems": {
+      "gender": "Gender-based violence and sexism",
+      "lgbtiq": "Sexual orientation, identity, and gender expression",
+      "ethnicity": "Racism and discrimination based on ethnicity or origin",
+      "disability": "Disability, accessibility, and support",
+      "language": "Inclusive and non-discriminatory communication",
+      "institutional": "Protocols, plans, and institutional transparency"
+    },
+    "supportTitle": "Do you need guidance or more information?",
+    "supportDescription": "If you have questions about this documentation or need us to point you to the right resource, you can contact us. In urgent cases, we also recommend using the specialized services available at your university or in your area.",
+    "supportPrimary": "Go to contact",
+    "supportSecondary": "Download protocol"
   },
   "members": {
     "title": "Members",
@@ -391,6 +483,17 @@
       "description": "Executive reports are prepared in relation to regulations, indicating either the minimum requirements they must include or the amendments CREUP wishes to propose.",
       "loadError": "Executive reports could not be loaded right now.",
       "empty": "No executive reports available."
+    }
+  },
+  "regulations": {
+    "title": "Regulations",
+    "description": "CREUP's internal regulations approved by the General Assembly, arranged in a normative hierarchy: the statutes form the foundational rules and take precedence over all others; the regime regulations govern the organisational structure; and the operating regulations define how each body functions in practice.",
+    "loadError": "Regulations could not be loaded right now.",
+    "empty": "No regulations available.",
+    "categories": {
+      "estatutos": "Statutes",
+      "reglamentos-de-regimen": "Regime Regulations",
+      "reglamentos-de-funcionamiento": "Operating Regulations"
     }
   },
   "press": {

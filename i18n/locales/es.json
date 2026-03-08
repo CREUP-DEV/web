@@ -71,6 +71,10 @@
     "newsAndEventsLabel": "Prensa y eventos",
     "latestNews": "Última hora",
     "featuredLinks": "Enlaces destacados",
+    "equalityLink": {
+      "title": "Igualdad y prevención del acoso",
+      "alt": "Ilustración de acceso a la sección de igualdad"
+    },
     "publicAgenda": "Agenda pública",
     "noNews": "No hay noticias para esta etiqueta",
     "carousel": {
@@ -216,6 +220,94 @@
         "cta": "Ir a Eventos"
       }
     }
+  },
+  "equalityPage": {
+    "title": "Igualdad y prevención del acoso",
+    "description": "Espacio público de CREUP que reúne documentación, compromisos y recursos sobre igualdad, diversidad, comunicación inclusiva y prevención del acoso.",
+    "eyebrow": "Igualdad y Dimensión Social",
+    "lead": "Un espacio único para consultar el posicionamiento de CREUP, su protocolo de actuación y materiales de apoyo sobre igualdad y dimensión social.",
+    "ctaDocuments": "Ver documentos clave",
+    "ctaContact": "Contacta con nosotros",
+    "heroPoints": {
+      "centralize": "Recursos reunidos en un mismo espacio",
+      "access": "Acceso claro desde la web pública",
+      "support": "Documentación para prevenir, actuar y acompañar"
+    },
+    "commitmentsTitle": "Qué reúne esta página",
+    "commitments": {
+      "policy": {
+        "title": "Marco político y de principios",
+        "description": "Explica la posición de CREUP sobre igualdad, diversidad y discriminaciones en el ámbito universitario."
+      },
+      "protocol": {
+        "title": "Prevención y actuación",
+        "description": "Recoge pautas de prevención, denuncia, acompañamiento y respuesta ante situaciones de acoso o discriminación."
+      },
+      "communication": {
+        "title": "Comunicación inclusiva",
+        "description": "Aporta criterios prácticos sobre lenguaje, representación visual y accesibilidad para comunicar de forma no discriminatoria."
+      },
+      "visibility": {
+        "title": "Transparencia y acceso",
+        "description": "Concentra recursos clave en una ubicación estable y fácil de encontrar desde la navegación pública."
+      }
+    },
+    "resourcesTitle": "Documentos disponibles",
+    "openDocument": "Abrir documento",
+    "resources": {
+      "motion": {
+        "title": "Moción interna sobre la inclusión de un apartado integral de Igualdad y Dimensión Social en la web",
+        "description": "Documento aprobado en la 75ª Asamblea General Ordinaria que impulsa la creación de este espacio y fija sus objetivos de centralización, visibilidad y accesibilidad.",
+        "meta": "75ª Asamblea General Ordinaria · 26 de abril de 2024"
+      },
+      "position": {
+        "title": "Posicionamiento político en materia de Igualdad y Diversidad",
+        "description": "Marco político de CREUP sobre discriminaciones en la universidad, planes de igualdad, protocolos y demandas a las instituciones públicas.",
+        "meta": "Documento político · Igualdad y diversidad"
+      },
+      "guide": {
+        "title": "Guía de Comunicación Inclusiva",
+        "description": "Recomendaciones prácticas sobre lenguaje, recursos visuales y criterios de accesibilidad para una comunicación más inclusiva en el ámbito universitario.",
+        "meta": "Guía práctica · Lenguaje, visualidad y accesibilidad"
+      },
+      "protocol": {
+        "title": "Protocolo de prevención y actuación frente a casos de acoso y discriminación en CREUP",
+        "description": "Procedimiento de prevención, denuncia, acompañamiento y respuesta ante situaciones de acoso o discriminación en actividades de CREUP.",
+        "meta": "Protocolo interno · Prevención y actuación"
+      }
+    },
+    "actionTitle": "Cómo actuar ante una situación de acoso o discriminación",
+    "actionSteps": {
+      "safety": {
+        "title": "Prioriza la seguridad",
+        "description": "Si existe riesgo inmediato, aléjate de la situación, busca apoyo de una persona de confianza y, en caso de urgencia, contacta con el 112 o con los servicios de emergencia."
+      },
+      "notify": {
+        "title": "Comunica lo ocurrido",
+        "description": "En actividades de CREUP, cualquier participante puede poner los hechos en conocimiento de la Vocalía de Igualdad y Dimensión Social, del Comité de Garantías o de la Comisión Ejecutiva."
+      },
+      "details": {
+        "title": "Recoge la información relevante",
+        "description": "Anota fechas, lugares, personas implicadas y cualquier evidencia disponible para facilitar la valoración y el acompañamiento posterior."
+      },
+      "support": {
+        "title": "Consulta el protocolo y pide acompañamiento",
+        "description": "El protocolo explica los pasos, garantías y medidas específicas para distintos supuestos, incluidas situaciones por género, orientación sexual, discapacidad o etnia."
+      }
+    },
+    "scopeTitle": "Ámbitos cubiertos",
+    "scopeItems": {
+      "gender": "Violencia de género y sexismo",
+      "lgbtiq": "Orientación sexual, identidad y expresión de género",
+      "ethnicity": "Racismo y discriminación por etnia u origen",
+      "disability": "Discapacidad, accesibilidad y apoyos",
+      "language": "Comunicación inclusiva y no discriminatoria",
+      "institutional": "Protocolos, planes y transparencia institucional"
+    },
+    "supportTitle": "¿Necesitas orientación o más información?",
+    "supportDescription": "Si tienes dudas sobre esta documentación o necesitas que te orientemos hacia el recurso adecuado, puedes escribirnos. Para casos urgentes, te recomendamos recurrir también a los servicios especializados de tu universidad o de tu territorio.",
+    "supportPrimary": "Ir a contacto",
+    "supportSecondary": "Descargar protocolo"
   },
   "members": {
     "title": "Miembros",
@@ -391,6 +483,17 @@
       "description": "Los informes ejecutivos se realizan en relación a una normativa donde se indican los mínimos que debe contener, o las modificaciones que desde CREUP se quieren realizar.",
       "loadError": "No se han podido cargar los informes ejecutivos en este momento.",
       "empty": "No hay informes ejecutivos disponibles."
+    }
+  },
+  "regulations": {
+    "title": "Normativa",
+    "description": "Normativa interna de CREUP aprobada por la Asamblea General, con carácter jerárquico: los estatutos constituyen la norma fundacional y prevalecen sobre el resto; los reglamentos de régimen regulan la estructura orgánica; y los reglamentos de funcionamiento concretan el régimen operativo de cada órgano.",
+    "loadError": "No se ha podido cargar la normativa en este momento.",
+    "empty": "No hay normativa disponible.",
+    "categories": {
+      "estatutos": "Estatutos",
+      "reglamentos-de-regimen": "Reglamentos de Régimen",
+      "reglamentos-de-funcionamiento": "Reglamentos de Funcionamiento"
     }
   },
   "press": {

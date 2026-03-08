@@ -12,7 +12,15 @@ const { data: homeData } = useHomeData()
 const { events, isLoading: eventsLoading } = useGoogleCalendar()
 
 const carouselItems = computed(() => homeData.value?.carousel ?? [])
-const links = computed(() => homeData.value?.featuredLinks ?? [])
+const links = computed(() => [
+  {
+    title: t('home.equalityLink.title'),
+    image: '/inicio/imagenes/links-igualdad.svg',
+    to: '/transparencia/igualdad/',
+    alt: t('home.equalityLink.alt'),
+  },
+  ...(homeData.value?.featuredLinks ?? []),
+])
 
 // SEO meta for home page
 useSeoMeta({

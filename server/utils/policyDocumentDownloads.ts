@@ -135,7 +135,9 @@ export async function toPolicyDocumentPublicPdfPathAsync(
     return null
   }
 
-  return `/documentos/${type}/${fileName}`
+  const versionParam = sourceUrl.searchParams.get('v')
+  const versionSuffix = versionParam ? `?v=${encodeURIComponent(versionParam)}` : ''
+  return `/documentos/${type}/${fileName}${versionSuffix}`
 }
 
 export async function resolvePolicyDocumentSourceByTypeAndFileName(

@@ -135,10 +135,6 @@ const items = computed<NavigationMenuItem[]>(() => [
     active: route.path.startsWith('/transparencia'),
     children: [
       {
-        label: t('nav.transparency.agreements'),
-        to: '/transparencia/convenios/',
-      },
-      {
         label: t('nav.transparency.regulations'),
         to: '/transparencia/normativa/',
       },

@@ -415,6 +415,25 @@ export const policyDocumentRouteTypeSchema = z.enum([
   'informe-ejecutivo',
 ])
 
+// External normativa (regulations) API schemas
+export const externalNormativaDocumentSchema = z.object({
+  order: z.coerce.number().int().default(0),
+  name: z.string(),
+  date: z.string(),
+  assembly: z.string().nullable().optional(),
+  file: externalPolicyDocumentFileSchema.nullable().optional(),
+})
+
+export const externalNormativaCategorySchema = z.object({
+  category: z.string(),
+  documents: z.array(externalNormativaDocumentSchema),
+})
+
+export const externalNormativaResponseSchema = z.object({
+  data: z.array(externalNormativaCategorySchema),
+  generated_at: z.string().nullable().optional(),
+})
+
 export const policyDocumentFileNameParamSchema = z.object({
   fileName: z
     .string()
