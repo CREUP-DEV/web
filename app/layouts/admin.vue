@@ -17,6 +17,7 @@ if (locale.value !== defaultLocale) {
 
 const navigation = [
   { name: 'Panel', to: '/admin', icon: 'i-tabler-layout-dashboard' },
+  { name: 'Accesos', to: '/admin/access', icon: 'i-tabler-shield-lock' },
   { name: 'Carrusel', to: '/admin/carousel', icon: 'i-tabler-photo' },
   { name: 'Newsletter', to: '/admin/newsletter', icon: 'i-tabler-mail' },
   { name: 'Prensa', to: '/admin/press', icon: 'i-tabler-news' },

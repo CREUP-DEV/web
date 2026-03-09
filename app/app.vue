@@ -4,7 +4,7 @@
  * Sets global document attributes and wraps pages with UApp.
  */
 import { en, es } from '@nuxt/ui/locale'
-import { getBaseLanguage } from '../shared/utils/locale'
+import { getBaseLanguage } from '~~/shared/utils/locale'
 
 const { locale, t } = useI18n()
 const { getLanguageTag } = useLocales()

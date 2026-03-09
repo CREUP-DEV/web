@@ -4,7 +4,7 @@ import {
   parseAcceptLanguageHeader,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
-} from '../../shared/utils/locale'
+} from '~~/shared/utils/locale'
 
 export default defineEventHandler((event) => {
   const config = useRuntimeConfig(event)

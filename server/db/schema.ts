@@ -128,6 +128,7 @@ export const pressArticleTranslations = pgTable(
     locale: text('locale').notNull(),
     title: text('title').notNull(),
     description: text('description'),
+    contentHtml: text('content_html'),
     alt: text('alt'),
     pressArticleId: text('press_article_id')
       .notNull()
@@ -222,6 +223,21 @@ export const featuredLinkTranslationsRelations = relations(featuredLinkTranslati
     references: [featuredLinks.id],
   }),
 }))
+
+// ============================================================================
+// Admin Access
+// ============================================================================
+
+export const adminAccess = pgTable('admin_access', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  email: text('email').notNull().unique(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
 
 // ============================================================================
 // Better Auth Tables

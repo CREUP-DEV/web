@@ -8,7 +8,7 @@ import {
   pickLocalizedEntry,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
-} from '../../shared/utils/locale'
+} from '~~/shared/utils/locale'
 
 export type LocaleConfig = ReturnType<typeof normalizeLocaleDefinitions>[number]
 

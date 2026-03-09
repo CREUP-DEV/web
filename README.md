@@ -30,6 +30,8 @@ Proyecto basado en [Nuxt 4](https://nuxt.com/) con SSR, panel de administración
 	```
 2. Copia y configura las variables de entorno necesarias (`.env`)
    En local, define `SITE_URL=http://localhost:3000` para que los enlaces absolutos de los correos apunten a la instancia correcta.
+   Define también `ADMIN_EMAILS=correo1@dominio.es,correo2@dominio.es` para los accesos base al panel.
+   Si quieres limitar todos los accesos admin a un dominio concreto, añade `ADMIN_EMAIL_DOMAIN=dominio.es`.
 3. Levanta los servicios auxiliares:
 	```sh
 	docker compose up -d postgres adminer mailpit

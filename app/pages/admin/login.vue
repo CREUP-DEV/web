@@ -8,16 +8,46 @@ definePageMeta({
   layout: false,
 })
 
-const { session, signInWithGoogle } = useAuth()
+const { session, signInWithGoogle, signOut } = useAuth()
+const route = useRoute()
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+const isCheckingAccess = ref(false)
 
-// Redirect if already logged in
+const isLoggedIn = computed(() => Boolean(session.value.data?.user))
+
+const verifyAdminAccess = async () => {
+  if (!session.value.data?.user) {
+    return
+  }
+
+  isCheckingAccess.value = true
+
+  try {
+    await $fetch('/api/admin/session')
+    await navigateTo('/admin')
+  } catch {
+    error.value = 'Esta cuenta ha iniciado sesión, pero no tiene acceso al panel de administración'
+  } finally {
+    isCheckingAccess.value = false
+  }
+}
+
+watch(
+  () => route.query.error,
+  (queryError) => {
+    if (typeof queryError === 'string' && queryError.length > 0) {
+      error.value = 'No se pudo completar el inicio de sesión con la cuenta seleccionada'
+    }
+  },
+  { immediate: true }
+)
+
 watch(
   () => session.value.data?.user,
-  (user) => {
+  async (user) => {
     if (user) {
-      navigateTo('/admin')
+      await verifyAdminAccess()
     }
   },
   { immediate: true }
@@ -46,14 +76,36 @@ const handleLogin = async () => {
 
       <UAlert v-if="error" color="error" :title="error" class="mt-4" />
 
+      <UAlert
+        v-if="isLoggedIn && !isCheckingAccess && error"
+        color="warning"
+        title="Sesión iniciada sin permisos"
+        description="Cierra sesión y accede con una cuenta autorizada para entrar al panel."
+      />
+
       <UButton
         block
         size="lg"
         :loading="isLoading"
+        :disabled="isCheckingAccess || isLoggedIn"
         icon="i-tabler-brand-google"
         @click="handleLogin"
       >
         Iniciar sesión con Google
+      </UButton>
+
+      <p v-if="isCheckingAccess" class="text-muted text-center text-sm">
+        Verificando acceso al panel...
+      </p>
+
+      <UButton
+        v-if="isLoggedIn && !isCheckingAccess && error"
+        block
+        variant="ghost"
+        icon="i-tabler-logout"
+        @click="signOut"
+      >
+        Cerrar sesión
       </UButton>
     </div>
   </div>

@@ -537,10 +537,10 @@ const getMemberAnimationStyle = (index: number) => {
                     <p class="text-muted mt-2 text-sm leading-snug">
                       {{ getMemberDenominationLabel(member) }}
                     </p>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
                       <UBadge
                         v-if="member.initials"
-                        size="xs"
+                        size="sm"
                         color="neutral"
                         variant="soft"
                         class="px-2 py-0.5 text-xs font-semibold"
@@ -548,7 +548,7 @@ const getMemberAnimationStyle = (index: number) => {
                         {{ member.initials }}
                       </UBadge>
                       <UBadge
-                        size="xs"
+                        size="sm"
                         color="neutral"
                         variant="outline"
                         class="px-2 py-0.5 text-xs font-semibold"
@@ -627,10 +627,10 @@ const getMemberAnimationStyle = (index: number) => {
                 <h3 class="text-base leading-tight font-semibold sm:text-lg">
                   {{ getSectorialDenominationLabel(sectorial) }}
                 </h3>
-                <div class="mt-3 flex flex-wrap items-center gap-2">
+                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
                   <UBadge
                     v-if="sectorial.initials"
-                    size="xs"
+                    size="sm"
                     color="neutral"
                     variant="soft"
                     class="px-2 py-0.5 text-xs font-semibold"
@@ -678,7 +678,7 @@ const getMemberAnimationStyle = (index: number) => {
                   {{ getMemberDenominationLabel(selectedMember) }}
                 </h3>
 
-                <div class="mt-3 flex flex-wrap items-center justify-center gap-2 md:justify-start">
+                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
                   <UBadge
                     v-if="selectedMember.initials"
                     size="sm"
@@ -804,7 +804,7 @@ const getMemberAnimationStyle = (index: number) => {
                   {{ getSectorialDenominationLabel(selectedSectorial) }}
                 </h3>
 
-                <div class="mt-3 flex flex-wrap items-center justify-center gap-2 md:justify-start">
+                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
                   <UBadge
                     v-if="selectedSectorial.initials"
                     size="sm"

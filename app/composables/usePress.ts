@@ -26,6 +26,7 @@ export interface PressArticle {
   title: string
   description: string
   alt: string
+  contentHtml: string | null
   publishedAt: string
   tags: PressArticleTag[]
   mediaOutlet: PressArticleMediaOutlet | null

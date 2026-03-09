@@ -7,7 +7,7 @@ import {
   pickLocalizedEntry,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
-} from '../../shared/utils/locale'
+} from '~~/shared/utils/locale'
 
 export default defineEventHandler(async (event) => {
   const runtimeI18n = useRuntimeConfig(event).public.i18n as {

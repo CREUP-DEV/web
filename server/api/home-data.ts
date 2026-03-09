@@ -13,7 +13,7 @@ import {
   pickLocalizedEntry,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
-} from '../../shared/utils/locale'
+} from '~~/shared/utils/locale'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
 
 export default defineEventHandler(async (event) => {

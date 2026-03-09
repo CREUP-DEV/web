@@ -4,11 +4,11 @@ import { db } from '../db'
 import { pressArticles, tags, pressArticleTags } from '../db/schema'
 import {
   normalizeLocaleDefinitions,
-  pickLocalizedEntry,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
-} from '../../shared/utils/locale'
+} from '~~/shared/utils/locale'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
+import { resolvePressTranslation } from '../utils/pressTranslation'
 
 /**
  * Public press articles API
@@ -77,9 +77,18 @@ export default defineEventHandler(async (event) => {
   })
 
   const articles = articlesList.map((item) => {
-    const trans = pickLocalizedEntry(item.translations, locale, locales, defaultLocale)
+    const trans = resolvePressTranslation(item.translations, locale, defaultLocale)
     const articleTags = item.tags.map((pt) => {
-      const tagTrans = pickLocalizedEntry(pt.tag.translations, locale, locales, defaultLocale)
+      const tagTrans =
+        pt.tag.translations.find(
+          (translation) =>
+            resolveLocaleCode(translation.locale, locales, '') ===
+            resolveLocaleCode(locale, locales, defaultLocale)
+        ) ??
+        pt.tag.translations.find(
+          (translation) => resolveLocaleCode(translation.locale, locales, '') === defaultLocale
+        ) ??
+        pt.tag.translations[0]
       return {
         slug: pt.tag.slug,
         name: tagTrans?.name ?? pt.tag.slug,
@@ -102,6 +111,7 @@ export default defineEventHandler(async (event) => {
       title: trans?.title ?? '',
       description: trans?.description ?? '',
       alt: trans?.alt ?? '',
+      contentHtml: trans?.contentHtml ?? null,
       publishedAt: item.publishedAt.toISOString(),
       tags: articleTags,
       mediaOutlet: item.mediaOutlet

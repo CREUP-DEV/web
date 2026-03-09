@@ -9,7 +9,7 @@ import {
   normalizeLocaleDefinitions,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
-} from '../../shared/utils/locale'
+} from '~~/shared/utils/locale'
 
 interface GoogleCalendarEvent {
   id: string

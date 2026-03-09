@@ -36,6 +36,20 @@
       "when": 1772824915608,
       "tag": "0004_noisy_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772932124733,
+      "tag": "0005_soft_lady_vermin",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772932491398,
+      "tag": "0006_free_stepford_cuckoos",
+      "breakpoints": true
     }
   ]
 }

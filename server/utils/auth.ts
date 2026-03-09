@@ -2,9 +2,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { db } from '../db'
 import { users, sessions, accounts, verifications } from '../db/schema'
-
-// Allowed admin emails
-const ALLOWED_ADMINS = ['tic@creup.es']
+import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
 
 interface SignInUser {
   id: string
@@ -41,9 +39,10 @@ export const auth = betterAuth({
     },
   },
   callbacks: {
-    // Only allow specific admin emails
     async signIn({ user }: { user: SignInUser }) {
-      if (!user.email || !ALLOWED_ADMINS.includes(user.email)) {
+      const normalizedEmail = user.email ? normalizeAdminEmail(user.email) : ''
+
+      if (!normalizedEmail || !(await isAdminEmailAuthorized(normalizedEmail))) {
         return {
           error: 'Acceso no autorizado. Solo los administradores pueden acceder.',
         }

@@ -180,6 +180,15 @@ async function main() {
   }
 
   console.log('📰 Creating press articles...')
+  const buildRichText = (paragraphs: string[], highlights: string[] = []) => {
+    const body = paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join('')
+    const bulletList = highlights.length
+      ? `<ul>${highlights.map((item) => `<li>${item}</li>`).join('')}</ul>`
+      : ''
+
+    return `${body}${bulletList}`
+  }
+
   const pressData = [
     {
       type: 'press_release' as const,
@@ -194,6 +203,17 @@ async function main() {
           title: 'Emergencia habitacional: los precios expulsan al estudiantado de la universidad',
           description:
             'Nota de prensa sobre la crisis de vivienda que afecta al estudiantado universitario en toda España.',
+          contentHtml: buildRichText(
+            [
+              'CREUP advierte de que el encarecimiento sostenido del alquiler y la falta de plazas públicas de alojamiento están expulsando a miles de estudiantes de sus estudios superiores.',
+              'La organización reclama a las administraciones una respuesta coordinada que garantice el acceso a la universidad en condiciones de igualdad, con especial atención a quienes deben desplazarse de su lugar de residencia habitual.',
+            ],
+            [
+              'Plan urgente de residencias públicas y asequibles.',
+              'Refuerzo de las becas vinculadas a alojamiento.',
+              'Medidas de contención de precios en zonas tensionadas.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -216,6 +236,17 @@ async function main() {
           title: 'Huelga universitaria en Madrid: movilizaciones por la financiación educativa',
           description:
             'Nota de prensa sobre las movilizaciones estudiantiles en Madrid en defensa de la financiación de la educación pública.',
+          contentHtml: buildRichText(
+            [
+              'CREUP respalda las movilizaciones convocadas en Madrid para denunciar la infrafinanciación estructural de las universidades públicas y sus efectos sobre la calidad docente y la equidad.',
+              'La coordinadora insiste en que la financiación universitaria debe blindarse con compromisos plurianuales y con una participación real del estudiantado en el diseño de las políticas públicas.',
+            ],
+            [
+              'Más recursos para plantillas e infraestructuras.',
+              'Reducción de barreras económicas de acceso y permanencia.',
+              'Participación estudiantil en la toma de decisiones.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -238,6 +269,17 @@ async function main() {
           title: 'Resolución por la soberanía digital en las universidades',
           description:
             'Comunicado oficial de CREUP sobre la necesidad de garantizar la soberanía digital en el ámbito universitario.',
+          contentHtml: buildRichText(
+            [
+              'CREUP considera prioritario que las universidades públicas refuercen su autonomía tecnológica y reduzcan la dependencia de plataformas privadas para servicios esenciales.',
+              'La resolución apuesta por soluciones interoperables, transparentes y respetuosas con los derechos digitales del estudiantado y del personal universitario.',
+            ],
+            [
+              'Protección reforzada de datos personales.',
+              'Uso preferente de herramientas auditables y abiertas.',
+              'Gobernanza universitaria sobre infraestructuras críticas digitales.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -260,6 +302,17 @@ async function main() {
           title: 'Entrada en vigor del Estatuto del Becario',
           description:
             'Comunicado sobre la entrada en vigor del Estatuto del Becario y su impacto en el estudiantado.',
+          contentHtml: buildRichText(
+            [
+              'CREUP valora la entrada en vigor del Estatuto del Becario como un avance relevante en la regulación de las prácticas, aunque recuerda que su aplicación deberá vigilarse para evitar usos fraudulentos.',
+              'La organización seguirá trabajando para que la formación práctica responda a fines pedagógicos reales y no sustituya empleo estructural.',
+            ],
+            [
+              'Seguimiento efectivo del cumplimiento normativo.',
+              'Garantías frente a abusos en las prácticas.',
+              'Coordinación entre universidades, empresas y estudiantes.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -305,6 +358,17 @@ async function main() {
           title: 'Nueva alianza con Fundación ONCE para la inclusión plena en los campus',
           description:
             'Comunicado sobre el acuerdo de colaboración con Fundación ONCE para mejorar la inclusión en las universidades.',
+          contentHtml: buildRichText(
+            [
+              'CREUP y Fundación ONCE refuerzan su colaboración para promover entornos universitarios accesibles, inclusivos y centrados en la participación efectiva del estudiantado con discapacidad.',
+              'El acuerdo permitirá compartir diagnósticos, buenas prácticas y propuestas dirigidas a mejorar la accesibilidad física, digital y académica en los campus.',
+            ],
+            [
+              'Accesibilidad universal en servicios y espacios.',
+              'Adaptaciones académicas eficaces y homogéneas.',
+              'Impulso a la participación estudiantil inclusiva.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -327,6 +391,17 @@ async function main() {
           title: 'Apoyo al decreto de garantía de calidad universitaria',
           description:
             'Nota de prensa en la que CREUP muestra su apoyo al nuevo decreto de calidad universitaria.',
+          contentHtml: buildRichText(
+            [
+              'CREUP expresa su apoyo a las medidas que refuerzan los estándares de calidad del sistema universitario, siempre que se apliquen con transparencia y con participación de la comunidad universitaria.',
+              'La coordinadora subraya que la calidad debe traducirse en mejores condiciones de aprendizaje, recursos suficientes y una evaluación orientada a la mejora continua.',
+            ],
+            [
+              'Garantías académicas y docentes homogéneas.',
+              'Evaluación con enfoque de mejora y no solo de control.',
+              'Participación del estudiantado en los procesos de calidad.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -370,6 +445,17 @@ async function main() {
           title: 'Recurso de inconstitucionalidad contra normativa en Canarias',
           description:
             'Nota de prensa sobre el recurso de inconstitucionalidad presentado contra una normativa autonómica en Canarias.',
+          contentHtml: buildRichText(
+            [
+              'CREUP ha seguido con preocupación la aprobación de una normativa autonómica en Canarias que puede afectar al marco competencial y a los derechos del estudiantado universitario.',
+              'La coordinadora defiende que cualquier reforma universitaria debe respetar las garantías constitucionales, la autonomía universitaria y la participación de la comunidad académica.',
+            ],
+            [
+              'Seguridad jurídica para universidades y estudiantes.',
+              'Respeto a la autonomía universitaria.',
+              'Participación real en los procesos normativos.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -392,6 +478,17 @@ async function main() {
           title: 'Conclusiones de la 77ª Asamblea: prioridades y acuerdos',
           description:
             'Comunicado con las conclusiones y acuerdos alcanzados durante la 77ª Asamblea General de CREUP.',
+          contentHtml: buildRichText(
+            [
+              'La 77ª Asamblea General de CREUP ha servido para actualizar la agenda política de la organización y fijar prioridades compartidas para los próximos meses.',
+              'Entre los acuerdos adoptados destacan el refuerzo del trabajo sobre vivienda, financiación universitaria, inclusión y derechos del estudiantado en prácticas.',
+            ],
+            [
+              'Defensa de la universidad pública como ascensor social.',
+              'Prioridad política a la vivienda estudiantil.',
+              'Seguimiento de calidad docente, bienestar e inclusión.',
+            ]
+          ),
         },
         {
           locale: 'en',
@@ -431,6 +528,7 @@ async function main() {
         locale: t.locale,
         title: t.title,
         description: t.description,
+        contentHtml: t.contentHtml ?? null,
         pressArticleId: article.id,
       }))
     )

@@ -30,9 +30,9 @@ CREATE TABLE "press_articles" (
 	CONSTRAINT "press_articles_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
-DROP TABLE "news_item_translations" CASCADE;--> statement-breakpoint
-DROP TABLE "news_items" CASCADE;--> statement-breakpoint
-DROP TABLE "news_tags" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "news_item_translations" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "news_items" CASCADE;--> statement-breakpoint
+DROP TABLE IF EXISTS "news_tags" CASCADE;--> statement-breakpoint
 ALTER TABLE "press_article_tags" ADD CONSTRAINT "press_article_tags_press_article_id_press_articles_id_fk" FOREIGN KEY ("press_article_id") REFERENCES "public"."press_articles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "press_article_tags" ADD CONSTRAINT "press_article_tags_tag_id_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "press_article_translations" ADD CONSTRAINT "press_article_translations_press_article_id_press_articles_id_fk" FOREIGN KEY ("press_article_id") REFERENCES "public"."press_articles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

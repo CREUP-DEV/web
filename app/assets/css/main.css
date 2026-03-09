@@ -86,3 +86,88 @@ html {
   --ui-primary: var(--color-creup-red-400);
   --ui-secondary: var(--color-creup-blue-400);
 }
+
+@layer components {
+  .press-rich-text {
+    max-width: none;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+  }
+
+  .press-rich-text > * {
+    margin-block: 0;
+  }
+
+  .press-rich-text > * + * {
+    margin-top: 1.5rem;
+  }
+
+  .press-rich-text p {
+    margin: 0;
+  }
+
+  .press-rich-text p + p {
+    margin-top: 1.75rem;
+  }
+
+  .press-rich-text h2,
+  .press-rich-text h3,
+  .press-rich-text h4 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .press-rich-text h2 {
+    margin-top: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .press-rich-text h3 {
+    margin-top: 1.75rem;
+    font-size: 1.375rem;
+  }
+
+  .press-rich-text h4 {
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+  }
+
+  .press-rich-text ul,
+  .press-rich-text ol {
+    margin: 1.5rem 0 0;
+    padding-left: 1.5rem;
+  }
+
+  .press-rich-text p + ul,
+  .press-rich-text p + ol,
+  .press-rich-text ul + p,
+  .press-rich-text ol + p {
+    margin-top: 1.75rem;
+  }
+
+  .press-rich-text ul {
+    list-style: disc;
+  }
+
+  .press-rich-text ol {
+    list-style: decimal;
+  }
+
+  .press-rich-text li + li {
+    margin-top: 0.5rem;
+  }
+
+  .press-rich-text blockquote {
+    margin-top: 1.75rem;
+    border-inline-start: 4px solid var(--ui-primary);
+    padding-left: 1rem;
+    font-style: italic;
+  }
+
+  .press-rich-text a {
+    color: var(--ui-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+}

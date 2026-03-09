@@ -23,5 +23,7 @@ logs
 .env.*
 !.env.example
 
-# PDFs
+# uploaded content
 public/documentos/**/*.pdf
+public/prensa/**/*.pdf
+public/prensa/**/*.jpg

@@ -290,8 +290,17 @@ useHead({
         <p class="text-lg leading-relaxed">{{ article.description }}</p>
       </div>
 
+      <!-- Rich text content -->
+      <!-- eslint-disable vue/no-v-html -->
+      <div
+        v-if="article.contentHtml"
+        class="article-body press-rich-text"
+        v-html="article.contentHtml"
+      />
+      <!-- eslint-enable vue/no-v-html -->
+
       <!-- Action buttons -->
-      <div class="no-print flex flex-wrap gap-3">
+      <div v-if="article.pdfUrl || article.externalUrl" class="no-print mt-8 flex flex-wrap gap-3">
         <!-- PDF download for press releases and statements -->
         <UButton
           v-if="article.pdfUrl"
@@ -375,6 +384,31 @@ useHead({
   .press-print :deep(header) {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  .press-print :deep(.article-body) {
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  .press-print :deep(.article-body h2),
+  .press-print :deep(.article-body h3),
+  .press-print :deep(.article-body h4) {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .press-print :deep(.article-body p),
+  .press-print :deep(.article-body ul),
+  .press-print :deep(.article-body ol),
+  .press-print :deep(.article-body blockquote) {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .press-print :deep(.article-body a) {
+    color: inherit !important;
+    text-decoration: underline !important;
   }
 
   .press-print :deep(*) {

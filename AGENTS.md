@@ -74,6 +74,8 @@ Content managed in the database uses translation tables (e.g., `*Translation` mo
 ### UI: Prefer Nuxt UI
 
 - Use Nuxt UI components whenever possible instead of custom UI.
+- Never use browser `alert()` dialogs. Use a Nuxt UI modal/dialog component instead.
+- Do not use `UBadge` with `size="xs"` because it is too small. Use `size="sm"` instead.
 - Tailwind is allowed for layout and minor styling, but avoid building custom component libraries.
 - Prefer consistent UI patterns already present in the project.
 - Use the Nuxt UI theme system for colors, typography, and spacing.

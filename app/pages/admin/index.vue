@@ -23,8 +23,15 @@ const { data: carouselData } = await useFetch('/api/admin/carousel')
 const { data: newsData } = await useFetch('/api/admin/news')
 const { data: linksData } = await useFetch('/api/admin/links')
 const { data: tagsData } = await useFetch('/api/admin/tags')
+const { data: accessData } = await useFetch('/api/admin/access')
 
 const stats = computed(() => [
+  {
+    name: 'Accesos',
+    count: (accessData.value as { items: unknown[] })?.items?.length ?? 0,
+    to: '/admin/access',
+    icon: 'i-tabler-shield-lock',
+  },
   {
     name: 'Carrusel',
     count: (carouselData.value as { items: unknown[] })?.items?.length ?? 0,

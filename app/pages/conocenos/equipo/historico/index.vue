@@ -265,7 +265,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
                   —
                   {{ mandate.endDate ? formatDate(mandate.endDate) : t('mandates.present') }}
                 </span>
-                <UBadge v-if="mandate.isCurrent" color="primary" variant="soft" size="xs">
+                <UBadge v-if="mandate.isCurrent" color="primary" variant="soft" size="sm">
                   {{ t('mandates.current') }}
                 </UBadge>
               </div>

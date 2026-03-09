@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles, pressArticleTranslations, pressArticleTags } from '../../../db/schema'
 import { requireAuth } from '../../../utils/requireAuth'
+import { hasMeaningfulRichTextHtml } from '../../../utils/pressTranslation'
 import { updatePressArticleSchema, validateBody } from '../../../utils/validation'
 import { generatePressSlug } from '../../../utils/slug'
 
@@ -79,6 +80,12 @@ export default defineEventHandler(async (event) => {
             locale: t.locale,
             title: t.title,
             description: t.description || null,
+            contentHtml:
+              validated.type === 'media_appearance'
+                ? null
+                : hasMeaningfulRichTextHtml(t.contentHtml)
+                  ? t.contentHtml!.trim()
+                  : null,
             alt: t.alt || null,
             pressArticleId: id,
           }))

@@ -143,10 +143,19 @@ const onTagSelect = (tagSlug: string) => {
                 </span>
               </div>
 
-              <!-- PDF indicator -->
-              <div v-if="article.pdfUrl" class="text-muted mt-3 flex items-center gap-1 text-xs">
-                <UIcon name="i-tabler-file-type-pdf" class="size-4" />
-                <span>{{ t('press.downloadPdf') }}</span>
+              <!-- Content indicator -->
+              <div
+                v-if="article.contentHtml || article.pdfUrl"
+                class="text-muted mt-3 flex flex-wrap items-center gap-3 text-xs"
+              >
+                <div v-if="article.contentHtml" class="flex items-center gap-1">
+                  <UIcon name="i-tabler-align-box-left-top" class="size-4" />
+                  <span>{{ t('press.readFull') }}</span>
+                </div>
+                <div v-if="article.pdfUrl" class="flex items-center gap-1">
+                  <UIcon name="i-tabler-file-type-pdf" class="size-4" />
+                  <span>{{ t('press.downloadPdf') }}</span>
+                </div>
               </div>
             </div>
           </NuxtLink>

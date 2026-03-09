@@ -4,11 +4,11 @@ import { db } from '../../db'
 import { pressArticles } from '../../db/schema'
 import {
   normalizeLocaleDefinitions,
-  pickLocalizedEntry,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
-} from '../../../shared/utils/locale'
+} from '~~/shared/utils/locale'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../utils/externalAssetProxy'
+import { resolvePressTranslation } from '../../utils/pressTranslation'
 
 /**
  * Public press article detail API — resolves by slug
@@ -46,10 +46,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Artículo no encontrado' })
   }
 
-  const trans = pickLocalizedEntry(article.translations, locale, locales, defaultLocale)
+  const trans = resolvePressTranslation(article.translations, locale, defaultLocale)
 
   const articleTags = article.tags.map((pt) => {
-    const tagTrans = pickLocalizedEntry(pt.tag.translations, locale, locales, defaultLocale)
+    const tagTrans =
+      pt.tag.translations.find(
+        (translation) =>
+          resolveLocaleCode(translation.locale, locales, '') ===
+          resolveLocaleCode(locale, locales, defaultLocale)
+      ) ??
+      pt.tag.translations.find(
+        (translation) => resolveLocaleCode(translation.locale, locales, '') === defaultLocale
+      ) ??
+      pt.tag.translations[0]
     return {
       slug: pt.tag.slug,
       name: tagTrans?.name ?? pt.tag.slug,
@@ -73,6 +82,7 @@ export default defineEventHandler(async (event) => {
       title: trans?.title ?? '',
       description: trans?.description ?? '',
       alt: trans?.alt ?? '',
+      contentHtml: trans?.contentHtml ?? null,
       publishedAt: article.publishedAt.toISOString(),
       tags: articleTags,
       mediaOutlet: article.mediaOutlet

@@ -4,6 +4,7 @@
  * Spanish (es) is required, other locales are optional
  */
 import { z } from 'zod'
+import { hasMeaningfulRichTextHtml } from './pressTranslation'
 
 // Locale is a non-empty string to support dynamic languages
 const localeSchema = z.string().min(1, 'El locale es requerido')
@@ -33,6 +34,7 @@ export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string(), // Not required for non-Spanish locales
   description: z.string().optional(),
+  contentHtml: z.string().optional().nullable(),
   alt: z.string().optional(),
 })
 
@@ -53,11 +55,24 @@ export const createPressArticleSchema = z
       .min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
-    if ((data.type === 'press_release' || data.type === 'statement') && !data.pdfUrl) {
+    const esTranslation = data.translations.find((translation) => translation.locale === 'es')
+
+    if (!esTranslation?.title?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'El PDF es obligatorio para notas de prensa y comunicados',
-        path: ['pdfUrl'],
+        message: 'El título en español es obligatorio',
+        path: ['translations'],
+      })
+    }
+    if (
+      (data.type === 'press_release' || data.type === 'statement') &&
+      !data.pdfUrl &&
+      !hasMeaningfulRichTextHtml(esTranslation?.contentHtml)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes añadir contenido o subir un PDF para notas de prensa y comunicados',
+        path: ['translations'],
       })
     }
     if (data.type === 'media_appearance' && !data.externalUrl) {
@@ -91,11 +106,24 @@ export const updatePressArticleSchema = z
       .min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
-    if ((data.type === 'press_release' || data.type === 'statement') && !data.pdfUrl) {
+    const esTranslation = data.translations.find((translation) => translation.locale === 'es')
+
+    if (!esTranslation?.title?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'El PDF es obligatorio para notas de prensa y comunicados',
-        path: ['pdfUrl'],
+        message: 'El título en español es obligatorio',
+        path: ['translations'],
+      })
+    }
+    if (
+      (data.type === 'press_release' || data.type === 'statement') &&
+      !data.pdfUrl &&
+      !hasMeaningfulRichTextHtml(esTranslation?.contentHtml)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes añadir contenido o subir un PDF para notas de prensa y comunicados',
+        path: ['translations'],
       })
     }
     if (data.type === 'media_appearance' && !data.externalUrl) {
@@ -467,6 +495,19 @@ export const updateNewsletterSchema = createNewsletterSchema
 // Newsletter subscriber schemas (admin)
 export const updateSubscriberSchema = z.object({
   email: z.string().email('El email no es válido'),
+  active: z.boolean(),
+})
+
+// Admin access schemas
+export const createAdminAccessSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email('El correo no es válido')
+    .transform((email) => email.toLowerCase()),
+})
+
+export const updateAdminAccessSchema = z.object({
   active: z.boolean(),
 })
 

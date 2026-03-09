@@ -1,6 +1,7 @@
 import type { defineEventHandler } from 'h3'
 import { createError } from 'h3'
 import { auth } from './auth'
+import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
 
 // Middleware to protect admin routes
 export async function requireAuth(
@@ -14,6 +15,14 @@ export async function requireAuth(
     throw createError({
       statusCode: 401,
       message: 'No autorizado',
+    })
+  }
+
+  const normalizedEmail = session.user.email ? normalizeAdminEmail(session.user.email) : ''
+  if (!normalizedEmail || !(await isAdminEmailAuthorized(normalizedEmail))) {
+    throw createError({
+      statusCode: 403,
+      message: 'Acceso no autorizado',
     })
   }
 
