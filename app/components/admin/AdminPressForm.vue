@@ -5,7 +5,6 @@
  */
 import { CalendarDate } from '@internationalized/date'
 import type { EditorToolbarItem } from '@nuxt/ui'
-import type UInputDate from '@nuxt/ui/dist/runtime/components/InputDate.vue'
 
 // Types
 type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
@@ -97,7 +96,9 @@ const today = new Date()
 const publishedAt = shallowRef(
   new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
 )
-const inputDate = useTemplateRef<InstanceType<typeof UInputDate>>('inputDate')
+const inputDate = useTemplateRef<{
+  inputsRef: Array<{ $el: HTMLElement | undefined } | undefined>
+}>('inputDate')
 
 // Form state
 const form = reactive({
@@ -355,7 +356,12 @@ const confirmCancel = () => {
 
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField label="Enlace a la noticia *">
-              <UInput v-model="form.externalUrl" placeholder="https://..." class="w-full" />
+              <UInput
+                :model-value="form.externalUrl ?? undefined"
+                placeholder="https://..."
+                class="w-full"
+                @update:model-value="form.externalUrl = $event || null"
+              />
             </UFormField>
 
             <UFormField label="Medio *">
@@ -602,7 +608,9 @@ const confirmCancel = () => {
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">
-            <div class="bg-warning/10 rounded-full p-2">
+            <div
+              class="bg-warning/10 flex size-10 shrink-0 items-center justify-center rounded-full"
+            >
               <UIcon name="i-tabler-alert-triangle" class="text-warning size-6" />
             </div>
             <h2 class="text-base font-bold">Cambios sin guardar</h2>

@@ -545,3 +545,47 @@ export const mediaOutlets = pgTable('media_outlets', {
 export const mediaOutletsRelations = relations(mediaOutlets, ({ many }) => ({
   pressArticles: many(pressArticles),
 }))
+
+// ============================================================================
+// Financial Reports (Informes Económicos)
+// ============================================================================
+
+export const financialReports = pgTable('financial_reports', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  pdfUrl: text('pdf_url').notNull(),
+  approvedAt: timestamp('approved_at', { mode: 'date' }).notNull(),
+  order: integer('order').default(0).notNull(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
+
+export const financialReportTranslations = pgTable(
+  'financial_report_translations',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    locale: text('locale').notNull(),
+    title: text('title').notNull(),
+    financialReportId: text('financial_report_id')
+      .notNull()
+      .references(() => financialReports.id, { onDelete: 'cascade' }),
+  },
+  (table) => [unique().on(table.financialReportId, table.locale)]
+)
+
+export const financialReportsRelations = relations(financialReports, ({ many }) => ({
+  translations: many(financialReportTranslations),
+}))
+
+export const financialReportTranslationsRelations = relations(
+  financialReportTranslations,
+  ({ one }) => ({
+    financialReport: one(financialReports, {
+      fields: [financialReportTranslations.financialReportId],
+      references: [financialReports.id],
+    }),
+  })
+)

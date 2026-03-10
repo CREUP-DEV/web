@@ -239,18 +239,23 @@ function formatDate(iso: string) {
 
     <!-- Delete confirmation modal -->
     <UModal v-model:open="showDeleteModal">
-      <template #header>
-        <h2 class="text-lg font-semibold">Eliminar suscriptor</h2>
-      </template>
-      <template #body>
-        <p>
-          ¿Seguro que quieres eliminar permanentemente a
-          <strong>{{ itemToDelete?.email }}</strong
-          >?
-        </p>
-        <div class="mt-4 flex justify-end gap-2">
-          <UButton variant="outline" @click="showDeleteModal = false">Cancelar</UButton>
-          <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+      <template #content>
+        <div class="p-6">
+          <div class="mb-4 flex items-center gap-3">
+            <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
+              <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
+            </div>
+            <h2 class="text-lg font-bold">Eliminar suscriptor</h2>
+          </div>
+          <p class="text-muted mb-6">
+            ¿Seguro que quieres eliminar permanentemente a
+            <strong>{{ itemToDelete?.email }}</strong
+            >?
+          </p>
+          <div class="flex justify-end gap-2">
+            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+          </div>
         </div>
       </template>
     </UModal>

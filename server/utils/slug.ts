@@ -11,7 +11,7 @@ import { pressArticles } from '../db/schema'
  * Convert a string to a URL-friendly slug
  * Handles Spanish characters (tildes, ñ, etc.)
  */
-function slugify(text: string): string {
+export function slugify(text: string): string {
   return text
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
@@ -21,6 +21,47 @@ function slugify(text: string): string {
     .replace(/-+/g, '-') // Collapse multiple hyphens
     .replace(/^-|-$/g, '') // Trim leading/trailing hyphens
     .slice(0, 60) // Limit length
+}
+
+export function buildReadableFileSlug(title: string, date?: Date | string | null): string {
+  const safeTitle = slugify(title) || 'documento'
+
+  if (!date) {
+    return safeTitle
+  }
+
+  const parsedDate = date instanceof Date ? date : new Date(date)
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return safeTitle
+  }
+
+  const year = parsedDate.getFullYear()
+  const month = String(parsedDate.getMonth() + 1).padStart(2, '0')
+  const day = String(parsedDate.getDate()).padStart(2, '0')
+
+  return `${safeTitle}-${year}-${month}-${day}`.slice(0, 90)
+}
+
+export function buildReadableFileSlugWithFallback(
+  title: string,
+  date?: Date | string | null,
+  suffix?: string | number | null
+): string {
+  let candidate = buildReadableFileSlug(title)
+
+  if (date) {
+    const datedCandidate = buildReadableFileSlug(title, date)
+    if (datedCandidate !== candidate) {
+      candidate = datedCandidate
+    }
+  }
+
+  if (suffix !== null && suffix !== undefined && suffix !== '') {
+    return `${candidate}-${suffix}`.slice(0, 100)
+  }
+
+  return candidate
 }
 
 /**

@@ -617,6 +617,60 @@ async function main() {
     )
   }
 
+  console.log('📊 Creating financial reports...')
+  await db.delete(schema.financialReports)
+
+  const financialReportsData = [
+    {
+      title: 'Informe Económico del XI Stage Formativo',
+      approvedAt: new Date('2025-04-04'),
+    },
+    {
+      title: 'Informe Económico de la 76.ª AGO',
+      approvedAt: new Date('2025-04-04'),
+    },
+    {
+      title:
+        'Informe Económico del VI Congreso CREUP-CRUE y XIV Encuentro Estatal de Representantes de CREUP',
+      approvedAt: new Date('2025-04-04'),
+    },
+    {
+      title: "Informe Económico de la 46th European Students' Convention",
+      approvedAt: new Date('2024-12-15'),
+    },
+    {
+      title: 'Informe Económico de la 75.ª AGO',
+      approvedAt: new Date('2024-12-15'),
+    },
+    {
+      title: 'Informe Económico del Ejercicio de 2023',
+      approvedAt: new Date('2024-12-15'),
+    },
+    {
+      title: 'Informe Económico del X Stage Formativo',
+      approvedAt: new Date('2024-12-15'),
+    },
+  ]
+
+  for (let i = 0; i < financialReportsData.length; i++) {
+    const item = financialReportsData[i]
+    const [report] = await db
+      .insert(schema.financialReports)
+      .values({
+        pdfUrl: `/documentos/informes-economicos/placeholder-${i + 1}.pdf`,
+        approvedAt: item.approvedAt,
+        order: i,
+        active: true,
+      })
+      .returning()
+
+    await db.insert(schema.financialReportTranslations).values({
+      locale: 'es',
+      title: item.title,
+      financialReportId: report.id,
+    })
+  }
+
   console.log('✅ Database seeding completed!')
 }
 

@@ -481,6 +481,36 @@ export const createMediaOutletSchema = z.object({
 
 export const updateMediaOutletSchema = createMediaOutletSchema
 
+// Financial Report schemas
+export const financialReportTranslationSchema = z.object({
+  locale: localeSchema,
+  title: z.string(),
+})
+
+export const createFinancialReportSchema = z
+  .object({
+    pdfUrl: z.string().min(1, 'El PDF es requerido'),
+    approvedAt: z.string().datetime('La fecha de aprobación no es válida'),
+    order: z.number().int().min(0).default(0),
+    active: z.boolean().default(true),
+    translations: z
+      .array(financialReportTranslationSchema)
+      .min(1, 'Se requiere al menos una traducción'),
+  })
+  .superRefine((data, ctx) => {
+    const esTranslation = data.translations.find((translation) => translation.locale === 'es')
+
+    if (!esTranslation?.title?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El título en español es obligatorio',
+        path: ['translations'],
+      })
+    }
+  })
+
+export const updateFinancialReportSchema = createFinancialReportSchema
+
 // Newsletter schemas
 export const createNewsletterSchema = z.object({
   /** ISO date string for the first day of the month this newsletter covers */

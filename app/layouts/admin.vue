@@ -24,6 +24,7 @@ const navigation = [
   { name: 'Enlaces', to: '/admin/links', icon: 'i-tabler-link' },
   { name: 'Etiquetas', to: '/admin/tags', icon: 'i-tabler-tags' },
   { name: 'Medios', to: '/admin/media', icon: 'i-tabler-broadcast' },
+  { name: 'Informes Económicos', to: '/admin/financial-reports', icon: 'i-tabler-file-analytics' },
 ]
 
 const sidebarOpen = ref(false)

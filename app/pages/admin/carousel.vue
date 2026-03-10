@@ -439,7 +439,7 @@ const handleDelete = async () => {
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">
-            <div class="bg-error/10 rounded-full p-2">
+            <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
             <h2 class="text-lg font-bold">Confirmar eliminación</h2>

@@ -496,6 +496,14 @@
       "reglamentos-de-funcionamiento": "Operating Regulations"
     }
   },
+  "financialReports": {
+    "title": "Financial Reports",
+    "description": "CREUP financial reports approved by the General Assembly, detailing the financial management of the organisation's activities and events.",
+    "loadError": "Financial reports could not be loaded right now.",
+    "empty": "No financial reports available.",
+    "approvedOn": "Approved on {date}",
+    "download": "Download"
+  },
   "press": {
     "downloadPdf": "Download PDF",
     "readOriginal": "Read original article",

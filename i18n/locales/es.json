@@ -496,6 +496,14 @@
       "reglamentos-de-funcionamiento": "Reglamentos de Funcionamiento"
     }
   },
+  "financialReports": {
+    "title": "Informes Económicos",
+    "description": "Informes económicos de CREUP aprobados por la Asamblea General, que detallan la gestión financiera de las actividades y eventos de la organización.",
+    "loadError": "No se han podido cargar los informes económicos en este momento.",
+    "empty": "No hay informes económicos disponibles.",
+    "approvedOn": "Aprobado el {date}",
+    "download": "Descargar"
+  },
   "press": {
     "downloadPdf": "Descargar PDF",
     "readOriginal": "Leer artículo original",
