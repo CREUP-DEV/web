@@ -1,5 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 
+const isDev = process.env.NODE_ENV !== 'production'
+
 const siteImageHostname = (() => {
   try {
     return new URL(process.env.SITE_URL || 'https://www.creup.es').hostname
@@ -14,6 +16,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   vite: {
     plugins: [tailwindcss() as never],
+    server: {
+      allowedHosts: isDev ? ['.trycloudflare.com'] : [],
+    },
     optimizeDeps: {
       include: [
         '@nuxt/ui > prosemirror-state',
@@ -204,7 +209,7 @@ export default defineNuxtConfig({
 
   // Accessibility testing (dev only)
   a11y: {
-    enabled: process.env.NODE_ENV !== 'production',
+    enabled: isDev,
     defaultHighlight: false,
     logIssues: true,
   },

@@ -66,19 +66,38 @@ function handleSave() {
         </div>
 
         <!-- Actions -->
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <NuxtLink to="/legal#cookies" class="text-primary text-sm hover:underline">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <NuxtLink
+            to="/legal#cookies"
+            class="text-primary inline-flex items-center text-sm font-medium hover:underline"
+          >
             {{ t('cookies.banner.learnMore') }}
           </NuxtLink>
 
-          <div class="flex flex-col gap-2 sm:flex-row">
-            <UButton variant="ghost" color="neutral" size="sm" @click="showSettings = true">
+          <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-row">
+            <UButton
+              variant="ghost"
+              color="neutral"
+              size="md"
+              class="justify-center"
+              @click="showSettings = true"
+            >
               {{ t('cookies.banner.customize') }}
             </UButton>
-            <UButton variant="outline" color="neutral" size="sm" @click="acceptEssentialOnly">
+            <UButton
+              variant="outline"
+              color="neutral"
+              size="md"
+              class="justify-center"
+              @click="acceptEssentialOnly"
+            >
               {{ t('cookies.banner.essentialOnly') }}
             </UButton>
-            <UButton size="sm" @click="acceptAll">
+            <UButton
+              size="md"
+              class="order-first col-span-2 justify-center sm:order-3 sm:col-span-1"
+              @click="acceptAll"
+            >
               {{ t('cookies.banner.acceptAll') }}
             </UButton>
           </div>

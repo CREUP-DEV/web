@@ -71,10 +71,6 @@
     "newsAndEventsLabel": "Prensa y eventos",
     "latestNews": "Última hora",
     "featuredLinks": "Enlaces destacados",
-    "equalityLink": {
-      "title": "Igualdad y prevención del acoso",
-      "alt": "Ilustración de acceso a la sección de igualdad"
-    },
     "publicAgenda": "Agenda pública",
     "noNews": "No hay noticias para esta etiqueta",
     "carousel": {
@@ -223,91 +219,106 @@
   },
   "equalityPage": {
     "title": "Igualdad y prevención del acoso",
-    "description": "Espacio público de CREUP que reúne documentación, compromisos y recursos sobre igualdad, diversidad, comunicación inclusiva y prevención del acoso.",
+    "description": "Espacio público con documentos y recursos sobre igualdad, diversidad, comunicación inclusiva y el Punto Seguro de nuestros eventos.",
     "eyebrow": "Igualdad y Dimensión Social",
-    "lead": "Un espacio único para consultar el posicionamiento de CREUP, su protocolo de actuación y materiales de apoyo sobre igualdad y dimensión social.",
-    "ctaDocuments": "Ver documentos clave",
-    "ctaContact": "Contacta con nosotros",
+    "lead": "En esta página podrás encontrar nuestro posicionamiento, los protocolos vigentes frente al acoso sexual y la discriminación, y la información básica sobre el Punto Seguro del que disponemos en asambleas, encuentros y demás eventos.",
+    "ctaDocuments": "Ver documentos",
+    "ctaContact": "Escribir al Punto Seguro",
     "heroPoints": {
       "centralize": "Recursos reunidos en un mismo espacio",
       "access": "Acceso claro desde la web pública",
       "support": "Documentación para prevenir, actuar y acompañar"
     },
-    "commitmentsTitle": "Qué reúne esta página",
+    "commitmentsTitle": "Qué tienes aquí",
     "commitments": {
       "policy": {
         "title": "Marco político y de principios",
-        "description": "Explica la posición de CREUP sobre igualdad, diversidad y discriminaciones en el ámbito universitario."
+        "description": "Expone cómo entendemos la igualdad, la diversidad y la no discriminación en la universidad y en nuestros espacios de representación."
       },
       "protocol": {
-        "title": "Prevención y actuación",
-        "description": "Recoge pautas de prevención, denuncia, acompañamiento y respuesta ante situaciones de acoso o discriminación."
+        "title": "Protocolos vigentes de actuación",
+        "description": "Reúne los dos protocolos aprobados en 2025 para prevenir, atender y tramitar situaciones de acoso sexual o discriminación en nuestros eventos."
       },
       "communication": {
         "title": "Comunicación inclusiva",
-        "description": "Aporta criterios prácticos sobre lenguaje, representación visual y accesibilidad para comunicar de forma no discriminatoria."
-      },
-      "visibility": {
-        "title": "Transparencia y acceso",
-        "description": "Concentra recursos clave en una ubicación estable y fácil de encontrar desde la navegación pública."
+        "description": "Incluye pautas prácticas sobre lenguaje, representación visual y accesibilidad para comunicarnos de forma no discriminatoria."
       }
     },
-    "resourcesTitle": "Documentos disponibles",
+    "resourcesTitle": "Documentos para consultar",
     "openDocument": "Abrir documento",
     "resources": {
-      "motion": {
-        "title": "Moción interna sobre la inclusión de un apartado integral de Igualdad y Dimensión Social en la web",
-        "description": "Documento aprobado en la 75ª Asamblea General Ordinaria que impulsa la creación de este espacio y fija sus objetivos de centralización, visibilidad y accesibilidad.",
-        "meta": "75ª Asamblea General Ordinaria · 26 de abril de 2024"
-      },
       "position": {
         "title": "Posicionamiento político en materia de Igualdad y Diversidad",
-        "description": "Marco político de CREUP sobre discriminaciones en la universidad, planes de igualdad, protocolos y demandas a las instituciones públicas.",
+        "description": "Nuestro documento marco sobre igualdad, diversidad, discriminaciones en la universidad y medidas que reclamamos a las instituciones públicas.",
         "meta": "Documento político · Igualdad y diversidad"
+      },
+      "sexualProtocol": {
+        "title": "Protocolo de prevención y actuación frente a casos de acoso sexual",
+        "description": "Aprobado en la 77.ª Asamblea General Ordinaria, recoge medidas preventivas, principios de confidencialidad, el funcionamiento del Punto Seguro y el procedimiento de actuación ante conductas contrarias a la libertad sexual.",
+        "meta": "77.ª Asamblea General Ordinaria · 4 de abril de 2025"
+      },
+      "discriminationProtocol": {
+        "title": "Protocolo de prevención y actuación frente a casos de discriminación",
+        "description": "Aprobado en la 77.ª Asamblea General Ordinaria, define supuestos de discriminación, garantías, Punto Seguro y niveles de intervención ante violencia o acoso por diversidad.",
+        "meta": "77.ª Asamblea General Ordinaria · 4 de abril de 2025"
       },
       "guide": {
         "title": "Guía de Comunicación Inclusiva",
-        "description": "Recomendaciones prácticas sobre lenguaje, recursos visuales y criterios de accesibilidad para una comunicación más inclusiva en el ámbito universitario.",
+        "description": "Recoge recomendaciones prácticas sobre lenguaje, recursos visuales y criterios de accesibilidad para una comunicación más inclusiva.",
         "meta": "Guía práctica · Lenguaje, visualidad y accesibilidad"
-      },
-      "protocol": {
-        "title": "Protocolo de prevención y actuación frente a casos de acoso y discriminación en CREUP",
-        "description": "Procedimiento de prevención, denuncia, acompañamiento y respuesta ante situaciones de acoso o discriminación en actividades de CREUP.",
-        "meta": "Protocolo interno · Prevención y actuación"
       }
     },
-    "actionTitle": "Cómo actuar ante una situación de acoso o discriminación",
+    "actionTitle": "Si pasa algo en uno de nuestros eventos",
     "actionSteps": {
       "safety": {
         "title": "Prioriza la seguridad",
-        "description": "Si existe riesgo inmediato, aléjate de la situación, busca apoyo de una persona de confianza y, en caso de urgencia, contacta con el 112 o con los servicios de emergencia."
+        "description": "Si hay un riesgo inmediato, aléjate de la situación, busca apoyo de una persona de confianza y, si hace falta, llama al 112 o a los servicios de emergencia."
       },
       "notify": {
         "title": "Comunica lo ocurrido",
-        "description": "En actividades de CREUP, cualquier participante puede poner los hechos en conocimiento de la Vocalía de Igualdad y Dimensión Social, del Comité de Garantías o de la Comisión Ejecutiva."
+        "description": "Durante el evento puedes acudir al Punto Seguro, a las personas de confianza designadas o a la persona competente en igualdad de la Comisión Ejecutiva ampliada. Si necesitas contarlo después, puedes hacerlo por este correo."
       },
       "details": {
         "title": "Recoge la información relevante",
-        "description": "Anota fechas, lugares, personas implicadas y cualquier evidencia disponible para facilitar la valoración y el acompañamiento posterior."
+        "description": "Anota fechas, lugares, personas implicadas y cualquier evidencia disponible. Los protocolos recuerdan que solo se debe pedir la información necesaria y que la confidencialidad es clave."
       },
       "support": {
-        "title": "Consulta el protocolo y pide acompañamiento",
-        "description": "El protocolo explica los pasos, garantías y medidas específicas para distintos supuestos, incluidas situaciones por género, orientación sexual, discapacidad o etnia."
+        "title": "Consulta el protocolo y pide apoyo",
+        "description": "Los protocolos explican qué garantías existen, qué medidas de protección se pueden activar y cómo pedir acompañamiento si hay una situación de acoso sexual o discriminación."
       }
     },
-    "scopeTitle": "Ámbitos cubiertos",
-    "scopeItems": {
-      "gender": "Violencia de género y sexismo",
-      "lgbtiq": "Orientación sexual, identidad y expresión de género",
-      "ethnicity": "Racismo y discriminación por etnia u origen",
-      "disability": "Discapacidad, accesibilidad y apoyos",
-      "language": "Comunicación inclusiva y no discriminatoria",
-      "institutional": "Protocolos, planes y transparencia institucional"
+    "pointSafeTitle": "Qué es el Punto Seguro",
+    "pointSafeDescription": "El Punto Seguro es el recurso del que disponemos en nuestros eventos para ofrecer información, escucha y acompañamiento ante situaciones de acoso sexual o discriminación.",
+    "pointSafeCalloutTitle": "Cómo funciona",
+    "pointSafeCalloutDescription": "El Punto Seguro funciona sobre el terreno, en asambleas, encuentros y demás actividades que organizamos. En cada evento se cuenta con al menos una persona de confianza cuyo contacto se pone a disposición de todos los asistentes.",
+    "pointSafePrimary": "Enviar correo al Punto Seguro",
+    "pointSafeItems": {
+      "prevention": {
+        "title": "Antes de que pase nada",
+        "description": "Sirve para recordar qué conductas no tienen cabida, compartir los protocolos y reforzar que queremos encuentros seguros y respetuosos."
+      },
+      "guidance": {
+        "title": "Cuando alguien necesita apoyo",
+        "description": "Ofrece un punto de referencia cercano donde poder parar, contar lo ocurrido, recibir orientación y valorar qué pasos dar."
+      },
+      "followUp": {
+        "title": "Si hace falta seguir",
+        "description": "Ayuda a dejar constancia de lo ocurrido, conectar con las personas responsables y dar continuidad al acompañamiento con la discreción que requiere cada caso."
+      }
     },
-    "supportTitle": "¿Necesitas orientación o más información?",
-    "supportDescription": "Si tienes dudas sobre esta documentación o necesitas que te orientemos hacia el recurso adecuado, puedes escribirnos. Para casos urgentes, te recomendamos recurrir también a los servicios especializados de tu universidad o de tu territorio.",
-    "supportPrimary": "Ir a contacto",
-    "supportSecondary": "Descargar protocolo"
+    "scopeTitle": "Qué situaciones recogen los protocolos",
+    "scopeItems": {
+      "sexualViolence": "Acoso sexual y conductas contra la libertad sexual",
+      "gender": "Sexismo, violencia de género y desigualdad estructural",
+      "lgbtiq": "Orientación sexual, identidad y expresión de género",
+      "ethnicity": "Racismo, xenofobia y discriminación por origen o etnia",
+      "disability": "Capacitismo, accesibilidad y necesidad de apoyos",
+      "otherDiscrimination": "Otras discriminaciones por edad, condición social u otras circunstancias personales o sociales"
+    },
+    "supportTitle": "¿Necesitas hablar con el Punto Seguro?",
+    "supportDescription": "Si quieres contarnos algo que haya pasado en uno de nuestros eventos o necesitas orientación, puedes escribir directamente al Punto Seguro. Aquí tienes la información y los documentos; la atención y el acompañamiento se prestan en el contexto de las actividades que organizamos. Si es urgente, recurre también a los servicios especializados de tu universidad, de tu territorio o al 112.",
+    "supportPrimary": "Enviar correo al Punto Seguro",
+    "supportSecondary": "Ver los documentos"
   },
   "members": {
     "title": "Miembros",

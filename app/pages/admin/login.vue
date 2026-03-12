@@ -67,12 +67,15 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="bg-background flex min-h-screen items-center justify-center px-4">
-    <div class="bg-surface w-full max-w-sm space-y-6 rounded-2xl p-8 shadow-xl">
-      <div class="text-center">
-        <h1 class="text-2xl font-bold">Administración</h1>
+  <main class="bg-background flex min-h-screen items-center justify-center px-4">
+    <section
+      aria-labelledby="admin-login-title"
+      class="bg-surface w-full max-w-sm space-y-6 rounded-2xl p-8 shadow-xl"
+    >
+      <header class="text-center">
+        <h1 id="admin-login-title" class="text-2xl font-bold">Administración</h1>
         <p class="text-muted mt-2 text-sm">Inicia sesión para acceder al panel de administración</p>
-      </div>
+      </header>
 
       <UAlert v-if="error" color="error" :title="error" class="mt-4" />
 
@@ -107,6 +110,6 @@ const handleLogin = async () => {
       >
         Cerrar sesión
       </UButton>
-    </div>
-  </div>
+    </section>
+  </main>
 </template>

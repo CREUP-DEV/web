@@ -1,10 +1,18 @@
 <script setup lang="ts">
-type CommitmentKey = 'policy' | 'protocol' | 'communication' | 'visibility'
-type ResourceKey = 'motion' | 'position' | 'guide' | 'protocol'
+type CommitmentKey = 'policy' | 'protocol' | 'communication'
+type ResourceKey = 'position' | 'sexualProtocol' | 'discriminationProtocol' | 'guide'
 type ActionStepKey = 'safety' | 'notify' | 'details' | 'support'
-type ScopeKey = 'gender' | 'lgbtiq' | 'ethnicity' | 'disability' | 'language' | 'institutional'
+type PointSafeKey = 'prevention' | 'guidance' | 'followUp'
+type ScopeKey =
+  | 'sexualViolence'
+  | 'gender'
+  | 'lgbtiq'
+  | 'ethnicity'
+  | 'disability'
+  | 'otherDiscrimination'
 
 const { t } = useI18n()
+const supportMailto = 'mailto:punto.seguro@creup.es'
 
 const accentButtonClass =
   'bg-[#513269] text-white hover:bg-[#452a59] focus-visible:ring-2 focus-visible:ring-[#513269]/40 focus-visible:outline-none dark:bg-[#6d4a88] dark:hover:bg-[#7b5599]'
@@ -22,10 +30,6 @@ const commitments = computed(() => [
     key: 'communication' as CommitmentKey,
     icon: 'i-tabler-language',
   },
-  {
-    key: 'visibility' as CommitmentKey,
-    icon: 'i-tabler-eye',
-  },
 ])
 
 const resources = computed(() => [
@@ -35,19 +39,19 @@ const resources = computed(() => [
     href: '/documentos/igualdad/posicionamiento-igualdad-diversidad.pdf',
   },
   {
-    key: 'protocol' as ResourceKey,
-    icon: 'i-tabler-shield-lock',
-    href: '/documentos/igualdad/protocolo-acoso-discriminacion-creup.pdf',
+    key: 'sexualProtocol' as ResourceKey,
+    icon: 'i-tabler-shield-heart',
+    href: '/documentos/igualdad/protocolo-acoso-sexual-creup.pdf',
+  },
+  {
+    key: 'discriminationProtocol' as ResourceKey,
+    icon: 'i-tabler-users-group',
+    href: '/documentos/igualdad/protocolo-discriminacion-creup.pdf',
   },
   {
     key: 'guide' as ResourceKey,
     icon: 'i-tabler-file-text',
     href: '/documentos/igualdad/guia-comunicacion-inclusiva.pdf',
-  },
-  {
-    key: 'motion' as ResourceKey,
-    icon: 'i-tabler-file-description',
-    href: '/documentos/igualdad/mocion-apartado-integral-igualdad.pdf',
   },
 ])
 
@@ -70,7 +74,26 @@ const actionSteps = computed(() => [
   },
 ])
 
+const pointSafeItems = computed(() => [
+  {
+    key: 'prevention' as PointSafeKey,
+    icon: 'i-tabler-speakerphone',
+  },
+  {
+    key: 'guidance' as PointSafeKey,
+    icon: 'i-tabler-lifebuoy',
+  },
+  {
+    key: 'followUp' as PointSafeKey,
+    icon: 'i-tabler-route-2',
+  },
+])
+
 const scopeItems = computed(() => [
+  {
+    key: 'sexualViolence' as ScopeKey,
+    icon: 'i-tabler-shield-x',
+  },
   {
     key: 'gender' as ScopeKey,
     icon: 'i-tabler-venus',
@@ -88,12 +111,8 @@ const scopeItems = computed(() => [
     icon: 'i-tabler-accessible',
   },
   {
-    key: 'language' as ScopeKey,
-    icon: 'i-tabler-language',
-  },
-  {
-    key: 'institutional' as ScopeKey,
-    icon: 'i-tabler-building-bank',
+    key: 'otherDiscrimination' as ScopeKey,
+    icon: 'i-tabler-users-group',
   },
 ])
 
@@ -113,7 +132,7 @@ useSeoMeta({
       >
         <div class="max-w-4xl space-y-4">
           <span
-            class="inline-flex items-center rounded-full border border-[rgba(81,50,105,0.16)] bg-white/70 px-3 py-1 text-sm font-medium text-[#513269] backdrop-blur-sm dark:border-[rgba(216,190,231,0.18)] dark:bg-white/[0.08] dark:text-[#d8bee7]"
+            class="inline-flex items-center rounded-full border border-[rgba(81,50,105,0.16)] bg-white/70 px-3 py-1 text-sm font-medium text-[#513269] backdrop-blur-sm dark:border-[rgba(216,190,231,0.18)] dark:bg-white/8 dark:text-[#d8bee7]"
           >
             {{ t('equalityPage.eyebrow') }}
           </span>
@@ -135,7 +154,7 @@ useSeoMeta({
               :class="accentButtonClass"
             />
             <UButton
-              to="/contacto"
+              :href="supportMailto"
               variant="soft"
               color="neutral"
               icon="i-tabler-mail"
@@ -152,26 +171,29 @@ useSeoMeta({
           </h2>
         </div>
 
-        <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <UCard v-for="item in commitments" :key="item.key" class="h-full">
-            <div class="space-y-4">
-              <span
-                class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
-              >
-                <UIcon :name="item.icon" class="size-5" />
-              </span>
+        <ul class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <li v-for="item in commitments" :key="item.key">
+            <UCard class="h-full">
+              <div class="space-y-4">
+                <span
+                  aria-hidden="true"
+                  class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                >
+                  <UIcon :name="item.icon" class="size-5" />
+                </span>
 
-              <div class="space-y-2">
-                <h3 class="text-lg font-semibold">
-                  {{ t(`equalityPage.commitments.${item.key}.title`) }}
-                </h3>
-                <p class="text-muted leading-relaxed">
-                  {{ t(`equalityPage.commitments.${item.key}.description`) }}
-                </p>
+                <div class="space-y-2">
+                  <h3 class="text-lg font-semibold">
+                    {{ t(`equalityPage.commitments.${item.key}.title`) }}
+                  </h3>
+                  <p class="text-muted leading-relaxed">
+                    {{ t(`equalityPage.commitments.${item.key}.description`) }}
+                  </p>
+                </div>
               </div>
-            </div>
-          </UCard>
-        </div>
+            </UCard>
+          </li>
+        </ul>
       </section>
 
       <section id="equality-documents" aria-labelledby="equality-documents-title">
@@ -181,46 +203,49 @@ useSeoMeta({
           </h2>
         </div>
 
-        <div class="mt-6 grid gap-4 lg:grid-cols-2">
-          <UCard v-for="resource in resources" :key="resource.key" class="h-full">
-            <div class="flex h-full flex-col gap-5">
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <span
-                    class="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
-                  >
-                    <UIcon :name="resource.icon" class="size-5" />
-                  </span>
+        <ul class="mt-6 grid gap-4 lg:grid-cols-2">
+          <li v-for="resource in resources" :key="resource.key">
+            <UCard class="h-full">
+              <div class="flex h-full flex-col gap-5">
+                <div class="space-y-3">
+                  <div class="flex items-start gap-3">
+                    <span
+                      aria-hidden="true"
+                      class="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                    >
+                      <UIcon :name="resource.icon" class="size-5" />
+                    </span>
 
-                  <div class="min-w-0 space-y-2">
-                    <h3 class="text-lg font-semibold text-balance">
-                      {{ t(`equalityPage.resources.${resource.key}.title`) }}
-                    </h3>
-                    <p class="text-muted text-sm">
-                      {{ t(`equalityPage.resources.${resource.key}.meta`) }}
-                    </p>
+                    <div class="min-w-0 space-y-2">
+                      <h3 class="text-lg font-semibold text-balance">
+                        {{ t(`equalityPage.resources.${resource.key}.title`) }}
+                      </h3>
+                      <p class="text-muted text-sm">
+                        {{ t(`equalityPage.resources.${resource.key}.meta`) }}
+                      </p>
+                    </div>
                   </div>
+
+                  <p class="text-muted leading-relaxed">
+                    {{ t(`equalityPage.resources.${resource.key}.description`) }}
+                  </p>
                 </div>
 
-                <p class="text-muted leading-relaxed">
-                  {{ t(`equalityPage.resources.${resource.key}.description`) }}
-                </p>
+                <div class="mt-auto">
+                  <UButton
+                    :href="resource.href"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    icon="i-tabler-file-download"
+                    :label="t('equalityPage.openDocument')"
+                    :aria-label="`${t('equalityPage.openDocument')}: ${t(`equalityPage.resources.${resource.key}.title`)}`"
+                    :class="accentButtonClass"
+                  />
+                </div>
               </div>
-
-              <div class="mt-auto">
-                <UButton
-                  :href="resource.href"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  icon="i-tabler-file-download"
-                  :label="t('equalityPage.openDocument')"
-                  :aria-label="`${t('equalityPage.openDocument')}: ${t(`equalityPage.resources.${resource.key}.title`)}`"
-                  :class="accentButtonClass"
-                />
-              </div>
-            </div>
-          </UCard>
-        </div>
+            </UCard>
+          </li>
+        </ul>
       </section>
 
       <section aria-labelledby="equality-action">
@@ -230,25 +255,98 @@ useSeoMeta({
           </h2>
         </div>
 
-        <div class="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-          <UCard v-for="step in actionSteps" :key="step.key" class="h-full">
+        <ul class="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+          <li v-for="step in actionSteps" :key="step.key">
+            <UCard class="h-full">
+              <div class="space-y-4">
+                <span
+                  aria-hidden="true"
+                  class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                >
+                  <UIcon :name="step.icon" class="size-5" />
+                </span>
+
+                <div class="space-y-2">
+                  <h3 class="text-lg font-semibold">
+                    {{ t(`equalityPage.actionSteps.${step.key}.title`) }}
+                  </h3>
+                  <p class="text-muted leading-relaxed">
+                    {{ t(`equalityPage.actionSteps.${step.key}.description`) }}
+                  </p>
+                </div>
+              </div>
+            </UCard>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="equality-point-safe">
+        <div class="space-y-3">
+          <h2 id="equality-point-safe" class="text-2xl font-semibold">
+            {{ t('equalityPage.pointSafeTitle') }}
+          </h2>
+          <p class="text-muted leading-relaxed">
+            {{ t('equalityPage.pointSafeDescription') }}
+          </p>
+        </div>
+
+        <div class="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]">
+          <UCard
+            class="border-[rgba(81,50,105,0.16)] bg-[linear-gradient(135deg,rgba(81,50,105,0.1),rgba(81,50,105,0.03))] dark:border-[rgba(216,190,231,0.18)] dark:bg-[linear-gradient(135deg,rgba(81,50,105,0.28),rgba(81,50,105,0.1))]"
+          >
             <div class="space-y-4">
               <span
-                class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                aria-hidden="true"
+                class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.14)] text-[#513269] dark:bg-[rgba(216,190,231,0.18)] dark:text-[#d8bee7]"
               >
-                <UIcon :name="step.icon" class="size-5" />
+                <UIcon name="i-tabler-shield-heart" class="size-5" />
               </span>
 
               <div class="space-y-2">
-                <h3 class="text-lg font-semibold">
-                  {{ t(`equalityPage.actionSteps.${step.key}.title`) }}
+                <h3 class="text-lg font-semibold text-balance">
+                  {{ t('equalityPage.pointSafeCalloutTitle') }}
                 </h3>
                 <p class="text-muted leading-relaxed">
-                  {{ t(`equalityPage.actionSteps.${step.key}.description`) }}
+                  {{ t('equalityPage.pointSafeCalloutDescription') }}
                 </p>
               </div>
+
+              <UButton
+                :href="supportMailto"
+                icon="i-tabler-mail"
+                :label="t('equalityPage.pointSafePrimary')"
+                :class="accentButtonClass"
+              />
             </div>
           </UCard>
+
+          <div
+            class="rounded-3xl border border-[rgba(81,50,105,0.12)] bg-white/70 p-6 backdrop-blur-sm dark:border-[rgba(216,190,231,0.16)] dark:bg-white/4"
+          >
+            <ul class="space-y-5">
+              <li
+                v-for="item in pointSafeItems"
+                :key="item.key"
+                class="flex items-start gap-4 border-b border-[rgba(81,50,105,0.08)] pb-5 last:border-b-0 last:pb-0 dark:border-[rgba(216,190,231,0.12)]"
+              >
+                <span
+                  aria-hidden="true"
+                  class="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                >
+                  <UIcon :name="item.icon" class="size-5" />
+                </span>
+
+                <div class="space-y-1.5">
+                  <h3 class="text-lg font-semibold">
+                    {{ t(`equalityPage.pointSafeItems.${item.key}.title`) }}
+                  </h3>
+                  <p class="text-muted leading-relaxed">
+                    {{ t(`equalityPage.pointSafeItems.${item.key}.description`) }}
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -267,6 +365,7 @@ useSeoMeta({
             <UCard class="h-full">
               <div class="flex items-center gap-3">
                 <span
+                  aria-hidden="true"
                   class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
                 >
                   <UIcon :name="item.icon" class="size-5" />
@@ -298,18 +397,16 @@ useSeoMeta({
 
           <div class="flex flex-wrap gap-3">
             <UButton
-              to="/contacto"
+              :href="supportMailto"
               icon="i-tabler-mail"
               :label="t('equalityPage.supportPrimary')"
               :class="accentButtonClass"
             />
             <UButton
-              href="/documentos/igualdad/protocolo-acoso-discriminacion-creup.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#equality-documents"
               variant="soft"
               color="neutral"
-              icon="i-tabler-file-download"
+              icon="i-tabler-files"
               :label="t('equalityPage.supportSecondary')"
             />
           </div>

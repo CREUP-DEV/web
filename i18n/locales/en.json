@@ -71,10 +71,6 @@
     "newsAndEventsLabel": "Press and events",
     "latestNews": "Latest News",
     "featuredLinks": "Featured Links",
-    "equalityLink": {
-      "title": "Equality and harassment prevention",
-      "alt": "Illustration linking to the equality section"
-    },
     "publicAgenda": "Public Agenda",
     "noNews": "No news available for this tag",
     "carousel": {
@@ -223,91 +219,106 @@
   },
   "equalityPage": {
     "title": "Equality and harassment prevention",
-    "description": "Public CREUP space bringing together documents, commitments, and resources on equality, diversity, inclusive communication, and harassment prevention.",
+    "description": "Public space with documents and resources on equality, diversity, inclusive communication, and the Safe Point used during our events.",
     "eyebrow": "Equality and Social Dimension",
-    "lead": "A single place to consult CREUP's position, its response protocol, and supporting materials on equality and social dimension.",
-    "ctaDocuments": "View key documents",
-    "ctaContact": "Contact us",
+    "lead": "On this page you can find our position, the current protocols on sexual harassment and discrimination, and the basic information about the Safe Point we have in place during assemblies, meetings, and other events.",
+    "ctaDocuments": "View documents",
+    "ctaContact": "Email the Safe Point",
     "heroPoints": {
       "centralize": "Resources gathered in one place",
       "access": "Clear access from the public website",
       "support": "Documentation to prevent, respond, and support"
     },
-    "commitmentsTitle": "What this page brings together",
+    "commitmentsTitle": "What you will find here",
     "commitments": {
       "policy": {
         "title": "Policy framework and principles",
-        "description": "Explains CREUP's position on equality, diversity, and discrimination within the university environment."
+        "description": "Explains how we understand equality, diversity, and non-discrimination in universities and in our representative spaces."
       },
       "protocol": {
-        "title": "Prevention and response",
-        "description": "Includes guidance on prevention, reporting, support, and response in situations of harassment or discrimination."
+        "title": "Current response protocols",
+        "description": "Brings together the two protocols approved in 2025 to prevent, address, and process situations of sexual harassment or discrimination during our events."
       },
       "communication": {
         "title": "Inclusive communication",
-        "description": "Provides practical criteria on language, visual representation, and accessibility for non-discriminatory communication."
-      },
-      "visibility": {
-        "title": "Transparency and access",
-        "description": "Concentrates key resources in a stable location that is easy to find from public navigation."
+        "description": "Includes practical guidance on language, visual representation, and accessibility for non-discriminatory communication."
       }
     },
-    "resourcesTitle": "Available documents",
+    "resourcesTitle": "Documents to consult",
     "openDocument": "Open document",
     "resources": {
-      "motion": {
-        "title": "Internal motion on the inclusion of a comprehensive Equality and Social Dimension section on the website",
-        "description": "Document approved at the 75th Ordinary General Assembly that drives the creation of this space and defines its goals of centralization, visibility, and accessibility.",
-        "meta": "75th Ordinary General Assembly · April 26, 2024"
-      },
       "position": {
         "title": "Policy position on Equality and Diversity",
-        "description": "CREUP's policy framework on discrimination in universities, equality plans, protocols, and demands addressed to public institutions.",
+        "description": "Our core document on equality, diversity, discrimination in universities, and the measures we call for from public institutions.",
         "meta": "Policy document · Equality and diversity"
+      },
+      "sexualProtocol": {
+        "title": "Protocol for prevention and response to sexual harassment cases",
+        "description": "Approved at the 77th Ordinary General Assembly, it sets out preventive measures, confidentiality principles, how the Safe Point works, and the response procedure for conduct against sexual freedom.",
+        "meta": "77th Ordinary General Assembly · April 4, 2025"
+      },
+      "discriminationProtocol": {
+        "title": "Protocol for prevention and response to discrimination cases",
+        "description": "Approved at the 77th Ordinary General Assembly, it defines situations of discrimination, safeguards, the Safe Point, and response levels for violence or harassment linked to diversity.",
+        "meta": "77th Ordinary General Assembly · April 4, 2025"
       },
       "guide": {
         "title": "Inclusive Communication Guide",
-        "description": "Practical recommendations on language, visual resources, and accessibility criteria for more inclusive communication in the university context.",
+        "description": "Practical recommendations on language, visual resources, and accessibility for more inclusive communication.",
         "meta": "Practical guide · Language, visuals, and accessibility"
-      },
-      "protocol": {
-        "title": "Protocol for prevention and response to harassment and discrimination cases in CREUP",
-        "description": "Procedure for prevention, reporting, support, and response in situations of harassment or discrimination during CREUP activities.",
-        "meta": "Internal protocol · Prevention and response"
       }
     },
-    "actionTitle": "How to act in a situation of harassment or discrimination",
+    "actionTitle": "If something happens during one of our events",
     "actionSteps": {
       "safety": {
         "title": "Prioritize safety",
-        "description": "If there is an immediate risk, leave the situation, seek support from a trusted person, and in urgent cases contact 112 or emergency services."
+        "description": "If there is an immediate risk, leave the situation, look for support from someone you trust, and contact 112 or emergency services if needed."
       },
       "notify": {
         "title": "Report what happened",
-        "description": "In CREUP activities, any participant can report the facts to the Equality and Social Dimension Officer, the Guarantees Committee, or the Executive Committee."
+        "description": "During the event you can approach the Safe Point, the trusted people assigned to it, or the person responsible for equality in the extended Executive Committee. If you need to report it later, you can use this email."
       },
       "details": {
         "title": "Gather relevant information",
-        "description": "Write down dates, places, people involved, and any available evidence to facilitate assessment and later support."
+        "description": "Write down dates, places, people involved, and any available evidence. The protocols stress only asking for the necessary information and protecting confidentiality."
       },
       "support": {
         "title": "Read the protocol and ask for support",
-        "description": "The protocol explains the steps, safeguards, and specific measures for different cases, including situations related to gender, sexual orientation, disability, or ethnicity."
+        "description": "The protocols explain what safeguards are in place, which protective measures can be activated, and how to ask for support if sexual harassment or discrimination takes place."
       }
     },
-    "scopeTitle": "Areas covered",
-    "scopeItems": {
-      "gender": "Gender-based violence and sexism",
-      "lgbtiq": "Sexual orientation, identity, and gender expression",
-      "ethnicity": "Racism and discrimination based on ethnicity or origin",
-      "disability": "Disability, accessibility, and support",
-      "language": "Inclusive and non-discriminatory communication",
-      "institutional": "Protocols, plans, and institutional transparency"
+    "pointSafeTitle": "What the Safe Point is",
+    "pointSafeDescription": "The Safe Point is the resource we have in place at our events to offer information, a listening ear, and support in situations involving sexual harassment or discrimination.",
+    "pointSafeCalloutTitle": "How it works",
+    "pointSafeCalloutDescription": "The Safe Point operates on the ground during assemblies, meetings, and other activities we organize. At each event, at least one trusted person is appointed and their contact details are shared with all attendees.",
+    "pointSafePrimary": "Email the Safe Point",
+    "pointSafeItems": {
+      "prevention": {
+        "title": "Before anything happens",
+        "description": "It helps set expectations, share the protocols, and make clear that our events are meant to be safe and respectful spaces."
+      },
+      "guidance": {
+        "title": "When someone needs support",
+        "description": "It offers a clear point of contact where someone can pause, explain what happened, get guidance, and think through the next steps."
+      },
+      "followUp": {
+        "title": "If follow-up is needed",
+        "description": "It helps document what happened, connect with the responsible people, and continue the support process with the level of discretion each case needs."
+      }
     },
-    "supportTitle": "Do you need guidance or more information?",
-    "supportDescription": "If you have questions about this documentation or need us to point you to the right resource, you can contact us. In urgent cases, we also recommend using the specialized services available at your university or in your area.",
-    "supportPrimary": "Go to contact",
-    "supportSecondary": "Download protocol"
+    "scopeTitle": "What the protocols cover",
+    "scopeItems": {
+      "sexualViolence": "Sexual harassment and conduct against sexual freedom",
+      "gender": "Sexism, gender-based violence, and structural inequality",
+      "lgbtiq": "Sexual orientation, identity, and gender expression",
+      "ethnicity": "Racism, xenophobia, and discrimination based on origin or ethnicity",
+      "disability": "Ableism, accessibility, and support needs",
+      "otherDiscrimination": "Other forms of discrimination based on age, social condition, or other personal or social circumstances"
+    },
+    "supportTitle": "Do you need to contact the Safe Point?",
+    "supportDescription": "If you want to tell us about something that happened during one of our events or you need guidance, you can email the Safe Point directly. This page gives you the documents and the contact route; support itself is provided in the context of the activities we organize. In urgent situations, also use the specialized services at your university, in your area, or call 112.",
+    "supportPrimary": "Email the Safe Point",
+    "supportSecondary": "View the documents"
   },
   "members": {
     "title": "Members",
