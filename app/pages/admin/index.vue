@@ -156,7 +156,7 @@ const sections = computed(() => [
 
 const quickActions = [
   {
-    label: 'Nuevo artículo',
+    label: 'Nuevo artículo de prensa',
     to: '/admin/press/create',
     icon: 'i-tabler-pencil-plus',
   },
@@ -165,18 +165,13 @@ const quickActions = [
     to: '/admin/newsletter',
     icon: 'i-tabler-mail-plus',
   },
-  {
-    label: 'Nuevo informe económico',
-    to: '/admin/financial-reports',
-    icon: 'i-tabler-file-plus',
-  },
 ]
 </script>
 
 <template>
   <div class="space-y-8">
     <section class="overflow-hidden rounded-2xl border">
-      <div class="from-primary/10 via-primary/5 to-background bg-gradient-to-br p-6 sm:p-8">
+      <div class="from-primary/10 via-primary/5 to-background bg-linear-to-br p-6 sm:p-8">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-2xl">
             <p class="text-primary mb-2 text-sm font-semibold tracking-wide uppercase">
@@ -213,7 +208,7 @@ const quickActions = [
             <p class="mt-2 text-3xl font-bold">{{ item.value }}</p>
             <p class="text-muted mt-2 text-sm">{{ item.description }}</p>
           </div>
-          <div class="rounded-xl border p-3">
+          <div class="flex size-12 shrink-0 items-center justify-center rounded-xl border">
             <UIcon :name="item.icon" class="size-6" />
           </div>
         </div>
@@ -230,7 +225,7 @@ const quickActions = [
         <NuxtLink v-for="section in sections" :key="section.to" :to="section.to" class="group">
           <UCard class="h-full transition-all group-hover:-translate-y-0.5 group-hover:shadow-md">
             <div class="flex items-start gap-4">
-              <div class="bg-muted rounded-xl p-3">
+              <div class="bg-muted flex size-12 shrink-0 items-center justify-center rounded-xl">
                 <UIcon :name="section.icon" class="text-primary size-6" />
               </div>
 

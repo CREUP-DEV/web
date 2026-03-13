@@ -42,7 +42,7 @@ export const carouselItemTranslations = pgTable(
       .notNull()
       .references(() => carouselItems.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.carouselItemId, table.locale)]
+  (table) => [unique().on(table.locale, table.carouselItemId)]
 )
 
 // Carousel relations
@@ -82,7 +82,7 @@ export const tagTranslations = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.tagId, table.locale)]
+  (table) => [unique().on(table.locale, table.tagId)]
 )
 
 // Tags relations
@@ -134,7 +134,7 @@ export const pressArticleTranslations = pgTable(
       .notNull()
       .references(() => pressArticles.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.pressArticleId, table.locale)]
+  (table) => [unique().on(table.locale, table.pressArticleId)]
 )
 
 // Junction table for Press Articles to Tags (many-to-many)
@@ -209,7 +209,7 @@ export const featuredLinkTranslations = pgTable(
       .notNull()
       .references(() => featuredLinks.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.featuredLinkId, table.locale)]
+  (table) => [unique().on(table.locale, table.featuredLinkId)]
 )
 
 // Featured Links relations
@@ -335,7 +335,7 @@ export const teamAreaTranslations = pgTable(
       .notNull()
       .references(() => teamAreas.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.teamAreaId, table.locale)]
+  (table) => [unique().on(table.locale, table.teamAreaId)]
 )
 
 // Team Areas relations
@@ -387,7 +387,7 @@ export const teamMemberTranslations = pgTable(
       .notNull()
       .references(() => teamMembers.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.teamMemberId, table.locale)]
+  (table) => [unique().on(table.locale, table.teamMemberId)]
 )
 
 // Team Members relations
@@ -456,7 +456,10 @@ export const organizationMemberTranslations = pgTable(
       .notNull()
       .references(() => organizationMembers.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.organizationMemberId, table.locale)]
+  (table) => [unique('organization_member_translations_locale_member_unique').on(
+    table.locale,
+    table.organizationMemberId
+  )]
 )
 
 // Organization Members relations
@@ -573,7 +576,7 @@ export const financialReportTranslations = pgTable(
       .notNull()
       .references(() => financialReports.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.financialReportId, table.locale)]
+  (table) => [unique().on(table.locale, table.financialReportId)]
 )
 
 export const financialReportsRelations = relations(financialReports, ({ many }) => ({

@@ -16,6 +16,15 @@ export interface AdminAccessListItem {
   createdAt: Date | null
 }
 
+function normalizeTimestamp(value: Date | string | null | undefined) {
+  if (!value) {
+    return null
+  }
+
+  const parsed = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
 export function normalizeAdminEmail(email: string) {
   return email.trim().toLowerCase()
 }
@@ -169,8 +178,8 @@ export async function listAdminAccess() {
           isAdminEmailFromAllowedDomain(email) && (protectedByEnv || dbEntry?.active === true),
         protectedByEnv,
         source: protectedByEnv && dbEntry ? 'both' : protectedByEnv ? 'env' : 'database',
-        lastAccessAt: user ? (lastAccessByUserId.get(user.id) ?? null) : null,
-        createdAt: dbEntry?.createdAt ?? null,
+        lastAccessAt: normalizeTimestamp(user ? lastAccessByUserId.get(user.id) : null),
+        createdAt: normalizeTimestamp(dbEntry?.createdAt),
       }
     })
     .sort((left, right) => {

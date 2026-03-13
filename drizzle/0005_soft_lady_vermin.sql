@@ -1,1 +1,0 @@
-ALTER TABLE "press_article_translations" ADD COLUMN "content_html" text;
