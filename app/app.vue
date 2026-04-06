@@ -35,7 +35,8 @@ useHead(() => ({
   ],
   link: [
     ...(localeHead.value.link ?? []).filter((link) => link.rel !== 'canonical'),
-    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg', sizes: 'any' },
+    { rel: 'shortcut icon', type: 'image/x-icon', href: '/favicon.ico' },
   ],
 }))
 
