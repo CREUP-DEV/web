@@ -1,19 +1,7 @@
 <script setup lang="ts">
-/**
- * Admin Media Outlets Management with drag-and-drop reordering
- * Allows CRUD operations and logo upload with preview
- */
-import Sortable from 'sortablejs'
-
 definePageMeta({
   layout: 'admin',
 })
-
-// Check auth
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
 
 const toast = useToast()
 
@@ -29,36 +17,14 @@ const { data, refresh } = await useFetch<{ items: MediaOutlet[] }>('/api/admin/m
 
 const items = computed(() => data.value?.items ?? [])
 
-// Local items for drag-and-drop
-const localItems = ref<MediaOutlet[]>([])
-const isSavingOrder = ref(false)
-
-const hasOrderChanges = computed(() => {
-  if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some(
-    (item: MediaOutlet, index: number) => item.id !== items.value[index]?.id
-  )
-})
-
-watch(
-  items,
-  (newItems: MediaOutlet[]) => {
-    localItems.value = [...newItems]
-  },
-  { immediate: true }
-)
-
-// Modal state
 const showModal = ref(false)
 const editingItem = ref<MediaOutlet | null>(null)
 const isSubmitting = ref(false)
 
-// Delete confirmation modal
 const showDeleteModal = ref(false)
 const itemToDelete = ref<MediaOutlet | null>(null)
 const isDeleting = ref(false)
 
-// Form state
 const form = reactive({
   name: '',
   website: '',
@@ -66,101 +32,44 @@ const form = reactive({
   order: 0,
 })
 
-// File upload state
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const logoPreview = ref<string | null>(null)
-const isUploading = ref(false)
-
-// Sortable setup
 const listRef = ref<HTMLElement | null>(null)
-let sortableInstance: Sortable | null = null
+const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
+  useReorderableAdminList({
+    items,
+    listRef,
+    persist: async (updates) => {
+      await $fetch('/api/admin/media/reorder', {
+        method: 'POST',
+        body: { items: updates },
+      })
 
-onMounted(() => {
-  if (listRef.value) {
-    sortableInstance = Sortable.create(listRef.value, {
-      animation: 150,
-      handle: '.drag-handle',
-      ghostClass: 'opacity-50',
-      onEnd: (evt) => {
-        if (evt.oldIndex !== undefined && evt.newIndex !== undefined) {
-          const movedItem = localItems.value.splice(evt.oldIndex, 1)[0]
-          if (movedItem) {
-            localItems.value.splice(evt.newIndex, 0, movedItem)
-          }
-        }
-      },
-    })
-  }
-})
+      await refresh()
+    },
+  })
 
-onUnmounted(() => {
-  sortableInstance?.destroy()
+const {
+  inputRef: fileInputRef,
+  preview: logoPreview,
+  isUploading,
+  triggerFileDialog: triggerFileInput,
+  handleFileSelect,
+} = useAdminFileUpload({
+  endpoint: '/api/admin/media/upload',
+  successMessage: 'Logo subido correctamente',
+  errorMessage: 'No se pudo subir el logo',
+  onUploaded: (storagePath) => {
+    form.logo = storagePath
+  },
+  getFallbackPreview: () => form.logo || null,
 })
 
 const saveOrder = async () => {
-  isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item: MediaOutlet, index: number) => ({
-      id: item.id,
-      order: index,
-    }))
-
-    await $fetch('/api/admin/media/reorder', {
-      method: 'POST',
-      body: { items: updates },
-    })
-
-    await refresh()
+    await persistOrder()
     toast.add({ title: 'Orden guardado', color: 'success' })
   } catch (e) {
     console.error('Error saving order:', e)
     toast.add({ title: 'No se pudo guardar el orden', color: 'error' })
-  } finally {
-    isSavingOrder.value = false
-  }
-}
-
-const cancelOrderChanges = () => {
-  localItems.value = [...items.value]
-}
-
-const triggerFileInput = () => {
-  fileInputRef.value?.click()
-}
-
-const handleFileSelect = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  // Client-side preview
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    logoPreview.value = e.target?.result as string
-  }
-  reader.readAsDataURL(file)
-
-  // Upload to server
-  isUploading.value = true
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const result = await $fetch<{ path: string; storagePath: string }>('/api/admin/media/upload', {
-      method: 'POST',
-      body: formData,
-    })
-
-    form.logo = result.storagePath
-    toast.add({ title: 'Logo subido correctamente', color: 'success' })
-  } catch (e) {
-    console.error('Error uploading file:', e)
-    logoPreview.value = null
-    toast.add({ title: 'No se pudo subir el logo', color: 'error' })
-  } finally {
-    isUploading.value = false
-    // Reset file input so the same file can be selected again
-    if (target) target.value = ''
   }
 }
 
@@ -264,7 +173,6 @@ const handleDelete = async () => {
         :key="item.id"
         class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
       >
-        <!-- Desktop layout -->
         <div class="hidden items-center gap-4 md:flex">
           <div class="drag-handle cursor-grab active:cursor-grabbing">
             <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
@@ -297,7 +205,6 @@ const handleDelete = async () => {
           </div>
         </div>
 
-        <!-- Mobile layout -->
         <div class="space-y-3 md:hidden">
           <div class="flex justify-center">
             <div class="drag-handle cursor-grab active:cursor-grabbing">
@@ -336,7 +243,6 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <!-- Edit/Create Modal -->
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-lg' }">
       <template #content>
         <div class="flex max-h-[80vh] flex-col">
@@ -356,7 +262,6 @@ const handleDelete = async () => {
 
               <UFormField label="Logo">
                 <div class="space-y-3">
-                  <!-- Logo preview -->
                   <div
                     v-if="logoPreview"
                     class="bg-muted/30 flex items-center justify-center rounded-lg border p-4"
@@ -368,7 +273,6 @@ const handleDelete = async () => {
                     />
                   </div>
 
-                  <!-- Upload button -->
                   <input
                     ref="fileInputRef"
                     type="file"
@@ -399,7 +303,6 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <!-- Delete Confirmation Modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">

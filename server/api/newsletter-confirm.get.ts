@@ -1,31 +1,46 @@
-import { createError, defineEventHandler, getQuery, sendRedirect } from 'h3'
+import { defineEventHandler, sendRedirect, setHeader } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterSubscribers } from '../db/schema'
+import { buildLocalizedPath } from '../utils/urlBuilder'
+import { newsletterTokenQuerySchema, validateQuery } from '../utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const query = getQuery(event)
-  const token = query.token as string | undefined
+  setHeader(event, 'cache-control', 'no-store')
 
-  if (!token) {
-    throw createError({ statusCode: 400, statusMessage: 'Token requerido' })
-  }
+  const { token } = validateQuery(event, newsletterTokenQuerySchema)
+  const redirectBasePath = buildLocalizedPath(event, '/prensa/newsletter')
 
   const subscriber = await db.query.newsletterSubscribers.findFirst({
     where: eq(newsletterSubscribers.confirmToken, token),
   })
 
-  if (subscriber) {
+  const now = new Date()
+
+  if (subscriber && (!subscriber.confirmTokenExpiresAt || subscriber.confirmTokenExpiresAt > now)) {
     await db
       .update(newsletterSubscribers)
       .set({
         active: true,
         confirmToken: null,
-        confirmedAt: subscriber.confirmedAt ?? new Date(),
+        confirmTokenExpiresAt: null,
+        confirmedAt: subscriber.confirmedAt ?? now,
         unsubscribedAt: null,
+      })
+      .where(eq(newsletterSubscribers.id, subscriber.id))
+
+    return sendRedirect(event, `${redirectBasePath}?confirmed=1`, 302)
+  }
+
+  if (subscriber) {
+    await db
+      .update(newsletterSubscribers)
+      .set({
+        confirmToken: null,
+        confirmTokenExpiresAt: null,
       })
       .where(eq(newsletterSubscribers.id, subscriber.id))
   }
 
-  return sendRedirect(event, '/prensa/newsletter?confirmed=1', 302)
+  return sendRedirect(event, `${redirectBasePath}?confirmed=expired`, 302)
 })

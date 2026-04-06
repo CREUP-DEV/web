@@ -1,8 +1,3 @@
-/**
- * Composable for fetching press articles from the public API
- * Supports filtering by type and tag
- */
-
 export type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
 
 export interface PressArticleTag {
@@ -37,12 +32,9 @@ export interface PressResponse {
 }
 
 export interface PressDetailResponse {
-  article: PressArticle
+  article: PressArticle | null
 }
 
-/**
- * Fetch a list of press articles, optionally filtered by type and tag
- */
 export function usePress(
   type?: Ref<PressArticleType | null> | PressArticleType | null,
   tagSlug?: Ref<string | null> | string | null,
@@ -72,14 +64,14 @@ export function usePress(
       return $fetch<PressResponse>(`/api/press?${params.toString()}`)
     },
     {
+      default: () => ({
+        articles: [],
+      }),
       watch: [locale, typeRef, tagRef],
     }
   )
 }
 
-/**
- * Fetch a single press article by slug
- */
 export function usePressArticle(slug: string) {
   const { locale } = useI18n()
 

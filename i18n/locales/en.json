@@ -35,10 +35,7 @@
       "regulations": "Regulations",
       "financialReports": "Financial reports",
       "corporateIdentity": "Corporate Identity",
-      "equality": {
-        "label": "Equality",
-        "overview": "General information"
-      }
+      "equality": "Equality and Harassment Prevention"
     },
     "contact": "Contact"
   },
@@ -102,8 +99,10 @@
     "loading": "Loading..."
   },
   "common": {
+    "all": "All",
     "readMore": "Read more",
     "viewAll": "View all",
+    "visitWebsite": "Visit website",
     "back": "Back",
     "comingSoon": "Content coming soon.",
     "close": "Close",
@@ -170,49 +169,81 @@
   },
   "aboutPage": {
     "title": "What is CREUP?",
-    "description": "CREUP is the leading voice of students at public universities in Spain.",
-    "lead": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) brings together student councils and delegations from 37 public universities, representing more than 1,000,000 students.",
-    "intro": "As a national reference body, CREUP channels students' needs and interests to public institutions and authorities, helping improve the university system.",
-    "activityTitle": "How we work",
-    "activityParagraph1": "To fulfill its mission, CREUP holds two General Assemblies each year where members agree on priorities, positions, and shared strategic lines.",
-    "activityParagraph2": "It also promotes training events and spaces for exchanging experiences among student representatives, strengthening coordination and shared learning.",
-    "collaborationTitle": "Institutional collaboration",
-    "collaborationParagraph": "CREUP maintains agreements and collaborative relationships with Higher Education organizations, such as CEDU, CRUE, and alumni associations, to reinforce the impact of student representation.",
-    "purposeTitle": "Commitment to society",
-    "purposeParagraph": "This work makes CREUP an essential actor for public universities: an organization that gives students a voice and works every day for a fairer, more participatory, and higher-quality Higher Education system.",
-    "missionTitle": "Mission",
-    "missionText": "Give students a voice to build and improve the university system.",
-    "visionTitle": "Vision",
-    "visionText": "Become the leading student representation body at the national level, serving as a bridge with associations and institutions.",
-    "valuesTitle": "Values",
-    "values": {
-      "independence": "Independence",
-      "cooperation": "Cooperation",
-      "nonDiscrimination": "Non-discrimination",
-      "socialCommitment": "Social commitment",
-      "participation": "Participation"
+    "description": "We are the leading student representation platform for public universities in Spain.",
+    "lead": "We are a state association that brings together the student councils of public universities, giving a voice to more than one million students across Spain.",
+    "intro": "We coordinate national student representation and defend our rights and participation in university policymaking.",
+    "snapshotTitle": "CREUP at a glance",
+    "ctaIdentity": "How we work",
+    "ctaMembers": "View members",
+    "stats": {
+      "universities": {
+        "label": "member public universities"
+      },
+      "students": {
+        "label": "students represented"
+      },
+      "years": {
+        "suffix": "years",
+        "label": "working for students"
+      }
     },
-    "sectionsTitle": "Learn more about CREUP",
-    "sectionsDescription": "If you want to go deeper into how we are organized and who is part of CREUP, visit these sections:",
+    "identityTitle": "We are the students' voice",
+    "identityParagraph1": "We act as interlocutors with key institutions so that our perspective as students is part of university policy-making.",
+    "identityParagraph2": "Our goal is to ensure that students' voices are heard in building and improving the university system, promoting a public education model that is high-quality, inclusive, and accessible.",
+    "activityTitle": "How we work",
+    "activityParagraph1": "We hold two General Assemblies each year where we agree on priorities, positions, and shared strategic lines.",
+    "activityParagraph2": "We promote training events and spaces for exchanging experiences and views among student representatives and other social actors in the university system.",
+    "purposeTitle": "Our commitment to society",
+    "purposeParagraph": "We give students a voice and work every day for a fairer, more participatory, and higher-quality Higher Education system. We believe in public universities as a driver of social mobility.",
+    "missionTitle": "Mission",
+    "missionText": "To give university students a voice in building and improving the Spanish University System, promoting Higher Education that is high-quality, accessible, and inclusive. We work so that our rights, needs, and interests are heard and considered in decision-making.",
+    "visionTitle": "Vision",
+    "visionText": "To become the leading student representation body at the national level, serving as a link with associations, institutions, and public and private organizations, both nationally and internationally. We aim to help build a university system that is fairer, more innovative, and better adapted to society's needs.",
+    "valuesTitle": "Values that define us",
+    "valuesDescription": "The student representation model we promote is grounded in clear and shared principles.",
+    "values": {
+      "independence": {
+        "title": "Independence",
+        "description": "We act autonomously so students are represented above interests unrelated to our needs."
+      },
+      "cooperation": {
+        "title": "Cooperation",
+        "description": "We build common positions through shared work among universities and student representatives across the country."
+      },
+      "nonDiscrimination": {
+        "title": "Non-discrimination",
+        "description": "We defend an inclusive, diverse university free from barriers for everyone."
+      },
+      "socialCommitment": {
+        "title": "Social commitment",
+        "description": "We understand Higher Education as a tool for equity, collective progress, and social transformation."
+      },
+      "participation": {
+        "title": "Participation",
+        "description": "We encourage students to take an active role in the decisions that shape our present and future."
+      }
+    },
+    "sectionsTitle": "Keep discovering us",
+    "sectionsDescription": "Explore the sections where our work is organized:",
     "sections": {
       "members": {
         "title": "Members",
-        "description": "See the student organizations and partner entities that actively participate in CREUP.",
+        "description": "See the student organizations that make up CREUP.",
         "cta": "Go to Members"
       },
       "team": {
         "title": "Team",
-        "description": "Meet the people who take on representation and coordination responsibilities within CREUP.",
+        "description": "Meet the people who take on representation and coordination responsibilities.",
         "cta": "Go to Team"
       },
       "committees": {
         "title": "Committees",
-        "description": "Discover working committees and their members, who drive the technical and policy activity of the organization.",
+        "description": "Discover our working committees and their members.",
         "cta": "Go to Committees"
       },
       "events": {
         "title": "Events",
-        "description": "Browse assemblies, meetings, and training activities organized by CREUP.",
+        "description": "Browse our assemblies, meetings, and training events.",
         "cta": "Go to Events"
       }
     }
@@ -221,7 +252,7 @@
     "title": "Equality and harassment prevention",
     "description": "Public space with documents and resources on equality, diversity, inclusive communication, and the Safe Point used during our events.",
     "eyebrow": "Equality and Social Dimension",
-    "lead": "On this page you can find our position, the current protocols on sexual harassment and discrimination, and the basic information about the Safe Point we have in place during assemblies, meetings, and other events.",
+    "lead": "On this page you can consult documents and resources related to equality, diversity, discrimination prevention, and the basic information about the Safe Point we have in place during assemblies, meetings, and other events.",
     "ctaDocuments": "View documents",
     "ctaContact": "Email the Safe Point",
     "heroPoints": {
@@ -229,45 +260,10 @@
       "access": "Clear access from the public website",
       "support": "Documentation to prevent, respond, and support"
     },
-    "commitmentsTitle": "What you will find here",
-    "commitments": {
-      "policy": {
-        "title": "Policy framework and principles",
-        "description": "Explains how we understand equality, diversity, and non-discrimination in universities and in our representative spaces."
-      },
-      "protocol": {
-        "title": "Current response protocols",
-        "description": "Brings together the two protocols approved in 2025 to prevent, address, and process situations of sexual harassment or discrimination during our events."
-      },
-      "communication": {
-        "title": "Inclusive communication",
-        "description": "Includes practical guidance on language, visual representation, and accessibility for non-discriminatory communication."
-      }
-    },
     "resourcesTitle": "Documents to consult",
     "openDocument": "Open document",
-    "resources": {
-      "position": {
-        "title": "Policy position on Equality and Diversity",
-        "description": "Our core document on equality, diversity, discrimination in universities, and the measures we call for from public institutions.",
-        "meta": "Policy document · Equality and diversity"
-      },
-      "sexualProtocol": {
-        "title": "Protocol for prevention and response to sexual harassment cases",
-        "description": "Approved at the 77th Ordinary General Assembly, it sets out preventive measures, confidentiality principles, how the Safe Point works, and the response procedure for conduct against sexual freedom.",
-        "meta": "77th Ordinary General Assembly · April 4, 2025"
-      },
-      "discriminationProtocol": {
-        "title": "Protocol for prevention and response to discrimination cases",
-        "description": "Approved at the 77th Ordinary General Assembly, it defines situations of discrimination, safeguards, the Safe Point, and response levels for violence or harassment linked to diversity.",
-        "meta": "77th Ordinary General Assembly · April 4, 2025"
-      },
-      "guide": {
-        "title": "Inclusive Communication Guide",
-        "description": "Practical recommendations on language, visual resources, and accessibility for more inclusive communication.",
-        "meta": "Practical guide · Language, visuals, and accessibility"
-      }
-    },
+    "loadError": "Equality documents could not be loaded right now.",
+    "empty": "There are no published equality documents yet.",
     "actionTitle": "If something happens during one of our events",
     "actionSteps": {
       "safety": {
@@ -306,7 +302,7 @@
         "description": "It helps document what happened, connect with the responsible people, and continue the support process with the level of discretion each case needs."
       }
     },
-    "scopeTitle": "What the protocols cover",
+    "scopeTitle": "What situations are covered",
     "scopeItems": {
       "sexualViolence": "Sexual harassment and conduct against sexual freedom",
       "gender": "Sexism, gender-based violence, and structural inequality",
@@ -338,6 +334,7 @@
     "unknownDenomination": "Designation not specified",
     "viewDetails": "View details",
     "memberModalDescription": "Details of the selected organization.",
+    "descriptionLabel": "Description",
     "info": "Information and contact",
     "socialNetworks": "Social networks",
     "networks": {
@@ -355,7 +352,20 @@
     },
     "membersIn": "Members in {community}",
     "selectCommunity": "Select an autonomous community on the map to see its members.",
-    "mapAccessibleHelp": "If you cannot use the map, you can jump directly to the members list.",
+    "mapAccessibleHelp": "If you cannot use the map, you can use the community filters or jump directly to the members list.",
+    "representedCommunities": "{count} communities with representation",
+    "mapSelectionSummary": "Showing members from {community}",
+    "mapSelectionAllSummary": "Showing all associated members",
+    "mapLegendLabel": "Map legend",
+    "mapLegendSelected": "Selected community",
+    "mapLegendActive": "Active representation",
+    "mapLegendInactive": "No registered members",
+    "mapFilterTitle": "Filter by community without using the map",
+    "mapTooltipCount": "{count} member | {count} members",
+    "mapTooltipEmpty": "No registered members",
+    "mapSelectedState": "Selected",
+    "mapAvailableState": "Has representation",
+    "mapUnavailableState": "No representation",
     "skipMap": "Go to list",
     "communities": {
       "andalucia": "Andalusia",
@@ -562,27 +572,11 @@
   "cookies": {
     "banner": {
       "title": "We respect your privacy",
-      "description": "We use essential cookies for the site to function and optional analytics cookies to understand usage and improve the experience. We do not collect personally identifiable data.",
-      "acceptAll": "Accept all",
-      "essentialOnly": "Essential only",
-      "customize": "Customize",
-      "learnMore": "Cookie policy"
+      "description": "This website only uses cookies and technical storage necessary for language, accessibility, and the administration session. In addition, CREUP uses a self-hosted Umami instance for aggregated usage measurement without cookies or persistent identifiers.",
+      "dismiss": "Understood",
+      "learnMore": "Privacy and cookies"
     },
-    "settings": {
-      "title": "Cookie preferences",
-      "description": "Choose which types of cookies you accept. You can change these preferences at any time from the link in the footer.",
-      "save": "Save preferences",
-      "essential": {
-        "title": "Essential cookies",
-        "description": "Required for basic site functionality: language, admin session, and interface preferences. These cannot be disabled.",
-        "always": "Always active"
-      },
-      "analytics": {
-        "title": "Analytics cookies",
-        "description": "We use Umami, a privacy-focused analytics tool. No third-party tracking cookies are used and no personal data is collected. The information is anonymous and helps us improve the site."
-      }
-    },
-    "editPreferences": "Cookie preferences"
+    "footerLink": "Cookies and privacy"
   },
   "contactPage": {
     "seo": {
@@ -654,6 +648,10 @@
     "confirmed": {
       "title": "Subscription confirmed",
       "description": "Your address is now active for receiving the CREUP newsletter."
+    },
+    "confirmedExpired": {
+      "title": "The confirmation link has expired",
+      "description": "Submit the subscription form again to receive a new link."
     },
     "unsubscribe": {
       "title": "You have unsubscribed from the newsletter",

@@ -1,23 +1,23 @@
-import { createError, defineEventHandler } from 'h3'
-import { requireAuth } from '../../../../utils/requireAuth'
-import { monthKeyToDate, sendNewsletterById } from '../../../../utils/newsletters'
+import { defineEventHandler } from 'h3'
+import { runInBackground } from '../../../../utils/backgroundTask'
+import {
+  claimNewsletterForSending,
+  monthKeyToDate,
+  processPendingNewsletterDeliveries,
+} from '../../../../utils/newsletters'
+import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event)
+  const { id } = validateRouteParams(event, idRouteParamSchema)
+  const item = await claimNewsletterForSending(id)
 
-  const id = getRouterParam(event, 'id')
-
-  if (!id) {
-    throw createError({ statusCode: 400, message: 'ID requerido' })
-  }
-
-  const { item, result } = await sendNewsletterById(id)
+  runInBackground(event, 'admin.newsletter.manual-send', processPendingNewsletterDeliveries())
 
   return {
     item: {
       ...item,
       month: monthKeyToDate(item.monthKey),
     },
-    result,
+    queued: true,
   }
 })

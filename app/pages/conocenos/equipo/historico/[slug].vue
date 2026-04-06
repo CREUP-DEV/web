@@ -1,36 +1,14 @@
 <script setup lang="ts">
-/**
- * Mandate Detail Page
- * Displays the org chart snapshot for a specific mandate term.
- * Shows areas with assignments, handling multiple people per role
- * and date ranges when positions changed hands.
- */
+import { socialNetworkIcons, type SocialNetworkEntry } from '~~/shared/utils/social'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const { t, locale } = useI18n()
+const { fallbackLocale } = useLocales()
 const route = useRoute()
 const localePath = useLocalePath()
+const { getFullName, getSocialButtons } = usePersonHelpers()
 
-// ============================================================================
-// Types
-// ============================================================================
-
-type SupportedSocialNetwork =
-  | 'website'
-  | 'email'
-  | 'instagram'
-  | 'twitter'
-  | 'tiktok'
-  | 'bluesky'
-  | 'linkedin'
-  | 'telegram'
-  | 'discord'
-  | 'facebook'
-  | 'github'
-
-interface SocialNetwork {
-  network: SupportedSocialNetwork
-  value: string
-}
+type SocialNetwork = SocialNetworkEntry
 
 interface AssignmentMember {
   order: number
@@ -76,10 +54,6 @@ interface MandateDetailResponse {
   generatedAt?: string | null
 }
 
-// ============================================================================
-// Data fetching
-// ============================================================================
-
 const slug = computed(() => route.params.slug as string)
 
 type SlugResponse =
@@ -94,12 +68,10 @@ if (error.value) {
   throw createError({
     statusCode: error.value.statusCode === 404 ? 404 : 503,
     fatal: true,
-    message: error.value.statusMessage ?? '',
+    message: error.value.statusCode === 404 ? t('error.notFound') : t('error.message'),
   })
 }
 
-// If the slug is ambiguous (year-only with multiple mandates), redirect to the
-// index page which will open a disambiguation modal for that year.
 if (data.value?.ambiguous === true) {
   const year = slug.value.slice(0, 4)
   await navigateTo(localePath(`/conocenos/equipo/historico?select=${encodeURIComponent(year)}`), {
@@ -109,46 +81,27 @@ if (data.value?.ambiguous === true) {
 
 const mandate = computed(() => (data.value && !data.value.ambiguous ? data.value.mandate : null))
 const areas = computed(() => (data.value && !data.value.ambiguous ? data.value.areas : []))
-
-useSeoMeta({
-  title: () =>
+const areaVisibility = useVisibilityRegistry({ threshold: 0.12, animateVisibleOnMount: true })
+usePageSeo(
+  () =>
     mandate.value
       ? `${t('mandates.mandateOf')} ${formatShortDate(mandate.value.startDate)} — ${mandate.value.endDate ? formatShortDate(mandate.value.endDate) : t('mandates.present')}`
       : t('mandates.title'),
-  description: () => t('mandates.detailDescription'),
-  ogTitle: () => t('mandates.title'),
-  ogDescription: () => t('mandates.detailDescription'),
-})
+  () => t('mandates.detailDescription')
+)
 
 const getAreaName = (area: AreaTerm) =>
-  area.nameTranslations?.[locale.value] ?? area.nameTranslations?.es ?? area.name
+  pickLocalizedValue(area.nameTranslations ?? {}, locale.value, fallbackLocale) ?? area.name
 
-// ============================================================================
-// Date formatting helpers
-// ============================================================================
-
-const { formatDate: formatLocaleDate } = useLocaleFormatting()
-
-function formatDate(dateStr: string): string {
-  return formatLocaleDate(`${dateStr}T00:00:00`, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
-function formatShortDate(dateStr: string): string {
-  return formatLocaleDate(`${dateStr}T00:00:00`, {
-    month: 'short',
-    year: 'numeric',
-  })
-}
+const {
+  formatLongDate: formatDate,
+  formatMonthYear: formatShortDate,
+  formatShortDate: formatCompactDateText,
+} = useDatePresets()
 
 function formatCompactDate(dateStr: string): string {
-  return formatLocaleDate(`${dateStr}T00:00:00`, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+  return formatCompactDateText(dateStr, {
+    includeYear: true,
   })
 }
 
@@ -167,90 +120,9 @@ function getDurationText(startDate: string, endDate: string | null): string {
   return t('mandates.durationMonths', { count: months })
 }
 
-// ============================================================================
-// Social network helpers (same pattern as team page)
-// ============================================================================
-
-const networkIcons: Record<SupportedSocialNetwork, string> = {
-  website: 'i-tabler-world',
-  email: 'i-tabler-mail',
-  instagram: 'i-tabler-brand-instagram',
-  twitter: 'i-tabler-brand-x',
-  tiktok: 'i-tabler-brand-tiktok',
-  bluesky: 'i-tabler-brand-bluesky',
-  linkedin: 'i-tabler-brand-linkedin',
-  telegram: 'i-tabler-brand-telegram',
-  discord: 'i-tabler-brand-discord',
-  facebook: 'i-tabler-brand-facebook',
-  github: 'i-tabler-brand-github',
-}
-
-const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value)
-const cleanHandle = (value: string) => value.trim().replace(/^@/, '')
-
-const buildSocialUrl = (network: SupportedSocialNetwork, rawValue: string) => {
-  const value = rawValue.trim()
-  if (!value) return null
-
-  if (network === 'email') {
-    return value.startsWith('mailto:') ? value : `mailto:${value}`
-  }
-
-  if (isAbsoluteUrl(value)) return value
-
-  switch (network) {
-    case 'website':
-      return `https://${value}`
-    case 'instagram':
-      return `https://instagram.com/${cleanHandle(value)}`
-    case 'twitter':
-      return `https://x.com/${cleanHandle(value)}`
-    case 'tiktok':
-      return `https://www.tiktok.com/@${cleanHandle(value)}`
-    case 'bluesky':
-      return `https://bsky.app/profile/${cleanHandle(value)}`
-    case 'linkedin':
-      return `https://www.linkedin.com/${value.replace(/^\/+/, '')}`
-    case 'telegram':
-      return `https://t.me/${cleanHandle(value)}`
-    case 'discord':
-      return `https://discord.gg/${cleanHandle(value)}`
-    case 'facebook':
-      return `https://facebook.com/${cleanHandle(value)}`
-    case 'github':
-      return `https://github.com/${cleanHandle(value)}`
-    default:
-      return null
-  }
-}
-
-interface SocialButton {
-  network: Exclude<SupportedSocialNetwork, 'website' | 'email'>
-  href: string
-}
-
-const getSocialButtons = (member: AssignmentMember): SocialButton[] => {
-  return member.socialNetworks.flatMap((sn) => {
-    if (sn.network === 'website' || sn.network === 'email') return []
-    const href = buildSocialUrl(sn.network, sn.value)
-    if (!href) return []
-    return [{ network: sn.network as SocialButton['network'], href }]
-  })
-}
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-const getFullName = (member: Pick<AssignmentMember, 'name' | 'surname'>) => {
-  return [member.name, member.surname].filter(Boolean).join(' ').trim()
-}
+const networkIcons = socialNetworkIcons
 
 const getViewProfileAriaLabel = (fullName: string) => `${t('team.viewProfile')}: ${fullName}`
-
-// ============================================================================
-// Modal state
-// ============================================================================
 
 const selectedAssignment = ref<Assignment | null>(null)
 const selectedAreaName = ref<string>('')
@@ -272,7 +144,6 @@ const closeMemberModal = () => {
 <template>
   <div>
     <UContainer class="py-8 sm:py-12">
-      <!-- Page Header -->
       <header class="mb-8 text-center sm:mb-12">
         <div class="mb-4">
           <UButton
@@ -287,7 +158,6 @@ const closeMemberModal = () => {
 
         <h1 class="text-3xl font-bold sm:text-4xl">{{ t('mandates.title') }}</h1>
 
-        <!-- Mandate date range info -->
         <div v-if="mandate" class="mt-4">
           <div class="flex flex-wrap items-center justify-center gap-2">
             <UBadge v-if="mandate.isCurrent" color="primary" variant="soft">
@@ -305,7 +175,6 @@ const closeMemberModal = () => {
         </div>
       </header>
 
-      <!-- Loading skeleton -->
       <div v-if="status === 'pending'" class="space-y-10">
         <div v-for="n in 3" :key="n">
           <USkeleton class="mb-4 h-8 w-48" />
@@ -328,13 +197,11 @@ const closeMemberModal = () => {
         </div>
       </div>
 
-      <!-- Empty state -->
       <div v-else-if="areas.length === 0" class="flex flex-col items-center py-12 text-center">
         <UIcon name="i-tabler-users-minus" class="text-muted mb-4 size-16" />
         <p class="text-muted text-lg">{{ t('mandates.noAreas') }}</p>
       </div>
 
-      <!-- Areas with assignments -->
       <div v-else class="space-y-12">
         <section
           v-for="area in areas"
@@ -348,22 +215,37 @@ const closeMemberModal = () => {
             {{ getAreaName(area) }}
           </h2>
 
-          <!-- No assignments for this area -->
           <div v-if="area.assignments.length === 0" class="text-muted py-4 text-sm">
             {{ t('mandates.noAssignments') }}
           </div>
 
-          <!-- Assignments list -->
-          <div v-else class="flex flex-wrap justify-center gap-6">
+          <div
+            v-else
+            :ref="areaVisibility.setRef(`area-${area.areaTermId}`)"
+            class="flex flex-wrap justify-center gap-6"
+          >
             <button
-              v-for="assignment in area.assignments"
+              v-for="(assignment, index) in area.assignments"
               :key="`assignment-${assignment.id}`"
               type="button"
-              class="bg-surface/50 hover:bg-surface group focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+              class="motion-card-strong bg-surface/50 hover:bg-surface group focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+              :class="
+                entranceClasses(
+                  areaVisibility.shouldAnimate(`area-${area.areaTermId}`),
+                  areaVisibility.isVisible(`area-${area.areaTermId}`),
+                  areaVisibility.isPending(`area-${area.areaTermId}`)
+                )
+              "
+              :style="
+                entranceStyle(
+                  areaVisibility.isVisible(`area-${area.areaTermId}`),
+                  areaVisibility.shouldAnimate(`area-${area.areaTermId}`),
+                  index
+                )
+              "
               :aria-label="getViewProfileAriaLabel(getFullName(assignment.member))"
               @click="openMemberModal(assignment, getAreaName(area))"
             >
-              <!-- Photo -->
               <div class="mb-4 flex justify-center">
                 <div
                   class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
@@ -383,7 +265,6 @@ const closeMemberModal = () => {
                 </div>
               </div>
 
-              <!-- Info -->
               <div class="text-center">
                 <p v-if="assignment.member.denomination" class="text-primary text-sm font-medium">
                   {{ assignment.member.denomination }}
@@ -392,7 +273,6 @@ const closeMemberModal = () => {
                   {{ getFullName(assignment.member) }}
                 </p>
 
-                <!-- Date range for this assignment -->
                 <div class="mt-2 flex items-center justify-center gap-1">
                   <UIcon name="i-tabler-calendar" class="text-muted size-3.5 shrink-0" />
                   <span class="text-muted text-xs">
@@ -415,9 +295,6 @@ const closeMemberModal = () => {
       </div>
     </UContainer>
 
-    <!-- ================================================================ -->
-    <!-- Member Detail Modal -->
-    <!-- ================================================================ -->
     <UModal
       v-model:open="modalOpen"
       :title="selectedAssignment?.member.denomination || selectedAreaName"
@@ -426,7 +303,6 @@ const closeMemberModal = () => {
     >
       <template #body>
         <div v-if="selectedAssignment" class="space-y-6">
-          <!-- Header with photo and basic info -->
           <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
             <div
               class="ring-primary/30 size-28 shrink-0 overflow-hidden rounded-full ring-2 sm:size-32"
@@ -459,7 +335,6 @@ const closeMemberModal = () => {
                 {{ selectedAreaName }}
               </UBadge>
 
-              <!-- Assignment date range -->
               <div class="mt-2 flex items-center gap-1.5 text-sm">
                 <UIcon name="i-tabler-calendar" class="text-muted size-4 shrink-0" />
                 <span class="text-muted">
@@ -476,7 +351,6 @@ const closeMemberModal = () => {
                 {{ getDurationText(selectedAssignment.startDate, selectedAssignment.endDate) }}
               </p>
 
-              <!-- University & Degree -->
               <div
                 v-if="selectedAssignment.member.university || selectedAssignment.member.degree"
                 class="mt-3 space-y-1"
@@ -499,7 +373,6 @@ const closeMemberModal = () => {
             </div>
           </div>
 
-          <!-- Description -->
           <div v-if="selectedAssignment.member.description">
             <h4 class="text-foreground mb-2 font-semibold">
               {{ t('team.about', { name: selectedAssignment.member.name }) }}
@@ -509,7 +382,6 @@ const closeMemberModal = () => {
             </div>
           </div>
 
-          <!-- Social Networks -->
           <div v-if="getSocialButtons(selectedAssignment.member).length > 0">
             <h4 class="text-foreground mb-3 font-semibold">{{ t('members.socialNetworks') }}</h4>
             <div class="flex flex-wrap gap-2">

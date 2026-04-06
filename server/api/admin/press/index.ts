@@ -2,17 +2,34 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq, desc } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles, pressArticleTranslations, pressArticleTags } from '../../../db/schema'
-import { requireAuth } from '../../../utils/requireAuth'
-import { hasMeaningfulRichTextHtml } from '../../../utils/pressTranslation'
-import { createPressArticleSchema, validateBody } from '../../../utils/validation'
+import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
+import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { getRequiredTranslationValue } from '../../../utils/localizedContent'
+import {
+  hasMeaningfulRichTextHtml,
+  sanitizePressTranslations,
+  sanitizeRichTextHtml,
+} from '../../../utils/pressTranslation'
+import {
+  adminPressListQuerySchema,
+  createPressArticleSchema,
+  validateBody,
+  validateQuery,
+} from '../../../utils/validation'
 import { generatePressSlug } from '../../../utils/slug'
+import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
+import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
+
+const IMAGE_UPLOAD_DIR = 'public/prensa/imagenes'
+const PDF_UPLOAD_DIR = 'public/prensa/documentos'
 
 // GET - List all press articles (optionally filtered by type)
 // POST - Create new press article
 export default defineEventHandler(async (event) => {
   if (event.method === 'GET') {
-    const query = getQuery(event)
-    const type = query.type as string | undefined
+    const { type } = validateQuery(event, adminPressListQuerySchema)
 
     const whereClause = type ? eq(pressArticles.type, type) : undefined
 
@@ -29,92 +46,157 @@ export default defineEventHandler(async (event) => {
         mediaOutlet: true,
       },
     })
-    return { items }
+    return {
+      items: items.map((item) => ({
+        ...item,
+        publishedAt: dateValueToDateOnly(item.publishedAt),
+        translations: sanitizePressTranslations(item.translations),
+      })),
+    }
   }
 
   if (event.method === 'POST') {
-    await requireAuth(event)
     const body = await readBody(event)
+    let image: string | null = null
+    let pdfUrl: string | null = null
+    let finalized = false
+    let originalImageStoragePath: string | null = null
+    let originalPdfStoragePath: string | null = null
 
     try {
       const validated = validateBody(createPressArticleSchema, body)
+      originalImageStoragePath = validated.image
+      originalPdfStoragePath = validated.pdfUrl ?? null
 
-      // Get the Spanish title for slug generation
-      const esTranslation = validated.translations.find((t) => t.locale === 'es')
-      if (!esTranslation?.title) {
+      const defaultTitle = getRequiredTranslationValue(validated.translations, 'title')
+      if (!defaultTitle) {
         throw new Error('El título en español es obligatorio')
       }
 
-      const publishedAt = validated.publishedAt ? new Date(validated.publishedAt) : new Date()
-      const slug = await generatePressSlug(esTranslation.title, publishedAt)
+      const publishedAt = dateOnlyToStorageDate(
+        validated.publishedAt ?? dateValueToDateOnly(new Date())
+      )
 
-      const [item] = await db
-        .insert(pressArticles)
-        .values({
-          type: validated.type,
+      const completeItem = await db.transaction(async (tx) => {
+        const slug = await generatePressSlug(defaultTitle, publishedAt, { executor: tx })
+        image = await finalizeAdminImage({
+          storagePath: validated.image,
+          uploadDir: IMAGE_UPLOAD_DIR,
+          publicPath: PRESS_IMAGE_PUBLIC_BASE,
           slug,
-          image: validated.image,
-          pdfUrl: validated.pdfUrl || null,
-          externalUrl: validated.externalUrl || null,
-          mediaOutletId: validated.mediaOutletId || null,
-          active: validated.active,
-          publishedAt,
+          publish: validated.active,
+          fallbackBaseName: 'prensa',
         })
-        .returning()
+        pdfUrl = validated.pdfUrl
+          ? await finalizeAdminDocument({
+              storagePath: validated.pdfUrl,
+              uploadDir: PDF_UPLOAD_DIR,
+              publicPath: PRESS_DOCUMENT_PUBLIC_PATH,
+              slug,
+              publish: validated.active,
+              fallbackBaseName: 'documento-prensa',
+            })
+          : null
 
-      if (!item) {
-        throw createError({ statusCode: 500, statusMessage: 'Error al crear el artículo' })
-      }
+        const [item] = await tx
+          .insert(pressArticles)
+          .values({
+            type: validated.type,
+            slug,
+            image: image!,
+            pdfUrl,
+            externalUrl: validated.externalUrl || null,
+            mediaOutletId: validated.mediaOutletId || null,
+            active: validated.active,
+            publishedAt,
+          })
+          .returning()
 
-      // Insert translations
-      if (validated.translations.length > 0) {
-        await db.insert(pressArticleTranslations).values(
-          validated.translations.map((t) => ({
-            locale: t.locale,
-            title: t.title,
-            description: t.description || null,
-            contentHtml:
-              validated.type === 'media_appearance'
-                ? null
-                : hasMeaningfulRichTextHtml(t.contentHtml)
-                  ? t.contentHtml!.trim()
-                  : null,
-            alt: t.alt || null,
-            pressArticleId: item.id,
-          }))
-        )
-      }
+        if (!item) {
+          throw createError({ statusCode: 500, statusMessage: 'Error al crear el artículo' })
+        }
 
-      // Insert tags
-      if (validated.tagIds && validated.tagIds.length > 0) {
-        await db.insert(pressArticleTags).values(
-          validated.tagIds.map((tagId) => ({
-            pressArticleId: item.id,
-            tagId,
-          }))
-        )
-      }
+        if (validated.translations.length > 0) {
+          await tx.insert(pressArticleTranslations).values(
+            validated.translations.map((translation) => ({
+              locale: translation.locale,
+              title: translation.title.trim(),
+              description: translation.description?.trim() || null,
+              contentHtml:
+                validated.type === 'media_appearance'
+                  ? null
+                  : hasMeaningfulRichTextHtml(translation.contentHtml)
+                    ? sanitizeRichTextHtml(translation.contentHtml)
+                    : null,
+              alt: translation.alt?.trim() || null,
+              pressArticleId: item.id,
+            }))
+          )
+        }
 
-      // Fetch the complete item
-      const completeItem = await db.query.pressArticles.findFirst({
-        where: eq(pressArticles.id, item.id),
-        with: {
-          translations: true,
-          tags: {
-            with: {
-              tag: { with: { translations: true } },
+        if (validated.tagIds && validated.tagIds.length > 0) {
+          await tx.insert(pressArticleTags).values(
+            validated.tagIds.map((tagId) => ({
+              pressArticleId: item.id,
+              tagId,
+            }))
+          )
+        }
+
+        return tx.query.pressArticles.findFirst({
+          where: eq(pressArticles.id, item.id),
+          with: {
+            translations: true,
+            tags: {
+              with: {
+                tag: { with: { translations: true } },
+              },
             },
+            mediaOutlet: true,
           },
-          mediaOutlet: true,
-        },
+        })
       })
+      finalized = true
 
-      return { item: completeItem }
-    } catch (e) {
-      throw createError({
-        statusCode: 400,
-        message: e instanceof Error ? e.message : 'Error de validación',
-      })
+      if (validated.image !== image) {
+        await cleanupUnusedAdminAsset({
+          storagePath: validated.image,
+          allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
+        })
+      }
+
+      if (validated.pdfUrl && validated.pdfUrl !== pdfUrl) {
+        await cleanupUnusedAdminAsset({
+          storagePath: validated.pdfUrl,
+          allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
+        })
+      }
+
+      return {
+        item: completeItem
+          ? {
+              ...completeItem,
+              publishedAt: dateValueToDateOnly(completeItem.publishedAt),
+              translations: sanitizePressTranslations(completeItem.translations),
+            }
+          : null,
+      }
+    } catch (error) {
+      if (!finalized && image && image !== originalImageStoragePath) {
+        await cleanupUnusedAdminAsset({
+          storagePath: image,
+          allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
+        })
+      }
+
+      if (!finalized && pdfUrl && pdfUrl !== originalPdfStoragePath) {
+        await cleanupUnusedAdminAsset({
+          storagePath: pdfUrl,
+          allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
+        })
+      }
+
+      throwAdminMutationError('admin.press.create', error, event)
     }
   }
 

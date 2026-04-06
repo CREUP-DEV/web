@@ -1,22 +1,16 @@
-/**
- * Admin Newsletter Subscribers
- * GET  /api/admin/newsletter/subscribers       — List all subscribers
- * POST /api/admin/newsletter/subscribers       — Add subscriber manually
- */
 import { defineEventHandler, readBody, createError } from 'h3'
 import { desc, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletterSubscribers } from '../../../db/schema'
-import { requireAuth } from '../../../utils/requireAuth'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { updateSubscriberSchema, validateBody } from '../../../utils/validation'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_CONSENT_TEXT_VERSION,
+  createNewsletterUnsubscribeToken,
 } from '../../../utils/newsletterSubscribers'
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event)
-
   if (event.method === 'GET') {
     const items = await db
       .select()
@@ -33,7 +27,6 @@ export default defineEventHandler(async (event) => {
       const validated = validateBody(updateSubscriberSchema, body)
       const email = validated.email.trim().toLowerCase()
 
-      // Check if already exists
       const existing = await db.query.newsletterSubscribers.findFirst({
         where: eq(newsletterSubscribers.email, email),
       })
@@ -52,19 +45,17 @@ export default defineEventHandler(async (event) => {
           active: validated.active,
           ageConfirmed: true,
           confirmToken: null,
+          confirmTokenExpiresAt: null,
           confirmedAt: validated.active ? new Date() : null,
           consentSource: NEWSLETTER_CONSENT_SOURCES.adminManual,
           consentTextVersion: NEWSLETTER_CONSENT_TEXT_VERSION,
+          unsubscribeToken: createNewsletterUnsubscribeToken(),
         })
         .returning()
 
       return { item }
     } catch (e) {
-      if (e && typeof e === 'object' && 'statusCode' in e) throw e
-      throw createError({
-        statusCode: 400,
-        message: e instanceof Error ? e.message : 'Error de validación',
-      })
+      throwAdminMutationError('admin.newsletter-subscribers.create', e, event)
     }
   }
 

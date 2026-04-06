@@ -1,14 +1,5 @@
 <script setup lang="ts">
-/**
- * Admin Newsletter Management
- * CRUD for newsletters with file upload, month picker and email dispatch toggle.
- */
 definePageMeta({ layout: 'admin' })
-
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
 
 interface Newsletter {
   id: string
@@ -23,23 +14,21 @@ interface Newsletter {
 }
 
 const toast = useToast()
+const route = useRoute()
+const router = useRouter()
 
-// Fetch newsletters
 const { data, refresh } = await useFetch<{ items: Newsletter[] }>('/api/admin/newsletter')
 const items = computed(() => data.value?.items ?? [])
 
-// Modal state
 const showModal = ref(false)
 const editingItem = ref<Newsletter | null>(null)
 const isSubmitting = ref(false)
 
-// Delete confirmation
 const showDeleteModal = ref(false)
 const itemToDelete = ref<Newsletter | null>(null)
 const isDeleting = ref(false)
 const sendingItemId = ref<string | null>(null)
 
-// File upload refs
 const imageInputRef = ref<HTMLInputElement | null>(null)
 const imagePreview = ref<string | null>(null)
 const isUploadingImage = ref(false)
@@ -47,7 +36,6 @@ const pdfInputRef = ref<HTMLInputElement | null>(null)
 const pdfName = ref<string | null>(null)
 const isUploadingPdf = ref(false)
 
-// Form state
 const form = reactive({
   month: '',
   coverImage: '',
@@ -56,7 +44,6 @@ const form = reactive({
   sendEmail: false,
 })
 
-// Month/year picker state
 const pickerYear = ref(new Date().getFullYear())
 const monthNames = [
   'Ene',
@@ -95,7 +82,6 @@ const reservedMonthKeys = computed(() => {
   return new Set(items.value.filter((item) => item.id !== currentId).map((item) => item.monthKey))
 })
 
-/** Currently selected month index (0-based) parsed from form.month */
 const selectedMonth = computed(() => (form.month ? Number(form.month.slice(5, 7)) - 1 : -1))
 const selectedYear = computed(() => (form.month ? Number(form.month.slice(0, 4)) : -1))
 const isSelectedMonthTaken = computed(
@@ -106,7 +92,6 @@ function pickMonth(monthIndex: number) {
   form.month = buildMonthValue(pickerYear.value, monthIndex)
 }
 
-/** Whether a month cell is in the future (disabled) */
 function isMonthDisabled(monthIndex: number): boolean {
   const now = new Date()
   const monthKey = `${pickerYear.value}-${padMonth(monthIndex + 1)}`
@@ -118,7 +103,6 @@ function isMonthDisabled(monthIndex: number): boolean {
   )
 }
 
-// Helpers
 function formatMonth(monthKey: string) {
   const label = buildMonthDate(monthKey).toLocaleDateString('es-ES', {
     year: 'numeric',
@@ -170,7 +154,6 @@ function getDefaultMonthValue() {
   return buildMonthValue(now.getFullYear(), now.getMonth())
 }
 
-// Form actions
 function openCreate() {
   editingItem.value = null
   const now = new Date()
@@ -183,6 +166,17 @@ function openCreate() {
   imagePreview.value = null
   pdfName.value = null
   showModal.value = true
+}
+
+async function openCreateFromQuery() {
+  if (route.query.open !== 'create') return
+
+  openCreate()
+
+  const nextQuery = { ...route.query }
+  delete nextQuery.open
+
+  await router.replace({ query: nextQuery })
 }
 
 function openEdit(item: Newsletter) {
@@ -198,7 +192,6 @@ function openEdit(item: Newsletter) {
   showModal.value = true
 }
 
-// File uploads
 function triggerImageInput() {
   imageInputRef.value?.click()
 }
@@ -313,25 +306,11 @@ async function handleManualSend(item: Newsletter) {
   sendingItemId.value = item.id
 
   try {
-    const response = await $fetch<{
-      result: { sent: boolean; sentCount: number; total: number }
-    }>(`/api/admin/newsletter/${item.id}/send`, {
+    await $fetch<{ queued: boolean }>(`/api/admin/newsletter/${item.id}/send`, {
       method: 'POST',
     })
 
-    if (response.result.sent) {
-      toast.add({ title: 'Newsletter enviada', color: 'success' })
-    } else if (response.result.total === 0) {
-      toast.add({
-        title: 'No hay suscriptores activos para enviar esta newsletter',
-        color: 'warning',
-      })
-    } else {
-      toast.add({
-        title: 'No se pudo completar el envío de la newsletter',
-        color: 'error',
-      })
-    }
+    toast.add({ title: 'Envío iniciado', color: 'success' })
 
     await refresh()
   } catch (error) {
@@ -374,6 +353,14 @@ const canSubmit = computed(
     !isSubmitting.value &&
     !isSelectedMonthTaken.value
 )
+
+watch(
+  () => route.query.open,
+  async () => {
+    await openCreateFromQuery()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -388,7 +375,6 @@ const canSubmit = computed(
       </div>
     </div>
 
-    <!-- List -->
     <div v-if="items.length === 0" class="text-muted py-12 text-center">
       No hay newsletters. Pulsa «Añadir» para crear la primera.
     </div>
@@ -399,12 +385,11 @@ const canSubmit = computed(
         :key="item.id"
         class="bg-surface flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
       >
-        <NuxtImg
+        <img
           :src="item.coverImage"
           :alt="formatMonth(item.monthKey)"
-          width="80"
-          height="80"
           class="size-20 rounded-lg object-cover"
+          loading="lazy"
         />
         <div class="flex-1 overflow-hidden">
           <h3 class="font-medium">{{ formatMonth(item.monthKey) }}</h3>
@@ -473,7 +458,6 @@ const canSubmit = computed(
       </div>
     </div>
 
-    <!-- Create/Edit modal -->
     <UModal v-model:open="showModal">
       <template #header>
         <h2 class="text-lg font-semibold">
@@ -482,10 +466,8 @@ const canSubmit = computed(
       </template>
       <template #body>
         <form class="space-y-5" @submit.prevent="handleSubmit">
-          <!-- Month picker -->
           <UFormField label="Mes *">
             <div class="rounded-lg border p-3" role="group" aria-label="Selector de mes y año">
-              <!-- Year navigation -->
               <div class="mb-2 flex items-center justify-between">
                 <UButton
                   icon="i-tabler-chevron-left"
@@ -504,7 +486,6 @@ const canSubmit = computed(
                   @click="pickerYear++"
                 />
               </div>
-              <!-- Month grid -->
               <div class="grid grid-cols-4 gap-1">
                 <button
                   v-for="(name, idx) in monthNames"
@@ -535,7 +516,6 @@ const canSubmit = computed(
             </template>
           </UFormField>
 
-          <!-- Cover image -->
           <UFormField label="Imagen de portada *">
             <div class="flex items-center gap-4">
               <div
@@ -573,7 +553,6 @@ const canSubmit = computed(
             </div>
           </UFormField>
 
-          <!-- PDF -->
           <UFormField label="PDF *">
             <div class="flex items-center gap-4">
               <UIcon
@@ -600,12 +579,10 @@ const canSubmit = computed(
             </div>
           </UFormField>
 
-          <!-- Active toggle -->
           <UFormField label="Activa">
             <USwitch v-model="form.active" />
           </UFormField>
 
-          <!-- Send email toggle (only for new) -->
           <UFormField v-if="!editingItem" label="Enviar correo a suscriptores">
             <USwitch v-model="form.sendEmail" />
             <template #hint>
@@ -625,7 +602,6 @@ const canSubmit = computed(
       </template>
     </UModal>
 
-    <!-- Delete confirmation modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">

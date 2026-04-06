@@ -1,13 +1,18 @@
 <script setup lang="ts">
-/**
- * TagSelector
- * Horizontal scrollable tag filter buttons.
- * Allows filtering news/content by category.
- */
 const { t } = useI18n()
 const { data: tagsData, pending } = useTags()
 
-const tagList = computed(() => tagsData.value?.tags ?? [])
+const tagList = computed(() => {
+  const availableTags = tagsData.value?.tags ?? []
+
+  return [
+    {
+      slug: 'all',
+      name: t('common.all'),
+    },
+    ...availableTags.filter((tag) => tag.slug !== 'all'),
+  ]
+})
 const isLoading = computed(() => pending.value || tagsData.value == null)
 
 const emit = defineEmits<{
@@ -21,30 +26,22 @@ const onSelectTag = (slug: string) => {
   emit('select', slug)
 }
 
-// Move all logic to client mount (avoids SSR/Hydration discrepancies)
-onMounted(() => {
-  watch(
-    tagList,
-    (list: Array<{ slug: string; name: string }>) => {
-      if (!list.length) {
-        selectedSlug.value = 'all'
-        return
-      }
-      // Default to first tag (which should be "all")
-      if (!list.find((tag: { slug: string }) => tag.slug === selectedSlug.value)) {
-        selectedSlug.value = list[0]?.slug ?? 'all'
-      }
-    },
-    { immediate: true }
-  )
-})
+watch(
+  tagList,
+  (list: Array<{ slug: string; name: string }>) => {
+    if (!list.find((tag: { slug: string }) => tag.slug === selectedSlug.value)) {
+      onSelectTag('all')
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
   <div class="w-full overflow-x-auto">
     <div
       class="flex flex-nowrap items-center gap-2 pb-2 sm:flex-wrap sm:gap-2 sm:pb-0"
-      role="tablist"
+      role="group"
       :aria-label="t('home.latestNews')"
     >
       <template v-if="isLoading">
@@ -58,9 +55,7 @@ onMounted(() => {
           size="sm"
           color="secondary"
           :variant="tag.slug === selectedSlug ? 'solid' : 'outline'"
-          role="tab"
-          :aria-selected="tag.slug === selectedSlug"
-          :tabindex="tag.slug === selectedSlug ? 0 : -1"
+          :aria-pressed="tag.slug === selectedSlug"
           type="button"
           @click="onSelectTag(tag.slug)"
         >

@@ -4,32 +4,32 @@ export const useSocials = () => {
   return computed(() => [
     {
       label: t('social.instagram'),
-      icon: 'tabler-brand-instagram',
+      icon: 'i-tabler-brand-instagram',
       to: 'https://www.instagram.com/CREUPCREUP',
     },
     {
       label: t('social.tiktok'),
-      icon: 'tabler-brand-tiktok',
+      icon: 'i-tabler-brand-tiktok',
       to: 'https://www.tiktok.com/@creupestudiantes',
     },
     {
       label: t('social.x'),
-      icon: 'tabler-brand-x',
+      icon: 'i-tabler-brand-x',
       to: 'https://x.com/CREUPCREUP',
     },
     {
       label: t('social.linkedin'),
-      icon: 'tabler-brand-linkedin',
+      icon: 'i-tabler-brand-linkedin',
       to: 'https://www.linkedin.com/company/creup',
     },
     {
       label: t('social.facebook'),
-      icon: 'tabler-brand-facebook',
+      icon: 'i-tabler-brand-facebook',
       to: 'https://www.facebook.com/CREUPCREUP',
     },
     {
       label: t('social.telegram'),
-      icon: 'tabler-brand-telegram',
+      icon: 'i-tabler-brand-telegram',
       to: 'https://telegram.me/CREUP',
     },
   ])

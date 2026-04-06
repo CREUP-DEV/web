@@ -1,33 +1,18 @@
 <script setup lang="ts">
-/**
- * FeaturedNewsRow
- * Renders the latest press articles (all types combined) as clickable cards.
- * - Images are constrained with a 16:9 ratio and object-cover.
- * - Uses NuxtLink for navigation and UIcon for subtle affordances.
- * - Section title comes from i18n.
- */
 import type { PressArticle, PressArticleType } from '@/composables/usePress'
 
 type NewsItem = {
-  /** Localized title (already in the current locale) */
   title: string
-  /** Image URL (public/ or external) */
   image: string
-  /** Route location or external URL */
   to: string
-  /** Optional alt text for accessibility */
   alt?: string
-  /** Optional description */
   description?: string
-  /** Optional media outlet name */
   mediaOutletName?: string
-  /** Optional media outlet logo */
   mediaOutletLogo?: string
 }
 
 const props = defineProps<{
   items?: NewsItem[]
-  /** Whether to show inline (without container wrapper) */
   inline?: boolean
 }>()
 
@@ -36,10 +21,7 @@ const { t } = useI18n()
 const hasProvidedItems = computed(() => Array.isArray(props.items))
 const loadedImageKeys = reactive<Record<string, boolean>>({})
 
-// Selected tag for filtering
 const selectedTag = ref<string>('all')
-
-// Fetch all press articles (all types combined) filtered by tag
 const { data: pressData, pending } = usePress(null, selectedTag, 4)
 
 const typeUrlPrefix: Record<PressArticleType, string> = {
@@ -48,7 +30,6 @@ const typeUrlPrefix: Record<PressArticleType, string> = {
   media_appearance: '/prensa/en-los-medios',
 }
 
-// Use props.items if provided, otherwise use press articles from API
 const displayItems = computed<NewsItem[]>(() => {
   if (props.items && props.items.length > 0) {
     return props.items
@@ -117,10 +98,8 @@ const onTagSelect = (tagSlug: string) => {
         </h2>
       </header>
 
-      <!-- Tag selector sits between the heading and the news grid -->
       <HomeTagSelector class="mb-4" @select="onTagSelect" />
 
-      <!-- Loading skeleton grid -->
       <div
         v-if="isLoading"
         aria-hidden="true"
@@ -129,7 +108,6 @@ const onTagSelect = (tagSlug: string) => {
         <USkeleton v-for="n in 4" :key="n" class="h-48 rounded-xl sm:h-72" />
       </div>
 
-      <!-- No results message -->
       <div
         v-else-if="!displayItems.length"
         class="text-muted flex flex-1 items-center justify-center py-12 text-center"
@@ -137,25 +115,22 @@ const onTagSelect = (tagSlug: string) => {
         <p>{{ t('home.noNews') }}</p>
       </div>
 
-      <!-- Responsive grid with special handling for 1 and 3 visible items -->
       <ul v-else class="grid flex-1 gap-3 sm:gap-4" :class="newsGridClass" role="list">
         <li v-for="(item, idx) in displayItems" :key="getItemKey(item)" :class="newsItemClass(idx)">
           <NuxtLink
             :to="item.to"
-            class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+            class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
           >
-            <!-- Cover -->
             <div class="bg-muted relative aspect-video">
               <NuxtImg
                 :src="item.image"
                 :alt="item.alt ?? ''"
                 width="640"
                 height="360"
-                class="size-full object-cover"
+                class="motion-link-media size-full object-cover"
                 loading="lazy"
                 @load="markItemImageAsLoaded(item)"
               />
-              <!-- Media outlet logo overlay -->
               <div
                 v-if="item.mediaOutletLogo && isItemImageLoaded(item)"
                 class="absolute right-2 bottom-2 rounded bg-white/70 p-1 backdrop-blur-sm"

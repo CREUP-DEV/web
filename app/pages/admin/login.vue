@@ -1,7 +1,4 @@
 <script setup lang="ts">
-/**
- * Admin Login Page
- */
 import { useAuth } from '@/composables/useAuth'
 
 definePageMeta({
@@ -58,8 +55,8 @@ const handleLogin = async () => {
     isLoading.value = true
     error.value = null
     await signInWithGoogle()
-  } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Error al iniciar sesión'
+  } catch {
+    error.value = 'No se ha podido iniciar sesión en este momento'
   } finally {
     isLoading.value = false
   }

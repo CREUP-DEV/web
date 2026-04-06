@@ -1,37 +1,47 @@
-import { defineEventHandler } from 'h3'
+import { createError, setHeader } from 'h3'
 import { asc } from 'drizzle-orm'
 import { db } from '../db'
 import { tags } from '../db/schema'
-import {
-  normalizeLocaleDefinitions,
-  pickLocalizedEntry,
-  resolveConfiguredLocaleCode,
-  resolveLocaleCode,
-} from '~~/shared/utils/locale'
+import { isDatabaseUnavailableError } from '../utils/databaseErrors'
+import { logError } from '../utils/logger'
+import { pickLocalizedEntry } from '~~/shared/utils/locale'
+import { getRequestLocaleContext } from '../utils/requestLocale'
+import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 
-export default defineEventHandler(async (event) => {
-  const runtimeI18n = useRuntimeConfig(event).public.i18n as {
-    defaultLocale?: unknown
-    locales?: unknown
-  }
-  const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
-  const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
-  const locale = resolveLocaleCode(event.context.requestLocale, locales, defaultLocale)
+export default defineCachedEventHandler(
+  async (event) => {
+    const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
 
-  const tagsList = await db.query.tags.findMany({
-    orderBy: asc(tags.order),
-    with: { translations: true },
-  })
+    try {
+      const tagsList = await db.query.tags.findMany({
+        orderBy: asc(tags.order),
+        with: { translations: true },
+      })
 
-  const payload = {
-    tags: tagsList.map((tag) => {
-      const trans = pickLocalizedEntry(tag.translations, locale, locales, defaultLocale)
       return {
-        slug: tag.slug,
-        name: trans?.name ?? tag.slug,
+        tags: tagsList.map((tag) => {
+          const trans = pickLocalizedEntry(tag.translations, locale, locales, fallbackLocale)
+          return {
+            slug: tag.slug,
+            name: trans?.name ?? tag.slug,
+          }
+        }),
       }
-    }),
-  }
+    } catch (error) {
+      if (isDatabaseUnavailableError(error)) {
+        logError('public.tags.database-unavailable', error, undefined, event)
+        setHeader(event, 'retry-after', 60)
+        throw createError({
+          statusCode: 503,
+          statusMessage: 'Servicio temporalmente no disponible',
+        })
+      }
 
-  return payload
-})
+      throw error
+    }
+  },
+  {
+    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    getKey: (event) => buildPublicRouteCacheKey(event, 'public-tags'),
+  }
+)

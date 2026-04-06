@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { getOptionalConfigUrl, requireConfigString } from '~~/shared/utils/config'
 import { db } from '../db'
 import { users, sessions, accounts, verifications } from '../db/schema'
 import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
@@ -9,6 +10,17 @@ interface SignInUser {
   email?: string | null
   name?: string | null
   image?: string | null
+}
+
+function getTrustedOrigins() {
+  return Array.from(
+    new Set(
+      [
+        getOptionalConfigUrl(process.env.BETTER_AUTH_URL, 'BETTER_AUTH_URL'),
+        getOptionalConfigUrl(process.env.SITE_URL, 'SITE_URL'),
+      ].filter((origin): origin is string => Boolean(origin))
+    )
+  )
 }
 
 export const auth = betterAuth({
@@ -26,8 +38,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: requireConfigString(process.env.GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_ID'),
+      clientSecret: requireConfigString(process.env.GOOGLE_CLIENT_SECRET, 'GOOGLE_CLIENT_SECRET'),
     },
   },
   session: {
@@ -50,7 +62,7 @@ export const auth = betterAuth({
       return { success: true }
     },
   },
-  trustedOrigins: [process.env.BETTER_AUTH_URL || 'http://localhost:3000'],
+  trustedOrigins: getTrustedOrigins(),
 })
 
 export type Session = typeof auth.$Infer.Session

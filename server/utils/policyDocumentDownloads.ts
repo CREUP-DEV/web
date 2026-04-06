@@ -1,7 +1,10 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
+import { getRequestLocaleContext } from './requestLocale'
+import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
 import { externalPolicyDocumentsResponseSchema } from './validation'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const POLICY_DOCUMENT_ENDPOINT_BY_TYPE = {
   posicionamiento: '/api/posicionamientos',
@@ -16,6 +19,14 @@ const POLICY_DOCUMENT_TYPE_BY_API_PATH = {
 } as const
 
 const POLICY_DOCUMENT_FILE_CACHE_VERSION = 1
+const messagesByLocale = {
+  en: {
+    unavailable: 'The requested documents are temporarily unavailable.',
+  },
+  es: {
+    unavailable: 'La documentación solicitada no está disponible temporalmente.',
+  },
+}
 
 type PolicyDocumentRouteType = keyof typeof POLICY_DOCUMENT_ENDPOINT_BY_TYPE
 
@@ -36,8 +47,7 @@ const resolveSourceUrl = (source: string, baseUrl: string) => {
 }
 
 const getConfiguredBaseUrl = (event: H3Event) => {
-  const runtimeConfig = useRuntimeConfig(event)
-  return String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  return getRequiredExternalApiBaseUrl(event)
 }
 
 const isPolicyDocumentRouteType = (value: string): value is PolicyDocumentRouteType =>
@@ -60,12 +70,9 @@ async function buildPolicyDocumentFileRegistryFromExternal(
   type: PolicyDocumentRouteType
 ) {
   const configuredBaseUrl = getConfiguredBaseUrl(event)
-  if (!configuredBaseUrl) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'External members API is not configured.',
-    })
-  }
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  const messages =
+    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   const endpoint = new URL(POLICY_DOCUMENT_ENDPOINT_BY_TYPE[type], configuredBaseUrl).toString()
   const payload = await $fetch<unknown>(endpoint)
@@ -74,7 +81,7 @@ async function buildPolicyDocumentFileRegistryFromExternal(
   if (!parsed.success) {
     throw createError({
       statusCode: 502,
-      statusMessage: 'Policy documents data is temporarily unavailable.',
+      statusMessage: messages.unavailable,
     })
   }
 
@@ -124,10 +131,6 @@ export async function toPolicyDocumentPublicPdfPathAsync(
   }
 
   const configuredBaseUrl = getConfiguredBaseUrl(event)
-  if (!configuredBaseUrl) {
-    return null
-  }
-
   const sourceUrl = resolveSourceUrl(rawSource, configuredBaseUrl)
   const fileName = getLowerCasedFileNameFromUrl(sourceUrl)
 

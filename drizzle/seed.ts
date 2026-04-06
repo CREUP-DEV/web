@@ -6,15 +6,39 @@
 import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from '../server/db/schema'
+import { requireConfigString } from '../shared/utils/config'
+import {
+  ABOUT_HERO_DEFAULT_IMAGE,
+  EQUALITY_DOCUMENTS_PUBLIC_PATH,
+  HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+  HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+} from '../shared/constants/assetPaths'
 
-const connectionString = process.env.DATABASE_URL!
+const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
+
+const slugify = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60)
+
+const buildHomeImagePath = (publicPath: string, title: string) =>
+  `${publicPath}/${slugify(title) || 'imagen'}.webp`
 
 async function main() {
   console.log('🌱 Starting database seeding...')
 
   // Clear existing data (in correct order for foreign keys)
   console.log('🗑️ Clearing existing data...')
+  await db.delete(schema.aboutPageContent)
+  await db.delete(schema.equalityDocumentTranslations)
+  await db.delete(schema.equalityDocuments)
   await db.delete(schema.carouselItemTranslations)
   await db.delete(schema.carouselItems)
   await db.delete(schema.pressArticleTags)
@@ -124,7 +148,10 @@ async function main() {
   console.log('🎠 Creating carousel items...')
   const carouselData = [
     {
-      image: '/inicio/imagenes/carousel-default.jpg',
+      image: buildHomeImagePath(
+        HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+        'Conoce a la asociación que representa a más de 1.000.000 de estudiantes.'
+      ),
       href: '/conocenos/que-es',
       translations: [
         {
@@ -136,23 +163,6 @@ async function main() {
           locale: 'en',
           title: 'Meet the association that represents more than 1,000,000 students.',
           buttonText: 'What is CREUP?',
-        },
-      ],
-    },
-    {
-      image: '/inicio/imagenes/carousel-vivienda.jpg',
-      href: '/noticias/vivienda',
-      translations: [
-        {
-          locale: 'es',
-          title:
-            'Exigimos un plan urgente de residencias públicas y regulación de precios de la vivienda.',
-          buttonText: 'Leer Posicionamiento',
-        },
-        {
-          locale: 'en',
-          title: 'We demand an urgent plan for public housing and regulation of housing prices.',
-          buttonText: 'Read Statement',
         },
       ],
     },
@@ -178,6 +188,12 @@ async function main() {
       }))
     )
   }
+
+  console.log('ℹ️ Creating about page content...')
+  await db.insert(schema.aboutPageContent).values({
+    heroImage: ABOUT_HERO_DEFAULT_IMAGE,
+    heroVisible: true,
+  })
 
   console.log('📰 Creating press articles...')
   const buildRichText = (paragraphs: string[], highlights: string[] = []) => {
@@ -548,15 +564,21 @@ async function main() {
   console.log('🔗 Creating featured links...')
   const featuredLinksData = [
     {
-      image: '/inicio/imagenes/links-mic.jpg',
-      to: 'https://www.creup.es/mic/',
+      image: buildHomeImagePath(
+        HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+        'Manual de Identidad Corporativa'
+      ),
+      to: '/transparencia/mic/',
       translations: [
         { locale: 'es', title: 'Manual de Identidad Corporativa' },
         { locale: 'en', title: 'Corporate Identity Manual' },
       ],
     },
     {
-      image: '/inicio/imagenes/links-newsletter.jpg',
+      image: buildHomeImagePath(
+        HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+        'Suscríbete a nuestra Newsletter'
+      ),
       to: 'https://www.creup.es/comunicacion/newsletter/',
       translations: [
         { locale: 'es', title: 'Suscríbete a nuestra Newsletter' },
@@ -564,31 +586,43 @@ async function main() {
       ],
     },
     {
-      image: '/inicio/imagenes/links-apariciones.jpg',
-      to: '/prensa/en-los-medios',
+      image: buildHomeImagePath(
+        HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+        'Igualdad y prevención del acoso'
+      ),
+      to: '/transparencia/igualdad',
       translations: [
-        { locale: 'es', title: 'Apariciones en los medios' },
-        { locale: 'en', title: 'Media Appearances' },
+        { locale: 'es', title: 'Igualdad y prevención del acoso' },
+        { locale: 'en', title: 'Equality and Harassment Prevention' },
       ],
     },
     {
-      image: '/inicio/imagenes/links-estatuto.jpg',
-      to: '/documentos/estatuto-estudiante',
+      image: buildHomeImagePath(
+        HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+        'Estatuto del Estudiante Universitario'
+      ),
+      to: 'https://www.boe.es/buscar/doc.php?id=BOE-A-2010-20147',
       translations: [
-        { locale: 'es', title: 'Estatuto del Estudiante' },
-        { locale: 'en', title: "Student's Statute" },
+        { locale: 'es', title: 'Estatuto del Estudiante Universitario' },
+        { locale: 'en', title: 'University Student Statute' },
       ],
     },
     {
-      image: '/inicio/imagenes/links-becas.jpg',
+      image: buildHomeImagePath(
+        HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+        'Becas y ayudas para el estudiantado'
+      ),
       to: 'https://www.becaseducacion.gob.es/',
       translations: [
-        { locale: 'es', title: 'Becas del Ministerio' },
-        { locale: 'en', title: 'Ministry Scholarships' },
+        { locale: 'es', title: 'Becas y ayudas para el estudiantado' },
+        { locale: 'en', title: 'Scholarships and Student Aid' },
       ],
     },
     {
-      image: '/inicio/imagenes/links-esu.jpg',
+      image: buildHomeImagePath(
+        HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+        "European Students' Union (ESU)"
+      ),
       to: 'https://www.esu-online.org/',
       translations: [
         { locale: 'es', title: "European Students' Union (ESU)" },
@@ -613,6 +647,108 @@ async function main() {
         locale: t.locale,
         title: t.title,
         featuredLinkId: link.id,
+      }))
+    )
+  }
+
+  console.log('⚖️ Creating equality documents...')
+  const equalityDocumentsData = [
+    {
+      pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/posicionamiento-igualdad-diversidad.pdf`,
+      translations: [
+        {
+          locale: 'es',
+          title: 'Posicionamiento político en materia de Igualdad y Diversidad',
+          description:
+            'Nuestro documento marco sobre igualdad, diversidad, discriminaciones en la universidad y medidas que reclamamos a las instituciones públicas.',
+          meta: 'Documento político · Igualdad y diversidad',
+        },
+        {
+          locale: 'en',
+          title: 'Policy position on Equality and Diversity',
+          description:
+            'Our core document on equality, diversity, discrimination in universities, and the measures we call for from public institutions.',
+          meta: 'Policy document · Equality and diversity',
+        },
+      ],
+    },
+    {
+      pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-acoso-sexual-creup.pdf`,
+      translations: [
+        {
+          locale: 'es',
+          title: 'Protocolo de prevención y actuación frente a casos de acoso sexual',
+          description:
+            'Aprobado en la 77.ª Asamblea General Ordinaria, recoge medidas preventivas, principios de confidencialidad, el funcionamiento del Punto Seguro y el procedimiento de actuación ante conductas contrarias a la libertad sexual.',
+          meta: '77.ª Asamblea General Ordinaria · 4 de abril de 2025',
+        },
+        {
+          locale: 'en',
+          title: 'Protocol for prevention and response to sexual harassment cases',
+          description:
+            'Approved at the 77th Ordinary General Assembly, it sets out preventive measures, confidentiality principles, how the Safe Point works, and the response procedure for conduct against sexual freedom.',
+          meta: '77th Ordinary General Assembly · April 4, 2025',
+        },
+      ],
+    },
+    {
+      pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-discriminacion-creup.pdf`,
+      translations: [
+        {
+          locale: 'es',
+          title: 'Protocolo de prevención y actuación frente a casos de discriminación',
+          description:
+            'Aprobado en la 77.ª Asamblea General Ordinaria, define supuestos de discriminación, garantías, Punto Seguro y niveles de intervención ante violencia o acoso por diversidad.',
+          meta: '77.ª Asamblea General Ordinaria · 4 de abril de 2025',
+        },
+        {
+          locale: 'en',
+          title: 'Protocol for prevention and response to discrimination cases',
+          description:
+            'Approved at the 77th Ordinary General Assembly, it defines situations of discrimination, safeguards, the Safe Point, and response levels for violence or harassment linked to diversity.',
+          meta: '77th Ordinary General Assembly · April 4, 2025',
+        },
+      ],
+    },
+    {
+      pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/guia-comunicacion-inclusiva.pdf`,
+      translations: [
+        {
+          locale: 'es',
+          title: 'Guía de Comunicación Inclusiva',
+          description:
+            'Recoge recomendaciones prácticas sobre lenguaje, recursos visuales y criterios de accesibilidad para una comunicación más inclusiva.',
+          meta: 'Guía práctica · Lenguaje, visualidad y accesibilidad',
+        },
+        {
+          locale: 'en',
+          title: 'Inclusive Communication Guide',
+          description:
+            'Practical recommendations on language, visual resources, and accessibility for more inclusive communication.',
+          meta: 'Practical guide · Language, visuals, and accessibility',
+        },
+      ],
+    },
+  ]
+
+  for (let i = 0; i < equalityDocumentsData.length; i++) {
+    const item = equalityDocumentsData[i]
+    const [document] = await db
+      .insert(schema.equalityDocuments)
+      .values({
+        pdfUrl: item.pdfUrl,
+        order: i,
+        active: true,
+      })
+      .returning()
+
+    await db.insert(schema.equalityDocumentTranslations).values(
+      item.translations.map((translation) => ({
+        locale: translation.locale,
+        title: translation.title,
+        description: translation.description,
+        meta: translation.meta,
+        equalityDocumentId: document.id,
       }))
     )
   }

@@ -8,17 +8,14 @@ import {
   isAdminEmailFromAllowedDomain,
   listAdminAccess,
 } from '../../../utils/adminAccess'
-import { requireAuth } from '../../../utils/requireAuth'
 import { createAdminAccessSchema, validateBody } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
   if (event.method === 'GET') {
-    await requireAuth(event)
     return listAdminAccess()
   }
 
   if (event.method === 'POST') {
-    await requireAuth(event)
     const body = await readBody(event)
 
     try {

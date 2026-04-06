@@ -1,15 +1,7 @@
 <script setup lang="ts">
-/**
- * Admin access management page
- */
 definePageMeta({
   layout: 'admin',
 })
-
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
 
 const toast = useToast()
 

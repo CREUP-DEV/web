@@ -1,21 +1,16 @@
 <script setup lang="ts">
-/**
- * Admin Featured Links Management with drag-and-drop reordering
- */
-import Sortable from 'sortablejs'
-import type { LocaleConfig } from '~/composables/useLocales'
-
 definePageMeta({
   layout: 'admin',
 })
 
-// Check auth
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
-
-const { localeConfigs, getLocaleFlag, getLocaleName, filterNonEmptyTranslations } = useLocales()
+const {
+  getLocaleFlag,
+  getLocaleName,
+  isDefaultLocale,
+  filterNonEmptyTranslations,
+  createEmptyTranslations,
+  mapTranslationsToForm,
+} = useLocales()
 const toast = useToast()
 
 interface Translation {
@@ -37,89 +32,64 @@ const { data, refresh } = await useFetch<{ items: FeaturedLink[] }>('/api/admin/
 
 const items = computed(() => data.value?.items ?? [])
 
-// Local items for drag-and-drop
-const localItems = ref<FeaturedLink[]>([])
-const isSavingOrder = ref(false)
-
-// Computed: detect if order changed from original
-const hasOrderChanges = computed(() => {
-  if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some(
-    (item: FeaturedLink, index: number) => item.id !== items.value[index]?.id
-  )
-})
-
-// Sync local items with server data
-watch(
-  items,
-  (newItems: FeaturedLink[]) => {
-    localItems.value = [...newItems]
-  },
-  { immediate: true }
-)
-
-// Modal state
 const showModal = ref(false)
 const editingItem = ref<FeaturedLink | null>(null)
 const isSubmitting = ref(false)
 
-// Delete confirmation modal
 const showDeleteModal = ref(false)
 const itemToDelete = ref<FeaturedLink | null>(null)
 const isDeleting = ref(false)
 
-// Form state
 const form = reactive({
   image: '',
   to: '',
   order: 0,
   active: true,
-  translations: [
-    { locale: 'es', title: '', alt: '' },
-    { locale: 'en', title: '', alt: '' },
-  ],
+  translations: createEmptyTranslations<Translation>({
+    title: '',
+    alt: '',
+  }),
 })
 
-// Sortable setup
+const currentImagePreview = computed(() => imagePreview.value || form.image || '')
+
 const listRef = ref<HTMLElement | null>(null)
-let sortableInstance: Sortable | null = null
+const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
+  useReorderableAdminList({
+    items,
+    listRef,
+    persist: async (updates) => {
+      await $fetch('/api/admin/links/reorder', {
+        method: 'POST',
+        body: { items: updates },
+      })
 
-onMounted(() => {
-  if (listRef.value) {
-    sortableInstance = Sortable.create(listRef.value, {
-      animation: 150,
-      handle: '.drag-handle',
-      ghostClass: 'opacity-50',
-      onEnd: (evt) => {
-        if (evt.oldIndex !== undefined && evt.newIndex !== undefined) {
-          const movedItem = localItems.value.splice(evt.oldIndex, 1)[0]
-          if (movedItem) {
-            localItems.value.splice(evt.newIndex, 0, movedItem)
-          }
-        }
-      },
-    })
-  }
-})
+      await refresh()
+    },
+  })
 
-onUnmounted(() => {
-  sortableInstance?.destroy()
+const {
+  inputRef: imageInputRef,
+  preview: imagePreview,
+  isUploading: isUploadingImage,
+  triggerFileDialog: triggerImageUpload,
+  handleFileSelect: handleImageSelect,
+} = useAdminFileUpload({
+  endpoint: '/api/admin/home/upload',
+  extraFields: {
+    kind: 'featured_link',
+  },
+  successMessage: 'Imagen subida correctamente',
+  errorMessage: 'No se pudo subir la imagen',
+  onUploaded: (storagePath) => {
+    form.image = storagePath
+  },
+  getFallbackPreview: () => form.image || null,
 })
 
 const saveOrder = async () => {
-  isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item: FeaturedLink, index: number) => ({
-      id: item.id,
-      order: index,
-    }))
-
-    await $fetch('/api/admin/links/reorder', {
-      method: 'POST',
-      body: { items: updates },
-    })
-
-    await refresh()
+    await persistOrder()
     toast.add({
       title: 'Orden de enlaces guardado',
       color: 'success',
@@ -130,13 +100,7 @@ const saveOrder = async () => {
       title: 'No se pudo guardar el orden de enlaces',
       color: 'error',
     })
-  } finally {
-    isSavingOrder.value = false
   }
-}
-
-const cancelOrderChanges = () => {
-  localItems.value = [...items.value]
 }
 
 const openCreate = () => {
@@ -145,11 +109,11 @@ const openCreate = () => {
   form.to = ''
   form.order = items.value.length
   form.active = true
-  form.translations = localeConfigs.value.map((l: LocaleConfig) => ({
-    locale: l.code,
+  form.translations = createEmptyTranslations<Translation>({
     title: '',
     alt: '',
-  }))
+  })
+  imagePreview.value = null
   showModal.value = true
 }
 
@@ -159,18 +123,23 @@ const openEdit = (item: FeaturedLink) => {
   form.to = item.to
   form.order = item.order
   form.active = item.active
-  form.translations = localeConfigs.value.map((l: LocaleConfig) => {
-    const existing = item.translations.find((t) => t.locale === l.code)
-    return {
-      locale: l.code,
-      title: existing?.title ?? '',
-      alt: existing?.alt ?? '',
-    }
-  })
+  form.translations = mapTranslationsToForm(item.translations, {
+    title: '',
+    alt: '',
+  }) as Translation[]
+  imagePreview.value = item.image
   showModal.value = true
 }
 
 const handleSubmit = async () => {
+  if (!form.image) {
+    toast.add({
+      title: 'La imagen es obligatoria',
+      color: 'error',
+    })
+    return
+  }
+
   isSubmitting.value = true
   try {
     const payload = {
@@ -261,18 +230,16 @@ const handleDelete = async () => {
         :key="item.id"
         class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
       >
-        <!-- Desktop layout -->
         <div class="hidden items-center gap-4 md:flex">
           <div class="drag-handle cursor-grab active:cursor-grabbing">
             <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
           </div>
-          <NuxtImg
+          <img
             :src="item.image"
             alt=""
             aria-hidden="true"
-            width="128"
-            height="128"
             class="h-16 w-16 rounded-lg object-cover"
+            loading="lazy"
           />
           <div class="flex-1 overflow-hidden">
             <h3 class="truncate font-medium">{{ item.translations[0]?.title }}</h3>
@@ -298,7 +265,6 @@ const handleDelete = async () => {
           </div>
         </div>
 
-        <!-- Mobile layout -->
         <div class="space-y-3 md:hidden">
           <div class="flex justify-center">
             <div class="drag-handle cursor-grab active:cursor-grabbing">
@@ -306,13 +272,12 @@ const handleDelete = async () => {
             </div>
           </div>
           <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.title }}</h3>
-          <NuxtImg
+          <img
             :src="item.image"
             alt=""
             aria-hidden="true"
-            width="128"
-            height="128"
             class="mx-auto h-32 w-32 rounded-lg object-cover"
+            loading="lazy"
           />
           <p class="text-muted text-sm break-all">{{ item.to }}</p>
           <div class="flex items-center justify-between">
@@ -341,7 +306,6 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <!-- Edit/Create Modal -->
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">
       <template #content>
         <div class="flex max-h-[80vh] flex-col">
@@ -351,8 +315,45 @@ const handleDelete = async () => {
             </h2>
 
             <form id="links-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Imagen (URL)">
-                <UInput v-model="form.image" placeholder="/test/imagen.jpg" class="w-full" />
+              <UFormField label="Imagen">
+                <div class="space-y-3">
+                  <div
+                    class="bg-muted/30 flex min-h-44 items-center justify-center overflow-hidden rounded-xl border p-4"
+                  >
+                    <img
+                      v-if="currentImagePreview"
+                      :src="currentImagePreview"
+                      alt="Vista previa de la imagen del enlace"
+                      class="max-h-24 max-w-full rounded-lg object-contain"
+                    />
+                    <p v-else class="text-muted px-4 text-center text-sm">
+                      Sube una imagen cuadrada para el enlace destacado.
+                    </p>
+                  </div>
+
+                  <input
+                    ref="imageInputRef"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
+                    class="hidden"
+                    @change="handleImageSelect"
+                  />
+
+                  <UButton
+                    type="button"
+                    variant="outline"
+                    icon="i-tabler-upload"
+                    :loading="isUploadingImage"
+                    @click="triggerImageUpload"
+                  >
+                    {{ form.image ? 'Cambiar imagen' : 'Subir imagen' }}
+                  </UButton>
+
+                  <p class="text-muted text-xs">
+                    Formato recomendado: cuadrado. La vista previa se muestra reducida para evitar
+                    ampliaciones engañosas.
+                  </p>
+                </div>
               </UFormField>
 
               <UFormField label="Enlace (URL)">
@@ -376,11 +377,13 @@ const handleDelete = async () => {
                   {{ getLocaleName(trans.locale) }}
                 </h4>
                 <div class="space-y-3">
-                  <UFormField :label="`Título ${trans.locale !== 'es' ? '(opcional)' : ''}`">
+                  <UFormField
+                    :label="`Título ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
+                  >
                     <UInput v-model="trans.title" class="w-full" />
                   </UFormField>
                   <UFormField
-                    :label="`Texto alternativo ${trans.locale !== 'es' ? '(opcional)' : ''}`"
+                    :label="`Texto alternativo ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
                   >
                     <UInput v-model="trans.alt" class="w-full" />
                   </UFormField>
@@ -398,7 +401,6 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <!-- Delete Confirmation Modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">

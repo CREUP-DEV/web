@@ -1,22 +1,40 @@
 <script setup lang="ts">
-/**
- * Public contact page with form and direct email link.
- * Supports general contact (info@creup.es) and press contact (prensa@creup.es).
- * Uses Nuxt i18n for all user-facing text.
- */
+import {
+  CONTACT_FIELD_LIMITS,
+  isValidOptionalContactPhone,
+} from '~~/shared/utils/contactValidation'
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const toast = useToast()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
+const {
+  elRef: headerRef,
+  isVisible: headerVisible,
+  isPending: headerPending,
+  shouldAnimate: headerShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: contactTypeRef,
+  isVisible: contactTypeVisible,
+  isPending: contactTypePending,
+  shouldAnimate: contactTypeShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: emailRef,
+  isVisible: emailVisible,
+  isPending: emailPending,
+  shouldAnimate: emailShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: formRef,
+  isVisible: formVisible,
+  isPending: formPending,
+  shouldAnimate: formShouldAnimate,
+} = useEntranceObserver(0.1)
 
-useSeoMeta({
-  title: () => t('contactPage.seo.title'),
-  description: () => t('contactPage.seo.description'),
-  ogTitle: () => t('contactPage.seo.title'),
-  ogDescription: () => t('contactPage.seo.description'),
-})
+usePageSeo('contactPage.seo.title', 'contactPage.seo.description')
 
-// Contact type: general or press
 const contactType = ref<'general' | 'press'>('general')
 const isPress = computed(() => contactType.value === 'press')
 const displayEmail = computed(() => (isPress.value ? 'prensa@creup.es' : 'info@creup.es'))
@@ -39,7 +57,6 @@ const contactTypeDescription = computed(() =>
     : t('contactPage.contactType.generalDescription')
 )
 
-// Form state
 const form = reactive({
   name: '',
   email: '',
@@ -47,10 +64,9 @@ const form = reactive({
   mediaName: '',
   subject: '',
   message: '',
-  website: '', // Honeypot — hidden from real users
+  website: '',
 })
 
-// Track fields the user has interacted with
 const touched = reactive({
   name: false,
   email: false,
@@ -63,54 +79,60 @@ const touched = reactive({
 const isSubmitting = ref(false)
 const formSubmitted = ref(false)
 
-// Phone validation — optional but must be valid if filled (digits, spaces, +, -, parens)
-const phoneRegex = /^[+\d][\d\s()-]{5,29}$/
-
-// Field-level validation rules
 const validations = computed(() => ({
   name: {
-    valid: form.name.trim().length >= 2 && form.name.trim().length <= 100,
+    valid:
+      form.name.trim().length >= CONTACT_FIELD_LIMITS.name.min &&
+      form.name.trim().length <= CONTACT_FIELD_LIMITS.name.max,
     error:
       form.name.trim().length === 0
         ? t('contactPage.form.errors.nameRequired')
-        : form.name.trim().length < 2
+        : form.name.trim().length < CONTACT_FIELD_LIMITS.name.min
           ? t('contactPage.form.errors.nameMin')
           : t('contactPage.form.errors.nameMax'),
   },
   email: {
-    valid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()),
+    valid:
+      form.email.trim().length <= CONTACT_FIELD_LIMITS.emailMax &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()),
     error:
       form.email.trim().length === 0
         ? t('contactPage.form.errors.emailRequired')
         : t('contactPage.form.errors.emailInvalid'),
   },
   phone: {
-    valid: !isPress.value || form.phone.trim().length === 0 || phoneRegex.test(form.phone.trim()),
+    valid: !isPress.value || isValidOptionalContactPhone(form.phone),
     error: t('contactPage.form.errors.phoneInvalid'),
   },
   mediaName: {
     valid:
-      !isPress.value || (form.mediaName.trim().length >= 1 && form.mediaName.trim().length <= 200),
+      !isPress.value ||
+      (form.mediaName.trim().length >= 1 &&
+        form.mediaName.trim().length <= CONTACT_FIELD_LIMITS.mediaNameMax),
     error:
       form.mediaName.trim().length === 0
         ? t('contactPage.form.errors.mediaNameRequired')
         : t('contactPage.form.errors.mediaNameMax'),
   },
   subject: {
-    valid: form.subject.trim().length >= 3 && form.subject.trim().length <= 200,
+    valid:
+      form.subject.trim().length >= CONTACT_FIELD_LIMITS.subject.min &&
+      form.subject.trim().length <= CONTACT_FIELD_LIMITS.subject.max,
     error:
       form.subject.trim().length === 0
         ? t('contactPage.form.errors.subjectRequired')
-        : form.subject.trim().length < 3
+        : form.subject.trim().length < CONTACT_FIELD_LIMITS.subject.min
           ? t('contactPage.form.errors.subjectMin')
           : t('contactPage.form.errors.subjectMax'),
   },
   message: {
-    valid: form.message.trim().length >= 10 && form.message.trim().length <= 5000,
+    valid:
+      form.message.trim().length >= CONTACT_FIELD_LIMITS.message.min &&
+      form.message.trim().length <= CONTACT_FIELD_LIMITS.message.max,
     error:
       form.message.trim().length === 0
         ? t('contactPage.form.errors.messageRequired')
-        : form.message.trim().length < 10
+        : form.message.trim().length < CONTACT_FIELD_LIMITS.message.min
           ? t('contactPage.form.errors.messageMin')
           : t('contactPage.form.errors.messageMax'),
   },
@@ -167,7 +189,6 @@ async function handleSubmit() {
       color: 'success',
     })
 
-    // Reset
     form.name = ''
     form.email = ''
     form.phone = ''
@@ -178,14 +199,11 @@ async function handleSubmit() {
     Object.keys(touched).forEach((k) => (touched[k as keyof typeof touched] = false))
   } catch (error: unknown) {
     const fetchError = error as {
-      data?: { message?: string }
-      statusMessage?: string
-      message?: string
+      data?: { message?: string; statusMessage?: string }
     }
     const errorMsg =
       fetchError.data?.message ||
-      fetchError.statusMessage ||
-      fetchError.message ||
+      fetchError.data?.statusMessage ||
       t('contactPage.form.errorGeneric')
 
     toast.add({
@@ -202,8 +220,12 @@ async function handleSubmit() {
 <template>
   <UContainer class="py-12">
     <section role="region" :aria-label="t('contactPage.title')" class="mx-auto max-w-2xl">
-      <!-- Header -->
-      <div class="mb-8 text-center">
+      <div
+        ref="headerRef"
+        class="mb-8 text-center"
+        :class="entranceClasses(headerShouldAnimate, headerVisible, headerPending)"
+        :style="entranceStyle(headerVisible, headerShouldAnimate, 0)"
+      >
         <h1 class="text-3xl font-bold sm:text-4xl">
           {{ t('contactPage.title') }}
         </h1>
@@ -212,22 +234,34 @@ async function handleSubmit() {
         </p>
       </div>
 
-      <!-- Contact type selector -->
-      <div class="mb-8">
+      <div
+        ref="contactTypeRef"
+        class="mb-8"
+        :class="entranceClasses(contactTypeShouldAnimate, contactTypeVisible, contactTypePending)"
+        :style="entranceStyle(contactTypeVisible, contactTypeShouldAnimate, 1)"
+      >
         <UTabs v-model="contactType" :items="contactTypeItems" class="w-full" />
         <p class="text-muted mt-2 text-sm">{{ contactTypeDescription }}</p>
       </div>
 
-      <!-- Direct email -->
-      <p class="text-muted mb-8 text-center">
+      <p
+        ref="emailRef"
+        class="text-muted mb-8 text-center"
+        :class="entranceClasses(emailShouldAnimate, emailVisible, emailPending)"
+        :style="entranceStyle(emailVisible, emailShouldAnimate, 2)"
+      >
         {{ t('contactPage.email') }}
         <a :href="mailtoHref" class="text-primary font-semibold hover:underline">{{
           displayEmail
         }}</a>
       </p>
 
-      <!-- Contact form -->
-      <UCard>
+      <UCard
+        ref="formRef"
+        class="motion-card-subtle"
+        :class="entranceClasses(formShouldAnimate, formVisible, formPending)"
+        :style="entranceStyle(formVisible, formShouldAnimate, 3)"
+      >
         <form
           class="space-y-6"
           aria-describedby="contact-form-description"
@@ -237,7 +271,6 @@ async function handleSubmit() {
             {{ t('contactPage.subtitle') }}
           </p>
 
-          <!-- Honeypot (hidden) -->
           <div class="sr-only" aria-hidden="true">
             <label for="website">Website</label>
             <input
@@ -250,7 +283,6 @@ async function handleSubmit() {
             />
           </div>
 
-          <!-- Name -->
           <UFormField :label="`${t('contactPage.form.name')} *`" :error="getFieldError('name')">
             <UInput
               id="contact-name"
@@ -265,7 +297,6 @@ async function handleSubmit() {
             />
           </UFormField>
 
-          <!-- Email -->
           <UFormField :label="`${t('contactPage.form.email')} *`" :error="getFieldError('email')">
             <UInput
               id="contact-email"
@@ -280,42 +311,40 @@ async function handleSubmit() {
             />
           </UFormField>
 
-          <!-- Press-only fields -->
-          <template v-if="isPress">
-            <!-- Phone -->
-            <UFormField :label="t('contactPage.form.phone')" :error="getFieldError('phone')">
-              <UInput
-                id="contact-phone"
-                v-model="form.phone"
-                type="tel"
-                :placeholder="t('contactPage.form.phonePlaceholder')"
-                :disabled="isSubmitting"
-                :color="shouldShowError('phone') ? 'error' : undefined"
-                class="w-full"
-                @blur="touched.phone = true"
-              />
-            </UFormField>
+          <Transition name="content-switch" mode="out-in">
+            <div v-if="isPress" key="press-fields" class="space-y-6">
+              <UFormField :label="t('contactPage.form.phone')" :error="getFieldError('phone')">
+                <UInput
+                  id="contact-phone"
+                  v-model="form.phone"
+                  type="tel"
+                  :placeholder="t('contactPage.form.phonePlaceholder')"
+                  :disabled="isSubmitting"
+                  :color="shouldShowError('phone') ? 'error' : undefined"
+                  class="w-full"
+                  @blur="touched.phone = true"
+                />
+              </UFormField>
 
-            <!-- Media name -->
-            <UFormField
-              :label="`${t('contactPage.form.mediaName')} *`"
-              :error="getFieldError('mediaName')"
-            >
-              <UInput
-                id="contact-mediaName"
-                v-model="form.mediaName"
-                type="text"
-                :placeholder="t('contactPage.form.mediaNamePlaceholder')"
-                required
-                :disabled="isSubmitting"
-                :color="shouldShowError('mediaName') ? 'error' : undefined"
-                class="w-full"
-                @blur="touched.mediaName = true"
-              />
-            </UFormField>
-          </template>
+              <UFormField
+                :label="`${t('contactPage.form.mediaName')} *`"
+                :error="getFieldError('mediaName')"
+              >
+                <UInput
+                  id="contact-mediaName"
+                  v-model="form.mediaName"
+                  type="text"
+                  :placeholder="t('contactPage.form.mediaNamePlaceholder')"
+                  required
+                  :disabled="isSubmitting"
+                  :color="shouldShowError('mediaName') ? 'error' : undefined"
+                  class="w-full"
+                  @blur="touched.mediaName = true"
+                />
+              </UFormField>
+            </div>
+          </Transition>
 
-          <!-- Subject -->
           <UFormField
             :label="`${t('contactPage.form.subject')} *`"
             :error="getFieldError('subject')"
@@ -333,7 +362,6 @@ async function handleSubmit() {
             />
           </UFormField>
 
-          <!-- Message -->
           <UFormField
             :label="`${t('contactPage.form.message')} *`"
             :error="getFieldError('message')"
@@ -356,7 +384,6 @@ async function handleSubmit() {
             </template>
           </UFormField>
 
-          <!-- Submit -->
           <UButton
             type="submit"
             color="primary"
@@ -368,7 +395,6 @@ async function handleSubmit() {
             {{ isSubmitting ? t('contactPage.form.sending') : t('contactPage.form.submit') }}
           </UButton>
 
-          <!-- Legal notice and data protection (first information layer) -->
           <div
             class="text-dimmed space-y-2 text-sm"
             :aria-label="t('contactPage.form.privacyInfoTitle')"

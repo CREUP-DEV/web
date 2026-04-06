@@ -1,17 +1,5 @@
 <script setup lang="ts">
-/**
- * Informes Ejecutivos page
- * Displays CREUP's executive report documents approved by the General Assembly.
- */
-
-const { t } = useI18n()
-
-useSeoMeta({
-  title: () => t('policy.reports.title'),
-  description: () => t('policy.reports.description'),
-  ogTitle: () => t('policy.reports.title'),
-  ogDescription: () => t('policy.reports.description'),
-})
+usePageSeo('policy.reports.title', 'policy.reports.description')
 </script>
 
 <template>

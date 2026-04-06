@@ -1,22 +1,8 @@
 <script setup lang="ts">
-/**
- * Corporate Identity Manual (MIC) page.
- * Displays brand assets (logo variants, corporate colors) with download links.
- */
-
 const { t } = useI18n()
-const toast = useToast()
+const { copyToClipboard } = useCopyToClipboard()
 
-useSeoMeta({
-  title: () => t('mic.title'),
-  description: () => t('mic.description'),
-  ogTitle: () => t('mic.title'),
-  ogDescription: () => t('mic.description'),
-})
-
-// ============================================================================
-// Types
-// ============================================================================
+usePageSeo('mic.title', 'mic.description')
 
 interface LogoVariant {
   key: string
@@ -40,15 +26,10 @@ interface CorporateColor {
   pantone: string
 }
 
-// ============================================================================
-// Data
-// ============================================================================
-
 const colorKeys = ['granate', 'grisOscuro', 'grisClaro', 'azul', 'beige', 'blancoPuro'] as const
 
 const BASE = 'https://www.creup.es/documentos/imagen/MIC'
 
-/** Helper to build a full variant set for a logo section */
 function buildVariants(prefix: string): LogoVariant[] {
   const variants: { slug: string; key: string }[] = [
     { slug: 'granate', key: 'granate' },
@@ -125,28 +106,37 @@ const corporateColors: CorporateColor[] = [
   },
 ]
 
-// ============================================================================
-// Clipboard helper
-// ============================================================================
-
-async function copyToClipboard(text: string) {
-  try {
-    await navigator.clipboard.writeText(text)
-    toast.add({
-      title: t('mic.copied', { value: text }),
-      color: 'success',
-      icon: 'i-tabler-clipboard-check',
-    })
-  } catch {
-    // Silently ignore clipboard errors (e.g. permission denied)
-  }
-}
+const {
+  elRef: introRef,
+  isVisible: introVisible,
+  isPending: introPending,
+  shouldAnimate: introShouldAnimate,
+} = useEntranceObserver(0.15)
+const {
+  elRef: logosRef,
+  isVisible: logosVisible,
+  isPending: logosPending,
+  shouldAnimate: logosShouldAnimate,
+} = useEntranceObserver(0.1)
+const {
+  elRef: colorsRef,
+  isVisible: colorsVisible,
+  isPending: colorsPending,
+  shouldAnimate: colorsShouldAnimate,
+} = useEntranceObserver(0.1)
+const {
+  elRef: downloadRef,
+  isVisible: downloadVisible,
+  isPending: downloadPending,
+  shouldAnimate: downloadShouldAnimate,
+} = useEntranceObserver(0.1)
+const copyColorToClipboard = (text: string) =>
+  copyToClipboard(text, t('mic.copied', { value: text }))
 </script>
 
 <template>
   <UContainer class="py-12">
     <article class="mx-auto max-w-5xl space-y-12">
-      <!-- Page title -->
       <header class="text-center">
         <h1 class="text-3xl font-bold sm:text-4xl">
           {{ t('mic.title') }}
@@ -156,8 +146,11 @@ async function copyToClipboard(text: string) {
         </p>
       </header>
 
-      <!-- Introduction -->
-      <section aria-labelledby="mic-intro">
+      <section
+        ref="introRef"
+        aria-labelledby="mic-intro"
+        :class="entranceClasses(introShouldAnimate, introVisible, introPending)"
+      >
         <h2 id="mic-intro" class="text-2xl font-semibold">
           {{ t('mic.introTitle') }}
         </h2>
@@ -168,8 +161,11 @@ async function copyToClipboard(text: string) {
         </div>
       </section>
 
-      <!-- Logo download section -->
-      <section aria-labelledby="mic-logos">
+      <section
+        ref="logosRef"
+        aria-labelledby="mic-logos"
+        :class="entranceClasses(logosShouldAnimate, logosVisible, logosPending)"
+      >
         <h2 id="mic-logos" class="text-2xl font-semibold">
           {{ t('mic.logosTitle') }}
         </h2>
@@ -178,13 +174,17 @@ async function copyToClipboard(text: string) {
           <strong>{{ t('mic.logosWarning') }}</strong>
         </p>
 
-        <!-- Logo variant tables -->
-        <div v-for="section in logoSections" :key="section.prefix" class="mt-8 space-y-4">
+        <div
+          v-for="(section, index) in logoSections"
+          :key="section.prefix"
+          class="mt-8 space-y-4"
+          :class="entranceClasses(logosShouldAnimate, logosVisible, logosPending)"
+          :style="entranceStyle(logosVisible, logosShouldAnimate, index + 1)"
+        >
           <h3 class="text-xl font-medium">
             {{ t(section.titleKey) }}
           </h3>
 
-          <!-- Desktop: table layout -->
           <div class="hidden overflow-x-auto lg:block">
             <table class="w-full min-w-200 table-fixed text-sm">
               <thead>
@@ -199,7 +199,6 @@ async function copyToClipboard(text: string) {
                 </tr>
               </thead>
               <tbody>
-                <!-- Preview row -->
                 <tr class="border-default border-b">
                   <td
                     v-for="variant in buildVariants(section.prefix)"
@@ -214,7 +213,6 @@ async function copyToClipboard(text: string) {
                     />
                   </td>
                 </tr>
-                <!-- SVG download row -->
                 <tr class="border-default border-b">
                   <td
                     v-for="variant in buildVariants(section.prefix)"
@@ -232,7 +230,6 @@ async function copyToClipboard(text: string) {
                     />
                   </td>
                 </tr>
-                <!-- PNG download row -->
                 <tr>
                   <td
                     v-for="variant in buildVariants(section.prefix)"
@@ -254,7 +251,6 @@ async function copyToClipboard(text: string) {
             </table>
           </div>
 
-          <!-- Mobile: card grid -->
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
             <div
               v-for="variant in buildVariants(section.prefix)"
@@ -293,7 +289,6 @@ async function copyToClipboard(text: string) {
             </div>
           </div>
 
-          <!-- ZIP download -->
           <div class="flex justify-center">
             <UButton
               :to="section.zipUrl"
@@ -307,8 +302,11 @@ async function copyToClipboard(text: string) {
         </div>
       </section>
 
-      <!-- Corporate colors -->
-      <section aria-labelledby="mic-colors">
+      <section
+        ref="colorsRef"
+        aria-labelledby="mic-colors"
+        :class="entranceClasses(colorsShouldAnimate, colorsVisible, colorsPending)"
+      >
         <h2 id="mic-colors" class="text-2xl font-semibold">
           {{ t('mic.colorsTitle') }}
         </h2>
@@ -316,7 +314,6 @@ async function copyToClipboard(text: string) {
           {{ t('mic.colorsDescription') }}
         </p>
 
-        <!-- Desktop: color table -->
         <div class="mt-6 hidden overflow-x-auto md:block">
           <table class="w-full min-w-175 text-sm">
             <thead>
@@ -351,7 +348,7 @@ async function copyToClipboard(text: string) {
                     variant="ghost"
                     size="xs"
                     :label="color.hex"
-                    @click="copyToClipboard(color.hex)"
+                    @click="copyColorToClipboard(color.hex)"
                   />
                 </td>
                 <td class="px-3 py-2">
@@ -359,7 +356,7 @@ async function copyToClipboard(text: string) {
                     variant="ghost"
                     size="xs"
                     :label="color.rgb"
-                    @click="copyToClipboard(color.rgb)"
+                    @click="copyColorToClipboard(color.rgb)"
                   />
                 </td>
                 <td class="px-3 py-2">
@@ -367,7 +364,7 @@ async function copyToClipboard(text: string) {
                     variant="ghost"
                     size="xs"
                     :label="color.cmyk"
-                    @click="copyToClipboard(color.cmyk)"
+                    @click="copyColorToClipboard(color.cmyk)"
                   />
                 </td>
                 <td class="px-3 py-2">
@@ -375,7 +372,7 @@ async function copyToClipboard(text: string) {
                     variant="ghost"
                     size="xs"
                     :label="color.pantone"
-                    @click="copyToClipboard(color.pantone)"
+                    @click="copyColorToClipboard(color.pantone)"
                   />
                 </td>
               </tr>
@@ -383,7 +380,6 @@ async function copyToClipboard(text: string) {
           </table>
         </div>
 
-        <!-- Mobile: color cards -->
         <div class="mt-6 grid gap-3 md:hidden">
           <div
             v-for="color in corporateColors"
@@ -406,7 +402,7 @@ async function copyToClipboard(text: string) {
                   variant="ghost"
                   size="xs"
                   :label="color.hex"
-                  @click="copyToClipboard(color.hex)"
+                  @click="copyColorToClipboard(color.hex)"
                 />
               </dd>
               <dt class="font-medium">RGB</dt>
@@ -415,7 +411,7 @@ async function copyToClipboard(text: string) {
                   variant="ghost"
                   size="xs"
                   :label="color.rgb"
-                  @click="copyToClipboard(color.rgb)"
+                  @click="copyColorToClipboard(color.rgb)"
                 />
               </dd>
               <dt class="font-medium">CMYK</dt>
@@ -424,7 +420,7 @@ async function copyToClipboard(text: string) {
                   variant="ghost"
                   size="xs"
                   :label="color.cmyk"
-                  @click="copyToClipboard(color.cmyk)"
+                  @click="copyColorToClipboard(color.cmyk)"
                 />
               </dd>
               <dt class="font-medium">PANTONE</dt>
@@ -433,7 +429,7 @@ async function copyToClipboard(text: string) {
                   variant="ghost"
                   size="xs"
                   :label="color.pantone"
-                  @click="copyToClipboard(color.pantone)"
+                  @click="copyColorToClipboard(color.pantone)"
                 />
               </dd>
             </dl>
@@ -441,8 +437,12 @@ async function copyToClipboard(text: string) {
         </div>
       </section>
 
-      <!-- Download full manual -->
-      <section aria-labelledby="mic-download" class="text-center">
+      <section
+        ref="downloadRef"
+        aria-labelledby="mic-download"
+        class="text-center"
+        :class="entranceClasses(downloadShouldAnimate, downloadVisible, downloadPending)"
+      >
         <h2 id="mic-download" class="text-2xl font-semibold">
           {{ t('mic.downloadTitle') }}
         </h2>

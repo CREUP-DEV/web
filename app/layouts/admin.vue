@@ -1,10 +1,7 @@
 <script setup lang="ts">
-/**
- * Admin Layout
- * Layout for admin panel pages with sidebar navigation
- */
 import type { Locale } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
+import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 const { session, signOut } = useAuth()
 
@@ -17,14 +14,7 @@ if (locale.value !== defaultLocale) {
 
 const navigation = [
   { name: 'Panel', to: '/admin', icon: 'i-tabler-layout-dashboard' },
-  { name: 'Accesos', to: '/admin/access', icon: 'i-tabler-shield-lock' },
-  { name: 'Carrusel', to: '/admin/carousel', icon: 'i-tabler-photo' },
-  { name: 'Newsletter', to: '/admin/newsletter', icon: 'i-tabler-mail' },
-  { name: 'Prensa', to: '/admin/press', icon: 'i-tabler-news' },
-  { name: 'Enlaces', to: '/admin/links', icon: 'i-tabler-link' },
-  { name: 'Etiquetas', to: '/admin/tags', icon: 'i-tabler-tags' },
-  { name: 'Medios', to: '/admin/media', icon: 'i-tabler-broadcast' },
-  { name: 'Informes Económicos', to: '/admin/financial-reports', icon: 'i-tabler-file-analytics' },
+  ...ADMIN_SECTION_DEFINITIONS,
 ]
 
 const sidebarOpen = ref(false)
@@ -39,7 +29,6 @@ const sidebarOpen = ref(false)
       Saltar al contenido principal
     </a>
 
-    <!-- Mobile sidebar backdrop -->
     <div
       v-if="sidebarOpen"
       class="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -47,7 +36,6 @@ const sidebarOpen = ref(false)
       @click="sidebarOpen = false"
     />
 
-    <!-- Sidebar -->
     <aside
       aria-label="Navegación de administración"
       :class="[
@@ -55,7 +43,6 @@ const sidebarOpen = ref(false)
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
     >
-      <!-- Logo -->
       <div class="flex h-16 items-center justify-between border-b px-4">
         <NuxtLink to="/admin" class="flex items-center gap-2">
           <span class="text-lg font-bold">Administración</span>
@@ -69,7 +56,6 @@ const sidebarOpen = ref(false)
         />
       </div>
 
-      <!-- Navigation -->
       <nav class="flex-1 space-y-1 overflow-y-auto p-4" aria-label="Secciones de administración">
         <NuxtLink
           v-for="item in navigation"
@@ -84,7 +70,6 @@ const sidebarOpen = ref(false)
         </NuxtLink>
       </nav>
 
-      <!-- User info -->
       <div class="border-t p-4">
         <div class="flex items-center gap-3">
           <img
@@ -112,9 +97,7 @@ const sidebarOpen = ref(false)
       </div>
     </aside>
 
-    <!-- Main content -->
     <div class="lg:pl-64">
-      <!-- Top bar -->
       <header
         class="bg-surface/80 sticky top-0 z-30 flex h-16 items-center gap-4 border-b px-4 backdrop-blur"
       >
@@ -134,7 +117,6 @@ const sidebarOpen = ref(false)
         </UButton>
       </header>
 
-      <!-- Page content -->
       <main id="admin-main-content" tabindex="-1" class="p-4 sm:p-6 lg:p-8">
         <slot />
       </main>

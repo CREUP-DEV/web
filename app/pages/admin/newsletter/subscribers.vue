@@ -1,14 +1,5 @@
 <script setup lang="ts">
-/**
- * Admin Newsletter Subscribers Management
- * View, edit, add and remove newsletter subscribers.
- */
 definePageMeta({ layout: 'admin' })
-
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
 
 interface Subscriber {
   id: string
@@ -20,7 +11,6 @@ interface Subscriber {
 
 const toast = useToast()
 
-// Fetch subscribers
 const { data, refresh } = await useFetch<{ items: Subscriber[] }>(
   '/api/admin/newsletter/subscribers'
 )
@@ -140,7 +130,6 @@ function formatDate(iso: string) {
       <UButton icon="i-tabler-plus" @click="showAddModal = true">Añadir</UButton>
     </div>
 
-    <!-- Filter and search bar -->
     <div class="mb-4 flex flex-wrap items-center gap-3">
       <UInput
         v-model="search"
@@ -159,7 +148,6 @@ function formatDate(iso: string) {
       </UButton>
     </div>
 
-    <!-- Subscribers list -->
     <div v-if="filteredItems.length === 0" class="text-muted py-12 text-center">
       No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
     </div>
@@ -207,7 +195,6 @@ function formatDate(iso: string) {
       </div>
     </div>
 
-    <!-- Add subscriber modal -->
     <UModal v-model:open="showAddModal">
       <template #header>
         <h2 class="text-lg font-semibold">Añadir suscriptor</h2>
@@ -237,7 +224,6 @@ function formatDate(iso: string) {
       </template>
     </UModal>
 
-    <!-- Delete confirmation modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">

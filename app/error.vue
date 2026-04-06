@@ -24,7 +24,7 @@ useHead({
 })
 
 const status = computed(() => error.status ?? 500)
-const statusText = computed(() => error.statusText || error.message || t('error.message'))
+const statusMessage = computed(() => t('error.message'))
 
 const route = useRoute()
 
@@ -57,7 +57,7 @@ const handleError = async () => {
               {{ status === 404 ? t('error.notFound') : t('error.generic') }}
             </h1>
             <p class="text-muted mt-3 text-base">
-              {{ statusText }}
+              {{ statusMessage }}
             </p>
             <div class="mt-8 flex justify-center">
               <UButton size="lg" @click="handleError">

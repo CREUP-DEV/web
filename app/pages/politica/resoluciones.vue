@@ -1,17 +1,5 @@
 <script setup lang="ts">
-/**
- * Resoluciones page
- * Displays CREUP's resolution documents approved by the General Assembly.
- */
-
-const { t } = useI18n()
-
-useSeoMeta({
-  title: () => t('policy.resolutions.title'),
-  description: () => t('policy.resolutions.description'),
-  ogTitle: () => t('policy.resolutions.title'),
-  ogDescription: () => t('policy.resolutions.description'),
-})
+usePageSeo('policy.resolutions.title', 'policy.resolutions.description')
 </script>
 
 <template>

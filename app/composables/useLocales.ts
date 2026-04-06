@@ -1,8 +1,3 @@
-/**
- * Composable for managing locales across the application.
- * Locale definitions are derived from the Nuxt i18n runtime config.
- */
-
 import {
   normalizeLocaleDefinitions,
   pickLocalizedEntry,
@@ -58,6 +53,9 @@ export function useLocales() {
 
   const getLocaleName = (code: string): string => getLocaleConfig(code)?.name ?? code.toUpperCase()
 
+  const isDefaultLocale = (code?: string): boolean =>
+    resolveLocaleCode(code, localeConfigs.value, '') === defaultLocaleCode.value
+
   const getLanguageTag = (code?: string): string =>
     getLocaleConfig(code)?.language ??
     getLocaleConfig(fallbackLocaleCode.value)?.language ??
@@ -78,13 +76,21 @@ export function useLocales() {
     return translation?.[key]
   }
 
-  const createEmptyTranslations = <T extends Record<string, unknown>>(
+  const getDefaultTranslation = <T extends { locale: string }>(translations: T[]): T | undefined =>
+    getTranslation(translations, defaultLocaleCode.value)
+
+  const getDefaultTranslationValue = <T extends { locale: string }, K extends keyof T>(
+    translations: T[],
+    key: K
+  ): T[K] | undefined => getTranslationValue(translations, key, defaultLocaleCode.value)
+
+  const createEmptyTranslations = <T extends { locale: string }>(
     template: Omit<T, 'locale'>
-  ): (T & { locale: string })[] =>
+  ): T[] =>
     localeConfigs.value.map((config: LocaleConfig) => ({
       ...template,
       locale: config.code,
-    })) as (T & { locale: string })[]
+    })) as T[]
 
   const mapTranslationsToForm = <T extends { locale: string }>(
     existingTranslations: T[],
@@ -122,8 +128,11 @@ export function useLocales() {
     getLocaleFlag,
     getLanguageTag,
     getLocaleName,
+    isDefaultLocale,
     getTranslation,
     getTranslationValue,
+    getDefaultTranslation,
+    getDefaultTranslationValue,
     createEmptyTranslations,
     mapTranslationsToForm,
     filterNonEmptyTranslations,

@@ -1,32 +1,44 @@
 <script setup lang="ts">
-/**
- * Public newsletter page.
- * Displays a subscription form (at the top) and the archive of all
- * published newsletters (cover image + PDF download).
- */
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const toast = useToast()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const showConfirmedMessage = computed(() => route.query.confirmed === '1')
+const showExpiredConfirmationMessage = computed(() => route.query.confirmed === 'expired')
 const showUnsubscribeMessage = computed(() => route.query.unsubscribed === '1')
+const {
+  elRef: headerRef,
+  isVisible: headerVisible,
+  isPending: headerPending,
+  shouldAnimate: headerShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: alertsRef,
+  isVisible: alertsVisible,
+  isPending: alertsPending,
+  shouldAnimate: alertsShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: formRef,
+  isVisible: formVisible,
+  isPending: formPending,
+  shouldAnimate: formShouldAnimate,
+} = useEntranceObserver(0.1)
+const {
+  elRef: archiveRef,
+  isVisible: archiveVisible,
+  isPending: archivePending,
+  shouldAnimate: archiveShouldAnimate,
+} = useEntranceObserver(0.1)
 
-useSeoMeta({
-  title: () => t('newsletterPage.seo.title'),
-  description: () => t('newsletterPage.seo.description'),
-  ogTitle: () => t('newsletterPage.seo.title'),
-  ogDescription: () => t('newsletterPage.seo.description'),
-})
+usePageSeo('newsletterPage.seo.title', 'newsletterPage.seo.description')
 
-// ------------------------------------------------------------------
-// Subscription form
-// ------------------------------------------------------------------
 const form = reactive({
   ageConfirmed: false,
   consent: false,
   email: '',
-  website: '', // Honeypot
+  website: '',
 })
 
 const touched = reactive({
@@ -114,9 +126,6 @@ async function handleSubscribe() {
   }
 }
 
-// ------------------------------------------------------------------
-// Newsletter archive
-// ------------------------------------------------------------------
 interface Newsletter {
   id: string
   month: string
@@ -140,8 +149,12 @@ function formatMonth(iso: string): string {
 <template>
   <UContainer class="py-12">
     <div class="mx-auto max-w-4xl">
-      <!-- Header -->
-      <div class="mb-10 text-center">
+      <div
+        ref="headerRef"
+        class="mb-10 text-center"
+        :class="entranceClasses(headerShouldAnimate, headerVisible, headerPending)"
+        :style="entranceStyle(headerVisible, headerShouldAnimate, 0)"
+      >
         <h1 class="text-3xl font-bold sm:text-4xl">
           {{ t('newsletterPage.title') }}
         </h1>
@@ -150,39 +163,55 @@ function formatMonth(iso: string): string {
         </p>
       </div>
 
-      <UAlert
-        v-if="showConfirmedMessage"
-        class="mx-auto mb-8 max-w-xl"
-        color="success"
-        variant="soft"
-        icon="i-tabler-mail-check"
-        :title="t('newsletterPage.confirmed.title')"
-        :description="t('newsletterPage.confirmed.description')"
-      />
+      <div
+        v-if="showConfirmedMessage || showExpiredConfirmationMessage || showUnsubscribeMessage"
+        ref="alertsRef"
+        class="mx-auto mb-8 max-w-xl space-y-4"
+        :class="entranceClasses(alertsShouldAnimate, alertsVisible, alertsPending)"
+        :style="entranceStyle(alertsVisible, alertsShouldAnimate, 1)"
+      >
+        <UAlert
+          v-if="showConfirmedMessage"
+          color="success"
+          variant="soft"
+          icon="i-tabler-mail-check"
+          :title="t('newsletterPage.confirmed.title')"
+          :description="t('newsletterPage.confirmed.description')"
+        />
 
-      <UAlert
-        v-if="showUnsubscribeMessage"
-        class="mx-auto mb-8 max-w-xl"
-        color="success"
-        variant="soft"
-        icon="i-tabler-mail-off"
-        :title="t('newsletterPage.unsubscribe.title')"
-        :description="t('newsletterPage.unsubscribe.description')"
-      />
+        <UAlert
+          v-if="showExpiredConfirmationMessage"
+          color="warning"
+          variant="soft"
+          icon="i-tabler-mail-x"
+          :title="t('newsletterPage.confirmedExpired.title')"
+          :description="t('newsletterPage.confirmedExpired.description')"
+        />
 
-      <!-- Subscription form -->
+        <UAlert
+          v-if="showUnsubscribeMessage"
+          color="success"
+          variant="soft"
+          icon="i-tabler-mail-off"
+          :title="t('newsletterPage.unsubscribe.title')"
+          :description="t('newsletterPage.unsubscribe.description')"
+        />
+      </div>
+
       <section
+        ref="formRef"
         role="region"
         :aria-label="t('newsletterPage.form.ariaLabel')"
         class="mx-auto mb-14 max-w-xl"
+        :class="entranceClasses(formShouldAnimate, formVisible, formPending)"
+        :style="entranceStyle(formVisible, formShouldAnimate, 2)"
       >
-        <UCard>
+        <UCard class="motion-card-subtle">
           <form class="space-y-5" @submit.prevent="handleSubscribe">
             <p class="text-center text-lg font-semibold">
               {{ t('newsletterPage.form.heading') }}
             </p>
 
-            <!-- Honeypot (hidden) -->
             <div class="sr-only" aria-hidden="true">
               <label for="website">Website</label>
               <input
@@ -195,7 +224,6 @@ function formatMonth(iso: string): string {
               />
             </div>
 
-            <!-- Email -->
             <UFormField :label="`${t('newsletterPage.form.email')} *`" :error="getEmailError()">
               <UInput
                 id="newsletter-email"
@@ -242,7 +270,6 @@ function formatMonth(iso: string): string {
               />
             </UFormField>
 
-            <!-- Submit -->
             <UButton
               type="submit"
               color="primary"
@@ -256,7 +283,6 @@ function formatMonth(iso: string): string {
               }}
             </UButton>
 
-            <!-- Legal notice (first information layer) -->
             <section
               class="text-dimmed space-y-2 text-sm"
               :aria-label="t('newsletterPage.form.privacyInfoTitle')"
@@ -287,8 +313,7 @@ function formatMonth(iso: string): string {
         </UCard>
       </section>
 
-      <!-- Newsletter archive -->
-      <section role="region" :aria-label="t('newsletterPage.archive.ariaLabel')">
+      <section ref="archiveRef" role="region" :aria-label="t('newsletterPage.archive.ariaLabel')">
         <h2 class="mb-6 text-2xl font-bold">
           {{ t('newsletterPage.archive.title') }}
         </h2>
@@ -299,9 +324,11 @@ function formatMonth(iso: string): string {
 
         <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <UCard
-            v-for="nl in newsletters"
+            v-for="(nl, index) in newsletters"
             :key="nl.id"
-            class="flex flex-col items-center text-center"
+            class="motion-card flex flex-col items-center text-center"
+            :class="entranceClasses(archiveShouldAnimate, archiveVisible, archivePending)"
+            :style="entranceStyle(archiveVisible, archiveShouldAnimate, index, 70)"
           >
             <NuxtImg
               :src="nl.coverImage"

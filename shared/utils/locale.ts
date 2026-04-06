@@ -13,8 +13,11 @@ interface RawLocaleDefinition {
 }
 
 export const DEFAULT_LOCALE_CODE = 'es'
+export const SUPPORTED_LOCALE_CODES = ['es', 'en'] as const
+export type SupportedLocaleCode = (typeof SUPPORTED_LOCALE_CODES)[number]
+
 const DEFAULT_LANGUAGE_TAG = 'es-ES'
-const DEFAULT_LOCALE_NAME = 'Espanol'
+const DEFAULT_LOCALE_NAME = 'Español'
 
 const flagFallbackByLanguage: Record<string, string> = {
   de: 'de',
@@ -204,4 +207,31 @@ export const pickLocalizedEntry = <T extends { locale: string }>(
     entries.find((entry) => resolveLocaleCode(entry.locale, locales, '') === fallbackCode) ??
     entries[0]
   )
+}
+
+export const pickLocalizedValue = <T>(
+  values: Partial<Record<string, T>>,
+  locale: string | null | undefined,
+  fallbackLocale: string | null | undefined,
+  defaultCode = DEFAULT_LOCALE_CODE
+) => {
+  const localeCandidates = [
+    String(locale ?? '')
+      .trim()
+      .toLowerCase(),
+    getBaseLanguage(locale),
+    String(fallbackLocale ?? '')
+      .trim()
+      .toLowerCase(),
+    getBaseLanguage(fallbackLocale),
+    defaultCode,
+  ].filter(Boolean)
+
+  for (const candidate of localeCandidates) {
+    if (candidate in values) {
+      return values[candidate]
+    }
+  }
+
+  return Object.values(values).find((value) => value !== undefined)
 }

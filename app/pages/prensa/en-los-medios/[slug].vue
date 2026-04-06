@@ -1,7 +1,6 @@
 <script setup lang="ts">
-/**
- * Media appearance detail page (/prensa/en-los-medios/[slug])
- */
+import type { PressArticle } from '@/composables/usePress'
+
 const { t } = useI18n()
 const route = useRoute()
 const slug = route.params.slug as string
@@ -12,7 +11,7 @@ if (error.value || !data.value?.article) {
   throw createError({ statusCode: 404, message: t('press.notFound') })
 }
 
-const article = computed(() => data.value!.article)
+const article = computed<PressArticle>(() => data.value!.article as PressArticle)
 </script>
 
 <template>

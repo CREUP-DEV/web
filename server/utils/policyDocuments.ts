@@ -1,8 +1,3 @@
-/**
- * Shared helper for fetching policy documents (posicionamientos, resoluciones, informes ejecutivos)
- * from the external CREUP intranet API.
- */
-
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import {
@@ -11,9 +6,21 @@ import {
   withExternalApiSWRCache,
 } from './externalApiCache'
 import { toPolicyDocumentPublicPdfPathAsync } from './policyDocumentDownloads'
+import { getRequestLocaleContext } from './requestLocale'
+import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
 import { externalPolicyDocumentsResponseSchema } from './validation'
+import { logError } from './logger'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const POLICY_DOCUMENTS_CACHE_VERSION = 2
+const messagesByLocale = {
+  en: {
+    unavailable: 'The requested documents are temporarily unavailable.',
+  },
+  es: {
+    unavailable: 'La documentación solicitada no está disponible temporalmente.',
+  },
+}
 
 interface PolicyDocumentFile {
   name: string | null
@@ -28,29 +35,18 @@ interface PolicyDocumentOutput {
   file: PolicyDocumentFile | null
 }
 
-/**
- * Fetches policy documents from the external API for the given endpoint path.
- * @param event - The H3 event
- * @param apiPath - The external API path (e.g., '/api/posicionamientos')
- * @param label  - A human-readable label for error messages (e.g., 'Posicionamientos')
- */
 export async function fetchPolicyDocuments(
   event: H3Event,
   apiPath: string,
   label: string
 ): Promise<{ documents: PolicyDocumentOutput[]; generatedAt: string | null }> {
-  const runtimeConfig = useRuntimeConfig(event)
-  const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  const messages =
+    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
-
-  if (!configuredBaseUrl) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'External members API is not configured.',
-    })
-  }
 
   return withExternalApiSWRCache(
     `external-api:policy-documents:v${POLICY_DOCUMENTS_CACHE_VERSION}:${configuredBaseUrl}:${apiPath}`,
@@ -61,19 +57,27 @@ export async function fetchPolicyDocuments(
       try {
         payload = await $fetch(endpoint)
       } catch (error) {
-        console.error(`Failed to fetch external ${label} API:`, error)
+        logError('external.policy-documents.fetch', error, { endpoint, label }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: `${label} data is temporarily unavailable.`,
+          statusMessage: messages.unavailable,
         })
       }
 
       const parsedPayload = externalPolicyDocumentsResponseSchema.safeParse(payload)
       if (!parsedPayload.success) {
-        console.error(`Invalid payload from external ${label} API:`, parsedPayload.error.flatten())
+        logError(
+          'external.policy-documents.invalid-payload',
+          parsedPayload.error,
+          {
+            endpoint,
+            label,
+          },
+          event
+        )
         throw createError({
           statusCode: 502,
-          statusMessage: `${label} data is temporarily unavailable.`,
+          statusMessage: messages.unavailable,
         })
       }
 

@@ -1,9 +1,4 @@
 <script setup lang="ts">
-/**
- * Interactive map of Spain's autonomous communities.
- * Paths come from a MapChart export provided by the user.
- */
-
 import { SPAIN_REGION_PATHS } from './spainRegions'
 
 const props = defineProps<{
@@ -18,13 +13,17 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const mapContainerRef = ref<HTMLElement | null>(null)
+const tooltipRef = ref<HTMLElement | null>(null)
+const tooltipId = 'members-map-tooltip'
 
 const tooltip = ref({
   visible: false,
-  text: '',
-  x: 0,
-  y: 0,
+  title: '',
+  meta: '',
 })
+
+let tooltipAnimationFrameId = 0
+let pendingTooltipPointerPosition: { clientX: number; clientY: number } | null = null
 
 const getCommunityName = (community: string) => {
   const key = `members.communities.${community}`
@@ -53,33 +52,97 @@ const getRegionClass = (community: string) => {
   }
 }
 
-const getRegionLabel = (community: string) => {
-  const count = props.memberCounts?.[community] ?? 0
-  return `${getCommunityName(community)} (${count})`
+const getCommunityCount = (community: string) => props.memberCounts?.[community] ?? 0
+
+const getCommunityCountLabel = (community: string) => {
+  const count = getCommunityCount(community)
+  return count > 0 ? t('members.mapTooltipCount', count) : t('members.mapTooltipEmpty')
 }
 
-const setTooltipPosition = (clientX: number, clientY: number) => {
+const getCommunityStateLabel = (community: string) => {
+  if (props.selectedCommunity === community) {
+    return t('members.mapSelectedState')
+  }
+
+  return getCommunityCount(community) > 0
+    ? t('members.mapAvailableState')
+    : t('members.mapUnavailableState')
+}
+
+const getRegionLabel = (community: string) => {
+  return [
+    getCommunityName(community),
+    getCommunityCountLabel(community),
+    getCommunityStateLabel(community),
+  ].join('. ')
+}
+
+const setTooltipCoordinates = (x: number, y: number) => {
+  if (!tooltipRef.value) {
+    return
+  }
+
+  tooltipRef.value.style.left = `${x}px`
+  tooltipRef.value.style.top = `${y}px`
+}
+
+const setTooltipPositionFromPointer = (clientX: number, clientY: number) => {
   if (!mapContainerRef.value) {
     return
   }
 
   const containerRect = mapContainerRef.value.getBoundingClientRect()
-  tooltip.value.x = clientX - containerRect.left
-  tooltip.value.y = clientY - containerRect.top
+  setTooltipCoordinates(clientX - containerRect.left, clientY - containerRect.top)
 }
 
-const showTooltip = (community: string) => {
-  tooltip.value.text = getCommunityName(community)
-  tooltip.value.visible = true
+const setTooltipPositionFromTarget = (target: EventTarget | null) => {
+  if (!mapContainerRef.value) {
+    return
+  }
+
+  const region = target as SVGPathElement | null
+  if (!region) {
+    return
+  }
+
+  const containerRect = mapContainerRef.value.getBoundingClientRect()
+  const targetRect = region.getBoundingClientRect()
+
+  setTooltipCoordinates(
+    targetRect.left - containerRect.left + targetRect.width / 2,
+    targetRect.top - containerRect.top
+  )
 }
 
-const hideTooltip = () => {
-  tooltip.value.visible = false
+const flushTooltipPosition = () => {
+  tooltipAnimationFrameId = 0
+
+  if (!pendingTooltipPointerPosition) {
+    return
+  }
+
+  setTooltipPositionFromPointer(
+    pendingTooltipPointerPosition.clientX,
+    pendingTooltipPointerPosition.clientY
+  )
+  pendingTooltipPointerPosition = null
+}
+
+const scheduleTooltipPosition = (clientX: number, clientY: number) => {
+  pendingTooltipPointerPosition = { clientX, clientY }
+
+  if (tooltipAnimationFrameId) {
+    return
+  }
+
+  tooltipAnimationFrameId = window.requestAnimationFrame(flushTooltipPosition)
 }
 
 const showTooltipFromPointer = (event: MouseEvent, community: string) => {
-  showTooltip(community)
-  setTooltipPosition(event.clientX, event.clientY)
+  tooltip.value.title = getCommunityName(community)
+  tooltip.value.meta = getCommunityCountLabel(community)
+  tooltip.value.visible = true
+  scheduleTooltipPosition(event.clientX, event.clientY)
 }
 
 const updateTooltipPosition = (event: MouseEvent) => {
@@ -87,26 +150,31 @@ const updateTooltipPosition = (event: MouseEvent) => {
     return
   }
 
-  setTooltipPosition(event.clientX, event.clientY)
+  scheduleTooltipPosition(event.clientX, event.clientY)
 }
 
 const showTooltipFromFocus = (event: FocusEvent, community: string) => {
-  if (!mapContainerRef.value) {
-    return
-  }
-
-  const target = event.target as SVGPathElement | null
-  if (!target) {
-    return
-  }
-
-  const containerRect = mapContainerRef.value.getBoundingClientRect()
-  const targetRect = target.getBoundingClientRect()
-
-  tooltip.value.x = targetRect.left - containerRect.left + targetRect.width / 2
-  tooltip.value.y = targetRect.top - containerRect.top
-  showTooltip(community)
+  setTooltipPositionFromTarget(event.currentTarget ?? event.target)
+  tooltip.value.title = getCommunityName(community)
+  tooltip.value.meta = getCommunityCountLabel(community)
+  tooltip.value.visible = true
 }
+
+const hideTooltip = () => {
+  tooltip.value.visible = false
+  pendingTooltipPointerPosition = null
+
+  if (tooltipAnimationFrameId) {
+    window.cancelAnimationFrame(tooltipAnimationFrameId)
+    tooltipAnimationFrameId = 0
+  }
+}
+
+onBeforeUnmount(() => {
+  if (tooltipAnimationFrameId) {
+    window.cancelAnimationFrame(tooltipAnimationFrameId)
+  }
+})
 </script>
 
 <template>
@@ -151,16 +219,15 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
     </svg>
 
     <div
-      v-if="tooltip.visible"
-      class="pointer-events-none absolute z-20 rounded-md bg-black/85 px-2 py-1 text-xs font-medium text-white"
-      :style="{
-        left: `${tooltip.x}px`,
-        top: `${tooltip.y}px`,
-        transform: 'translate(-50%, calc(-100% - 0.5rem))',
-      }"
+      v-show="tooltip.visible"
+      :id="tooltipId"
+      ref="tooltipRef"
+      class="pointer-events-none absolute z-20 min-w-32 rounded-md bg-black/85 px-3 py-2 text-xs text-white shadow-lg"
+      style="left: 0; top: 0; transform: translate(-50%, calc(-100% - 0.5rem))"
       role="tooltip"
     >
-      {{ tooltip.text }}
+      <p class="font-semibold">{{ tooltip.title }}</p>
+      <p class="mt-0.5 text-white/80">{{ tooltip.meta }}</p>
     </div>
   </div>
 </template>
@@ -174,8 +241,12 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
   transition:
     fill 0.15s ease,
     stroke 0.15s ease,
-    opacity 0.15s ease;
+    transform 0.15s ease,
+    filter 0.15s ease;
   vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: fill, stroke, transform, filter;
 }
 
 .map-region:focus {
@@ -186,6 +257,12 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
   stroke-width: 2.5;
 }
 
+.map-region:hover,
+.map-region:focus-visible {
+  filter: drop-shadow(0 8px 18px rgb(106 7 7 / 0.18));
+  transform: translateY(-1px) scale(1.01);
+}
+
 .map-region--selected {
   fill: #dc2626;
   stroke: #991b1b;
@@ -194,6 +271,7 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 .map-region--selected:hover,
 .map-region--selected:focus-visible {
   fill: #ef4444;
+  stroke: #7f1d1d;
 }
 
 .map-region--active {
@@ -203,7 +281,8 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 
 .map-region--active:hover,
 .map-region--active:focus-visible {
-  fill: #fca5a5;
+  fill: #fb7185;
+  stroke: #991b1b;
 }
 
 .map-region--inactive {
@@ -213,7 +292,8 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 
 .map-region--inactive:hover,
 .map-region--inactive:focus-visible {
-  fill: #cbd5e1;
+  fill: #94a3b8;
+  stroke: #64748b;
 }
 
 .map-overlay {
@@ -228,10 +308,10 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 }
 
 .map-watermark-text {
+  fill: #000;
   font-family: 'Century Gothic', 'Segoe UI', 'Lucida Grande', sans-serif;
   font-size: 7.5px;
   font-weight: 700;
-  fill: #000;
 }
 
 :global(.dark) .map-region--selected {
@@ -242,6 +322,7 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 :global(.dark) .map-region--selected:hover,
 :global(.dark) .map-region--selected:focus-visible {
   fill: #fca5a5;
+  stroke: #fee2e2;
 }
 
 :global(.dark) .map-region--active {
@@ -252,7 +333,8 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 
 :global(.dark) .map-region--active:hover,
 :global(.dark) .map-region--active:focus-visible {
-  fill: #ef4444;
+  fill: #f87171;
+  stroke: #fee2e2;
   opacity: 0.95;
 }
 
@@ -263,7 +345,8 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 
 :global(.dark) .map-region--inactive:hover,
 :global(.dark) .map-region--inactive:focus-visible {
-  fill: #6b7280;
+  fill: #9ca3af;
+  stroke: #cbd5e1;
 }
 
 :global(.dark) .map-watermark-text {

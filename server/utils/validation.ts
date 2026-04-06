@@ -1,188 +1,214 @@
-/**
- * Zod validation schemas for admin API endpoints
- * Note: Locale is validated as a string (not enum) to support dynamic languages
- * Spanish (es) is required, other locales are optional
- */
+import type { H3Event, MultiPartData } from 'h3'
+import { createError, getQuery, getRouterParam } from 'h3'
+import {
+  CONTACT_FIELD_LIMITS,
+  isValidOptionalContactPhone,
+} from '~~/shared/utils/contactValidation'
+import { DATE_ONLY_PATTERN, parseDateOnlyString } from '~~/shared/utils/date'
+import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
+import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 import { z } from 'zod'
 import { hasMeaningfulRichTextHtml } from './pressTranslation'
 
-// Locale is a non-empty string to support dynamic languages
-const localeSchema = z.string().min(1, 'El locale es requerido')
+const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
+  message: 'El locale no es válido',
+})
 
-// Carousel Item schemas
+/** Validates that a URL/path is safe (no javascript: protocol) */
+const safeHrefSchema = z
+  .string()
+  .min(1)
+  .refine(
+    (value) =>
+      value.startsWith('/') ||
+      value.startsWith('#') ||
+      value.startsWith('http://') ||
+      value.startsWith('https://'),
+    'El enlace debe ser una ruta relativa o una URL http/https'
+  )
+const dateOnlySchema = z
+  .string()
+  .regex(DATE_ONLY_PATTERN, 'La fecha no es válida')
+  .refine((value) => parseDateOnlyString(value) !== null, 'La fecha no es válida')
+const getSingleValue = (value: unknown) => (Array.isArray(value) ? value[0] : value)
+
+const toSingleStringSchema = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((value) => getSingleValue(value), schema)
+
+const toOptionalSingleStringSchema = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((value) => {
+    const normalizedValue = getSingleValue(value)
+    if (normalizedValue === '' || normalizedValue == null) {
+      return undefined
+    }
+    return normalizedValue
+  }, schema.optional())
+
+const getRequiredTranslation = <T extends { locale: string }>(translations: T[]) =>
+  translations.find((translation) => translation.locale === DEFAULT_LOCALE_CODE)
+
 export const carouselTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string(), // Not required for non-Spanish locales
+  title: z.string(),
   buttonText: z.string().optional(),
   alt: z.string().optional(),
 })
 
-export const createCarouselItemSchema = z.object({
-  image: z.string().min(1, 'La imagen es requerida'),
-  href: z.string().min(1, 'El enlace es requerido'),
-  order: z.number().int().min(0).default(0),
-  active: z.boolean().default(true),
-  translations: z.array(carouselTranslationSchema).min(1, 'Se requiere al menos una traducción'),
-})
+export const createCarouselItemSchema = z
+  .object({
+    image: z.string().min(1, 'La imagen es requerida'),
+    href: safeHrefSchema,
+    order: z.number().int().min(0).default(0),
+    active: z.boolean().default(true),
+    translations: z.array(carouselTranslationSchema).min(1, 'Se requiere al menos una traducción'),
+  })
+  .superRefine((data, ctx) => {
+    const requiredTranslation = getRequiredTranslation(data.translations)
 
-export const updateCarouselItemSchema = createCarouselItemSchema.partial().extend({
-  translations: z.array(carouselTranslationSchema).min(1),
-})
+    if (!requiredTranslation?.title?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El título en español es obligatorio',
+        path: ['translations'],
+      })
+    }
+  })
 
-// Press Article schemas
+export const updateCarouselItemSchema = createCarouselItemSchema
+
 export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string(), // Not required for non-Spanish locales
+  title: z.string(),
   description: z.string().optional(),
   contentHtml: z.string().optional().nullable(),
   alt: z.string().optional(),
 })
 
-export const pressArticleTypeSchema = z.enum(['press_release', 'statement', 'media_appearance'])
+export const pressArticleTypeSchema = z.enum(PRESS_ARTICLE_TYPES)
 
-export const createPressArticleSchema = z
-  .object({
-    type: pressArticleTypeSchema,
-    image: z.string().min(1, 'La imagen es requerida'),
-    pdfUrl: z.string().optional().nullable(),
-    externalUrl: z.string().url('La URL externa no es válida').optional().nullable(),
-    mediaOutletId: z.string().optional().nullable(),
-    active: z.boolean().default(true),
-    tagIds: z.array(z.string()).optional().default([]),
-    publishedAt: z.string().datetime().optional(),
-    translations: z
-      .array(pressArticleTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
-  })
-  .superRefine((data, ctx) => {
-    const esTranslation = data.translations.find((translation) => translation.locale === 'es')
+/** Shared refinement for press article business rules (used by both create and update) */
+function refinePressArticle(
+  data: {
+    type: string
+    pdfUrl?: string | null
+    externalUrl?: string | null
+    mediaOutletId?: string | null
+    translations: Array<{ locale: string; title?: string; contentHtml?: string | null }>
+  },
+  ctx: z.RefinementCtx
+) {
+  const requiredTranslation = getRequiredTranslation(data.translations)
 
-    if (!esTranslation?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El título en español es obligatorio',
-        path: ['translations'],
-      })
-    }
-    if (
-      (data.type === 'press_release' || data.type === 'statement') &&
-      !data.pdfUrl &&
-      !hasMeaningfulRichTextHtml(esTranslation?.contentHtml)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Debes añadir contenido o subir un PDF para notas de prensa y comunicados',
-        path: ['translations'],
-      })
-    }
-    if (data.type === 'media_appearance' && !data.externalUrl) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La URL externa es obligatoria para apariciones en medios',
-        path: ['externalUrl'],
-      })
-    }
-    if (data.type === 'media_appearance' && !data.mediaOutletId) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El medio de comunicación es obligatorio para apariciones en medios',
-        path: ['mediaOutletId'],
-      })
-    }
-  })
+  if (!requiredTranslation?.title?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'El título en español es obligatorio',
+      path: ['translations'],
+    })
+  }
+  if (
+    (data.type === 'press_release' || data.type === 'statement') &&
+    !data.pdfUrl &&
+    !hasMeaningfulRichTextHtml(requiredTranslation?.contentHtml)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Debes añadir contenido o subir un PDF para notas de prensa y comunicados',
+      path: ['translations'],
+    })
+  }
+  if (data.type === 'media_appearance' && !data.externalUrl) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'La URL externa es obligatoria para apariciones en medios',
+      path: ['externalUrl'],
+    })
+  }
+  if (data.type === 'media_appearance' && !data.mediaOutletId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'El medio de comunicación es obligatorio para apariciones en medios',
+      path: ['mediaOutletId'],
+    })
+  }
+}
 
-export const updatePressArticleSchema = z
-  .object({
-    type: pressArticleTypeSchema,
-    image: z.string().min(1, 'La imagen es requerida'),
-    pdfUrl: z.string().optional().nullable(),
-    externalUrl: z.string().url('La URL externa no es válida').optional().nullable(),
-    mediaOutletId: z.string().optional().nullable(),
-    active: z.boolean().default(true),
-    tagIds: z.array(z.string()).optional().default([]),
-    publishedAt: z.string().datetime().optional(),
-    translations: z
-      .array(pressArticleTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
-  })
-  .superRefine((data, ctx) => {
-    const esTranslation = data.translations.find((translation) => translation.locale === 'es')
-
-    if (!esTranslation?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El título en español es obligatorio',
-        path: ['translations'],
-      })
-    }
-    if (
-      (data.type === 'press_release' || data.type === 'statement') &&
-      !data.pdfUrl &&
-      !hasMeaningfulRichTextHtml(esTranslation?.contentHtml)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Debes añadir contenido o subir un PDF para notas de prensa y comunicados',
-        path: ['translations'],
-      })
-    }
-    if (data.type === 'media_appearance' && !data.externalUrl) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La URL externa es obligatoria para apariciones en medios',
-        path: ['externalUrl'],
-      })
-    }
-    if (data.type === 'media_appearance' && !data.mediaOutletId) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El medio de comunicación es obligatorio para apariciones en medios',
-        path: ['mediaOutletId'],
-      })
-    }
-  })
-
-// Featured Link schemas
-export const featuredLinkTranslationSchema = z.object({
-  locale: localeSchema,
-  title: z.string(), // Not required for non-Spanish locales
-  alt: z.string().optional(),
-})
-
-export const createFeaturedLinkSchema = z.object({
+const basePressArticleSchema = z.object({
+  type: pressArticleTypeSchema,
   image: z.string().min(1, 'La imagen es requerida'),
-  to: z.string().min(1, 'El enlace es requerido'),
-  order: z.number().int().min(0).default(0),
+  pdfUrl: z.string().optional().nullable(),
+  externalUrl: z.string().url('La URL externa no es válida').optional().nullable(),
+  mediaOutletId: z.string().optional().nullable(),
   active: z.boolean().default(true),
+  tagIds: z.array(z.string()).optional().default([]),
+  publishedAt: dateOnlySchema.optional(),
   translations: z
-    .array(featuredLinkTranslationSchema)
+    .array(pressArticleTranslationSchema)
     .min(1, 'Se requiere al menos una traducción'),
 })
 
-export const updateFeaturedLinkSchema = createFeaturedLinkSchema.partial().extend({
-  translations: z.array(featuredLinkTranslationSchema).min(1),
+export const createPressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
+
+export const updatePressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
+
+export const featuredLinkTranslationSchema = z.object({
+  locale: localeSchema,
+  title: z.string(),
+  alt: z.string().optional(),
 })
 
-// Tag schemas
+export const createFeaturedLinkSchema = z
+  .object({
+    image: z.string().min(1, 'La imagen es requerida'),
+    to: safeHrefSchema,
+    order: z.number().int().min(0).default(0),
+    active: z.boolean().default(true),
+    translations: z
+      .array(featuredLinkTranslationSchema)
+      .min(1, 'Se requiere al menos una traducción'),
+  })
+  .superRefine((data, ctx) => {
+    const requiredTranslation = getRequiredTranslation(data.translations)
+
+    if (!requiredTranslation?.title?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El título en español es obligatorio',
+        path: ['translations'],
+      })
+    }
+  })
+
+export const updateFeaturedLinkSchema = createFeaturedLinkSchema
+
 export const tagTranslationSchema = z.object({
   locale: localeSchema,
-  name: z.string(), // Not required for non-Spanish locales
+  name: z.string(),
 })
 
-export const createTagSchema = z.object({
-  slug: z
-    .string()
-    .min(1, 'El slug es requerido')
-    .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones'),
-  order: z.number().int().min(0).default(0),
-  translations: z.array(tagTranslationSchema).min(1, 'Se requiere al menos una traducción'),
-})
+export const createTagSchema = z
+  .object({
+    slug: z
+      .string()
+      .min(1, 'El slug es requerido')
+      .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones'),
+    order: z.number().int().min(0).default(0),
+    translations: z.array(tagTranslationSchema).min(1, 'Se requiere al menos una traducción'),
+  })
+  .superRefine((data, ctx) => {
+    const requiredTranslation = getRequiredTranslation(data.translations)
 
-export const updateTagSchema = createTagSchema.partial().extend({
-  translations: z.array(tagTranslationSchema).min(1),
-})
+    if (!requiredTranslation?.name?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El nombre en español es obligatorio',
+        path: ['translations'],
+      })
+    }
+  })
 
-// Bulk order update schema
+export const updateTagSchema = createTagSchema
+
 export const updateOrderSchema = z.object({
   items: z.array(
     z.object({
@@ -192,11 +218,72 @@ export const updateOrderSchema = z.object({
   ),
 })
 
+export const idRouteParamSchema = z.object({
+  id: z.string().trim().min(1, 'ID requerido'),
+})
+
+export const numericIdRouteParamSchema = z.object({
+  id: z.coerce.number().int().min(1, 'ID no válido'),
+})
+
+export const slugRouteParamSchema = z.object({
+  slug: z.string().trim().min(1, 'Slug requerido'),
+})
+
+export const mandateSlugRouteParamSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .regex(/^\d{4}(-\d{2}(-\d{2})?)?$/, 'El mandato debe tener formato YYYY, YYYY-MM o YYYY-MM-DD'),
+})
+
+export const newsletterTokenQuerySchema = z.object({
+  token: toSingleStringSchema(z.string().trim().min(1, 'Token requerido')),
+})
+
+export const pressListQuerySchema = z.object({
+  type: z.preprocess(
+    (value) => (Array.isArray(value) ? value[0] : value),
+    pressArticleTypeSchema.optional()
+  ),
+  tag: toOptionalSingleStringSchema(z.string().trim()),
+  limit: z.preprocess((value) => {
+    const normalizedValue = Array.isArray(value) ? value[0] : value
+    if (normalizedValue === '' || normalizedValue == null) {
+      return undefined
+    }
+    return normalizedValue
+  }, z.coerce.number().int().min(1).max(50).default(12)),
+})
+
+export const adminPressListQuerySchema = z.object({
+  type: z.preprocess(
+    (value) => (Array.isArray(value) ? value[0] : value),
+    pressArticleTypeSchema.optional()
+  ),
+})
+
+export const memberCalendarQuerySchema = z.object({
+  calendarId: toOptionalSingleStringSchema(z.string().trim().email('El calendario no es válido')),
+})
+
+export const externalAssetTypeRouteParamSchema = z.object({
+  type: z.enum(['image', 'pdf']),
+})
+
+export const adminAssetPathRouteParamSchema = z.object({
+  path: z.string().trim().min(1, 'Ruta no válida'),
+})
+
 // External members API schemas
-export const externalAssociatedMemberSocialSchema = z.object({
+
+/** Shared social network schema used across all external member types */
+const externalSocialNetworkSchema = z.object({
   network: z.string().nullable().optional(),
   value: z.string().nullable().optional(),
 })
+
+export const externalAssociatedMemberSocialSchema = externalSocialNetworkSchema
 
 export const externalAssociatedMemberSchema = z.object({
   order: z.coerce.number().int().default(0),
@@ -215,6 +302,8 @@ export const externalAssociatedMembersResponseSchema = z.object({
   generated_at: z.string().nullable().optional(),
 })
 
+export const externalAssociatedMembersCountResponseSchema = z.coerce.number().int().min(0)
+
 export const externalAssetQuerySchema = z.object({
   src: z.string().trim().min(1),
 })
@@ -225,16 +314,21 @@ export const externalAssetPublicPathParamSchema = z.object({
     .trim()
     .min(1)
     .max(2048)
-    .regex(/^[A-Za-z0-9%/:._-]+$/),
+    .regex(/^[A-Za-z0-9%/:._-]+$/)
+    .refine((value) => {
+      try {
+        const decoded = decodeURIComponent(value)
+        return !decoded.includes('..') && !decoded.includes('\\')
+      } catch {
+        return false
+      }
+    }, 'La ruta contiene caracteres no permitidos'),
 })
 
 export const membersLogoQuerySchema = externalAssetQuerySchema
 
 // External sectorial members API schemas
-export const externalSectorialMemberSocialSchema = z.object({
-  network: z.string().nullable().optional(),
-  value: z.string().nullable().optional(),
-})
+export const externalSectorialMemberSocialSchema = externalSocialNetworkSchema
 
 export const externalSectorialMemberSchema = z.object({
   order: z.coerce.number().int().default(0),
@@ -252,10 +346,7 @@ export const externalSectorialMembersResponseSchema = z.object({
 })
 
 // External organigrama (org chart) API schemas
-export const externalOrganigramaMemberSocialSchema = z.object({
-  network: z.string().nullable().optional(),
-  value: z.string().nullable().optional(),
-})
+export const externalOrganigramaMemberSocialSchema = externalSocialNetworkSchema
 
 export const externalOrganigramaMemberSchema = z.object({
   order: z.coerce.number().int().default(0),
@@ -338,10 +429,7 @@ export const externalMandateDetailResponseSchema = z.object({
 })
 
 // External committees API schemas
-export const externalCommitteeMemberSocialSchema = z.object({
-  network: z.string().nullable().optional(),
-  value: z.string().nullable().optional(),
-})
+export const externalCommitteeMemberSocialSchema = externalSocialNetworkSchema
 
 export const externalCommitteeMemberSchema = z.object({
   order: z.coerce.number().int().default(0),
@@ -471,6 +559,10 @@ export const policyDocumentFileNameParamSchema = z.object({
     .regex(/^[A-Za-z0-9%._-]+$/),
 })
 
+export const policyDocumentTypeRouteParamSchema = z.object({
+  type: policyDocumentRouteTypeSchema,
+})
+
 // Media Outlet schemas
 export const createMediaOutletSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -481,6 +573,51 @@ export const createMediaOutletSchema = z.object({
 
 export const updateMediaOutletSchema = createMediaOutletSchema
 
+// About page schemas
+export const updateAboutPageContentSchema = z.object({
+  heroImage: z.string().min(1, 'La imagen es requerida').nullable(),
+  heroVisible: z.boolean().default(false),
+})
+
+// Equality Document schemas
+export const equalityDocumentTranslationSchema = z.object({
+  locale: localeSchema,
+  title: z.string(),
+  description: z.string(),
+  meta: z.string().optional().nullable(),
+})
+
+export const createEqualityDocumentSchema = z
+  .object({
+    pdfUrl: z.string().min(1, 'El PDF es requerido'),
+    order: z.number().int().min(0).default(0),
+    active: z.boolean().default(true),
+    translations: z
+      .array(equalityDocumentTranslationSchema)
+      .min(1, 'Se requiere al menos una traducción'),
+  })
+  .superRefine((data, ctx) => {
+    const requiredTranslation = getRequiredTranslation(data.translations)
+
+    if (!requiredTranslation?.title?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El título en español es obligatorio',
+        path: ['translations'],
+      })
+    }
+
+    if (!requiredTranslation?.description?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La descripción en español es obligatoria',
+        path: ['translations'],
+      })
+    }
+  })
+
+export const updateEqualityDocumentSchema = createEqualityDocumentSchema
+
 // Financial Report schemas
 export const financialReportTranslationSchema = z.object({
   locale: localeSchema,
@@ -490,7 +627,7 @@ export const financialReportTranslationSchema = z.object({
 export const createFinancialReportSchema = z
   .object({
     pdfUrl: z.string().min(1, 'El PDF es requerido'),
-    approvedAt: z.string().datetime('La fecha de aprobación no es válida'),
+    approvedAt: dateOnlySchema,
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
     translations: z
@@ -498,9 +635,9 @@ export const createFinancialReportSchema = z
       .min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
-    const esTranslation = data.translations.find((translation) => translation.locale === 'es')
+    const requiredTranslation = getRequiredTranslation(data.translations)
 
-    if (!esTranslation?.title?.trim()) {
+    if (!requiredTranslation?.title?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'El título en español es obligatorio',
@@ -511,9 +648,12 @@ export const createFinancialReportSchema = z
 
 export const updateFinancialReportSchema = createFinancialReportSchema
 
-// Newsletter schemas
+export const updatePressDossierSchema = z.object({
+  pdfUrl: z.string().min(1, 'El PDF es requerido').nullable(),
+  active: z.boolean().default(false),
+})
+
 export const createNewsletterSchema = z.object({
-  /** ISO date string for the first day of the month this newsletter covers */
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
   coverImage: z.string().min(1, 'La imagen de portada es requerida'),
   pdfUrl: z.string().min(1, 'El PDF es requerido'),
@@ -522,13 +662,11 @@ export const createNewsletterSchema = z.object({
 
 export const updateNewsletterSchema = createNewsletterSchema
 
-// Newsletter subscriber schemas (admin)
 export const updateSubscriberSchema = z.object({
   email: z.string().email('El email no es válido'),
   active: z.boolean(),
 })
 
-// Admin access schemas
 export const createAdminAccessSchema = z.object({
   email: z
     .string()
@@ -541,13 +679,12 @@ export const updateAdminAccessSchema = z.object({
   active: z.boolean(),
 })
 
-// Newsletter subscription schema (public endpoint)
 export const newsletterSubscribeSchema = z
   .object({
     email: z.string().email().max(254),
     consent: z.boolean(),
     ageConfirmed: z.boolean(),
-    website: z.string().optional(), // Honeypot
+    website: z.string().max(256).optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.consent) {
@@ -567,19 +704,26 @@ export const newsletterSubscribeSchema = z
     }
   })
 
-// Contact form schema (public endpoint)
 export const contactFormSchema = z
   .object({
     contactType: z.enum(['general', 'press']).default('general'),
-    name: z.string().min(2).max(100),
-    email: z.string().email().max(254),
-    phone: z.string().max(30).optional(), // Required for press, optional otherwise
-    mediaName: z.string().max(200).optional(), // Required for press
-    subject: z.string().min(3).max(200),
-    message: z.string().min(10).max(5000),
-    website: z.string().optional(), // Honeypot field — should always be empty
+    name: z.string().min(CONTACT_FIELD_LIMITS.name.min).max(CONTACT_FIELD_LIMITS.name.max),
+    email: z.string().email().max(CONTACT_FIELD_LIMITS.emailMax),
+    phone: z.string().max(CONTACT_FIELD_LIMITS.phoneMax).optional(),
+    mediaName: z.string().max(CONTACT_FIELD_LIMITS.mediaNameMax).optional(),
+    subject: z.string().min(CONTACT_FIELD_LIMITS.subject.min).max(CONTACT_FIELD_LIMITS.subject.max),
+    message: z.string().min(CONTACT_FIELD_LIMITS.message.min).max(CONTACT_FIELD_LIMITS.message.max),
+    website: z.string().max(256).optional(),
   })
   .superRefine((data, ctx) => {
+    if (!isValidOptionalContactPhone(data.phone)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El teléfono no es válido',
+        path: ['phone'],
+      })
+    }
+
     if (data.contactType === 'press') {
       if (!data.mediaName || data.mediaName.trim().length === 0) {
         ctx.addIssue({
@@ -591,14 +735,88 @@ export const contactFormSchema = z
     }
   })
 
-// Helper function to validate and parse body
-export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): T {
-  const result = schema.safeParse(body)
+export const adminUploadKindSchema = z.object({
+  kind: z.enum(['carousel', 'featured_link']),
+})
+
+const multipartFileSchema = z.object({
+  data: z.instanceof(Uint8Array),
+  filename: z.string().trim().min(1),
+})
+
+function formatValidationError(error: z.ZodError) {
+  return error.issues
+    .map((issue: z.core.$ZodIssue) => `${issue.path.join('.')}: ${issue.message}`)
+    .join(', ')
+}
+
+function validateSchema<T>(schema: z.ZodSchema<T>, input: unknown): T {
+  const result = schema.safeParse(input)
+
   if (!result.success) {
-    const errors = result.error.issues
-      .map((e: z.core.$ZodIssue) => `${e.path.join('.')}: ${e.message}`)
-      .join(', ')
-    throw new Error(`Validation error: ${errors}`)
+    throw createError({
+      statusCode: 400,
+      message: formatValidationError(result.error),
+    })
   }
+
   return result.data
+}
+
+export function validateInput<T>(schema: z.ZodSchema<T>, input: unknown): T {
+  return validateSchema(schema, input)
+}
+
+export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): T {
+  return validateInput(schema, body)
+}
+
+export function validateQuery<T>(event: H3Event, schema: z.ZodSchema<T>): T {
+  return validateInput(schema, getQuery(event))
+}
+
+export function validateRouteParams<T extends z.ZodRawShape>(
+  event: H3Event,
+  schema: z.ZodObject<T>
+): z.infer<z.ZodObject<T>> {
+  const params = Object.fromEntries(
+    Object.keys(schema.shape).map((key) => [key, getRouterParam(event, key)])
+  )
+
+  return validateInput(schema, params)
+}
+
+export function validateMultipartFile(
+  formData: MultiPartData[] | undefined,
+  fieldName = 'file'
+): z.infer<typeof multipartFileSchema> {
+  if (!formData?.length) {
+    throw createError({ statusCode: 400, message: 'No se ha enviado ningún archivo' })
+  }
+
+  const file = formData.find((entry) => entry.name === fieldName)
+  if (!file) {
+    throw createError({ statusCode: 400, message: 'Archivo no válido' })
+  }
+
+  const parsedFile = multipartFileSchema.safeParse({
+    data: file.data,
+    filename: file.filename,
+  })
+
+  if (!parsedFile.success) {
+    throw createError({ statusCode: 400, message: 'Archivo no válido' })
+  }
+
+  return parsedFile.data
+}
+
+export function getMultipartTextField(
+  formData: MultiPartData[] | undefined,
+  fieldName: string
+): string | undefined {
+  const field = formData?.find((entry) => entry.name === fieldName)
+  const value = field?.data?.toString('utf8').trim()
+
+  return value ? value : undefined
 }

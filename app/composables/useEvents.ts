@@ -1,7 +1,3 @@
-/**
- * Composable for fetching and managing CREUP events data.
- */
-
 export interface EventBanner {
   url: string | null
 }
@@ -47,21 +43,26 @@ interface EventsResponse {
   generatedAt: string | null
 }
 
+interface EventDetailResponse {
+  event: CREUPEvent
+  generatedAt: string | null
+}
+
 export function useEvents() {
+  const { locale } = useI18n()
+  const { getLanguageTag } = useLocales()
   const { data, error, status } = useFetch<EventsResponse>('/api/eventos')
 
   const events = computed(() => data.value?.events ?? [])
 
-  /** Unique, non-null event types for filter UI */
   const eventTypes = computed(() => {
     const types = new Set<string>()
     for (const event of events.value) {
       if (event.type) types.add(event.type)
     }
-    return Array.from(types).sort((a, b) => a.localeCompare(b, 'es'))
+    return Array.from(types).sort((a, b) => a.localeCompare(b, getLanguageTag(locale.value)))
   })
 
-  /** Find a single event by slug */
   const findBySlug = (slug: string) =>
     computed(() => events.value.find((e) => e.slug === slug) ?? null)
 
@@ -72,4 +73,17 @@ export function useEvents() {
     status,
     findBySlug,
   }
+}
+
+export function useEvent(slug: Ref<string> | string) {
+  const slugRef = typeof slug === 'string' ? ref(slug) : slug
+  const key = computed(() => `event-${slugRef.value}`)
+
+  return useAsyncData<EventDetailResponse>(
+    key,
+    () => $fetch<EventDetailResponse>(`/api/eventos/${slugRef.value}`),
+    {
+      watch: [slugRef],
+    }
+  )
 }

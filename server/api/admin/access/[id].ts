@@ -3,17 +3,17 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
 import { assertAdminAccessCanBeRevoked, getAdminAccessById } from '../../../utils/adminAccess'
-import { requireAuth } from '../../../utils/requireAuth'
-import { updateAdminAccessSchema, validateBody } from '../../../utils/validation'
+import {
+  idRouteParamSchema,
+  updateAdminAccessSchema,
+  validateBody,
+  validateRouteParams,
+} from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, message: 'ID requerido' })
-  }
+  const { id } = validateRouteParams(event, idRouteParamSchema)
 
   if (event.method === 'PATCH') {
-    await requireAuth(event)
     const body = await readBody(event)
 
     try {
@@ -48,7 +48,6 @@ export default defineEventHandler(async (event) => {
   }
 
   if (event.method === 'DELETE') {
-    await requireAuth(event)
     const entry = await getAdminAccessById(id)
 
     if (!entry) {

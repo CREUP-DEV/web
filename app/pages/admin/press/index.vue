@@ -1,19 +1,8 @@
 <script setup lang="ts">
-/**
- * Admin Press Articles List
- * Improved list view with tab filtering, search, and item cards.
- * Create/edit actions navigate to dedicated pages instead of opening modals.
- */
 definePageMeta({
   layout: 'admin',
 })
 
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
-
-// Types
 type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
 
 interface Translation {
@@ -63,6 +52,8 @@ interface PressArticle {
 }
 
 const toast = useToast()
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
+const { getDefaultTranslationValue } = useLocales()
 
 // Current type tab
 const currentType = ref<PressArticleType | null>(null)
@@ -86,6 +77,12 @@ const typeUrlPrefix: Record<PressArticleType, string> = {
   press_release: '/prensa/notas-prensa',
   statement: '/prensa/comunicados',
   media_appearance: '/prensa/en-los-medios',
+}
+
+const createPathByType: Record<PressArticleType, string> = {
+  press_release: '/admin/press/create?type=press_release',
+  statement: '/admin/press/create?type=statement',
+  media_appearance: '/admin/press/create?type=media_appearance',
 }
 
 // Fetch all data
@@ -129,25 +126,26 @@ const hasMeaningfulHtmlContent = (value: string | null | undefined) =>
     .trim().length > 0
 
 const getTagName = (tag: Tag) => {
-  const esTranslation = tag.translations.find((t: TagTranslation) => t.locale === 'es')
-  return esTranslation?.name ?? tag.slug
+  return getDefaultTranslationValue(tag.translations, 'name') ?? tag.slug
 }
 
 const getItemTitle = (item: PressArticle) => {
-  const esTranslation = item.translations.find((t: Translation) => t.locale === 'es')
-  return esTranslation?.title ?? item.translations[0]?.title ?? ''
+  return getDefaultTranslationValue(item.translations, 'title') ?? item.translations[0]?.title ?? ''
 }
 
 const getItemDescription = (item: PressArticle) => {
-  const esTranslation = item.translations.find((t: Translation) => t.locale === 'es')
-  return esTranslation?.description ?? item.translations[0]?.description ?? ''
+  return (
+    getDefaultTranslationValue(item.translations, 'description') ??
+    item.translations[0]?.description ??
+    ''
+  )
 }
 
 const hasItemContent = (item: PressArticle) =>
   item.translations.some((translation) => hasMeaningfulHtmlContent(translation.contentHtml))
 
 const formatDate = (iso: string) => {
-  return new Date(iso).toLocaleDateString('es-ES', {
+  return formatLocaleDate(iso, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -199,19 +197,51 @@ const activeTab = computed({
     currentType.value = val === 'all' ? null : (val as PressArticleType)
   },
 })
+
+const emptyStateCreatePath = computed(() =>
+  currentType.value ? createPathByType[currentType.value] : createPathByType.press_release
+)
 </script>
 
 <template>
   <div>
-    <!-- Header -->
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-2xl font-bold">Artículos de prensa</h1>
-      <UButton to="/admin/press/create" icon="i-tabler-plus"> Nuevo artículo </UButton>
+    <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Artículos de prensa</h1>
+        <p class="text-muted mt-1 text-sm">
+          Crea nuevas piezas con el tipo ya preparado para reducir pasos en el flujo diario.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <UButton
+          to="/admin/press/create?type=press_release"
+          icon="i-tabler-writing-sign"
+          variant="outline"
+          color="neutral"
+        >
+          Nueva nota de prensa
+        </UButton>
+        <UButton
+          to="/admin/press/create?type=statement"
+          icon="i-tabler-speakerphone"
+          variant="outline"
+          color="neutral"
+        >
+          Nuevo comunicado
+        </UButton>
+        <UButton
+          to="/admin/press/create?type=media_appearance"
+          icon="i-tabler-broadcast"
+          variant="outline"
+          color="neutral"
+        >
+          Añadir aparición
+        </UButton>
+      </div>
     </div>
 
-    <!-- Filters bar -->
     <div class="mb-6 space-y-4">
-      <!-- Type tabs -->
       <div class="flex gap-2 overflow-x-auto">
         <UButton
           v-for="tab in tabItems"
@@ -233,7 +263,6 @@ const activeTab = computed({
         </UButton>
       </div>
 
-      <!-- Search -->
       <UInput
         v-model="searchQuery"
         icon="i-tabler-search"
@@ -242,7 +271,6 @@ const activeTab = computed({
       />
     </div>
 
-    <!-- Articles list -->
     <div class="space-y-3">
       <article
         v-for="item in items"
@@ -253,18 +281,15 @@ const activeTab = computed({
           :to="`/admin/press/${item.id}`"
           class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
         >
-          <!-- Thumbnail -->
           <div class="shrink-0">
-            <NuxtImg
+            <img
               :src="item.image"
               :alt="getItemTitle(item)"
-              width="192"
-              height="108"
               class="h-24 w-full rounded-lg object-cover sm:w-40"
+              loading="lazy"
             />
           </div>
 
-          <!-- Content -->
           <div class="min-w-0 flex-1">
             <div class="mb-1 flex items-start gap-2">
               <h3 class="group-hover:text-primary truncate text-base font-semibold">
@@ -277,49 +302,41 @@ const activeTab = computed({
             </p>
 
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-              <!-- Date -->
               <span class="text-muted flex items-center gap-1 text-xs">
                 <UIcon name="i-tabler-calendar" class="size-3.5" />
                 {{ formatDate(item.publishedAt) }}
               </span>
 
-              <!-- Type badge -->
               <UBadge variant="subtle" size="sm">
                 <UIcon :name="typeIcons[item.type]" class="mr-1 size-3" />
                 {{ typeLabels[item.type] }}
               </UBadge>
 
-              <!-- Status -->
               <UBadge :color="item.active ? 'success' : 'neutral'" variant="subtle" size="sm">
                 {{ item.active ? 'Activo' : 'Inactivo' }}
               </UBadge>
 
-              <!-- PDF indicator -->
               <UBadge v-if="item.pdfUrl" variant="subtle" color="warning" size="sm">
                 <UIcon name="i-tabler-file-type-pdf" class="mr-0.5 size-3" />
                 PDF
               </UBadge>
 
-              <!-- Text content indicator -->
               <UBadge v-if="hasItemContent(item)" variant="subtle" color="info" size="sm">
                 <UIcon name="i-tabler-file-text" class="mr-0.5 size-3" />
                 Texto
               </UBadge>
 
-              <!-- Media outlet -->
               <UBadge v-if="item.mediaOutlet" variant="subtle" size="sm">
                 <UIcon name="i-tabler-broadcast" class="mr-0.5 size-3" />
                 {{ item.mediaOutlet.name }}
               </UBadge>
 
-              <!-- Tags -->
               <UBadge v-for="pressTag in item.tags" :key="pressTag.id" variant="outline" size="sm">
                 {{ getTagName(pressTag.tag) }}
               </UBadge>
             </div>
           </div>
 
-          <!-- Actions (stop propagation to prevent navigation) -->
           <div
             class="flex shrink-0 items-center gap-1 self-start sm:self-center"
             @click.prevent.stop
@@ -354,7 +371,6 @@ const activeTab = computed({
         </NuxtLink>
       </article>
 
-      <!-- Empty states -->
       <div v-if="!items.length && searchQuery.trim()" class="py-16 text-center">
         <UIcon name="i-tabler-search-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />
         <p class="text-muted text-sm">No se encontraron artículos para "{{ searchQuery }}"</p>
@@ -369,13 +385,12 @@ const activeTab = computed({
           No hay
           {{ currentType ? typeLabels[currentType].toLowerCase() : 'artículos de prensa' }} todavía
         </p>
-        <UButton to="/admin/press/create" icon="i-tabler-plus" size="sm">
+        <UButton :to="emptyStateCreatePath" icon="i-tabler-plus" size="sm">
           Crear primer artículo
         </UButton>
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">

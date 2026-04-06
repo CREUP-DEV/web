@@ -2,18 +2,23 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
-import { requireAuth } from '../../../utils/requireAuth'
-import { updateMediaOutletSchema, validateBody } from '../../../utils/validation'
+import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import {
+  idRouteParamSchema,
+  updateMediaOutletSchema,
+  validateBody,
+  validateRouteParams,
+} from '../../../utils/validation'
+import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+
+const LOGO_UPLOAD_DIR = 'public/prensa/imagenes/medios'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, message: 'ID requerido' })
-  }
+  const { id } = validateRouteParams(event, idRouteParamSchema)
 
   // GET - Get single media outlet
   if (event.method === 'GET') {
-    await requireAuth(event)
     const item = await db.query.mediaOutlets.findFirst({
       where: eq(mediaOutlets.id, id),
     })
@@ -27,18 +32,34 @@ export default defineEventHandler(async (event) => {
 
   // PUT - Update media outlet
   if (event.method === 'PUT') {
-    await requireAuth(event)
     const body = await readBody(event)
 
     try {
+      const existingItem = await db.query.mediaOutlets.findFirst({
+        where: eq(mediaOutlets.id, id),
+      })
+
+      if (!existingItem) {
+        throw createError({ statusCode: 404, message: 'No encontrado' })
+      }
+
       const validated = validateBody(updateMediaOutletSchema, body)
+      const previousLogo = existingItem.logo
+      const logo = await finalizeAdminImage({
+        storagePath: validated.logo,
+        uploadDir: LOGO_UPLOAD_DIR,
+        publicPath: PRESS_MEDIA_LOGO_PUBLIC_PATH,
+        slug: validated.name,
+        fallbackBaseName: 'medio',
+        replaceStoragePath: existingItem.logo,
+      })
 
       await db
         .update(mediaOutlets)
         .set({
           name: validated.name,
           website: validated.website,
-          logo: validated.logo,
+          logo,
           order: validated.order,
         })
         .where(eq(mediaOutlets.id, id))
@@ -47,8 +68,19 @@ export default defineEventHandler(async (event) => {
         where: eq(mediaOutlets.id, id),
       })
 
+      if (previousLogo !== logo) {
+        await cleanupUnusedAdminAsset({
+          storagePath: previousLogo,
+          allowedPublicPathPrefixes: [PRESS_MEDIA_LOGO_PUBLIC_PATH],
+        })
+      }
+
       return { item }
     } catch (e) {
+      if (typeof e === 'object' && e !== null && 'statusCode' in e) {
+        throw e
+      }
+
       throw createError({
         statusCode: 400,
         message: e instanceof Error ? e.message : 'Error de validación',
@@ -58,9 +90,20 @@ export default defineEventHandler(async (event) => {
 
   // DELETE - Delete media outlet
   if (event.method === 'DELETE') {
-    await requireAuth(event)
+    const existingItem = await db.query.mediaOutlets.findFirst({
+      where: eq(mediaOutlets.id, id),
+    })
+
+    if (!existingItem) {
+      throw createError({ statusCode: 404, message: 'No encontrado' })
+    }
 
     await db.delete(mediaOutlets).where(eq(mediaOutlets.id, id))
+
+    await cleanupUnusedAdminAsset({
+      storagePath: existingItem.logo,
+      allowedPublicPathPrefixes: [PRESS_MEDIA_LOGO_PUBLIC_PATH],
+    })
 
     return { success: true }
   }

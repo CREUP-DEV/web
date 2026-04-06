@@ -11,6 +11,9 @@ export function useTags() {
   const { locale } = useI18n()
 
   return useAsyncData<TagsResponse>('tags', () => $fetch<TagsResponse>('/api/tags'), {
+    default: () => ({
+      tags: [],
+    }),
     watch: [locale],
   })
 }

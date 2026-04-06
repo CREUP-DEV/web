@@ -1,17 +1,12 @@
 <script setup lang="ts">
-/**
- * Admin Financial Reports Management
- * CRUD for financial reports with localized titles and PDF upload.
- */
 import { CalendarDate } from '@internationalized/date'
-import type { LocaleConfig } from '~/composables/useLocales'
+import {
+  calendarDateLikeToDateOnly,
+  dateValueToDateOnly,
+  parseDateOnlyString,
+} from '~~/shared/utils/date'
 
 definePageMeta({ layout: 'admin' })
-
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
 
 interface FinancialReportTranslation {
   locale: string
@@ -29,7 +24,15 @@ interface FinancialReport {
 }
 
 const toast = useToast()
-const { localeConfigs, getLocaleFlag, getLocaleName, filterNonEmptyTranslations } = useLocales()
+const {
+  getDefaultTranslationValue,
+  getLocaleFlag,
+  getLocaleName,
+  isDefaultLocale,
+  filterNonEmptyTranslations,
+  createEmptyTranslations,
+  mapTranslationsToForm,
+} = useLocales()
 
 const { data, refresh } = await useFetch<{ items: FinancialReport[] }>(
   '/api/admin/financial-reports'
@@ -47,58 +50,58 @@ const isDeleting = ref(false)
 const pdfInputRef = ref<HTMLInputElement | null>(null)
 const pdfName = ref<string | null>(null)
 const isUploadingPdf = ref(false)
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 const today = new Date()
 const approvedAt = shallowRef(
   new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
 )
 
-const createEmptyTranslations = () =>
-  localeConfigs.value.map((locale: LocaleConfig) => ({
-    locale: locale.code,
+const createEmptyTranslationSet = () =>
+  createEmptyTranslations<FinancialReportTranslation>({
     title: '',
-  }))
+  })
 
 const form = reactive({
   pdfUrl: '',
   order: 0,
   active: true,
-  translations: createEmptyTranslations(),
+  translations: createEmptyTranslationSet(),
 })
 
-const calendarDateToISO = (date: CalendarDate): string =>
-  new Date(date.year, date.month - 1, date.day).toISOString()
+const calendarDateToDateOnly = (date: CalendarDate) => calendarDateLikeToDateOnly(date)
 
-const isoToCalendarDate = (iso: string): CalendarDate => {
-  const date = new Date(iso)
-  return new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
+const valueToCalendarDate = (value: string): CalendarDate => {
+  const normalizedDate = parseDateOnlyString(dateValueToDateOnly(value))
+
+  if (!normalizedDate) {
+    return new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+  }
+
+  return new CalendarDate(normalizedDate.year, normalizedDate.month, normalizedDate.day)
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', {
+  return formatLocaleDate(iso, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 }
 
-function getSpanishTitle(translations: FinancialReportTranslation[]) {
-  return translations.find((translation) => translation.locale === 'es')?.title.trim() ?? ''
+function getRequiredTitle(translations: FinancialReportTranslation[]) {
+  return getDefaultTranslationValue(translations, 'title')?.trim() ?? ''
 }
 
 function getReportTitle(item: FinancialReport | null) {
   if (!item) return ''
 
-  return (
-    item.translations.find((translation) => translation.locale === 'es')?.title ||
-    item.translations[0]?.title ||
-    ''
-  )
+  return getDefaultTranslationValue(item.translations, 'title') || item.translations[0]?.title || ''
 }
 
 function getAdditionalTranslationCount(item: FinancialReport) {
   return item.translations.filter(
-    (translation) => translation.locale !== 'es' && translation.title.trim()
+    (translation) => !isDefaultLocale(translation.locale) && translation.title.trim()
   ).length
 }
 
@@ -113,7 +116,7 @@ const openCreate = () => {
   form.pdfUrl = ''
   form.order = items.value.length
   form.active = true
-  form.translations = createEmptyTranslations()
+  form.translations = createEmptyTranslationSet()
   pdfName.value = null
   approvedAt.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
   showModal.value = true
@@ -124,20 +127,16 @@ const openEdit = (item: FinancialReport) => {
   form.pdfUrl = item.pdfUrl
   form.order = item.order
   form.active = item.active
-  form.translations = localeConfigs.value.map((locale: LocaleConfig) => {
-    const existing = item.translations.find((translation) => translation.locale === locale.code)
-    return {
-      locale: locale.code,
-      title: existing?.title ?? '',
-    }
-  })
+  form.translations = mapTranslationsToForm(item.translations, {
+    title: '',
+  }) as FinancialReportTranslation[]
   pdfName.value = item.pdfUrl.split('/').pop() ?? null
-  approvedAt.value = isoToCalendarDate(item.approvedAt)
+  approvedAt.value = valueToCalendarDate(item.approvedAt)
   showModal.value = true
 }
 
 const handleSubmit = async () => {
-  if (!getSpanishTitle(form.translations)) {
+  if (!getRequiredTitle(form.translations)) {
     toast.add({ title: 'El título en español es obligatorio', color: 'error' })
     return
   }
@@ -153,7 +152,7 @@ const handleSubmit = async () => {
       pdfUrl: form.pdfUrl,
       order: form.order,
       active: form.active,
-      approvedAt: calendarDateToISO(approvedAt.value),
+      approvedAt: calendarDateToDateOnly(approvedAt.value),
       translations: filterNonEmptyTranslations(form.translations, 'title'),
     }
 
@@ -218,8 +217,6 @@ const handlePdfSelect = async (event: Event) => {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('title', getSpanishTitle(form.translations))
-    formData.append('approvedAt', calendarDateToISO(approvedAt.value))
 
     const result = await $fetch<{ path: string; storagePath: string }>(
       '/api/admin/financial-reports/upload',
@@ -265,29 +262,42 @@ const handlePdfSelect = async (event: Event) => {
 
     <div v-else class="space-y-3">
       <UCard v-for="item in items" :key="item.id">
-        <div class="flex items-center gap-4">
-          <UIcon name="i-tabler-file-type-pdf" class="text-primary size-8 shrink-0" />
+        <div class="flex flex-col gap-4 md:flex-row md:items-center">
+          <div class="flex min-w-0 flex-1 items-center gap-4">
+            <UIcon name="i-tabler-file-type-pdf" class="text-primary size-8 shrink-0" />
 
-          <div class="min-w-0 flex-1">
-            <p class="truncate font-medium">{{ getReportTitle(item) }}</p>
-            <div class="mt-1 flex flex-wrap items-center gap-2">
-              <p class="text-muted text-sm">Aprobado el {{ formatDate(item.approvedAt) }}</p>
-              <UBadge
-                v-if="getAdditionalTranslationCount(item) > 0"
-                color="info"
-                variant="subtle"
-                size="sm"
-              >
-                {{ getAdditionalTranslationLabel(item) }}
-              </UBadge>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="truncate font-medium">{{ getReportTitle(item) }}</p>
+                <UBadge :color="item.active ? 'success' : 'neutral'" variant="subtle" size="sm">
+                  {{ item.active ? 'Activo' : 'Inactivo' }}
+                </UBadge>
+              </div>
+              <div class="mt-1 flex flex-wrap items-center gap-2">
+                <p class="text-muted text-sm">Aprobado el {{ formatDate(item.approvedAt) }}</p>
+                <UBadge
+                  v-if="getAdditionalTranslationCount(item) > 0"
+                  color="info"
+                  variant="subtle"
+                  size="sm"
+                >
+                  {{ getAdditionalTranslationLabel(item) }}
+                </UBadge>
+              </div>
             </div>
           </div>
 
-          <UBadge :color="item.active ? 'success' : 'neutral'" variant="subtle" size="sm">
-            {{ item.active ? 'Activo' : 'Inactivo' }}
-          </UBadge>
-
-          <div class="flex gap-1">
+          <div class="flex flex-wrap items-center gap-2 md:justify-end">
+            <UButton
+              :href="item.pdfUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="outline"
+              icon="i-tabler-external-link"
+              size="sm"
+            >
+              Ver PDF
+            </UButton>
             <UButton
               variant="ghost"
               icon="i-tabler-edit"
@@ -329,7 +339,7 @@ const handlePdfSelect = async (event: Event) => {
                   <UIcon :name="getLocaleFlag(translation.locale)" class="size-5" />
                   <span>{{ getLocaleName(translation.locale) }}</span>
                   <UBadge
-                    v-if="translation.locale === 'es'"
+                    v-if="isDefaultLocale(translation.locale)"
                     color="primary"
                     variant="subtle"
                     size="sm"
@@ -339,12 +349,12 @@ const handlePdfSelect = async (event: Event) => {
                   <span v-else class="text-muted text-xs">(opcional)</span>
                 </div>
 
-                <UFormField :label="translation.locale === 'es' ? 'Título *' : 'Título'">
+                <UFormField :label="isDefaultLocale(translation.locale) ? 'Título *' : 'Título'">
                   <UInput
                     v-model="translation.title"
                     class="w-full"
                     :placeholder="
-                      translation.locale === 'es'
+                      isDefaultLocale(translation.locale)
                         ? 'Informe Económico de...'
                         : 'Economic Report for...'
                     "

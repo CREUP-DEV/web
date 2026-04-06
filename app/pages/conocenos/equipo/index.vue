@@ -1,42 +1,22 @@
 <script setup lang="ts">
-/**
- * Team Page
- * Displays team members grouped by hierarchy or by area,
- * with data sourced from the external organigrama API.
- */
 import type { CalendarEvent } from '@/composables/useGoogleCalendar'
-import { useAutoAnimate } from '@formkit/auto-animate/vue'
+import { collectUpcomingCalendarSeries } from '@/composables/useCalendarEventSeries'
+import { socialNetworkIcons, type SocialNetworkEntry } from '~~/shared/utils/social'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const { t, locale } = useI18n()
+const { fallbackLocale } = useLocales()
+const { copyToClipboard } = useCopyToClipboard()
+const {
+  getDisplayName: getMemberDisplayName,
+  getContactEmail,
+  getSocialButtons,
+  getCopyEmailAriaLabel,
+} = usePersonHelpers()
 
-useSeoMeta({
-  title: () => t('team.title'),
-  description: () => t('team.description'),
-  ogTitle: () => t('team.title'),
-  ogDescription: () => t('team.description'),
-})
+usePageSeo('team.title', 'team.description')
 
-// ============================================================================
-// Types
-// ============================================================================
-
-type SupportedSocialNetwork =
-  | 'website'
-  | 'email'
-  | 'instagram'
-  | 'twitter'
-  | 'tiktok'
-  | 'bluesky'
-  | 'linkedin'
-  | 'telegram'
-  | 'discord'
-  | 'facebook'
-  | 'github'
-
-interface SocialNetwork {
-  network: SupportedSocialNetwork
-  value: string
-}
+type SocialNetwork = SocialNetworkEntry
 
 interface OrgMember {
   order: number
@@ -64,39 +44,23 @@ interface OrgResponse {
   areas: OrgArea[]
   generatedAt?: string | null
 }
-
-// Enriched member type used throughout the page
 interface EnrichedMember extends OrgMember {
   areaName: string
   areaId: number
   isLeader: boolean
 }
 
-// ============================================================================
-// Data fetching
-// ============================================================================
-
 const { data, error } = await useFetch<OrgResponse>('/api/organigrama')
 
 const areas = computed(() => data.value?.areas ?? [])
 
 const getAreaName = (area: OrgArea) =>
-  area.nameTranslations?.[locale.value] ?? area.nameTranslations?.es ?? area.name
-
-// ============================================================================
-// Tab state
-// ============================================================================
+  pickLocalizedValue(area.nameTranslations ?? {}, locale.value, fallbackLocale) ?? area.name
 
 type ViewMode = 'hierarchy' | 'area'
 const viewMode = ref<ViewMode>('hierarchy')
+const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
 
-const [contentRef] = useAutoAnimate()
-
-// ============================================================================
-// Hierarchy view: split into executive / extended
-// ============================================================================
-
-/** First member of each area = area leader → Comisión Ejecutiva */
 const executiveMembers = computed<EnrichedMember[]>(() => {
   return areas.value
     .filter((area: OrgArea) => area.members.length > 0)
@@ -108,7 +72,6 @@ const executiveMembers = computed<EnrichedMember[]>(() => {
     }))
 })
 
-/** All non-first members across all areas → Comisión Ejecutiva Ampliada */
 const extendedMembers = computed<EnrichedMember[]>(() => {
   const result: EnrichedMember[] = []
   for (const area of areas.value) {
@@ -124,95 +87,17 @@ const extendedMembers = computed<EnrichedMember[]>(() => {
   return result
 })
 
-// ============================================================================
-// Social network helpers
-// ============================================================================
-
-const networkIcons: Record<SupportedSocialNetwork, string> = {
-  website: 'i-tabler-world',
-  email: 'i-tabler-mail',
-  instagram: 'i-tabler-brand-instagram',
-  twitter: 'i-tabler-brand-x',
-  tiktok: 'i-tabler-brand-tiktok',
-  bluesky: 'i-tabler-brand-bluesky',
-  linkedin: 'i-tabler-brand-linkedin',
-  telegram: 'i-tabler-brand-telegram',
-  discord: 'i-tabler-brand-discord',
-  facebook: 'i-tabler-brand-facebook',
-  github: 'i-tabler-brand-github',
-}
-
-const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value)
-const cleanHandle = (value: string) => value.trim().replace(/^@/, '')
-
-const buildSocialUrl = (network: SupportedSocialNetwork, rawValue: string) => {
-  const value = rawValue.trim()
-  if (!value) return null
-
-  if (network === 'email') {
-    return value.startsWith('mailto:') ? value : `mailto:${value}`
-  }
-
-  if (isAbsoluteUrl(value)) return value
-
-  switch (network) {
-    case 'website':
-      return `https://${value}`
-    case 'instagram':
-      return `https://instagram.com/${cleanHandle(value)}`
-    case 'twitter':
-      return `https://x.com/${cleanHandle(value)}`
-    case 'tiktok':
-      return `https://www.tiktok.com/@${cleanHandle(value)}`
-    case 'bluesky':
-      return `https://bsky.app/profile/${cleanHandle(value)}`
-    case 'linkedin':
-      return `https://www.linkedin.com/${value.replace(/^\/+/, '')}`
-    case 'telegram':
-      return `https://t.me/${cleanHandle(value)}`
-    case 'discord':
-      return `https://discord.gg/${cleanHandle(value)}`
-    case 'facebook':
-      return `https://facebook.com/${cleanHandle(value)}`
-    case 'github':
-      return `https://github.com/${cleanHandle(value)}`
-    default:
-      return null
-  }
-}
-
-interface SocialButton {
-  network: Exclude<SupportedSocialNetwork, 'website' | 'email'>
-  href: string
-}
-
-const getSocialButtons = (member: OrgMember): SocialButton[] => {
-  return member.socialNetworks.flatMap((sn) => {
-    if (sn.network === 'website' || sn.network === 'email') return []
-    const href = buildSocialUrl(sn.network, sn.value)
-    if (!href) return []
-    return [{ network: sn.network as SocialButton['network'], href }]
-  })
-}
-
-const getContactEmail = (member: OrgMember) => {
-  const contactEmail = member.socialNetworks.find((sn) => sn.network === 'email')
-  return (contactEmail?.value || member.email).replace(/^mailto:/i, '').trim()
-}
-
-const getFullName = (member: Pick<OrgMember, 'name' | 'surname'>) => {
-  return [member.name, member.surname].filter(Boolean).join(' ').trim()
-}
-const getMemberDisplayName = (member: Pick<OrgMember, 'name' | 'surname' | 'email'>) =>
-  getFullName(member) || member.email
+const networkIcons = socialNetworkIcons
 
 const getViewProfileAriaLabel = (fullName: string) => `${t('team.viewProfile')}: ${fullName}`
-const getCopyEmailAriaLabel = (email: string) => `${t('common.copyEmail')}: ${email}`
 const getPublicAgendaAriaLabel = (fullName: string) => `${t('team.publicAgenda')}: ${fullName}`
 
-// ============================================================================
-// Modal state
-// ============================================================================
+const copyEmail = (email: string) => copyToClipboard(email, t('common.emailCopied'))
+
+const memberCardClass =
+  'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl p-5 ring-1 ring-gray-200/50 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50'
+const memberCardTriggerClass =
+  'focus-visible:ring-primary block w-full rounded-xl text-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
 
 const selectedMember = ref<EnrichedMember | null>(null)
 const modalOpen = ref(false)
@@ -220,17 +105,6 @@ const modalOpen = ref(false)
 const openMemberModal = (member: EnrichedMember) => {
   selectedMember.value = member
   modalOpen.value = true
-}
-
-const onMemberCardKeydown = (event: KeyboardEvent, member: EnrichedMember) => {
-  if (event.target !== event.currentTarget) {
-    return
-  }
-
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    openMemberModal(member)
-  }
 }
 
 const toEnrichedMember = (member: OrgMember, area: OrgArea, isLeader: boolean): EnrichedMember => ({
@@ -245,42 +119,155 @@ const closeMemberModal = () => {
   selectedMember.value = null
 }
 
-// ============================================================================
-// Copy email
-// ============================================================================
-
-const toast = useToast()
-
-const copyEmail = async (email: string) => {
-  try {
-    await navigator.clipboard.writeText(email)
-    toast.add({
-      title: t('common.emailCopied'),
-      color: 'success',
-    })
-  } catch (e) {
-    console.error('Error copying email:', e)
-  }
-}
-
-// ============================================================================
-// Public agenda (overlay panel for area leaders)
-// ============================================================================
-
 const agendaMember = ref<EnrichedMember | null>(null)
 const agendaOpen = ref(false)
 const agendaEvents = ref<CalendarEvent[]>([])
 const agendaLoading = ref(false)
-const agendaModalUi = computed(() => ({
-  content: [
-    'transition-all duration-300 ease-out',
-    agendaLoading.value ? 'sm:max-w-md' : 'sm:max-w-lg',
-  ],
-}))
-const agendaBodyClass = computed(() => [
-  'space-y-4 overflow-hidden px-1 pt-1 transition-[max-height] duration-500 ease-out',
-  agendaLoading.value ? 'max-h-[220px]' : 'max-h-[70vh]',
-])
+const agendaTransitionWrapperRef = ref<HTMLElement | null>(null)
+const agendaModalUi = {
+  content: 'sm:max-w-lg',
+}
+const agendaBodyClass = 'min-h-[220px] space-y-4 overflow-hidden px-1 pt-1'
+
+const setAgendaTransitionStyles = (el: Element, styles: Partial<CSSStyleDeclaration>) => {
+  Object.assign((el as HTMLElement).style, styles)
+}
+
+const setAgendaWrapperStyles = (styles: Partial<CSSStyleDeclaration>) => {
+  if (!agendaTransitionWrapperRef.value) {
+    return
+  }
+
+  Object.assign(agendaTransitionWrapperRef.value.style, styles)
+}
+
+const lockAgendaWrapperHeight = () => {
+  if (!agendaTransitionWrapperRef.value) {
+    return 0
+  }
+
+  const height = agendaTransitionWrapperRef.value.getBoundingClientRect().height
+
+  setAgendaWrapperStyles({
+    height: `${height}px`,
+    overflow: 'hidden',
+  })
+
+  return height
+}
+
+const beforeAgendaExpandEnter = (el: Element) => {
+  lockAgendaWrapperHeight()
+
+  setAgendaTransitionStyles(el, {
+    opacity: '0',
+    transform: 'translateY(6px)',
+  })
+}
+
+const enterAgendaExpand = (el: Element, done: () => void) => {
+  const element = el as HTMLElement
+  const nextHeight = element.scrollHeight
+
+  setAgendaWrapperStyles({
+    transition: 'height 280ms cubic-bezier(0.16, 1, 0.3, 1)',
+  })
+
+  setAgendaTransitionStyles(element, {
+    transition: 'opacity 220ms ease, transform 280ms cubic-bezier(0.16, 1, 0.3, 1)',
+  })
+
+  requestAnimationFrame(() => {
+    setAgendaWrapperStyles({
+      height: `${nextHeight}px`,
+    })
+
+    setAgendaTransitionStyles(element, {
+      opacity: '1',
+      transform: 'translateY(0)',
+    })
+  })
+
+  const wrapper = agendaTransitionWrapperRef.value
+
+  if (!wrapper) {
+    done()
+    return
+  }
+
+  const onEnd = (event: TransitionEvent) => {
+    if (event.target !== wrapper || event.propertyName !== 'height') {
+      return
+    }
+
+    wrapper.removeEventListener('transitionend', onEnd)
+    done()
+  }
+
+  wrapper.addEventListener('transitionend', onEnd)
+}
+
+const afterAgendaExpandEnter = (el: Element) => {
+  setAgendaWrapperStyles({
+    height: '',
+    overflow: '',
+    transition: '',
+  })
+
+  setAgendaTransitionStyles(el, {
+    opacity: '',
+    transition: '',
+    transform: '',
+  })
+}
+
+const beforeAgendaExpandLeave = (el: Element) => {
+  const element = el as HTMLElement
+
+  lockAgendaWrapperHeight()
+
+  setAgendaTransitionStyles(element, {
+    opacity: '1',
+    position: 'absolute',
+    inset: '0',
+    width: '100%',
+  })
+}
+
+const leaveAgendaExpand = (el: Element, done: () => void) => {
+  const element = el as HTMLElement
+
+  setAgendaTransitionStyles(element, {
+    transition: 'opacity 160ms ease',
+  })
+
+  requestAnimationFrame(() => {
+    setAgendaTransitionStyles(element, {
+      opacity: '0',
+    })
+  })
+
+  const onEnd = (event: TransitionEvent) => {
+    if (event.target !== element || event.propertyName !== 'opacity') {
+      return
+    }
+
+    element.removeEventListener('transitionend', onEnd)
+    done()
+  }
+
+  element.addEventListener('transitionend', onEnd)
+}
+
+const afterAgendaExpandLeave = (el: Element) => {
+  setAgendaTransitionStyles(el, {
+    opacity: '',
+    position: '',
+    inset: '',
+    width: '',
+    transition: '',
+  })
+}
 
 const openAgenda = async (member: EnrichedMember) => {
   agendaMember.value = member
@@ -292,12 +279,11 @@ const openAgenda = async (member: EnrichedMember) => {
     const response = await $fetch<{ events: CalendarEvent[] }>('/api/member-calendar', {
       query: {
         calendarId: member.email,
-        locale: locale.value,
       },
     })
     agendaEvents.value = response.events ?? []
-  } catch (e) {
-    console.error('Error fetching member calendar:', e)
+  } catch {
+    agendaEvents.value = []
   } finally {
     agendaLoading.value = false
   }
@@ -315,53 +301,13 @@ const openSelectedMemberAgenda = () => {
   closeMemberModal()
 }
 
-// Deduplicate multi-day events into single entries
+const { formatShortDate } = useDatePresets()
 const upcomingAgendaEvents = computed(() => {
-  const now = new Date()
-  const bySeries = new Map<string, CalendarEvent>()
-
-  for (const event of agendaEvents.value) {
-    const seriesId = event.seriesId || event.id
-    const startDate = event.startDate || event.date
-    const endDate = event.endDate || event.date
-
-    const endDateTime = event.isAllDay
-      ? new Date(`${endDate}T23:59:59`)
-      : event.endTime
-        ? new Date(`${endDate}T${event.endTime}`)
-        : new Date(`${endDate}T23:59:59`)
-
-    if (endDateTime.getTime() < now.getTime()) continue
-
-    const existing = bySeries.get(seriesId)
-    if (!existing) {
-      bySeries.set(seriesId, { ...event, startDate, endDate })
-      continue
-    }
-
-    const existingStart = existing.startDate || existing.date
-    const existingEnd = existing.endDate || existing.date
-
-    if (startDate < existingStart) existing.startDate = startDate
-    if (endDate > existingEnd) existing.endDate = endDate
-  }
-
-  return Array.from(bySeries.values())
-    .sort((a, b) => (a.startDate || a.date).localeCompare(b.startDate || b.date))
-    .slice(0, 8)
-})
-
-const { formatDate: formatLocaleDate } = useLocaleFormatting()
-
-const formatShortDate = (dateStr: string): string =>
-  formatLocaleDate(`${dateStr}T00:00:00`, {
-    day: 'numeric',
-    month: 'short',
+  return collectUpcomingCalendarSeries(agendaEvents.value, {
+    limit: 8,
+    allDayLabel: t('home.calendar.allDay'),
   })
-
-// ============================================================================
-// Tab items for UTabs
-// ============================================================================
+})
 
 const tabItems = computed(() => [
   { label: t('team.hierarchyView'), value: 'hierarchy' as ViewMode, icon: 'i-tabler-hierarchy-2' },
@@ -372,7 +318,6 @@ const tabItems = computed(() => [
 <template>
   <div>
     <UContainer class="py-8 sm:py-12">
-      <!-- Page Header -->
       <header class="mb-8 text-center sm:mb-12">
         <h1 class="text-3xl font-bold sm:text-4xl">{{ t('team.title') }}</h1>
         <p class="text-muted mt-3 text-lg">{{ t('team.description') }}</p>
@@ -388,7 +333,6 @@ const tabItems = computed(() => [
         </div>
       </header>
 
-      <!-- Error -->
       <UAlert
         v-if="error"
         class="mb-6"
@@ -398,7 +342,6 @@ const tabItems = computed(() => [
         :title="t('team.loadError')"
       />
 
-      <!-- Tab selector -->
       <div class="mb-8 flex justify-center">
         <UTabs
           :items="tabItems"
@@ -407,13 +350,8 @@ const tabItems = computed(() => [
         />
       </div>
 
-      <!-- Content area with auto-animate -->
-      <div ref="contentRef">
-        <!-- ============================================================ -->
-        <!-- HIERARCHY VIEW -->
-        <!-- ============================================================ -->
+      <Transition name="content-switch" mode="out-in">
         <div v-if="viewMode === 'hierarchy'" key="hierarchy" class="space-y-12">
-          <!-- Comisión Ejecutiva -->
           <section v-if="executiveMembers.length > 0" aria-labelledby="executive-heading">
             <h2
               id="executive-heading"
@@ -422,74 +360,80 @@ const tabItems = computed(() => [
               {{ t('team.executiveCommission') }}
             </h2>
 
-            <div class="flex flex-wrap justify-center gap-6">
+            <TransitionGroup
+              appear
+              tag="div"
+              name="stagger-list"
+              class="flex flex-wrap justify-center gap-6"
+            >
               <article
-                v-for="member in executiveMembers"
+                v-for="(member, index) in executiveMembers"
                 :key="`exec-${member.areaId}`"
-                class="group bg-surface/50 hover:bg-surface focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
-                tabindex="0"
-                :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
-                @click="openMemberModal(member)"
-                @keydown="onMemberCardKeydown($event, member)"
+                :class="memberCardClass"
+                :style="getEntranceDelay(index)"
               >
-                <!-- Photo -->
-                <div class="mb-4 flex justify-center">
-                  <div
-                    class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
-                  >
-                    <NuxtImg
-                      v-if="member.photo"
-                      :src="member.photo"
-                      :alt="getMemberDisplayName(member)"
-                      class="size-full object-cover"
-                    />
+                <button
+                  type="button"
+                  :class="memberCardTriggerClass"
+                  :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
+                  @click="openMemberModal(member)"
+                >
+                  <div class="mb-4 flex justify-center">
                     <div
-                      v-else
-                      class="bg-primary/10 text-primary flex size-full items-center justify-center"
+                      class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                     >
-                      <UIcon name="i-tabler-user" class="size-12" />
+                      <NuxtImg
+                        v-if="member.photo"
+                        :src="member.photo"
+                        :alt="getMemberDisplayName(member)"
+                        class="size-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="bg-primary/10 text-primary flex size-full items-center justify-center"
+                      >
+                        <UIcon name="i-tabler-user" class="size-12" />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Info -->
-                <div class="text-center">
-                  <p v-if="member.denomination" class="text-primary text-sm font-medium">
-                    {{ member.denomination }}
-                  </p>
-                  <p class="text-foreground mt-1 font-semibold">
-                    {{ getMemberDisplayName(member) }}
-                  </p>
-                  <p class="text-muted mt-1 text-xs">{{ member.areaName }}</p>
-
-                  <div class="mt-3 flex flex-col items-center gap-2">
-                    <button
-                      type="button"
-                      class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
-                      :aria-label="getCopyEmailAriaLabel(member.email)"
-                      @click.stop="copyEmail(member.email)"
-                    >
-                      <UIcon name="i-tabler-mail" class="size-4" />
-                      <span>{{ member.email }}</span>
-                    </button>
-
-                    <UButton
-                      v-if="member.publicAgenda"
-                      size="xs"
-                      variant="soft"
-                      icon="i-tabler-calendar"
-                      :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
-                      @click.stop="openAgenda(member)"
-                    >
-                      {{ t('team.publicAgenda') }}
-                    </UButton>
+                  <div class="text-center">
+                    <p v-if="member.denomination" class="text-primary text-sm font-medium">
+                      {{ member.denomination }}
+                    </p>
+                    <p class="text-foreground mt-1 font-semibold">
+                      {{ getMemberDisplayName(member) }}
+                    </p>
+                    <p class="text-muted mt-1 text-xs">{{ member.areaName }}</p>
                   </div>
+                </button>
+
+                <div class="mt-3 flex flex-col items-center gap-2">
+                  <button
+                    type="button"
+                    class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
+                    :aria-label="getCopyEmailAriaLabel(member.email)"
+                    @click="copyEmail(member.email)"
+                  >
+                    <UIcon name="i-tabler-mail" class="size-4" />
+                    <span>{{ member.email }}</span>
+                  </button>
+
+                  <UButton
+                    v-if="member.publicAgenda"
+                    size="xs"
+                    variant="soft"
+                    icon="i-tabler-calendar"
+                    :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                    @click="openAgenda(member)"
+                  >
+                    {{ t('team.publicAgenda') }}
+                  </UButton>
                 </div>
               </article>
-            </div>
+            </TransitionGroup>
           </section>
 
-          <!-- Comisión Ejecutiva Ampliada -->
           <section v-if="extendedMembers.length > 0" aria-labelledby="extended-heading">
             <h2
               id="extended-heading"
@@ -498,77 +442,81 @@ const tabItems = computed(() => [
               {{ t('team.extendedCommission') }}
             </h2>
 
-            <div class="flex flex-wrap justify-center gap-6">
+            <TransitionGroup
+              appear
+              tag="div"
+              name="stagger-list"
+              class="flex flex-wrap justify-center gap-6"
+            >
               <article
                 v-for="(member, idx) in extendedMembers"
                 :key="`ext-${member.areaId}-${idx}`"
-                class="group bg-surface/50 hover:bg-surface focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
-                tabindex="0"
-                :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
-                @click="openMemberModal(member)"
-                @keydown="onMemberCardKeydown($event, member)"
+                :class="memberCardClass"
+                :style="getEntranceDelay(idx)"
               >
-                <!-- Photo -->
-                <div class="mb-4 flex justify-center">
-                  <div
-                    class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
-                  >
-                    <NuxtImg
-                      v-if="member.photo"
-                      :src="member.photo"
-                      :alt="getMemberDisplayName(member)"
-                      class="size-full object-cover"
-                    />
+                <button
+                  type="button"
+                  :class="memberCardTriggerClass"
+                  :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
+                  @click="openMemberModal(member)"
+                >
+                  <div class="mb-4 flex justify-center">
                     <div
-                      v-else
-                      class="bg-primary/10 text-primary flex size-full items-center justify-center"
+                      class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                     >
-                      <UIcon name="i-tabler-user" class="size-12" />
+                      <NuxtImg
+                        v-if="member.photo"
+                        :src="member.photo"
+                        :alt="getMemberDisplayName(member)"
+                        class="size-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="bg-primary/10 text-primary flex size-full items-center justify-center"
+                      >
+                        <UIcon name="i-tabler-user" class="size-12" />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Info -->
-                <div class="text-center">
-                  <p v-if="member.denomination" class="text-primary text-sm font-medium">
-                    {{ member.denomination }}
-                  </p>
-                  <p class="text-foreground mt-1 font-semibold">
-                    {{ getMemberDisplayName(member) }}
-                  </p>
-                  <p class="text-muted mt-1 text-xs">{{ member.areaName }}</p>
-
-                  <div class="mt-3 flex flex-col items-center gap-2">
-                    <button
-                      type="button"
-                      class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
-                      :aria-label="getCopyEmailAriaLabel(member.email)"
-                      @click.stop="copyEmail(member.email)"
-                    >
-                      <UIcon name="i-tabler-mail" class="size-4" />
-                      <span>{{ member.email }}</span>
-                    </button>
-
-                    <UButton
-                      v-if="member.publicAgenda"
-                      size="xs"
-                      variant="soft"
-                      icon="i-tabler-calendar"
-                      :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
-                      @click.stop="openAgenda(member)"
-                    >
-                      {{ t('team.publicAgenda') }}
-                    </UButton>
+                  <div class="text-center">
+                    <p v-if="member.denomination" class="text-primary text-sm font-medium">
+                      {{ member.denomination }}
+                    </p>
+                    <p class="text-foreground mt-1 font-semibold">
+                      {{ getMemberDisplayName(member) }}
+                    </p>
+                    <p class="text-muted mt-1 text-xs">{{ member.areaName }}</p>
                   </div>
+                </button>
+
+                <div class="mt-3 flex flex-col items-center gap-2">
+                  <button
+                    type="button"
+                    class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
+                    :aria-label="getCopyEmailAriaLabel(member.email)"
+                    @click="copyEmail(member.email)"
+                  >
+                    <UIcon name="i-tabler-mail" class="size-4" />
+                    <span>{{ member.email }}</span>
+                  </button>
+
+                  <UButton
+                    v-if="member.publicAgenda"
+                    size="xs"
+                    variant="soft"
+                    icon="i-tabler-calendar"
+                    :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                    @click="openAgenda(member)"
+                  >
+                    {{ t('team.publicAgenda') }}
+                  </UButton>
                 </div>
               </article>
-            </div>
+            </TransitionGroup>
           </section>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- AREA VIEW -->
-        <!-- ============================================================ -->
         <div v-else key="area" class="space-y-12">
           <section
             v-for="area in areas"
@@ -582,78 +530,82 @@ const tabItems = computed(() => [
               {{ getAreaName(area) }}
             </h2>
 
-            <div class="flex flex-wrap justify-center gap-6">
+            <TransitionGroup
+              appear
+              tag="div"
+              name="stagger-list"
+              class="flex flex-wrap justify-center gap-6"
+            >
               <article
                 v-for="(member, idx) in area.members"
                 :key="`area-${area.id}-member-${idx}`"
-                class="group bg-surface/50 hover:bg-surface focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
-                tabindex="0"
-                :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
-                @click="openMemberModal(toEnrichedMember(member, area, idx === 0))"
-                @keydown="onMemberCardKeydown($event, toEnrichedMember(member, area, idx === 0))"
+                :class="memberCardClass"
+                :style="getEntranceDelay(idx)"
               >
-                <!-- Photo -->
-                <div class="mb-4 flex justify-center">
-                  <div
-                    class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
-                  >
-                    <NuxtImg
-                      v-if="member.photo"
-                      :src="member.photo"
-                      :alt="getMemberDisplayName(member)"
-                      class="size-full object-cover"
-                    />
+                <button
+                  type="button"
+                  :class="memberCardTriggerClass"
+                  :aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
+                  @click="openMemberModal(toEnrichedMember(member, area, idx === 0))"
+                >
+                  <div class="mb-4 flex justify-center">
                     <div
-                      v-else
-                      class="bg-primary/10 text-primary flex size-full items-center justify-center"
+                      class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                     >
-                      <UIcon name="i-tabler-user" class="size-12" />
+                      <NuxtImg
+                        v-if="member.photo"
+                        :src="member.photo"
+                        :alt="getMemberDisplayName(member)"
+                        class="size-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="bg-primary/10 text-primary flex size-full items-center justify-center"
+                      >
+                        <UIcon name="i-tabler-user" class="size-12" />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Info -->
-                <div class="text-center">
-                  <p v-if="member.denomination" class="text-primary text-sm font-medium">
-                    {{ member.denomination }}
-                  </p>
-                  <p class="text-foreground mt-1 font-semibold">
-                    {{ getMemberDisplayName(member) }}
-                  </p>
-
-                  <div class="mt-3 flex flex-col items-center gap-2">
-                    <button
-                      type="button"
-                      class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
-                      :aria-label="getCopyEmailAriaLabel(member.email)"
-                      @click.stop="copyEmail(member.email)"
-                    >
-                      <UIcon name="i-tabler-mail" class="size-4" />
-                      <span>{{ member.email }}</span>
-                    </button>
-
-                    <UButton
-                      v-if="member.publicAgenda"
-                      size="xs"
-                      variant="soft"
-                      icon="i-tabler-calendar"
-                      :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
-                      @click.stop="openAgenda(toEnrichedMember(member, area, idx === 0))"
-                    >
-                      {{ t('team.publicAgenda') }}
-                    </UButton>
+                  <div class="text-center">
+                    <p v-if="member.denomination" class="text-primary text-sm font-medium">
+                      {{ member.denomination }}
+                    </p>
+                    <p class="text-foreground mt-1 font-semibold">
+                      {{ getMemberDisplayName(member) }}
+                    </p>
                   </div>
+                </button>
+
+                <div class="mt-3 flex flex-col items-center gap-2">
+                  <button
+                    type="button"
+                    class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
+                    :aria-label="getCopyEmailAriaLabel(member.email)"
+                    @click="copyEmail(member.email)"
+                  >
+                    <UIcon name="i-tabler-mail" class="size-4" />
+                    <span>{{ member.email }}</span>
+                  </button>
+
+                  <UButton
+                    v-if="member.publicAgenda"
+                    size="xs"
+                    variant="soft"
+                    icon="i-tabler-calendar"
+                    :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                    @click="openAgenda(toEnrichedMember(member, area, idx === 0))"
+                  >
+                    {{ t('team.publicAgenda') }}
+                  </UButton>
                 </div>
               </article>
-            </div>
+            </TransitionGroup>
           </section>
         </div>
-      </div>
+      </Transition>
     </UContainer>
 
-    <!-- ================================================================ -->
-    <!-- Member Detail Modal -->
-    <!-- ================================================================ -->
     <UModal
       v-model:open="modalOpen"
       :title="selectedMember?.denomination || selectedMember?.areaName"
@@ -662,7 +614,6 @@ const tabItems = computed(() => [
     >
       <template #body>
         <div v-if="selectedMember" class="space-y-6">
-          <!-- Header with photo and basic info -->
           <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
             <div
               class="ring-primary/30 size-28 shrink-0 overflow-hidden rounded-full ring-2 sm:size-32"
@@ -692,7 +643,6 @@ const tabItems = computed(() => [
                 {{ selectedMember.areaName }}
               </UBadge>
 
-              <!-- Email -->
               <button
                 type="button"
                 class="text-muted hover:text-primary mt-2 flex items-center gap-1.5 text-sm transition-colors"
@@ -704,7 +654,6 @@ const tabItems = computed(() => [
                 <UIcon name="i-tabler-copy" class="size-3.5 opacity-50" />
               </button>
 
-              <!-- University & Degree -->
               <div v-if="selectedMember.university || selectedMember.degree" class="mt-3 space-y-1">
                 <p
                   v-if="selectedMember.university"
@@ -724,7 +673,6 @@ const tabItems = computed(() => [
             </div>
           </div>
 
-          <!-- Description -->
           <div v-if="selectedMember.description">
             <h4 class="text-foreground mb-2 font-semibold">
               {{ t('team.about', { name: selectedMember.name }) }}
@@ -734,7 +682,6 @@ const tabItems = computed(() => [
             </div>
           </div>
 
-          <!-- Social Networks -->
           <div v-if="getSocialButtons(selectedMember).length > 0">
             <h4 class="text-foreground mb-3 font-semibold">{{ t('members.socialNetworks') }}</h4>
             <div class="flex flex-wrap gap-2">
@@ -773,9 +720,6 @@ const tabItems = computed(() => [
       </template>
     </UModal>
 
-    <!-- ================================================================ -->
-    <!-- Public Agenda Modal -->
-    <!-- ================================================================ -->
     <UModal
       v-model:open="agendaOpen"
       :ui="agendaModalUi"
@@ -785,7 +729,6 @@ const tabItems = computed(() => [
     >
       <template #body>
         <div v-if="agendaMember" :class="agendaBodyClass">
-          <!-- Member info -->
           <div class="flex items-center gap-3">
             <div class="ring-primary/20 size-12 overflow-hidden rounded-full ring-2">
               <NuxtImg
@@ -809,62 +752,102 @@ const tabItems = computed(() => [
             </div>
           </div>
 
-          <!-- Loading -->
-          <div v-if="agendaLoading" class="space-y-2">
-            <div v-for="n in 3" :key="n" class="bg-surface flex items-start gap-3 rounded-lg p-3">
-              <USkeleton class="h-10 w-16 shrink-0 rounded" />
-              <div class="flex-1 space-y-1">
-                <USkeleton class="h-4 w-3/4" />
-                <USkeleton class="h-3 w-1/2" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Events list -->
-          <ul v-else-if="upcomingAgendaEvents.length > 0" class="space-y-2">
-            <li
-              v-for="(event, idx) in upcomingAgendaEvents"
-              :key="idx"
-              class="bg-surface flex items-start gap-3 rounded-lg p-3"
+          <div ref="agendaTransitionWrapperRef" class="relative">
+            <Transition
+              @before-enter="beforeAgendaExpandEnter"
+              @enter="enterAgendaExpand"
+              @after-enter="afterAgendaExpandEnter"
+              @before-leave="beforeAgendaExpandLeave"
+              @leave="leaveAgendaExpand"
+              @after-leave="afterAgendaExpandLeave"
             >
-              <!-- Date badge -->
-              <div
-                class="bg-primary/10 flex min-h-10 w-16 shrink-0 flex-col items-center justify-center rounded py-1 text-center"
-              >
-                <span class="text-primary text-xs leading-tight font-semibold">
-                  {{ formatShortDate(event.startDate || event.date) }}
-                </span>
-                <span
-                  v-if="event.endDate && event.startDate !== event.endDate"
-                  class="text-primary text-xs leading-tight font-semibold"
+              <div v-if="agendaLoading" key="loading" class="space-y-2">
+                <div
+                  v-for="n in 3"
+                  :key="n"
+                  class="bg-surface flex animate-pulse items-start gap-3 rounded-lg p-3"
+                  :style="{ animationDelay: `${(n - 1) * 150}ms` }"
                 >
-                  {{ formatShortDate(event.endDate) }}
-                </span>
+                  <USkeleton class="h-10 w-16 shrink-0 rounded" />
+                  <div class="flex-1 space-y-1">
+                    <USkeleton class="h-4 w-3/4" />
+                    <USkeleton class="h-3 w-1/2" />
+                  </div>
+                </div>
               </div>
-              <!-- Event details -->
-              <div class="min-w-0 flex-1">
-                <p class="text-foreground line-clamp-2 text-sm font-medium">
-                  {{ event.title }}
-                </p>
-                <p class="text-muted mt-0.5 flex items-center gap-1 text-xs">
-                  <UIcon name="i-tabler-clock" class="size-3.5 shrink-0" />
-                  <span>{{ event.timeSlot }}</span>
-                </p>
-                <p v-if="event.location" class="text-muted mt-0.5 flex items-center gap-1 text-xs">
-                  <UIcon name="i-tabler-map-pin" class="size-3.5 shrink-0" />
-                  <span class="truncate">{{ event.location }}</span>
-                </p>
-              </div>
-            </li>
-          </ul>
 
-          <!-- No events -->
-          <div v-else class="flex flex-col items-center py-6 text-center">
-            <UIcon name="i-tabler-calendar-off" class="text-muted mb-2 size-10" />
-            <p class="text-muted text-sm">{{ t('team.noEvents') }}</p>
+              <TransitionGroup
+                v-else-if="upcomingAgendaEvents.length > 0"
+                key="events"
+                tag="ul"
+                appear
+                name="agenda-event"
+                class="space-y-2"
+              >
+                <li
+                  v-for="(event, idx) in upcomingAgendaEvents"
+                  :key="idx"
+                  class="bg-surface flex items-start gap-3 rounded-lg p-3"
+                  :style="{ transitionDelay: `${Math.min(idx * 45, 180)}ms` }"
+                >
+                  <div
+                    class="bg-primary/10 flex min-h-10 w-16 shrink-0 flex-col items-center justify-center rounded py-1 text-center"
+                  >
+                    <span class="text-primary text-xs leading-tight font-semibold">
+                      {{ formatShortDate(event.startDate || event.date) }}
+                    </span>
+                    <span
+                      v-if="event.endDate && event.startDate !== event.endDate"
+                      class="text-primary text-xs leading-tight font-semibold"
+                    >
+                      {{ formatShortDate(event.endDate) }}
+                    </span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-foreground line-clamp-2 text-sm font-medium">
+                      {{ event.title }}
+                    </p>
+                    <p class="text-muted mt-0.5 flex items-center gap-1 text-xs">
+                      <UIcon name="i-tabler-clock" class="size-3.5 shrink-0" />
+                      <span>{{ event.timeSlot }}</span>
+                    </p>
+                  </div>
+                </li>
+              </TransitionGroup>
+
+              <div v-else key="empty" class="flex flex-col items-center py-6 text-center">
+                <UIcon name="i-tabler-calendar-off" class="text-muted mb-2 size-10" />
+                <p class="text-muted text-sm">{{ t('team.noEvents') }}</p>
+              </div>
+            </Transition>
           </div>
         </div>
       </template>
     </UModal>
   </div>
 </template>
+
+<style scoped>
+.agenda-event-enter-active {
+  transition:
+    opacity 0.24s ease,
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.agenda-event-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.agenda-event-leave-active,
+.agenda-event-move {
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s ease;
+}
+
+.agenda-event-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>

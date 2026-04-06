@@ -1,21 +1,11 @@
 <script setup lang="ts">
-/**
- * PressArticleList
- * Reusable list component for press articles (press releases, statements, media appearances)
- * Shows articles as cards with cover image, title, description, date, and tags
- */
 import type { PressArticleType } from '@/composables/usePress'
 
 const props = defineProps<{
-  /** The type of articles to display */
   type: PressArticleType
-  /** Page title */
   title: string
-  /** Page description */
   description: string
-  /** Empty state message */
   emptyMessage: string
-  /** Error message */
   errorMessage: string
 }>()
 
@@ -56,10 +46,8 @@ const onTagSelect = (tagSlug: string) => {
         <p class="text-muted mt-2 max-w-2xl text-lg">{{ description }}</p>
       </header>
 
-      <!-- Tag filter -->
       <HomeTagSelector class="mb-6" @select="onTagSelect" />
 
-      <!-- Loading skeleton -->
       <div
         v-if="isLoading"
         class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
@@ -72,39 +60,34 @@ const onTagSelect = (tagSlug: string) => {
         </div>
       </div>
 
-      <!-- Error state -->
       <div v-else-if="error" class="text-muted py-12 text-center">
         <UIcon name="i-tabler-alert-circle" class="mx-auto mb-2 size-8 opacity-50" />
         <p>{{ errorMessage }}</p>
       </div>
 
-      <!-- Empty state -->
       <div v-else-if="!articles.length" class="text-muted py-12 text-center">
         <UIcon name="i-tabler-news-off" class="mx-auto mb-2 size-8 opacity-50" />
         <p>{{ emptyMessage }}</p>
       </div>
 
-      <!-- Articles grid -->
       <ul v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
         <li v-for="article in articles" :key="article.id">
           <NuxtLink
             :to="`${typeUrlPrefix[article.type]}/${article.slug}`"
-            class="group focus-visible:ring-primary/60 bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+            class="motion-link-card group focus-visible:ring-primary/60 bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
           >
-            <!-- Cover image -->
             <div class="bg-muted aspect-video overflow-hidden">
               <NuxtImg
                 :src="article.image"
                 :alt="article.alt || article.title"
                 width="640"
                 height="360"
-                class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                class="motion-link-media size-full object-cover"
                 loading="lazy"
               />
             </div>
 
             <div class="p-4">
-              <!-- Date and media outlet -->
               <div class="text-muted mb-1.5 flex items-center gap-2 text-xs">
                 <time :datetime="article.publishedAt">{{ formatDate(article.publishedAt) }}</time>
                 <template v-if="article.mediaOutlet">
@@ -120,19 +103,16 @@ const onTagSelect = (tagSlug: string) => {
                 </template>
               </div>
 
-              <!-- Title -->
               <h2
                 class="group-hover:text-primary line-clamp-2 leading-snug font-semibold transition-colors"
               >
                 {{ article.title }}
               </h2>
 
-              <!-- Description -->
               <p v-if="article.description" class="text-muted mt-1.5 line-clamp-2 text-sm">
                 {{ article.description }}
               </p>
 
-              <!-- Tags -->
               <div v-if="article.tags.length" class="mt-3 flex flex-wrap gap-1.5">
                 <span
                   v-for="tag in article.tags"
@@ -143,7 +123,6 @@ const onTagSelect = (tagSlug: string) => {
                 </span>
               </div>
 
-              <!-- Content indicator -->
               <div
                 v-if="article.contentHtml || article.pdfUrl"
                 class="text-muted mt-3 flex flex-wrap items-center gap-3 text-xs"

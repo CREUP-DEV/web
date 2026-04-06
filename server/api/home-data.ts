@@ -1,81 +1,95 @@
-/**
- * Home Data API endpoint
- * Returns data for the home page (carousel, featured links)
- * Press articles are now fetched separately via /api/press
- */
-
-import { defineEventHandler } from 'h3'
+import { createError, setHeader } from 'h3'
 import { eq, asc } from 'drizzle-orm'
 import { db } from '../db'
 import { carouselItems, featuredLinks } from '../db/schema'
-import {
-  normalizeLocaleDefinitions,
-  pickLocalizedEntry,
-  resolveConfiguredLocaleCode,
-  resolveLocaleCode,
-} from '~~/shared/utils/locale'
+import { isDatabaseUnavailableError } from '../utils/databaseErrors'
+import { logError } from '../utils/logger'
+import { pickLocalizedEntry } from '~~/shared/utils/locale'
+import { HOME_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
+import { getRequestLocaleContext } from '../utils/requestLocale'
+import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 
-export default defineEventHandler(async (event) => {
-  const runtimeI18n = useRuntimeConfig(event).public.i18n as {
-    defaultLocale?: unknown
-    locales?: unknown
+export default defineCachedEventHandler(
+  async (event) => {
+    const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
+
+    try {
+      const carouselItemsList = await db.query.carouselItems.findMany({
+        where: eq(carouselItems.active, true),
+        orderBy: asc(carouselItems.order),
+        with: { translations: true },
+      })
+
+      const linkItemsList = await db.query.featuredLinks.findMany({
+        where: eq(featuredLinks.active, true),
+        orderBy: asc(featuredLinks.order),
+        with: { translations: true },
+      })
+
+      const carousel = carouselItemsList.map((item) => {
+        const translation = pickLocalizedEntry(
+          item.translations,
+          locale,
+          locales,
+          fallbackLocale
+        ) || {
+          title: '',
+          buttonText: '',
+          alt: null,
+        }
+        return {
+          image:
+            toExternalImageProxyUrl(item.image, {
+              publicPathBase: HOME_IMAGE_PUBLIC_BASE,
+            }) ?? item.image,
+          href: item.href,
+          title: translation.title,
+          buttonText: translation.buttonText,
+          alt: (translation as { alt?: string | null }).alt ?? '',
+        }
+      })
+
+      const featuredLinksList = linkItemsList.map((item) => {
+        const translation = pickLocalizedEntry(
+          item.translations,
+          locale,
+          locales,
+          fallbackLocale
+        ) || {
+          title: '',
+          alt: null,
+        }
+        return {
+          image:
+            toExternalImageProxyUrl(item.image, {
+              publicPathBase: HOME_IMAGE_PUBLIC_BASE,
+            }) ?? item.image,
+          to: item.to,
+          title: translation.title,
+          alt: (translation as { alt?: string | null }).alt ?? '',
+        }
+      })
+
+      return {
+        carousel,
+        featuredLinks: featuredLinksList,
+      }
+    } catch (error) {
+      if (isDatabaseUnavailableError(error)) {
+        logError('public.home-data.database-unavailable', error, undefined, event)
+        setHeader(event, 'retry-after', 60)
+        throw createError({
+          statusCode: 503,
+          statusMessage: 'Servicio temporalmente no disponible',
+        })
+      }
+
+      throw error
+    }
+  },
+  {
+    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    getKey: (event) => buildPublicRouteCacheKey(event, 'public-home-data'),
   }
-  const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
-  const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
-  const locale = resolveLocaleCode(event.context.requestLocale, locales, defaultLocale)
-
-  // Fetch carousel items
-  const carouselItemsList = await db.query.carouselItems.findMany({
-    where: eq(carouselItems.active, true),
-    orderBy: asc(carouselItems.order),
-    with: { translations: true },
-  })
-
-  // Fetch featured links
-  const linkItemsList = await db.query.featuredLinks.findMany({
-    where: eq(featuredLinks.active, true),
-    orderBy: asc(featuredLinks.order),
-    with: { translations: true },
-  })
-
-  // Transform data with locale-specific translations
-  const carousel = carouselItemsList.map((item) => {
-    const translation = pickLocalizedEntry(item.translations, locale, locales, defaultLocale) || {
-      title: '',
-      buttonText: '',
-      alt: null,
-    }
-    return {
-      image:
-        toExternalImageProxyUrl(item.image, {
-          publicPathBase: '/inicio/imagenes',
-        }) ?? item.image,
-      href: item.href,
-      title: translation.title,
-      buttonText: translation.buttonText,
-      alt: (translation as { alt?: string | null }).alt ?? '',
-    }
-  })
-
-  const featuredLinksList = linkItemsList.map((item) => {
-    const translation = pickLocalizedEntry(item.translations, locale, locales, defaultLocale) || {
-      title: '',
-      alt: null,
-    }
-    return {
-      image:
-        toExternalImageProxyUrl(item.image, {
-          publicPathBase: '/inicio/imagenes',
-        }) ?? item.image,
-      to: item.to,
-      title: translation.title,
-      alt: (translation as { alt?: string | null }).alt ?? '',
-    }
-  })
-
-  return {
-    carousel,
-    featuredLinks: featuredLinksList,
-  }
-})
+)

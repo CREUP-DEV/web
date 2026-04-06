@@ -1,3 +1,11 @@
+CREATE TABLE "about_page_content" (
+	"id" text PRIMARY KEY NOT NULL,
+	"hero_image" text,
+	"hero_visible" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -37,6 +45,25 @@ CREATE TABLE "carousel_items" (
 	"id" text PRIMARY KEY NOT NULL,
 	"image" text NOT NULL,
 	"href" text NOT NULL,
+	"order" integer DEFAULT 0 NOT NULL,
+	"active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "equality_document_translations" (
+	"id" text PRIMARY KEY NOT NULL,
+	"locale" text NOT NULL,
+	"title" text NOT NULL,
+	"description" text NOT NULL,
+	"meta" text,
+	"equality_document_id" text NOT NULL,
+	CONSTRAINT "equality_document_translations_locale_equality_document_id_unique" UNIQUE("locale","equality_document_id")
+);
+--> statement-breakpoint
+CREATE TABLE "equality_documents" (
+	"id" text PRIMARY KEY NOT NULL,
+	"pdf_url" text NOT NULL,
 	"order" integer DEFAULT 0 NOT NULL,
 	"active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -183,6 +210,14 @@ CREATE TABLE "press_articles" (
 	CONSTRAINT "press_articles_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
+CREATE TABLE "press_dossier" (
+	"id" text PRIMARY KEY NOT NULL,
+	"pdf_url" text,
+	"active" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "sessions" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp NOT NULL,
@@ -277,6 +312,7 @@ CREATE TABLE "verifications" (
 --> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "carousel_item_translations" ADD CONSTRAINT "carousel_item_translations_carousel_item_id_carousel_items_id_fk" FOREIGN KEY ("carousel_item_id") REFERENCES "public"."carousel_items"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "equality_document_translations" ADD CONSTRAINT "equality_document_translations_equality_document_id_equality_documents_id_fk" FOREIGN KEY ("equality_document_id") REFERENCES "public"."equality_documents"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "featured_link_translations" ADD CONSTRAINT "featured_link_translations_featured_link_id_featured_links_id_fk" FOREIGN KEY ("featured_link_id") REFERENCES "public"."featured_links"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "financial_report_translations" ADD CONSTRAINT "financial_report_translations_financial_report_id_financial_reports_id_fk" FOREIGN KEY ("financial_report_id") REFERENCES "public"."financial_reports"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "organization_member_translations" ADD CONSTRAINT "organization_member_translations_organization_member_id_organization_members_id_fk" FOREIGN KEY ("organization_member_id") REFERENCES "public"."organization_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

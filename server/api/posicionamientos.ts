@@ -1,8 +1,3 @@
-/**
- * Posicionamientos API endpoint
- * Proxies policy position documents from the external CREUP intranet API.
- */
-
 import { defineEventHandler } from 'h3'
 import { fetchPolicyDocuments } from '../utils/policyDocuments'
 

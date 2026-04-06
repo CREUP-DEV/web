@@ -1,15 +1,7 @@
 <script setup lang="ts">
-/**
- * Press Releases listing page (/prensa/notas-prensa/)
- */
 const { t } = useI18n()
 
-useSeoMeta({
-  title: () => t('press.releases.title'),
-  description: () => t('press.releases.description'),
-  ogTitle: () => t('press.releases.title'),
-  ogDescription: () => t('press.releases.description'),
-})
+usePageSeo('press.releases.title', 'press.releases.description')
 </script>
 
 <template>

@@ -1,8 +1,8 @@
 import { defineEventHandler } from 'h3'
-import { requireAuth } from '../../utils/requireAuth'
+import { getAdminSession } from '../../utils/requireAuth'
 
 export default defineEventHandler(async (event) => {
-  const session = await requireAuth(event)
+  const session = getAdminSession(event)
 
   return {
     user: session.user,

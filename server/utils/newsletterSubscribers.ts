@@ -1,49 +1,19 @@
 import { createId } from '@paralleldrive/cuid2'
-import nodemailer from 'nodemailer'
-import { getHeader, type H3Event } from 'h3'
+import type { H3Event } from 'h3'
+import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
+import { buildAbsoluteUrl, getClientIp, getUserAgent, normalizeBaseUrl } from './urlBuilder'
+import { getSmtpTransporter } from './smtpTransporter'
 
 export const NEWSLETTER_CONSENT_TEXT_VERSION = '2026-03-06'
+
+/** Confirmation tokens expire after 48 hours */
+export const NEWSLETTER_CONFIRM_TOKEN_TTL_MS = 48 * 60 * 60 * 1000
 
 export const NEWSLETTER_CONSENT_SOURCES = {
   adminManual: 'admin_manual',
   legacyImport: 'legacy_import',
   webForm: 'web_form',
 } as const
-
-function normalizeBaseUrl(baseUrl: string): string {
-  return baseUrl.replace(/\/+$/, '')
-}
-
-function buildAbsoluteUrl(baseUrl: string, path: string): string {
-  if (/^https?:\/\//i.test(path)) {
-    return path
-  }
-
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`
-  return `${normalizeBaseUrl(baseUrl)}${normalizedPath}`
-}
-
-function getClientIp(event: H3Event): string | null {
-  const forwarded = getHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim()
-  const realIp = getHeader(event, 'x-real-ip')?.trim()
-  const ip = forwarded || realIp
-
-  if (!ip || ip === 'unknown') {
-    return null
-  }
-
-  return ip.slice(0, 128)
-}
-
-function getUserAgent(event: H3Event): string | null {
-  const userAgent = getHeader(event, 'user-agent')?.trim()
-
-  if (!userAgent) {
-    return null
-  }
-
-  return userAgent.slice(0, 512)
-}
 
 export function getNewsletterConsentEvidence(event: H3Event) {
   return {
@@ -114,33 +84,17 @@ ${privacyUrl}
 
 export async function sendNewsletterConfirmationEmail(
   email: string,
-  confirmToken: string
+  confirmToken: string,
+  configErrorMessage = 'Server configuration error.'
 ): Promise<void> {
-  const config = useRuntimeConfig()
+  const transporter = getSmtpTransporter(configErrorMessage)
 
-  if (!config.smtpHost || !config.smtpUser || !config.smtpPass) {
-    throw new Error('SMTP_CONFIG_MISSING')
-  }
-
-  const transporter = nodemailer.createTransport({
-    host: config.smtpHost as string,
-    port: Number(config.smtpPort) || 587,
-    secure: config.smtpSecure === 'true',
-    auth: {
-      user: config.smtpUser as string,
-      pass: config.smtpPass as string,
-    },
-    connectionTimeout: 10_000,
-    greetingTimeout: 10_000,
-    socketTimeout: 30_000,
-  })
-
-  const siteUrl = normalizeBaseUrl((config.siteUrl as string) || 'https://www.creup.es')
+  const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
   const confirmUrl = buildAbsoluteUrl(
     siteUrl,
     `/api/newsletter-confirm?token=${encodeURIComponent(confirmToken)}`
   )
-  const fromEmail = (config.smtpFromEmail as string) || 'info@creup.es'
+  const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
 
   await transporter.sendMail({
     from: `"CREUP Newsletter" <${fromEmail}>`,
@@ -153,4 +107,12 @@ export async function sendNewsletterConfirmationEmail(
 
 export function createNewsletterConfirmToken(): string {
   return createId()
+}
+
+export function createNewsletterUnsubscribeToken(): string {
+  return createId()
+}
+
+export function createConfirmTokenExpiresAt(): Date {
+  return new Date(Date.now() + NEWSLETTER_CONFIRM_TOKEN_TTL_MS)
 }

@@ -1,12 +1,34 @@
-import type { defineEventHandler } from 'h3'
+import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { auth } from './auth'
 import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
 
-// Middleware to protect admin routes
-export async function requireAuth(
-  event: Parameters<typeof defineEventHandler>[0] extends (event: infer E) => unknown ? E : never
-) {
+export type AdminSession = Awaited<ReturnType<typeof auth.api.getSession>>
+
+export interface AdminAuthEventContext {
+  adminSession?: AdminSession
+}
+
+export function getAdminSession(event: H3Event) {
+  const context = event.context as AdminAuthEventContext
+
+  if (!context.adminSession) {
+    throw createError({
+      statusCode: 401,
+      message: 'No autorizado',
+    })
+  }
+
+  return context.adminSession
+}
+
+export async function requireAuth(event: H3Event) {
+  const context = event.context as AdminAuthEventContext
+
+  if (context.adminSession) {
+    return context.adminSession
+  }
+
   const session = await auth.api.getSession({
     headers: event.headers,
   })
@@ -25,6 +47,8 @@ export async function requireAuth(
       message: 'Acceso no autorizado',
     })
   }
+
+  context.adminSession = session
 
   return session
 }

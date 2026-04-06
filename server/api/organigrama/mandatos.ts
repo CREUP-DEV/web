@@ -1,15 +1,14 @@
-/**
- * Mandates list API endpoint
- * Proxies mandate data from the external CREUP intranet API.
- */
-
 import { createError, defineEventHandler } from 'h3'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
   withExternalApiSWRCache,
 } from '../../utils/externalApiCache'
+import { logError } from '../../utils/logger'
+import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
+import { getRequestLocaleContext } from '../../utils/requestLocale'
 import { externalMandatesResponseSchema } from '../../utils/validation'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 interface MandateOutput {
   id: number
@@ -18,19 +17,23 @@ interface MandateOutput {
   isCurrent: boolean
 }
 
+const messagesByLocale = {
+  en: {
+    unavailable: 'Mandate data is temporarily unavailable.',
+  },
+  es: {
+    unavailable: 'La información de los mandatos no está disponible temporalmente.',
+  },
+}
+
 export default defineEventHandler(async (event) => {
-  const runtimeConfig = useRuntimeConfig(event)
-  const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  const messages =
+    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
-
-  if (!configuredBaseUrl) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'External members API is not configured.',
-    })
-  }
 
   return withExternalApiSWRCache(
     `external-api:organigrama-mandatos-route:${configuredBaseUrl}`,
@@ -41,19 +44,19 @@ export default defineEventHandler(async (event) => {
       try {
         payload = await $fetch(endpoint)
       } catch (error) {
-        console.error('Failed to fetch external mandates API:', error)
+        logError('external.mandates-route.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Mandates data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 
       const parsed = externalMandatesResponseSchema.safeParse(payload)
       if (!parsed.success) {
-        console.error('Invalid payload from external mandates API:', parsed.error.flatten())
+        logError('external.mandates-route.invalid-payload', parsed.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Mandates data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 

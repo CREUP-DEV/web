@@ -1,44 +1,27 @@
 <script setup lang="ts">
-/**
- * Members Page
- * Displays associated members grouped by autonomous community
- * and sectorial associations as a separate list.
- */
-
 import { useAutoAnimate } from '@formkit/auto-animate/vue'
+import { SPAIN_REGION_PATHS } from '@/components/members/spainRegions'
+import {
+  getEmailData as resolveEmailData,
+  getSocialButtons as resolveSocialButtons,
+  getWebsiteData as resolveWebsiteData,
+  type SocialNetworkEntry,
+} from '~~/shared/utils/social'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const { getLanguageTag } = useLocales()
 const colorMode = useColorMode()
 const hasMounted = ref(false)
+const { copyToClipboard } = useCopyToClipboard()
+const { getCopyEmailAriaLabel } = usePersonHelpers()
 
 onMounted(() => {
   hasMounted.value = true
 })
 
-useSeoMeta({
-  title: () => t('members.title'),
-  description: () => t('members.description'),
-  ogTitle: () => t('members.title'),
-  ogDescription: () => t('members.description'),
-})
+usePageSeo('members.title', 'members.description')
 
-type SupportedSocialNetwork =
-  | 'website'
-  | 'email'
-  | 'instagram'
-  | 'twitter'
-  | 'tiktok'
-  | 'bluesky'
-  | 'linkedin'
-  | 'telegram'
-  | 'discord'
-  | 'facebook'
-  | 'github'
-
-interface SocialNetwork {
-  network: SupportedSocialNetwork
-  value: string
-}
+type SocialNetwork = SocialNetworkEntry
 
 interface OrganizationMember {
   id: string
@@ -76,77 +59,10 @@ interface SectorialesResponse {
   generatedAt?: string | null
 }
 
-/**
- * Common shape shared by associated members and sectorial entities.
- * Used to type helper functions that work with social networks and logos.
- */
 interface SocialEntity {
   socialNetworks: SocialNetwork[]
   logoLight: string | null
   logoDark: string | null
-}
-
-interface SocialButton {
-  network: Exclude<SupportedSocialNetwork, 'website' | 'email'>
-  href: string
-}
-
-const networkIcons: Record<SupportedSocialNetwork, string> = {
-  website: 'i-tabler-world',
-  email: 'i-tabler-mail',
-  instagram: 'i-tabler-brand-instagram',
-  twitter: 'i-tabler-brand-x',
-  tiktok: 'i-tabler-brand-tiktok',
-  bluesky: 'i-tabler-brand-bluesky',
-  linkedin: 'i-tabler-brand-linkedin',
-  telegram: 'i-tabler-brand-telegram',
-  discord: 'i-tabler-brand-discord',
-  facebook: 'i-tabler-brand-facebook',
-  github: 'i-tabler-brand-github',
-}
-
-const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value)
-
-const cleanHandle = (value: string) => value.trim().replace(/^@/, '')
-
-const buildSocialUrl = (network: SupportedSocialNetwork, rawValue: string) => {
-  const value = rawValue.trim()
-  if (!value) {
-    return null
-  }
-
-  if (network === 'email') {
-    return value.startsWith('mailto:') ? value : `mailto:${value}`
-  }
-
-  if (isAbsoluteUrl(value)) {
-    return value
-  }
-
-  switch (network) {
-    case 'website':
-      return `https://${value}`
-    case 'instagram':
-      return `https://instagram.com/${cleanHandle(value)}`
-    case 'twitter':
-      return `https://x.com/${cleanHandle(value)}`
-    case 'tiktok':
-      return `https://www.tiktok.com/@${cleanHandle(value)}`
-    case 'bluesky':
-      return `https://bsky.app/profile/${cleanHandle(value)}`
-    case 'linkedin':
-      return `https://www.linkedin.com/${value.replace(/^\/+/, '')}`
-    case 'telegram':
-      return `https://t.me/${cleanHandle(value)}`
-    case 'discord':
-      return `https://discord.gg/${cleanHandle(value)}`
-    case 'facebook':
-      return `https://facebook.com/${cleanHandle(value)}`
-    case 'github':
-      return `https://github.com/${cleanHandle(value)}`
-    default:
-      return null
-  }
 }
 
 const getCommunityLabel = (community: string, fallback?: string) => {
@@ -155,58 +71,11 @@ const getCommunityLabel = (community: string, fallback?: string) => {
   return translated === key ? (fallback ?? community) : translated
 }
 
-const getSocialByNetwork = (entity: SocialEntity, network: SupportedSocialNetwork) => {
-  return entity.socialNetworks.find((socialNetwork) => socialNetwork.network === network)
-}
+const getWebsiteData = (entity: SocialEntity) => resolveWebsiteData(entity.socialNetworks)
 
-const getWebsiteData = (entity: SocialEntity) => {
-  const website = getSocialByNetwork(entity, 'website')
-  if (!website) {
-    return null
-  }
+const getEmailData = (entity: SocialEntity) => resolveEmailData(entity.socialNetworks)
 
-  const href = buildSocialUrl('website', website.value)
-  if (!href) {
-    return null
-  }
-
-  return {
-    href,
-    label: website.value.replace(/^https?:\/\//i, ''),
-  }
-}
-
-const getEmailData = (entity: SocialEntity) => {
-  const email = getSocialByNetwork(entity, 'email')
-  if (!email) {
-    return null
-  }
-
-  const href = buildSocialUrl('email', email.value)
-  if (!href) {
-    return null
-  }
-
-  return {
-    href,
-    email: email.value.replace(/^mailto:/i, ''),
-  }
-}
-
-const getSocialButtons = (entity: SocialEntity): SocialButton[] => {
-  return entity.socialNetworks.flatMap((socialNetwork) => {
-    if (socialNetwork.network === 'website' || socialNetwork.network === 'email') {
-      return []
-    }
-
-    const href = buildSocialUrl(socialNetwork.network, socialNetwork.value)
-    if (!href) {
-      return []
-    }
-
-    return [{ network: socialNetwork.network, href }]
-  })
-}
+const getSocialButtons = (entity: SocialEntity) => resolveSocialButtons(entity.socialNetworks)
 
 const getEntityLogo = (entity: SocialEntity) => {
   const preferredLogo =
@@ -232,8 +101,6 @@ const getMemberImageAlt = (member: OrganizationMember) =>
 const getMemberDetailsAriaLabel = (member: OrganizationMember) =>
   `${t('members.viewDetails')}: ${getMemberImageAlt(member)}`
 
-const hasSocialButtons = (entity: SocialEntity) => getSocialButtons(entity).length > 0
-
 const normalizeComparable = (value: string) =>
   value
     .normalize('NFD')
@@ -246,17 +113,18 @@ const isUniversidadGranada = (value: string) => {
   return normalized === 'universidaddegranada' || normalized === 'universityofgranada'
 }
 
-const { data, error } = await useFetch<MembersResponse>('/api/members')
+const [{ data, error }, { data: sectorialesData }] = await Promise.all([
+  useFetch<MembersResponse>('/api/members'),
+  useFetch<SectorialesResponse>('/api/sectoriales'),
+])
 
 if (error.value) {
   throw createError({
     statusCode: error.value.statusCode === 404 ? 404 : 503,
     fatal: true,
-    message: error.value.statusMessage ?? '',
+    message: error.value.statusCode === 404 ? t('error.notFound') : t('members.loadError'),
   })
 }
-
-const { data: sectorialesData } = await useFetch<SectorialesResponse>('/api/sectoriales')
 
 const allMembers = computed(() => data.value?.members ?? [])
 const allSectoriales = computed(() => sectorialesData.value?.sectoriales ?? [])
@@ -299,14 +167,23 @@ const handleCommunitySelect = (community: string | null) => {
   selectedCommunity.value = community
 }
 
+const mapCommunities = Array.from(new Set(SPAIN_REGION_PATHS.map((region) => region.community)))
+
+const communityFilters = computed(() =>
+  mapCommunities
+    .map((community) => ({
+      slug: community,
+      label: getCommunityLabel(community),
+      count: memberCounts.value[community] ?? 0,
+    }))
+    .filter((community) => community.count > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, getLanguageTag(locale.value)))
+)
+
 const [mapActionsRef] = useAutoAnimate()
 
 const membersContainerRef = ref<HTMLElement | null>(null)
 
-/**
- * Smoothly animate the members container height when the filtered list changes,
- * so the sectoriales section below slides into its new position instead of jumping.
- */
 watch(filteredMembers, async () => {
   const el = membersContainerRef.value
   if (!el) return
@@ -353,12 +230,22 @@ const openMemberModal = (member: OrganizationMember) => {
   modalOpen.value = true
 }
 
+const closeMemberModal = () => {
+  modalOpen.value = false
+  selectedMember.value = null
+}
+
 const selectedSectorial = ref<SectorialMember | null>(null)
 const sectorialModalOpen = ref(false)
 
 const openSectorialModal = (sectorial: SectorialMember) => {
   selectedSectorial.value = sectorial
   sectorialModalOpen.value = true
+}
+
+const closeSectorialModal = () => {
+  sectorialModalOpen.value = false
+  selectedSectorial.value = null
 }
 
 const getSectorialDenominationLabel = (sectorial: SectorialMember) =>
@@ -368,21 +255,7 @@ const getSectorialImageAlt = (sectorial: SectorialMember) =>
   getSectorialDenominationLabel(sectorial)
 const getSectorialDetailsAriaLabel = (sectorial: SectorialMember) =>
   `${t('members.sectoriales.viewDetails')}: ${getSectorialImageAlt(sectorial)}`
-const getCopyEmailAriaLabel = (email: string) => `${t('common.copyEmail')}: ${email}`
-
-const toast = useToast()
-
-const copyEmail = async (email: string) => {
-  try {
-    await navigator.clipboard.writeText(email)
-    toast.add({
-      title: t('common.emailCopied'),
-      color: 'success',
-    })
-  } catch (copyError) {
-    console.error('Error copying email:', copyError)
-  }
-}
+const copyEmail = (email: string) => copyToClipboard(email, t('common.emailCopied'))
 
 const sectionTitle = computed(() => {
   if (!selectedCommunity.value) {
@@ -404,6 +277,87 @@ const getMemberAnimationStyle = (index: number) => {
     '--member-enter-delay': `${Math.max(0, enterDelay)}ms`,
   }
 }
+
+type OrganizationModalData = {
+  eyebrow: string
+  heading: string
+  aboutTitle: string
+  imageAlt: string
+  description: string | null
+  initials: string | null
+  communityLabel: string | null
+  logoSrc: string | null
+  website: ReturnType<typeof getWebsiteData>
+  email: ReturnType<typeof getEmailData>
+  socialButtons: ReturnType<typeof getSocialButtons>
+  copyEmailAriaLabel: string | null
+}
+
+const buildOrganizationModalData = (
+  entity: SocialEntity,
+  options: {
+    eyebrow: string
+    heading: string
+    aboutTitle: string
+    imageAlt: string
+    description?: string | null
+    initials?: string | null
+    communityLabel?: string | null
+  }
+): OrganizationModalData => {
+  const website = getWebsiteData(entity)
+  const email = getEmailData(entity)
+
+  return {
+    eyebrow: options.eyebrow,
+    heading: options.heading,
+    aboutTitle: options.aboutTitle,
+    imageAlt: options.imageAlt,
+    description: options.description ?? null,
+    initials: options.initials ?? null,
+    communityLabel: options.communityLabel ?? null,
+    logoSrc: getEntityLogo(entity),
+    website,
+    email,
+    socialButtons: getSocialButtons(entity),
+    copyEmailAriaLabel: email ? getCopyEmailAriaLabel(email.email) : null,
+  }
+}
+
+const selectedMemberModalData = computed(() => {
+  if (!selectedMember.value) {
+    return null
+  }
+
+  const member = selectedMember.value
+
+  return buildOrganizationModalData(member, {
+    eyebrow: getMemberUniversityLabel(member),
+    heading: getMemberDenominationLabel(member),
+    aboutTitle: t('members.descriptionLabel'),
+    imageAlt: getMemberImageAlt(member),
+    description: member.description,
+    initials: member.initials,
+    communityLabel: getCommunityLabel(member.autonomousCommunity, member.autonomousCommunityName),
+  })
+})
+
+const selectedSectorialModalData = computed(() => {
+  if (!selectedSectorial.value) {
+    return null
+  }
+
+  const sectorial = selectedSectorial.value
+
+  return buildOrganizationModalData(sectorial, {
+    eyebrow: t('members.sectoriales.title'),
+    heading: getSectorialDenominationLabel(sectorial),
+    aboutTitle: t('members.descriptionLabel'),
+    imageAlt: getSectorialImageAlt(sectorial),
+    description: sectorial.description,
+    initials: sectorial.initials,
+  })
+})
 </script>
 
 <template>
@@ -458,30 +412,74 @@ const getMemberAnimationStyle = (index: number) => {
           <div
             class="bg-surface/50 rounded-xl p-4 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
           >
+            <div class="mb-5 space-y-3 border-b border-gray-200/60 pb-4 dark:border-gray-800/60">
+              <div
+                class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs"
+                :aria-label="t('members.mapLegendLabel')"
+              >
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-3 w-3 rounded-full bg-red-600" aria-hidden="true" />
+                  {{ t('members.mapLegendSelected') }}
+                </span>
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-3 w-3 rounded-full bg-red-200" aria-hidden="true" />
+                  {{ t('members.mapLegendActive') }}
+                </span>
+                <span class="inline-flex items-center gap-2">
+                  <span class="h-3 w-3 rounded-full bg-gray-300" aria-hidden="true" />
+                  {{ t('members.mapLegendInactive') }}
+                </span>
+              </div>
+            </div>
+
             <LazyMembersSpainMap
               :selected-community="selectedCommunity"
               :member-counts="memberCounts"
               @select="handleCommunitySelect"
             />
 
-            <div ref="mapActionsRef" class="mt-5 flex flex-wrap items-center justify-center gap-3">
-              <UButton
-                v-if="selectedCommunity"
-                variant="soft"
-                icon="i-tabler-map"
-                @click="handleCommunitySelect(null)"
-              >
-                {{ t('members.showAll') }}
-              </UButton>
+            <div ref="mapActionsRef" class="mt-6 space-y-4">
+              <div v-if="communityFilters.length" class="space-y-3">
+                <p class="text-muted text-sm font-medium">{{ t('members.mapFilterTitle') }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <UButton
+                    v-for="community in communityFilters"
+                    :key="community.slug"
+                    type="button"
+                    size="sm"
+                    :color="selectedCommunity === community.slug ? 'primary' : 'neutral'"
+                    :variant="selectedCommunity === community.slug ? 'solid' : 'outline'"
+                    :aria-pressed="selectedCommunity === community.slug"
+                    @click="
+                      handleCommunitySelect(
+                        selectedCommunity === community.slug ? null : community.slug
+                      )
+                    "
+                  >
+                    {{ community.label }} ({{ community.count }})
+                  </UButton>
+                </div>
+              </div>
 
-              <UButton
-                variant="ghost"
-                color="neutral"
-                icon="i-tabler-list-search"
-                to="#members-list"
-              >
-                {{ t('members.skipMap') }}
-              </UButton>
+              <div class="flex flex-wrap items-center justify-center gap-3">
+                <UButton
+                  v-if="selectedCommunity"
+                  variant="soft"
+                  icon="i-tabler-map"
+                  @click="handleCommunitySelect(null)"
+                >
+                  {{ t('members.showAll') }}
+                </UButton>
+
+                <UButton
+                  variant="ghost"
+                  color="neutral"
+                  icon="i-tabler-list-search"
+                  to="#members-list"
+                >
+                  {{ t('members.skipMap') }}
+                </UButton>
+              </div>
             </div>
           </div>
         </section>
@@ -503,14 +501,16 @@ const getMemberAnimationStyle = (index: number) => {
 
             <TransitionGroup
               v-else
+              :key="selectedCommunity ?? 'all'"
+              appear
               tag="div"
-              name="members-seq"
+              name="stagger-list"
               class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
             >
               <button
                 v-for="(member, index) in filteredMembers"
                 :key="member.id"
-                class="group bg-surface/50 hover:bg-surface rounded-2xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg sm:p-6 dark:ring-gray-800/50"
+                class="motion-card-strong group bg-surface/50 hover:bg-surface rounded-2xl p-5 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
                 :style="getMemberAnimationStyle(index)"
                 type="button"
                 :aria-label="getMemberDetailsAriaLabel(member)"
@@ -596,14 +596,16 @@ const getMemberAnimationStyle = (index: number) => {
 
         <TransitionGroup
           v-else
+          key="sectoriales"
+          appear
           tag="div"
-          name="members-seq"
+          name="stagger-list"
           class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
         >
           <button
             v-for="(sectorial, index) in allSectoriales"
             :key="sectorial.id"
-            class="group bg-surface/50 hover:bg-surface rounded-2xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg sm:p-6 dark:ring-gray-800/50"
+            class="motion-card-strong group bg-surface/50 hover:bg-surface rounded-2xl p-5 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
             :style="getMemberAnimationStyle(index)"
             type="button"
             :aria-label="getSectorialDetailsAriaLabel(sectorial)"
@@ -651,271 +653,41 @@ const getMemberAnimationStyle = (index: number) => {
     </UContainer>
 
     <UModal
-      v-if="modalOpen && selectedMember"
       v-model:open="modalOpen"
-      :title="getMemberUniversityLabel(selectedMember)"
+      :title="
+        selectedMember
+          ? `${getMemberUniversityLabel(selectedMember)} · ${getMemberDenominationLabel(selectedMember)}`
+          : undefined
+      "
       :description="t('members.memberModalDescription')"
+      :ui="{ content: 'sm:max-w-5xl' }"
+      @close="closeMemberModal"
     >
       <template #body>
-        <div v-if="selectedMember" class="space-y-5">
-          <div class="bg-surface/50 rounded-2xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50">
-            <div class="grid gap-5 md:grid-cols-[minmax(0,200px)_minmax(0,1fr)] md:items-center">
-              <div
-                class="mx-auto flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white ring-2 ring-gray-200 md:h-52 md:w-52 dark:bg-gray-800 dark:ring-gray-700"
-              >
-                <NuxtImg
-                  v-if="getEntityLogo(selectedMember)"
-                  :src="getEntityLogo(selectedMember)!"
-                  :alt="getMemberImageAlt(selectedMember)"
-                  class="size-full object-contain p-4"
-                  @error="handleLogoError(getEntityLogo(selectedMember))"
-                />
-                <UIcon v-else name="i-tabler-building" class="text-muted size-12" />
-              </div>
-
-              <div class="min-w-0 text-center md:text-left">
-                <h3 class="text-2xl leading-tight font-bold">
-                  {{ getMemberDenominationLabel(selectedMember) }}
-                </h3>
-
-                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-                  <UBadge
-                    v-if="selectedMember.initials"
-                    size="sm"
-                    color="neutral"
-                    variant="soft"
-                    class="px-3 py-1 text-sm font-semibold"
-                  >
-                    {{ selectedMember.initials }}
-                  </UBadge>
-                  <UBadge size="sm" color="neutral" variant="outline" class="px-3 py-1 text-sm">
-                    {{
-                      getCommunityLabel(
-                        selectedMember.autonomousCommunity,
-                        selectedMember.autonomousCommunityName
-                      )
-                    }}
-                  </UBadge>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="selectedMember.description"
-            class="bg-surface/30 rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
-          >
-            <p class="text-sm leading-relaxed">{{ selectedMember.description }}</p>
-          </div>
-
-          <div class="space-y-4">
-            <div
-              v-if="getWebsiteData(selectedMember) || getEmailData(selectedMember)"
-              class="rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
-            >
-              <h4 class="mb-3 text-sm font-semibold">
-                {{ t('members.info') }}
-              </h4>
-
-              <div class="space-y-3">
-                <div v-if="getWebsiteData(selectedMember)" class="flex items-center gap-3">
-                  <UIcon :name="networkIcons.website" class="text-muted size-5 shrink-0" />
-                  <a
-                    :href="getWebsiteData(selectedMember)!.href"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-primary truncate hover:underline"
-                  >
-                    {{ getWebsiteData(selectedMember)!.label }}
-                  </a>
-                </div>
-
-                <div v-if="getEmailData(selectedMember)" class="flex items-center gap-3">
-                  <UIcon :name="networkIcons.email" class="text-muted size-5 shrink-0" />
-                  <a
-                    :href="getEmailData(selectedMember)!.href"
-                    class="text-primary truncate hover:underline"
-                  >
-                    {{ getEmailData(selectedMember)!.email }}
-                  </a>
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
-                    size="xs"
-                    icon="i-tabler-copy"
-                    :aria-label="getCopyEmailAriaLabel(getEmailData(selectedMember)!.email)"
-                    @click.stop="copyEmail(getEmailData(selectedMember)!.email)"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-if="hasSocialButtons(selectedMember)"
-              class="rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
-            >
-              <h4 class="mb-3 text-sm font-semibold">{{ t('members.socialNetworks') }}</h4>
-              <div class="flex flex-wrap gap-2">
-                <UButton
-                  v-for="socialNetwork in getSocialButtons(selectedMember)"
-                  :key="`${socialNetwork.network}-${socialNetwork.href}`"
-                  :to="socialNetwork.href"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  :icon="networkIcons[socialNetwork.network]"
-                  color="neutral"
-                  variant="soft"
-                  size="sm"
-                >
-                  {{ t(`members.networks.${socialNetwork.network}`) }}
-                </UButton>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MembersOrganizationDetailModal
+          v-if="selectedMemberModalData"
+          v-bind="selectedMemberModalData"
+          @copy-email="copyEmail"
+          @logo-error="handleLogoError"
+        />
       </template>
     </UModal>
 
     <UModal
-      v-if="sectorialModalOpen && selectedSectorial"
       v-model:open="sectorialModalOpen"
-      :title="getSectorialDenominationLabel(selectedSectorial)"
+      :title="selectedSectorial ? getSectorialDenominationLabel(selectedSectorial) : undefined"
       :description="t('members.memberModalDescription')"
+      :ui="{ content: 'sm:max-w-5xl' }"
+      @close="closeSectorialModal"
     >
       <template #body>
-        <div v-if="selectedSectorial" class="space-y-5">
-          <div class="bg-surface/50 rounded-2xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50">
-            <div class="grid gap-5 md:grid-cols-[minmax(0,200px)_minmax(0,1fr)] md:items-center">
-              <div
-                class="mx-auto flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white ring-2 ring-gray-200 md:h-52 md:w-52 dark:bg-gray-800 dark:ring-gray-700"
-              >
-                <NuxtImg
-                  v-if="getEntityLogo(selectedSectorial)"
-                  :src="getEntityLogo(selectedSectorial)!"
-                  :alt="getSectorialImageAlt(selectedSectorial)"
-                  class="size-full object-contain p-4"
-                  @error="handleLogoError(getEntityLogo(selectedSectorial))"
-                />
-                <UIcon v-else name="i-tabler-building" class="text-muted size-12" />
-              </div>
-
-              <div class="min-w-0 text-center md:text-left">
-                <h3 class="text-2xl leading-tight font-bold">
-                  {{ getSectorialDenominationLabel(selectedSectorial) }}
-                </h3>
-
-                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-                  <UBadge
-                    v-if="selectedSectorial.initials"
-                    size="sm"
-                    color="neutral"
-                    variant="soft"
-                    class="px-3 py-1 text-sm font-semibold"
-                  >
-                    {{ selectedSectorial.initials }}
-                  </UBadge>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="selectedSectorial.description"
-            class="bg-surface/30 rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
-          >
-            <p class="text-sm leading-relaxed">{{ selectedSectorial.description }}</p>
-          </div>
-
-          <div class="space-y-4">
-            <div
-              v-if="getWebsiteData(selectedSectorial) || getEmailData(selectedSectorial)"
-              class="rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
-            >
-              <h4 class="mb-3 text-sm font-semibold">
-                {{ t('members.info') }}
-              </h4>
-
-              <div class="space-y-3">
-                <div v-if="getWebsiteData(selectedSectorial)" class="flex items-center gap-3">
-                  <UIcon :name="networkIcons.website" class="text-muted size-5 shrink-0" />
-                  <a
-                    :href="getWebsiteData(selectedSectorial)!.href"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-primary truncate hover:underline"
-                  >
-                    {{ getWebsiteData(selectedSectorial)!.label }}
-                  </a>
-                </div>
-
-                <div v-if="getEmailData(selectedSectorial)" class="flex items-center gap-3">
-                  <UIcon :name="networkIcons.email" class="text-muted size-5 shrink-0" />
-                  <a
-                    :href="getEmailData(selectedSectorial)!.href"
-                    class="text-primary truncate hover:underline"
-                  >
-                    {{ getEmailData(selectedSectorial)!.email }}
-                  </a>
-                  <UButton
-                    variant="ghost"
-                    color="neutral"
-                    size="xs"
-                    icon="i-tabler-copy"
-                    :aria-label="getCopyEmailAriaLabel(getEmailData(selectedSectorial)!.email)"
-                    @click.stop="copyEmail(getEmailData(selectedSectorial)!.email)"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-if="hasSocialButtons(selectedSectorial)"
-              class="rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
-            >
-              <h4 class="mb-3 text-sm font-semibold">{{ t('members.socialNetworks') }}</h4>
-              <div class="flex flex-wrap gap-2">
-                <UButton
-                  v-for="socialNetwork in getSocialButtons(selectedSectorial)"
-                  :key="`${socialNetwork.network}-${socialNetwork.href}`"
-                  :to="socialNetwork.href"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  :icon="networkIcons[socialNetwork.network]"
-                  color="neutral"
-                  variant="soft"
-                  size="sm"
-                >
-                  {{ t(`members.networks.${socialNetwork.network}`) }}
-                </UButton>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MembersOrganizationDetailModal
+          v-if="selectedSectorialModalData"
+          v-bind="selectedSectorialModalData"
+          @copy-email="copyEmail"
+          @logo-error="handleLogoError"
+        />
       </template>
     </UModal>
   </div>
 </template>
-
-<style scoped>
-.members-seq-enter-active {
-  transition:
-    opacity 180ms ease-out,
-    transform 180ms ease-out;
-  transition-delay: var(--member-enter-delay, 0ms);
-}
-
-.members-seq-enter-from,
-.members-seq-leave-to {
-  opacity: 0;
-  transform: scale(0.97);
-  transform-origin: center;
-}
-
-.members-seq-leave-active {
-  display: none;
-}
-
-.members-seq-move {
-  transition: transform 120ms ease;
-}
-</style>

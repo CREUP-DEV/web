@@ -1,15 +1,7 @@
 <script setup lang="ts">
-/**
- * Media appearances listing page (/prensa/en-los-medios/)
- */
 const { t } = useI18n()
 
-useSeoMeta({
-  title: () => t('press.inMedia.title'),
-  description: () => t('press.inMedia.description'),
-  ogTitle: () => t('press.inMedia.title'),
-  ogDescription: () => t('press.inMedia.description'),
-})
+usePageSeo('press.inMedia.title', 'press.inMedia.description')
 </script>
 
 <template>

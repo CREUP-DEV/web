@@ -1,16 +1,7 @@
-/**
- * Slug generation utilities for press articles
- * Generates URL-friendly slugs from titles with year-month suffix to reduce collisions
- */
-
-import { eq } from 'drizzle-orm'
+import { and, eq, ne, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles } from '../db/schema'
 
-/**
- * Convert a string to a URL-friendly slug
- * Handles Spanish characters (tildes, ñ, etc.)
- */
 export function slugify(text: string): string {
   return text
     .normalize('NFD')
@@ -64,35 +55,41 @@ export function buildReadableFileSlugWithFallback(
   return candidate
 }
 
-/**
- * Generate a unique slug for a press article
- * Format: `slugified-title-YYYY-MM`
- * If collision occurs, appends a numeric suffix: `-2`, `-3`, etc.
- *
- * @param title - The article title (typically in Spanish)
- * @param publishedAt - The publication date
- * @param excludeId - Optional article ID to exclude from collision check (for updates)
- */
+type PressSlugExecutor = Pick<typeof db, 'execute' | 'query'>
+
+interface GeneratePressSlugOptions {
+  excludeId?: string
+  executor?: PressSlugExecutor
+}
+
 export async function generatePressSlug(
   title: string,
   publishedAt: Date,
-  excludeId?: string
+  options: GeneratePressSlugOptions = {}
 ): Promise<string> {
-  const year = publishedAt.getFullYear()
-  const month = String(publishedAt.getMonth() + 1).padStart(2, '0')
-  const base = slugify(title)
+  const year = publishedAt.getUTCFullYear()
+  const month = String(publishedAt.getUTCMonth() + 1).padStart(2, '0')
+  const base = slugify(title) || 'articulo'
   const baseSlug = `${base}-${year}-${month}`
+  const executor = options.executor ?? db
+
+  // Serialize slug generation per base slug so concurrent mutations cannot
+  // claim the same value between the uniqueness check and the write.
+  await executor.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${baseSlug}))`)
 
   let candidate = baseSlug
   let suffix = 2
 
   while (true) {
-    const existing = await db.query.pressArticles.findFirst({
-      where: eq(pressArticles.slug, candidate),
+    const whereClause = options.excludeId
+      ? and(eq(pressArticles.slug, candidate), ne(pressArticles.id, options.excludeId))
+      : eq(pressArticles.slug, candidate)
+
+    const existing = await executor.query.pressArticles.findFirst({
+      where: whereClause,
     })
 
-    // No collision, or the collision is the same article being updated
-    if (!existing || (excludeId && existing.id === excludeId)) {
+    if (!existing) {
       return candidate
     }
 

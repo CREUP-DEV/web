@@ -1,10 +1,4 @@
 <script setup lang="ts">
-/**
- * Normativa (regulations) page
- * Displays CREUP's internal regulations grouped by category,
- * fetched from the external intranet API.
- */
-
 interface NormativaDocumentFile {
   name: string | null
   url: string | null
@@ -29,12 +23,8 @@ interface NormativaResponse {
 }
 
 const { t, te } = useI18n()
-const { formatDate: formatLocaleDate } = useLocaleFormatting()
+const { formatLongDate } = useDatePresets()
 
-/**
- * Normalize a category name from the API to a translation key slug.
- * e.g. "Reglamentos de Régimen" → "reglamentos-de-regimen"
- */
 function toCategorySlug(name: string): string {
   return name
     .toLowerCase()
@@ -49,24 +39,16 @@ function translateCategory(name: string): string {
   return te(key) ? t(key) : name
 }
 
-useSeoMeta({
-  title: () => t('regulations.title'),
-  description: () => t('regulations.description'),
-  ogTitle: () => t('regulations.title'),
-  ogDescription: () => t('regulations.description'),
-})
+usePageSeo('regulations.title', 'regulations.description')
 
 const { data, error } = await useFetch<NormativaResponse>('/api/normativa')
 
 const categories = computed(() => data.value?.categories ?? [])
+const getEntranceDelay = (index: number) => useEntranceDelay(index, 90)
 
 function formatDate(dateStr: string): string {
   try {
-    return formatLocaleDate(dateStr, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+    return formatLongDate(dateStr)
   } catch {
     return dateStr
   }
@@ -85,7 +67,6 @@ function formatDate(dateStr: string): string {
         </p>
       </header>
 
-      <!-- Error state -->
       <UCard v-if="error" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
@@ -95,7 +76,6 @@ function formatDate(dateStr: string): string {
         </div>
       </UCard>
 
-      <!-- Empty state -->
       <UCard v-else-if="categories.length === 0" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-file-off" class="text-muted size-10" />
@@ -105,16 +85,24 @@ function formatDate(dateStr: string): string {
         </div>
       </UCard>
 
-      <!-- Categories with documents -->
-      <template v-else>
-        <section v-for="cat in categories" :key="cat.category" class="space-y-3">
+      <div v-else class="space-y-8">
+        <section v-for="(cat, categoryIndex) in categories" :key="cat.category" class="space-y-3">
           <h2 class="text-xl font-semibold">
             {{ translateCategory(cat.category) }}
           </h2>
 
-          <ul class="space-y-3" :aria-label="cat.category">
-            <li v-for="doc in cat.documents" :key="doc.order">
-              <UCard>
+          <TransitionGroup
+            appear
+            tag="ul"
+            name="stagger-list"
+            class="space-y-3"
+            :aria-label="cat.category"
+          >
+            <li v-for="(doc, documentIndex) in cat.documents" :key="doc.order">
+              <UCard
+                class="motion-card"
+                :style="getEntranceDelay(categoryIndex * 2 + documentIndex)"
+              >
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div class="min-w-0 flex-1 space-y-1">
                     <p class="text-base leading-snug font-medium">
@@ -146,9 +134,9 @@ function formatDate(dateStr: string): string {
                 </div>
               </UCard>
             </li>
-          </ul>
+          </TransitionGroup>
         </section>
-      </template>
+      </div>
     </article>
   </UContainer>
 </template>

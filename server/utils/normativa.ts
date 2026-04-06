@@ -1,8 +1,3 @@
-/**
- * Shared helper for fetching normativa (regulations) from the external CREUP intranet API.
- * Returns categories of documents grouped by regulation type.
- */
-
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import {
@@ -11,9 +6,21 @@ import {
   withExternalApiSWRCache,
 } from './externalApiCache'
 import { toExternalPdfProxyUrl } from './externalAssetProxy'
+import { logError } from './logger'
+import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
+import { getRequestLocaleContext } from './requestLocale'
 import { externalNormativaResponseSchema } from './validation'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const NORMATIVA_CACHE_VERSION = 1
+const messagesByLocale = {
+  en: {
+    unavailable: 'Regulations data is temporarily unavailable.',
+  },
+  es: {
+    unavailable: 'La normativa no está disponible temporalmente.',
+  },
+}
 
 interface NormativaDocumentFile {
   name: string | null
@@ -33,24 +40,16 @@ interface NormativaCategory {
   documents: NormativaDocument[]
 }
 
-/**
- * Fetches normativa from the external API, validates, and proxies file URLs.
- */
 export async function fetchNormativa(
   event: H3Event
 ): Promise<{ categories: NormativaCategory[]; generatedAt: string | null }> {
-  const runtimeConfig = useRuntimeConfig(event)
-  const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  const messages =
+    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
-
-  if (!configuredBaseUrl) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'External members API is not configured.',
-    })
-  }
 
   return withExternalApiSWRCache(
     `external-api:normativa:v${NORMATIVA_CACHE_VERSION}:${configuredBaseUrl}`,
@@ -61,19 +60,19 @@ export async function fetchNormativa(
       try {
         payload = await $fetch(endpoint)
       } catch (error) {
-        console.error('Failed to fetch external normativa API:', error)
+        logError('external.normativa.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Normativa data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 
       const parsedPayload = externalNormativaResponseSchema.safeParse(payload)
       if (!parsedPayload.success) {
-        console.error('Invalid payload from external normativa API:', parsedPayload.error.flatten())
+        logError('external.normativa.invalid-payload', parsedPayload.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Normativa data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 
@@ -89,7 +88,7 @@ export async function fetchNormativa(
             file: doc.file
               ? {
                   name: doc.file.name ?? null,
-                  url: toExternalPdfProxyUrl(doc.file.url, { event }) ?? null,
+                  url: toExternalPdfProxyUrl(doc.file.url, { event }),
                 }
               : null,
           })),

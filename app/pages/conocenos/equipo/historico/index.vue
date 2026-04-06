@@ -1,24 +1,9 @@
 <script setup lang="ts">
-/**
- * Mandates (Historic Terms) List Page
- * Displays all mandates with dates and links to their detail pages.
- * Handles URL-driven disambiguation when a year maps to more than one mandate.
- */
-
 const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
 
-useSeoMeta({
-  title: () => `${t('mandates.title')}`,
-  description: () => t('mandates.description'),
-  ogTitle: () => `${t('mandates.title')}`,
-  ogDescription: () => t('mandates.description'),
-})
-
-// ============================================================================
-// Types
-// ============================================================================
+usePageSeo('mandates.title', 'mandates.description')
 
 interface Mandate {
   id: number
@@ -32,21 +17,15 @@ interface MandatesResponse {
   generatedAt?: string | null
 }
 
-// ============================================================================
-// Data fetching
-// ============================================================================
-
 const { data, error, status } = await useFetch<MandatesResponse>('/api/organigrama/mandatos')
 
 const mandates = computed(() => data.value?.mandates ?? [])
-
-// ============================================================================
-// Slug generation
-// Uses the shortest prefix that uniquely identifies the mandate:
-//   YYYY        → when no other mandate starts in the same year
-//   YYYY-MM     → when no other mandate starts in the same year-month
-//   YYYY-MM-DD  → fallback (full date)
-// ============================================================================
+const {
+  elRef: mandatesRef,
+  isVisible: mandatesVisible,
+  isPending: mandatesPending,
+  shouldAnimate: mandatesShouldAnimate,
+} = useEntranceObserver(0.12)
 
 const buildMandateSlug = (mandate: Mandate): string => {
   const all = mandates.value
@@ -58,11 +37,6 @@ const buildMandateSlug = (mandate: Mandate): string => {
 
   return mandate.startDate
 }
-
-// ============================================================================
-// Disambiguation modal
-// Opened by ?select=YYYY in the URL (e.g. after a redirect from [slug].vue)
-// ============================================================================
 
 const selectYear = computed(() => {
   const raw = route.query.select
@@ -90,24 +64,7 @@ const closeDisambiguateModal = () => {
   disambiguateModalOpen.value = false
 }
 
-// ============================================================================
-// Date formatting helpers
-// ============================================================================
-
-const { formatDate: formatLocaleDate } = useLocaleFormatting()
-
-const formatDate = (dateStr: string): string =>
-  formatLocaleDate(`${dateStr}T00:00:00`, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-
-const formatShortDate = (dateStr: string): string =>
-  formatLocaleDate(`${dateStr}T00:00:00`, {
-    month: 'short',
-    year: 'numeric',
-  })
+const { formatLongDate: formatDate, formatMonthYear: formatShortDate } = useDatePresets()
 
 const getDurationText = (startDate: string, endDate: string | null): string => {
   const start = new Date(startDate + 'T00:00:00')
@@ -128,7 +85,6 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
 <template>
   <div>
     <UContainer class="py-8 sm:py-12">
-      <!-- Page Header -->
       <header class="mb-8 text-center sm:mb-12">
         <div class="mb-4">
           <UButton to="/conocenos/equipo" variant="ghost" icon="i-tabler-arrow-left" size="sm">
@@ -139,7 +95,6 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
         <p class="text-muted mt-3 text-lg">{{ t('mandates.description') }}</p>
       </header>
 
-      <!-- Error -->
       <UAlert
         v-if="error"
         class="mb-6"
@@ -149,7 +104,6 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
         :title="t('mandates.loadError')"
       />
 
-      <!-- Loading skeleton -->
       <div v-else-if="status === 'pending'" class="space-y-4">
         <div
           v-for="n in 3"
@@ -166,21 +120,20 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
         </div>
       </div>
 
-      <!-- Empty state -->
       <div v-else-if="mandates.length === 0" class="flex flex-col items-center py-12 text-center">
         <UIcon name="i-tabler-history-off" class="text-muted mb-4 size-16" />
         <p class="text-muted text-lg">{{ t('mandates.noMandates') }}</p>
       </div>
 
-      <!-- Mandates list -->
-      <div v-else class="mx-auto max-w-2xl space-y-4">
+      <div v-else ref="mandatesRef" class="mx-auto max-w-2xl space-y-4">
         <NuxtLink
-          v-for="mandate in mandates"
+          v-for="(mandate, index) in mandates"
           :key="mandate.id"
           :to="localePath(`/conocenos/equipo/historico/${buildMandateSlug(mandate)}`)"
-          class="group bg-surface/50 hover:bg-surface flex items-center gap-4 rounded-xl p-5 ring-1 ring-gray-200/50 transition-all hover:shadow-lg sm:p-6 dark:ring-gray-800/50"
+          class="motion-card-strong group bg-surface/50 hover:bg-surface flex items-center gap-4 rounded-xl p-5 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
+          :class="entranceClasses(mandatesShouldAnimate, mandatesVisible, mandatesPending)"
+          :style="entranceStyle(mandatesVisible, mandatesShouldAnimate, index)"
         >
-          <!-- Icon -->
           <div
             class="flex size-12 shrink-0 items-center justify-center rounded-lg"
             :class="
@@ -195,7 +148,6 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
             />
           </div>
 
-          <!-- Info -->
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <h2 class="text-foreground font-semibold">
@@ -217,7 +169,6 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
             </p>
           </div>
 
-          <!-- Arrow -->
           <UIcon
             name="i-tabler-chevron-right"
             class="text-muted group-hover:text-primary size-5 shrink-0 transition-colors"
@@ -226,10 +177,6 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
       </div>
     </UContainer>
 
-    <!-- ================================================================ -->
-    <!-- Disambiguation Modal -->
-    <!-- Shown when ?select=YYYY resolves to more than one mandate -->
-    <!-- ================================================================ -->
     <UModal
       v-model:open="disambiguateModalOpen"
       :title="t('mandates.disambiguateTitle', { year: selectYear })"
@@ -242,7 +189,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
             v-for="mandate in disambiguateMandates"
             :key="mandate.id"
             :to="localePath(`/conocenos/equipo/historico/${buildMandateSlug(mandate)}`)"
-            class="group bg-surface/50 hover:bg-surface flex items-center gap-4 rounded-xl p-4 ring-1 ring-gray-200/50 transition-all hover:shadow-md dark:ring-gray-800/50"
+            class="motion-card group bg-surface/50 hover:bg-surface flex items-center gap-4 rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
             @click="closeDisambiguateModal"
           >
             <div

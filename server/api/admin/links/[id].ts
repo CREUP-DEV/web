@@ -2,14 +2,25 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
-import { requireAuth } from '../../../utils/requireAuth'
-import { updateFeaturedLinkSchema, validateBody } from '../../../utils/validation'
+import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import { getPreferredTranslationValue } from '../../../utils/localizedContent'
+import {
+  idRouteParamSchema,
+  updateFeaturedLinkSchema,
+  validateBody,
+  validateRouteParams,
+} from '../../../utils/validation'
+import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+
+const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/enlaces-destacados'
+
+function getFeaturedLinkImageSlug(translations: Array<{ locale: string; title: string }>) {
+  return getPreferredTranslationValue(translations, 'title')
+}
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, message: 'ID requerido' })
-  }
+  const { id } = validateRouteParams(event, idRouteParamSchema)
 
   // GET - Get single featured link
   if (event.method === 'GET') {
@@ -27,48 +38,74 @@ export default defineEventHandler(async (event) => {
 
   // PUT - Update featured link
   if (event.method === 'PUT') {
-    await requireAuth(event)
     const body = await readBody(event)
 
     try {
-      const validated = validateBody(updateFeaturedLinkSchema, body)
+      const existingItem = await db.query.featuredLinks.findFirst({
+        where: eq(featuredLinks.id, id),
+      })
 
-      // Delete existing translations
-      await db
-        .delete(featuredLinkTranslations)
-        .where(eq(featuredLinkTranslations.featuredLinkId, id))
-
-      // Update the item
-      await db
-        .update(featuredLinks)
-        .set({
-          image: validated.image,
-          to: validated.to,
-          order: validated.order,
-          active: validated.active,
-        })
-        .where(eq(featuredLinks.id, id))
-
-      // Insert new translations
-      if (validated.translations.length > 0) {
-        await db.insert(featuredLinkTranslations).values(
-          validated.translations.map((t) => ({
-            locale: t.locale,
-            title: t.title,
-            alt: t.alt || null,
-            featuredLinkId: id,
-          }))
-        )
+      if (!existingItem) {
+        throw createError({ statusCode: 404, message: 'No encontrado' })
       }
 
-      // Fetch the complete item with translations
-      const item = await db.query.featuredLinks.findFirst({
-        where: eq(featuredLinks.id, id),
-        with: { translations: true },
+      const validated = validateBody(updateFeaturedLinkSchema, body)
+      const previousImage = existingItem.image
+      const image = await finalizeAdminImage({
+        storagePath: validated.image,
+        uploadDir: IMAGE_UPLOAD_DIR,
+        publicPath: HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+        slug: getFeaturedLinkImageSlug(validated.translations),
+        publish: validated.active,
+        fallbackBaseName: 'enlace-destacado',
+        replaceStoragePath: existingItem.image,
       })
+
+      const item = await db.transaction(async (tx) => {
+        await tx
+          .delete(featuredLinkTranslations)
+          .where(eq(featuredLinkTranslations.featuredLinkId, id))
+
+        await tx
+          .update(featuredLinks)
+          .set({
+            image,
+            to: validated.to,
+            order: validated.order,
+            active: validated.active,
+          })
+          .where(eq(featuredLinks.id, id))
+
+        if (validated.translations.length > 0) {
+          await tx.insert(featuredLinkTranslations).values(
+            validated.translations.map((translation) => ({
+              locale: translation.locale,
+              title: translation.title,
+              alt: translation.alt || null,
+              featuredLinkId: id,
+            }))
+          )
+        }
+
+        return tx.query.featuredLinks.findFirst({
+          where: eq(featuredLinks.id, id),
+          with: { translations: true },
+        })
+      })
+
+      if (previousImage !== image) {
+        await cleanupUnusedAdminAsset({
+          storagePath: previousImage,
+          allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
+        })
+      }
 
       return { item }
     } catch (e) {
+      if (typeof e === 'object' && e !== null && 'statusCode' in e) {
+        throw e
+      }
+
       throw createError({
         statusCode: 400,
         message: e instanceof Error ? e.message : 'Error de validación',
@@ -78,9 +115,20 @@ export default defineEventHandler(async (event) => {
 
   // DELETE - Delete featured link
   if (event.method === 'DELETE') {
-    await requireAuth(event)
+    const existingItem = await db.query.featuredLinks.findFirst({
+      where: eq(featuredLinks.id, id),
+    })
+
+    if (!existingItem) {
+      throw createError({ statusCode: 404, message: 'No encontrado' })
+    }
 
     await db.delete(featuredLinks).where(eq(featuredLinks.id, id))
+
+    await cleanupUnusedAdminAsset({
+      storagePath: existingItem.image,
+      allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
+    })
 
     return { success: true }
   }

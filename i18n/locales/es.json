@@ -35,10 +35,7 @@
       "regulations": "Normativa",
       "financialReports": "Informes económicos",
       "corporateIdentity": "Identidad Corporativa",
-      "equality": {
-        "label": "Igualdad",
-        "overview": "Información general"
-      }
+      "equality": "Igualdad"
     },
     "contact": "Contacto"
   },
@@ -102,8 +99,10 @@
     "loading": "Cargando..."
   },
   "common": {
+    "all": "Todos",
     "readMore": "Leer más",
     "viewAll": "Ver todo",
+    "visitWebsite": "Visitar web",
     "back": "Volver",
     "comingSoon": "Contenido disponible próximamente.",
     "close": "Cerrar",
@@ -170,49 +169,81 @@
   },
   "aboutPage": {
     "title": "¿Qué es CREUP?",
-    "description": "CREUP es la principal voz del estudiantado universitario de las universidades públicas en España.",
-    "lead": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) agrupa a consejos de estudiantes y delegaciones de 37 universidades públicas, representando a más de 1.000.000 de estudiantes.",
-    "intro": "Como entidad estatal de referencia, CREUP traslada las necesidades e intereses del estudiantado ante instituciones y administraciones públicas para contribuir a la mejora continua del sistema universitario.",
-    "activityTitle": "Cómo trabajamos",
-    "activityParagraph1": "Para cumplir sus fines, CREUP celebra dos Asambleas Generales al año en las que sus miembros acuerdan prioridades, posicionamientos y líneas estratégicas comunes.",
-    "activityParagraph2": "Además, impulsa encuentros formativos y espacios de intercambio de experiencias entre representantes estudiantiles, fortaleciendo la coordinación y el aprendizaje compartido.",
-    "collaborationTitle": "Colaboración institucional",
-    "collaborationParagraph": "CREUP mantiene convenios y relaciones de colaboración con entidades vinculadas a la Educación Superior, como CEDU, CRUE o asociaciones de egresados y egresadas, para reforzar el impacto de la representación estudiantil.",
-    "purposeTitle": "Compromiso con la sociedad",
-    "purposeParagraph": "Esta labor convierte a CREUP en un actor imprescindible para la universidad pública: una organización que da voz al estudiantado y trabaja, de forma constante, por una educación superior más justa, participativa y de calidad.",
-    "missionTitle": "Misión",
-    "missionText": "Dar voz al estudiantado para la construcción y mejora del sistema universitario.",
-    "visionTitle": "Visión",
-    "visionText": "Consolidarse como el principal agente de representación del estudiantado a nivel estatal, actuando como enlace con asociaciones e instituciones.",
-    "valuesTitle": "Valores",
-    "values": {
-      "independence": "Independencia",
-      "cooperation": "Cooperación",
-      "nonDiscrimination": "No discriminación",
-      "socialCommitment": "Compromiso social",
-      "participation": "Participación"
+    "description": "Somos la principal plataforma de representación del estudiantado de las universidades públicas en España.",
+    "lead": "Somos una asociación estatal que reúne a los consejos de estudiantes de las universidades públicas, dando voz a más de un millón de estudiantes de toda España.",
+    "intro": "Coordinamos la representación estatal del estudiantado y defendemos nuestros derechos y participación en la política universitaria.",
+    "snapshotTitle": "CREUP en cifras",
+    "ctaIdentity": "Cómo trabajamos",
+    "ctaMembers": "Ver miembros",
+    "stats": {
+      "universities": {
+        "label": "universidades públicas miembro"
+      },
+      "students": {
+        "label": "estudiantes representados"
+      },
+      "years": {
+        "suffix": "años",
+        "label": "trabajando por el estudiantado"
+      }
     },
-    "sectionsTitle": "Conoce mejor CREUP",
-    "sectionsDescription": "Si quieres profundizar en cómo nos organizamos y quiénes formamos parte de la Coordinadora, visita estas secciones:",
+    "identityTitle": "Somos la voz del estudiantado",
+    "identityParagraph1": "Actuamos como interlocutores ante instituciones y organismos clave para que nuestra perspectiva como estudiantes forme parte de las políticas universitarias.",
+    "identityParagraph2": "Nuestro objetivo es garantizar que la voz del estudiantado sea escuchada en la construcción y mejora del sistema universitario, promoviendo un modelo de educación pública de calidad, inclusiva y accesible.",
+    "activityTitle": "Así trabajamos",
+    "activityParagraph1": "Celebramos dos Asambleas Generales al año en las que acordamos prioridades, posicionamientos y líneas estratégicas comunes.",
+    "activityParagraph2": "Impulsamos encuentros formativos y espacios de intercambio de experiencias y opiniones entre representantes estudiantiles y otros agentes sociales del sistema universitario.",
+    "purposeTitle": "Nuestro compromiso con la sociedad",
+    "purposeParagraph": "Damos voz al estudiantado y trabajamos, de forma constante, por una educación superior más justa, participativa y de calidad. Creemos en la universidad pública como ascensor social.",
+    "missionTitle": "Misión",
+    "missionText": "Dar voz al estudiantado universitario para la construcción y mejora del Sistema Universitario Español, promoviendo una educación superior de calidad, accesible e inclusiva. Buscamos que nuestros derechos, necesidades e intereses sean escuchados y tenidos en cuenta en la toma de decisiones.",
+    "visionTitle": "Visión",
+    "visionText": "Consolidarnos como el principal agente de representación del estudiantado a nivel estatal, sirviendo de enlace con asociaciones, instituciones y organismos públicos y privados, tanto nacionales como internacionales. Aspiramos a impulsar un sistema universitario más justo, innovador y adaptado a las necesidades de la sociedad.",
+    "valuesTitle": "Valores que nos definen",
+    "valuesDescription": "La representación estudiantil que impulsamos se apoya en principios claros y compartidos.",
+    "values": {
+      "independence": {
+        "title": "Independencia",
+        "description": "Actuamos con autonomía para representar al estudiantado por encima de intereses ajenos a nuestras necesidades."
+      },
+      "cooperation": {
+        "title": "Cooperación",
+        "description": "Construimos posiciones comunes desde el trabajo compartido entre universidades y representantes de todo el Estado."
+      },
+      "nonDiscrimination": {
+        "title": "No discriminación",
+        "description": "Defendemos una universidad inclusiva, diversa y libre de barreras para todas las personas."
+      },
+      "socialCommitment": {
+        "title": "Compromiso social",
+        "description": "Entendemos la educación superior como una herramienta de equidad, progreso colectivo y transformación social."
+      },
+      "participation": {
+        "title": "Participación",
+        "description": "Promovemos que el estudiantado forme parte activa de las decisiones que afectan a nuestro presente y a nuestro futuro."
+      }
+    },
+    "sectionsTitle": "Sigue conociéndonos",
+    "sectionsDescription": "Consulta las secciones donde se organiza nuestro trabajo:",
     "sections": {
       "members": {
         "title": "Miembros",
-        "description": "Consulta las organizaciones estudiantiles y entidades que participan activamente en CREUP.",
+        "description": "Consulta las organizaciones estudiantiles que forman parte de CREUP.",
         "cta": "Ir a Miembros"
       },
       "team": {
         "title": "Equipo",
-        "description": "Conoce a las personas que asumen responsabilidades de representación y coordinación en CREUP.",
+        "description": "Conoce a las personas que asumimos responsabilidades de representación y coordinación.",
         "cta": "Ir a Equipo"
       },
       "committees": {
         "title": "Comités",
-        "description": "Descubre los comités de trabajo y a sus integrantes, que desarrollan la actividad técnica y política de la organización.",
+        "description": "Descubre nuestros comités de trabajo y a sus integrantes.",
         "cta": "Ir a Comités"
       },
       "events": {
         "title": "Eventos",
-        "description": "Consulta las asambleas, encuentros y actividades formativas organizadas por CREUP.",
+        "description": "Consulta nuestras asambleas, encuentros y eventos formativos.",
         "cta": "Ir a Eventos"
       }
     }
@@ -221,7 +252,7 @@
     "title": "Igualdad y prevención del acoso",
     "description": "Espacio público con documentos y recursos sobre igualdad, diversidad, comunicación inclusiva y el Punto Seguro de nuestros eventos.",
     "eyebrow": "Igualdad y Dimensión Social",
-    "lead": "En esta página podrás encontrar nuestro posicionamiento, los protocolos vigentes frente al acoso sexual y la discriminación, y la información básica sobre el Punto Seguro del que disponemos en asambleas, encuentros y demás eventos.",
+    "lead": "En esta página podrás consultar documentos y recursos relacionados con la igualdad, la diversidad, la prevención de discriminaciones y la información básica sobre el Punto Seguro del que disponemos en asambleas, encuentros y demás eventos.",
     "ctaDocuments": "Ver documentos",
     "ctaContact": "Escribir al Punto Seguro",
     "heroPoints": {
@@ -229,45 +260,10 @@
       "access": "Acceso claro desde la web pública",
       "support": "Documentación para prevenir, actuar y acompañar"
     },
-    "commitmentsTitle": "Qué tienes aquí",
-    "commitments": {
-      "policy": {
-        "title": "Marco político y de principios",
-        "description": "Expone cómo entendemos la igualdad, la diversidad y la no discriminación en la universidad y en nuestros espacios de representación."
-      },
-      "protocol": {
-        "title": "Protocolos vigentes de actuación",
-        "description": "Reúne los dos protocolos aprobados en 2025 para prevenir, atender y tramitar situaciones de acoso sexual o discriminación en nuestros eventos."
-      },
-      "communication": {
-        "title": "Comunicación inclusiva",
-        "description": "Incluye pautas prácticas sobre lenguaje, representación visual y accesibilidad para comunicarnos de forma no discriminatoria."
-      }
-    },
     "resourcesTitle": "Documentos para consultar",
     "openDocument": "Abrir documento",
-    "resources": {
-      "position": {
-        "title": "Posicionamiento político en materia de Igualdad y Diversidad",
-        "description": "Nuestro documento marco sobre igualdad, diversidad, discriminaciones en la universidad y medidas que reclamamos a las instituciones públicas.",
-        "meta": "Documento político · Igualdad y diversidad"
-      },
-      "sexualProtocol": {
-        "title": "Protocolo de prevención y actuación frente a casos de acoso sexual",
-        "description": "Aprobado en la 77.ª Asamblea General Ordinaria, recoge medidas preventivas, principios de confidencialidad, el funcionamiento del Punto Seguro y el procedimiento de actuación ante conductas contrarias a la libertad sexual.",
-        "meta": "77.ª Asamblea General Ordinaria · 4 de abril de 2025"
-      },
-      "discriminationProtocol": {
-        "title": "Protocolo de prevención y actuación frente a casos de discriminación",
-        "description": "Aprobado en la 77.ª Asamblea General Ordinaria, define supuestos de discriminación, garantías, Punto Seguro y niveles de intervención ante violencia o acoso por diversidad.",
-        "meta": "77.ª Asamblea General Ordinaria · 4 de abril de 2025"
-      },
-      "guide": {
-        "title": "Guía de Comunicación Inclusiva",
-        "description": "Recoge recomendaciones prácticas sobre lenguaje, recursos visuales y criterios de accesibilidad para una comunicación más inclusiva.",
-        "meta": "Guía práctica · Lenguaje, visualidad y accesibilidad"
-      }
-    },
+    "loadError": "No se pudieron cargar los documentos de igualdad en este momento.",
+    "empty": "No hay documentos de igualdad publicados por ahora.",
     "actionTitle": "Si pasa algo en uno de nuestros eventos",
     "actionSteps": {
       "safety": {
@@ -306,7 +302,7 @@
         "description": "Ayuda a dejar constancia de lo ocurrido, conectar con las personas responsables y dar continuidad al acompañamiento con la discreción que requiere cada caso."
       }
     },
-    "scopeTitle": "Qué situaciones recogen los protocolos",
+    "scopeTitle": "Qué situaciones se contemplan",
     "scopeItems": {
       "sexualViolence": "Acoso sexual y conductas contra la libertad sexual",
       "gender": "Sexismo, violencia de género y desigualdad estructural",
@@ -338,6 +334,7 @@
     "unknownDenomination": "Designación no especificada",
     "viewDetails": "Ver detalles",
     "memberModalDescription": "Detalles de la organización seleccionada.",
+    "descriptionLabel": "Descripción",
     "info": "Información y contacto",
     "socialNetworks": "Redes sociales",
     "networks": {
@@ -355,7 +352,20 @@
     },
     "membersIn": "Miembros en {community}",
     "selectCommunity": "Selecciona una comunidad autónoma en el mapa para ver sus miembros.",
-    "mapAccessibleHelp": "Si no puedes usar el mapa, puedes saltar directamente al listado de miembros.",
+    "mapAccessibleHelp": "Si no puedes usar el mapa, puedes usar el filtro de comunidades o saltar directamente al listado de miembros.",
+    "representedCommunities": "{count} comunidades con representación",
+    "mapSelectionSummary": "Mostrando miembros de {community}",
+    "mapSelectionAllSummary": "Mostrando el conjunto de miembros asociados",
+    "mapLegendLabel": "Leyenda del mapa",
+    "mapLegendSelected": "Comunidad seleccionada",
+    "mapLegendActive": "Con representación activa",
+    "mapLegendInactive": "Sin miembros registrados",
+    "mapFilterTitle": "Filtrar por comunidad sin usar el mapa",
+    "mapTooltipCount": "{count} miembro | {count} miembros",
+    "mapTooltipEmpty": "Sin miembros registrados",
+    "mapSelectedState": "Seleccionada",
+    "mapAvailableState": "Con representación",
+    "mapUnavailableState": "Sin representación",
     "skipMap": "Ir al listado",
     "communities": {
       "andalucia": "Andalucía",
@@ -562,27 +572,11 @@
   "cookies": {
     "banner": {
       "title": "Respetamos tu privacidad",
-      "description": "Usamos cookies esenciales para el funcionamiento del sitio y cookies analíticas opcionales para entender cómo se usa y poder mejorarlo. No recopilamos datos personales identificables.",
-      "acceptAll": "Aceptar todas",
-      "essentialOnly": "Solo esenciales",
-      "customize": "Configurar",
-      "learnMore": "Política de cookies"
+      "description": "Este sitio usa solo cookies y almacenamiento técnico necesarios para idioma, accesibilidad y la sesión de administración. Además, CREUP utiliza una instancia autoalojada de Umami para medición agregada del uso sin cookies ni identificadores persistentes.",
+      "dismiss": "Entendido",
+      "learnMore": "Privacidad y cookies"
     },
-    "settings": {
-      "title": "Preferencias de cookies",
-      "description": "Elige qué tipos de cookies aceptas. Puedes cambiar estas preferencias en cualquier momento desde el enlace en el pie de página.",
-      "save": "Guardar preferencias",
-      "essential": {
-        "title": "Cookies esenciales",
-        "description": "Necesarias para el funcionamiento básico del sitio: idioma, sesión de administración y preferencias de interfaz. No se pueden desactivar.",
-        "always": "Siempre activas"
-      },
-      "analytics": {
-        "title": "Cookies analíticas",
-        "description": "Utilizamos Umami, una herramienta de analítica respetuosa con la privacidad. No se utilizan cookies de seguimiento de terceros ni se recopilan datos personales. La información es anónima y nos ayuda a mejorar el sitio."
-      }
-    },
-    "editPreferences": "Preferencias de cookies"
+    "footerLink": "Cookies y privacidad"
   },
   "contactPage": {
     "seo": {
@@ -654,6 +648,10 @@
     "confirmed": {
       "title": "Suscripción confirmada",
       "description": "Tu dirección ha quedado activada para recibir la newsletter de CREUP."
+    },
+    "confirmedExpired": {
+      "title": "El enlace de confirmación ha caducado",
+      "description": "Vuelve a enviar el formulario de suscripción para recibir un enlace nuevo."
     },
     "unsubscribe": {
       "title": "Te has dado de baja de la newsletter",

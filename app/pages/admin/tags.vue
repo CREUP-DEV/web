@@ -1,23 +1,18 @@
 <script setup lang="ts">
-/**
- * Admin Tags Management with drag-and-drop reordering
- */
-import Sortable from 'sortablejs'
-import type { LocaleConfig } from '~/composables/useLocales'
-
 definePageMeta({
   layout: 'admin',
 })
 
-// Check auth
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
-
 const { t } = useI18n()
 const toast = useToast()
-const { localeConfigs, getLocaleFlag, getLocaleName, filterNonEmptyTranslations } = useLocales()
+const {
+  getLocaleFlag,
+  getLocaleName,
+  isDefaultLocale,
+  filterNonEmptyTranslations,
+  createEmptyTranslations,
+  mapTranslationsToForm,
+} = useLocales()
 
 interface Translation {
   locale: string
@@ -35,85 +30,40 @@ const { data, refresh } = await useFetch<{ items: Tag[] }>('/api/admin/tags')
 
 const items = computed(() => data.value?.items ?? [])
 
-// Local items for drag-and-drop
-const localItems = ref<Tag[]>([])
-const isSavingOrder = ref(false)
-
-// Computed: detect if order changed from original
-const hasOrderChanges = computed(() => {
-  if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some((item: Tag, index: number) => item.id !== items.value[index]?.id)
-})
-
-// Sync local items with server data
-watch(
-  items,
-  (newItems: Tag[]) => {
-    localItems.value = [...newItems]
-  },
-  { immediate: true }
-)
-
-// Modal state
 const showModal = ref(false)
 const editingItem = ref<Tag | null>(null)
 const isSubmitting = ref(false)
 
-// Delete confirmation modal
 const showDeleteModal = ref(false)
 const itemToDelete = ref<Tag | null>(null)
 const isDeleting = ref(false)
 
-// Form state
 const form = reactive({
   slug: '',
   order: 0,
-  translations: [
-    { locale: 'es', name: '' },
-    { locale: 'en', name: '' },
-  ],
+  translations: createEmptyTranslations<Translation>({
+    name: '',
+  }),
 })
 
-// Sortable setup
 const listRef = ref<HTMLElement | null>(null)
-let sortableInstance: Sortable | null = null
+const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
+  useReorderableAdminList({
+    items,
+    listRef,
+    persist: async (updates) => {
+      await $fetch('/api/admin/tags/reorder', {
+        method: 'POST',
+        body: { items: updates },
+      })
 
-onMounted(() => {
-  if (listRef.value) {
-    sortableInstance = Sortable.create(listRef.value, {
-      animation: 150,
-      handle: '.drag-handle',
-      ghostClass: 'opacity-50',
-      onEnd: (evt) => {
-        if (evt.oldIndex !== undefined && evt.newIndex !== undefined) {
-          const movedItem = localItems.value.splice(evt.oldIndex, 1)[0]
-          if (movedItem) {
-            localItems.value.splice(evt.newIndex, 0, movedItem)
-          }
-        }
-      },
-    })
-  }
-})
-
-onUnmounted(() => {
-  sortableInstance?.destroy()
-})
+      await refresh()
+    },
+  })
 
 const saveOrder = async () => {
-  isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item: Tag, index: number) => ({
-      id: item.id,
-      order: index,
-    }))
-
-    await $fetch('/api/admin/tags/reorder', {
-      method: 'POST',
-      body: { items: updates },
-    })
-
-    await refresh()
+    await persistOrder()
     toast.add({
       title: t('admin.messages.tagOrderSaved'),
       color: 'success',
@@ -124,23 +74,16 @@ const saveOrder = async () => {
       title: t('admin.errors.tagOrderSaveFailed'),
       color: 'error',
     })
-  } finally {
-    isSavingOrder.value = false
   }
-}
-
-const cancelOrderChanges = () => {
-  localItems.value = [...items.value]
 }
 
 const openCreate = () => {
   editingItem.value = null
   form.slug = ''
   form.order = items.value.length
-  form.translations = localeConfigs.value.map((l: LocaleConfig) => ({
-    locale: l.code,
+  form.translations = createEmptyTranslations<Translation>({
     name: '',
-  }))
+  })
   showModal.value = true
 }
 
@@ -148,13 +91,9 @@ const openEdit = (item: Tag) => {
   editingItem.value = item
   form.slug = item.slug
   form.order = item.order
-  form.translations = localeConfigs.value.map((l: LocaleConfig) => {
-    const existing = item.translations.find((t) => t.locale === l.code)
-    return {
-      locale: l.code,
-      name: existing?.name ?? '',
-    }
-  })
+  form.translations = mapTranslationsToForm(item.translations, {
+    name: '',
+  }) as Translation[]
   showModal.value = true
 }
 
@@ -277,7 +216,6 @@ const handleDelete = async () => {
       <div v-if="!localItems.length" class="text-muted py-12 text-center">No hay etiquetas</div>
     </div>
 
-    <!-- Edit/Create Modal -->
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">
       <template #content>
         <div class="flex max-h-[80vh] flex-col">
@@ -300,7 +238,7 @@ const handleDelete = async () => {
                   <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
                   {{ getLocaleName(trans.locale) }}
                 </h4>
-                <UFormField :label="`Nombre ${trans.locale !== 'es' ? '(opcional)' : ''}`">
+                <UFormField :label="`Nombre ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`">
                   <UInput v-model="trans.name" class="w-full" />
                 </UFormField>
               </div>
@@ -316,7 +254,6 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <!-- Delete Confirmation Modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">

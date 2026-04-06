@@ -1,8 +1,3 @@
-/**
- * Sectoriales API endpoint
- * Proxies sectorial association data from the external CREUP intranet API.
- */
-
 import { createError, defineEventHandler } from 'h3'
 import {
   getExternalApiCacheOptions,
@@ -10,28 +5,16 @@ import {
   withExternalApiSWRCache,
 } from '../utils/externalApiCache'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
+import { logError } from '../utils/logger'
+import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
 import { externalSectorialMembersResponseSchema } from '../utils/validation'
-
-const supportedNetworks = [
-  'website',
-  'email',
-  'instagram',
-  'twitter',
-  'tiktok',
-  'bluesky',
-  'linkedin',
-  'telegram',
-  'discord',
-  'facebook',
-  'github',
-] as const
-
-type SupportedNetwork = (typeof supportedNetworks)[number]
-
-interface SectorialSocialOutput {
-  network: SupportedNetwork
-  value: string
-}
+import {
+  collectSocialNetworks,
+  normalizeSocialText,
+  type SocialNetworkEntry,
+} from '~~/shared/utils/social'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
+import { getRequestLocaleContext } from '../utils/requestLocale'
 
 interface SectorialMemberOutput {
   id: string
@@ -41,50 +24,7 @@ interface SectorialMemberOutput {
   description: string | null
   logoLight: string | null
   logoDark: string | null
-  socialNetworks: SectorialSocialOutput[]
-}
-
-const networkAliasMap: Record<string, SupportedNetwork> = {
-  website: 'website',
-  webpage: 'website',
-  web: 'website',
-  sitioweb: 'website',
-  paginaweb: 'website',
-
-  email: 'email',
-  mail: 'email',
-  correo: 'email',
-  correoelectronico: 'email',
-  contactemail: 'email',
-  contact_email: 'email',
-
-  instagram: 'instagram',
-
-  twitter: 'twitter',
-  x: 'twitter',
-  twitterx: 'twitter',
-
-  tiktok: 'tiktok',
-
-  bluesky: 'bluesky',
-
-  linkedin: 'linkedin',
-
-  telegram: 'telegram',
-
-  discord: 'discord',
-
-  facebook: 'facebook',
-
-  github: 'github',
-}
-
-const normalizeKey = (value: string) => {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9_]+/g, '')
+  socialNetworks: SocialNetworkEntry[]
 }
 
 const slugify = (value: string) => {
@@ -96,58 +36,25 @@ const slugify = (value: string) => {
     .replace(/^-+|-+$/g, '')
 }
 
-const normalizeText = (value: string | null | undefined) => {
-  if (typeof value !== 'string') {
-    return ''
-  }
-  return value.trim()
-}
+const normalizeText = normalizeSocialText
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const normalizeNetwork = (network: string): SupportedNetwork | null => {
-  const normalized = normalizeKey(network)
-  if (networkAliasMap[normalized]) {
-    return networkAliasMap[normalized]
-  }
-
-  if (normalized.includes('correo') || normalized.includes('email')) {
-    return 'email'
-  }
-
-  if (normalized.includes('web') || normalized.includes('pagina') || normalized.includes('sitio')) {
-    return 'website'
-  }
-
-  return null
-}
-
-const inferNetwork = (networkValue: string, value: string): SupportedNetwork | null => {
-  const inferred = normalizeNetwork(networkValue)
-  if (inferred) {
-    return inferred
-  }
-
-  if (emailPattern.test(value)) {
-    return 'email'
-  }
-
-  return null
+const messagesByLocale = {
+  en: {
+    unavailable: 'Sectorial data is temporarily unavailable.',
+  },
+  es: {
+    unavailable: 'La información de las sectoriales no está disponible temporalmente.',
+  },
 }
 
 export default defineEventHandler(async (event) => {
-  const runtimeConfig = useRuntimeConfig(event)
-  const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  const messages =
+    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
-
-  if (!configuredBaseUrl) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'External members API is not configured.',
-    })
-  }
 
   return withExternalApiSWRCache(
     `external-api:sectoriales:${configuredBaseUrl}`,
@@ -158,47 +65,24 @@ export default defineEventHandler(async (event) => {
       try {
         payload = await $fetch(endpoint)
       } catch (error) {
-        console.error('Failed to fetch external sectoriales API:', error)
+        logError('external.sectoriales.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Sectoriales data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 
       const parsedPayload = externalSectorialMembersResponseSchema.safeParse(payload)
       if (!parsedPayload.success) {
-        console.error(
-          'Invalid payload from external sectoriales API:',
-          parsedPayload.error.flatten()
-        )
+        logError('external.sectoriales.invalid-payload', parsedPayload.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Sectoriales data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 
       const sectoriales: SectorialMemberOutput[] = parsedPayload.data.data.map((member, index) => {
-        const socialMap = new Map<SupportedNetwork, string>()
-
-        for (const socialNetwork of member.social_networks ?? []) {
-          const value = normalizeText(socialNetwork.value)
-          const network = inferNetwork(normalizeText(socialNetwork.network), value)
-
-          if (!network || !value || socialMap.has(network)) {
-            continue
-          }
-
-          socialMap.set(network, value)
-        }
-
-        const socialNetworks: SectorialSocialOutput[] = supportedNetworks.flatMap((network) => {
-          const value = socialMap.get(network)
-          if (!value) {
-            return []
-          }
-
-          return [{ network, value }]
-        })
+        const socialNetworks = collectSocialNetworks(member.social_networks)
 
         const denomination = normalizeText(member.denomination)
         const initials = normalizeText(member.initials)

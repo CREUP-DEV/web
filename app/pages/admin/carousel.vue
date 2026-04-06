@@ -1,19 +1,9 @@
 <script setup lang="ts">
-/**
- * Admin Carousel Management with drag-and-drop reordering
- */
-import Sortable from 'sortablejs'
-import type { LocaleConfig } from '~/composables/useLocales'
+import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
 
 definePageMeta({
   layout: 'admin',
 })
-
-// Check auth
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
 
 interface Translation {
   locale: string
@@ -33,99 +23,76 @@ interface CarouselItem {
 
 const toast = useToast()
 
-const defaultCarouselImage = '/inicio/imagenes/carousel-default.jpg'
+const defaultCarouselImage = HOME_CAROUSEL_FALLBACK_IMAGE
 
 const { data, refresh } = await useFetch<{ items: CarouselItem[] }>('/api/admin/carousel')
 
 const items = computed(() => data.value?.items ?? [])
 
-// Local items for drag-and-drop
-const localItems = ref<CarouselItem[]>([])
-const isSavingOrder = ref(false)
+const {
+  getLocaleFlag,
+  getLocaleName,
+  isDefaultLocale,
+  createEmptyTranslations,
+  mapTranslationsToForm,
+} = useLocales()
 
-// Computed to check if order has changed by comparing IDs
-const hasOrderChanges = computed(() => {
-  if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some(
-    (item: CarouselItem, index: number) => item.id !== items.value[index]?.id
-  )
-})
-
-// Sync local items with server data
-watch(
-  items,
-  (newItems: CarouselItem[]) => {
-    localItems.value = [...newItems]
-  },
-  { immediate: true }
-)
-
-// Locales composable
-const { localeConfigs, getLocaleFlag, getLocaleName } = useLocales()
-
-// Modal state
 const showModal = ref(false)
 const editingItem = ref<CarouselItem | null>(null)
 const isSubmitting = ref(false)
 
-// Delete confirmation modal
 const showDeleteModal = ref(false)
 const itemToDelete = ref<CarouselItem | null>(null)
 const isDeleting = ref(false)
 
-// Form state - dynamic based on available locales
 const emptyTranslation = { title: '', buttonText: '', alt: '' }
 const form = reactive({
   image: '',
   href: '',
   order: 0,
   active: true,
-  translations: localeConfigs.value.map((localeConfig: LocaleConfig) => ({
-    locale: localeConfig.code,
-    ...emptyTranslation,
-  })),
+  translations: createEmptyTranslations<Translation>(emptyTranslation),
 })
 
-// Sortable setup
+const currentImagePreview = computed(() => imagePreview.value || form.image || defaultCarouselImage)
+
 const listRef = ref<HTMLElement | null>(null)
-let sortableInstance: Sortable | null = null
+const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
+  useReorderableAdminList({
+    items,
+    listRef,
+    persist: async (updates) => {
+      await $fetch('/api/admin/carousel/reorder', {
+        method: 'POST',
+        body: { items: updates },
+      })
 
-onMounted(() => {
-  if (listRef.value) {
-    sortableInstance = Sortable.create(listRef.value, {
-      animation: 150,
-      handle: '.drag-handle',
-      ghostClass: 'opacity-50',
-      onEnd: (evt) => {
-        if (evt.oldIndex !== undefined && evt.newIndex !== undefined) {
-          const movedItem = localItems.value.splice(evt.oldIndex, 1)[0]
-          if (movedItem) {
-            localItems.value.splice(evt.newIndex, 0, movedItem)
-          }
-        }
-      },
-    })
-  }
-})
+      await refresh()
+    },
+  })
 
-onUnmounted(() => {
-  sortableInstance?.destroy()
+const {
+  inputRef: imageInputRef,
+  preview: imagePreview,
+  isUploading: isUploadingImage,
+  triggerFileDialog: triggerImageUpload,
+  handleFileSelect: handleImageSelect,
+} = useAdminFileUpload({
+  endpoint: '/api/admin/home/upload',
+  extraFields: {
+    kind: 'carousel',
+  },
+  successMessage: 'Imagen subida correctamente',
+  errorMessage: 'No se pudo subir la imagen',
+  onUploaded: (storagePath) => {
+    form.image = storagePath
+  },
+  getFallbackPreview: () => form.image || null,
 })
 
 const saveOrder = async () => {
-  isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item: CarouselItem, index: number) => ({
-      id: item.id,
-      order: index,
-    }))
-
-    await $fetch('/api/admin/carousel/reorder', {
-      method: 'POST',
-      body: { items: updates },
-    })
-
-    await refresh()
+    await persistOrder()
     toast.add({
       title: 'Orden del carrusel guardado',
       color: 'success',
@@ -136,13 +103,7 @@ const saveOrder = async () => {
       title: 'No se pudo guardar el orden del carrusel',
       color: 'error',
     })
-  } finally {
-    isSavingOrder.value = false
   }
-}
-
-const cancelOrderChanges = () => {
-  localItems.value = [...items.value]
 }
 
 const openCreate = () => {
@@ -151,13 +112,8 @@ const openCreate = () => {
   form.href = ''
   form.order = items.value.length
   form.active = true
-  // Create empty translations for all available locales
-  form.translations = localeConfigs.value.map((localeConfig: LocaleConfig) => ({
-    locale: localeConfig.code,
-    title: '',
-    buttonText: '',
-    alt: '',
-  }))
+  form.translations = createEmptyTranslations<Translation>(emptyTranslation)
+  imagePreview.value = null
   showModal.value = true
 }
 
@@ -167,18 +123,8 @@ const openEdit = (item: CarouselItem) => {
   form.href = item.href
   form.order = item.order
   form.active = item.active
-  // Map existing translations to form, ensuring all locales are present
-  form.translations = localeConfigs.value.map((localeConfig: LocaleConfig) => {
-    const existing = item.translations.find(
-      (translation) => translation.locale === localeConfig.code
-    )
-    return {
-      locale: localeConfig.code,
-      title: existing?.title ?? '',
-      buttonText: existing?.buttonText ?? '',
-      alt: existing?.alt ?? '',
-    }
-  })
+  form.translations = mapTranslationsToForm(item.translations, emptyTranslation) as Translation[]
+  imagePreview.value = item.image
   showModal.value = true
 }
 
@@ -270,19 +216,16 @@ const handleDelete = async () => {
         :key="item.id"
         class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
       >
-        <!-- Desktop layout -->
         <div class="hidden items-center gap-4 md:flex">
           <div class="drag-handle cursor-grab active:cursor-grabbing">
             <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
           </div>
           <div class="bg-muted aspect-1925/550 w-40 max-w-40 overflow-hidden rounded-lg">
-            <NuxtImg
+            <img
               :src="item.image || defaultCarouselImage"
               alt=""
               aria-hidden="true"
               class="size-full object-contain"
-              width="385"
-              height="110"
               loading="lazy"
             />
           </div>
@@ -310,7 +253,6 @@ const handleDelete = async () => {
           </div>
         </div>
 
-        <!-- Mobile layout -->
         <div class="space-y-3 md:hidden">
           <div class="flex justify-center">
             <div class="drag-handle cursor-grab active:cursor-grabbing">
@@ -319,13 +261,11 @@ const handleDelete = async () => {
           </div>
           <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.title }}</h3>
           <div class="bg-muted aspect-1925/550 w-full overflow-hidden rounded-lg">
-            <NuxtImg
+            <img
               :src="item.image || defaultCarouselImage"
               alt=""
               aria-hidden="true"
               class="size-full object-contain"
-              width="385"
-              height="110"
               loading="lazy"
             />
           </div>
@@ -356,7 +296,6 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <!-- Edit/Create Modal -->
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">
       <template #content>
         <div class="flex max-h-[80vh] flex-col">
@@ -366,16 +305,41 @@ const handleDelete = async () => {
             </h2>
 
             <form id="carousel-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Imagen (URL, opcional)">
-                <UInput
-                  v-model="form.image"
-                  placeholder="/inicio/imagenes/carousel-default.jpg"
-                  class="w-full"
-                />
-                <p class="text-muted mt-1 text-xs">
-                  Si no se indica imagen, se usará la predeterminada. Tamaño recomendado: 1925 × 550
-                  px.
-                </p>
+              <UFormField label="Imagen (opcional)">
+                <div class="space-y-3">
+                  <div class="bg-muted aspect-1925/550 overflow-hidden rounded-xl border">
+                    <img
+                      :src="currentImagePreview"
+                      alt="Vista previa del banner"
+                      class="size-full object-cover"
+                    />
+                  </div>
+
+                  <input
+                    ref="imageInputRef"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
+                    class="hidden"
+                    @change="handleImageSelect"
+                  />
+
+                  <div class="flex flex-wrap gap-2">
+                    <UButton
+                      type="button"
+                      variant="outline"
+                      icon="i-tabler-upload"
+                      :loading="isUploadingImage"
+                      @click="triggerImageUpload"
+                    >
+                      {{ form.image ? 'Cambiar imagen' : 'Subir imagen' }}
+                    </UButton>
+                  </div>
+
+                  <p class="text-muted text-xs">
+                    Si no subes una imagen, se usará la predeterminada. Tamaño recomendado: 1925 ×
+                    550 px.
+                  </p>
+                </div>
               </UFormField>
 
               <UFormField label="Enlace">
@@ -397,24 +361,26 @@ const handleDelete = async () => {
                 <h4 class="mb-3 flex items-center gap-2 font-medium">
                   <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
                   {{ getLocaleName(trans.locale) }}
-                  <span v-if="trans.locale !== 'es'" class="text-muted text-xs"> (opcional) </span>
+                  <span v-if="!isDefaultLocale(trans.locale)" class="text-muted text-xs">
+                    (opcional)
+                  </span>
                 </h4>
                 <div class="space-y-3">
-                  <UFormField :label="trans.locale === 'es' ? 'Título *' : 'Título'">
+                  <UFormField :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'">
                     <UTextarea
                       v-model="trans.title"
                       :rows="2"
                       class="w-full"
-                      :required="trans.locale === 'es'"
+                      :required="isDefaultLocale(trans.locale)"
                     />
                   </UFormField>
                   <UFormField
-                    :label="trans.locale === 'es' ? 'Texto del botón *' : 'Texto del botón'"
+                    :label="isDefaultLocale(trans.locale) ? 'Texto del botón *' : 'Texto del botón'"
                   >
                     <UInput
                       v-model="trans.buttonText"
                       class="w-full"
-                      :required="trans.locale === 'es'"
+                      :required="isDefaultLocale(trans.locale)"
                     />
                   </UFormField>
                   <UFormField label="Texto alternativo (descripción de la imagen)">
@@ -434,7 +400,6 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <!-- Delete Confirmation Modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">

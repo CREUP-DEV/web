@@ -1,13 +1,12 @@
 <script setup lang="ts">
-/**
- * Root App component.
- * Sets global document attributes and wraps pages with UApp.
- */
 import { en, es } from '@nuxt/ui/locale'
 import { getBaseLanguage } from '~~/shared/utils/locale'
 
 const { locale, t } = useI18n()
 const { getLanguageTag } = useLocales()
+const localeHead = useLocaleHead({ seo: true })
+const siteConfig = useSiteConfig()
+const siteUrl = computed(() => String(siteConfig.url ?? 'https://www.creup.es'))
 
 const nuxtUiLocales = { en, es } as const
 const currentUiLocale = computed(
@@ -19,26 +18,39 @@ const currentUiLocale = computed(
 
 const lang = computed(() => getLanguageTag(locale.value))
 const dir = computed(() => currentUiLocale.value.dir)
+const pageTransition = {
+  name: 'page-shell',
+  mode: 'out-in' as const,
+}
 
-// Global document head configuration
-useHead({
+useHead(() => ({
   htmlAttrs: {
-    lang,
-    dir,
+    lang: localeHead.value.htmlAttrs?.lang ?? lang.value,
+    dir: (localeHead.value.htmlAttrs?.dir ?? dir.value) as 'auto' | 'ltr' | 'rtl',
   },
   meta: [
+    ...(localeHead.value.meta ?? []),
     { name: 'theme-color', content: '#792225' },
     { name: 'author', content: 'CREUP' },
   ],
-  link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-})
+  link: [
+    ...(localeHead.value.link ?? []).filter((link) => link.rel !== 'canonical'),
+    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+  ],
+}))
 
 useSchemaOrg([
+  defineWebSite({
+    '@id': () => `${siteUrl.value}#website`,
+    name: () => String(siteConfig.name ?? 'CREUP'),
+    url: () => siteUrl.value,
+    inLanguage: () => lang.value,
+  }),
   defineOrganization({
-    '@id': 'https://www.creup.es/#organization',
+    '@id': () => `${siteUrl.value}#organization`,
     name: 'CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas',
-    url: 'https://www.creup.es',
-    logo: 'https://www.creup.es/favicon.svg',
+    url: () => siteUrl.value,
+    logo: () => `${siteUrl.value}/favicon.svg`,
     description: () => t('nuxtSiteConfig.description'),
     sameAs: [
       'https://www.instagram.com/CREUPCREUP',
@@ -61,7 +73,7 @@ useSchemaOrg([
   <UApp :locale="currentUiLocale">
     <NuxtRouteAnnouncer />
     <NuxtLayout>
-      <NuxtPage />
+      <NuxtPage :transition="pageTransition" />
     </NuxtLayout>
   </UApp>
 </template>

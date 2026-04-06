@@ -1,26 +1,22 @@
-/**
- * Admin Newsletter Subscriber by ID
- * PUT    /api/admin/newsletter/subscriber/:id — Update subscriber (toggle active, change email)
- * DELETE /api/admin/newsletter/subscriber/:id — Delete subscriber permanently
- */
 import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletterSubscribers } from '../../../../db/schema'
-import { requireAuth } from '../../../../utils/requireAuth'
-import { updateSubscriberSchema, validateBody } from '../../../../utils/validation'
+import { throwAdminMutationError } from '../../../../utils/adminErrors'
+import {
+  idRouteParamSchema,
+  updateSubscriberSchema,
+  validateBody,
+  validateRouteParams,
+} from '../../../../utils/validation'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_CONSENT_TEXT_VERSION,
+  createNewsletterUnsubscribeToken,
 } from '../../../../utils/newsletterSubscribers'
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event)
-
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, message: 'ID requerido' })
-  }
+  const { id } = validateRouteParams(event, idRouteParamSchema)
 
   // PUT — update subscriber
   if (event.method === 'PUT') {
@@ -39,8 +35,10 @@ export default defineEventHandler(async (event) => {
           consentSource: validated.active ? NEWSLETTER_CONSENT_SOURCES.adminManual : undefined,
           consentTextVersion: validated.active ? NEWSLETTER_CONSENT_TEXT_VERSION : undefined,
           confirmToken: validated.active ? null : undefined,
+          confirmTokenExpiresAt: validated.active ? null : undefined,
           consentIp: validated.active ? undefined : null,
           consentUserAgent: validated.active ? undefined : null,
+          unsubscribeToken: validated.active ? createNewsletterUnsubscribeToken() : undefined,
           unsubscribedAt: validated.active ? null : new Date(),
         })
         .where(eq(newsletterSubscribers.id, id))
@@ -51,11 +49,7 @@ export default defineEventHandler(async (event) => {
 
       return { item }
     } catch (e) {
-      if (e && typeof e === 'object' && 'statusCode' in e) throw e
-      throw createError({
-        statusCode: 400,
-        message: e instanceof Error ? e.message : 'Error de validación',
-      })
+      throwAdminMutationError('admin.newsletter-subscriber.update', e, event)
     }
   }
 

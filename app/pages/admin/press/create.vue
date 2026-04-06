@@ -1,20 +1,22 @@
 <script setup lang="ts">
-/**
- * Admin page for creating a new press article.
- * Uses AdminPressForm for the form logic and provides a full-page editing experience.
- */
 definePageMeta({
   layout: 'admin',
 })
 
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
-
 const toast = useToast()
+const route = useRoute()
 const router = useRouter()
 const isSubmitting = ref(false)
+
+type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
+
+const validPressTypes: PressArticleType[] = ['press_release', 'statement', 'media_appearance']
+const initialType = computed<PressArticleType>(() => {
+  const requestedType = String(route.query.type ?? '')
+  return validPressTypes.includes(requestedType as PressArticleType)
+    ? (requestedType as PressArticleType)
+    : 'press_release'
+})
 
 const handleSubmit = async (payload: Record<string, unknown>) => {
   isSubmitting.value = true
@@ -40,6 +42,11 @@ const handleCancel = () => {
 
 <template>
   <div>
-    <AdminPressForm :submitting="isSubmitting" @submit="handleSubmit" @cancel="handleCancel" />
+    <AdminPressForm
+      :initial-type="initialType"
+      :submitting="isSubmitting"
+      @submit="handleSubmit"
+      @cancel="handleCancel"
+    />
   </div>
 </template>

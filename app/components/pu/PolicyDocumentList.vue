@@ -1,10 +1,4 @@
 <script setup lang="ts">
-/**
- * PolicyDocumentList — shared component for policy document pages
- * Displays a list of documents fetched from the external API with
- * their name, assembly, date, and a download button.
- */
-
 interface PolicyDocumentFile {
   name: string | null
   url: string | null
@@ -24,15 +18,10 @@ interface PolicyDocumentsResponse {
 }
 
 const props = defineProps<{
-  /** The API endpoint to fetch documents from (e.g., '/api/posicionamientos') */
   apiEndpoint: string
-  /** i18n key for the page title */
   titleKey: string
-  /** i18n key for the page description */
   descriptionKey: string
-  /** i18n key for the error message */
   errorKey: string
-  /** i18n key for the empty state */
   emptyKey: string
 }>()
 
@@ -42,10 +31,8 @@ const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const { data, error } = await useFetch<PolicyDocumentsResponse>(props.apiEndpoint)
 
 const documents = computed(() => data.value?.documents ?? [])
+const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
 
-/**
- * Format a date string to a locale-aware representation.
- */
 function formatDate(dateStr: string): string {
   try {
     return formatLocaleDate(dateStr, {
@@ -71,7 +58,6 @@ function formatDate(dateStr: string): string {
         </p>
       </header>
 
-      <!-- Error state -->
       <UCard v-if="error" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
@@ -81,7 +67,6 @@ function formatDate(dateStr: string): string {
         </div>
       </UCard>
 
-      <!-- Empty state -->
       <UCard v-else-if="documents.length === 0" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-file-off" class="text-muted size-10" />
@@ -91,10 +76,16 @@ function formatDate(dateStr: string): string {
         </div>
       </UCard>
 
-      <!-- Document list -->
-      <ul v-else class="space-y-3" :aria-label="t(titleKey)">
-        <li v-for="doc in documents" :key="doc.order">
-          <UCard>
+      <TransitionGroup
+        v-else
+        appear
+        tag="ul"
+        name="stagger-list"
+        class="space-y-3"
+        :aria-label="t(titleKey)"
+      >
+        <li v-for="(doc, index) in documents" :key="doc.order">
+          <UCard class="motion-card" :style="getEntranceDelay(index)">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0 flex-1 space-y-1">
                 <p class="text-base leading-snug font-medium">
@@ -126,7 +117,7 @@ function formatDate(dateStr: string): string {
             </div>
           </UCard>
         </li>
-      </ul>
+      </TransitionGroup>
     </article>
   </UContainer>
 </template>

@@ -2,7 +2,6 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
-import { requireAuth } from '../../../utils/requireAuth'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
 // POST - Reorder media outlets
@@ -11,7 +10,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 405, message: 'Método no permitido' })
   }
 
-  await requireAuth(event)
   const body = await readBody(event)
 
   try {

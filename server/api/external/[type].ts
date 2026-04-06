@@ -1,15 +1,9 @@
-import { createError, defineEventHandler, getRouterParam } from 'h3'
+import { defineEventHandler } from 'h3'
 import { proxyExternalAsset } from '../../utils/externalAssetProxy'
+import { externalAssetTypeRouteParamSchema, validateRouteParams } from '../../utils/validation'
 
 export default defineEventHandler(async (event) => {
-  const type = getRouterParam(event, 'type')
-
-  if (type !== 'image' && type !== 'pdf') {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Asset type not found.',
-    })
-  }
+  const { type } = validateRouteParams(event, externalAssetTypeRouteParamSchema)
 
   return proxyExternalAsset(event, type)
 })

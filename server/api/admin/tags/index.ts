@@ -2,7 +2,11 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq, asc } from 'drizzle-orm'
 import { db } from '../../../db'
 import { tags, tagTranslations } from '../../../db/schema'
-import { requireAuth } from '../../../utils/requireAuth'
+import {
+  filterTranslationsByContent,
+  getRequiredTranslationValue,
+} from '../../../utils/localizedContent'
+import { assertTagSlugAvailable } from '../../../utils/tagMutations'
 import { createTagSchema, validateBody } from '../../../utils/validation'
 
 // GET - List all tags
@@ -17,60 +21,54 @@ export default defineEventHandler(async (event) => {
 
   // POST - Create new tag
   if (event.method === 'POST') {
-    await requireAuth(event)
     const body = await readBody(event)
 
     try {
       const validated = validateBody(createTagSchema, body)
+      await assertTagSlugAvailable(validated.slug)
 
-      // Check if slug already exists
-      const existingTag = await db.query.tags.findFirst({
-        where: eq(tags.slug, validated.slug),
-      })
-
-      if (existingTag) {
-        throw createError({
-          statusCode: 409,
-          message: 'SLUG_EXISTS',
-        })
-      }
-
-      // Filter translations - only save non-empty ones, Spanish is required
-      const spanishTranslation = validated.translations.find((t) => t.locale === 'es')
-      if (!spanishTranslation?.name?.trim()) {
+      if (!getRequiredTranslationValue(validated.translations, 'name')) {
         throw createError({
           statusCode: 400,
           message: 'El nombre en español es requerido',
         })
       }
 
-      const translationsToCreate = validated.translations.filter(
-        (t) => t.locale === 'es' || (t.name && t.name.trim() !== '')
+      const translationsToCreate = filterTranslationsByContent(
+        validated.translations,
+        (translation) => Boolean(translation.name?.trim())
       )
 
-      const [item] = await db
-        .insert(tags)
-        .values({
-          slug: validated.slug,
-          order: validated.order,
+      const completeItem = await db.transaction(async (tx) => {
+        const [item] = await tx
+          .insert(tags)
+          .values({
+            slug: validated.slug,
+            order: validated.order,
+          })
+          .returning()
+
+        if (!item) {
+          throw createError({
+            statusCode: 500,
+            message: 'No se pudo crear la etiqueta',
+          })
+        }
+
+        if (translationsToCreate.length > 0) {
+          await tx.insert(tagTranslations).values(
+            translationsToCreate.map((translation) => ({
+              locale: translation.locale,
+              name: translation.name,
+              tagId: item.id,
+            }))
+          )
+        }
+
+        return tx.query.tags.findFirst({
+          where: eq(tags.id, item.id),
+          with: { translations: true },
         })
-        .returning()
-
-      // Insert translations
-      if (translationsToCreate.length > 0) {
-        await db.insert(tagTranslations).values(
-          translationsToCreate.map((t) => ({
-            locale: t.locale,
-            name: t.name,
-            tagId: item.id,
-          }))
-        )
-      }
-
-      // Fetch the complete item with translations
-      const completeItem = await db.query.tags.findFirst({
-        where: eq(tags.id, item.id),
-        with: { translations: true },
       })
 
       return { item: completeItem }

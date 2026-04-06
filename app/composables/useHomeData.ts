@@ -1,8 +1,3 @@
-/**
- * Composable for fetching home page data from the database
- * Press articles are fetched separately via usePress composable
- */
-
 export interface CarouselItem {
   image: string
   href: string
@@ -30,6 +25,10 @@ export function useHomeData() {
     'home-data',
     () => $fetch<HomeDataResponse>('/api/home-data'),
     {
+      default: () => ({
+        carousel: [],
+        featuredLinks: [],
+      }),
       watch: [locale],
     }
   )

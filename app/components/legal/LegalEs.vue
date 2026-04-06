@@ -6,15 +6,12 @@ defineProps<{
 
 <template>
   <article class="mx-auto max-w-4xl space-y-10">
-    <!-- Header -->
     <header class="space-y-2">
       <h1 class="text-3xl font-bold sm:text-4xl">
         {{ title }}
       </h1>
-      <p class="text-muted text-sm">Última actualización: 6 de marzo de 2026</p>
     </header>
 
-    <!-- I. INFORMACIÓN GENERAL -->
     <section id="informacion-general" class="space-y-4">
       <h2 class="text-xl font-bold">I. Información general</h2>
 
@@ -31,7 +28,7 @@ defineProps<{
         el número 171330, con los siguientes datos de contacto:
       </p>
 
-      <UCard variant="subtle">
+      <UCard variant="subtle" class="motion-card-subtle">
         <div class="flex flex-col gap-3 text-sm">
           <div class="flex items-start gap-2">
             <UIcon name="i-tabler-map-pin" class="text-primary mt-0.5 size-4 shrink-0" />
@@ -54,7 +51,6 @@ defineProps<{
 
     <USeparator />
 
-    <!-- II. CONDICIONES GENERALES DE USO -->
     <section id="terminos" class="space-y-4">
       <h2 class="text-xl font-bold">II. Condiciones generales de uso</h2>
 
@@ -122,7 +118,6 @@ defineProps<{
 
     <USeparator />
 
-    <!-- III. GARANTÍAS Y RESPONSABILIDAD -->
     <section id="garantias" class="space-y-4">
       <h2 class="text-xl font-bold">
         III. Acceso y navegación: exención de garantías y responsabilidad
@@ -150,7 +145,6 @@ defineProps<{
 
     <USeparator />
 
-    <!-- IV. PRIVACIDAD Y PROTECCIÓN DE DATOS -->
     <section id="privacidad" class="space-y-4">
       <h2 class="text-xl font-bold">IV. Política de privacidad y protección de datos</h2>
 
@@ -211,6 +205,7 @@ defineProps<{
           ]"
           :key="principle"
           variant="subtle"
+          class="motion-card-subtle"
           :ui="{ body: 'p-3' }"
         >
           <div class="flex items-center gap-2 text-sm">
@@ -234,7 +229,10 @@ defineProps<{
         consentimiento de la persona interesada, recabado mediante una acción afirmativa clara y
         confirmado mediante un procedimiento de doble opt-in. En el formulario de contacto, la base
         jurídica es la atención de la solicitud remitida por la persona interesada y, en su caso, la
-        aplicación de medidas precontractuales solicitadas por esta.
+        aplicación de medidas precontractuales solicitadas por esta. Para la medición agregada del
+        uso del sitio mediante la instancia autoalojada de Umami, CREUP aplica su interés legítimo
+        en conocer el uso básico, el rendimiento y los errores del sitio sin utilizar cookies ni
+        identificadores persistentes.
       </p>
 
       <h3 class="text-base font-semibold">Finalidades del tratamiento</h3>
@@ -242,7 +240,45 @@ defineProps<{
       <p class="text-sm leading-relaxed">
         Los datos personales se recogen y gestionan para atender solicitudes y consultas, facilitar
         la relación con las personas usuarias y, cuando exista consentimiento expreso, gestionar la
-        suscripción a la newsletter y remitir sus comunicaciones.
+        suscripción a la newsletter y remitir sus comunicaciones. Asimismo, CREUP obtiene
+        información agregada de uso del sitio para fines estadísticos, técnicos y de mejora del
+        servicio mediante una instancia propia de Umami configurada sin cookies ni identificadores
+        persistentes.
+      </p>
+
+      <h3 class="text-base font-semibold">Analítica web sin cookies</h3>
+
+      <p class="text-sm leading-relaxed">
+        Este Sitio Web utiliza una instancia autoalojada de Umami, gestionada por la propia CREUP,
+        para obtener estadísticas agregadas de uso sin emplear cookies de seguimiento ni
+        identificadores persistentes. Según la documentación oficial de Umami, la medición puede
+        incluir datos como la URL y el título de la página visitada, la página de procedencia, el
+        idioma del navegador, el navegador, el sistema operativo, el tipo de dispositivo, la
+        resolución de pantalla y métricas de rendimiento.
+      </p>
+
+      <p class="text-sm leading-relaxed">
+        Cuando existen parámetros de campaña en la URL, estos también pueden registrarse con fines
+        de atribución agregada. La localización aproximada puede inferirse a partir de cabeceras de
+        geolocalización o de la IP empleada para la solicitud, pero la dirección IP no se almacena,
+        conforme a la documentación oficial de Umami. Esta medición no identifica personalmente al
+        usuario ni realiza seguimiento entre sitios. Como referencia general sobre el funcionamiento
+        de la herramienta, puede consultarse la documentación oficial de Umami en
+        <a
+          href="https://docs.umami.is/docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary underline underline-offset-2 hover:no-underline"
+          >docs.umami.is/docs</a
+        >
+        y su aviso de privacidad en
+        <a
+          href="https://umami.is/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary underline underline-offset-2 hover:no-underline"
+          >umami.is/privacy</a
+        >.
       </p>
 
       <h3 class="text-base font-semibold">Plazos de conservación</h3>
@@ -260,7 +296,10 @@ defineProps<{
       <h3 class="text-base font-semibold">Destinatarios de los datos personales</h3>
 
       <p class="text-sm leading-relaxed">
-        Los datos personales no se ceden a terceros, salvo obligación legal.
+        Los datos personales no se ceden a terceros, salvo obligación legal. Las métricas agregadas
+        de uso del sitio se procesan en infraestructura propia de CREUP mediante su instancia
+        autoalojada de Umami, por lo que no implican la contratación de un proveedor analítico
+        externo por ese motivo.
       </p>
 
       <h3 class="text-base font-semibold">Datos de menores</h3>
@@ -303,26 +342,6 @@ defineProps<{
         firma, y documentación acreditativa.
       </p>
 
-      <UCard variant="subtle">
-        <div class="flex flex-col gap-3 text-sm">
-          <div class="flex items-start gap-2">
-            <UIcon name="i-tabler-map-pin" class="text-primary mt-0.5 size-4 shrink-0" />
-            <span
-              >Colegio de Sta Mª Catalina Callejón de Sta Mª S/N 28801 Alcalá de Henares (Madrid),
-              España</span
-            >
-          </div>
-          <div class="flex items-center gap-2">
-            <UIcon name="i-tabler-mail" class="text-primary size-4 shrink-0" />
-            <a
-              href="mailto:info@creup.es"
-              class="text-primary underline underline-offset-2 hover:no-underline"
-              >info@creup.es</a
-            >
-          </div>
-        </div>
-      </UCard>
-
       <h3 class="text-base font-semibold">Sitios web de terceros</h3>
 
       <p class="text-sm leading-relaxed">
@@ -356,31 +375,31 @@ defineProps<{
 
     <USeparator />
 
-    <!-- V. POLÍTICA DE COOKIES -->
     <section id="cookies" class="space-y-4">
-      <h2 class="text-xl font-bold">V. Política de cookies</h2>
+      <h2 class="text-xl font-bold">V. Política de cookies y almacenamiento local</h2>
 
       <p class="text-sm leading-relaxed">
-        El acceso a este Sitio Web implica el uso de cookies y almacenamiento local del navegador.
-        Las cookies son pequeños archivos de información almacenados en el navegador del Usuario
-        para mejorar la navegación y la experiencia del usuario.
+        En este sitio web se utilizan únicamente cookies y mecanismos de almacenamiento local
+        necesarios para recordar el idioma, mantener las sesiones de administración y conservar
+        determinadas preferencias técnicas de interfaz y accesibilidad. La medición agregada con
+        Umami se describe aquí y en la Política de Privacidad porque está configurada sin cookies.
       </p>
 
-      <h3 class="text-base font-semibold">Cookies utilizadas en este sitio web</h3>
+      <h3 class="text-base font-semibold">Cookies y tecnologías utilizadas en este sitio web</h3>
 
-      <!-- Essential cookies card -->
-      <UCard variant="subtle">
+      <UCard variant="subtle" class="motion-card-subtle">
         <template #header>
           <div class="flex items-center justify-between">
-            <p class="text-sm font-semibold">Cookies esenciales</p>
+            <p class="text-sm font-semibold">Cookies y almacenamiento técnico esenciales</p>
             <UBadge color="primary" variant="subtle" size="sm">Siempre activas</UBadge>
           </div>
         </template>
 
         <div class="space-y-3 text-sm">
           <p class="text-muted">
-            Cookies estrictamente necesarias para el funcionamiento del sitio web. No se pueden
-            desactivar.
+            A continuación se identifican las tecnologías técnicas necesarias para el funcionamiento
+            del sitio web. No pueden desactivarse desde el propio sitio porque son necesarias para
+            prestar el servicio.
           </p>
 
           <div class="divide-default space-y-2 divide-y">
@@ -389,14 +408,6 @@ defineProps<{
               <p class="text-muted text-xs">
                 Almacena el idioma seleccionado por el usuario para mantener la preferencia entre
                 sesiones. Duración: 1 año.
-              </p>
-            </div>
-            <div class="pt-2">
-              <p class="font-medium">
-                Cookie de consentimiento (<code class="text-xs">cookie-consent</code>)
-              </p>
-              <p class="text-muted text-xs">
-                Registra las preferencias de consentimiento de cookies del usuario. Duración: 1 año.
               </p>
             </div>
             <div class="pt-2">
@@ -422,42 +433,31 @@ defineProps<{
         </div>
       </UCard>
 
-      <!-- Analytics cookies card -->
-      <UCard variant="subtle">
+      <UCard variant="subtle" class="motion-card-subtle">
         <template #header>
           <div class="flex items-center justify-between">
-            <p class="text-sm font-semibold">Cookies de analítica</p>
-            <UBadge color="neutral" variant="subtle" size="sm">Requieren consentimiento</UBadge>
+            <p class="text-sm font-semibold">Medición agregada sin cookies</p>
+            <UBadge color="neutral" variant="subtle" size="sm">Autoalojada</UBadge>
           </div>
         </template>
 
         <div class="space-y-3 text-sm">
           <p class="text-muted">
-            Estas cookies nos permiten medir el uso del sitio web de forma agregada y anónima para
-            mejorar su funcionamiento.
+            Además de las tecnologías técnicas imprescindibles, el sitio realiza una medición
+            agregada del uso para mejorar su funcionamiento y detectar incidencias.
           </p>
 
           <div>
             <p class="font-medium">Umami Analytics</p>
             <p class="text-muted text-xs">
-              Utilizamos Umami, una solución de analítica web centrada en la privacidad. Umami no
-              emplea cookies persistentes, no recopila datos personales identificables, no realiza
-              seguimiento entre sitios y todos los datos se almacenan de forma agregada y
-              anonimizada. El usuario puede activar o desactivar esta categoría en cualquier momento
-              a través de las preferencias de cookies.
+              Utilizamos una instancia autoalojada de Umami gestionada por CREUP. Umami no emplea
+              cookies, no utiliza identificadores persistentes, no realiza seguimiento entre sitios
+              y trata la información de forma agregada. La información general sobre la herramienta
+              puede consultarse en la documentación oficial de Umami.
             </p>
           </div>
         </div>
       </UCard>
-
-      <h3 class="text-base font-semibold">Gestión del consentimiento</h3>
-
-      <p class="text-sm leading-relaxed">
-        Al visitar este sitio web por primera vez se muestra un aviso de cookies que permite aceptar
-        todas las categorías, aceptar únicamente las esenciales o personalizar las preferencias
-        individualmente. El usuario puede modificar sus preferencias en cualquier momento desde el
-        enlace «Preferencias de cookies» situado en el pie de página del sitio.
-      </p>
 
       <h3 class="text-base font-semibold">Cookies de terceros y redes sociales</h3>
 
@@ -472,20 +472,14 @@ defineProps<{
       <p class="text-sm leading-relaxed">
         Los usuarios pueden desactivar, rechazar o eliminar cookies a través de la configuración del
         navegador. Si se bloquean las cookies técnicas, es posible que algunas funcionalidades del
-        sitio web no estén disponibles.
-      </p>
-
-      <h3 class="text-base font-semibold">Cambios en la Política de Cookies</h3>
-
-      <p class="text-sm leading-relaxed">
-        Esta Política de Cookies puede modificarse o actualizarse; se recomienda a los usuarios
-        revisarla periódicamente.
+        sitio web no estén disponibles. La medición agregada con Umami está configurada sin cookies
+        ni identificadores persistentes; si esta configuración cambiara, esta política se
+        actualizaría en consecuencia.
       </p>
     </section>
 
     <USeparator />
 
-    <!-- VI. POLÍTICA DE ENLACES -->
     <section id="enlaces" class="space-y-4">
       <h2 class="text-xl font-bold">VI. Política de enlaces</h2>
 
@@ -528,7 +522,6 @@ defineProps<{
 
     <USeparator />
 
-    <!-- VII. PROPIEDAD INTELECTUAL E INDUSTRIAL -->
     <section id="propiedad-intelectual" class="space-y-4">
       <h2 class="text-xl font-bold">VII. Propiedad intelectual e industrial</h2>
 
@@ -553,7 +546,6 @@ defineProps<{
 
     <USeparator />
 
-    <!-- VIII. ACCIONES LEGALES -->
     <section id="acciones-legales" class="space-y-4">
       <h2 class="text-xl font-bold">
         VIII. Acciones legales, legislación aplicable y jurisdicción
@@ -569,10 +561,6 @@ defineProps<{
         La relación entre el Usuario y CREUP se rige por la legislación española. Cualquier
         controversia relativa a la interpretación y/o aplicación de las presentes Condiciones será
         sometida a la jurisdicción ordinaria de los tribunales competentes.
-      </p>
-
-      <p class="text-muted text-sm">
-        <strong>Última actualización: 13 de febrero de 2026</strong>
       </p>
     </section>
   </article>

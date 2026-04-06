@@ -1,25 +1,33 @@
-/**
- * Admin Newsletter Management
- * GET  /api/admin/newsletter       — List all newsletters (ordered by month desc)
- * POST /api/admin/newsletter       — Create newsletter (+ optionally send to subscribers)
- */
 import { defineEventHandler, readBody, createError } from 'h3'
 import { desc } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
-import { requireAuth } from '../../../utils/requireAuth'
+import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
+import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { runInBackground } from '../../../utils/backgroundTask'
 import { createNewsletterSchema, validateBody } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
+  claimNewsletterForSending,
   monthKeyToDate,
   normalizeNewsletterMonthInput,
-  sendClaimedNewsletter,
+  processPendingNewsletterDeliveries,
 } from '../../../utils/newsletters'
+import {
+  NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+  NEWSLETTER_DOCUMENT_PUBLIC_PATH,
+} from '~~/shared/constants/assetPaths'
+
+const COVER_IMAGE_UPLOAD_DIR = 'public/prensa/newsletter/portadas'
+const DOCUMENT_UPLOAD_DIR = 'public/prensa/newsletter/documentos'
+
+const buildNewsletterCoverSlug = (monthKey: string) => `newsletter-${monthKey}-portada`
+const buildNewsletterDocumentSlug = (monthKey: string) => `newsletter-${monthKey}`
 
 export default defineEventHandler(async (event) => {
   if (event.method === 'GET') {
-    await requireAuth(event)
-
     const items = await db.select().from(newsletters).orderBy(desc(newsletters.month))
 
     return {
@@ -31,8 +39,10 @@ export default defineEventHandler(async (event) => {
   }
 
   if (event.method === 'POST') {
-    await requireAuth(event)
     const body = await readBody(event)
+    let createdNewsletterId: string | null = null
+    let coverImage: string | null = null
+    let pdfUrl: string | null = null
 
     try {
       const validated = validateBody(createNewsletterSchema, body)
@@ -40,44 +50,83 @@ export default defineEventHandler(async (event) => {
       const { monthDate, monthKey } = normalizeNewsletterMonthInput(validated.month)
 
       await assertNewsletterMonthAvailable(monthKey)
+      coverImage = await finalizeAdminImage({
+        storagePath: validated.coverImage,
+        uploadDir: COVER_IMAGE_UPLOAD_DIR,
+        publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+        slug: buildNewsletterCoverSlug(monthKey),
+        publish: validated.active,
+        fallbackBaseName: 'newsletter-portada',
+      })
+      pdfUrl = await finalizeAdminDocument({
+        storagePath: validated.pdfUrl,
+        uploadDir: DOCUMENT_UPLOAD_DIR,
+        publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
+        slug: buildNewsletterDocumentSlug(monthKey),
+        publish: validated.active,
+        fallbackBaseName: 'newsletter',
+      })
 
       const [item] = await db
         .insert(newsletters)
         .values({
           month: monthDate,
           monthKey,
-          coverImage: validated.coverImage,
-          pdfUrl: validated.pdfUrl,
+          coverImage,
+          pdfUrl,
           active: validated.active,
-          sending: sendEmail && validated.active,
+          sending: false,
         })
         .returning()
 
       if (!item) {
         throw createError({ statusCode: 500, statusMessage: 'Error al crear la newsletter' })
       }
+      createdNewsletterId = item.id
 
-      // Send newsletter emails in background if requested
-      if (sendEmail && item.active) {
-        // Fire and forget — don't block the response
-        sendClaimedNewsletter(item).catch((err: unknown) => {
-          console.error('Error sending newsletter emails:', err)
+      if (validated.coverImage !== coverImage) {
+        await cleanupUnusedAdminAsset({
+          storagePath: validated.coverImage,
+          allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
         })
+      }
+
+      if (validated.pdfUrl !== pdfUrl) {
+        await cleanupUnusedAdminAsset({
+          storagePath: validated.pdfUrl,
+          allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+        })
+      }
+
+      const queuedItem = sendEmail && item.active ? await claimNewsletterForSending(item.id) : item
+
+      if (sendEmail && queuedItem.active) {
+        runInBackground(event, 'admin.newsletter.create-send', processPendingNewsletterDeliveries())
       }
 
       return {
         item: {
-          ...item,
-          month: monthKeyToDate(item.monthKey),
+          ...(queuedItem ?? item),
+          month: monthKeyToDate((queuedItem ?? item).monthKey),
         },
-        emailQueued: sendEmail && item.active,
+        emailQueued: sendEmail && queuedItem.active,
       }
     } catch (e) {
-      if (e && typeof e === 'object' && 'statusCode' in e) throw e
-      throw createError({
-        statusCode: 400,
-        message: e instanceof Error ? e.message : 'Error de validación',
-      })
+      if (!createdNewsletterId && coverImage) {
+        await cleanupUnusedAdminAsset({
+          storagePath: coverImage,
+          allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+        })
+      }
+
+      if (!createdNewsletterId && pdfUrl) {
+        await cleanupUnusedAdminAsset({
+          storagePath: pdfUrl,
+          allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+        })
+      }
+
+      throwAdminMutationError('admin.newsletter.create', e, event)
     }
   }
 

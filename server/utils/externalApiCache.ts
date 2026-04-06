@@ -1,5 +1,10 @@
 import type { H3Event } from 'h3'
 import { setHeader } from 'h3'
+import {
+  getRequiredExternalApiCacheMaxAgeSeconds,
+  getRequiredExternalApiCacheStaleSeconds,
+} from './runtimeConfig'
+import { logError } from './logger'
 
 export interface ExternalApiCacheOptions {
   maxAgeSeconds: number
@@ -16,33 +21,16 @@ interface CacheEntry<T> {
 
 const cacheStore = new Map<string, CacheEntry<unknown>>()
 const MAX_CACHE_ENTRIES = 500
-const DEFAULT_MAX_AGE_SECONDS = 300
-const DEFAULT_STALE_SECONDS = 900
 
-const parsePositiveInt = (value: unknown, fallback: number) => {
-  const numericValue = Number(value)
-  if (!Number.isFinite(numericValue) || numericValue <= 0) {
-    return fallback
-  }
-  return Math.floor(numericValue)
-}
+const touchCacheEntry = (key: string, entry: CacheEntry<unknown>) => {
+  cacheStore.delete(key)
+  cacheStore.set(key, entry)
 
-const enforceCacheSizeLimit = () => {
-  if (cacheStore.size <= MAX_CACHE_ENTRIES) {
-    return
-  }
-
-  let oldestKey: string | null = null
-  let oldestUpdatedAt = Number.POSITIVE_INFINITY
-
-  for (const [key, entry] of cacheStore.entries()) {
-    if (entry.updatedAt < oldestUpdatedAt) {
-      oldestUpdatedAt = entry.updatedAt
-      oldestKey = key
+  while (cacheStore.size > MAX_CACHE_ENTRIES) {
+    const oldestKey = cacheStore.keys().next().value
+    if (!oldestKey) {
+      break
     }
-  }
-
-  if (oldestKey) {
     cacheStore.delete(oldestKey)
   }
 }
@@ -61,8 +49,7 @@ const startRefresh = <T>(
       entry.freshUntil = now + options.maxAgeSeconds * 1000
       entry.staleUntil = now + options.staleSeconds * 1000
       entry.updatedAt = now
-      cacheStore.set(key, entry as CacheEntry<unknown>)
-      enforceCacheSizeLimit()
+      touchCacheEntry(key, entry as CacheEntry<unknown>)
       return value
     })
     .catch((error) => {
@@ -77,20 +64,13 @@ const startRefresh = <T>(
     })
 
   entry.pending = refreshPromise
-  cacheStore.set(key, entry as CacheEntry<unknown>)
+  touchCacheEntry(key, entry as CacheEntry<unknown>)
   return refreshPromise
 }
 
 export function getExternalApiCacheOptions(event: H3Event): ExternalApiCacheOptions {
-  const runtimeConfig = useRuntimeConfig(event)
-  const maxAgeSeconds = parsePositiveInt(
-    runtimeConfig.externalApiCacheMaxAgeSeconds,
-    DEFAULT_MAX_AGE_SECONDS
-  )
-  const staleSeconds = parsePositiveInt(
-    runtimeConfig.externalApiCacheStaleSeconds,
-    DEFAULT_STALE_SECONDS
-  )
+  const maxAgeSeconds = getRequiredExternalApiCacheMaxAgeSeconds(event)
+  const staleSeconds = getRequiredExternalApiCacheStaleSeconds(event)
 
   return {
     maxAgeSeconds,
@@ -120,6 +100,7 @@ export async function withExternalApiSWRCache<T>(
 
   if (existingEntry) {
     existingEntry.updatedAt = now
+    touchCacheEntry(key, existingEntry as CacheEntry<unknown>)
 
     if (existingEntry.value !== null && now <= existingEntry.freshUntil) {
       return existingEntry.value
@@ -134,7 +115,7 @@ export async function withExternalApiSWRCache<T>(
 
     if (existingEntry.value !== null && now <= existingEntry.staleUntil) {
       void startRefresh(key, existingEntry, fetcher, options, true).catch((error) => {
-        console.error(`Background refresh failed for cache key "${key}":`, error)
+        logError('external-api-cache.refresh', error, { cacheKey: key })
       })
       return existingEntry.value
     }

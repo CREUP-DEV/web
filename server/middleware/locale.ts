@@ -34,7 +34,5 @@ export default defineEventHandler((event) => {
     }
   }
 
-  // Attach to request context for downstream handlers with a safe custom key
-  const ctx = event.context as unknown as { requestLocale: string }
-  ctx.requestLocale = resolved
+  event.context.requestLocale = resolved
 })

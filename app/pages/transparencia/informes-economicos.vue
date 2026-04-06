@@ -1,10 +1,4 @@
 <script setup lang="ts">
-/**
- * Financial Reports (Informes Económicos) page
- * Displays CREUP's economic reports approved by the General Assembly,
- * fetched from the internal database.
- */
-
 interface FinancialReport {
   id: string
   title: string
@@ -17,26 +11,18 @@ interface FinancialReportsResponse {
 }
 
 const { t } = useI18n()
-const { formatDate: formatLocaleDate } = useLocaleFormatting()
+const { formatLongDate } = useDatePresets()
 
-useSeoMeta({
-  title: () => t('financialReports.title'),
-  description: () => t('financialReports.description'),
-  ogTitle: () => t('financialReports.title'),
-  ogDescription: () => t('financialReports.description'),
-})
+usePageSeo('financialReports.title', 'financialReports.description')
 
 const { data, error } = await useFetch<FinancialReportsResponse>('/api/financial-reports')
 
 const items = computed(() => data.value?.items ?? [])
+const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
 
 function formatDate(dateStr: string): string {
   try {
-    return formatLocaleDate(dateStr, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+    return formatLongDate(dateStr)
   } catch {
     return dateStr
   }
@@ -55,7 +41,6 @@ function formatDate(dateStr: string): string {
         </p>
       </header>
 
-      <!-- Error state -->
       <UCard v-if="error" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
@@ -65,7 +50,6 @@ function formatDate(dateStr: string): string {
         </div>
       </UCard>
 
-      <!-- Empty state -->
       <UCard v-else-if="items.length === 0" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-file-off" class="text-muted size-10" />
@@ -75,10 +59,16 @@ function formatDate(dateStr: string): string {
         </div>
       </UCard>
 
-      <!-- Reports list -->
-      <ul v-else class="space-y-3" :aria-label="t('financialReports.title')">
-        <li v-for="report in items" :key="report.id">
-          <UCard>
+      <TransitionGroup
+        v-else
+        appear
+        tag="ul"
+        name="stagger-list"
+        class="space-y-3"
+        :aria-label="t('financialReports.title')"
+      >
+        <li v-for="(report, index) in items" :key="report.id">
+          <UCard class="motion-card" :style="getEntranceDelay(index)">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0 flex-1 space-y-1">
                 <p class="text-base leading-snug font-medium">
@@ -106,7 +96,7 @@ function formatDate(dateStr: string): string {
             </div>
           </UCard>
         </li>
-      </ul>
+      </TransitionGroup>
     </article>
   </UContainer>
 </template>

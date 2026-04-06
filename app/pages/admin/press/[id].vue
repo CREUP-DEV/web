@@ -1,16 +1,7 @@
 <script setup lang="ts">
-/**
- * Admin page for editing an existing press article.
- * Fetches the article by ID and uses AdminPressForm for form logic.
- */
 definePageMeta({
   layout: 'admin',
 })
-
-const { error: authError } = await useFetch('/api/admin/session')
-if (authError.value) {
-  navigateTo('/admin/login')
-}
 
 const route = useRoute()
 const router = useRouter()

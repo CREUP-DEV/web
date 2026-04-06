@@ -1,7 +1,3 @@
-/**
- * Composable for fetching events from Google Calendar
- */
-
 export interface CalendarEvent {
   id: string
   seriesId: string
@@ -9,7 +5,7 @@ export interface CalendarEvent {
   date: string // YYYY-MM-DD
   startDate: string // YYYY-MM-DD (series start)
   endDate?: string // YYYY-MM-DD for multi-day events
-  timeSlot: string // e.g., "10:00 - 12:00" or "Todo el día"
+  timeSlot: string // e.g. "10:00 - 12:00" or "All day"
   startTime?: string
   endTime?: string
   isAllDay?: boolean
@@ -23,12 +19,7 @@ export function useGoogleCalendar() {
 
   const { data, pending, error, refresh } = useAsyncData<{ events: CalendarEvent[] }>(
     'google-calendar-events',
-    () =>
-      $fetch<{ events: CalendarEvent[] }>('/api/calendar', {
-        query: {
-          locale: locale.value,
-        },
-      }),
+    () => $fetch<{ events: CalendarEvent[] }>('/api/calendar'),
     {
       watch: [locale],
     }

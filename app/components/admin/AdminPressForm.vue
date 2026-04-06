@@ -1,12 +1,11 @@
 <script setup lang="ts">
-/**
- * Shared form component for creating/editing press articles.
- * Used by both the create and edit admin pages.
- */
 import { CalendarDate } from '@internationalized/date'
-import type { EditorToolbarItem } from '@nuxt/ui'
+import {
+  calendarDateLikeToDateOnly,
+  dateValueToDateOnly,
+  parseDateOnlyString,
+} from '~~/shared/utils/date'
 
-// Types
 type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
 
 interface Translation {
@@ -58,6 +57,8 @@ interface PressArticle {
 const props = defineProps<{
   /** The article being edited, or null when creating */
   article?: PressArticle | null
+  /** Initial article type for create flows */
+  initialType?: PressArticleType
   /** Whether the form is currently submitting */
   submitting?: boolean
 }>()
@@ -68,7 +69,14 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
-const { localeConfigs, getLocaleFlag, getLocaleName } = useLocales()
+const {
+  getDefaultTranslationValue,
+  getLocaleFlag,
+  getLocaleName,
+  isDefaultLocale,
+  createEmptyTranslations,
+  mapTranslationsToForm,
+} = useLocales()
 
 const isEditing = computed(() => !!props.article)
 
@@ -77,8 +85,10 @@ const hasUnsavedChanges = ref(false)
 defineExpose({ hasUnsavedChanges })
 
 // Fetch supporting data
-const { data: tagsData } = await useFetch<{ items: Tag[] }>('/api/admin/tags')
-const { data: mediaData } = await useFetch<{ items: MediaOutlet[] }>('/api/admin/media')
+const [{ data: tagsData }, { data: mediaData }] = await Promise.all([
+  useFetch<{ items: Tag[] }>('/api/admin/tags'),
+  useFetch<{ items: MediaOutlet[] }>('/api/admin/media'),
+])
 
 const tags = computed(() => tagsData.value?.items ?? [])
 const mediaOutlets = computed(() => mediaData.value?.items ?? [])
@@ -109,13 +119,12 @@ const form = reactive({
   mediaOutletId: '' as string | null,
   active: true,
   tagIds: [] as string[],
-  translations: localeConfigs.value.map((l: { code: string }) => ({
-    locale: l.code,
+  translations: createEmptyTranslations<Translation>({
     title: '',
     description: '',
     contentHtml: '',
     alt: '',
-  })),
+  }),
 })
 
 const typeLabels: Record<PressArticleType, string> = {
@@ -143,42 +152,21 @@ const mediaOutletSelectItems = computed(() =>
 )
 
 // Helpers
-const calendarDateToISO = (date: CalendarDate): string => {
-  return new Date(date.year, date.month - 1, date.day).toISOString()
-}
+const calendarDateToDateOnly = (date: CalendarDate) => calendarDateLikeToDateOnly(date)
 
-const isoToCalendarDate = (iso: string): CalendarDate => {
-  const d = new Date(iso)
-  return new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate())
+const valueToCalendarDate = (value: string): CalendarDate => {
+  const normalizedDate = parseDateOnlyString(dateValueToDateOnly(value))
+
+  if (!normalizedDate) {
+    return new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+  }
+
+  return new CalendarDate(normalizedDate.year, normalizedDate.month, normalizedDate.day)
 }
 
 const getTagName = (tag: Tag) => {
-  const esTranslation = tag.translations.find((t: TagTranslation) => t.locale === 'es')
-  return esTranslation?.name ?? tag.slug
+  return getDefaultTranslationValue(tag.translations, 'name') ?? tag.slug
 }
-
-const editorToolbarItems: EditorToolbarItem[][] = [
-  [
-    { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold' },
-    { kind: 'mark', mark: 'italic', icon: 'i-lucide-italic' },
-    { kind: 'link', icon: 'i-lucide-link' },
-  ],
-  [
-    { kind: 'heading', level: 2, icon: 'i-lucide-heading-2' },
-    { kind: 'heading', level: 3, icon: 'i-lucide-heading-3' },
-    { kind: 'paragraph', icon: 'i-lucide-pilcrow' },
-  ],
-  [
-    { kind: 'bulletList', icon: 'i-lucide-list' },
-    { kind: 'orderedList', icon: 'i-lucide-list-ordered' },
-    { kind: 'blockquote', icon: 'i-lucide-quote' },
-  ],
-  [
-    { kind: 'undo', icon: 'i-lucide-undo-2' },
-    { kind: 'redo', icon: 'i-lucide-redo-2' },
-    { kind: 'clearFormatting', icon: 'i-lucide-remove-formatting' },
-  ],
-]
 
 // Populate form from article when editing
 const populateForm = (article: PressArticle) => {
@@ -191,17 +179,13 @@ const populateForm = (article: PressArticle) => {
   form.tagIds = article.tags.map((t) => t.tagId)
   imagePreview.value = article.image || null
   pdfName.value = article.pdfUrl ? (article.pdfUrl.split('/').pop() ?? null) : null
-  publishedAt.value = isoToCalendarDate(article.publishedAt)
-  form.translations = localeConfigs.value.map((l: { code: string }) => {
-    const existing = article.translations.find((t: Translation) => t.locale === l.code)
-    return {
-      locale: l.code,
-      title: existing?.title ?? '',
-      description: existing?.description ?? '',
-      contentHtml: existing?.contentHtml ?? '',
-      alt: existing?.alt ?? '',
-    }
-  })
+  publishedAt.value = valueToCalendarDate(article.publishedAt)
+  form.translations = mapTranslationsToForm(article.translations, {
+    title: '',
+    description: '',
+    contentHtml: '',
+    alt: '',
+  }) as Translation[]
 }
 
 // Watch for article changes (when data loads)
@@ -209,6 +193,16 @@ watch(
   () => props.article,
   (article) => {
     if (article) populateForm(article)
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.initialType,
+  (initialType) => {
+    if (!isEditing.value && initialType) {
+      form.type = initialType
+    }
   },
   { immediate: true }
 )
@@ -289,7 +283,7 @@ const handlePdfSelect = async (event: Event) => {
 const handleSubmit = () => {
   emit('submit', {
     ...form,
-    publishedAt: calendarDateToISO(publishedAt.value),
+    publishedAt: calendarDateToDateOnly(publishedAt.value),
   })
 }
 
@@ -318,7 +312,6 @@ const confirmCancel = () => {
 
 <template>
   <form @submit.prevent="handleSubmit">
-    <!-- Sticky action bar -->
     <div
       class="bg-background/80 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
     >
@@ -343,11 +336,8 @@ const confirmCancel = () => {
       </UButton>
     </div>
 
-    <!-- Main layout: content area + sidebar -->
     <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
-      <!-- Main content area — translations -->
       <div class="min-w-0 space-y-6">
-        <!-- External URL + Media outlet (media_appearance only) -->
         <div v-if="form.type === 'media_appearance'" class="space-y-4 rounded-xl border p-5">
           <h3 class="flex items-center gap-2 font-semibold">
             <UIcon name="i-tabler-broadcast" class="text-muted size-5" />
@@ -385,19 +375,23 @@ const confirmCancel = () => {
           <h3 class="mb-4 flex items-center gap-2 font-semibold">
             <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
             {{ getLocaleName(trans.locale) }}
-            <UBadge v-if="trans.locale === 'es'" variant="subtle" color="primary" size="sm">
+            <UBadge v-if="isDefaultLocale(trans.locale)" variant="subtle" color="primary" size="sm">
               Obligatorio
             </UBadge>
             <span v-else class="text-muted text-xs font-normal">(opcional)</span>
           </h3>
 
           <div class="space-y-4">
-            <UFormField :label="trans.locale === 'es' ? 'Título *' : 'Título'">
-              <UInput v-model="trans.title" class="w-full" :required="trans.locale === 'es'" />
+            <UFormField :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'">
+              <UInput
+                v-model="trans.title"
+                class="w-full"
+                :required="isDefaultLocale(trans.locale)"
+              />
             </UFormField>
 
             <UFormField
-              :label="trans.locale === 'es' ? 'Descripción breve *' : 'Descripción breve'"
+              :label="isDefaultLocale(trans.locale) ? 'Descripción breve *' : 'Descripción breve'"
             >
               <UTextarea
                 v-model="trans.description"
@@ -411,30 +405,20 @@ const confirmCancel = () => {
               v-if="form.type === 'press_release' || form.type === 'statement'"
               label="Contenido completo"
             >
-              <div class="overflow-hidden rounded-xl border">
-                <UEditor
-                  v-model="trans.contentHtml"
-                  content-type="html"
-                  :placeholder="{
-                    placeholder: 'Escribe aquí el contenido completo de la noticia...',
-                    mode: 'firstLine',
-                  }"
-                  :image="false"
-                  :mention="false"
-                  :ui="{
-                    root: 'min-h-80',
-                    content: 'min-h-64',
-                    base: 'press-rich-text min-h-64 px-4 py-4 text-[15px] focus:outline-none',
-                  }"
-                >
-                  <template #default="{ editor }">
-                    <UEditorToolbar :editor="editor" :items="editorToolbarItems" />
-                  </template>
-                </UEditor>
-              </div>
+              <ClientOnly>
+                <LazyAdminRichTextEditor v-model="trans.contentHtml" />
+                <template #fallback>
+                  <UTextarea
+                    v-model="trans.contentHtml"
+                    class="w-full"
+                    :rows="10"
+                    placeholder="Escribe aquí el contenido completo de la noticia..."
+                  />
+                </template>
+              </ClientOnly>
               <p class="text-muted mt-2 text-xs">
                 {{
-                  trans.locale === 'es'
+                  isDefaultLocale(trans.locale)
                     ? 'Obligatorio si no subes PDF. En otros idiomas puedes dejarlo vacío y se mostrará el contenido en español.'
                     : 'Opcional. Si lo dejas vacío, se mostrará el contenido en español.'
                 }}
@@ -452,9 +436,7 @@ const confirmCancel = () => {
         </div>
       </div>
 
-      <!-- Sidebar — metadata, media & settings -->
       <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
-        <!-- Type selector (only when creating) -->
         <div class="space-y-5 rounded-xl border p-5">
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-settings" class="text-muted size-4" />
@@ -470,7 +452,6 @@ const confirmCancel = () => {
             />
           </UFormField>
 
-          <!-- Date -->
           <UFormField label="Fecha publicación">
             <UInputDate ref="inputDate" v-model="publishedAt" class="w-full">
               <template #trailing>
@@ -491,7 +472,6 @@ const confirmCancel = () => {
             </UInputDate>
           </UFormField>
 
-          <!-- Status -->
           <UFormField label="Estado">
             <div class="flex items-center gap-2">
               <USwitch v-model="form.active" />
@@ -499,7 +479,6 @@ const confirmCancel = () => {
             </div>
           </UFormField>
 
-          <!-- Tags -->
           <UFormField label="Etiquetas">
             <USelectMenu
               v-model="form.tagIds"
@@ -512,7 +491,6 @@ const confirmCancel = () => {
           </UFormField>
         </div>
 
-        <!-- Cover image -->
         <div class="space-y-4 rounded-xl border p-5">
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-photo" class="text-muted size-4" />
@@ -555,7 +533,6 @@ const confirmCancel = () => {
           </UButton>
         </div>
 
-        <!-- PDF (press_release and statement only) -->
         <div
           v-if="form.type === 'press_release' || form.type === 'statement'"
           class="space-y-4 rounded-xl border p-5"
@@ -603,7 +580,6 @@ const confirmCancel = () => {
       </aside>
     </div>
 
-    <!-- Unsaved changes confirmation modal -->
     <UModal v-model:open="showCancelModal" :ui="{ content: 'sm:max-w-sm' }">
       <template #content>
         <div class="p-6">

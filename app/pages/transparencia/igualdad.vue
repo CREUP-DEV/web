@@ -1,6 +1,4 @@
 <script setup lang="ts">
-type CommitmentKey = 'policy' | 'protocol' | 'communication'
-type ResourceKey = 'position' | 'sexualProtocol' | 'discriminationProtocol' | 'guide'
 type ActionStepKey = 'safety' | 'notify' | 'details' | 'support'
 type PointSafeKey = 'prevention' | 'guidance' | 'followUp'
 type ScopeKey =
@@ -11,49 +9,24 @@ type ScopeKey =
   | 'disability'
   | 'otherDiscrimination'
 
+interface EqualityDocument {
+  id: string
+  title: string
+  description: string
+  meta: string
+  pdfUrl: string
+  icon?: string
+}
+
+interface EqualityDocumentsResponse {
+  items: EqualityDocument[]
+}
+
 const { t } = useI18n()
 const supportMailto = 'mailto:punto.seguro@creup.es'
 
 const accentButtonClass =
   'bg-[#513269] text-white hover:bg-[#452a59] focus-visible:ring-2 focus-visible:ring-[#513269]/40 focus-visible:outline-none dark:bg-[#6d4a88] dark:hover:bg-[#7b5599]'
-
-const commitments = computed(() => [
-  {
-    key: 'policy' as CommitmentKey,
-    icon: 'i-tabler-scale',
-  },
-  {
-    key: 'protocol' as CommitmentKey,
-    icon: 'i-tabler-shield-check',
-  },
-  {
-    key: 'communication' as CommitmentKey,
-    icon: 'i-tabler-language',
-  },
-])
-
-const resources = computed(() => [
-  {
-    key: 'position' as ResourceKey,
-    icon: 'i-tabler-scale',
-    href: '/documentos/igualdad/posicionamiento-igualdad-diversidad.pdf',
-  },
-  {
-    key: 'sexualProtocol' as ResourceKey,
-    icon: 'i-tabler-shield-heart',
-    href: '/documentos/igualdad/protocolo-acoso-sexual-creup.pdf',
-  },
-  {
-    key: 'discriminationProtocol' as ResourceKey,
-    icon: 'i-tabler-users-group',
-    href: '/documentos/igualdad/protocolo-discriminacion-creup.pdf',
-  },
-  {
-    key: 'guide' as ResourceKey,
-    icon: 'i-tabler-file-text',
-    href: '/documentos/igualdad/guia-comunicacion-inclusiva.pdf',
-  },
-])
 
 const actionSteps = computed(() => [
   {
@@ -116,12 +89,55 @@ const scopeItems = computed(() => [
   },
 ])
 
-useSeoMeta({
-  title: () => t('equalityPage.title'),
-  description: () => t('equalityPage.description'),
-  ogTitle: () => t('equalityPage.title'),
-  ogDescription: () => t('equalityPage.description'),
-})
+usePageSeo('equalityPage.title', 'equalityPage.description')
+
+const { data: documentsData, error: documentsError } =
+  await useFetch<EqualityDocumentsResponse>('/api/equality-documents')
+
+const resourceIcons = [
+  'i-tabler-scale',
+  'i-tabler-shield-heart',
+  'i-tabler-users-group',
+  'i-tabler-file-text',
+]
+
+const resources = computed(() =>
+  (documentsData.value?.items ?? []).map((item, index) => ({
+    ...item,
+    icon: resourceIcons[index] ?? 'i-tabler-file-text',
+  }))
+)
+
+const {
+  elRef: documentsRef,
+  isVisible: documentsVisible,
+  isPending: documentsPending,
+  shouldAnimate: documentsShouldAnimate,
+} = useEntranceObserver(0.1)
+const {
+  elRef: actionRef,
+  isVisible: actionVisible,
+  isPending: actionPending,
+  shouldAnimate: actionShouldAnimate,
+} = useEntranceObserver(0.1)
+const {
+  elRef: pointSafeRef,
+  isVisible: pointSafeVisible,
+  isPending: pointSafePending,
+  shouldAnimate: pointSafeShouldAnimate,
+} = useEntranceObserver(0.1)
+const {
+  elRef: scopeRef,
+  isVisible: scopeVisible,
+  isPending: scopePending,
+  shouldAnimate: scopeShouldAnimate,
+} = useEntranceObserver(0.1)
+const {
+  elRef: supportRef,
+  isVisible: supportVisible,
+  isPending: supportPending,
+  shouldAnimate: supportShouldAnimate,
+} = useEntranceObserver(0.1)
 </script>
 
 <template>
@@ -131,12 +147,6 @@ useSeoMeta({
         class="overflow-hidden rounded-3xl border border-[rgba(81,50,105,0.16)] bg-[linear-gradient(135deg,rgba(81,50,105,0.14),rgba(81,50,105,0.04))] p-6 sm:p-8 lg:p-10 dark:border-[rgba(216,190,231,0.2)] dark:bg-[linear-gradient(135deg,rgba(81,50,105,0.32),rgba(81,50,105,0.14))]"
       >
         <div class="max-w-4xl space-y-4">
-          <span
-            class="inline-flex items-center rounded-full border border-[rgba(81,50,105,0.16)] bg-white/70 px-3 py-1 text-sm font-medium text-[#513269] backdrop-blur-sm dark:border-[rgba(216,190,231,0.18)] dark:bg-white/8 dark:text-[#d8bee7]"
-          >
-            {{ t('equalityPage.eyebrow') }}
-          </span>
-
           <div class="space-y-3">
             <h1 class="text-3xl font-bold text-balance sm:text-4xl">
               {{ t('equalityPage.title') }}
@@ -164,38 +174,6 @@ useSeoMeta({
         </div>
       </header>
 
-      <section aria-labelledby="equality-commitments">
-        <div class="max-w-3xl">
-          <h2 id="equality-commitments" class="text-2xl font-semibold">
-            {{ t('equalityPage.commitmentsTitle') }}
-          </h2>
-        </div>
-
-        <ul class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <li v-for="item in commitments" :key="item.key">
-            <UCard class="h-full">
-              <div class="space-y-4">
-                <span
-                  aria-hidden="true"
-                  class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
-                >
-                  <UIcon :name="item.icon" class="size-5" />
-                </span>
-
-                <div class="space-y-2">
-                  <h3 class="text-lg font-semibold">
-                    {{ t(`equalityPage.commitments.${item.key}.title`) }}
-                  </h3>
-                  <p class="text-muted leading-relaxed">
-                    {{ t(`equalityPage.commitments.${item.key}.description`) }}
-                  </p>
-                </div>
-              </div>
-            </UCard>
-          </li>
-        </ul>
-      </section>
-
       <section id="equality-documents" aria-labelledby="equality-documents-title">
         <div class="max-w-3xl">
           <h2 id="equality-documents-title" class="text-2xl font-semibold">
@@ -203,9 +181,27 @@ useSeoMeta({
           </h2>
         </div>
 
-        <ul class="mt-6 grid gap-4 lg:grid-cols-2">
-          <li v-for="resource in resources" :key="resource.key">
-            <UCard class="h-full">
+        <UCard v-if="documentsError" class="mt-6 text-center">
+          <div class="flex flex-col items-center gap-3 py-6">
+            <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
+            <p class="text-muted">{{ t('equalityPage.loadError') }}</p>
+          </div>
+        </UCard>
+
+        <UCard v-else-if="resources.length === 0" class="mt-6 text-center">
+          <div class="flex flex-col items-center gap-3 py-6">
+            <UIcon name="i-tabler-files-off" class="text-muted size-10" />
+            <p class="text-muted">{{ t('equalityPage.empty') }}</p>
+          </div>
+        </UCard>
+
+        <ul v-else ref="documentsRef" class="mt-6 grid gap-4 lg:grid-cols-2">
+          <li v-for="(resource, index) in resources" :key="resource.id">
+            <UCard
+              class="motion-card h-full"
+              :class="entranceClasses(documentsShouldAnimate, documentsVisible, documentsPending)"
+              :style="entranceStyle(documentsVisible, documentsShouldAnimate, index)"
+            >
               <div class="flex h-full flex-col gap-5">
                 <div class="space-y-3">
                   <div class="flex items-start gap-3">
@@ -218,27 +214,27 @@ useSeoMeta({
 
                     <div class="min-w-0 space-y-2">
                       <h3 class="text-lg font-semibold text-balance">
-                        {{ t(`equalityPage.resources.${resource.key}.title`) }}
+                        {{ resource.title }}
                       </h3>
-                      <p class="text-muted text-sm">
-                        {{ t(`equalityPage.resources.${resource.key}.meta`) }}
+                      <p v-if="resource.meta" class="text-muted text-sm">
+                        {{ resource.meta }}
                       </p>
                     </div>
                   </div>
 
                   <p class="text-muted leading-relaxed">
-                    {{ t(`equalityPage.resources.${resource.key}.description`) }}
+                    {{ resource.description }}
                   </p>
                 </div>
 
                 <div class="mt-auto">
                   <UButton
-                    :href="resource.href"
+                    :href="resource.pdfUrl"
                     target="_blank"
                     rel="noopener noreferrer"
                     icon="i-tabler-file-download"
                     :label="t('equalityPage.openDocument')"
-                    :aria-label="`${t('equalityPage.openDocument')}: ${t(`equalityPage.resources.${resource.key}.title`)}`"
+                    :aria-label="`${t('equalityPage.openDocument')}: ${resource.title}`"
                     :class="accentButtonClass"
                   />
                 </div>
@@ -255,9 +251,13 @@ useSeoMeta({
           </h2>
         </div>
 
-        <ul class="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-          <li v-for="step in actionSteps" :key="step.key">
-            <UCard class="h-full">
+        <ul ref="actionRef" class="mt-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+          <li v-for="(step, index) in actionSteps" :key="step.key">
+            <UCard
+              class="motion-card h-full"
+              :class="entranceClasses(actionShouldAnimate, actionVisible, actionPending)"
+              :style="entranceStyle(actionVisible, actionShouldAnimate, index)"
+            >
               <div class="space-y-4">
                 <span
                   aria-hidden="true"
@@ -290,9 +290,14 @@ useSeoMeta({
           </p>
         </div>
 
-        <div class="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]">
+        <div
+          ref="pointSafeRef"
+          class="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]"
+        >
           <UCard
             class="border-[rgba(81,50,105,0.16)] bg-[linear-gradient(135deg,rgba(81,50,105,0.1),rgba(81,50,105,0.03))] dark:border-[rgba(216,190,231,0.18)] dark:bg-[linear-gradient(135deg,rgba(81,50,105,0.28),rgba(81,50,105,0.1))]"
+            :class="entranceClasses(pointSafeShouldAnimate, pointSafeVisible, pointSafePending)"
+            :style="entranceStyle(pointSafeVisible, pointSafeShouldAnimate, 0)"
           >
             <div class="space-y-4">
               <span
@@ -322,6 +327,8 @@ useSeoMeta({
 
           <div
             class="rounded-3xl border border-[rgba(81,50,105,0.12)] bg-white/70 p-6 backdrop-blur-sm dark:border-[rgba(216,190,231,0.16)] dark:bg-white/4"
+            :class="entranceClasses(pointSafeShouldAnimate, pointSafeVisible, pointSafePending)"
+            :style="entranceStyle(pointSafeVisible, pointSafeShouldAnimate, 1)"
           >
             <ul class="space-y-5">
               <li
@@ -358,11 +365,16 @@ useSeoMeta({
         </div>
 
         <ul
+          ref="scopeRef"
           class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3"
           :aria-label="t('equalityPage.scopeTitle')"
         >
-          <li v-for="item in scopeItems" :key="item.key">
-            <UCard class="h-full">
+          <li v-for="(item, index) in scopeItems" :key="item.key">
+            <UCard
+              class="motion-card h-full"
+              :class="entranceClasses(scopeShouldAnimate, scopeVisible, scopePending)"
+              :style="entranceStyle(scopeVisible, scopeShouldAnimate, index)"
+            >
               <div class="flex items-center gap-3">
                 <span
                   aria-hidden="true"
@@ -380,7 +392,10 @@ useSeoMeta({
       </section>
 
       <UCard
+        ref="supportRef"
         class="border-[rgba(81,50,105,0.16)] bg-[linear-gradient(135deg,rgba(81,50,105,0.1),rgba(81,50,105,0.03))] dark:border-[rgba(216,190,231,0.18)] dark:bg-[linear-gradient(135deg,rgba(81,50,105,0.28),rgba(81,50,105,0.1))]"
+        :class="entranceClasses(supportShouldAnimate, supportVisible, supportPending)"
+        :style="entranceStyle(supportVisible, supportShouldAnimate, 0)"
       >
         <section
           aria-labelledby="equality-support"

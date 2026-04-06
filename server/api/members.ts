@@ -1,8 +1,3 @@
-/**
- * Members API endpoint
- * Proxies member data from the external CREUP intranet API.
- */
-
 import { createError, defineEventHandler } from 'h3'
 import {
   getExternalApiCacheOptions,
@@ -10,28 +5,16 @@ import {
   withExternalApiSWRCache,
 } from '../utils/externalApiCache'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
+import { logError } from '../utils/logger'
+import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
 import { externalAssociatedMembersResponseSchema } from '../utils/validation'
-
-const supportedNetworks = [
-  'website',
-  'email',
-  'instagram',
-  'twitter',
-  'tiktok',
-  'bluesky',
-  'linkedin',
-  'telegram',
-  'discord',
-  'facebook',
-  'github',
-] as const
-
-type SupportedNetwork = (typeof supportedNetworks)[number]
-
-interface MemberSocialOutput {
-  network: SupportedNetwork
-  value: string
-}
+import {
+  collectSocialNetworks,
+  normalizeSocialText,
+  type SocialNetworkEntry,
+} from '~~/shared/utils/social'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
+import { getRequestLocaleContext } from '../utils/requestLocale'
 
 interface OrganizationMemberOutput {
   id: string
@@ -45,40 +28,7 @@ interface OrganizationMemberOutput {
   description: string | null
   logoLight: string | null
   logoDark: string | null
-  socialNetworks: MemberSocialOutput[]
-}
-
-const networkAliasMap: Record<string, SupportedNetwork> = {
-  website: 'website',
-  webpage: 'website',
-  web: 'website',
-  sitioweb: 'website',
-  paginaweb: 'website',
-
-  email: 'email',
-  mail: 'email',
-  correo: 'email',
-  correoelectronico: 'email',
-
-  instagram: 'instagram',
-
-  twitter: 'twitter',
-  x: 'twitter',
-  twitterx: 'twitter',
-
-  tiktok: 'tiktok',
-
-  bluesky: 'bluesky',
-
-  linkedin: 'linkedin',
-
-  telegram: 'telegram',
-
-  discord: 'discord',
-
-  facebook: 'facebook',
-
-  github: 'github',
+  socialNetworks: SocialNetworkEntry[]
 }
 
 const communityAliasMap: Record<string, string> = {
@@ -138,64 +88,29 @@ const slugify = (value: string) => {
     .replace(/^-+|-+$/g, '')
 }
 
-const normalizeNetwork = (network: string): SupportedNetwork | null => {
-  const normalized = normalizeKey(network)
-  if (networkAliasMap[normalized]) {
-    return networkAliasMap[normalized]
-  }
-
-  // Handle unexpected labels from upstream API (e.g. "Correo electrónico institucional")
-  if (normalized.includes('correo') || normalized.includes('email')) {
-    return 'email'
-  }
-
-  if (normalized.includes('web') || normalized.includes('pagina') || normalized.includes('sitio')) {
-    return 'website'
-  }
-
-  return null
-}
-
 const normalizeCommunity = (communityName: string) => {
   const normalized = normalizeKey(communityName)
   return communityAliasMap[normalized] ?? 'unknown'
 }
 
-const normalizeText = (value: string | null | undefined) => {
-  if (typeof value !== 'string') {
-    return ''
-  }
-  return value.trim()
-}
-
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-const inferNetwork = (networkValue: string, value: string): SupportedNetwork | null => {
-  const inferred = normalizeNetwork(networkValue)
-  if (inferred) {
-    return inferred
-  }
-
-  if (emailPattern.test(value)) {
-    return 'email'
-  }
-
-  return null
+const normalizeText = normalizeSocialText
+const messagesByLocale = {
+  en: {
+    unavailable: 'Member data is temporarily unavailable.',
+  },
+  es: {
+    unavailable: 'La información de las asociaciones miembro no está disponible temporalmente.',
+  },
 }
 
 export default defineEventHandler(async (event) => {
-  const runtimeConfig = useRuntimeConfig(event)
-  const configuredBaseUrl = String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  const messages =
+    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
-
-  if (!configuredBaseUrl) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'External members API is not configured.',
-    })
-  }
 
   return withExternalApiSWRCache(
     `external-api:members:${configuredBaseUrl}`,
@@ -206,44 +121,24 @@ export default defineEventHandler(async (event) => {
       try {
         payload = await $fetch(endpoint)
       } catch (error) {
-        console.error('Failed to fetch external members API:', error)
+        logError('external.members.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Members data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 
       const parsedPayload = externalAssociatedMembersResponseSchema.safeParse(payload)
       if (!parsedPayload.success) {
-        console.error('Invalid payload from external members API:', parsedPayload.error.flatten())
+        logError('external.members.invalid-payload', parsedPayload.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Members data is temporarily unavailable.',
+          statusMessage: messages.unavailable,
         })
       }
 
       const members: OrganizationMemberOutput[] = parsedPayload.data.data.map((member, index) => {
-        const socialMap = new Map<SupportedNetwork, string>()
-
-        for (const socialNetwork of member.social_networks ?? []) {
-          const value = normalizeText(socialNetwork.value)
-          const network = inferNetwork(normalizeText(socialNetwork.network), value)
-
-          if (!network || !value || socialMap.has(network)) {
-            continue
-          }
-
-          socialMap.set(network, value)
-        }
-
-        const socialNetworks: MemberSocialOutput[] = supportedNetworks.flatMap((network) => {
-          const value = socialMap.get(network)
-          if (!value) {
-            return []
-          }
-
-          return [{ network, value }]
-        })
+        const socialNetworks = collectSocialNetworks(member.social_networks)
 
         const denomination = normalizeText(member.denomination)
         const initials = normalizeText(member.initials)

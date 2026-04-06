@@ -1,12 +1,6 @@
 <script setup lang="ts">
-/**
- * PublicAgenda
- * Displays a mini calendar with upcoming events from Google Calendar.
- * - Click on a day to see events (uses UPopover).
- * - Upcoming events listed below the calendar.
- * - Fixed-size date badges for consistent alignment.
- */
 import type { CalendarEvent } from '@/composables/useGoogleCalendar'
+import { collectUpcomingCalendarSeries } from '@/composables/useCalendarEventSeries'
 
 const props = defineProps<{
   events: CalendarEvent[]
@@ -15,19 +9,17 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { currentLanguageTag, formatDate: formatLocaleDate } = useLocaleFormatting()
+const { formatShortDate } = useDatePresets()
 
-// Current date state
 const today = new Date()
 const currentYear = ref(today.getFullYear())
 const currentMonth = ref(today.getMonth())
 
-// Selected day - use -1 to indicate no selection (avoids null issues)
 const selectedDay = ref<number>(-1)
 const isSelectingDay = ref(false)
 const touchStartX = ref(0)
 const touchStartY = ref(0)
 
-// Days of week labels
 const weekDays = computed(() => {
   const formatter = new Intl.DateTimeFormat(currentLanguageTag.value, { weekday: 'narrow' })
   const monday = Date.UTC(2024, 0, 1)
@@ -37,7 +29,6 @@ const weekDays = computed(() => {
   )
 })
 
-// Month name
 const monthName = computed(() => {
   const date = new Date(currentYear.value, currentMonth.value, 1)
   return formatLocaleDate(date, {
@@ -68,14 +59,10 @@ const canGoToNextMonth = computed(() => {
   return current < maxMonthDate.value
 })
 
-// First day of month (0 = Sunday, adjust to Monday-first week)
 const firstDayOfMonth = computed(() => {
   const day = new Date(currentYear.value, currentMonth.value, 1).getDay()
-  // Convert Sunday (0) to 7 for Monday-first week
   return day === 0 ? 7 : day
 })
-
-// Days in current month
 const daysInMonth = computed(() => {
   return new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
 })
@@ -108,51 +95,11 @@ const getEventsForDay = (day: number): CalendarEvent[] => {
 
 // Upcoming events (next 4 events from today)
 const upcomingEvents = computed(() => {
-  const now = new Date()
-  const bySeries = new Map<string, CalendarEvent>()
-
-  for (const event of props.events) {
-    const seriesId = event.seriesId || event.id
-    const startDate = event.startDate || event.date
-    const endDate = event.endDate || event.date
-    const endDateTime = getEventEndDateTime(event, endDate)
-
-    if (endDateTime.getTime() < now.getTime()) continue
-
-    const existing = bySeries.get(seriesId)
-    if (!existing) {
-      bySeries.set(seriesId, {
-        ...event,
-        startDate,
-        endDate,
-      })
-      continue
-    }
-
-    const existingStart = existing.startDate || existing.date
-    const existingEnd = existing.endDate || existing.date
-
-    if (startDate < existingStart) {
-      existing.startDate = startDate
-    }
-
-    if (endDate > existingEnd) {
-      existing.endDate = endDate
-    }
-  }
-
-  return Array.from(bySeries.values())
-    .sort((a, b) => (a.startDate || a.date).localeCompare(b.startDate || b.date))
-    .slice(0, 4)
-})
-
-// Format date for upcoming events (shorter format)
-const formatShortDate = (dateStr: string): string => {
-  return formatLocaleDate(`${dateStr}T00:00:00`, {
-    day: 'numeric',
-    month: 'short',
+  return collectUpcomingCalendarSeries(props.events, {
+    limit: 4,
+    allDayLabel: t('home.calendar.allDay'),
   })
-}
+})
 
 const isMultiDayRange = (startDate: string, endDate?: string): boolean => {
   return Boolean(endDate && startDate !== endDate)
@@ -162,18 +109,6 @@ const formatUpcomingTime = (event: CalendarEvent): string => {
   if (event.isAllDay) return t('home.calendar.allDay')
   if (event.startTime && event.endTime) return `${event.startTime} - ${event.endTime}`
   return event.timeSlot
-}
-
-const getEventEndDateTime = (event: CalendarEvent, endDate: string): Date => {
-  if (event.isAllDay) {
-    return new Date(`${endDate}T23:59:59`)
-  }
-
-  if (event.endTime) {
-    return new Date(`${endDate}T${event.endTime}`)
-  }
-
-  return new Date(`${endDate}T23:59:59`)
 }
 
 // Check if it's today
@@ -283,7 +218,6 @@ const onTouchEnd = (event: TouchEvent) => {
         </h2>
       </header>
 
-      <!-- Calendar Navigation -->
       <div class="mb-3 flex items-center justify-between">
         <UButton
           variant="ghost"
@@ -306,14 +240,12 @@ const onTouchEnd = (event: TouchEvent) => {
         />
       </div>
 
-      <!-- Week days header -->
       <div class="text-muted mb-2 grid grid-cols-7 gap-1 text-center text-xs font-medium">
         <div v-for="(day, index) in weekDays" :key="`${currentLanguageTag}-${index}`" class="py-1">
           {{ day }}
         </div>
       </div>
 
-      <!-- Calendar grid -->
       <div
         class="relative grid grid-cols-7 gap-1"
         :aria-label="t('home.calendar.label')"
@@ -386,12 +318,10 @@ const onTouchEnd = (event: TouchEvent) => {
         </UPopover>
       </div>
 
-      <!-- Upcoming events -->
       <div class="mt-4 flex-1">
         <h3 class="text-foreground mb-2 text-sm font-semibold">
           {{ t('home.calendar.upcomingEvents') }}
         </h3>
-        <!-- Loading skeleton -->
         <ul v-if="pending" class="space-y-2" role="list" aria-hidden="true">
           <li v-for="n in 4" :key="n" class="bg-surface flex items-start gap-3 rounded-lg p-2.5">
             <USkeleton class="h-10 w-14 shrink-0 rounded" />
@@ -401,14 +331,12 @@ const onTouchEnd = (event: TouchEvent) => {
             </div>
           </li>
         </ul>
-        <!-- Actual events -->
         <ul v-else-if="upcomingEvents.length > 0" class="space-y-2" role="list">
           <li
             v-for="(event, idx) in upcomingEvents"
             :key="idx"
             class="bg-surface flex items-start gap-3 rounded-lg p-2.5"
           >
-            <!-- Fixed-width date badge for consistent alignment -->
             <div
               class="bg-primary/10 flex min-h-10 w-16 shrink-0 flex-col items-center justify-center rounded py-1 text-center"
             >
@@ -422,7 +350,6 @@ const onTouchEnd = (event: TouchEvent) => {
                 {{ formatShortDate(event.endDate || event.date) }}
               </span>
             </div>
-            <!-- Event details with fixed min-height for consistency -->
             <div class="min-h-10 min-w-0 flex-1">
               <p class="text-foreground line-clamp-2 text-sm leading-snug font-medium">
                 {{ event.title }}

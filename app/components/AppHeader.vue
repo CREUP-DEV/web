@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
+import { useAuth } from '@/composables/useAuth'
 
 type LocaleItem = {
   value: Locale
@@ -8,8 +9,16 @@ type LocaleItem = {
   icon: string
 }
 
+interface PressDossierResponse {
+  item: {
+    pdfUrl: string
+  } | null
+}
+
 const { locale, setLocale, t, setLocaleCookie } = useI18n()
 const { defaultLocale, getLocaleName, localeConfigs } = useLocales()
+const { session } = useAuth()
+const localePath = useLocalePath()
 
 const localeItems = computed<LocaleItem[]>(() =>
   localeConfigs.value.map((config) => ({
@@ -48,114 +57,153 @@ const mobileLocaleItems = computed(() =>
   }))
 )
 
-const { session } = useAuth()
-const isLoggedIn = computed(() => Boolean(session.value.data?.user))
+const isAdminUser = computed(() => Boolean(session.value?.data?.user?.id))
+
+const { data: pressDossierData } = await useFetch<PressDossierResponse>('/api/press-dossier')
 
 const route = useRoute()
+const pressDossierLink = computed(() => pressDossierData.value?.item?.pdfUrl ?? null)
+const localizedPath = (path: string) => localePath(path)
+const normalizePath = (path: string) => {
+  let normalized = path.trim() || '/'
+
+  if (normalized !== '/' && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1)
+  }
+
+  const matchedLocale = localeConfigs.value.find(
+    (config) => normalized === `/${config.code}` || normalized.startsWith(`/${config.code}/`)
+  )
+
+  if (!matchedLocale) {
+    return normalized || '/'
+  }
+
+  const strippedPath = normalized.slice(matchedLocale.code.length + 1) || '/'
+  return strippedPath.startsWith('/') ? strippedPath : `/${strippedPath}`
+}
+const normalizedRoutePath = computed(() => normalizePath(route.path))
+const isSectionActive = (sectionPath: string) => {
+  const normalizedSectionPath = normalizePath(sectionPath)
+
+  if (normalizedSectionPath === '/') {
+    return normalizedRoutePath.value === '/'
+  }
+
+  return (
+    normalizedRoutePath.value === normalizedSectionPath ||
+    normalizedRoutePath.value.startsWith(`${normalizedSectionPath}/`)
+  )
+}
 
 const items = computed<NavigationMenuItem[]>(() => [
   {
     label: t('nav.home'),
-    to: '/',
-    active: route.path === '/',
+    to: localizedPath('/'),
+    active: isSectionActive('/'),
   },
   {
     label: t('nav.about.label'),
-    to: '/conocenos/que-es',
-    active: route.path.startsWith('/conocenos'),
+    to: localizedPath('/conocenos/que-es'),
+    active: isSectionActive('/conocenos'),
     children: [
       {
         label: t('nav.about.whatIs'),
-        to: '/conocenos/que-es',
+        to: localizedPath('/conocenos/que-es'),
       },
       {
         label: t('nav.about.members'),
-        to: '/conocenos/miembros',
+        to: localizedPath('/conocenos/miembros'),
       },
       {
         label: t('nav.about.team'),
-        to: '/conocenos/equipo',
+        to: localizedPath('/conocenos/equipo'),
       },
       {
         label: t('nav.about.committees'),
-        to: '/conocenos/comites',
+        to: localizedPath('/conocenos/comites'),
       },
       {
         label: t('nav.events.label'),
-        to: '/conocenos/eventos',
+        to: localizedPath('/conocenos/eventos'),
       },
     ],
   },
   {
     label: t('nav.policy.label'),
-    active: route.path.startsWith('/politica'),
+    active: isSectionActive('/politica'),
     children: [
       {
         label: t('nav.policy.positions'),
-        to: '/politica/posicionamientos/',
+        to: localizedPath('/politica/posicionamientos/'),
       },
       {
         label: t('nav.policy.resolutions'),
-        to: '/politica/resoluciones/',
+        to: localizedPath('/politica/resoluciones/'),
       },
       {
         label: t('nav.policy.reports'),
-        to: '/politica/informes-ejecutivos/',
+        to: localizedPath('/politica/informes-ejecutivos/'),
       },
     ],
   },
   {
     label: t('nav.press.label'),
-    active: route.path.startsWith('/prensa'),
+    active: isSectionActive('/prensa'),
     children: [
       {
         label: t('nav.press.newsletter'),
-        to: '/prensa/newsletter/',
+        to: localizedPath('/prensa/newsletter/'),
       },
       {
         label: t('nav.press.pressReleases'),
-        to: '/prensa/notas-prensa/',
+        to: localizedPath('/prensa/notas-prensa/'),
       },
       {
         label: t('nav.press.statements'),
-        to: '/prensa/comunicados/',
+        to: localizedPath('/prensa/comunicados/'),
       },
       {
         label: t('nav.press.inMedia'),
-        to: '/prensa/en-los-medios/',
+        to: localizedPath('/prensa/en-los-medios/'),
       },
-      {
-        label: t('nav.press.pressKit'),
-        to: '/prensa/dossier/',
-      },
+      ...(pressDossierLink.value
+        ? [
+            {
+              label: t('nav.press.pressKit'),
+              href: pressDossierLink.value,
+              target: '_blank',
+            },
+          ]
+        : []),
     ],
   },
   {
     label: t('nav.transparency.label'),
-    active: route.path.startsWith('/transparencia'),
+    active: isSectionActive('/transparencia'),
     children: [
       {
         label: t('nav.transparency.regulations'),
-        to: '/transparencia/normativa/',
+        to: localizedPath('/transparencia/normativa/'),
       },
       {
         label: t('nav.transparency.financialReports'),
-        to: '/transparencia/informes-economicos/',
+        to: localizedPath('/transparencia/informes-economicos/'),
       },
       {
         label: t('nav.transparency.corporateIdentity'),
-        to: '/transparencia/mic/',
+        to: localizedPath('/transparencia/mic/'),
       },
       {
-        label: t('nav.transparency.equality.label'),
-        to: '/transparencia/igualdad/',
+        label: t('nav.transparency.equality'),
+        to: localizedPath('/transparencia/igualdad/'),
       },
     ],
   },
   {
     label: t('nav.contact'),
-    to: '/contacto',
-    active: route.path.startsWith('/contacto'),
+    to: localizedPath('/contacto'),
+    active: isSectionActive('/contacto'),
   },
 ])
 </script>
@@ -169,8 +217,8 @@ const items = computed<NavigationMenuItem[]>(() => [
   >
     <template #title>
       <UColorModeImage
-        light="/img/creup-imagotipo.svg"
-        dark="/img/creup-imagotipo-dark.svg"
+        light="/nav/creup-site-header-logo-light.svg"
+        dark="/nav/creup-site-header-logo-dark.svg"
         :alt="t('accessibility.siteLogo')"
         class="h-8 w-auto"
       />
@@ -191,8 +239,7 @@ const items = computed<NavigationMenuItem[]>(() => [
     </template>
 
     <template #right>
-      <!-- Admin panel button (only when logged in) -->
-      <UTooltip v-if="isLoggedIn" :text="t('nav.admin')">
+      <UTooltip v-if="isAdminUser" :text="t('nav.admin')">
         <UButton
           to="/admin"
           icon="i-tabler-settings-2"
@@ -206,7 +253,6 @@ const items = computed<NavigationMenuItem[]>(() => [
         <UColorModeButton />
       </UTooltip>
 
-      <!-- Desktop locale selector -->
       <USelect
         v-model="selectedLocale"
         :items="localeItems"
@@ -219,7 +265,6 @@ const items = computed<NavigationMenuItem[]>(() => [
         </template>
       </USelect>
 
-      <!-- Mobile locale dropdown -->
       <UDropdownMenu :items="mobileLocaleItems" class="sm:hidden">
         <UButton
           :icon="currentLocale!.icon"

@@ -1,7 +1,3 @@
-/**
- * GET /api/newsletter
- * Public endpoint — returns active newsletters ordered by month (newest first).
- */
 import { defineEventHandler } from 'h3'
 import { desc, eq } from 'drizzle-orm'
 import { db } from '../db'

@@ -1,6 +1,18 @@
 import type { H3Event } from 'h3'
 import { createError, getHeader, getMethod, getQuery, getRequestURL } from 'h3'
+import {
+  getRequiredExternalApiBaseUrl,
+  getRequiredExternalAssetProxyAllowedOrigins,
+  getRequiredExternalAssetProxyImageMaxBytes,
+  getRequiredExternalAssetProxyPdfMaxBytes,
+  getRequiredExternalAssetProxyTimeoutMs,
+  getRequiredSiteUrl,
+} from './runtimeConfig'
+import { logError } from './logger'
+import { getRequestLocaleContext } from './requestLocale'
 import { externalAssetPublicPathParamSchema, externalAssetQuerySchema } from './validation'
+import { INTERNAL_ASSET_PROXY_PATH_BASES } from '~~/shared/constants/assetPaths'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 export type ExternalAssetType = 'image' | 'pdf'
 
@@ -10,30 +22,52 @@ interface ExternalAssetProxyUrlOptions {
   publicPathBase?: string
 }
 
-const DEFAULT_TIMEOUT_MS = 12000
-const DEFAULT_IMAGE_MAX_BYTES = 12 * 1024 * 1024
-const DEFAULT_PDF_MAX_BYTES = 30 * 1024 * 1024
 const DEFAULT_CACHE_CONTROL = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
 
-const PROXIED_PATH_PREFIXES = [
-  '/imagenes/externas/',
-  '/documentos/externos/',
-  '/inicio/imagenes/',
-  '/conocenos/imagenes/',
-  '/eventos/imagenes/',
-  '/eventos/documentos/',
-  '/prensa/imagenes/',
-  '/prensa/documentos/',
-  '/prensa/newsletter/portadas/',
-  '/prensa/newsletter/documentos/',
-]
+const PROXIED_PATH_PREFIXES = INTERNAL_ASSET_PROXY_PATH_BASES.map((path) => `${path}/`)
 
-const parsePositiveInt = (value: unknown, fallback: number) => {
-  const numericValue = Number(value)
-  if (!Number.isFinite(numericValue) || numericValue <= 0) {
-    return fallback
+const messagesByLocale = {
+  en: {
+    invalidPath: 'Invalid asset path.',
+    methodNotAllowed: 'Method not allowed.',
+    proxyNotConfigured: 'External asset proxy is not configured.',
+    invalidProtocol: 'Invalid asset protocol.',
+    invalidCredentials: 'Invalid asset URL credentials.',
+    invalidOrigin: 'Invalid asset origin.',
+    notFound: 'External asset not found.',
+    unavailable: 'External asset is temporarily unavailable.',
+    unsupportedType: 'Unsupported external asset type.',
+    tooLarge: 'External asset exceeds size limit.',
+    timedOut: 'External asset request timed out.',
+    invalidRequest: 'Invalid asset request.',
+    pathRequired: 'Asset path is required.',
+    siteUrlNotConfigured: 'Site URL is not configured.',
+  },
+  es: {
+    invalidPath: 'La ruta del recurso no es válida.',
+    methodNotAllowed: 'Método no permitido.',
+    proxyNotConfigured: 'El proxy de recursos externos no está configurado.',
+    invalidProtocol: 'El protocolo del recurso no es válido.',
+    invalidCredentials: 'La URL del recurso no puede incluir credenciales.',
+    invalidOrigin: 'El origen del recurso no es válido.',
+    notFound: 'Recurso externo no encontrado.',
+    unavailable: 'El recurso externo no está disponible temporalmente.',
+    unsupportedType: 'El tipo de recurso externo no es compatible.',
+    tooLarge: 'El recurso externo supera el tamaño máximo permitido.',
+    timedOut: 'La solicitud del recurso externo ha superado el tiempo de espera.',
+    invalidRequest: 'La solicitud del recurso no es válida.',
+    pathRequired: 'La ruta del recurso es obligatoria.',
+    siteUrlNotConfigured: 'La URL pública del sitio no está configurada.',
+  },
+}
+
+const getMessages = (event?: H3Event) => {
+  if (!event) {
+    return messagesByLocale.es
   }
-  return Math.floor(numericValue)
+
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  return pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 }
 
 const normalizeOrigin = (value: string) => {
@@ -91,8 +125,7 @@ const getDefaultAssetPathBase = (type: ExternalAssetType) =>
   type === 'image' ? '/imagenes/externas' : '/documentos/externos'
 
 const getConfiguredBaseUrl = (event?: H3Event) => {
-  const runtimeConfig = useRuntimeConfig(event)
-  return String(runtimeConfig.externalMembersApiBaseUrl ?? '').trim()
+  return getRequiredExternalApiBaseUrl(event, getMessages(event).proxyNotConfigured)
 }
 
 const buildAssetPath = (pathBase: string, pathname: string, search = '') => {
@@ -106,18 +139,7 @@ const getPublicSiteOrigin = (event?: H3Event) => {
     return getRequestURL(event).origin
   }
 
-  const runtimeConfig = useRuntimeConfig()
-  const configuredSiteUrl = String(runtimeConfig.siteUrl ?? '').trim()
-
-  if (!configuredSiteUrl) {
-    return null
-  }
-
-  try {
-    return new URL(configuredSiteUrl).origin
-  } catch {
-    return null
-  }
+  return new URL(getRequiredSiteUrl(undefined, getMessages(undefined).siteUrlNotConfigured)).origin
 }
 
 const stripHash = (value: string) => {
@@ -165,11 +187,12 @@ const resolveSourceFromPublicPath = (
   type: ExternalAssetType,
   publicPath: string
 ) => {
+  const messages = getMessages(event)
   const parsedPath = externalAssetPublicPathParamSchema.safeParse({ path: publicPath })
   if (!parsedPath.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid asset path.',
+      statusMessage: messages.invalidPath,
     })
   }
 
@@ -222,13 +245,11 @@ const isValidAssetContentType = (
 }
 
 const getMaxBytesForType = (event: H3Event, type: ExternalAssetType) => {
-  const runtimeConfig = useRuntimeConfig(event)
-
   if (type === 'image') {
-    return parsePositiveInt(runtimeConfig.externalAssetProxyImageMaxBytes, DEFAULT_IMAGE_MAX_BYTES)
+    return getRequiredExternalAssetProxyImageMaxBytes(event)
   }
 
-  return parsePositiveInt(runtimeConfig.externalAssetProxyPdfMaxBytes, DEFAULT_PDF_MAX_BYTES)
+  return getRequiredExternalAssetProxyPdfMaxBytes(event)
 }
 
 const buildOutgoingHeaders = (
@@ -287,29 +308,27 @@ export const proxyExternalAssetBySource = async (
   type: ExternalAssetType,
   source: string
 ) => {
+  const messages = getMessages(event)
   const method = getMethod(event).toUpperCase()
   if (method !== 'GET' && method !== 'HEAD') {
     throw createError({
       statusCode: 405,
-      statusMessage: 'Method not allowed.',
+      statusMessage: messages.methodNotAllowed,
     })
   }
 
   const normalizedSource = source.trim()
-  const runtimeConfig = useRuntimeConfig(event)
   const configuredBaseUrl = getConfiguredBaseUrl(event)
   const configuredBaseOrigin = normalizeOrigin(configuredBaseUrl)
-  const allowedOrigins = parseAllowedOrigins(
-    String(runtimeConfig.externalAssetProxyAllowedOrigins ?? '')
-  )
+  const allowedOrigins = parseAllowedOrigins(getRequiredExternalAssetProxyAllowedOrigins(event))
   if (configuredBaseOrigin) {
     allowedOrigins.add(configuredBaseOrigin)
   }
 
-  if (allowedOrigins.size === 0 || !configuredBaseUrl) {
+  if (allowedOrigins.size === 0) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'External asset proxy is not configured.',
+      statusMessage: messages.proxyNotConfigured,
     })
   }
 
@@ -318,25 +337,25 @@ export const proxyExternalAssetBySource = async (
   if (!['http:', 'https:'].includes(sourceUrl.protocol)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid asset protocol.',
+      statusMessage: messages.invalidProtocol,
     })
   }
 
   if (sourceUrl.username || sourceUrl.password) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid asset URL credentials.',
+      statusMessage: messages.invalidCredentials,
     })
   }
 
   if (!allowedOrigins.has(sourceUrl.origin)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid asset origin.',
+      statusMessage: messages.invalidOrigin,
     })
   }
 
-  const timeoutMs = parsePositiveInt(runtimeConfig.externalAssetProxyTimeoutMs, DEFAULT_TIMEOUT_MS)
+  const timeoutMs = getRequiredExternalAssetProxyTimeoutMs(event)
   const maxBytes = getMaxBytesForType(event, type)
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
@@ -375,14 +394,14 @@ export const proxyExternalAssetBySource = async (
     if (upstreamResponse.status === 404) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'External asset not found.',
+        statusMessage: messages.notFound,
       })
     }
 
     if (![200, 206, 304].includes(upstreamResponse.status)) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'External asset is temporarily unavailable.',
+        statusMessage: messages.unavailable,
       })
     }
 
@@ -391,7 +410,7 @@ export const proxyExternalAssetBySource = async (
       if (!isValidAssetContentType(type, contentType, sourceUrl.pathname)) {
         throw createError({
           statusCode: 415,
-          statusMessage: 'Unsupported external asset type.',
+          statusMessage: messages.unsupportedType,
         })
       }
 
@@ -399,7 +418,7 @@ export const proxyExternalAssetBySource = async (
       if (Number.isFinite(contentLength) && contentLength > maxBytes) {
         throw createError({
           statusCode: 413,
-          statusMessage: 'External asset exceeds size limit.',
+          statusMessage: messages.tooLarge,
         })
       }
     }
@@ -417,7 +436,7 @@ export const proxyExternalAssetBySource = async (
     if (error instanceof Error && error.name === 'AbortError') {
       throw createError({
         statusCode: 504,
-        statusMessage: 'External asset request timed out.',
+        statusMessage: messages.timedOut,
       })
     }
 
@@ -425,10 +444,10 @@ export const proxyExternalAssetBySource = async (
       throw error
     }
 
-    console.error('Failed to proxy external asset:', error)
+    logError('external-asset.proxy', error, { source: normalizedSource, type }, event)
     throw createError({
       statusCode: 502,
-      statusMessage: 'External asset is temporarily unavailable.',
+      statusMessage: messages.unavailable,
     })
   } finally {
     clearTimeout(timeoutId)
@@ -463,6 +482,10 @@ export const toExternalAssetProxyUrl = (
     return null
   }
 
+  if (options.forceProxyRelative) {
+    return assetPath
+  }
+
   if (type === 'image') {
     const siteOrigin = getPublicSiteOrigin(options.event)
     if (siteOrigin) {
@@ -484,11 +507,12 @@ export const toExternalPdfProxyUrl = (
 ) => toExternalAssetProxyUrl(src, 'pdf', options)
 
 export async function proxyExternalAsset(event: H3Event, type: ExternalAssetType) {
+  const messages = getMessages(event)
   const parsedQuery = externalAssetQuerySchema.safeParse(getQuery(event))
   if (!parsedQuery.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid asset request.',
+      statusMessage: messages.invalidRequest,
     })
   }
 
@@ -512,6 +536,7 @@ export async function proxyExternalAssetByPublicPathBase(
   type: ExternalAssetType,
   publicPathBase: string
 ) {
+  const messages = getMessages(event)
   const pathname = getRequestURL(event).pathname
   const normalizedBase = publicPathBase.replace(/\/+$/, '')
   const prefix = `${normalizedBase}/`
@@ -519,7 +544,7 @@ export async function proxyExternalAssetByPublicPathBase(
   if (!pathname.startsWith(prefix)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid asset path.',
+      statusMessage: messages.invalidPath,
     })
   }
 
@@ -527,7 +552,7 @@ export async function proxyExternalAssetByPublicPathBase(
   if (!publicPath) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Asset path is required.',
+      statusMessage: messages.pathRequired,
     })
   }
 
@@ -537,7 +562,7 @@ export async function proxyExternalAssetByPublicPathBase(
     if (error instanceof URIError) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Invalid asset path.',
+        statusMessage: messages.invalidPath,
       })
     }
 

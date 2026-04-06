@@ -1,8 +1,3 @@
-/**
- * MapChart autonomous communities paths for Spain map interactivity.
- * Source: user-provided MapChart SVG export.
- */
-
 export interface SpainRegionPath {
   svgId: string
   community: string

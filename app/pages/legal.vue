@@ -3,19 +3,28 @@ import LegalEn from '~/components/legal/LegalEn.vue'
 import LegalEs from '~/components/legal/LegalEs.vue'
 
 const { t, locale } = useI18n()
+const { defaultLocale } = useLocales()
 
-useSeoMeta({
-  title: () => t('footer.legal'),
-  description: () => t('meta.legal.description'),
-  ogTitle: () => t('footer.legal'),
-  ogDescription: () => t('meta.legal.ogDescription'),
-})
+const legalComponents = {
+  en: LegalEn,
+  es: LegalEs,
+} as const
+
+const legalComponent = computed(
+  () =>
+    legalComponents[locale.value as keyof typeof legalComponents] ??
+    legalComponents[defaultLocale as keyof typeof legalComponents] ??
+    LegalEs
+)
+
+usePageSeo(
+  () => t('footer.legal'),
+  () => t('meta.legal.description')
+)
 </script>
 
 <template>
   <UContainer class="py-12">
-    <!-- Spanish is the default locale, so for now render English only when not 'es' -->
-    <LegalEn v-if="locale !== 'es'" :title="t('footer.legal')" />
-    <LegalEs v-else :title="t('footer.legal')" />
+    <component :is="legalComponent" :title="t('footer.legal')" />
   </UContainer>
 </template>

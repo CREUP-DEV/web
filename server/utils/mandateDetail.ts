@@ -1,18 +1,32 @@
-/**
- * Shared utilities for fetching and transforming mandate data from the
- * external CREUP intranet API.
- */
-
 import type { externalOrganigramaMemberSocialSchema } from './validation'
 import type { ExternalApiCacheOptions } from './externalApiCache'
 import type { H3Event } from 'h3'
 import { withExternalApiSWRCache } from './externalApiCache'
 import { toExternalImageProxyUrl } from './externalAssetProxy'
+import { logError } from './logger'
+import { getRequestLocaleContext } from './requestLocale'
 import { externalMandatesResponseSchema, externalMandateDetailResponseSchema } from './validation'
+import { pickLocalizedValue } from '~~/shared/utils/locale'
 
-// ============================================================================
-// Shared types
-// ============================================================================
+const messagesByLocale = {
+  en: {
+    mandatesUnavailable: 'Mandate data is temporarily unavailable.',
+    mandateDetailUnavailable: 'Mandate detail is temporarily unavailable.',
+  },
+  es: {
+    mandatesUnavailable: 'La información de los mandatos no está disponible temporalmente.',
+    mandateDetailUnavailable: 'El detalle del mandato no está disponible temporalmente.',
+  },
+}
+
+const getMessages = (event?: H3Event) => {
+  if (!event) {
+    return messagesByLocale.es
+  }
+
+  const { locale, fallbackLocale } = getRequestLocaleContext(event)
+  return pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
+}
 
 export const SUPPORTED_NETWORKS = [
   'website',
@@ -78,10 +92,6 @@ export interface MandateDetailOutput {
   areas: AreaTermOutput[]
   generatedAt: string | null
 }
-
-// ============================================================================
-// Network normalisation helpers
-// ============================================================================
 
 const networkAliasMap: Record<string, SupportedNetwork> = {
   website: 'website',
@@ -157,18 +167,13 @@ const transformMemberSocials = (socialNetworks: ExternalMember[]): MemberSocialO
   })
 }
 
-// ============================================================================
-// Public fetch helpers
-// ============================================================================
-
-/**
- * Fetches the mandates list from the external API and returns normalised
- * mandate summaries sorted newest-first.
- */
 export async function fetchMandatesList(
   externalBaseUrl: string,
-  cacheOptions: ExternalApiCacheOptions
+  cacheOptions: ExternalApiCacheOptions,
+  event?: H3Event
 ): Promise<MandateInfoOutput[]> {
+  const messages = getMessages(event)
+
   return withExternalApiSWRCache(
     `external-api:organigrama-mandates:${externalBaseUrl}`,
     async () => {
@@ -178,19 +183,19 @@ export async function fetchMandatesList(
       try {
         payload = await $fetch(endpoint)
       } catch (error) {
-        console.error('Failed to fetch external mandates list:', error)
+        logError('external.mandates.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Mandates data is temporarily unavailable.',
+          statusMessage: messages.mandatesUnavailable,
         })
       }
 
       const parsed = externalMandatesResponseSchema.safeParse(payload)
       if (!parsed.success) {
-        console.error('Invalid payload from external mandates API:', parsed.error.flatten())
+        logError('external.mandates.invalid-payload', parsed.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Mandates data is temporarily unavailable.',
+          statusMessage: messages.mandatesUnavailable,
         })
       }
 
@@ -207,16 +212,14 @@ export async function fetchMandatesList(
   )
 }
 
-/**
- * Fetches the full detail for a single mandate by its numeric ID from the
- * external API and returns a normalised response.
- */
 export async function fetchMandateDetail(
   externalBaseUrl: string,
   mandateId: number,
   cacheOptions: ExternalApiCacheOptions,
   event?: H3Event
 ): Promise<MandateDetailOutput> {
+  const messages = getMessages(event)
+
   return withExternalApiSWRCache(
     `external-api:organigrama-mandate-detail:${externalBaseUrl}:${mandateId}`,
     async () => {
@@ -226,19 +229,27 @@ export async function fetchMandateDetail(
       try {
         payload = await $fetch(endpoint)
       } catch (error) {
-        console.error(`Failed to fetch mandate detail for id ${mandateId}:`, error)
+        logError('external.mandate-detail.fetch', error, { endpoint, mandateId }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: 'Mandate detail data is temporarily unavailable.',
+          statusMessage: messages.mandateDetailUnavailable,
         })
       }
 
       const parsed = externalMandateDetailResponseSchema.safeParse(payload)
       if (!parsed.success) {
-        console.error('Invalid mandate detail payload:', parsed.error.flatten())
+        logError(
+          'external.mandate-detail.invalid-payload',
+          parsed.error,
+          {
+            endpoint,
+            mandateId,
+          },
+          event
+        )
         throw createError({
           statusCode: 502,
-          statusMessage: 'Mandate detail data is temporarily unavailable.',
+          statusMessage: messages.mandateDetailUnavailable,
         })
       }
 

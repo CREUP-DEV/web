@@ -1,8 +1,6 @@
 import { createAuthClient } from 'better-auth/vue'
 
-export const authClient = createAuthClient({
-  baseURL: process.env.BETTER_AUTH_URL!,
-})
+export const authClient = createAuthClient()
 
 export const useAuth = () => {
   const session = authClient.useSession()

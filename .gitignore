@@ -27,3 +27,16 @@ logs
 public/documentos/**/*.pdf
 public/prensa/**/*.pdf
 public/prensa/**/*.jpg
+public/prensa/**/*.jpeg
+public/prensa/**/*.png
+public/prensa/**/*.gif
+public/prensa/**/*.webp
+public/prensa/**/*.avif
+public/prensa/**/*.svg
+public/conocenos/**/*.jpg
+public/conocenos/**/*.jpeg
+public/conocenos/**/*.png
+public/conocenos/**/*.gif
+public/conocenos/**/*.webp
+public/conocenos/**/*.avif
+public/conocenos/**/*.svg

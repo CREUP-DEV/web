@@ -1,10 +1,6 @@
 <script setup lang="ts">
-/**
- * PressArticleDetail
- * Shared detail view for a press article (press release, statement, media appearance)
- * Displays full article with SEO metadata, cover image, description, tags, and type-specific content
- */
-import type { PressArticle, PressArticleType } from '@/composables/usePress'
+import type { PressArticle } from '@/composables/usePress'
+import { toAbsoluteUrl } from '~~/shared/utils/url'
 
 type ShareAction = {
   key: string
@@ -17,9 +13,7 @@ type ShareAction = {
 
 const props = defineProps<{
   article: PressArticle
-  /** Back link URL */
   backTo: string
-  /** Back link label */
   backLabel: string
 }>()
 
@@ -27,6 +21,38 @@ const { t } = useI18n()
 const toast = useToast()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const canNativeShare = ref(false)
+const route = useRoute()
+const siteConfig = useSiteConfig()
+const {
+  elRef: navRef,
+  isVisible: navVisible,
+  isPending: navPending,
+  shouldAnimate: navShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: headerRef,
+  isVisible: headerVisible,
+  isPending: headerPending,
+  shouldAnimate: headerShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: coverRef,
+  isVisible: coverVisible,
+  isPending: coverPending,
+  shouldAnimate: coverShouldAnimate,
+} = useEntranceObserver(0.12)
+const {
+  elRef: bodyRef,
+  isVisible: bodyVisible,
+  isPending: bodyPending,
+  shouldAnimate: bodyShouldAnimate,
+} = useEntranceObserver(0.08)
+const {
+  elRef: actionsRef,
+  isVisible: actionsVisible,
+  isPending: actionsPending,
+  shouldAnimate: actionsShouldAnimate,
+} = useEntranceObserver(0.08)
 
 onMounted(() => {
   canNativeShare.value = typeof navigator.share === 'function'
@@ -40,17 +66,10 @@ const formatDate = (iso: string) => {
   })
 }
 
-const typeUrlPrefix: Record<PressArticleType, string> = {
-  press_release: '/prensa/notas-prensa',
-  statement: '/prensa/comunicados',
-  media_appearance: '/prensa/en-los-medios',
-}
-
 const canonicalUrl = computed(
-  () => `https://www.creup.es${typeUrlPrefix[props.article.type]}/${props.article.slug}`
+  () => toAbsoluteUrl(route.path, String(siteConfig.url ?? '').trim()) ?? route.path
 )
 
-// Social sharing
 const shareText = computed(() => props.article.title)
 const twitterShareUrl = computed(
   () =>
@@ -74,7 +93,6 @@ const emailShareUrl = computed(
   () =>
     `mailto:?subject=${encodeURIComponent(shareText.value)}&body=${encodeURIComponent(`${shareText.value}\n\n${canonicalUrl.value}`)}`
 )
-// Instagram and TikTok do not provide web-based share URLs — sharing is mobile-only on those platforms.
 const shareNative = async () => {
   if (!import.meta.client || !navigator.share) return
   try {
@@ -192,33 +210,25 @@ const externalLinkLabel = computed(() => {
   return t('press.readFull')
 })
 
-// SEO meta
-useSeoMeta({
-  title: () => props.article.title,
-  description: () => props.article.description,
-  ogTitle: () => props.article.title,
-  ogDescription: () => props.article.description,
-  ogImage: () =>
-    props.article.image.startsWith('http')
-      ? props.article.image
-      : `https://www.creup.es${props.article.image}`,
-  ogType: 'article',
-  ogUrl: () => canonicalUrl.value,
-  twitterCard: 'summary_large_image',
-  twitterTitle: () => props.article.title,
-  twitterDescription: () => props.article.description,
-})
-
-useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl.value }],
-})
+usePageSeo(
+  () => props.article.title,
+  () => props.article.description,
+  {
+    ogImage: () => props.article.image,
+    ogType: () => 'article',
+  }
+)
 </script>
 
 <template>
   <article class="press-print py-8 sm:py-12">
     <UContainer class="max-w-4xl">
-      <!-- Back link -->
-      <nav class="no-print mb-6">
+      <nav
+        ref="navRef"
+        class="no-print mb-6"
+        :class="entranceClasses(navShouldAnimate, navVisible, navPending)"
+        :style="entranceStyle(navVisible, navShouldAnimate, 0)"
+      >
         <NuxtLink
           :to="backTo"
           class="text-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
@@ -228,9 +238,12 @@ useHead({
         </NuxtLink>
       </nav>
 
-      <!-- Header -->
-      <header class="mb-8">
-        <!-- Date and media outlet -->
+      <header
+        ref="headerRef"
+        class="mb-8"
+        :class="entranceClasses(headerShouldAnimate, headerVisible, headerPending)"
+        :style="entranceStyle(headerVisible, headerShouldAnimate, 1)"
+      >
         <div class="text-muted mb-3 flex flex-wrap items-center gap-2 text-sm">
           <time :datetime="article.publishedAt">{{ formatDate(article.publishedAt) }}</time>
           <template v-if="article.mediaOutlet">
@@ -260,7 +273,6 @@ useHead({
           {{ canonicalUrl }}
         </p>
 
-        <!-- Tags -->
         <div v-if="article.tags.length" class="mt-4 flex flex-wrap gap-2">
           <span
             v-for="tag in article.tags"
@@ -272,9 +284,13 @@ useHead({
         </div>
       </header>
 
-      <!-- Cover image -->
-      <figure class="mb-8">
-        <div class="bg-muted overflow-hidden rounded-xl">
+      <figure
+        ref="coverRef"
+        class="mb-8"
+        :class="entranceClasses(coverShouldAnimate, coverVisible, coverPending)"
+        :style="entranceStyle(coverVisible, coverShouldAnimate, 2)"
+      >
+        <div class="motion-card-subtle bg-muted overflow-hidden rounded-xl">
           <NuxtImg
             :src="article.image"
             :alt="article.alt || article.title"
@@ -285,64 +301,71 @@ useHead({
         </div>
       </figure>
 
-      <!-- Description -->
-      <div v-if="article.description" class="prose prose-lg dark:prose-invert mb-8 max-w-none">
-        <p class="text-lg leading-relaxed">{{ article.description }}</p>
-      </div>
-
-      <!-- Rich text content -->
-      <!-- eslint-disable vue/no-v-html -->
       <div
-        v-if="article.contentHtml"
-        class="article-body press-rich-text"
-        v-html="article.contentHtml"
-      />
-      <!-- eslint-enable vue/no-v-html -->
+        ref="bodyRef"
+        :class="entranceClasses(bodyShouldAnimate, bodyVisible, bodyPending)"
+        :style="entranceStyle(bodyVisible, bodyShouldAnimate, 3)"
+      >
+        <div v-if="article.description" class="prose prose-lg dark:prose-invert mb-8 max-w-none">
+          <p class="text-lg leading-relaxed">{{ article.description }}</p>
+        </div>
 
-      <!-- Action buttons -->
-      <div v-if="article.pdfUrl || article.externalUrl" class="no-print mt-8 flex flex-wrap gap-3">
-        <!-- PDF download for press releases and statements -->
-        <UButton
-          v-if="article.pdfUrl"
-          :href="article.pdfUrl"
-          external
-          target="_blank"
-          icon="i-tabler-download"
-          size="lg"
-        >
-          {{ t('press.downloadPdf') }}
-        </UButton>
-
-        <!-- External link for media appearances / full article -->
-        <UButton
-          v-if="article.externalUrl"
-          :to="article.externalUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          icon="i-tabler-external-link"
-          size="lg"
-        >
-          {{ externalLinkLabel }}
-        </UButton>
+        <!-- eslint-disable vue/no-v-html -->
+        <div
+          v-if="article.contentHtml"
+          class="article-body press-rich-text"
+          v-html="article.contentHtml"
+        />
+        <!-- eslint-enable vue/no-v-html -->
       </div>
 
-      <!-- Share buttons -->
-      <div class="no-print mt-8 border-t pt-6">
-        <p class="text-muted mb-3 text-sm font-medium">{{ t('press.share') }}</p>
-        <div class="flex flex-wrap gap-2">
-          <UTooltip v-for="action in shareActions" :key="action.key" :text="action.label">
-            <UButton
-              :to="action.to"
-              :icon="action.icon"
-              variant="outline"
-              size="sm"
-              :class="action.class"
-              :target="action.to ? '_blank' : undefined"
-              :rel="action.to ? 'noopener noreferrer' : undefined"
-              :aria-label="action.label"
-              @click="action.onClick?.()"
-            />
-          </UTooltip>
+      <div
+        ref="actionsRef"
+        class="no-print"
+        :class="entranceClasses(actionsShouldAnimate, actionsVisible, actionsPending)"
+        :style="entranceStyle(actionsVisible, actionsShouldAnimate, 4)"
+      >
+        <div v-if="article.pdfUrl || article.externalUrl" class="mt-8 flex flex-wrap gap-3">
+          <UButton
+            v-if="article.pdfUrl"
+            :href="article.pdfUrl"
+            external
+            target="_blank"
+            icon="i-tabler-download"
+            size="lg"
+          >
+            {{ t('press.downloadPdf') }}
+          </UButton>
+
+          <UButton
+            v-if="article.externalUrl"
+            :to="article.externalUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            icon="i-tabler-external-link"
+            size="lg"
+          >
+            {{ externalLinkLabel }}
+          </UButton>
+        </div>
+
+        <div class="mt-8 border-t pt-6">
+          <p class="text-muted mb-3 text-sm font-medium">{{ t('press.share') }}</p>
+          <div class="flex flex-wrap gap-2">
+            <UTooltip v-for="action in shareActions" :key="action.key" :text="action.label">
+              <UButton
+                :to="action.to"
+                :icon="action.icon"
+                variant="outline"
+                size="sm"
+                :class="action.class"
+                :target="action.to ? '_blank' : undefined"
+                :rel="action.to ? 'noopener noreferrer' : undefined"
+                :aria-label="action.label"
+                @click="action.onClick?.()"
+              />
+            </UTooltip>
+          </div>
         </div>
       </div>
     </UContainer>

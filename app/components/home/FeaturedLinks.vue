@@ -1,31 +1,33 @@
 <script setup lang="ts">
-/**
- * FeaturedLinksRow
- * Renders a row of "links of interest" (image + title).
- * - Auto-wraps to multiple rows on small screens.
- * - Each card is a compact tile; good for 4–8 links.
- */
+import { isExternalNavigationTarget } from '~~/shared/utils/url'
 
 type LinkItem = {
-  /** Localized title */
   title: string
-  /** Thumbnail or small banner */
   image: string
-  /** Internal or external link */
   to: string
-  /** Optional alt text for accessibility */
   alt?: string
 }
 
-const props = defineProps<{
-  items: LinkItem[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    items: LinkItem[]
+    pending?: boolean
+  }>(),
+  {
+    pending: false,
+  }
+)
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 </script>
 
 <template>
-  <section aria-labelledby="featured-links-heading" class="py-4 sm:py-6">
+  <section
+    v-if="props.pending || props.items.length"
+    aria-labelledby="featured-links-heading"
+    class="py-4 sm:py-6"
+  >
     <UContainer>
       <header class="mb-3 flex items-center justify-between sm:mb-5">
         <h2 id="featured-links-heading" class="text-xl font-semibold sm:text-2xl">
@@ -33,9 +35,8 @@ const { t } = useI18n()
         </h2>
       </header>
 
-      <!-- Loading skeleton tiles -->
       <div
-        v-if="!props.items.length"
+        v-if="props.pending"
         aria-hidden="true"
         class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
       >
@@ -51,7 +52,6 @@ const { t } = useI18n()
         </div>
       </div>
 
-      <!-- Responsive tiles: 2 / 3 / 4 / 5 / 6 columns depending on width -->
       <ul
         v-else
         class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
@@ -59,10 +59,11 @@ const { t } = useI18n()
       >
         <li v-for="(item, idx) in props.items" :key="idx">
           <a
+            v-if="isExternalNavigationTarget(item.to)"
             :href="item.to"
-            class="group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
-            :target="item.to.startsWith('http') ? '_blank' : undefined"
-            :rel="item.to.startsWith('http') ? 'noopener noreferrer' : undefined"
+            class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <div class="bg-muted aspect-square">
               <NuxtImg
@@ -70,7 +71,7 @@ const { t } = useI18n()
                 :alt="item.alt ?? ''"
                 width="288"
                 height="288"
-                class="size-full object-cover"
+                class="motion-link-media size-full object-cover"
                 loading="lazy"
               />
             </div>
@@ -84,6 +85,31 @@ const { t } = useI18n()
               </UTooltip>
             </div>
           </a>
+          <NuxtLink
+            v-else
+            :to="localePath(item.to)"
+            class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+          >
+            <div class="bg-muted aspect-square">
+              <NuxtImg
+                :src="item.image"
+                :alt="item.alt ?? ''"
+                width="288"
+                height="288"
+                class="motion-link-media size-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div class="p-2.5 sm:p-3">
+              <UTooltip :text="item.title">
+                <p
+                  class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
+                >
+                  {{ item.title }}
+                </p>
+              </UTooltip>
+            </div>
+          </NuxtLink>
         </li>
       </ul>
     </UContainer>
