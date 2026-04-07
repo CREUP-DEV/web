@@ -5,6 +5,7 @@ import {
   withExternalApiSWRCache,
 } from '../utils/externalApiCache'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
 import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
 import { externalOrganigramaResponseSchema } from '../utils/validation'
@@ -13,8 +14,6 @@ import {
   normalizeSocialText,
   type SocialNetworkEntry,
 } from '~~/shared/utils/social'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
-import { getRequestLocaleContext } from '../utils/requestLocale'
 
 interface OrgMemberOutput {
   order: number
@@ -39,21 +38,9 @@ interface OrgAreaOutput {
 }
 
 const normalizeText = normalizeSocialText
-const messagesByLocale = {
-  en: {
-    unavailable: 'Org chart data is temporarily unavailable.',
-  },
-  es: {
-    unavailable: 'La información del organigrama no está disponible temporalmente.',
-  },
-}
-
 export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
 
@@ -69,7 +56,7 @@ export default defineEventHandler(async (event) => {
         logError('external.organigrama.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: getPublicApiErrorMessage(event, 'orgChartUnavailable'),
         })
       }
 
@@ -78,7 +65,7 @@ export default defineEventHandler(async (event) => {
         logError('external.organigrama.invalid-payload', parsedPayload.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: getPublicApiErrorMessage(event, 'orgChartUnavailable'),
         })
       }
 

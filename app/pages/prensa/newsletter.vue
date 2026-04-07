@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isValidNewsletterEmail } from '~~/shared/utils/newsletterValidation'
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
@@ -7,6 +9,7 @@ const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const showConfirmedMessage = computed(() => route.query.confirmed === '1')
 const showExpiredConfirmationMessage = computed(() => route.query.confirmed === 'expired')
 const showUnsubscribeMessage = computed(() => route.query.unsubscribed === '1')
+const showInvalidUnsubscribeMessage = computed(() => route.query.unsubscribed === 'invalid')
 const {
   elRef: headerRef,
   isVisible: headerVisible,
@@ -49,7 +52,7 @@ const touched = reactive({
 const isSubmitting = ref(false)
 const formSubmitted = ref(false)
 
-const emailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+const emailValid = computed(() => isValidNewsletterEmail(form.email))
 const consentValid = computed(() => form.consent === true)
 const ageConfirmedValid = computed(() => form.ageConfirmed === true)
 
@@ -115,9 +118,20 @@ async function handleSubscribe() {
     touched.ageConfirmed = false
     touched.consent = false
     touched.email = false
-  } catch {
+  } catch (error) {
+    const errorTitle =
+      error &&
+      typeof error === 'object' &&
+      'data' in error &&
+      error.data &&
+      typeof error.data === 'object' &&
+      'message' in error.data &&
+      typeof error.data.message === 'string'
+        ? error.data.message
+        : t('newsletterPage.form.errorGeneric')
+
     toast.add({
-      title: t('newsletterPage.form.errorGeneric'),
+      title: errorTitle,
       icon: 'i-tabler-alert-circle',
       color: 'error',
     })
@@ -133,8 +147,15 @@ interface Newsletter {
   pdfUrl: string
 }
 
-const { data } = await useFetch<{ items: Newsletter[] }>('/api/newsletter')
+const LIMIT = 12
+const page = ref(1)
+const offset = computed(() => (page.value - 1) * LIMIT)
+
+const { data } = await useFetch<{ items: Newsletter[]; total: number }>('/api/newsletter', {
+  query: computed(() => ({ limit: LIMIT, offset: offset.value })),
+})
 const newsletters = computed(() => data.value?.items ?? [])
+const total = computed(() => data.value?.total ?? 0)
 
 function formatMonth(iso: string): string {
   const d = new Date(iso)
@@ -164,7 +185,12 @@ function formatMonth(iso: string): string {
       </div>
 
       <div
-        v-if="showConfirmedMessage || showExpiredConfirmationMessage || showUnsubscribeMessage"
+        v-if="
+          showConfirmedMessage ||
+          showExpiredConfirmationMessage ||
+          showUnsubscribeMessage ||
+          showInvalidUnsubscribeMessage
+        "
         ref="alertsRef"
         class="mx-auto mb-8 max-w-xl space-y-4"
         :class="entranceClasses(alertsShouldAnimate, alertsVisible, alertsPending)"
@@ -195,6 +221,15 @@ function formatMonth(iso: string): string {
           icon="i-tabler-mail-off"
           :title="t('newsletterPage.unsubscribe.title')"
           :description="t('newsletterPage.unsubscribe.description')"
+        />
+
+        <UAlert
+          v-if="showInvalidUnsubscribeMessage"
+          color="warning"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('newsletterPage.unsubscribeInvalid.title')"
+          :description="t('newsletterPage.unsubscribeInvalid.description')"
         />
       </div>
 
@@ -322,36 +357,42 @@ function formatMonth(iso: string): string {
           {{ t('newsletterPage.archive.empty') }}
         </div>
 
-        <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <UCard
-            v-for="(nl, index) in newsletters"
-            :key="nl.id"
-            class="motion-card flex flex-col items-center text-center"
-            :class="entranceClasses(archiveShouldAnimate, archiveVisible, archivePending)"
-            :style="entranceStyle(archiveVisible, archiveShouldAnimate, index, 70)"
-          >
-            <NuxtImg
-              :src="nl.coverImage"
-              :alt="formatMonth(nl.month)"
-              width="240"
-              height="240"
-              class="mb-4 aspect-square w-full max-w-60 rounded-lg object-cover"
-            />
-            <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
-            <UButton
-              :href="nl.pdfUrl"
-              external
-              target="_blank"
-              rel="noopener noreferrer"
-              icon="i-tabler-download"
-              variant="outline"
-              block
-              :aria-label="`${t('newsletterPage.archive.download')} — ${formatMonth(nl.month)}`"
+        <template v-else>
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <UCard
+              v-for="(nl, index) in newsletters"
+              :key="nl.id"
+              class="motion-card flex flex-col items-center text-center"
+              :class="entranceClasses(archiveShouldAnimate, archiveVisible, archivePending)"
+              :style="entranceStyle(archiveVisible, archiveShouldAnimate, index, 70)"
             >
-              {{ t('newsletterPage.archive.download') }}
-            </UButton>
-          </UCard>
-        </div>
+              <NuxtImg
+                :src="nl.coverImage"
+                :alt="formatMonth(nl.month)"
+                width="240"
+                height="240"
+                class="mb-4 aspect-square w-full max-w-60 rounded-lg object-cover"
+              />
+              <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
+              <UButton
+                :href="nl.pdfUrl"
+                external
+                target="_blank"
+                rel="noopener noreferrer"
+                icon="i-tabler-download"
+                variant="outline"
+                block
+                :aria-label="`${t('newsletterPage.archive.download')} — ${formatMonth(nl.month)}`"
+              >
+                {{ t('newsletterPage.archive.download') }}
+              </UButton>
+            </UCard>
+          </div>
+
+          <div v-if="total > LIMIT" class="mt-8 flex justify-center">
+            <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
+          </div>
+        </template>
       </section>
     </div>
   </UContainer>

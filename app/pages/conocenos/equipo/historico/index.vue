@@ -2,6 +2,7 @@
 const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
+const localeApiHeaders = useLocaleApiHeaders()
 
 usePageSeo('mandates.title', 'mandates.description')
 
@@ -17,7 +18,9 @@ interface MandatesResponse {
   generatedAt?: string | null
 }
 
-const { data, error, status } = await useFetch<MandatesResponse>('/api/organigrama/mandatos')
+const { data, error, status } = await useFetch<MandatesResponse>('/api/organigrama/mandatos', {
+  headers: localeApiHeaders,
+})
 
 const mandates = computed(() => data.value?.mandates ?? [])
 const {

@@ -4,13 +4,14 @@ import {
   getRequiredGoogleCalendarApiKey,
   getRequiredGoogleCalendarId,
 } from '../utils/googleCalendarConfig'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
 import { getRequestLocaleContext } from '../utils/requestLocale'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
+
+const GOOGLE_CALENDAR_MAX_RESULTS = 1000
 
 interface GoogleCalendarResponse {
   items: GoogleCalendarEvent[]
-  nextPageToken?: string
 }
 
 interface CalendarApiResponse {
@@ -19,19 +20,8 @@ interface CalendarApiResponse {
   unavailable?: boolean
 }
 
-const messagesByLocale = {
-  en: {
-    unavailable: 'Google Calendar is temporarily unavailable.',
-  },
-  es: {
-    unavailable: 'Google Calendar no está disponible temporalmente.',
-  },
-}
-
 export default defineEventHandler(async (event) => {
   const { locale, fallbackLocale, languageTag } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
   let apiKey: string
   let calendarId: string
 
@@ -49,47 +39,39 @@ export default defineEventHandler(async (event) => {
 
   try {
     const now = new Date()
-    const threeMonthsAgo = new Date(now)
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
-    threeMonthsAgo.setHours(0, 0, 0, 0)
-
-    const threeMonthsLater = new Date(now)
-    threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
+    const threeMonthsAgoMonthStart = new Date(now.getFullYear(), now.getMonth() - 3, 1)
+    const threeMonthsLaterMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 4,
+      0,
+      23,
+      59,
+      59,
+      999
+    )
 
     const baseParams = new URLSearchParams({
       key: apiKey,
-      timeMin: threeMonthsAgo.toISOString(),
-      timeMax: threeMonthsLater.toISOString(),
+      timeMin: threeMonthsAgoMonthStart.toISOString(),
+      timeMax: threeMonthsLaterMonthEnd.toISOString(),
       singleEvents: 'true',
       orderBy: 'startTime',
-      maxResults: '2500',
+      maxResults: String(GOOGLE_CALENDAR_MAX_RESULTS),
     })
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${baseParams}`
+    const response = await fetch(url, { signal: AbortSignal.timeout(10_000) })
 
-    const items: GoogleCalendarEvent[] = []
-    let nextPageToken: string | undefined
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null)
+      logError('calendar.fetch.response', errorData, { statusCode: response.status }, event)
+      throw createError({
+        statusCode: response.status,
+        message: getPublicApiErrorMessage(event, 'googleCalendarUnavailable'),
+      })
+    }
 
-    do {
-      const params = new URLSearchParams(baseParams)
-      if (nextPageToken) {
-        params.set('pageToken', nextPageToken)
-      }
-
-      const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`
-      const response = await fetch(url)
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null)
-        logError('calendar.fetch.response', errorData, { statusCode: response.status }, event)
-        throw createError({
-          statusCode: response.status,
-          statusMessage: messages.unavailable,
-        })
-      }
-
-      const data: GoogleCalendarResponse = await response.json()
-      items.push(...(data.items || []))
-      nextPageToken = data.nextPageToken
-    } while (nextPageToken)
+    const data: GoogleCalendarResponse = await response.json()
+    const items = data.items || []
 
     return {
       events: transformGoogleCalendarItems(items, {

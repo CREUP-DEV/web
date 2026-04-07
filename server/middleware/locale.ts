@@ -1,5 +1,6 @@
-import { defineEventHandler, getCookie, getHeader } from 'h3'
+import { defineEventHandler, getCookie, getHeader, getRequestURL } from 'h3'
 import {
+  extractLocaleCodeFromPathname,
   normalizeLocaleDefinitions,
   parseAcceptLanguageHeader,
   resolveConfiguredLocaleCode,
@@ -16,11 +17,21 @@ export default defineEventHandler((event) => {
   const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
   const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
   const cookieKey = runtimeI18n.detectBrowserLanguage?.cookieKey
+  const headerLocale = resolveLocaleCode(
+    getHeader(event, 'x-request-locale') ?? getHeader(event, 'x-locale'),
+    locales,
+    ''
+  )
+  const pathnameLocale = extractLocaleCodeFromPathname(getRequestURL(event).pathname, locales)
 
   const cookie = cookieKey ? getCookie(event, cookieKey) : undefined
   let resolved = defaultLocale
 
-  if (cookie) {
+  if (headerLocale) {
+    resolved = headerLocale
+  } else if (pathnameLocale) {
+    resolved = pathnameLocale
+  } else if (cookie) {
     resolved = resolveLocaleCode(cookie, locales, defaultLocale)
   } else {
     const acceptedLocales = parseAcceptLanguageHeader(getHeader(event, 'accept-language'))

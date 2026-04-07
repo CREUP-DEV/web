@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'admin',
+  title: 'Prensa',
 })
 
 type PressArticleType = 'press_release' | 'statement' | 'media_appearance'

@@ -2,48 +2,46 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterSubscribers } from '../db/schema'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
 import { newsletterSubscribeSchema, validateBody } from '../utils/validation'
 import { enforceRateLimit } from '../utils/rateLimit'
 import {
+  NEWSLETTER_CONSENT_SOURCES,
+  NEWSLETTER_CONSENT_TEXT_VERSION,
+  NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   createConfirmTokenExpiresAt,
   createNewsletterConfirmToken,
   createNewsletterUnsubscribeToken,
   getNewsletterConsentEvidence,
+  recordNewsletterSubscriptionEvent,
   sendNewsletterConfirmationEmail,
 } from '../utils/newsletterSubscribers'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
-
-const messagesByLocale = {
-  es: {
-    rateLimited: 'Has enviado demasiadas solicitudes. Inténtalo de nuevo más tarde.',
-    subscriptionFailed: 'No se pudo completar la suscripción en este momento',
-    invalidData: 'Datos de suscripción no válidos',
-  },
-  en: {
-    rateLimited: 'Too many requests. Please try again later.',
-    subscriptionFailed: 'The subscription could not be completed right now',
-    invalidData: 'Invalid subscription data',
-  },
-}
 
 export default defineEventHandler(async (event) => {
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
+  const { locale } = getRequestLocaleContext(event)
+  const newsletterRateLimitedMessage = getPublicApiErrorMessage(event, 'newsletterRateLimited')
+  const newsletterSubscriptionFailedMessage = getPublicApiErrorMessage(
+    event,
+    'newsletterSubscriptionFailed'
+  )
+  const newsletterEmailDeliveryFailedMessage = getPublicApiErrorMessage(
+    event,
+    'newsletterEmailDeliveryFailed'
+  )
+  const newsletterInvalidDataMessage = getPublicApiErrorMessage(event, 'newsletterInvalidData')
 
-  await enforceRateLimit(event, {
+  enforceRateLimit(event, {
     namespace: 'newsletter-subscribe',
     maxRequests: 5,
     windowMs: 60 * 60 * 1000,
-    errorMessage: messages.rateLimited,
+    errorMessage: newsletterRateLimitedMessage,
   })
 
   try {
     const raw = await readBody(event)
     const body = validateBody(newsletterSubscribeSchema, raw)
 
-    // Honeypot: if filled, it is very likely a bot. Return success silently.
     if (body.website && body.website.trim() !== '') {
       return { success: true }
     }
@@ -53,44 +51,104 @@ export default defineEventHandler(async (event) => {
     const confirmTokenExpiresAt = createConfirmTokenExpiresAt()
     const consentEvidence = getNewsletterConsentEvidence(event)
 
-    // Check if already subscribed
-    const existing = await db.query.newsletterSubscribers.findFirst({
-      where: eq(newsletterSubscribers.email, email),
-    })
+    await db.transaction(async (tx) => {
+      const existing = await tx.query.newsletterSubscribers.findFirst({
+        where: eq(newsletterSubscribers.email, email),
+      })
 
-    if (existing) {
-      if (!existing.active) {
-        await db
+      if (existing && existing.active) {
+        return
+      }
+
+      if (existing) {
+        const [item] = await tx
           .update(newsletterSubscribers)
           .set({
             active: false,
+            ageConfirmed: true,
             confirmToken,
             confirmTokenExpiresAt,
             confirmedAt: null,
+            consentIp: consentEvidence.consentIp,
+            consentSource: NEWSLETTER_CONSENT_SOURCES.webForm,
+            consentTextVersion: NEWSLETTER_CONSENT_TEXT_VERSION,
+            consentUserAgent: consentEvidence.consentUserAgent,
+            locale,
             subscribedAt: new Date(),
             unsubscribedAt: null,
             unsubscribeToken: createNewsletterUnsubscribeToken(),
-            ...consentEvidence,
           })
           .where(eq(newsletterSubscribers.id, existing.id))
+          .returning()
 
-        await sendNewsletterConfirmationEmail(email, confirmToken, messages.subscriptionFailed)
+        if (!item) {
+          throw createError({
+            statusCode: 500,
+            message: newsletterSubscriptionFailedMessage,
+          })
+        }
+
+        await recordNewsletterSubscriptionEvent(
+          {
+            email,
+            eventSource: NEWSLETTER_CONSENT_SOURCES.webForm,
+            eventType: NEWSLETTER_SUBSCRIPTION_EVENT_TYPES.requested,
+            subscriberId: item.id,
+          },
+          tx
+        )
+      } else {
+        const [item] = await tx
+          .insert(newsletterSubscribers)
+          .values({
+            ...consentEvidence,
+            active: false,
+            ageConfirmed: true,
+            confirmToken,
+            confirmTokenExpiresAt,
+            confirmedAt: null,
+            consentSource: NEWSLETTER_CONSENT_SOURCES.webForm,
+            consentTextVersion: NEWSLETTER_CONSENT_TEXT_VERSION,
+            email,
+            locale,
+            subscribedAt: new Date(),
+            unsubscribedAt: null,
+            unsubscribeToken: createNewsletterUnsubscribeToken(),
+          })
+          .returning()
+
+        if (!item) {
+          throw createError({
+            statusCode: 500,
+            message: newsletterSubscriptionFailedMessage,
+          })
+        }
+
+        await recordNewsletterSubscriptionEvent(
+          {
+            email,
+            eventSource: NEWSLETTER_CONSENT_SOURCES.webForm,
+            eventType: NEWSLETTER_SUBSCRIPTION_EVENT_TYPES.requested,
+            subscriberId: item.id,
+          },
+          tx
+        )
       }
 
-      // Either way, return success (don't reveal subscription status)
-      return { success: true }
-    }
-
-    await db.insert(newsletterSubscribers).values({
-      email,
-      active: false,
-      confirmToken,
-      confirmTokenExpiresAt,
-      unsubscribeToken: createNewsletterUnsubscribeToken(),
-      ...consentEvidence,
+      try {
+        await sendNewsletterConfirmationEmail(
+          email,
+          confirmToken,
+          locale,
+          newsletterSubscriptionFailedMessage
+        )
+      } catch {
+        throw createError({
+          statusCode: 503,
+          message: newsletterEmailDeliveryFailedMessage,
+        })
+      }
     })
-
-    await sendNewsletterConfirmationEmail(email, confirmToken, messages.subscriptionFailed)
 
     return { success: true }
   } catch (error) {
@@ -103,14 +161,21 @@ export default defineEventHandler(async (event) => {
       if (error.statusCode === 400) {
         throw createError({
           statusCode: 400,
-          message: messages.invalidData,
+          message: newsletterInvalidDataMessage,
+        })
+      }
+
+      if (error.statusCode === 503) {
+        throw createError({
+          statusCode: 503,
+          message: newsletterEmailDeliveryFailedMessage,
         })
       }
 
       if (error.statusCode >= 500) {
         throw createError({
           statusCode: 500,
-          message: messages.subscriptionFailed,
+          message: newsletterSubscriptionFailedMessage,
         })
       }
 
@@ -119,7 +184,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      message: messages.subscriptionFailed,
+      message: newsletterSubscriptionFailedMessage,
     })
   }
 })

@@ -2,6 +2,7 @@ import { createError, setHeader } from 'h3'
 import { db } from '../db'
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
@@ -30,7 +31,7 @@ export default defineCachedEventHandler(
         setHeader(event, 'retry-after', 60)
         throw createError({
           statusCode: 503,
-          statusMessage: 'Servicio temporalmente no disponible',
+          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
         })
       }
 

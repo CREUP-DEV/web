@@ -34,8 +34,8 @@ export async function assertMemberCalendarIsPublic(event: H3Event, calendarId: s
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const messages = getMessages(event)
 
-  const isAllowedCalendar = await withExternalApiSWRCache(
-    `external-api:organigrama:public-calendars:${configuredBaseUrl}`,
+  const allowedCalendars = await withExternalApiSWRCache(
+    `external-api:organigrama:public-calendar-ids:${configuredBaseUrl}`,
     async () => {
       const endpoint = new URL('/api/organigrama', configuredBaseUrl).toString()
 
@@ -66,19 +66,22 @@ export async function assertMemberCalendarIsPublic(event: H3Event, calendarId: s
         })
       }
 
-      return parsedPayload.data.data.some((area) =>
-        area.members.some(
-          (member) =>
-            member.public_agenda === true &&
-            typeof member.email === 'string' &&
-            normalizeCalendarId(member.email) === normalizedCalendarId
+      return new Set(
+        parsedPayload.data.data.flatMap((area) =>
+          area.members.flatMap((member) => {
+            if (member.public_agenda !== true || typeof member.email !== 'string') {
+              return []
+            }
+
+            return [normalizeCalendarId(member.email)]
+          })
         )
       )
     },
     getExternalApiCacheOptions(event)
   )
 
-  if (!isAllowedCalendar) {
+  if (!allowedCalendars.has(normalizedCalendarId)) {
     throw createError({
       statusCode: 404,
       statusMessage: messages.unavailableForMember,

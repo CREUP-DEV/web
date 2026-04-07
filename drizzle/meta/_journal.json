@@ -22,6 +22,34 @@
       "when": 1775493117032,
       "tag": "0002_foamy_lethal_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775493117033,
+      "tag": "0003_lively_amber_kite",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775502397782,
+      "tag": "0004_flawless_landau",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775516060703,
+      "tag": "0005_sticky_mimic",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744070400000,
+      "tag": "0006_refactor_schema",
+      "breakpoints": true
     }
   ]
 }

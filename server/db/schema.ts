@@ -1,8 +1,28 @@
-import { pgTable, text, boolean, integer, timestamp, unique, index } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+import {
+  pgTable,
+  pgEnum,
+  text,
+  boolean,
+  integer,
+  timestamp,
+  unique,
+  index,
+  check,
+  date,
+  jsonb,
+} from 'drizzle-orm/pg-core'
+import { relations, sql } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 
 const cuid = () => createId()
+
+// Enums
+
+export const pressArticleTypeEnum = pgEnum('press_article_type', [
+  'press_release',
+  'statement',
+  'media_appearance',
+])
 
 // Carousel items
 
@@ -31,7 +51,10 @@ export const carouselItemTranslations = pgTable(
       .notNull()
       .references(() => carouselItems.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.carouselItemId)]
+  (table) => [
+    unique().on(table.locale, table.carouselItemId),
+    check('carousel_item_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 // Carousel relations
@@ -69,7 +92,10 @@ export const tagTranslations = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.tagId)]
+  (table) => [
+    unique().on(table.locale, table.tagId),
+    check('tag_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 // Tags relations
@@ -91,7 +117,7 @@ export const pressArticles = pgTable(
   'press_articles',
   {
     id: text('id').primaryKey().$defaultFn(cuid),
-    type: text('type').notNull(), // 'press_release' | 'statement' | 'media_appearance'
+    type: pressArticleTypeEnum('type').notNull(),
     slug: text('slug').notNull().unique(),
     image: text('image').notNull(),
     pdfUrl: text('pdf_url'), // For press_release and statement
@@ -100,7 +126,7 @@ export const pressArticles = pgTable(
       onDelete: 'set null',
     }),
     active: boolean('active').default(true).notNull(),
-    publishedAt: timestamp('published_at', { mode: 'date' }).defaultNow().notNull(),
+    publishedAt: date('published_at').defaultNow().notNull(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .defaultNow()
@@ -110,6 +136,15 @@ export const pressArticles = pgTable(
   (table) => [
     index('idx_press_articles_active_published').on(table.active, table.publishedAt),
     index('idx_press_articles_type').on(table.type),
+    // Subtype invariants: media_appearance requires externalUrl and mediaOutletId
+    check(
+      'press_articles_media_appearance_external_url_check',
+      sql`${table.type} != 'media_appearance' OR ${table.externalUrl} IS NOT NULL`
+    ),
+    check(
+      'press_articles_media_appearance_media_outlet_check',
+      sql`${table.type} != 'media_appearance' OR ${table.mediaOutletId} IS NOT NULL`
+    ),
   ]
 )
 
@@ -126,7 +161,10 @@ export const pressArticleTranslations = pgTable(
       .notNull()
       .references(() => pressArticles.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.pressArticleId)]
+  (table) => [
+    unique().on(table.locale, table.pressArticleId),
+    check('press_article_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 // Junction table for Press Articles to Tags (many-to-many)
@@ -175,16 +213,21 @@ export const pressArticleTagsRelations = relations(pressArticleTags, ({ one }) =
 
 // Press dossier
 
-export const pressDossier = pgTable('press_dossier', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  pdfUrl: text('pdf_url'),
-  active: boolean('active').default(false).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const pressDossier = pgTable(
+  'press_dossier',
+  {
+    /** Fixed singleton row — always 'singleton'. Enforced by CHECK constraint. */
+    id: text('id').primaryKey().default('singleton'),
+    pdfUrl: text('pdf_url'),
+    active: boolean('active').default(false).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [check('press_dossier_singleton_check', sql`${table.id} = 'singleton'`)]
+)
 
 // Featured links
 
@@ -212,7 +255,10 @@ export const featuredLinkTranslations = pgTable(
       .notNull()
       .references(() => featuredLinks.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.featuredLinkId)]
+  (table) => [
+    unique().on(table.locale, table.featuredLinkId),
+    check('featured_link_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 // Featured Links relations
@@ -332,7 +378,10 @@ export const teamAreaTranslations = pgTable(
       .notNull()
       .references(() => teamAreas.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.teamAreaId)]
+  (table) => [
+    unique().on(table.locale, table.teamAreaId),
+    check('team_area_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 // Team Areas relations
@@ -382,7 +431,10 @@ export const teamMemberTranslations = pgTable(
       .notNull()
       .references(() => teamMembers.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.teamMemberId)]
+  (table) => [
+    unique().on(table.locale, table.teamMemberId),
+    check('team_member_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 // Team Members relations
@@ -423,11 +475,10 @@ export const organizationMembers = pgTable('organization_members', {
   logo: text('logo'),
   website: text('website'),
   email: text('email'),
-  instagram: text('instagram'),
-  twitter: text('twitter'),
-  facebook: text('facebook'),
-  linkedin: text('linkedin'),
-  tiktok: text('tiktok'),
+  socials: jsonb('socials')
+    .$type<Array<{ network: string; value: string }>>()
+    .default([])
+    .notNull(),
   autonomousCommunity: text('autonomous_community').notNull(),
   order: integer('order').default(0).notNull(),
   active: boolean('active').default(true).notNull(),
@@ -454,6 +505,7 @@ export const organizationMemberTranslations = pgTable(
       table.locale,
       table.organizationMemberId
     ),
+    check('organization_member_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
   ]
 )
 
@@ -517,18 +569,26 @@ export const newsletterSubscribers = pgTable(
     subscribedAt: timestamp('subscribed_at', { mode: 'date' }).defaultNow().notNull(),
     confirmedAt: timestamp('confirmed_at', { mode: 'date' }),
     unsubscribedAt: timestamp('unsubscribed_at', { mode: 'date' }),
-    /** Pending double opt-in confirmation token */
-    confirmToken: text('confirm_token'),
+    /**
+     * Pending double opt-in confirmation token.
+     * NULL means no pending confirmation. UNIQUE so tokens cannot collide
+     * (PostgreSQL UNIQUE allows multiple NULLs — they are treated as distinct).
+     */
+    confirmToken: text('confirm_token').unique(),
     /** Expiry timestamp for the confirmation token (48h TTL) */
     confirmTokenExpiresAt: timestamp('confirm_token_expires_at', { mode: 'date' }),
-    /** Token for one-click unsubscribe links */
-    unsubscribeToken: text('unsubscribe_token').notNull().$defaultFn(cuid),
+    /**
+     * Token for one-click unsubscribe links.
+     * UNIQUE ensures no two subscribers share the same token.
+     */
+    unsubscribeToken: text('unsubscribe_token').notNull().unique().$defaultFn(cuid),
     /** Minimal evidence to demonstrate the consent request */
     consentIp: text('consent_ip'),
     consentUserAgent: text('consent_user_agent'),
     consentSource: text('consent_source').default('web_form').notNull(),
     consentTextVersion: text('consent_text_version').default('2026-03-06').notNull(),
     ageConfirmed: boolean('age_confirmed').default(false).notNull(),
+    locale: text('locale'),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .defaultNow()
@@ -536,8 +596,48 @@ export const newsletterSubscribers = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    index('idx_subscribers_confirm_token').on(table.confirmToken),
-    index('idx_subscribers_unsubscribe_token').on(table.unsubscribeToken),
+    index('idx_newsletter_subscribers_active_subscribed').on(table.active, table.subscribedAt),
+    check(
+      'newsletter_subscribers_consent_source_check',
+      sql`${table.consentSource} in ('web_form', 'email_link', 'admin_manual', 'legacy_import', 'system')`
+    ),
+  ]
+)
+
+export const newsletterSubscriptionEvents = pgTable(
+  'newsletter_subscription_events',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    subscriberId: text('subscriber_id').references(() => newsletterSubscribers.id, {
+      onDelete: 'set null',
+    }),
+    email: text('email').notNull(),
+    eventType: text('event_type').notNull(),
+    eventSource: text('event_source').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_newsletter_subscription_events_subscriber_created').on(
+      table.subscriberId,
+      table.createdAt
+    ),
+    index('idx_newsletter_subscription_events_email').on(table.email),
+    check(
+      'newsletter_subscription_events_type_check',
+      sql`${table.eventType} in (
+        'requested',
+        'confirmed',
+        'unsubscribed',
+        'admin_created',
+        'admin_updated',
+        'admin_deleted',
+        'confirmation_expired'
+      )`
+    ),
+    check(
+      'newsletter_subscription_events_source_check',
+      sql`${table.eventSource} in ('web_form', 'email_link', 'admin_manual', 'legacy_import', 'system')`
+    ),
   ]
 )
 
@@ -569,6 +669,10 @@ export const newsletterDeliveries = pgTable(
     ),
     index('idx_newsletter_deliveries_status').on(table.newsletterId, table.status),
     index('idx_newsletter_deliveries_subscriber').on(table.subscriberId),
+    check(
+      'newsletter_deliveries_status_check',
+      sql`${table.status} in ('queued', 'sending', 'sent', 'failed')`
+    ),
   ]
 )
 
@@ -594,16 +698,21 @@ export const mediaOutletsRelations = relations(mediaOutlets, ({ many }) => ({
 
 // About page
 
-export const aboutPageContent = pgTable('about_page_content', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  heroImage: text('hero_image'),
-  heroVisible: boolean('hero_visible').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const aboutPageContent = pgTable(
+  'about_page_content',
+  {
+    /** Fixed singleton row — always 'singleton'. Enforced by CHECK constraint. */
+    id: text('id').primaryKey().default('singleton'),
+    heroImage: text('hero_image'),
+    heroVisible: boolean('hero_visible').default(true).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [check('about_page_content_singleton_check', sql`${table.id} = 'singleton'`)]
+)
 
 // Equality documents
 
@@ -631,7 +740,10 @@ export const equalityDocumentTranslations = pgTable(
       .notNull()
       .references(() => equalityDocuments.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.equalityDocumentId)]
+  (table) => [
+    unique().on(table.locale, table.equalityDocumentId),
+    check('equality_document_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 export const equalityDocumentsRelations = relations(equalityDocuments, ({ many }) => ({
@@ -673,7 +785,10 @@ export const financialReportTranslations = pgTable(
       .notNull()
       .references(() => financialReports.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.locale, table.financialReportId)]
+  (table) => [
+    unique().on(table.locale, table.financialReportId),
+    check('financial_report_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+  ]
 )
 
 export const financialReportsRelations = relations(financialReports, ({ many }) => ({

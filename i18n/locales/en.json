@@ -657,6 +657,10 @@
       "title": "You have unsubscribed from the newsletter",
       "description": "You will no longer receive CREUP newsletter emails at this address."
     },
+    "unsubscribeInvalid": {
+      "title": "This unsubscribe link is no longer valid",
+      "description": "Use the most recent unsubscribe link available in one of your newsletter emails to manage your subscription."
+    },
     "form": {
       "ariaLabel": "Newsletter subscription form",
       "heading": "Subscribe to the newsletter",
@@ -714,5 +718,31 @@
       "deleted": "Deleted successfully",
       "orderSaved": "Order saved successfully"
     }
+  },
+  "confirmSubscription": {
+    "seo": {
+      "title": "Confirm newsletter subscription",
+      "description": "Confirm your subscription to the CREUP newsletter."
+    },
+    "processingTitle": "Confirming your subscription",
+    "processingDescription": "We are activating your CREUP newsletter subscription.",
+    "invalidTitle": "Invalid link",
+    "invalidDescription": "The confirmation link is not valid. Please check the email you received or subscribe again.",
+    "errorTitle": "An error occurred",
+    "errorDescription": "Your subscription could not be confirmed. Please try again or resubmit the subscription form.",
+    "backToNewsletter": "Back to newsletter"
+  },
+  "unsubscribePage": {
+    "seo": {
+      "title": "Unsubscribe from newsletter",
+      "description": "Cancel your CREUP newsletter subscription."
+    },
+    "processingTitle": "Processing your unsubscription",
+    "processingDescription": "We are canceling your CREUP newsletter subscription.",
+    "invalidTitle": "Invalid link",
+    "invalidDescription": "The unsubscribe link is not valid. Please check the email you received.",
+    "errorTitle": "An error occurred",
+    "errorDescription": "Your unsubscription could not be processed. Please try again.",
+    "backToNewsletter": "Back to newsletter"
   }
 }

@@ -24,8 +24,15 @@ export default defineEventHandler(async (event) => {
   const apiKey = getRequiredGoogleCalendarApiKey()
 
   const now = new Date()
-  const threeMonthsLater = new Date()
-  threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
+  const threeMonthsLaterMonthEnd = new Date(
+    now.getFullYear(),
+    now.getMonth() + 4,
+    0,
+    23,
+    59,
+    59,
+    999
+  )
 
   try {
     const url = new URL(
@@ -33,12 +40,12 @@ export default defineEventHandler(async (event) => {
     )
     url.searchParams.set('key', apiKey)
     url.searchParams.set('timeMin', now.toISOString())
-    url.searchParams.set('timeMax', threeMonthsLater.toISOString())
+    url.searchParams.set('timeMax', threeMonthsLaterMonthEnd.toISOString())
     url.searchParams.set('singleEvents', 'true')
     url.searchParams.set('orderBy', 'startTime')
     url.searchParams.set('maxResults', '50')
 
-    const response = await fetch(url.toString())
+    const response = await fetch(url.toString(), { signal: AbortSignal.timeout(10_000) })
 
     if (!response.ok) {
       logError(

@@ -1,6 +1,5 @@
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
 import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
-import { logError, logInfo } from './logger'
 import { getSmtpTransporter } from './smtpTransporter'
 import { buildAbsoluteUrl, normalizeBaseUrl } from './urlBuilder'
 
@@ -15,20 +14,6 @@ interface Subscriber {
   id: string
   email: string
   unsubscribeToken: string
-}
-
-interface NewsletterEmailSendResult {
-  errorCount: number
-  failedRecipients: string[]
-  sentCount: number
-  total: number
-}
-
-const BATCH_SIZE = 50
-const BATCH_DELAY_MS = 2000
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function formatMonth(date: Date): string {
@@ -171,7 +156,7 @@ export async function sendNewsletterEmail(
   const subject = `Newsletter CREUP — ${monthStr.charAt(0).toUpperCase() + monthStr.slice(1)}`
   const unsubscribeUrl = buildAbsoluteUrl(
     siteUrl,
-    `/api/newsletter-unsubscribe?token=${encodeURIComponent(subscriber.unsubscribeToken)}`
+    `/desuscribirse?token=${encodeURIComponent(subscriber.unsubscribeToken)}`
   )
 
   await transporter.sendMail({
@@ -186,61 +171,4 @@ export async function sendNewsletterEmail(
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     },
   })
-}
-
-export async function sendNewsletterEmails(
-  newsletter: Newsletter,
-  subscribers: Subscriber[],
-  configErrorMessage = 'Server configuration error.'
-): Promise<NewsletterEmailSendResult> {
-  if (subscribers.length === 0) {
-    return {
-      errorCount: 0,
-      failedRecipients: [],
-      sentCount: 0,
-      total: 0,
-    }
-  }
-
-  let sentCount = 0
-  let errorCount = 0
-  const failedRecipients: string[] = []
-
-  for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
-    const batch = subscribers.slice(i, i + BATCH_SIZE)
-
-    for (const subscriber of batch) {
-      try {
-        await sendNewsletterEmail(newsletter, subscriber, configErrorMessage)
-        sentCount++
-      } catch (err) {
-        errorCount++
-        failedRecipients.push(subscriber.email)
-        logError('newsletter.send.recipient', err, {
-          newsletterId: newsletter.id,
-          subscriberEmail: subscriber.email,
-        })
-      }
-    }
-
-    // Pause between batches to respect rate limits
-    if (i + BATCH_SIZE < subscribers.length) {
-      await sleep(BATCH_DELAY_MS)
-    }
-  }
-
-  logInfo('newsletter.send.completed', {
-    errorCount,
-    failedRecipients,
-    newsletterId: newsletter.id,
-    sentCount,
-    total: subscribers.length,
-  })
-
-  return {
-    errorCount,
-    failedRecipients,
-    sentCount,
-    total: subscribers.length,
-  }
 }

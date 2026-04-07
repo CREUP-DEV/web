@@ -1,0 +1,1 @@
+{"version":"7","dialect":"postgresql","id":"0006","prevId":"0005","tables":{},"enums":{"public.press_article_type":{"name":"press_article_type","schema":"public","values":["press_release","statement","media_appearance"]}},"schemas":{},"_meta":{"columns":{},"schemas":{},"tables":{}}}

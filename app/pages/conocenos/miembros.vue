@@ -10,6 +10,7 @@ import {
 
 const { t, locale } = useI18n()
 const { getLanguageTag } = useLocales()
+const localeApiHeaders = useLocaleApiHeaders()
 const colorMode = useColorMode()
 const hasMounted = ref(false)
 const { copyToClipboard } = useCopyToClipboard()
@@ -114,8 +115,12 @@ const isUniversidadGranada = (value: string) => {
 }
 
 const [{ data, error }, { data: sectorialesData }] = await Promise.all([
-  useFetch<MembersResponse>('/api/members'),
-  useFetch<SectorialesResponse>('/api/sectoriales'),
+  useFetch<MembersResponse>('/api/members', {
+    headers: localeApiHeaders,
+  }),
+  useFetch<SectorialesResponse>('/api/sectoriales', {
+    headers: localeApiHeaders,
+  }),
 ])
 
 if (error.value) {

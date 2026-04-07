@@ -16,10 +16,14 @@ export interface CalendarEvent {
 
 export function useGoogleCalendar() {
   const { locale } = useI18n()
+  const localeApiHeaders = useLocaleApiHeaders()
 
   const { data, pending, error, refresh } = useAsyncData<{ events: CalendarEvent[] }>(
-    'google-calendar-events',
-    () => $fetch<{ events: CalendarEvent[] }>('/api/calendar'),
+    () => `google-calendar-events-${locale.value}`,
+    () =>
+      $fetch<{ events: CalendarEvent[] }>('/api/calendar', {
+        headers: localeApiHeaders.value,
+      }),
     {
       watch: [locale],
     }

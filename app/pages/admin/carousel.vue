@@ -3,6 +3,7 @@ import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
 
 definePageMeta({
   layout: 'admin',
+  title: 'Carrusel',
 })
 
 interface Translation {

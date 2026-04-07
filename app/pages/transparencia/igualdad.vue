@@ -20,9 +20,11 @@ interface EqualityDocument {
 
 interface EqualityDocumentsResponse {
   items: EqualityDocument[]
+  total: number
 }
 
 const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
 const supportMailto = 'mailto:punto.seguro@creup.es'
 
 const accentButtonClass =
@@ -91,8 +93,17 @@ const scopeItems = computed(() => [
 
 usePageSeo('equalityPage.title', 'equalityPage.description')
 
-const { data: documentsData, error: documentsError } =
-  await useFetch<EqualityDocumentsResponse>('/api/equality-documents')
+const LIMIT = 12
+const docsPage = ref(1)
+const docsOffset = computed(() => (docsPage.value - 1) * LIMIT)
+
+const { data: documentsData, error: documentsError } = await useFetch<EqualityDocumentsResponse>(
+  '/api/equality-documents',
+  {
+    headers: localeApiHeaders,
+    query: computed(() => ({ limit: LIMIT, offset: docsOffset.value })),
+  }
+)
 
 const resourceIcons = [
   'i-tabler-scale',
@@ -101,10 +112,12 @@ const resourceIcons = [
   'i-tabler-file-text',
 ]
 
+const docsTotal = computed(() => documentsData.value?.total ?? 0)
+
 const resources = computed(() =>
   (documentsData.value?.items ?? []).map((item, index) => ({
     ...item,
-    icon: resourceIcons[index] ?? 'i-tabler-file-text',
+    icon: resourceIcons[(docsOffset.value + index) % resourceIcons.length] ?? 'i-tabler-file-text',
   }))
 )
 
@@ -242,6 +255,10 @@ const {
             </UCard>
           </li>
         </ul>
+
+        <div v-if="docsTotal > LIMIT" class="mt-6 flex justify-center">
+          <UPagination v-model:page="docsPage" :total="docsTotal" :items-per-page="LIMIT" />
+        </div>
       </section>
 
       <section aria-labelledby="equality-action">

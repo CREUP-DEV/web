@@ -17,7 +17,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL y Drizzle ORM. In
 - Nuxt UI v4 + Tailwind CSS
 - `@nuxtjs/i18n`
 - PostgreSQL + Drizzle ORM
-- `better-auth` con Google OAuth para el admin
+- `better-auth` con Google OAuth para el panel de administración
 
 ## Requisitos
 
@@ -64,6 +64,7 @@ pnpm db:seed
 - `SITE_URL`
 - `DATABASE_URL`
 - `BETTER_AUTH_URL`
+- `BETTER_AUTH_SECRET`
 - `OG_IMAGE_SECRET`
 
 ### Acceso de administración
@@ -141,9 +142,99 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 ## Servicios locales
 
 - Aplicación: `http://localhost:3000`
-- Adminer: `http://localhost:8080` por defecto
+- Adminer: `http://localhost:8088` por defecto
 - Mailpit web: `http://localhost:8025` por defecto
 - Mailpit SMTP: `localhost:1025` por defecto
+
+## Deploy con Docker + NGINX (sin build en VPS)
+
+Este repositorio incluye un flujo donde el build se hace en tu equipo local o CI, se publica la imagen en GHCR y el VPS solo hace pull + recreate con Docker Compose.
+
+Puntos clave del flujo actual:
+
+- Se usa un único archivo de entorno: `.env` (también en producción).
+- `deploy.sh` mantiene las migraciones en deploy (`APPLY_MIGRATIONS_ON_DEPLOY=true` por defecto).
+- Hay soporte opcional para ejecutar migraciones en cada arranque del contenedor
+  (`RUN_MIGRATIONS_ON_START=true`).
+- En producción se recomienda usar bind mounts para gestionar ficheros desde el VPS.
+
+### Compose mínimo de producción
+
+Hay un ejemplo mínimo en `docker-compose.production.example.yml` (sin Adminer/Mailpit y sin
+acoplar NGINX dentro del mismo stack). Puedes copiarlo como `docker-compose.yml` en el directorio
+del servicio web en el VPS.
+
+El ejemplo usa `env_file: .env` para inyectar variables de entorno, bind mounts para datos de app
+y volumen nombrado para PostgreSQL:
+
+- `${APP_PUBLIC_DIR}` -> `/app/.output/public`
+- `${APP_ADMIN_ASSETS_DIR}` -> `/app/.output/.data/admin-assets`
+- `creup_web_postgres_data` -> `/var/lib/postgresql/data` (si habilitas `postgres` local)
+
+### 1) Preparar VPS una sola vez
+
+1. Copia el proyecto al VPS en una ruta estable (por ejemplo `/opt/creup-web`).
+2. Crea el archivo `.env` en el VPS a partir de `.env.example`.
+3. Ajusta `DATABASE_URL`, secretos OAuth, SMTP y resto de variables reales.
+4. Si usas GHCR privado, ejecuta una vez en el VPS: `docker login ghcr.io`.
+5. Si usas PostgreSQL en el mismo compose de producción, usa `DATABASE_URL` con host `postgres`.
+6. Asegura que Docker y Docker Compose estén instalados en el VPS.
+
+### 2) Configurar variables en tu equipo local
+
+1. Mantén tu `.env` para desarrollo.
+2. Usa ese mismo `.env` como fuente para el deploy.
+3. Define al menos:
+  - `SITE_URL`
+  - `VPS_HOST` (ejemplo: `ubuntu@mi-vps`)
+  - `REMOTE_DIR` (ejemplo: `/opt/creup-web`)
+4. Opcional:
+  - `IMAGE_NAME`, `IMAGE_TAG` o `IMAGE`
+  - `GHCR_USERNAME` + `GHCR_TOKEN`
+  - `DOCKER_PLATFORM` (por defecto `linux/amd64`)
+  - `APPLY_MIGRATIONS_ON_DEPLOY=false` si no quieres ejecutar migraciones en `deploy.sh`
+  - `RUN_MIGRATIONS_ON_START=true` para ejecutar migraciones en cada arranque del contenedor
+
+Antes del primer uso, marca scripts como ejecutables:
+
+```sh
+chmod +x deploy.sh
+```
+
+### 3) Ejecutar deploy remoto
+
+```sh
+bash ./deploy.sh
+```
+
+Qué hace `deploy.sh`:
+
+1. Carga variables de `.env` local.
+2. Construye la imagen con Docker Buildx (o Docker clásico si no hay Buildx).
+3. Publica la imagen en GHCR.
+4. Se conecta por SSH al VPS.
+5. En el VPS ejecuta `cd`, `docker compose pull` y `docker compose up -d`.
+6. Si `APPLY_MIGRATIONS_ON_DEPLOY=true`, el `up -d` del deploy fuerza
+  `RUN_MIGRATIONS_ON_START=true` para aplicar migraciones en ese despliegue.
+
+### 4) Persistencia de uploads en producción
+
+La app escribe assets en disco (`.data/admin-assets` y varios subdirectorios de `public/`).
+En producción, usa bind mounts para gestionar ese contenido directamente en el VPS.
+
+Haz backup tanto de PostgreSQL como de estos volúmenes Docker.
+
+### 5) TLS / HTTPS
+
+Para producción pública:
+
+1. Añade TLS (Let's Encrypt con certbot o un proxy frontal).
+2. Fuerza redirección HTTP -> HTTPS.
+3. Mantén cabeceras `X-Real-IP` y `X-Forwarded-For` con IP real del cliente.
+4. Puedes partir de la plantilla `deploy/nginx/creup.production.example.conf` y adaptarla a tu dominio/certificados.
+
+NGINX puede vivir en un stack separado del stack web. El deploy de este repositorio no modifica
+la configuración de NGINX.
 
 ## Estructura principal
 

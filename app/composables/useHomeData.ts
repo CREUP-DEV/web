@@ -20,10 +20,14 @@ export interface HomeDataResponse {
 
 export function useHomeData() {
   const { locale } = useI18n()
+  const localeApiHeaders = useLocaleApiHeaders()
 
   return useAsyncData<HomeDataResponse>(
-    'home-data',
-    () => $fetch<HomeDataResponse>('/api/home-data'),
+    () => `home-data-${locale.value}`,
+    () =>
+      $fetch<HomeDataResponse>('/api/home-data', {
+        headers: localeApiHeaders.value,
+      }),
     {
       default: () => ({
         carousel: [],

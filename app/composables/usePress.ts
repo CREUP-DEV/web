@@ -1,3 +1,5 @@
+import type { MaybeRef } from 'vue'
+
 export type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
 
 export interface PressArticleTag {
@@ -29,6 +31,7 @@ export interface PressArticle {
 
 export interface PressResponse {
   articles: PressArticle[]
+  total: number
 }
 
 export interface PressDetailResponse {
@@ -36,48 +39,78 @@ export interface PressDetailResponse {
 }
 
 export function usePress(
-  type?: Ref<PressArticleType | null> | PressArticleType | null,
-  tagSlug?: Ref<string | null> | string | null,
-  limit?: number
+  type?: MaybeRef<PressArticleType | null | undefined>,
+  tagSlug?: MaybeRef<string | null | undefined>,
+  limit?: MaybeRef<number | undefined>,
+  offset?: MaybeRef<number | undefined>
 ) {
   const { locale } = useI18n()
+  const localeApiHeaders = useLocaleApiHeaders()
 
-  const typeRef = typeof type === 'string' || type === null || type === undefined ? ref(type) : type
-  const tagRef =
-    typeof tagSlug === 'string' || tagSlug === null || tagSlug === undefined
-      ? ref(tagSlug)
-      : tagSlug
+  const typeValue = computed(() => unref(type) ?? null)
+  const tagValue = computed(() => unref(tagSlug) ?? null)
+  const limitValue = computed(() => {
+    const value = unref(limit)
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      return Math.floor(value)
+    }
+
+    return undefined
+  })
+  const offsetValue = computed(() => {
+    const value = unref(offset)
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      return Math.floor(value)
+    }
+
+    return 0
+  })
+
+  const pressKey = computed(() => {
+    return `press-${locale.value}-${typeValue.value || 'all'}-${tagValue.value || 'all'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
+  })
 
   return useAsyncData<PressResponse>(
-    `press-${unref(typeRef) || 'all'}-${unref(tagRef) || 'all'}`,
+    pressKey,
     () => {
       const params = new URLSearchParams()
-      if (typeRef.value) {
-        params.set('type', typeRef.value)
+      if (typeValue.value) {
+        params.set('type', typeValue.value)
       }
-      if (tagRef.value && tagRef.value !== 'all') {
-        params.set('tag', tagRef.value)
+      if (tagValue.value && tagValue.value !== 'all') {
+        params.set('tag', tagValue.value)
       }
-      if (limit) {
-        params.set('limit', String(limit))
+      if (limitValue.value != null) {
+        params.set('limit', String(limitValue.value))
       }
-      return $fetch<PressResponse>(`/api/press?${params.toString()}`)
+      if (offsetValue.value > 0) {
+        params.set('offset', String(offsetValue.value))
+      }
+      return $fetch<PressResponse>(`/api/press?${params.toString()}`, {
+        headers: localeApiHeaders.value,
+      })
     },
     {
       default: () => ({
         articles: [],
+        total: 0,
       }),
-      watch: [locale, typeRef, tagRef],
+      watch: [locale, typeValue, tagValue, limitValue, offsetValue],
     }
   )
 }
 
 export function usePressArticle(slug: string) {
   const { locale } = useI18n()
+  const localeApiHeaders = useLocaleApiHeaders()
+  const pressArticleKey = computed(() => `press-article-${slug}-${locale.value}`)
 
   return useAsyncData<PressDetailResponse>(
-    `press-article-${slug}`,
-    () => $fetch<PressDetailResponse>(`/api/press/${slug}`),
+    pressArticleKey,
+    () =>
+      $fetch<PressDetailResponse>(`/api/press/${slug}`, {
+        headers: localeApiHeaders.value,
+      }),
     {
       watch: [locale],
     }

@@ -657,6 +657,10 @@
       "title": "Te has dado de baja de la newsletter",
       "description": "No recibirás más correos de la newsletter de CREUP con esta dirección."
     },
+    "unsubscribeInvalid": {
+      "title": "Este enlace de baja ya no es válido",
+      "description": "Utiliza el enlace de baja más reciente que tengas en un correo de la newsletter para gestionar tu suscripción."
+    },
     "form": {
       "ariaLabel": "Formulario de suscripción a la newsletter",
       "heading": "Suscríbete a la newsletter",
@@ -714,5 +718,31 @@
       "deleted": "Eliminado correctamente",
       "orderSaved": "Orden guardado correctamente"
     }
+  },
+  "confirmSubscription": {
+    "seo": {
+      "title": "Confirmar suscripción a la newsletter",
+      "description": "Confirma tu suscripción a la newsletter de CREUP."
+    },
+    "processingTitle": "Confirmando tu suscripción",
+    "processingDescription": "Estamos activando tu suscripción a la newsletter de CREUP.",
+    "invalidTitle": "Enlace no válido",
+    "invalidDescription": "El enlace de confirmación no es correcto. Comprueba el correo que recibiste o vuelve a suscribirte.",
+    "errorTitle": "Ha ocurrido un error",
+    "errorDescription": "No se ha podido confirmar la suscripción. Por favor, inténtalo de nuevo o vuelve a enviar el formulario.",
+    "backToNewsletter": "Volver a newsletter"
+  },
+  "unsubscribePage": {
+    "seo": {
+      "title": "Darse de baja de la newsletter",
+      "description": "Cancela tu suscripción a la newsletter de CREUP."
+    },
+    "processingTitle": "Procesando tu baja",
+    "processingDescription": "Estamos cancelando tu suscripción a la newsletter de CREUP.",
+    "invalidTitle": "Enlace no válido",
+    "invalidDescription": "El enlace de baja no es correcto. Comprueba el correo que recibiste.",
+    "errorTitle": "Ha ocurrido un error",
+    "errorDescription": "No se ha podido procesar la baja. Por favor, inténtalo de nuevo.",
+    "backToNewsletter": "Volver a newsletter"
   }
 }

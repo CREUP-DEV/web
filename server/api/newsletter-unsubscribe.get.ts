@@ -1,34 +1,12 @@
-import { defineEventHandler, sendRedirect, setHeader } from 'h3'
-import { eq } from 'drizzle-orm'
-import { db } from '../db'
-import { newsletterSubscribers } from '../db/schema'
-import { buildLocalizedPath } from '../utils/urlBuilder'
-import { newsletterTokenQuerySchema, validateQuery } from '../utils/validation'
+import { createError, defineEventHandler } from 'h3'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 
-export default defineEventHandler(async (event) => {
-  setHeader(event, 'cache-control', 'no-store')
-
-  const { token } = validateQuery(event, newsletterTokenQuerySchema)
-  const redirectBasePath = buildLocalizedPath(event, '/prensa/newsletter')
-
-  const subscriber = await db.query.newsletterSubscribers.findFirst({
-    where: eq(newsletterSubscribers.unsubscribeToken, token),
+// This action is now a POST to prevent mail scanners from triggering unsubscription.
+// The unsubscribe link in emails points to the /desuscribirse interstitial page,
+// which submits the token via POST to /api/newsletter-unsubscribe.
+export default defineEventHandler((event) => {
+  throw createError({
+    statusCode: 405,
+    message: getPublicApiErrorMessage(event, 'methodNotAllowed'),
   })
-
-  if (subscriber && subscriber.active) {
-    await db
-      .update(newsletterSubscribers)
-      .set({
-        active: false,
-        confirmToken: null,
-        confirmTokenExpiresAt: null,
-        consentIp: null,
-        consentUserAgent: null,
-        unsubscribedAt: new Date(),
-      })
-      .where(eq(newsletterSubscribers.id, subscriber.id))
-  }
-
-  // Redirect to the newsletter page regardless (don't reveal if token was valid)
-  return sendRedirect(event, `${redirectBasePath}?unsubscribed=1`, 302)
 })

@@ -2,7 +2,12 @@ import { createError, defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
-import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import {
+  cleanupAdminAssetFinalizationsSafely,
+  cleanupUnusedAdminAssetSafely,
+  type CleanupUnusedAdminAssetOptions,
+  trackAdminAssetFinalization,
+} from '../../../utils/adminAssetPublication'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
@@ -37,6 +42,7 @@ export default defineEventHandler(async (event) => {
   let previousPdfUrl: string | null = null
   let coverImage: string | null = null
   let pdfUrl: string | null = null
+  const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
   try {
     const existingItem = await db.query.newsletters.findFirst({
@@ -62,6 +68,11 @@ export default defineEventHandler(async (event) => {
       fallbackBaseName: 'newsletter-portada',
       replaceStoragePath: existingItem.coverImage,
     })
+    trackAdminAssetFinalization(cleanupTargets, {
+      sourceStoragePath: validated.coverImage,
+      storagePath: coverImage,
+      allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+    })
     pdfUrl = await finalizeAdminDocument({
       storagePath: validated.pdfUrl,
       uploadDir: DOCUMENT_UPLOAD_DIR,
@@ -70,6 +81,11 @@ export default defineEventHandler(async (event) => {
       publish: validated.active,
       fallbackBaseName: 'newsletter',
       replaceStoragePath: existingItem.pdfUrl,
+    })
+    trackAdminAssetFinalization(cleanupTargets, {
+      sourceStoragePath: validated.pdfUrl,
+      storagePath: pdfUrl,
+      allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
     })
 
     await db
@@ -89,17 +105,25 @@ export default defineEventHandler(async (event) => {
     })
 
     if (previousCoverImage !== coverImage) {
-      await cleanupUnusedAdminAsset({
-        storagePath: previousCoverImage,
-        allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-      })
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: previousCoverImage,
+          allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+        },
+        'admin.newsletter.update.cleanup.cover',
+        event
+      )
     }
 
     if (previousPdfUrl !== pdfUrl) {
-      await cleanupUnusedAdminAsset({
-        storagePath: previousPdfUrl,
-        allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
-      })
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: previousPdfUrl,
+          allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+        },
+        'admin.newsletter.update.cleanup.pdf',
+        event
+      )
     }
 
     return {
@@ -111,18 +135,32 @@ export default defineEventHandler(async (event) => {
         : null,
     }
   } catch (error) {
+    await cleanupAdminAssetFinalizationsSafely(
+      cleanupTargets,
+      'admin.newsletter.update.rollback',
+      event
+    )
+
     if (!dbUpdated && coverImage && coverImage !== previousCoverImage) {
-      await cleanupUnusedAdminAsset({
-        storagePath: coverImage,
-        allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-      })
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: coverImage,
+          allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+        },
+        'admin.newsletter.update.rollback.cover',
+        event
+      )
     }
 
     if (!dbUpdated && pdfUrl && pdfUrl !== previousPdfUrl) {
-      await cleanupUnusedAdminAsset({
-        storagePath: pdfUrl,
-        allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
-      })
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: pdfUrl,
+          allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+        },
+        'admin.newsletter.update.rollback.pdf',
+        event
+      )
     }
 
     throwAdminMutationError('admin.newsletter.update', error, event)

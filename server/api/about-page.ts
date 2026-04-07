@@ -10,6 +10,7 @@ import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
 import { logError } from '../utils/logger'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 export default defineEventHandler(async (event) => {
@@ -25,7 +26,7 @@ export default defineEventHandler(async (event) => {
         setHeader(event, 'retry-after', 60)
         throw createError({
           statusCode: 503,
-          statusMessage: 'Servicio temporalmente no disponible',
+          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
         })
       }
 

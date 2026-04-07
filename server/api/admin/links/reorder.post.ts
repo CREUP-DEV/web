@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks } from '../../../db/schema'
+import { assertCompleteReorderSet } from '../../../utils/adminReorder'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
 // POST - Reorder featured links
@@ -14,6 +15,12 @@ export default defineEventHandler(async (event) => {
 
   try {
     const validated = validateBody(updateOrderSchema, body)
+    const existingItems = await db.select({ id: featuredLinks.id }).from(featuredLinks)
+
+    assertCompleteReorderSet(
+      validated.items,
+      existingItems.map((item) => item.id)
+    )
 
     // Update all items in a transaction
     await db.transaction(async (tx) => {

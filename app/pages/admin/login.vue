@@ -3,6 +3,11 @@ import { useAuth } from '@/composables/useAuth'
 
 definePageMeta({
   layout: false,
+  title: 'Acceso',
+})
+
+useHead({
+  titleTemplate: (titleChunk) => (titleChunk ? `${titleChunk} | Admin CREUP` : 'Admin CREUP'),
 })
 
 const { session, signInWithGoogle, signOut } = useAuth()

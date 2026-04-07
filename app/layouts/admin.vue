@@ -17,6 +17,10 @@ const navigation = [
   ...ADMIN_SECTION_DEFINITIONS,
 ]
 
+useHead({
+  titleTemplate: (titleChunk) => (titleChunk ? `${titleChunk} | Admin CREUP` : 'Admin CREUP'),
+})
+
 const sidebarOpen = ref(false)
 </script>
 

@@ -1,3 +1,6 @@
+import createDOMPurify, { type WindowLike } from 'dompurify'
+import { JSDOM } from 'jsdom'
+
 type PressTranslationLike = {
   locale: string
   title?: string | null
@@ -6,16 +9,9 @@ type PressTranslationLike = {
   contentHtml?: string | null
 }
 
-const blockedElementPattern =
-  /<(script|style|iframe|object|embed|template|svg|math|form|input|button|textarea|select)[^>]*>[\s\S]*?<\/\1\s*>/gi
-const blockedSingleTagPattern =
-  /<(script|style|iframe|object|embed|template|svg|math|form|input|button|textarea|select)\b[^>]*\/?>/gi
-const htmlCommentPattern = /<!--[\s\S]*?-->/g
-const doctypePattern = /<!doctype[^>]*>/gi
-const tagPattern = /<\/?([a-z0-9]+)\b([^>]*)>/gi
-const attributePattern = /([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gi
+const richTextPurifier = createDOMPurify(new JSDOM('').window as unknown as WindowLike)
 
-const allowedTags = new Set([
+const allowedRichTextTags = [
   'a',
   'blockquote',
   'br',
@@ -27,12 +23,10 @@ const allowedTags = new Set([
   'p',
   'strong',
   'ul',
-])
-const voidTags = new Set(['br'])
-const tagAliases: Record<string, string> = {
-  b: 'strong',
-  i: 'em',
-}
+  'b',
+  'i',
+]
+const allowedRichTextAttributes = ['href', 'target']
 
 const normalizeLocaleIdentifier = (value?: string | null) => {
   const normalized = String(value ?? '')
@@ -46,26 +40,24 @@ const normalizeLocaleIdentifier = (value?: string | null) => {
   return normalized.split('-')[0] ?? normalized
 }
 
-const stripHtml = (value?: string | null) =>
-  String(value ?? '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&(nbsp|#160);/gi, ' ')
+const extractPlainText = (value?: string | null) => {
+  const normalized = String(value ?? '').trim()
+  if (!normalized) {
+    return ''
+  }
+
+  const textContent = JSDOM.fragment(normalized).textContent ?? ''
+
+  return textContent
+    .replace(/\u00A0/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
 
 const pickTextValue = (value?: string | null) => {
   const normalized = String(value ?? '').trim()
   return normalized.length > 0 ? normalized : null
 }
-
-const escapeHtmlText = (value: string) =>
-  value
-    .replace(/&(?!(?:[a-zA-Z][a-zA-Z0-9]+|#\d+|#x[a-fA-F0-9]+);)/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-
-const escapeHtmlAttribute = (value: string) =>
-  escapeHtmlText(value).replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 const sanitizeRichTextLinkHref = (value?: string | null) => {
   const normalized = String(value ?? '').trim()
@@ -93,107 +85,82 @@ const sanitizeRichTextLinkHref = (value?: string | null) => {
   return null
 }
 
+const replaceElementTag = (element: Element, tagName: 'strong' | 'em') => {
+  const ownerDocument = element.ownerDocument
+  const replacement = ownerDocument.createElement(tagName)
+
+  while (element.firstChild) {
+    replacement.appendChild(element.firstChild)
+  }
+
+  element.replaceWith(replacement)
+}
+
+const unwrapElement = (element: Element) => {
+  const parentNode = element.parentNode
+  if (!parentNode) {
+    return
+  }
+
+  while (element.firstChild) {
+    parentNode.insertBefore(element.firstChild, element)
+  }
+
+  parentNode.removeChild(element)
+}
+
 export const sanitizeRichTextHtml = (value?: string | null) => {
   const normalized = String(value ?? '').trim()
   if (!normalized) {
     return null
   }
 
-  const sanitizedSource = normalized
-    .replace(htmlCommentPattern, '')
-    .replace(doctypePattern, '')
-    .replace(blockedElementPattern, '')
-    .replace(blockedSingleTagPattern, '')
+  const sanitizedSource = richTextPurifier.sanitize(normalized, {
+    ALLOWED_TAGS: allowedRichTextTags,
+    ALLOWED_ATTR: allowedRichTextAttributes,
+    ALLOW_ARIA_ATTR: false,
+    ALLOW_DATA_ATTR: false,
+    KEEP_CONTENT: true,
+    RETURN_TRUSTED_TYPE: false,
+  }) as string
 
-  let sanitizedHtml = ''
-  let lastIndex = 0
-  const openTags: string[] = []
+  const document = new JSDOM(`<body>${sanitizedSource}</body>`).window.document
 
-  for (const match of sanitizedSource.matchAll(tagPattern)) {
-    const fullMatch = match[0]
-    const rawTagName = match[1]?.toLowerCase() ?? ''
-    const tagName = tagAliases[rawTagName] ?? rawTagName
-    const matchIndex = match.index ?? 0
-
-    sanitizedHtml += escapeHtmlText(sanitizedSource.slice(lastIndex, matchIndex))
-    lastIndex = matchIndex + fullMatch.length
-
-    if (!allowedTags.has(tagName)) {
-      continue
-    }
-
-    const isClosingTag = fullMatch.startsWith('</')
-
-    if (isClosingTag) {
-      if (voidTags.has(tagName)) {
-        continue
-      }
-
-      const openTagIndex = openTags.lastIndexOf(tagName)
-      if (openTagIndex === -1) {
-        continue
-      }
-
-      while (openTags.length > openTagIndex + 1) {
-        sanitizedHtml += `</${openTags.pop()!}>`
-      }
-
-      openTags.pop()
-      sanitizedHtml += `</${tagName}>`
-      continue
-    }
-
-    if (voidTags.has(tagName)) {
-      sanitizedHtml += '<br />'
-      continue
-    }
-
-    if (tagName === 'a') {
-      let href: string | null = null
-      let target: string | null = null
-
-      for (const attributeMatch of match[2]?.matchAll(attributePattern) ?? []) {
-        const attributeName = attributeMatch[1]?.toLowerCase()
-        const attributeValue = attributeMatch[2] ?? attributeMatch[3] ?? attributeMatch[4] ?? ''
-
-        if (attributeName === 'href') {
-          href = sanitizeRichTextLinkHref(attributeValue)
-        }
-
-        if (attributeName === 'target' && attributeValue === '_blank') {
-          target = '_blank'
-        }
-      }
-
-      if (!href) {
-        continue
-      }
-
-      const attributes = [`href="${escapeHtmlAttribute(href)}"`]
-      if (target === '_blank') {
-        attributes.push('target="_blank"', 'rel="noopener noreferrer"')
-      }
-
-      sanitizedHtml += `<a ${attributes.join(' ')}>`
-      openTags.push(tagName)
-      continue
-    }
-
-    sanitizedHtml += `<${tagName}>`
-    openTags.push(tagName)
+  for (const boldElement of Array.from(document.body.querySelectorAll('b'))) {
+    replaceElementTag(boldElement, 'strong')
   }
 
-  sanitizedHtml += escapeHtmlText(sanitizedSource.slice(lastIndex))
-
-  while (openTags.length > 0) {
-    sanitizedHtml += `</${openTags.pop()!}>`
+  for (const italicElement of Array.from(document.body.querySelectorAll('i'))) {
+    replaceElementTag(italicElement, 'em')
   }
 
-  return stripHtml(sanitizedHtml).length > 0 ? sanitizedHtml : null
+  for (const anchorElement of Array.from(document.body.querySelectorAll('a'))) {
+    const href = sanitizeRichTextLinkHref(anchorElement.getAttribute('href'))
+
+    if (!href) {
+      unwrapElement(anchorElement)
+      continue
+    }
+
+    anchorElement.setAttribute('href', href)
+
+    if (anchorElement.getAttribute('target') === '_blank') {
+      anchorElement.setAttribute('target', '_blank')
+      anchorElement.setAttribute('rel', 'noopener noreferrer')
+      continue
+    }
+
+    anchorElement.removeAttribute('target')
+    anchorElement.removeAttribute('rel')
+  }
+
+  const sanitizedHtml = document.body.innerHTML.trim()
+
+  return extractPlainText(sanitizedHtml).length > 0 ? sanitizedHtml : null
 }
 
 export const hasMeaningfulRichTextHtml = (value?: string | null) =>
-  stripHtml(sanitizeRichTextHtml(value)).length > 0
+  sanitizeRichTextHtml(value) !== null
 
 export const sanitizePressTranslation = <T extends PressTranslationLike>(translation: T): T => ({
   ...translation,

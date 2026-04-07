@@ -1,6 +1,10 @@
 <script setup lang="ts">
+const props = defineProps<{
+  type?: string
+}>()
+
 const { t } = useI18n()
-const { data: tagsData, pending } = useTags()
+const { data: tagsData, pending } = useTags(() => props.type)
 
 const tagList = computed(() => {
   const availableTags = tagsData.value?.tags ?? []

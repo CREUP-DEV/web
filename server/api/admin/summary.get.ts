@@ -1,6 +1,7 @@
+import { defineEventHandler, setHeader } from 'h3'
 import { getAdminDashboardSummary } from '../../utils/adminSummary'
 
-export default defineCachedEventHandler(() => getAdminDashboardSummary(), {
-  maxAge: 30,
-  swr: true,
+export default defineEventHandler(async (event) => {
+  setHeader(event, 'cache-control', 'no-store')
+  return getAdminDashboardSummary()
 })

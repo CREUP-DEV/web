@@ -2,7 +2,12 @@ import { createError, defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems, carouselItemTranslations } from '../../../db/schema'
-import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import {
+  type CleanupUnusedAdminAssetOptions,
+  cleanupAdminAssetFinalizationsSafely,
+  cleanupUnusedAdminAssetSafely,
+  trackAdminAssetFinalization,
+} from '../../../utils/adminAssetPublication'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
@@ -30,6 +35,7 @@ export default defineEventHandler(async (event) => {
   let dbUpdated = false
   let previousImage: string | null = null
   let image: string | null = null
+  const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
   try {
     const existingItem = await db.query.carouselItems.findFirst({
@@ -55,6 +61,12 @@ export default defineEventHandler(async (event) => {
             replaceStoragePath: existingItem.image,
           })
     image = nextImage
+    trackAdminAssetFinalization(cleanupTargets, {
+      sourceStoragePath: validated.image,
+      storagePath: nextImage,
+      allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+      protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
+    })
 
     const item = await db.transaction(async (tx) => {
       await tx
@@ -91,21 +103,35 @@ export default defineEventHandler(async (event) => {
     dbUpdated = true
 
     if (previousImage !== image) {
-      await cleanupUnusedAdminAsset({
-        storagePath: previousImage,
-        allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-        protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
-      })
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: previousImage,
+          allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+          protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
+        },
+        'admin.carousel.update.cleanup',
+        event
+      )
     }
 
     return { item }
   } catch (error) {
+    await cleanupAdminAssetFinalizationsSafely(
+      cleanupTargets,
+      'admin.carousel.update.rollback',
+      event
+    )
+
     if (!dbUpdated && image && image !== previousImage) {
-      await cleanupUnusedAdminAsset({
-        storagePath: image,
-        allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-        protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
-      })
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: image,
+          allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+          protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
+        },
+        'admin.carousel.update.rollback.cleanup',
+        event
+      )
     }
 
     throwAdminMutationError('admin.carousel.update', error, event)

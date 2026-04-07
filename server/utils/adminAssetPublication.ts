@@ -1,3 +1,4 @@
+import type { H3Event } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import {
@@ -31,7 +32,7 @@ import {
   PRESS_IMAGE_PUBLIC_BASE,
 } from '~~/shared/constants/assetPaths'
 
-interface CleanupUnusedAdminAssetOptions {
+export interface CleanupUnusedAdminAssetOptions {
   storagePath: string | null | undefined
   allowedPublicPathPrefixes: string[]
   protectedPublicPaths?: string[]
@@ -57,6 +58,51 @@ export async function cleanupUnusedAdminAsset(options: CleanupUnusedAdminAssetOp
     allowedPublicPathPrefixes: options.allowedPublicPathPrefixes,
     protectedPublicPaths: options.protectedPublicPaths,
   })
+}
+
+export async function cleanupUnusedAdminAssetSafely(
+  options: CleanupUnusedAdminAssetOptions,
+  scope: string,
+  event?: H3Event
+) {
+  try {
+    return await cleanupUnusedAdminAsset(options)
+  } catch (error) {
+    logError(scope, error, { ...options }, event)
+    return false
+  }
+}
+
+export function trackAdminAssetFinalization(
+  targets: CleanupUnusedAdminAssetOptions[],
+  options: CleanupUnusedAdminAssetOptions & { sourceStoragePath?: string | null | undefined }
+) {
+  const sourceStoragePath = options.sourceStoragePath?.trim()
+  const finalizedStoragePath = options.storagePath?.trim()
+
+  if (!sourceStoragePath || !finalizedStoragePath || sourceStoragePath === finalizedStoragePath) {
+    return false
+  }
+
+  targets.push({
+    storagePath: finalizedStoragePath,
+    allowedPublicPathPrefixes: [...options.allowedPublicPathPrefixes],
+    protectedPublicPaths: options.protectedPublicPaths
+      ? [...options.protectedPublicPaths]
+      : undefined,
+  })
+
+  return true
+}
+
+export async function cleanupAdminAssetFinalizationsSafely(
+  targets: CleanupUnusedAdminAssetOptions[],
+  scope: string,
+  event?: H3Event
+) {
+  for (const target of [...targets].reverse()) {
+    await cleanupUnusedAdminAssetSafely(target, scope, event)
+  }
 }
 
 async function reconcileStoredImage(options: {

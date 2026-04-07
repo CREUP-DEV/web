@@ -1,6 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { createError } from 'h3'
-import { and, asc, eq, inArray, isNull, lte, ne, or, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterDeliveries, newsletters, newsletterSubscribers } from '../db/schema'
 import { sendNewsletterEmail } from './newsletterMailer'
@@ -8,6 +8,7 @@ import { logError, logInfo } from './logger'
 
 const MONTH_INPUT_REGEX = /^(?<year>\d{4})-(?<month>0[1-9]|1[0-2])-01$/
 const NEWSLETTER_DELIVERY_BATCH_SIZE = 50
+const NEWSLETTER_DELIVERY_INSERT_BATCH_SIZE = 1000
 const NEWSLETTER_DELIVERY_WORKER_STALE_MS = 2 * 60 * 1000
 const NEWSLETTER_DELIVERY_STATUS = {
   failed: 'failed',
@@ -15,6 +16,8 @@ const NEWSLETTER_DELIVERY_STATUS = {
   sending: 'sending',
   sent: 'sent',
 } as const
+
+export const NEWSLETTER_DELIVERY_MAX_ATTEMPTS = 3
 
 type NewsletterRecord = typeof newsletters.$inferSelect
 
@@ -114,25 +117,63 @@ async function seedNewsletterDeliveries(item: NewsletterRecord) {
       .where(eq(newsletters.id, item.id))
   }
 
-  await db
-    .insert(newsletterDeliveries)
-    .select(
-      db
-        .select({
-          newsletterId: sql<string>`${item.id}`.as('newsletterId'),
-          subscriberId: newsletterSubscribers.id,
-        })
-        .from(newsletterSubscribers)
-        .where(
-          and(
-            eq(newsletterSubscribers.active, true),
-            lte(newsletterSubscribers.subscribedAt, startedAt)
-          )
-        )
+  const activeSubscribers = await db
+    .select({
+      subscriberId: newsletterSubscribers.id,
+    })
+    .from(newsletterSubscribers)
+    .where(
+      and(
+        eq(newsletterSubscribers.active, true),
+        lte(newsletterSubscribers.subscribedAt, startedAt)
+      )
     )
-    .onConflictDoNothing()
+
+  // Keep inserts in batches to avoid oversized parameterized queries.
+  for (
+    let index = 0;
+    index < activeSubscribers.length;
+    index += NEWSLETTER_DELIVERY_INSERT_BATCH_SIZE
+  ) {
+    const batch = activeSubscribers.slice(index, index + NEWSLETTER_DELIVERY_INSERT_BATCH_SIZE)
+
+    await db
+      .insert(newsletterDeliveries)
+      .values(
+        batch.map(({ subscriberId }) => ({
+          newsletterId: item.id,
+          subscriberId,
+        }))
+      )
+      .onConflictDoNothing()
+  }
+
+  await db
+    .update(newsletterDeliveries)
+    .set({
+      lastError: null,
+      status: NEWSLETTER_DELIVERY_STATUS.queued,
+    })
+    .where(
+      and(
+        eq(newsletterDeliveries.newsletterId, item.id),
+        eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.failed),
+        lt(newsletterDeliveries.attempts, NEWSLETTER_DELIVERY_MAX_ATTEMPTS)
+      )
+    )
 
   return setNewsletterDeliverySnapshot(item.id)
+}
+
+async function touchNewsletterDeliveryWorker(newsletterId: string, workerToken: string) {
+  await db
+    .update(newsletters)
+    .set({
+      lastDeliveryHeartbeatAt: new Date(),
+    })
+    .where(
+      and(eq(newsletters.id, newsletterId), eq(newsletters.lastDeliveryWorkerToken, workerToken))
+    )
 }
 
 async function claimNewsletterDeliveryWorker(id: string) {
@@ -143,17 +184,27 @@ async function claimNewsletterDeliveryWorker(id: string) {
   const [item] = await db
     .update(newsletters)
     .set({
+      lastDeliveryFinishedAt: null,
       lastDeliveryHeartbeatAt: now,
+      lastDeliveryStartedAt: sql`coalesce(${newsletters.lastDeliveryStartedAt}, ${now})`,
       lastDeliveryWorkerToken: workerToken,
+      sending: true,
     })
     .where(
       and(
         eq(newsletters.id, id),
-        eq(newsletters.sending, true),
+        eq(newsletters.active, true),
         isNull(newsletters.sentAt),
         or(
-          isNull(newsletters.lastDeliveryWorkerToken),
-          lte(newsletters.lastDeliveryHeartbeatAt, staleBefore)
+          eq(newsletters.sending, false),
+          and(
+            eq(newsletters.sending, true),
+            or(
+              isNull(newsletters.lastDeliveryWorkerToken),
+              isNull(newsletters.lastDeliveryHeartbeatAt),
+              lte(newsletters.lastDeliveryHeartbeatAt, staleBefore)
+            )
+          )
         )
       )
     )
@@ -178,47 +229,26 @@ async function releaseNewsletterDeliveryWorker(
     )
 }
 
-async function loadNewsletterDeliveryBatch(
+async function claimNewsletterDeliveryBatch(
   item: NewsletterRecord
 ): Promise<NewsletterDeliveryCandidate[]> {
   const staleBefore = getNewsletterDeliveryStaleBefore()
 
-  const rows = await db
-    .select({
-      delivery: newsletterDeliveries,
-      subscriber: newsletterSubscribers,
-    })
-    .from(newsletterDeliveries)
-    .leftJoin(
-      newsletterSubscribers,
-      eq(newsletterSubscribers.id, newsletterDeliveries.subscriberId)
-    )
+  // Reset stale 'sending' rows so they can be retried in this pass
+  await db
+    .update(newsletterDeliveries)
+    .set({ status: NEWSLETTER_DELIVERY_STATUS.queued })
     .where(
       and(
         eq(newsletterDeliveries.newsletterId, item.id),
-        or(
-          inArray(newsletterDeliveries.status, [
-            NEWSLETTER_DELIVERY_STATUS.queued,
-            NEWSLETTER_DELIVERY_STATUS.failed,
-          ]),
-          and(
-            eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.sending),
-            lte(newsletterDeliveries.lastAttemptAt, staleBefore)
-          )
-        )
+        eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.sending),
+        lte(newsletterDeliveries.lastAttemptAt, staleBefore)
       )
     )
-    .orderBy(asc(newsletterDeliveries.createdAt), asc(newsletterDeliveries.id))
-    .limit(NEWSLETTER_DELIVERY_BATCH_SIZE)
 
-  return rows.map((row) => ({
-    delivery: row.delivery,
-    subscriber: row.subscriber,
-  }))
-}
-
-async function markDeliveryAttemptStarted(deliveryId: string) {
-  await db
+  // Atomically claim a batch: UPDATE wins the race so a second concurrent worker
+  // finds no 'queued' rows and claims nothing for the same newsletter
+  const claimed = await db
     .update(newsletterDeliveries)
     .set({
       attempts: sql`${newsletterDeliveries.attempts} + 1`,
@@ -226,7 +256,50 @@ async function markDeliveryAttemptStarted(deliveryId: string) {
       lastError: null,
       status: NEWSLETTER_DELIVERY_STATUS.sending,
     })
-    .where(eq(newsletterDeliveries.id, deliveryId))
+    .where(
+      and(
+        eq(newsletterDeliveries.newsletterId, item.id),
+        eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.queued),
+        inArray(
+          newsletterDeliveries.id,
+          db
+            .select({ id: newsletterDeliveries.id })
+            .from(newsletterDeliveries)
+            .where(
+              and(
+                eq(newsletterDeliveries.newsletterId, item.id),
+                eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.queued)
+              )
+            )
+            .orderBy(asc(newsletterDeliveries.createdAt), asc(newsletterDeliveries.id))
+            .limit(NEWSLETTER_DELIVERY_BATCH_SIZE)
+        )
+      )
+    )
+    .returning()
+
+  if (claimed.length === 0) {
+    return []
+  }
+
+  // Load subscriber data for the claimed deliveries
+  const subscriberIds = [...new Set(claimed.map((d) => d.subscriberId))]
+  const subscribers = await db
+    .select({
+      active: newsletterSubscribers.active,
+      email: newsletterSubscribers.email,
+      id: newsletterSubscribers.id,
+      unsubscribeToken: newsletterSubscribers.unsubscribeToken,
+    })
+    .from(newsletterSubscribers)
+    .where(inArray(newsletterSubscribers.id, subscriberIds))
+
+  const subscriberMap = new Map(subscribers.map((s) => [s.id, s]))
+
+  return claimed.map((delivery) => ({
+    delivery,
+    subscriber: subscriberMap.get(delivery.subscriberId) ?? null,
+  }))
 }
 
 async function markDeliverySent(deliveryId: string) {
@@ -250,76 +323,76 @@ async function markDeliveryFailed(deliveryId: string, error: unknown) {
     .where(eq(newsletterDeliveries.id, deliveryId))
 }
 
-async function processNewsletterDeliveryBatch(id: string) {
-  const claimedItem = await claimNewsletterDeliveryWorker(id)
+export async function processNewsletterDeliveryRun(item: NewsletterRecord) {
+  const workerToken = item.lastDeliveryWorkerToken ?? ''
 
-  if (!claimedItem) {
+  if (!workerToken) {
     return false
   }
 
   try {
-    await seedNewsletterDeliveries(claimedItem)
-    const batch = await loadNewsletterDeliveryBatch(claimedItem)
+    await seedNewsletterDeliveries(item)
+    await touchNewsletterDeliveryWorker(item.id, workerToken)
 
-    if (batch.length === 0) {
-      const snapshot = await setNewsletterDeliverySnapshot(id)
+    while (true) {
+      const batch = await claimNewsletterDeliveryBatch(item)
 
-      await releaseNewsletterDeliveryWorker(id, claimedItem.lastDeliveryWorkerToken ?? '', {
-        lastDeliveryFinishedAt: new Date(),
-        lastDeliveryHeartbeatAt: null,
-        sending: false,
-        sentAt: snapshot.sentCount > 0 ? new Date() : null,
-      })
-
-      logInfo('newsletter.delivery.completed', {
-        newsletterId: id,
-        sentCount: snapshot.sentCount,
-        total: snapshot.total,
-      })
-
-      return true
-    }
-
-    for (const { delivery, subscriber } of batch) {
-      await markDeliveryAttemptStarted(delivery.id)
-
-      if (!subscriber || !subscriber.active) {
-        await markDeliveryFailed(delivery.id, new Error('La suscripción ya no está activa'))
-        continue
+      if (batch.length === 0) {
+        break
       }
 
-      try {
-        await sendNewsletterEmail(
-          claimedItem,
-          subscriber,
-          'Falta la configuración SMTP para enviar correos'
-        )
-        await markDeliverySent(delivery.id)
-      } catch (error) {
-        await markDeliveryFailed(delivery.id, error)
-        logError('newsletter.send.recipient', error, {
-          deliveryId: delivery.id,
-          newsletterId: claimedItem.id,
-          subscriberEmail: subscriber.email,
-        })
+      for (const { delivery, subscriber } of batch) {
+        if (!subscriber || !subscriber.active) {
+          await markDeliveryFailed(delivery.id, new Error('La suscripción ya no está activa'))
+          await touchNewsletterDeliveryWorker(item.id, workerToken)
+          continue
+        }
+
+        try {
+          await sendNewsletterEmail(
+            item,
+            subscriber,
+            'Falta la configuración SMTP para enviar correos'
+          )
+          await markDeliverySent(delivery.id)
+        } catch (error) {
+          await markDeliveryFailed(delivery.id, error)
+          logError('newsletter.send.recipient', error, {
+            deliveryId: delivery.id,
+            newsletterId: item.id,
+            subscriberEmail: subscriber.email,
+          })
+        } finally {
+          await touchNewsletterDeliveryWorker(item.id, workerToken)
+        }
       }
     }
 
-    const snapshot = await setNewsletterDeliverySnapshot(id)
-    const completedBatch = batch.length < NEWSLETTER_DELIVERY_BATCH_SIZE
+    const snapshot = await setNewsletterDeliverySnapshot(item.id)
+    const now = new Date()
+    const completedSuccessfully = snapshot.total === 0 || snapshot.errorCount === 0
 
-    await releaseNewsletterDeliveryWorker(id, claimedItem.lastDeliveryWorkerToken ?? '', {
-      lastDeliveryFinishedAt: completedBatch ? new Date() : null,
-      lastDeliveryHeartbeatAt: completedBatch ? null : new Date(),
-      sending: completedBatch ? false : true,
-      sentAt: completedBatch && snapshot.sentCount > 0 ? new Date() : null,
+    await releaseNewsletterDeliveryWorker(item.id, workerToken, {
+      lastDeliveryFinishedAt: now,
+      lastDeliveryHeartbeatAt: null,
+      sending: false,
+      sentAt: completedSuccessfully ? now : null,
     })
 
-    return true
+    logInfo('newsletter.delivery.completed', {
+      completedSuccessfully,
+      errorCount: snapshot.errorCount,
+      newsletterId: item.id,
+      sentCount: snapshot.sentCount,
+      total: snapshot.total,
+    })
+
+    return completedSuccessfully
   } catch (error) {
-    logError('newsletter.delivery.batch', error, { newsletterId: id })
-    await releaseNewsletterDeliveryWorker(id, claimedItem.lastDeliveryWorkerToken ?? '', {
+    logError('newsletter.delivery.batch', error, { newsletterId: item.id })
+    await releaseNewsletterDeliveryWorker(item.id, workerToken, {
       lastDeliveryHeartbeatAt: null,
+      sending: false,
     })
     return false
   }
@@ -327,15 +400,12 @@ async function processNewsletterDeliveryBatch(id: string) {
 
 export async function processPendingNewsletterDeliveries() {
   const pendingItems = await db.query.newsletters.findMany({
-    columns: {
-      id: true,
-    },
     orderBy: asc(newsletters.lastDeliveryStartedAt),
     where: and(eq(newsletters.sending, true), isNull(newsletters.sentAt)),
   })
 
   for (const item of pendingItems) {
-    await processNewsletterDeliveryBatch(item.id)
+    await processNewsletterDeliveryRun(item)
   }
 }
 
@@ -382,39 +452,28 @@ export async function assertNewsletterMonthAvailable(monthKey: string, excludeId
 }
 
 export async function claimNewsletterForSending(id: string): Promise<NewsletterRecord> {
-  const now = new Date()
-  const [item] = await db
-    .update(newsletters)
-    .set({
-      sending: true,
-      lastDeliveryErrorCount: 0,
-      lastDeliveryFailedRecipients: null,
-      lastDeliveryFinishedAt: null,
-      lastDeliveryHeartbeatAt: null,
-      lastDeliverySentCount: 0,
-      lastDeliveryStartedAt: now,
-      lastDeliveryTotal: 0,
-      lastDeliveryWorkerToken: null,
-    })
-    .where(
-      and(
-        eq(newsletters.id, id),
-        eq(newsletters.active, true),
-        eq(newsletters.sending, false),
-        isNull(newsletters.sentAt)
-      )
-    )
-    .returning()
+  const claimedItem = await claimNewsletterDeliveryWorker(id)
 
-  if (item) {
-    await db.delete(newsletterDeliveries).where(eq(newsletterDeliveries.newsletterId, item.id))
-    await seedNewsletterDeliveries(item)
-
-    const queuedItem = await db.query.newsletters.findFirst({
-      where: eq(newsletters.id, item.id),
+  if (claimedItem) {
+    const preparedSnapshot = await seedNewsletterDeliveries(claimedItem)
+    const currentItem = await db.query.newsletters.findFirst({
+      where: eq(newsletters.id, claimedItem.id),
     })
 
-    return queuedItem ?? item
+    if (currentItem) {
+      return currentItem
+    }
+
+    return {
+      ...claimedItem,
+      lastDeliveryErrorCount: preparedSnapshot.errorCount,
+      lastDeliveryFailedRecipients:
+        preparedSnapshot.failedRecipients.length > 0
+          ? JSON.stringify(preparedSnapshot.failedRecipients)
+          : null,
+      lastDeliverySentCount: preparedSnapshot.sentCount,
+      lastDeliveryTotal: preparedSnapshot.total,
+    }
   }
 
   const current = await db.query.newsletters.findFirst({
@@ -454,8 +513,7 @@ export async function sendNewsletterById(id: string): Promise<{
   result: NewsletterDeliveryResult
 }> {
   const item = await claimNewsletterForSending(id)
-  await processPendingNewsletterDeliveries()
-
+  const sent = await processNewsletterDeliveryRun(item)
   const updatedItem = await db.query.newsletters.findFirst({
     where: eq(newsletters.id, id),
   })
@@ -465,7 +523,7 @@ export async function sendNewsletterById(id: string): Promise<{
     item: updatedItem ?? item,
     result: {
       ...result,
-      sent: result.sentCount > 0,
+      sent,
     },
   }
 }

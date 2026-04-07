@@ -4,6 +4,7 @@ import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const { t, locale } = useI18n()
 const { fallbackLocale } = useLocales()
+const localeApiHeaders = useLocaleApiHeaders()
 const { copyToClipboard } = useCopyToClipboard()
 const {
   getDisplayName: getMemberDisplayName,
@@ -49,7 +50,9 @@ interface EnrichedMember extends CommitteeMember {
   committeeId: number
 }
 
-const { data, error } = await useFetch<CommitteesResponse>('/api/comites')
+const { data, error } = await useFetch<CommitteesResponse>('/api/comites', {
+  headers: localeApiHeaders,
+})
 
 const committees = computed(() => data.value?.committees ?? [])
 const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)

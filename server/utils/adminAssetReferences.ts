@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { db } from '../db'
 import {
   aboutPageContent,
@@ -15,77 +15,42 @@ import {
   users,
 } from '../db/schema'
 
-// Keep this list in sync with every table/column that stores admin-managed files:
-// about_page_content.hero_image, carousel_items.image, equality_documents.pdf_url,
-// featured_links.image, financial_reports.pdf_url, media_outlets.logo,
-// newsletters.cover_image, newsletters.pdf_url, organization_members.logo,
-// press_articles.image, press_articles.pdf_url, press_dossier.pdf_url,
-// team_members.photo, users.image.
-export async function hasAdminStoredFileReference(storagePath: string) {
+// Registry of every table/column that stores admin-managed files.
+// To register a new asset field: add one entry here — nothing else needs updating.
+// Using `any` to allow a uniform registry across table-specific Drizzle column types.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ASSET_COLUMN_REGISTRY: Array<{ table: any; column: any }> = [
+  { table: aboutPageContent, column: aboutPageContent.heroImage },
+  { table: carouselItems, column: carouselItems.image },
+  { table: equalityDocuments, column: equalityDocuments.pdfUrl },
+  { table: featuredLinks, column: featuredLinks.image },
+  { table: financialReports, column: financialReports.pdfUrl },
+  { table: mediaOutlets, column: mediaOutlets.logo },
+  { table: newsletters, column: newsletters.coverImage },
+  { table: newsletters, column: newsletters.pdfUrl },
+  { table: organizationMembers, column: organizationMembers.logo },
+  { table: pressArticles, column: pressArticles.image },
+  { table: pressArticles, column: pressArticles.pdfUrl },
+  { table: pressDossier, column: pressDossier.pdfUrl },
+  { table: teamMembers, column: teamMembers.photo },
+  { table: users, column: users.image },
+]
+
+export async function hasAdminStoredFileReference(storagePath: string): Promise<boolean> {
   const normalizedStoragePath = storagePath.trim()
 
   if (!normalizedStoragePath) {
     return false
   }
 
-  const references = await Promise.all([
-    db.query.carouselItems.findFirst({
-      where: eq(carouselItems.image, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.pressArticles.findFirst({
-      where: eq(pressArticles.image, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.pressArticles.findFirst({
-      where: eq(pressArticles.pdfUrl, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.pressDossier.findFirst({
-      where: eq(pressDossier.pdfUrl, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.featuredLinks.findFirst({
-      where: eq(featuredLinks.image, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.users.findFirst({
-      where: eq(users.image, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.teamMembers.findFirst({
-      where: eq(teamMembers.photo, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.organizationMembers.findFirst({
-      where: eq(organizationMembers.logo, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.newsletters.findFirst({
-      where: eq(newsletters.coverImage, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.newsletters.findFirst({
-      where: eq(newsletters.pdfUrl, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.mediaOutlets.findFirst({
-      where: eq(mediaOutlets.logo, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.aboutPageContent.findFirst({
-      where: eq(aboutPageContent.heroImage, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.equalityDocuments.findFirst({
-      where: eq(equalityDocuments.pdfUrl, normalizedStoragePath),
-      columns: { id: true },
-    }),
-    db.query.financialReports.findFirst({
-      where: eq(financialReports.pdfUrl, normalizedStoragePath),
-      columns: { id: true },
-    }),
-  ])
+  const checks = ASSET_COLUMN_REGISTRY.map(({ table, column }) =>
+    db
+      .select({ found: sql<number>`1` })
+      .from(table)
+      .where(eq(column, normalizedStoragePath))
+      .limit(1)
+  )
 
-  return references.some(Boolean)
+  const results = await Promise.all(checks)
+  return results.some((rows) => rows.length > 0)
 }

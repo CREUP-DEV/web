@@ -4,6 +4,7 @@ import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 definePageMeta({
   layout: 'admin',
+  title: 'Inicio',
 })
 
 interface DashboardRecentActivityItem {

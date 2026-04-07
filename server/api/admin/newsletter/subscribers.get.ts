@@ -1,0 +1,21 @@
+import { defineEventHandler } from 'h3'
+import { desc, sql } from 'drizzle-orm'
+import { db } from '../../../db'
+import { newsletterSubscribers } from '../../../db/schema'
+import { paginationQuerySchema, validateQuery } from '../../../utils/validation'
+
+export default defineEventHandler(async (event) => {
+  const { limit, offset } = validateQuery(event, paginationQuerySchema)
+
+  const [items, countResult] = await Promise.all([
+    db
+      .select()
+      .from(newsletterSubscribers)
+      .orderBy(desc(newsletterSubscribers.subscribedAt))
+      .limit(limit)
+      .offset(offset),
+    db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(newsletterSubscribers),
+  ])
+
+  return { items, total: countResult[0]?.count ?? 0 }
+})

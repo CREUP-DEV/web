@@ -4,14 +4,16 @@ import {
   CONTACT_FIELD_LIMITS,
   isValidOptionalContactPhone,
 } from '~~/shared/utils/contactValidation'
+import { EMAIL_MAX_LENGTH } from '~~/shared/utils/emailValidation'
 import { DATE_ONLY_PATTERN, parseDateOnlyString } from '~~/shared/utils/date'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
+import { NEWSLETTER_FIELD_LIMITS } from '~~/shared/utils/newsletterValidation'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 import { z } from 'zod'
 import { hasMeaningfulRichTextHtml } from './pressTranslation'
 
 const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
-  message: 'El locale no es válido',
+  message: 'Invalid locale / El locale no es válido',
 })
 
 /** Validates that a URL/path is safe (no javascript: protocol) */
@@ -20,7 +22,7 @@ const safeHrefSchema = z
   .min(1)
   .refine(
     (value) =>
-      value.startsWith('/') ||
+      (value.startsWith('/') && !value.startsWith('//')) ||
       value.startsWith('#') ||
       value.startsWith('http://') ||
       value.startsWith('https://'),
@@ -131,16 +133,29 @@ function refinePressArticle(
       path: ['mediaOutletId'],
     })
   }
+
+  const locales = data.translations.map((t) => t.locale)
+  if (new Set(locales).size !== locales.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'No puede haber traducciones duplicadas para el mismo idioma',
+      path: ['translations'],
+    })
+  }
 }
 
 const basePressArticleSchema = z.object({
   type: pressArticleTypeSchema,
   image: z.string().min(1, 'La imagen es requerida'),
-  pdfUrl: z.string().optional().nullable(),
-  externalUrl: z.string().url('La URL externa no es válida').optional().nullable(),
-  mediaOutletId: z.string().optional().nullable(),
+  pdfUrl: toOptionalSingleStringSchema(z.string().trim().min(1)),
+  externalUrl: toOptionalSingleStringSchema(z.string().trim().url('La URL externa no es válida')),
+  mediaOutletId: toOptionalSingleStringSchema(z.string().trim().min(1)),
   active: z.boolean().default(true),
-  tagIds: z.array(z.string()).optional().default([]),
+  tagIds: z
+    .array(z.string())
+    .optional()
+    .default([])
+    .transform((ids) => [...new Set(ids)]),
   publishedAt: dateOnlySchema.optional(),
   translations: z
     .array(pressArticleTranslationSchema)
@@ -205,6 +220,15 @@ export const createTagSchema = z
         path: ['translations'],
       })
     }
+
+    const locales = data.translations.map((t) => t.locale)
+    if (new Set(locales).size !== locales.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'No puede haber traducciones duplicadas para el mismo idioma',
+        path: ['translations'],
+      })
+    }
   })
 
 export const updateTagSchema = createTagSchema
@@ -247,13 +271,15 @@ export const pressListQuerySchema = z.object({
     pressArticleTypeSchema.optional()
   ),
   tag: toOptionalSingleStringSchema(z.string().trim()),
-  limit: z.preprocess((value) => {
-    const normalizedValue = Array.isArray(value) ? value[0] : value
-    if (normalizedValue === '' || normalizedValue == null) {
-      return undefined
-    }
-    return normalizedValue
-  }, z.coerce.number().int().min(1).max(50).default(12)),
+  limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(50).default(12)),
+  offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
+})
+
+export const tagsListQuerySchema = z.object({
+  type: z.preprocess(
+    (value) => (Array.isArray(value) ? value[0] : value),
+    pressArticleTypeSchema.optional()
+  ),
 })
 
 export const adminPressListQuerySchema = z.object({
@@ -314,11 +340,14 @@ export const externalAssetPublicPathParamSchema = z.object({
     .trim()
     .min(1)
     .max(2048)
-    .regex(/^[A-Za-z0-9%/:._-]+$/)
     .refine((value) => {
       try {
         const decoded = decodeURIComponent(value)
-        return !decoded.includes('..') && !decoded.includes('\\')
+        return (
+          /^[\p{L}\p{N} /:._-]+$/u.test(decoded) &&
+          !decoded.includes('..') &&
+          !decoded.includes('\\')
+        )
       } catch {
         return false
       }
@@ -556,7 +585,7 @@ export const policyDocumentFileNameParamSchema = z.object({
     .trim()
     .min(1)
     .max(255)
-    .regex(/^[A-Za-z0-9%._-]+$/),
+    .regex(/^[A-Za-z0-9._-]+$/),
 })
 
 export const policyDocumentTypeRouteParamSchema = z.object({
@@ -662,6 +691,10 @@ export const createNewsletterSchema = z.object({
 
 export const updateNewsletterSchema = createNewsletterSchema
 
+export const createNewsletterRequestSchema = createNewsletterSchema.extend({
+  sendEmail: z.boolean().default(false),
+})
+
 export const updateSubscriberSchema = z.object({
   email: z.string().email('El email no es válido'),
   active: z.boolean(),
@@ -681,10 +714,10 @@ export const updateAdminAccessSchema = z.object({
 
 export const newsletterSubscribeSchema = z
   .object({
-    email: z.string().email().max(254),
+    email: z.string().email().max(NEWSLETTER_FIELD_LIMITS.emailMax),
     consent: z.boolean(),
     ageConfirmed: z.boolean(),
-    website: z.string().max(256).optional(),
+    website: z.string().max(NEWSLETTER_FIELD_LIMITS.websiteMax).optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.consent) {
@@ -708,12 +741,12 @@ export const contactFormSchema = z
   .object({
     contactType: z.enum(['general', 'press']).default('general'),
     name: z.string().min(CONTACT_FIELD_LIMITS.name.min).max(CONTACT_FIELD_LIMITS.name.max),
-    email: z.string().email().max(CONTACT_FIELD_LIMITS.emailMax),
+    email: z.string().email().max(Math.min(CONTACT_FIELD_LIMITS.emailMax, EMAIL_MAX_LENGTH)),
     phone: z.string().max(CONTACT_FIELD_LIMITS.phoneMax).optional(),
     mediaName: z.string().max(CONTACT_FIELD_LIMITS.mediaNameMax).optional(),
     subject: z.string().min(CONTACT_FIELD_LIMITS.subject.min).max(CONTACT_FIELD_LIMITS.subject.max),
     message: z.string().min(CONTACT_FIELD_LIMITS.message.min).max(CONTACT_FIELD_LIMITS.message.max),
-    website: z.string().max(256).optional(),
+    website: z.string().max(NEWSLETTER_FIELD_LIMITS.websiteMax).optional(),
   })
   .superRefine((data, ctx) => {
     if (!isValidOptionalContactPhone(data.phone)) {
@@ -737,6 +770,18 @@ export const contactFormSchema = z
 
 export const adminUploadKindSchema = z.object({
   kind: z.enum(['carousel', 'featured_link']),
+})
+
+/** Reusable pagination query params: limit + offset */
+export const paginationQuerySchema = z.object({
+  limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(200).default(20)),
+  offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
+})
+
+/** Public pagination with smaller max and default */
+export const publicPaginationQuerySchema = z.object({
+  limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(50).default(12)),
+  offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
 })
 
 const multipartFileSchema = z.object({

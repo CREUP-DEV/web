@@ -1,30 +1,38 @@
+import { logError, logInfo } from '../utils/logger'
 import { processPendingNewsletterDeliveries } from '../utils/newsletters'
-import { logError } from '../utils/logger'
+import { cleanupExpiredNewsletterConfirmTokens } from '../utils/newsletterSubscribers'
 
-const NEWSLETTER_DELIVERY_POLL_MS = 15_000
+const DELIVERY_RECOVERY_INTERVAL_MS = 5 * 60 * 1000
+const CONFIRM_TOKEN_CLEANUP_INTERVAL_MS = 60 * 60 * 1000
 
-let hasStartedNewsletterDeliveryWorker = false
-let newsletterDeliveryInterval: ReturnType<typeof setInterval> | null = null
+export default defineNitroPlugin((nitro) => {
+  const runRecovery = () =>
+    processPendingNewsletterDeliveries().catch((error) => {
+      logError('newsletter.delivery.recovery', error)
+    })
 
-async function runNewsletterDeliveryCycle() {
-  try {
-    await processPendingNewsletterDeliveries()
-  } catch (error) {
-    logError('newsletter.delivery.worker', error)
-  }
-}
+  const runConfirmTokenCleanup = () =>
+    cleanupExpiredNewsletterConfirmTokens()
+      .then((deletedCount) => {
+        if (deletedCount > 0) {
+          logInfo('newsletter.confirm-token.cleanup', { deletedCount })
+        }
+      })
+      .catch((error) => {
+        logError('newsletter.confirm-token.cleanup', error)
+      })
 
-export default defineNitroPlugin(() => {
-  if (hasStartedNewsletterDeliveryWorker) {
-    return
-  }
+  void runRecovery()
+  void runConfirmTokenCleanup()
 
-  hasStartedNewsletterDeliveryWorker = true
-  void runNewsletterDeliveryCycle()
+  const recoveryIntervalId = setInterval(() => void runRecovery(), DELIVERY_RECOVERY_INTERVAL_MS)
+  const cleanupIntervalId = setInterval(
+    () => void runConfirmTokenCleanup(),
+    CONFIRM_TOKEN_CLEANUP_INTERVAL_MS
+  )
 
-  newsletterDeliveryInterval = setInterval(() => {
-    void runNewsletterDeliveryCycle()
-  }, NEWSLETTER_DELIVERY_POLL_MS)
-
-  newsletterDeliveryInterval.unref?.()
+  nitro.hooks.hookOnce('close', () => {
+    clearInterval(recoveryIntervalId)
+    clearInterval(cleanupIntervalId)
+  })
 })

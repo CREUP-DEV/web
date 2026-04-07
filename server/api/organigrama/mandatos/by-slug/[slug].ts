@@ -3,27 +3,14 @@ import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
 } from '../../../../utils/externalApiCache'
+import { getPublicApiErrorMessage } from '../../../../utils/apiErrorMessages'
 import { fetchMandatesList, fetchMandateDetail } from '../../../../utils/mandateDetail'
-import { getRequestLocaleContext } from '../../../../utils/requestLocale'
 import { getRequiredExternalApiBaseUrl } from '../../../../utils/runtimeConfig'
 import { mandateSlugRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
-
-const messagesByLocale = {
-  en: {
-    notFound: 'No mandate found for the given date.',
-  },
-  es: {
-    notFound: 'No se ha encontrado ningún mandato para esa fecha.',
-  },
-}
 
 export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
 
@@ -35,7 +22,7 @@ export default defineEventHandler(async (event) => {
   if (matches.length === 0) {
     throw createError({
       statusCode: 404,
-      statusMessage: messages.notFound,
+      message: getPublicApiErrorMessage(event, 'mandateNotFoundByDate'),
     })
   }
 

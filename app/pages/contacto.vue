@@ -3,6 +3,7 @@ import {
   CONTACT_FIELD_LIMITS,
   isValidOptionalContactPhone,
 } from '~~/shared/utils/contactValidation'
+import { isValidEmailAddress } from '~~/shared/utils/emailValidation'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -93,8 +94,7 @@ const validations = computed(() => ({
   },
   email: {
     valid:
-      form.email.trim().length <= CONTACT_FIELD_LIMITS.emailMax &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()),
+      form.email.trim().length <= CONTACT_FIELD_LIMITS.emailMax && isValidEmailAddress(form.email),
     error:
       form.email.trim().length === 0
         ? t('contactPage.form.errors.emailRequired')

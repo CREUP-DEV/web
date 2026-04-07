@@ -38,15 +38,11 @@ const monthName = computed(() => {
 })
 
 const minMonthDate = computed(() => {
-  const min = new Date(today)
-  min.setMonth(min.getMonth() - 3)
-  return new Date(min.getFullYear(), min.getMonth(), 1)
+  return new Date(today.getFullYear(), today.getMonth() - 3, 1)
 })
 
 const maxMonthDate = computed(() => {
-  const max = new Date(today)
-  max.setMonth(max.getMonth() + 3)
-  return new Date(max.getFullYear(), max.getMonth(), 1)
+  return new Date(today.getFullYear(), today.getMonth() + 3, 1)
 })
 
 const canGoToPreviousMonth = computed(() => {

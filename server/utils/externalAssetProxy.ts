@@ -134,13 +134,8 @@ const buildAssetPath = (pathBase: string, pathname: string, search = '') => {
   return `${base}${normalizedPath}${search}`
 }
 
-const getPublicSiteOrigin = (event?: H3Event) => {
-  if (event) {
-    return getRequestURL(event).origin
-  }
-
-  return new URL(getRequiredSiteUrl(undefined, getMessages(undefined).siteUrlNotConfigured)).origin
-}
+const getPublicSiteOrigin = () =>
+  new URL(getRequiredSiteUrl(undefined, getMessages(undefined).siteUrlNotConfigured)).origin
 
 const stripHash = (value: string) => {
   const hashIndex = value.indexOf('#')
@@ -424,8 +419,21 @@ export const proxyExternalAssetBySource = async (
     }
 
     const headers = buildOutgoingHeaders(upstreamResponse, type, method)
-    const body =
-      method === 'HEAD' || upstreamResponse.status === 304 ? null : (upstreamResponse.body ?? null)
+    let body: ReadableStream | null = null
+    if (method !== 'HEAD' && upstreamResponse.status !== 304 && upstreamResponse.body) {
+      let bytesRead = 0
+      const transform = new TransformStream({
+        transform(chunk, controller) {
+          bytesRead += chunk.byteLength
+          if (bytesRead > maxBytes) {
+            controller.error(new Error('Asset exceeds size limit'))
+            return
+          }
+          controller.enqueue(chunk)
+        },
+      })
+      body = upstreamResponse.body.pipeThrough(transform)
+    }
 
     return new Response(body, {
       status: upstreamResponse.status,
@@ -487,7 +495,7 @@ export const toExternalAssetProxyUrl = (
   }
 
   if (type === 'image') {
-    const siteOrigin = getPublicSiteOrigin(options.event)
+    const siteOrigin = getPublicSiteOrigin()
     if (siteOrigin) {
       return new URL(assetPath, siteOrigin).toString()
     }

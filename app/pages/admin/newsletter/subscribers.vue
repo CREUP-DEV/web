@@ -1,5 +1,8 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'admin' })
+definePageMeta({
+  layout: 'admin',
+  title: 'Suscriptores de newsletter',
+})
 
 interface Subscriber {
   id: string

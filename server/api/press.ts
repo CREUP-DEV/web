@@ -1,5 +1,5 @@
 import { createError, setHeader } from 'h3'
-import { eq, desc, and, inArray, type SQL } from 'drizzle-orm'
+import { eq, desc, and, inArray, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, tags, pressArticleTags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
@@ -7,6 +7,7 @@ import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externa
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { logError } from '../utils/logger'
 import { resolvePressTranslation } from '../utils/pressTranslation'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 import { pressListQuerySchema, validateQuery } from '../utils/validation'
@@ -19,6 +20,7 @@ export default defineCachedEventHandler(
     const type = query.type
     const tagSlug = query.tag
     const limit = query.limit
+    const offset = query.offset
 
     try {
       const conditions: SQL[] = [eq(pressArticles.active, true)]
@@ -39,22 +41,29 @@ export default defineCachedEventHandler(
 
       const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0]
 
-      const articlesList = await db.query.pressArticles.findMany({
-        where: whereClause,
-        orderBy: desc(pressArticles.publishedAt),
-        limit,
-        with: {
-          translations: true,
-          tags: {
-            with: {
-              tag: {
-                with: { translations: true },
+      const [articlesList, countResult] = await Promise.all([
+        db.query.pressArticles.findMany({
+          where: whereClause,
+          orderBy: desc(pressArticles.publishedAt),
+          limit,
+          offset,
+          with: {
+            translations: true,
+            tags: {
+              with: {
+                tag: {
+                  with: { translations: true },
+                },
               },
             },
+            mediaOutlet: true,
           },
-          mediaOutlet: true,
-        },
-      })
+        }),
+        db
+          .select({ count: sql<number>`count(*)`.mapWith(Number) })
+          .from(pressArticles)
+          .where(whereClause),
+      ])
 
       const articles = articlesList.map((item) => {
         const trans = resolvePressTranslation(item.translations, locale, fallbackLocale)
@@ -98,14 +107,14 @@ export default defineCachedEventHandler(
         }
       })
 
-      return { articles }
+      return { articles, total: countResult[0]?.count ?? 0 }
     } catch (error) {
       if (isDatabaseUnavailableError(error)) {
         logError('public.press.database-unavailable', error, undefined, event)
         setHeader(event, 'retry-after', 60)
         throw createError({
           statusCode: 503,
-          statusMessage: 'Servicio temporalmente no disponible',
+          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
         })
       }
 
@@ -116,7 +125,7 @@ export default defineCachedEventHandler(
     ...PUBLIC_ROUTE_CACHE_OPTIONS,
     getKey: (event) =>
       buildPublicRouteCacheKey(event, 'public-press', {
-        queryKeys: ['type', 'tag', 'limit'],
+        queryKeys: ['type', 'tag', 'limit', 'offset'],
       }),
   }
 )

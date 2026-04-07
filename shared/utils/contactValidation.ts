@@ -1,9 +1,11 @@
+import { EMAIL_MAX_LENGTH } from './emailValidation'
+
 export const CONTACT_FIELD_LIMITS = {
   name: {
     min: 2,
     max: 100,
   },
-  emailMax: 254,
+  emailMax: EMAIL_MAX_LENGTH,
   phoneMax: 30,
   mediaNameMax: 200,
   subject: {

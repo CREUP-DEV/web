@@ -51,7 +51,10 @@ interface EventDetailResponse {
 export function useEvents() {
   const { locale } = useI18n()
   const { getLanguageTag } = useLocales()
-  const { data, error, status } = useFetch<EventsResponse>('/api/eventos')
+  const localeApiHeaders = useLocaleApiHeaders()
+  const { data, error, status } = useFetch<EventsResponse>('/api/eventos', {
+    headers: localeApiHeaders,
+  })
 
   const events = computed(() => data.value?.events ?? [])
 
@@ -77,13 +80,18 @@ export function useEvents() {
 
 export function useEvent(slug: Ref<string> | string) {
   const slugRef = typeof slug === 'string' ? ref(slug) : slug
-  const key = computed(() => `event-${slugRef.value}`)
+  const { locale } = useI18n()
+  const localeApiHeaders = useLocaleApiHeaders()
+  const key = computed(() => `event-${slugRef.value}-${locale.value}`)
 
   return useAsyncData<EventDetailResponse>(
     key,
-    () => $fetch<EventDetailResponse>(`/api/eventos/${slugRef.value}`),
+    () =>
+      $fetch<EventDetailResponse>(`/api/eventos/${slugRef.value}`, {
+        headers: localeApiHeaders.value,
+      }),
     {
-      watch: [slugRef],
+      watch: [locale, slugRef],
     }
   )
 }

@@ -12,12 +12,20 @@ const props = defineProps<{
 const { t } = useI18n()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
+const LIMIT = 12
 const selectedTag = ref<string>('all')
+const page = ref(1)
+const offset = computed(() => (page.value - 1) * LIMIT)
 
-const { data, pending, error } = usePress(props.type, selectedTag)
+const { data, pending, error } = usePress(props.type, selectedTag, LIMIT, offset)
 
 const articles = computed(() => data.value?.articles ?? [])
+const total = computed(() => data.value?.total ?? 0)
 const isLoading = computed(() => pending.value || data.value == null)
+
+watch(selectedTag, () => {
+  page.value = 1
+})
 
 const typeUrlPrefix: Record<PressArticleType, string> = {
   press_release: '/prensa/notas-prensa',
@@ -46,7 +54,7 @@ const onTagSelect = (tagSlug: string) => {
         <p class="text-muted mt-2 max-w-2xl text-lg">{{ description }}</p>
       </header>
 
-      <HomeTagSelector class="mb-6" @select="onTagSelect" />
+      <HomeTagSelector :type="type" class="mb-6" @select="onTagSelect" />
 
       <div
         v-if="isLoading"
@@ -140,6 +148,10 @@ const onTagSelect = (tagSlug: string) => {
           </NuxtLink>
         </li>
       </ul>
+
+      <div v-if="total > LIMIT" class="mt-8 flex justify-center">
+        <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
+      </div>
     </UContainer>
   </section>
 </template>

@@ -7,7 +7,7 @@ const editorToolbarItems: EditorToolbarItem[][] = [
   [
     { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold' },
     { kind: 'mark', mark: 'italic', icon: 'i-lucide-italic' },
-    { kind: 'link', icon: 'i-lucide-link' },
+    { kind: 'link', slot: 'link', icon: 'i-lucide-link' },
   ],
   [
     { kind: 'heading', level: 2, icon: 'i-lucide-heading-2' },
@@ -18,6 +18,7 @@ const editorToolbarItems: EditorToolbarItem[][] = [
     { kind: 'bulletList', icon: 'i-lucide-list' },
     { kind: 'orderedList', icon: 'i-lucide-list-ordered' },
     { kind: 'blockquote', icon: 'i-lucide-quote' },
+    { kind: 'horizontalRule', icon: 'i-lucide-minus' },
   ],
   [
     { kind: 'undo', icon: 'i-lucide-undo-2' },
@@ -33,19 +34,23 @@ const editorToolbarItems: EditorToolbarItem[][] = [
       v-model="model"
       content-type="html"
       :placeholder="{
-        placeholder: 'Escribe aquí el contenido completo de la noticia...',
+        placeholder: 'Escribe aquí el contenido...',
         mode: 'firstLine',
       }"
       :image="false"
       :mention="false"
       :ui="{
-        root: 'min-h-80',
-        content: 'min-h-64',
-        base: 'press-rich-text min-h-64 px-4 py-4 text-[15px] focus:outline-none',
+        root: 'min-h-96',
+        content: 'min-h-80',
+        base: 'press-rich-text min-h-80 px-4 py-4 text-[15px] focus:outline-none',
       }"
     >
       <template #default="{ editor }">
-        <UEditorToolbar :editor="editor" :items="editorToolbarItems" />
+        <UEditorToolbar :editor="editor" :items="editorToolbarItems">
+          <template #link>
+            <AdminEditorLinkModal :editor="editor" />
+          </template>
+        </UEditorToolbar>
       </template>
     </UEditor>
   </div>

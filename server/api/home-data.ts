@@ -7,6 +7,7 @@ import { logError } from '../utils/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { HOME_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 
@@ -17,13 +18,13 @@ export default defineCachedEventHandler(
     try {
       const carouselItemsList = await db.query.carouselItems.findMany({
         where: eq(carouselItems.active, true),
-        orderBy: asc(carouselItems.order),
+        orderBy: [asc(carouselItems.order), asc(carouselItems.id)],
         with: { translations: true },
       })
 
       const linkItemsList = await db.query.featuredLinks.findMany({
         where: eq(featuredLinks.active, true),
-        orderBy: asc(featuredLinks.order),
+        orderBy: [asc(featuredLinks.order), asc(featuredLinks.id)],
         with: { translations: true },
       })
 
@@ -81,7 +82,7 @@ export default defineCachedEventHandler(
         setHeader(event, 'retry-after', 60)
         throw createError({
           statusCode: 503,
-          statusMessage: 'Servicio temporalmente no disponible',
+          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
         })
       }
 

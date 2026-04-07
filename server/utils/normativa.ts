@@ -10,6 +10,7 @@ import { logError } from './logger'
 import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
 import { getRequestLocaleContext } from './requestLocale'
 import { externalNormativaResponseSchema } from './validation'
+import { EXTERNAL_DOCUMENT_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const NORMATIVA_CACHE_VERSION = 1
@@ -88,7 +89,10 @@ export async function fetchNormativa(
             file: doc.file
               ? {
                   name: doc.file.name ?? null,
-                  url: toExternalPdfProxyUrl(doc.file.url, { event }),
+                  url: toExternalPdfProxyUrl(doc.file.url, {
+                    forceProxyRelative: true,
+                    publicPathBase: EXTERNAL_DOCUMENT_PUBLIC_BASE,
+                  }),
                 }
               : null,
           })),

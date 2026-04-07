@@ -8,16 +8,26 @@ interface FinancialReport {
 
 interface FinancialReportsResponse {
   items: FinancialReport[]
+  total: number
 }
 
 const { t } = useI18n()
 const { formatLongDate } = useDatePresets()
+const localeApiHeaders = useLocaleApiHeaders()
 
 usePageSeo('financialReports.title', 'financialReports.description')
 
-const { data, error } = await useFetch<FinancialReportsResponse>('/api/financial-reports')
+const LIMIT = 12
+const page = ref(1)
+const offset = computed(() => (page.value - 1) * LIMIT)
+
+const { data, error } = await useFetch<FinancialReportsResponse>('/api/financial-reports', {
+  headers: localeApiHeaders,
+  query: computed(() => ({ limit: LIMIT, offset: offset.value })),
+})
 
 const items = computed(() => data.value?.items ?? [])
+const total = computed(() => data.value?.total ?? 0)
 const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
 
 function formatDate(dateStr: string): string {
@@ -97,6 +107,10 @@ function formatDate(dateStr: string): string {
           </UCard>
         </li>
       </TransitionGroup>
+
+      <div v-if="total > LIMIT" class="flex justify-center">
+        <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
+      </div>
     </article>
   </UContainer>
 </template>

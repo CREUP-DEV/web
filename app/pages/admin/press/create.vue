@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'admin',
+  title: 'Crear artículo de prensa',
 })
 
 const toast = useToast()

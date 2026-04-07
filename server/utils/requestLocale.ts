@@ -1,5 +1,7 @@
 import type { H3Event } from 'h3'
+import { getRequestURL } from 'h3'
 import {
+  extractLocaleCodeFromPathname,
   normalizeLocaleDefinitions,
   resolveConfiguredLocaleCode,
   resolveLocaleCode,
@@ -33,7 +35,12 @@ export function getRequestLocaleContext(event: H3Event) {
     locales,
     defaultLocale
   )
-  const locale = resolveLocaleCode(event.context.requestLocale, locales, fallbackLocale)
+  const pathLocale = extractLocaleCodeFromPathname(getRequestURL(event).pathname, locales)
+  const locale = resolveLocaleCode(
+    pathLocale ?? event.context.requestLocale,
+    locales,
+    fallbackLocale
+  )
   const languageTag =
     locales.find((configuredLocale) => configuredLocale.code === locale)?.language ?? 'es-ES'
 

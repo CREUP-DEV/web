@@ -1,27 +1,40 @@
 import { createError, setHeader } from 'h3'
-import { desc, eq } from 'drizzle-orm'
+import { desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { financialReports } from '../db/schema'
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
 import { logError } from '../utils/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import { publicPaginationQuerySchema, validateQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 
 export default defineCachedEventHandler(
   async (event) => {
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
+    const { limit, offset } = validateQuery(event, publicPaginationQuerySchema)
 
     try {
-      const items = await db.query.financialReports.findMany({
-        where: eq(financialReports.active, true),
-        orderBy: desc(financialReports.approvedAt),
-        with: {
-          translations: true,
-        },
-      })
+      const activeWhere = eq(financialReports.active, true)
+
+      const [items, countResult] = await Promise.all([
+        db.query.financialReports.findMany({
+          where: activeWhere,
+          orderBy: desc(financialReports.approvedAt),
+          limit,
+          offset,
+          with: {
+            translations: true,
+          },
+        }),
+        db
+          .select({ count: sql<number>`count(*)`.mapWith(Number) })
+          .from(financialReports)
+          .where(activeWhere),
+      ])
 
       return {
         items: items.map((item) => ({
@@ -34,6 +47,7 @@ export default defineCachedEventHandler(
             }) ?? item.pdfUrl,
           approvedAt: dateValueToDateOnly(item.approvedAt),
         })),
+        total: countResult[0]?.count ?? 0,
       }
     } catch (error) {
       if (isDatabaseUnavailableError(error)) {
@@ -41,7 +55,7 @@ export default defineCachedEventHandler(
         setHeader(event, 'retry-after', 60)
         throw createError({
           statusCode: 503,
-          statusMessage: 'Servicio temporalmente no disponible',
+          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
         })
       }
 
@@ -50,6 +64,9 @@ export default defineCachedEventHandler(
   },
   {
     ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) => buildPublicRouteCacheKey(event, 'public-financial-reports'),
+    getKey: (event) =>
+      buildPublicRouteCacheKey(event, 'public-financial-reports', {
+        queryKeys: ['limit', 'offset'],
+      }),
   }
 )

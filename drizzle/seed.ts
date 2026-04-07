@@ -44,6 +44,7 @@ async function main() {
   await db.delete(schema.pressArticleTags)
   await db.delete(schema.pressArticleTranslations)
   await db.delete(schema.pressArticles)
+  await db.delete(schema.mediaOutlets)
   await db.delete(schema.featuredLinkTranslations)
   await db.delete(schema.featuredLinks)
   await db.delete(schema.tagTranslations)
@@ -195,6 +196,38 @@ async function main() {
     heroVisible: true,
   })
 
+  console.log('🗞️ Creating media outlets...')
+  const mediaOutletsData = [
+    {
+      key: 'las-provincias',
+      name: 'Las Provincias',
+      website: 'https://www.lasprovincias.es/',
+      logo: '/prensa/imagenes/media-las-provincias.webp',
+    },
+    {
+      key: 'ideal',
+      name: 'Ideal',
+      website: 'https://www.ideal.es/',
+      logo: '/prensa/imagenes/media-ideal.webp',
+    },
+  ]
+
+  const mediaOutlets: Record<string, string> = {}
+  for (let i = 0; i < mediaOutletsData.length; i++) {
+    const item = mediaOutletsData[i]
+    const [mediaOutlet] = await db
+      .insert(schema.mediaOutlets)
+      .values({
+        name: item.name,
+        website: item.website,
+        logo: item.logo,
+        order: i,
+      })
+      .returning()
+
+    mediaOutlets[item.key] = mediaOutlet.id
+  }
+
   console.log('📰 Creating press articles...')
   const buildRichText = (paragraphs: string[], highlights: string[] = []) => {
     const body = paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join('')
@@ -343,7 +376,7 @@ async function main() {
       image: '/prensa/imagenes/news-medicina-practicas.jpg',
       pdfUrl: null,
       externalUrl: 'https://example.com/practicas-sanitarias',
-      mediaOutletId: null,
+      mediaOutletId: 'las-provincias',
       tagSlugs: ['teaching-quality', 'university-policy'],
       translations: [
         {
@@ -432,7 +465,7 @@ async function main() {
       image: '/prensa/imagenes/news-comedores-ugr.jpg',
       pdfUrl: null,
       externalUrl: 'https://example.com/comedores-granada',
-      mediaOutletId: null,
+      mediaOutletId: 'ideal',
       tagSlugs: ['university-life-health', 'funding-scholarships'],
       translations: [
         {
@@ -524,6 +557,11 @@ async function main() {
     const esTranslation = item.translations.find((t) => t.locale === 'es')!
     const publishedAt = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
     const slug = await generatePressSlug(esTranslation.title, publishedAt)
+    const resolvedMediaOutletId = item.mediaOutletId ? mediaOutlets[item.mediaOutletId] : null
+
+    if (item.type === 'media_appearance' && !resolvedMediaOutletId) {
+      throw new Error(`Missing media outlet for media appearance: ${esTranslation.title}`)
+    }
 
     const [article] = await db
       .insert(schema.pressArticles)
@@ -533,7 +571,7 @@ async function main() {
         image: item.image,
         pdfUrl: item.pdfUrl,
         externalUrl: item.externalUrl,
-        mediaOutletId: item.mediaOutletId,
+        mediaOutletId: resolvedMediaOutletId,
         active: true,
         publishedAt,
       })

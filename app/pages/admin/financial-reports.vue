@@ -6,7 +6,10 @@ import {
   parseDateOnlyString,
 } from '~~/shared/utils/date'
 
-definePageMeta({ layout: 'admin' })
+definePageMeta({
+  layout: 'admin',
+  title: 'Informes económicos',
+})
 
 interface FinancialReportTranslation {
   locale: string

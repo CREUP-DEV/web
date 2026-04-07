@@ -194,6 +194,23 @@ export const parseAcceptLanguageHeader = (headerValue?: string | null) =>
     .sort((a, b) => b.quality - a.quality)
     .map((entry) => entry.tag)
 
+export const extractLocaleCodeFromPathname = (
+  pathname: string | null | undefined,
+  locales: LocaleDefinition[]
+) => {
+  const normalizedPathname = String(pathname ?? '').trim()
+  if (!normalizedPathname) {
+    return null
+  }
+
+  const firstSegment = normalizedPathname.split('/').filter(Boolean)[0]
+  if (!firstSegment) {
+    return null
+  }
+
+  return locales.find((locale) => locale.code === firstSegment.toLowerCase())?.code ?? null
+}
+
 export const pickLocalizedEntry = <T extends { locale: string }>(
   entries: T[],
   locale: string | null | undefined,

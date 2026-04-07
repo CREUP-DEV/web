@@ -1,3 +1,5 @@
+import type { MaybeRefOrGetter } from 'vue'
+
 export interface Tag {
   slug: string
   name: string
@@ -7,13 +9,32 @@ export interface TagsResponse {
   tags: Tag[]
 }
 
-export function useTags() {
+export function useTags(type?: MaybeRefOrGetter<string | null | undefined>) {
   const { locale } = useI18n()
+  const localeApiHeaders = useLocaleApiHeaders()
+  const typeValue = computed(() => toValue(type) ?? null)
 
-  return useAsyncData<TagsResponse>('tags', () => $fetch<TagsResponse>('/api/tags'), {
-    default: () => ({
-      tags: [],
-    }),
-    watch: [locale],
-  })
+  return useAsyncData<TagsResponse>(
+    () => `tags-${locale.value}-${typeValue.value || 'all'}`,
+    () => {
+      const params = new URLSearchParams()
+
+      if (typeValue.value) {
+        params.set('type', typeValue.value)
+      }
+
+      const query = params.toString()
+      const requestUrl = query ? `/api/tags?${query}` : '/api/tags'
+
+      return $fetch<TagsResponse>(requestUrl, {
+        headers: localeApiHeaders.value,
+      })
+    },
+    {
+      default: () => ({
+        tags: [],
+      }),
+      watch: [locale, typeValue],
+    }
+  )
 }

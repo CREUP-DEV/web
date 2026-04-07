@@ -68,7 +68,6 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-const toast = useToast()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -93,13 +92,22 @@ const [{ data: tagsData }, { data: mediaData }] = await Promise.all([
 const tags = computed(() => tagsData.value?.items ?? [])
 const mediaOutlets = computed(() => mediaData.value?.items ?? [])
 
-// File upload state
-const imageInputRef = ref<HTMLInputElement | null>(null)
-const imagePreview = ref<string | null>(null)
-const isUploadingImage = ref(false)
-const pdfInputRef = ref<HTMLInputElement | null>(null)
-const pdfName = ref<string | null>(null)
-const isUploadingPdf = ref(false)
+// File uploads
+const imageUpload = useAdminFileUpload({
+  endpoint: '/api/admin/press/upload',
+  successMessage: 'Imagen subida correctamente',
+  errorMessage: 'No se pudo subir la imagen',
+  onUploaded: (storagePath) => {
+    form.image = storagePath
+  },
+  getFallbackPreview: () => form.image || null,
+})
+const pdfUpload = useAdminDocumentUpload({
+  endpoint: '/api/admin/press/upload',
+  onUploaded: (storagePath) => {
+    form.pdfUrl = storagePath
+  },
+})
 
 // Date picker
 const today = new Date()
@@ -131,6 +139,34 @@ const typeLabels: Record<PressArticleType, string> = {
   press_release: 'Notas de prensa',
   statement: 'Comunicados',
   media_appearance: 'En los medios',
+}
+
+const typeIcons: Record<PressArticleType, string> = {
+  press_release: 'i-tabler-writing-sign',
+  statement: 'i-tabler-speakerphone',
+  media_appearance: 'i-tabler-broadcast',
+}
+
+const publicArticleUrl = computed(() => {
+  if (!props.article?.slug) return null
+  const prefixes: Record<PressArticleType, string> = {
+    press_release: '/prensa/notas-prensa',
+    statement: '/prensa/comunicados',
+    media_appearance: '/prensa/en-los-medios',
+  }
+  return `${prefixes[props.article.type]}/${props.article.slug}`
+})
+
+const submitAttempted = ref(false)
+const canSubmit = computed(() => Boolean(form.image))
+
+const handleSubmit = () => {
+  submitAttempted.value = true
+  if (!canSubmit.value) return
+  emit('submit', {
+    ...form,
+    publishedAt: calendarDateToDateOnly(publishedAt.value),
+  })
 }
 
 // Tag select items (exclude the 'all' meta-tag)
@@ -177,8 +213,8 @@ const populateForm = (article: PressArticle) => {
   form.mediaOutletId = article.mediaOutletId
   form.active = article.active
   form.tagIds = article.tags.map((t) => t.tagId)
-  imagePreview.value = article.image || null
-  pdfName.value = article.pdfUrl ? (article.pdfUrl.split('/').pop() ?? null) : null
+  imageUpload.setPreview(article.image || null)
+  pdfUpload.setFile(article.pdfUrl)
   publishedAt.value = valueToCalendarDate(article.publishedAt)
   form.translations = mapTranslationsToForm(article.translations, {
     title: '',
@@ -207,84 +243,9 @@ watch(
   { immediate: true }
 )
 
-// File upload handlers
-const triggerImageInput = () => {
-  imageInputRef.value?.click()
-}
-
-const handleImageSelect = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    imagePreview.value = e.target?.result as string
-  }
-  reader.readAsDataURL(file)
-
-  isUploadingImage.value = true
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const result = await $fetch<{ path: string; storagePath: string }>('/api/admin/press/upload', {
-      method: 'POST',
-      body: formData,
-    })
-    form.image = result.storagePath
-    toast.add({ title: 'Imagen subida correctamente', color: 'success' })
-  } catch {
-    imagePreview.value = null
-    toast.add({ title: 'No se pudo subir la imagen', color: 'error' })
-  } finally {
-    isUploadingImage.value = false
-    if (target) target.value = ''
-  }
-}
-
-const triggerPdfInput = () => {
-  pdfInputRef.value?.click()
-}
-
-const removePdf = () => {
+const handleRemovePdf = () => {
+  pdfUpload.remove()
   form.pdfUrl = null
-  pdfName.value = null
-  if (pdfInputRef.value) {
-    pdfInputRef.value.value = ''
-  }
-}
-
-const handlePdfSelect = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  pdfName.value = file.name
-
-  isUploadingPdf.value = true
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const result = await $fetch<{ path: string; storagePath: string }>('/api/admin/press/upload', {
-      method: 'POST',
-      body: formData,
-    })
-    form.pdfUrl = result.storagePath
-    toast.add({ title: 'PDF subido correctamente', color: 'success' })
-  } catch {
-    pdfName.value = null
-    toast.add({ title: 'No se pudo subir el PDF', color: 'error' })
-  } finally {
-    isUploadingPdf.value = false
-    if (target) target.value = ''
-  }
-}
-
-const handleSubmit = () => {
-  emit('submit', {
-    ...form,
-    publishedAt: calendarDateToDateOnly(publishedAt.value),
-  })
 }
 
 watch(
@@ -315,7 +276,7 @@ const confirmCancel = () => {
     <div
       class="bg-background/80 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
     >
-      <div class="flex items-center gap-3">
+      <div class="flex min-w-0 items-center gap-3">
         <UButton
           type="button"
           variant="ghost"
@@ -325,24 +286,47 @@ const confirmCancel = () => {
         >
           Volver
         </UButton>
-        <USeparator orientation="vertical" class="h-5" />
-        <span class="text-muted text-sm">
-          {{ isEditing ? 'Editando' : 'Nuevo' }}
-          <template v-if="isEditing"> · {{ typeLabels[form.type] }}</template>
+        <USeparator orientation="vertical" class="h-5 shrink-0" />
+        <UIcon :name="typeIcons[form.type]" class="text-muted size-4 shrink-0" />
+        <span class="text-muted truncate text-sm">
+          {{ isEditing ? 'Editando' : 'Nuevo' }} · {{ typeLabels[form.type] }}
         </span>
       </div>
-      <UButton type="submit" icon="i-tabler-check" :loading="submitting">
-        {{ isEditing ? 'Guardar cambios' : 'Crear artículo' }}
-      </UButton>
+      <div class="flex shrink-0 items-center gap-2">
+        <UButton
+          v-if="publicArticleUrl"
+          type="button"
+          variant="ghost"
+          icon="i-tabler-external-link"
+          size="sm"
+          :to="publicArticleUrl"
+          target="_blank"
+          aria-label="Ver artículo en la web"
+        />
+        <UButton
+          type="submit"
+          icon="i-tabler-check"
+          :loading="submitting"
+          :disabled="!canSubmit || submitting"
+          :title="!canSubmit ? 'Sube una imagen antes de guardar' : undefined"
+        >
+          {{ isEditing ? 'Guardar cambios' : 'Crear artículo' }}
+        </UButton>
+      </div>
     </div>
 
     <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
       <div class="min-w-0 space-y-6">
         <div v-if="form.type === 'media_appearance'" class="space-y-4 rounded-xl border p-5">
-          <h3 class="flex items-center gap-2 font-semibold">
-            <UIcon name="i-tabler-broadcast" class="text-muted size-5" />
-            Medio de comunicación
-          </h3>
+          <div>
+            <h3 class="flex items-center gap-2 font-semibold">
+              <UIcon name="i-tabler-broadcast" class="text-muted size-5" />
+              Aparición en medios
+            </h3>
+            <p class="text-muted mt-1 text-xs">
+              Indica el enlace a la noticia original y el medio que la publicó.
+            </p>
+          </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField label="Enlace a la noticia *">
@@ -451,6 +435,10 @@ const confirmCancel = () => {
               class="w-full"
             />
           </UFormField>
+          <div v-else class="flex items-center gap-2 text-sm">
+            <UIcon :name="typeIcons[form.type]" class="text-muted size-4 shrink-0" />
+            <span>{{ typeLabels[form.type] }}</span>
+          </div>
 
           <UFormField label="Fecha publicación">
             <UInputDate ref="inputDate" v-model="publishedAt" class="w-full">
@@ -491,15 +479,19 @@ const confirmCancel = () => {
           </UFormField>
         </div>
 
-        <div class="space-y-4 rounded-xl border p-5">
+        <div
+          class="space-y-4 rounded-xl border p-5"
+          :class="submitAttempted && !form.image ? 'border-error/50' : ''"
+        >
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-photo" class="text-muted size-4" />
-            Imagen de portada *
+            Imagen de portada
+            <span class="text-error font-normal">*</span>
           </h3>
 
-          <div v-if="imagePreview" class="overflow-hidden rounded-lg border">
+          <div v-if="imageUpload.preview.value" class="overflow-hidden rounded-lg border">
             <img
-              :src="imagePreview"
+              :src="imageUpload.preview.value"
               alt="Vista previa de la imagen"
               class="aspect-video w-full object-cover"
             />
@@ -514,11 +506,11 @@ const confirmCancel = () => {
             </div>
           </div>
           <input
-            ref="imageInputRef"
+            :ref="imageUpload.inputRef"
             type="file"
             accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
             class="hidden"
-            @change="handleImageSelect"
+            @change="imageUpload.handleFileSelect"
           />
           <UButton
             type="button"
@@ -526,11 +518,15 @@ const confirmCancel = () => {
             icon="i-tabler-upload"
             size="sm"
             block
-            :loading="isUploadingImage"
-            @click="triggerImageInput"
+            :loading="imageUpload.isUploading.value"
+            @click="imageUpload.triggerFileDialog"
           >
-            {{ imagePreview ? 'Cambiar imagen' : 'Subir imagen' }}
+            {{ imageUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
           </UButton>
+          <p v-if="submitAttempted && !form.image" class="text-error text-xs" role="alert">
+            La imagen de portada es obligatoria.
+          </p>
+          <p v-else class="text-muted text-xs">JPG, PNG, WebP, SVG o AVIF</p>
         </div>
 
         <div
@@ -542,9 +538,12 @@ const confirmCancel = () => {
             Documento PDF
           </h3>
 
-          <div v-if="pdfName" class="bg-muted/30 flex items-center gap-2 rounded-lg border p-3">
+          <div
+            v-if="pdfUpload.fileName.value"
+            class="bg-muted/30 flex items-center gap-2 rounded-lg border p-3"
+          >
             <UIcon name="i-tabler-file-type-pdf" class="text-error size-5 shrink-0" />
-            <span class="flex-1 truncate text-sm">{{ pdfName }}</span>
+            <span class="flex-1 truncate text-sm">{{ pdfUpload.fileName.value }}</span>
             <UButton
               type="button"
               variant="ghost"
@@ -552,15 +551,15 @@ const confirmCancel = () => {
               icon="i-tabler-x"
               size="xs"
               aria-label="Quitar PDF"
-              @click="removePdf"
+              @click="handleRemovePdf"
             />
           </div>
           <input
-            ref="pdfInputRef"
+            :ref="pdfUpload.inputRef"
             type="file"
             accept=".pdf"
             class="hidden"
-            @change="handlePdfSelect"
+            @change="pdfUpload.handleFileSelect"
           />
           <UButton
             type="button"
@@ -568,10 +567,10 @@ const confirmCancel = () => {
             icon="i-tabler-upload"
             size="sm"
             block
-            :loading="isUploadingPdf"
-            @click="triggerPdfInput"
+            :loading="pdfUpload.isUploading.value"
+            @click="pdfUpload.triggerFileDialog"
           >
-            {{ pdfName ? 'Cambiar PDF' : 'Subir PDF' }}
+            {{ pdfUpload.fileName.value ? 'Cambiar PDF' : 'Subir PDF' }}
           </UButton>
           <p class="text-muted text-xs">
             Opcional. Si no subes PDF, añade el contenido en el editor.

@@ -1,0 +1,114 @@
+import { defineEventHandler, readBody, createError } from 'h3'
+import { eq } from 'drizzle-orm'
+import { db } from '../../../db'
+import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
+import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import {
+  type CleanupUnusedAdminAssetOptions,
+  cleanupAdminAssetFinalizationsSafely,
+  cleanupUnusedAdminAssetSafely,
+  trackAdminAssetFinalization,
+} from '../../../utils/adminAssetPublication'
+import { getPreferredTranslationValue } from '../../../utils/localizedContent'
+import {
+  idRouteParamSchema,
+  updateFeaturedLinkSchema,
+  validateBody,
+  validateRouteParams,
+} from '../../../utils/validation'
+import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+
+const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/enlaces-destacados'
+
+function getFeaturedLinkImageSlug(translations: Array<{ locale: string; title: string }>) {
+  return getPreferredTranslationValue(translations, 'title')
+}
+
+export default defineEventHandler(async (event) => {
+  const { id } = validateRouteParams(event, idRouteParamSchema)
+  const body = await readBody(event)
+  const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
+
+  try {
+    const existingItem = await db.query.featuredLinks.findFirst({
+      where: eq(featuredLinks.id, id),
+    })
+
+    if (!existingItem) {
+      throw createError({ statusCode: 404, message: 'No encontrado' })
+    }
+
+    const validated = validateBody(updateFeaturedLinkSchema, body)
+    const previousImage = existingItem.image
+    const image = await finalizeAdminImage({
+      storagePath: validated.image,
+      uploadDir: IMAGE_UPLOAD_DIR,
+      publicPath: HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+      slug: getFeaturedLinkImageSlug(validated.translations),
+      publish: validated.active,
+      fallbackBaseName: 'enlace-destacado',
+      replaceStoragePath: existingItem.image,
+    })
+    trackAdminAssetFinalization(cleanupTargets, {
+      sourceStoragePath: validated.image,
+      storagePath: image,
+      allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
+    })
+
+    const item = await db.transaction(async (tx) => {
+      await tx
+        .delete(featuredLinkTranslations)
+        .where(eq(featuredLinkTranslations.featuredLinkId, id))
+
+      await tx
+        .update(featuredLinks)
+        .set({
+          image,
+          to: validated.to,
+          order: validated.order,
+          active: validated.active,
+        })
+        .where(eq(featuredLinks.id, id))
+
+      if (validated.translations.length > 0) {
+        await tx.insert(featuredLinkTranslations).values(
+          validated.translations.map((translation) => ({
+            locale: translation.locale,
+            title: translation.title,
+            alt: translation.alt || null,
+            featuredLinkId: id,
+          }))
+        )
+      }
+
+      return tx.query.featuredLinks.findFirst({
+        where: eq(featuredLinks.id, id),
+        with: { translations: true },
+      })
+    })
+
+    if (previousImage !== image) {
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: previousImage,
+          allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
+        },
+        'admin.links.update.cleanup',
+        event
+      )
+    }
+
+    return { item }
+  } catch (e) {
+    await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.links.update.rollback', event)
+
+    if (typeof e === 'object' && e !== null && 'statusCode' in e) {
+      throw e
+    }
+
+    throw createError({
+      statusCode: 400,
+      message: e instanceof Error ? e.message : 'Error de validación',
+    })
+  }
+})

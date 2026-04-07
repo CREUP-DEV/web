@@ -5,6 +5,7 @@ import {
   withExternalApiSWRCache,
 } from '../utils/externalApiCache'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
 import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
 import { externalCommitteesResponseSchema } from '../utils/validation'
@@ -13,8 +14,6 @@ import {
   normalizeSocialText,
   type SocialNetworkEntry,
 } from '~~/shared/utils/social'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
-import { getRequestLocaleContext } from '../utils/requestLocale'
 
 interface CommitteeMemberOutput {
   order: number
@@ -42,21 +41,9 @@ interface CommitteeOutput {
 
 const normalizeText = normalizeSocialText
 
-const messagesByLocale = {
-  en: {
-    unavailable: 'Committee data is temporarily unavailable.',
-  },
-  es: {
-    unavailable: 'La información de los comités no está disponible temporalmente.',
-  },
-}
-
 export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
 
@@ -72,7 +59,7 @@ export default defineEventHandler(async (event) => {
         logError('external.committees.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: getPublicApiErrorMessage(event, 'committeesUnavailable'),
         })
       }
 
@@ -81,7 +68,7 @@ export default defineEventHandler(async (event) => {
         logError('external.committees.invalid-payload', parsedPayload.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: getPublicApiErrorMessage(event, 'committeesUnavailable'),
         })
       }
 

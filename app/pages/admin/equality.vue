@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import Sortable from 'sortablejs'
 
-definePageMeta({ layout: 'admin' })
+definePageMeta({
+  layout: 'admin',
+  title: 'Igualdad',
+})
 
 interface EqualityDocumentTranslation {
   locale: string

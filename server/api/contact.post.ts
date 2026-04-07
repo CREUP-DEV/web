@@ -1,38 +1,24 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { getRequestLocaleContext } from '../utils/requestLocale'
 import {
   getRequiredSmtpFromEmail,
   getRequiredSmtpPressEmail,
   getRequiredSmtpToEmail,
 } from '../utils/runtimeConfig'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { contactFormSchema, validateBody } from '../utils/validation'
 import { enforceRateLimit } from '../utils/rateLimit'
 import { getSmtpTransporter } from '../utils/smtpTransporter'
 import { logError } from '../utils/logger'
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const SPAM_PATTERNS = [
   /\[url=/i,
   /\[link=/i,
   /<a\s+href/i,
-  /https?:\/\/[^\s]{50,}/i,
+  /https?:\/\/[^\s]{256,}/i,
   /(.)\1{10,}/i,
   /viagra|cialis|casino|lottery|winner|bitcoin|crypto|investment|earn money/i,
 ]
-
-const messagesByLocale = {
-  es: {
-    rateLimited: 'Has enviado demasiados mensajes. Inténtalo de nuevo más tarde.',
-    spamDetected: 'El mensaje contiene contenido no permitido.',
-    emailServiceUnavailable: 'El servicio de correo no está disponible en este momento.',
-  },
-  en: {
-    rateLimited: 'Too many requests. Please try again later.',
-    spamDetected: 'The message contains prohibited content.',
-    emailServiceUnavailable: 'The email service is not available right now.',
-  },
-}
 
 function hasSpamPatterns(text: string): boolean {
   return SPAM_PATTERNS.some((p) => p.test(text))
@@ -51,15 +37,11 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 export default defineEventHandler(async (event) => {
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
-
-  await enforceRateLimit(event, {
+  enforceRateLimit(event, {
     namespace: 'contact',
     maxRequests: 5,
     windowMs: 60 * 60 * 1000,
-    errorMessage: messages.rateLimited,
+    errorMessage: getPublicApiErrorMessage(event, 'contactRateLimited'),
   })
 
   const raw = await readBody(event)
@@ -81,11 +63,11 @@ export default defineEventHandler(async (event) => {
   if (hasSpamPatterns(`${name} ${subject} ${message}`)) {
     throw createError({
       statusCode: 400,
-      statusMessage: messages.spamDetected,
+      message: getPublicApiErrorMessage(event, 'contactSpamDetected'),
     })
   }
 
-  const publicConfigMessage = messages.emailServiceUnavailable
+  const publicConfigMessage = getPublicApiErrorMessage(event, 'contactEmailServiceUnavailable')
   const toEmail = isPress
     ? getRequiredSmtpPressEmail(event, publicConfigMessage)
     : getRequiredSmtpToEmail(event, publicConfigMessage)
@@ -225,7 +207,7 @@ Fecha: ${sentAt}
     logError('contact.send', err, { contactType })
     throw createError({
       statusCode: 500,
-      statusMessage: messages.emailServiceUnavailable,
+      message: getPublicApiErrorMessage(event, 'contactEmailServiceUnavailable'),
     })
   }
 })

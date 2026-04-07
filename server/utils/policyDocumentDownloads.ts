@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
+import { createHash } from 'node:crypto'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
 import { getRequestLocaleContext } from './requestLocale'
 import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
@@ -18,7 +19,7 @@ const POLICY_DOCUMENT_TYPE_BY_API_PATH = {
   '/api/informes-ejecutivos': 'informe-ejecutivo',
 } as const
 
-const POLICY_DOCUMENT_FILE_CACHE_VERSION = 1
+const POLICY_DOCUMENT_FILE_CACHE_VERSION = 2
 const messagesByLocale = {
   en: {
     unavailable: 'The requested documents are temporarily unavailable.',
@@ -38,6 +39,9 @@ const normalizeText = (value: string | null | undefined) => {
   return value.trim()
 }
 
+const createPolicyDocumentFingerprint = (value: string) =>
+  createHash('sha1').update(value).digest('hex').slice(0, 10)
+
 const resolveSourceUrl = (source: string, baseUrl: string) => {
   try {
     return new URL(source)
@@ -54,7 +58,12 @@ const isPolicyDocumentRouteType = (value: string): value is PolicyDocumentRouteT
   Object.hasOwn(POLICY_DOCUMENT_ENDPOINT_BY_TYPE, value)
 
 const normalizePolicyDocumentFileName = (value: string | null | undefined) => {
-  const normalized = normalizeText(value).toLowerCase().replace(/\.+$/g, '')
+  const normalized = normalizeText(value)
+    .toLowerCase()
+    .replace(/\.+$/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
   if (!normalized) {
     return ''
   }
@@ -62,8 +71,12 @@ const normalizePolicyDocumentFileName = (value: string | null | undefined) => {
   return normalized.endsWith('.pdf') ? normalized : `${normalized}.pdf`
 }
 
-const getLowerCasedFileNameFromUrl = (url: URL) =>
-  normalizePolicyDocumentFileName(url.pathname.split('/').pop())
+const getPolicyDocumentPublicFileName = (url: URL) => {
+  const sourceFileName = normalizePolicyDocumentFileName(url.pathname.split('/').pop())
+  const sourceStem = sourceFileName.replace(/\.pdf$/i, '') || 'documento'
+
+  return `${sourceStem}--${createPolicyDocumentFingerprint(url.toString())}.pdf`
+}
 
 async function buildPolicyDocumentFileRegistryFromExternal(
   event: H3Event,
@@ -94,9 +107,9 @@ async function buildPolicyDocumentFileRegistryFromExternal(
     }
 
     const sourceUrl = resolveSourceUrl(rawFileUrl, configuredBaseUrl)
-    const fileName = getLowerCasedFileNameFromUrl(sourceUrl)
+    const fileName = getPolicyDocumentPublicFileName(sourceUrl)
 
-    if (!fileName || registry[fileName]) {
+    if (!fileName) {
       continue
     }
 
@@ -132,15 +145,13 @@ export async function toPolicyDocumentPublicPdfPathAsync(
 
   const configuredBaseUrl = getConfiguredBaseUrl(event)
   const sourceUrl = resolveSourceUrl(rawSource, configuredBaseUrl)
-  const fileName = getLowerCasedFileNameFromUrl(sourceUrl)
+  const fileName = getPolicyDocumentPublicFileName(sourceUrl)
 
   if (!fileName) {
     return null
   }
 
-  const versionParam = sourceUrl.searchParams.get('v')
-  const versionSuffix = versionParam ? `?v=${encodeURIComponent(versionParam)}` : ''
-  return `/documentos/${type}/${fileName}${versionSuffix}`
+  return `/documentos/${type}/${fileName}`
 }
 
 export async function resolvePolicyDocumentSourceByTypeAndFileName(

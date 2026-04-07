@@ -4,11 +4,10 @@ import {
   setExternalApiCacheHeaders,
   withExternalApiSWRCache,
 } from '../../utils/externalApiCache'
+import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
 import { logError } from '../../utils/logger'
 import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
-import { getRequestLocaleContext } from '../../utils/requestLocale'
 import { externalMandatesResponseSchema } from '../../utils/validation'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 interface MandateOutput {
   id: number
@@ -17,21 +16,9 @@ interface MandateOutput {
   isCurrent: boolean
 }
 
-const messagesByLocale = {
-  en: {
-    unavailable: 'Mandate data is temporarily unavailable.',
-  },
-  es: {
-    unavailable: 'La información de los mandatos no está disponible temporalmente.',
-  },
-}
-
 export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 
   setExternalApiCacheHeaders(event, cacheOptions)
 
@@ -47,7 +34,7 @@ export default defineEventHandler(async (event) => {
         logError('external.mandates-route.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: getPublicApiErrorMessage(event, 'mandatesUnavailable'),
         })
       }
 
@@ -56,7 +43,7 @@ export default defineEventHandler(async (event) => {
         logError('external.mandates-route.invalid-payload', parsed.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: getPublicApiErrorMessage(event, 'mandatesUnavailable'),
         })
       }
 

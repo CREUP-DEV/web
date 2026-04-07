@@ -3,7 +3,9 @@ import { requireConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
 
 const isDev = process.env.NODE_ENV !== 'production'
-const siteUrl = requireConfigUrl(process.env.SITE_URL, 'SITE_URL')
+const siteUrl = isDev
+  ? requireConfigUrl(process.env.SITE_URL || 'http://localhost:3000', 'SITE_URL')
+  : requireConfigUrl(process.env.SITE_URL, 'SITE_URL')
 const canonicalSiteUrl =
   isDev && ['localhost', '127.0.0.1'].includes(new URL(siteUrl).hostname)
     ? 'https://www.creup.es'
@@ -25,7 +27,8 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
     server: {
-      allowedHosts: isDev ? ['.trycloudflare.com'] : [],
+      // Vite 7 requires localhost to be listed explicitly when allowedHosts is an array
+      allowedHosts: isDev ? ['localhost', '127.0.0.1', '.trycloudflare.com'] : undefined,
     },
     optimizeDeps: {
       include: [
@@ -36,6 +39,8 @@ export default defineNuxtConfig({
         '@nuxt/ui > prosemirror-gapcursor',
         'better-auth/vue',
         '@formkit/auto-animate/vue',
+        'sortablejs',
+        '@internationalized/date',
       ],
     },
     build: {
@@ -151,8 +156,19 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/**': {
+      headers: {
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+        // CSP: unsafe-inline/unsafe-eval required by Nuxt SSR + Tailwind; tighten once a nonce strategy is in place
+        'Content-Security-Policy':
+          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+      },
+    },
     '/admin/**': {
       headers: {
+        'X-Frame-Options': 'DENY',
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     },

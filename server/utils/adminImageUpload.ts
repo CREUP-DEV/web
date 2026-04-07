@@ -1,4 +1,6 @@
 import { createError } from 'h3'
+import createDOMPurify, { type WindowLike } from 'dompurify'
+import { JSDOM } from 'jsdom'
 import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { slugify } from './slug'
@@ -19,55 +21,161 @@ const VECTOR_IMAGE_EXTENSIONS = new Set(['.svg'])
 const OUTPUT_IMAGE_EXTENSIONS = new Set([...ALLOWED_ADMIN_IMAGE_EXTENSIONS, '.webp'])
 const OUTPUT_IMAGE_EXTENSION_LIST = Array.from(OUTPUT_IMAGE_EXTENSIONS)
 
-// Dangerous SVG elements and attributes that can execute scripts or embed external content
-const SVG_BLOCKED_ELEMENTS =
-  /(<\/?)(script|foreignObject|iframe|object|embed|use|set|animate(?:Transform|Motion)?|handler)\b/gi
-const SVG_BLOCKED_DECLARATIONS = /<!DOCTYPE[\s\S]*?>|<!ENTITY[\s\S]*?>/gi
-const SVG_EVENT_ATTRIBUTES = /\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]*)/gi
-const SVG_HREF_SCRIPT = /\s+(xlink:)?href\s*=\s*(["'])\s*javascript:/gi
-const SVG_DATA_URI_SCRIPT = /\s+(xlink:)?href\s*=\s*(["'])\s*data:\s*text\/html/gi
-const SVG_DANGEROUS_PROTOCOL_REFERENCE =
-  /\b(?:href|xlink:href|src)\s*=\s*(["'])\s*(?:javascript:|data:)/gi
-const SVG_EXTERNAL_REFERENCE = /\b(?:href|xlink:href|src)\s*=\s*(["'])\s*(?:https?:)?\/\//gi
-const SVG_URL_FUNCTION_REFERENCE = /\b(?:fill|filter|clip-path|mask)\s*=\s*(["'])\s*url\(\s*(?!#)/gi
+const svgPurifier = createDOMPurify(new JSDOM('').window as unknown as WindowLike)
+const blockedSvgTags = new Set([
+  'script',
+  'foreignobject',
+  'iframe',
+  'object',
+  'embed',
+  'set',
+  'animate',
+  'animatetransform',
+  'animatemotion',
+  'handler',
+])
+const svgReferenceAttributes = new Set(['href', 'xlink:href', 'src'])
 
-function sanitizeSvgContent(data: Buffer): Buffer {
-  let svg = data.toString('utf8')
+const hasUnsafeSvgReference = (value: string) => {
+  const normalized = value.trim().toLowerCase()
 
-  if (!/^\s*<svg\b/i.test(svg)) {
-    throw createError({
-      statusCode: 400,
-      message: 'El SVG subido no es válido',
-    })
+  if (!normalized) {
+    return false
   }
 
-  // Strip dangerous elements
-  svg = svg.replace(SVG_BLOCKED_DECLARATIONS, '')
-  svg = svg.replace(SVG_BLOCKED_ELEMENTS, '<!-- blocked --')
-  // Strip event handler attributes (onclick, onload, onerror, etc.)
-  svg = svg.replace(SVG_EVENT_ATTRIBUTES, '')
-  // Strip javascript: protocol in href attributes
-  svg = svg.replace(SVG_HREF_SCRIPT, '')
-  // Strip data:text/html in href attributes
-  svg = svg.replace(SVG_DATA_URI_SCRIPT, '')
-  svg = svg.replace(SVG_DANGEROUS_PROTOCOL_REFERENCE, '')
-  // Strip external references to remote content
-  svg = svg.replace(SVG_EXTERNAL_REFERENCE, '')
-  svg = svg.replace(SVG_URL_FUNCTION_REFERENCE, '')
+  return !normalized.startsWith('#')
+}
+
+const hasUnsafeCssReference = (value: string) => {
+  const normalized = value.trim().toLowerCase()
+
+  if (!normalized) {
+    return false
+  }
 
   if (
-    /<\/?(script|foreignObject|iframe|object|embed)\b/i.test(svg) ||
-    /\son[a-z]+\s*=/i.test(svg) ||
-    /(?:href|xlink:href|src)\s*=\s*(["'])\s*(?:javascript:|data:)/i.test(svg) ||
-    /\b(?:fill|filter|clip-path|mask)\s*=\s*(["'])\s*url\(\s*(?!#)/i.test(svg)
+    normalized.includes('@import') ||
+    normalized.includes('expression(') ||
+    normalized.includes('javascript:') ||
+    normalized.includes('data:')
   ) {
-    throw createError({
-      statusCode: 400,
-      message: 'El SVG contiene elementos no permitidos',
-    })
+    return true
   }
 
-  return Buffer.from(svg, 'utf8')
+  let cursor = normalized.indexOf('url(')
+
+  while (cursor !== -1) {
+    const closingIndex = normalized.indexOf(')', cursor + 4)
+    if (closingIndex === -1) {
+      return true
+    }
+
+    const rawTarget = normalized.slice(cursor + 4, closingIndex).trim()
+    const target = rawTarget.replaceAll('"', '').replaceAll("'", '')
+    if (target && !target.startsWith('#')) {
+      return true
+    }
+
+    cursor = normalized.indexOf('url(', closingIndex + 1)
+  }
+
+  return false
+}
+
+const invalidSvgError = () =>
+  createError({
+    statusCode: 400,
+    message: 'El SVG subido no es válido',
+  })
+
+const disallowedSvgError = () =>
+  createError({
+    statusCode: 400,
+    message: 'El SVG contiene elementos no permitidos',
+  })
+
+function sanitizeSvgContent(data: Buffer): Buffer {
+  const source = data.toString('utf8').trim()
+
+  if (!source) {
+    throw invalidSvgError()
+  }
+
+  const sanitized = svgPurifier.sanitize(source, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    FORBID_TAGS: Array.from(blockedSvgTags),
+    ALLOW_ARIA_ATTR: false,
+    ALLOW_DATA_ATTR: false,
+    RETURN_TRUSTED_TYPE: false,
+  }) as string
+
+  if (!sanitized.trim()) {
+    throw invalidSvgError()
+  }
+
+  let svgDocument: JSDOM['window']['document']
+
+  try {
+    svgDocument = new JSDOM(sanitized, { contentType: 'image/svg+xml' }).window.document
+  } catch {
+    throw invalidSvgError()
+  }
+
+  if (svgDocument.querySelector('parsererror')) {
+    throw invalidSvgError()
+  }
+
+  const rootElement = svgDocument.documentElement
+  if (!rootElement || rootElement.tagName.toLowerCase() !== 'svg') {
+    throw invalidSvgError()
+  }
+
+  for (const element of Array.from(svgDocument.querySelectorAll('*'))) {
+    const tagName = element.tagName.toLowerCase()
+    if (blockedSvgTags.has(tagName)) {
+      throw disallowedSvgError()
+    }
+
+    for (const attributeName of element.getAttributeNames()) {
+      const normalizedAttributeName = attributeName.toLowerCase()
+      const attributeValue = element.getAttribute(attributeName)?.trim() ?? ''
+
+      if (normalizedAttributeName.startsWith('on')) {
+        element.removeAttribute(attributeName)
+        continue
+      }
+
+      if (
+        svgReferenceAttributes.has(normalizedAttributeName) &&
+        hasUnsafeSvgReference(attributeValue)
+      ) {
+        element.removeAttribute(attributeName)
+        continue
+      }
+
+      if (
+        (normalizedAttributeName === 'style' ||
+          normalizedAttributeName === 'fill' ||
+          normalizedAttributeName === 'filter' ||
+          normalizedAttributeName === 'clip-path' ||
+          normalizedAttributeName === 'mask' ||
+          normalizedAttributeName === 'marker-start' ||
+          normalizedAttributeName === 'marker-mid' ||
+          normalizedAttributeName === 'marker-end') &&
+        hasUnsafeCssReference(attributeValue)
+      ) {
+        element.removeAttribute(attributeName)
+      }
+    }
+  }
+
+  const serializedSvg = new svgDocument.defaultView!.XMLSerializer().serializeToString(rootElement)
+
+  if (!serializedSvg.trim()) {
+    throw invalidSvgError()
+  }
+
+  return Buffer.from(serializedSvg, 'utf8')
 }
 
 interface SaveAdminImageOptions {

@@ -2,10 +2,11 @@ import { defineEventHandler, createError, setHeader } from 'h3'
 import { eq, and } from 'drizzle-orm'
 import { db } from '../../db'
 import { pressArticles } from '../../db/schema'
-import { pickLocalizedEntry, pickLocalizedValue } from '~~/shared/utils/locale'
+import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../utils/externalAssetProxy'
 import { isDatabaseUnavailableError } from '../../utils/databaseErrors'
+import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
 import { logError } from '../../utils/logger'
 import { resolvePressTranslation } from '../../utils/pressTranslation'
 import { getRequestLocaleContext } from '../../utils/requestLocale'
@@ -14,14 +15,6 @@ import { slugRouteParamSchema, validateRouteParams } from '../../utils/validatio
 export default defineEventHandler(async (event) => {
   const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
   const { slug } = validateRouteParams(event, slugRouteParamSchema)
-  const messages = pickLocalizedValue(
-    {
-      en: { notFound: 'Article not found.' },
-      es: { notFound: 'Artículo no encontrado.' },
-    },
-    locale,
-    fallbackLocale
-  ) ?? { notFound: 'Artículo no encontrado.' }
 
   try {
     const article = await db.query.pressArticles.findFirst({
@@ -40,7 +33,10 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!article) {
-      throw createError({ statusCode: 404, statusMessage: messages.notFound })
+      throw createError({
+        statusCode: 404,
+        message: getPublicApiErrorMessage(event, 'articleNotFound'),
+      })
     }
 
     const trans = resolvePressTranslation(article.translations, locale, fallbackLocale)
@@ -91,7 +87,7 @@ export default defineEventHandler(async (event) => {
       setHeader(event, 'retry-after', 60)
       throw createError({
         statusCode: 503,
-        statusMessage: 'Servicio temporalmente no disponible',
+        message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
       })
     }
 

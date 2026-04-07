@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'admin',
+  title: 'Editar artículo de prensa',
 })
 
 const route = useRoute()

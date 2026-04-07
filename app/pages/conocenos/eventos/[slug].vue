@@ -87,18 +87,20 @@ const configuredSiteHostname = computed<string | null>(() => {
   }
 })
 
-const isExternalToConfiguredSite = (url: string | null): boolean => {
+const getSafeNavigationUrl = (url: string | null): string | null => normalizeUrl(url)
+
+const getExternalWebsiteUrl = (url: string | null): string | null => {
   const normalized = normalizeUrl(url)
-  if (!normalized) return false
+  if (!normalized) return null
 
   const siteHostname = configuredSiteHostname.value
-  if (!siteHostname) return true
+  if (!siteHostname) return normalized
 
   try {
     const urlHostname = normalizeHostname(new URL(normalized).hostname)
-    return urlHostname !== siteHostname
+    return urlHostname !== siteHostname ? normalized : null
   } catch {
-    return true
+    return null
   }
 }
 
@@ -330,8 +332,8 @@ function getPhotoAlt(index: number): string {
                 />
                 <p class="text-sm font-medium">{{ org.name }}</p>
                 <UButton
-                  v-if="isExternalToConfiguredSite(org.link)"
-                  :to="normalizeUrl(org.link) ?? undefined"
+                  v-if="getExternalWebsiteUrl(org.link)"
+                  :to="getExternalWebsiteUrl(org.link) ?? undefined"
                   target="_blank"
                   rel="noopener noreferrer"
                   variant="ghost"
@@ -360,8 +362,8 @@ function getPhotoAlt(index: number): string {
                 />
                 <p class="text-sm font-medium">{{ venue.name }}</p>
                 <UButton
-                  v-if="venue.link"
-                  :to="normalizeUrl(venue.link) ?? undefined"
+                  v-if="getSafeNavigationUrl(venue.link)"
+                  :to="getSafeNavigationUrl(venue.link) ?? undefined"
                   target="_blank"
                   rel="noopener noreferrer"
                   variant="ghost"
@@ -390,8 +392,8 @@ function getPhotoAlt(index: number): string {
                 />
                 <p class="text-sm font-medium">{{ collab.name }}</p>
                 <UButton
-                  v-if="collab.link"
-                  :to="normalizeUrl(collab.link) ?? undefined"
+                  v-if="getSafeNavigationUrl(collab.link)"
+                  :to="getSafeNavigationUrl(collab.link) ?? undefined"
                   target="_blank"
                   rel="noopener noreferrer"
                   variant="ghost"

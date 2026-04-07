@@ -6,6 +6,7 @@ import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const { t, locale } = useI18n()
 const { fallbackLocale } = useLocales()
+const localeApiHeaders = useLocaleApiHeaders()
 const { copyToClipboard } = useCopyToClipboard()
 const {
   getDisplayName: getMemberDisplayName,
@@ -50,7 +51,9 @@ interface EnrichedMember extends OrgMember {
   isLeader: boolean
 }
 
-const { data, error } = await useFetch<OrgResponse>('/api/organigrama')
+const { data, error } = await useFetch<OrgResponse>('/api/organigrama', {
+  headers: localeApiHeaders,
+})
 
 const areas = computed(() => data.value?.areas ?? [])
 
@@ -277,6 +280,7 @@ const openAgenda = async (member: EnrichedMember) => {
 
   try {
     const response = await $fetch<{ events: CalendarEvent[] }>('/api/member-calendar', {
+      headers: localeApiHeaders.value,
       query: {
         calendarId: member.email,
       },

@@ -1,5 +1,8 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'admin' })
+definePageMeta({
+  layout: 'admin',
+  title: 'Newsletter',
+})
 
 interface Newsletter {
   id: string
@@ -11,13 +14,21 @@ interface Newsletter {
   sending: boolean
   sentAt: string | null
   createdAt: string
+  lastDeliveryTotal: number | null
+  lastDeliverySentCount: number | null
+  lastDeliveryErrorCount: number | null
+  lastDeliveryFailedRecipients: string | null
 }
 
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 
-const { data, refresh } = await useFetch<{ items: Newsletter[] }>('/api/admin/newsletter')
+const { data, refresh } = await useFetch<{
+  items: Newsletter[]
+  total: number
+  maxDeliveryAttempts: number
+}>('/api/admin/newsletter')
 const items = computed(() => data.value?.items ?? [])
 
 const showModal = ref(false)
@@ -28,13 +39,23 @@ const showDeleteModal = ref(false)
 const itemToDelete = ref<Newsletter | null>(null)
 const isDeleting = ref(false)
 const sendingItemId = ref<string | null>(null)
+let sendingRefreshTimer: ReturnType<typeof setInterval> | null = null
 
-const imageInputRef = ref<HTMLInputElement | null>(null)
-const imagePreview = ref<string | null>(null)
-const isUploadingImage = ref(false)
-const pdfInputRef = ref<HTMLInputElement | null>(null)
-const pdfName = ref<string | null>(null)
-const isUploadingPdf = ref(false)
+const imageUpload = useAdminFileUpload({
+  endpoint: '/api/admin/newsletter/upload',
+  successMessage: 'Imagen subida correctamente',
+  errorMessage: 'No se pudo subir la imagen',
+  onUploaded: (storagePath) => {
+    form.coverImage = storagePath
+  },
+  getFallbackPreview: () => form.coverImage || null,
+})
+const pdfUpload = useAdminDocumentUpload({
+  endpoint: '/api/admin/newsletter/upload',
+  onUploaded: (storagePath) => {
+    form.pdfUrl = storagePath
+  },
+})
 
 const form = reactive({
   month: '',
@@ -44,28 +65,9 @@ const form = reactive({
   sendEmail: false,
 })
 
-const pickerYear = ref(new Date().getFullYear())
-const monthNames = [
-  'Ene',
-  'Feb',
-  'Mar',
-  'Abr',
-  'May',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dic',
-]
-
-function padMonth(month: number) {
-  return String(month).padStart(2, '0')
-}
-
 function buildMonthValue(year: number, monthIndex: number) {
-  return `${year}-${padMonth(monthIndex + 1)}-01`
+  const mm = String(monthIndex + 1).padStart(2, '0')
+  return `${year}-${mm}-01`
 }
 
 function getMonthKey(value: string) {
@@ -78,30 +80,12 @@ function buildMonthDate(monthKey: string) {
 
 const reservedMonthKeys = computed(() => {
   const currentId = editingItem.value?.id
-
   return new Set(items.value.filter((item) => item.id !== currentId).map((item) => item.monthKey))
 })
 
-const selectedMonth = computed(() => (form.month ? Number(form.month.slice(5, 7)) - 1 : -1))
-const selectedYear = computed(() => (form.month ? Number(form.month.slice(0, 4)) : -1))
 const isSelectedMonthTaken = computed(
   () => Boolean(form.month) && reservedMonthKeys.value.has(getMonthKey(form.month))
 )
-
-function pickMonth(monthIndex: number) {
-  form.month = buildMonthValue(pickerYear.value, monthIndex)
-}
-
-function isMonthDisabled(monthIndex: number): boolean {
-  const now = new Date()
-  const monthKey = `${pickerYear.value}-${padMonth(monthIndex + 1)}`
-
-  return (
-    pickerYear.value > now.getFullYear() ||
-    (pickerYear.value === now.getFullYear() && monthIndex > now.getMonth()) ||
-    reservedMonthKeys.value.has(monthKey)
-  )
-}
 
 function formatMonth(monthKey: string) {
   const label = buildMonthDate(monthKey).toLocaleDateString('es-ES', {
@@ -156,15 +140,13 @@ function getDefaultMonthValue() {
 
 function openCreate() {
   editingItem.value = null
-  const now = new Date()
   form.month = getDefaultMonthValue()
   form.coverImage = ''
   form.pdfUrl = ''
   form.active = true
   form.sendEmail = false
-  pickerYear.value = Number(form.month.slice(0, 4)) || now.getFullYear()
-  imagePreview.value = null
-  pdfName.value = null
+  imageUpload.setPreview(null)
+  pdfUpload.setFile(null)
   showModal.value = true
 }
 
@@ -186,79 +168,9 @@ function openEdit(item: Newsletter) {
   form.pdfUrl = item.pdfUrl
   form.active = item.active
   form.sendEmail = false
-  pickerYear.value = Number(item.monthKey.slice(0, 4))
-  imagePreview.value = item.coverImage || null
-  pdfName.value = item.pdfUrl ? (item.pdfUrl.split('/').pop() ?? null) : null
+  imageUpload.setPreview(item.coverImage || null)
+  pdfUpload.setFile(item.pdfUrl)
   showModal.value = true
-}
-
-function triggerImageInput() {
-  imageInputRef.value?.click()
-}
-
-async function handleImageSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    imagePreview.value = e.target?.result as string
-  }
-  reader.readAsDataURL(file)
-
-  isUploadingImage.value = true
-  try {
-    const fd = new FormData()
-    fd.append('file', file)
-    const result = await $fetch<{ path: string; storagePath: string }>(
-      '/api/admin/newsletter/upload',
-      {
-        method: 'POST',
-        body: fd,
-      }
-    )
-    form.coverImage = result.storagePath
-    toast.add({ title: 'Imagen subida correctamente', color: 'success' })
-  } catch {
-    imagePreview.value = null
-    toast.add({ title: 'No se pudo subir la imagen', color: 'error' })
-  } finally {
-    isUploadingImage.value = false
-    if (target) target.value = ''
-  }
-}
-
-function triggerPdfInput() {
-  pdfInputRef.value?.click()
-}
-
-async function handlePdfSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  pdfName.value = file.name
-  isUploadingPdf.value = true
-  try {
-    const fd = new FormData()
-    fd.append('file', file)
-    const result = await $fetch<{ path: string; storagePath: string }>(
-      '/api/admin/newsletter/upload',
-      {
-        method: 'POST',
-        body: fd,
-      }
-    )
-    form.pdfUrl = result.storagePath
-    toast.add({ title: 'PDF subido correctamente', color: 'success' })
-  } catch {
-    pdfName.value = null
-    toast.add({ title: 'No se pudo subir el PDF', color: 'error' })
-  } finally {
-    isUploadingPdf.value = false
-    if (target) target.value = ''
-  }
 }
 
 // Submit
@@ -361,6 +273,21 @@ watch(
   },
   { immediate: true }
 )
+
+onMounted(() => {
+  sendingRefreshTimer = setInterval(() => {
+    if (items.value.some((item) => item.sending)) {
+      void refresh()
+    }
+  }, 10_000)
+})
+
+onBeforeUnmount(() => {
+  if (sendingRefreshTimer) {
+    clearInterval(sendingRefreshTimer)
+    sendingRefreshTimer = null
+  }
+})
 </script>
 
 <template>
@@ -399,7 +326,7 @@ watch(
           </div>
           <div v-else-if="item.sending" class="text-muted mt-0.5 text-sm">Enviándose ahora</div>
           <div v-else class="text-muted mt-0.5 text-sm">Pendiente de envío</div>
-          <div class="mt-1 flex items-center gap-2">
+          <div class="mt-1 flex flex-wrap items-center gap-2">
             <span
               :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
               class="rounded-full px-2 py-0.5 text-xs"
@@ -427,6 +354,32 @@ watch(
               PDF <span class="sr-only">(se abre en nueva pestaña)</span>
             </a>
           </div>
+          <!-- Delivery stats: shown once a delivery has been attempted -->
+          <div
+            v-if="item.lastDeliveryTotal !== null"
+            class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs"
+          >
+            <span class="text-muted">
+              <span class="font-medium">{{ item.lastDeliverySentCount ?? 0 }}</span
+              >/{{ item.lastDeliveryTotal }} enviados
+            </span>
+            <span v-if="(item.lastDeliveryErrorCount ?? 0) > 0" class="text-error font-medium">
+              {{ item.lastDeliveryErrorCount }} fallidos
+            </span>
+            <UTooltip
+              v-if="item.lastDeliveryFailedRecipients"
+              :text="
+                (JSON.parse(item.lastDeliveryFailedRecipients) as string[]).slice(0, 5).join(', ') +
+                ((JSON.parse(item.lastDeliveryFailedRecipients) as string[]).length > 5
+                  ? ` +${(JSON.parse(item.lastDeliveryFailedRecipients) as string[]).length - 5} más`
+                  : '')
+              "
+            >
+              <span class="text-error cursor-help underline decoration-dotted"
+                >ver destinatarios</span
+              >
+            </UTooltip>
+          </div>
         </div>
         <div class="flex gap-1">
           <UButton
@@ -434,8 +387,15 @@ watch(
             icon="i-tabler-send"
             variant="ghost"
             size="sm"
-            :loading="sendingItemId === item.id || item.sending"
-            :disabled="!item.active || item.sending || sendingItemId === item.id"
+            :loading="sendingItemId === item.id"
+            :disabled="!item.active || sendingItemId === item.id || item.sending"
+            :title="
+              item.sending
+                ? 'Ya se está enviando'
+                : !item.active
+                  ? 'Activa la newsletter para poder enviarla'
+                  : undefined
+            "
             :aria-label="`Enviar newsletter de ${formatMonth(item.monthKey)}`"
             @click="handleManualSend(item)"
           />
@@ -467,53 +427,11 @@ watch(
       <template #body>
         <form class="space-y-5" @submit.prevent="handleSubmit">
           <UFormField label="Mes *">
-            <div class="rounded-lg border p-3" role="group" aria-label="Selector de mes y año">
-              <div class="mb-2 flex items-center justify-between">
-                <UButton
-                  icon="i-tabler-chevron-left"
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Año anterior"
-                  @click="pickerYear--"
-                />
-                <span class="text-sm font-semibold">{{ pickerYear }}</span>
-                <UButton
-                  icon="i-tabler-chevron-right"
-                  variant="ghost"
-                  size="sm"
-                  :disabled="pickerYear >= new Date().getFullYear()"
-                  aria-label="Año siguiente"
-                  @click="pickerYear++"
-                />
-              </div>
-              <div class="grid grid-cols-4 gap-1">
-                <button
-                  v-for="(name, idx) in monthNames"
-                  :key="idx"
-                  type="button"
-                  :disabled="isMonthDisabled(idx)"
-                  :aria-pressed="selectedMonth === idx && selectedYear === pickerYear"
-                  class="rounded-md px-2 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-                  :class="[
-                    selectedMonth === idx && selectedYear === pickerYear
-                      ? 'bg-primary text-inverted'
-                      : 'hover:bg-elevated',
-                  ]"
-                  @click="pickMonth(idx)"
-                >
-                  {{ name }}
-                </button>
-              </div>
-            </div>
-            <template #hint>
-              <span :class="isSelectedMonthTaken ? 'text-error' : 'text-dimmed'" class="text-xs">
-                {{
-                  isSelectedMonthTaken
-                    ? 'Ya existe una newsletter para ese mes.'
-                    : 'Solo se permite una newsletter por mes.'
-                }}
-              </span>
-            </template>
+            <AdminNewsletterMonthPicker
+              v-model="form.month"
+              :disabled-months="reservedMonthKeys"
+              :taken="isSelectedMonthTaken"
+            />
           </UFormField>
 
           <UFormField label="Imagen de portada *">
@@ -523,13 +441,13 @@ watch(
                 tabindex="0"
                 class="bg-muted flex size-24 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border"
                 aria-label="Seleccionar imagen de portada"
-                @click="triggerImageInput"
-                @keydown.enter="triggerImageInput"
-                @keydown.space.prevent="triggerImageInput"
+                @click="imageUpload.triggerFileDialog"
+                @keydown.enter="imageUpload.triggerFileDialog"
+                @keydown.space.prevent="imageUpload.triggerFileDialog"
               >
                 <img
-                  v-if="imagePreview"
-                  :src="imagePreview"
+                  v-if="imageUpload.preview.value"
+                  :src="imageUpload.preview.value"
                   alt="Portada"
                   class="size-full object-cover"
                 />
@@ -538,17 +456,17 @@ watch(
               <UButton
                 variant="outline"
                 size="sm"
-                :loading="isUploadingImage"
-                @click="triggerImageInput"
+                :loading="imageUpload.isUploading.value"
+                @click="imageUpload.triggerFileDialog"
               >
-                {{ imagePreview ? 'Cambiar imagen' : 'Subir imagen' }}
+                {{ imageUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
               </UButton>
               <input
-                ref="imageInputRef"
+                :ref="imageUpload.inputRef"
                 type="file"
                 accept="image/*"
                 class="hidden"
-                @change="handleImageSelect"
+                @change="imageUpload.handleFileSelect"
               />
             </div>
           </UFormField>
@@ -556,25 +474,27 @@ watch(
           <UFormField label="PDF *">
             <div class="flex items-center gap-4">
               <UIcon
-                :name="pdfName ? 'i-tabler-file-check' : 'i-tabler-file-upload'"
+                :name="pdfUpload.fileName.value ? 'i-tabler-file-check' : 'i-tabler-file-upload'"
                 class="size-8"
-                :class="pdfName ? 'text-success' : 'text-muted'"
+                :class="pdfUpload.fileName.value ? 'text-success' : 'text-muted'"
               />
-              <span v-if="pdfName" class="truncate text-sm">{{ pdfName }}</span>
+              <span v-if="pdfUpload.fileName.value" class="truncate text-sm">{{
+                pdfUpload.fileName.value
+              }}</span>
               <UButton
                 variant="outline"
                 size="sm"
-                :loading="isUploadingPdf"
-                @click="triggerPdfInput"
+                :loading="pdfUpload.isUploading.value"
+                @click="pdfUpload.triggerFileDialog"
               >
-                {{ pdfName ? 'Cambiar PDF' : 'Subir PDF' }}
+                {{ pdfUpload.fileName.value ? 'Cambiar PDF' : 'Subir PDF' }}
               </UButton>
               <input
-                ref="pdfInputRef"
+                :ref="pdfUpload.inputRef"
                 type="file"
                 accept=".pdf"
                 class="hidden"
-                @change="handlePdfSelect"
+                @change="pdfUpload.handleFileSelect"
               />
             </div>
           </UFormField>

@@ -1,9 +1,13 @@
 import { createError, defineEventHandler, readBody } from 'h3'
-import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressDossier } from '../../../db/schema'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
-import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import {
+  type CleanupUnusedAdminAssetOptions,
+  cleanupAdminAssetFinalizationsSafely,
+  cleanupUnusedAdminAssetSafely,
+  trackAdminAssetFinalization,
+} from '../../../utils/adminAssetPublication'
 import { updatePressDossierSchema, validateBody } from '../../../utils/validation'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
@@ -19,6 +23,7 @@ export default defineEventHandler(async (event) => {
 
   if (event.method === 'PUT') {
     const body = await readBody(event)
+    const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
     try {
       const validated = validateBody(updatePressDossierSchema, body)
@@ -36,46 +41,52 @@ export default defineEventHandler(async (event) => {
             replaceStoragePath: previousPdfUrl,
           })
         : null
+      trackAdminAssetFinalization(cleanupTargets, {
+        sourceStoragePath: validated.pdfUrl,
+        storagePath: pdfUrl,
+        allowedPublicPathPrefixes: [PRESS_DOSSIER_PUBLIC_PATH],
+      })
 
       const item = await db.transaction(async (tx) => {
-        if (!existingItem) {
-          const [created] = await tx
-            .insert(pressDossier)
-            .values({
-              pdfUrl,
-              active: validated.active,
-            })
-            .returning()
-
-          if (!created) {
-            throw createError({ statusCode: 500, message: 'No se pudo guardar el dossier' })
-          }
-
-          return created
-        }
-
-        await tx
-          .update(pressDossier)
-          .set({
+        const [upserted] = await tx
+          .insert(pressDossier)
+          .values({
+            id: 'singleton',
             pdfUrl,
             active: validated.active,
           })
-          .where(eq(pressDossier.id, existingItem.id))
+          .onConflictDoUpdate({
+            target: pressDossier.id,
+            set: { pdfUrl, active: validated.active },
+          })
+          .returning()
 
-        return tx.query.pressDossier.findFirst({
-          where: eq(pressDossier.id, existingItem.id),
-        })
+        if (!upserted) {
+          throw createError({ statusCode: 500, message: 'No se pudo guardar el dossier' })
+        }
+
+        return upserted
       })
 
       if (previousPdfUrl && previousPdfUrl !== pdfUrl) {
-        await cleanupUnusedAdminAsset({
-          storagePath: previousPdfUrl,
-          allowedPublicPathPrefixes: [PRESS_DOSSIER_PUBLIC_PATH],
-        })
+        await cleanupUnusedAdminAssetSafely(
+          {
+            storagePath: previousPdfUrl,
+            allowedPublicPathPrefixes: [PRESS_DOSSIER_PUBLIC_PATH],
+          },
+          'admin.press-dossier.update.cleanup',
+          event
+        )
       }
 
       return { item }
     } catch (error) {
+      await cleanupAdminAssetFinalizationsSafely(
+        cleanupTargets,
+        'admin.press-dossier.update.rollback',
+        event
+      )
+
       if (error && typeof error === 'object' && 'statusCode' in error) {
         throw error
       }

@@ -1,27 +1,40 @@
 import { createError, setHeader } from 'h3'
-import { asc, eq } from 'drizzle-orm'
+import { asc, eq, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { equalityDocuments } from '../db/schema'
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
 import { logError } from '../utils/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { getRequestLocaleContext } from '../utils/requestLocale'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import { publicPaginationQuerySchema, validateQuery } from '../utils/validation'
 
 export default defineCachedEventHandler(
   async (event) => {
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
+    const { limit, offset } = validateQuery(event, publicPaginationQuerySchema)
 
     try {
-      const items = await db.query.equalityDocuments.findMany({
-        where: eq(equalityDocuments.active, true),
-        orderBy: asc(equalityDocuments.order),
-        with: {
-          translations: true,
-        },
-      })
+      const activeWhere = eq(equalityDocuments.active, true)
+
+      const [items, countResult] = await Promise.all([
+        db.query.equalityDocuments.findMany({
+          where: activeWhere,
+          orderBy: [asc(equalityDocuments.order), asc(equalityDocuments.id)],
+          limit,
+          offset,
+          with: {
+            translations: true,
+          },
+        }),
+        db
+          .select({ count: sql<number>`count(*)`.mapWith(Number) })
+          .from(equalityDocuments)
+          .where(activeWhere),
+      ])
 
       return {
         items: items.map((item) => {
@@ -38,6 +51,7 @@ export default defineCachedEventHandler(
               }) ?? item.pdfUrl,
           }
         }),
+        total: countResult[0]?.count ?? 0,
       }
     } catch (error) {
       if (isDatabaseUnavailableError(error)) {
@@ -45,7 +59,7 @@ export default defineCachedEventHandler(
         setHeader(event, 'retry-after', 60)
         throw createError({
           statusCode: 503,
-          statusMessage: 'Servicio temporalmente no disponible',
+          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
         })
       }
 
@@ -54,6 +68,9 @@ export default defineCachedEventHandler(
   },
   {
     ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) => buildPublicRouteCacheKey(event, 'public-equality-documents'),
+    getKey: (event) =>
+      buildPublicRouteCacheKey(event, 'public-equality-documents', {
+        queryKeys: ['limit', 'offset'],
+      }),
   }
 )

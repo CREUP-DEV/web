@@ -1,5 +1,8 @@
-import { createId } from '@paralleldrive/cuid2'
+import { randomBytes } from 'node:crypto'
 import type { H3Event } from 'h3'
+import { and, eq, isNotNull, isNull, lte } from 'drizzle-orm'
+import { db } from '../db'
+import { newsletterSubscribers, newsletterSubscriptionEvents } from '../db/schema'
 import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
 import { buildAbsoluteUrl, getClientIp, getUserAgent, normalizeBaseUrl } from './urlBuilder'
 import { getSmtpTransporter } from './smtpTransporter'
@@ -12,8 +15,33 @@ export const NEWSLETTER_CONFIRM_TOKEN_TTL_MS = 48 * 60 * 60 * 1000
 export const NEWSLETTER_CONSENT_SOURCES = {
   adminManual: 'admin_manual',
   legacyImport: 'legacy_import',
+  emailLink: 'email_link',
+  system: 'system',
   webForm: 'web_form',
 } as const
+
+export const NEWSLETTER_SUBSCRIPTION_EVENT_TYPES = {
+  adminCreated: 'admin_created',
+  adminDeleted: 'admin_deleted',
+  adminUpdated: 'admin_updated',
+  confirmationExpired: 'confirmation_expired',
+  confirmed: 'confirmed',
+  requested: 'requested',
+  unsubscribed: 'unsubscribed',
+} as const
+
+export type NewsletterSubscriptionEventType =
+  (typeof NEWSLETTER_SUBSCRIPTION_EVENT_TYPES)[keyof typeof NEWSLETTER_SUBSCRIPTION_EVENT_TYPES]
+
+export type NewsletterSubscriptionEventSource =
+  (typeof NEWSLETTER_CONSENT_SOURCES)[keyof typeof NEWSLETTER_CONSENT_SOURCES]
+
+export interface NewsletterSubscriptionEventInput {
+  email: string
+  eventSource: NewsletterSubscriptionEventSource
+  eventType: NewsletterSubscriptionEventType
+  subscriberId: string
+}
 
 export function getNewsletterConsentEvidence(event: H3Event) {
   return {
@@ -23,6 +51,18 @@ export function getNewsletterConsentEvidence(event: H3Event) {
     consentTextVersion: NEWSLETTER_CONSENT_TEXT_VERSION,
     consentUserAgent: getUserAgent(event),
   }
+}
+
+export async function recordNewsletterSubscriptionEvent(
+  input: NewsletterSubscriptionEventInput,
+  database: Pick<typeof db, 'insert'> = db
+) {
+  await database.insert(newsletterSubscriptionEvents).values({
+    email: input.email.trim().toLowerCase(),
+    eventSource: input.eventSource,
+    eventType: input.eventType,
+    subscriberId: input.subscriberId,
+  })
 }
 
 function buildConfirmationEmailHtml(confirmUrl: string, siteUrl: string): string {
@@ -85,14 +125,16 @@ ${privacyUrl}
 export async function sendNewsletterConfirmationEmail(
   email: string,
   confirmToken: string,
+  locale: string = 'es',
   configErrorMessage = 'Server configuration error.'
 ): Promise<void> {
   const transporter = getSmtpTransporter(configErrorMessage)
 
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
+  const localePath = locale === 'en' ? '/en/confirmar-suscripcion' : '/confirmar-suscripcion'
   const confirmUrl = buildAbsoluteUrl(
     siteUrl,
-    `/api/newsletter-confirm?token=${encodeURIComponent(confirmToken)}`
+    `${localePath}?token=${encodeURIComponent(confirmToken)}`
   )
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
 
@@ -106,13 +148,30 @@ export async function sendNewsletterConfirmationEmail(
 }
 
 export function createNewsletterConfirmToken(): string {
-  return createId()
+  return randomBytes(32).toString('base64url')
 }
 
 export function createNewsletterUnsubscribeToken(): string {
-  return createId()
+  return randomBytes(32).toString('base64url')
 }
 
 export function createConfirmTokenExpiresAt(): Date {
   return new Date(Date.now() + NEWSLETTER_CONFIRM_TOKEN_TTL_MS)
+}
+
+export async function cleanupExpiredNewsletterConfirmTokens(now: Date = new Date()) {
+  const deleted = await db
+    .delete(newsletterSubscribers)
+    .where(
+      and(
+        eq(newsletterSubscribers.active, false),
+        isNull(newsletterSubscribers.confirmedAt),
+        isNotNull(newsletterSubscribers.confirmToken),
+        isNotNull(newsletterSubscribers.confirmTokenExpiresAt),
+        lte(newsletterSubscribers.confirmTokenExpiresAt, now)
+      )
+    )
+    .returning({ id: newsletterSubscribers.id })
+
+  return deleted.length
 }

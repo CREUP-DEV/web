@@ -13,7 +13,7 @@ import { createTagSchema, validateBody } from '../../../utils/validation'
 export default defineEventHandler(async (event) => {
   if (event.method === 'GET') {
     const items = await db.query.tags.findMany({
-      orderBy: asc(tags.order),
+      orderBy: [asc(tags.order), asc(tags.id)],
       with: { translations: true },
     })
     return { items }

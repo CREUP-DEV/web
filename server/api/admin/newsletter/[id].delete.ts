@@ -2,7 +2,7 @@ import { createError, defineEventHandler } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
-import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
@@ -22,15 +22,23 @@ export default defineEventHandler(async (event) => {
 
   await db.delete(newsletters).where(eq(newsletters.id, id))
 
-  await cleanupUnusedAdminAsset({
-    storagePath: existingItem.coverImage,
-    allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-  })
+  await cleanupUnusedAdminAssetSafely(
+    {
+      storagePath: existingItem.coverImage,
+      allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+    },
+    'admin.newsletter.delete.cleanup.cover',
+    event
+  )
 
-  await cleanupUnusedAdminAsset({
-    storagePath: existingItem.pdfUrl,
-    allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
-  })
+  await cleanupUnusedAdminAssetSafely(
+    {
+      storagePath: existingItem.pdfUrl,
+      allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+    },
+    'admin.newsletter.delete.cleanup.pdf',
+    event
+  )
 
   return { success: true }
 })

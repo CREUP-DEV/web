@@ -2,7 +2,7 @@ import { createError, defineEventHandler } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems } from '../../../db/schema'
-import { cleanupUnusedAdminAsset } from '../../../utils/adminAssetPublication'
+import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import {
   HOME_CAROUSEL_FALLBACK_IMAGE,
@@ -22,11 +22,15 @@ export default defineEventHandler(async (event) => {
 
   await db.delete(carouselItems).where(eq(carouselItems.id, id))
 
-  await cleanupUnusedAdminAsset({
-    storagePath: existingItem.image,
-    allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-    protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
-  })
+  await cleanupUnusedAdminAssetSafely(
+    {
+      storagePath: existingItem.image,
+      allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+      protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
+    },
+    'admin.carousel.delete.cleanup',
+    event
+  )
 
   return { success: true }
 })

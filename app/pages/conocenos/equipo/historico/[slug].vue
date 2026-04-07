@@ -6,6 +6,7 @@ const { t, locale } = useI18n()
 const { fallbackLocale } = useLocales()
 const route = useRoute()
 const localePath = useLocalePath()
+const localeApiHeaders = useLocaleApiHeaders()
 const { getFullName, getSocialButtons } = usePersonHelpers()
 
 type SocialNetwork = SocialNetworkEntry
@@ -61,7 +62,10 @@ type SlugResponse =
   | { ambiguous: true; mandates: MandateInfo[] }
 
 const { data, error, status } = await useFetch<SlugResponse>(
-  () => `/api/organigrama/mandatos/by-slug/${slug.value}`
+  () => `/api/organigrama/mandatos/by-slug/${slug.value}`,
+  {
+    headers: localeApiHeaders,
+  }
 )
 
 if (error.value) {

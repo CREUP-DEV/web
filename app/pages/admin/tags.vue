@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'admin',
+  title: 'Etiquetas',
 })
 
 const { t } = useI18n()

@@ -1,46 +1,12 @@
-import { defineEventHandler, sendRedirect, setHeader } from 'h3'
-import { eq } from 'drizzle-orm'
-import { db } from '../db'
-import { newsletterSubscribers } from '../db/schema'
-import { buildLocalizedPath } from '../utils/urlBuilder'
-import { newsletterTokenQuerySchema, validateQuery } from '../utils/validation'
+import { createError, defineEventHandler } from 'h3'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 
-export default defineEventHandler(async (event) => {
-  setHeader(event, 'cache-control', 'no-store')
-
-  const { token } = validateQuery(event, newsletterTokenQuerySchema)
-  const redirectBasePath = buildLocalizedPath(event, '/prensa/newsletter')
-
-  const subscriber = await db.query.newsletterSubscribers.findFirst({
-    where: eq(newsletterSubscribers.confirmToken, token),
+// This action is now a POST to prevent mail scanners from triggering confirmation.
+// The confirmation link in emails points to the /confirmar-suscripcion interstitial page,
+// which submits the token via POST to /api/newsletter-confirm.
+export default defineEventHandler((event) => {
+  throw createError({
+    statusCode: 405,
+    message: getPublicApiErrorMessage(event, 'methodNotAllowed'),
   })
-
-  const now = new Date()
-
-  if (subscriber && (!subscriber.confirmTokenExpiresAt || subscriber.confirmTokenExpiresAt > now)) {
-    await db
-      .update(newsletterSubscribers)
-      .set({
-        active: true,
-        confirmToken: null,
-        confirmTokenExpiresAt: null,
-        confirmedAt: subscriber.confirmedAt ?? now,
-        unsubscribedAt: null,
-      })
-      .where(eq(newsletterSubscribers.id, subscriber.id))
-
-    return sendRedirect(event, `${redirectBasePath}?confirmed=1`, 302)
-  }
-
-  if (subscriber) {
-    await db
-      .update(newsletterSubscribers)
-      .set({
-        confirmToken: null,
-        confirmTokenExpiresAt: null,
-      })
-      .where(eq(newsletterSubscribers.id, subscriber.id))
-  }
-
-  return sendRedirect(event, `${redirectBasePath}?confirmed=expired`, 302)
 })
