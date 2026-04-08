@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import type { CarouselItem } from '@/composables/useHomeData'
 import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
 import { isExternalNavigationTarget } from '~~/shared/utils/url'
@@ -15,6 +16,13 @@ const props = withDefaults(
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+
+const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+
+const autoplay = computed(() => {
+  if (props.items.length <= 1 || prefersReducedMotion.value) return false
+  return { delay: 10000, stopOnMouseEnter: true, stopOnFocusIn: true }
+})
 
 const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? undefined : 'webp')
 </script>
@@ -38,7 +46,7 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
         :dots="props.items.length > 1"
         :arrows="false"
         auto-height
-        :autoplay="props.items.length > 1 ? { delay: 10000 } : false"
+        :autoplay="autoplay"
         :items="props.items"
         :ui="{
           container: 'transition-[height]',
@@ -81,7 +89,7 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {{ item.buttonText }}
+                {{ item.buttonText || t('home.carousel.defaultButtonText') }}
                 <UIcon name="i-tabler-arrow-right" class="ml-1" aria-hidden="true" />
               </a>
               <NuxtLink
@@ -89,7 +97,7 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
                 :to="localePath(item.href)"
                 class="bg-primary text-inverted ring-primary/60 hover:bg-primary/90 inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 sm:w-auto sm:shrink-0"
               >
-                {{ item.buttonText }}
+                {{ item.buttonText || t('home.carousel.defaultButtonText') }}
                 <UIcon name="i-tabler-arrow-right" class="ml-1" aria-hidden="true" />
               </NuxtLink>
             </div>

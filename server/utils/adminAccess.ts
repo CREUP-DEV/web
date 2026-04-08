@@ -29,40 +29,21 @@ export function normalizeAdminEmail(email: string) {
   return email.trim().toLowerCase()
 }
 
-export function normalizeAdminEmailDomain(domain: string) {
-  return domain.trim().toLowerCase().replace(/^@+/, '')
-}
-
-export function getAllowedAdminEmailDomain() {
-  const rawDomain = process.env.ADMIN_EMAIL_DOMAIN
-
-  if (rawDomain === undefined) {
-    return null
-  }
-
-  const domain = normalizeAdminEmailDomain(rawDomain)
-  return domain || null
-}
-
-export function isAdminEmailFromAllowedDomain(email: string) {
-  const allowedDomain = getAllowedAdminEmailDomain()
-  if (!allowedDomain) {
-    return true
-  }
-
-  const normalizedEmail = normalizeAdminEmail(email)
-  const [, emailDomain = ''] = normalizedEmail.split('@')
-  return emailDomain === allowedDomain
-}
+let cachedEnvAdminEmails: string[] | null = null
 
 export function getEnvAdminEmails() {
+  if (cachedEnvAdminEmails !== null) {
+    return cachedEnvAdminEmails
+  }
+
   const rawEmails = process.env.ADMIN_EMAILS
 
   if (rawEmails === undefined) {
-    return []
+    cachedEnvAdminEmails = []
+    return cachedEnvAdminEmails
   }
 
-  return Array.from(
+  cachedEnvAdminEmails = Array.from(
     new Set(
       rawEmails
         .split(/[\s,;]+/)
@@ -70,6 +51,8 @@ export function getEnvAdminEmails() {
         .filter(Boolean)
     )
   )
+
+  return cachedEnvAdminEmails
 }
 
 export function isEnvAdminEmail(email: string) {
@@ -79,14 +62,16 @@ export function isEnvAdminEmail(email: string) {
 export async function isAdminEmailAuthorized(email: string) {
   const normalizedEmail = normalizeAdminEmail(email)
 
-  if (!normalizedEmail || !isAdminEmailFromAllowedDomain(normalizedEmail)) {
+  if (!normalizedEmail) {
     return false
   }
 
+  // Env-configured emails are always authoritative
   if (isEnvAdminEmail(normalizedEmail)) {
     return true
   }
 
+  // Otherwise check the database
   const [authorizedEmail] = await db
     .select({ id: adminAccess.id })
     .from(adminAccess)
@@ -102,22 +87,17 @@ export async function getAdminAccessById(id: string) {
 }
 
 export async function countEffectiveActiveAdmins() {
-  const envEmails = getEnvAdminEmails().filter((email) => isAdminEmailFromAllowedDomain(email))
+  const envEmails = getEnvAdminEmails()
   const dbAdmins = await db
     .select({ email: adminAccess.email })
     .from(adminAccess)
     .where(eq(adminAccess.active, true))
 
-  return new Set([
-    ...envEmails,
-    ...dbAdmins
-      .map((entry) => normalizeAdminEmail(entry.email))
-      .filter((email) => isAdminEmailFromAllowedDomain(email)),
-  ]).size
+  return new Set([...envEmails, ...dbAdmins.map((entry) => normalizeAdminEmail(entry.email))]).size
 }
 
 export async function getAdminAccessSummary() {
-  const envEmails = getEnvAdminEmails().filter((email) => isAdminEmailFromAllowedDomain(email))
+  const envEmails = getEnvAdminEmails()
   const dbEntries = await db
     .select({
       email: adminAccess.email,
@@ -131,7 +111,7 @@ export async function getAdminAccessSummary() {
   for (const entry of dbEntries) {
     const normalizedEmail = normalizeAdminEmail(entry.email)
 
-    if (!normalizedEmail || !isAdminEmailFromAllowedDomain(normalizedEmail)) {
+    if (!normalizedEmail) {
       continue
     }
 
@@ -220,8 +200,7 @@ export async function listAdminAccess() {
         email,
         name: user?.name ?? null,
         image: user?.image ?? null,
-        active:
-          isAdminEmailFromAllowedDomain(email) && (protectedByEnv || dbEntry?.active === true),
+        active: protectedByEnv || dbEntry?.active === true,
         protectedByEnv,
         source,
         lastAccessAt: normalizeTimestamp(user ? lastAccessByUserId.get(user.id) : null),

@@ -11,30 +11,30 @@ const tagList = computed(() => {
 
   return [
     {
-      slug: 'all',
+      slug: null,
       name: t('common.all'),
     },
-    ...availableTags.filter((tag) => tag.slug !== 'all'),
+    ...availableTags,
   ]
 })
 const isLoading = computed(() => pending.value || tagsData.value == null)
 
 const emit = defineEmits<{
-  (e: 'select', tagSlug: string): void
+  (e: 'select', tagSlug: string | null): void
 }>()
 
-const selectedSlug = ref<string>('all')
+const selectedSlug = ref<string | null>(null)
 
-const onSelectTag = (slug: string) => {
+const onSelectTag = (slug: string | null) => {
   selectedSlug.value = slug
   emit('select', slug)
 }
 
 watch(
   tagList,
-  (list: Array<{ slug: string; name: string }>) => {
-    if (!list.find((tag: { slug: string }) => tag.slug === selectedSlug.value)) {
-      onSelectTag('all')
+  (list: Array<{ slug: string | null; name: string }>) => {
+    if (!list.find((tag) => tag.slug === selectedSlug.value)) {
+      onSelectTag(null)
     }
   },
   { immediate: true }
@@ -54,7 +54,7 @@ watch(
       <template v-else>
         <UButton
           v-for="tag in tagList"
-          :key="tag.slug"
+          :key="tag.slug ?? '__all__'"
           class="shrink-0 rounded-full whitespace-nowrap"
           size="sm"
           color="secondary"

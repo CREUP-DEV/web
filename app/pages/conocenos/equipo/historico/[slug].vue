@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { socialNetworkIcons, type SocialNetworkEntry } from '~~/shared/utils/social'
+import type { SocialNetworkEntry } from '~~/shared/utils/social'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const { t, locale } = useI18n()
@@ -7,7 +7,7 @@ const { fallbackLocale } = useLocales()
 const route = useRoute()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
-const { getFullName, getSocialButtons } = usePersonHelpers()
+const { getFullName } = usePersonHelpers()
 
 type SocialNetwork = SocialNetworkEntry
 
@@ -124,8 +124,6 @@ function getDurationText(startDate: string, endDate: string | null): string {
   return t('mandates.durationMonths', { count: months })
 }
 
-const networkIcons = socialNetworkIcons
-
 const getViewProfileAriaLabel = (fullName: string) => `${t('team.viewProfile')}: ${fullName}`
 
 const selectedAssignment = ref<Assignment | null>(null)
@@ -143,6 +141,24 @@ const closeMemberModal = () => {
   selectedAssignment.value = null
   selectedAreaName.value = ''
 }
+
+const modalAssignmentStart = computed(() =>
+  selectedAssignment.value ? formatCompactDate(selectedAssignment.value.startDate) : null
+)
+
+const modalAssignmentEnd = computed(() =>
+  selectedAssignment.value
+    ? selectedAssignment.value.endDate
+      ? formatCompactDate(selectedAssignment.value.endDate)
+      : t('mandates.present')
+    : null
+)
+
+const modalAssignmentDuration = computed(() =>
+  selectedAssignment.value
+    ? getDurationText(selectedAssignment.value.startDate, selectedAssignment.value.endDate)
+    : null
+)
 </script>
 
 <template>
@@ -306,104 +322,15 @@ const closeMemberModal = () => {
       @close="closeMemberModal"
     >
       <template #body>
-        <div v-if="selectedAssignment" class="space-y-6">
-          <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-            <div
-              class="ring-primary/30 size-28 shrink-0 overflow-hidden rounded-full ring-2 sm:size-32"
-            >
-              <NuxtImg
-                v-if="selectedAssignment.member.photo"
-                :src="selectedAssignment.member.photo"
-                :alt="getFullName(selectedAssignment.member)"
-                class="size-full object-cover"
-              />
-              <div
-                v-else
-                class="bg-primary/10 text-primary flex size-full items-center justify-center"
-              >
-                <UIcon name="i-tabler-user" class="size-14" />
-              </div>
-            </div>
-
-            <div class="text-center sm:text-left">
-              <p
-                v-if="selectedAssignment.member.denomination"
-                class="text-primary text-lg font-medium"
-              >
-                {{ selectedAssignment.member.denomination }}
-              </p>
-              <p class="text-foreground text-xl font-bold">
-                {{ getFullName(selectedAssignment.member) }}
-              </p>
-              <UBadge size="sm" color="neutral" variant="soft" class="mt-1">
-                {{ selectedAreaName }}
-              </UBadge>
-
-              <div class="mt-2 flex items-center gap-1.5 text-sm">
-                <UIcon name="i-tabler-calendar" class="text-muted size-4 shrink-0" />
-                <span class="text-muted">
-                  {{ formatCompactDate(selectedAssignment.startDate) }}
-                  —
-                  {{
-                    selectedAssignment.endDate
-                      ? formatCompactDate(selectedAssignment.endDate)
-                      : t('mandates.present')
-                  }}
-                </span>
-              </div>
-              <p class="text-muted text-xs">
-                {{ getDurationText(selectedAssignment.startDate, selectedAssignment.endDate) }}
-              </p>
-
-              <div
-                v-if="selectedAssignment.member.university || selectedAssignment.member.degree"
-                class="mt-3 space-y-1"
-              >
-                <p
-                  v-if="selectedAssignment.member.university"
-                  class="text-muted flex items-center gap-1.5 text-sm"
-                >
-                  <UIcon name="i-tabler-building" class="size-4 shrink-0" />
-                  <span>{{ selectedAssignment.member.university }}</span>
-                </p>
-                <p
-                  v-if="selectedAssignment.member.degree"
-                  class="text-muted flex items-center gap-1.5 text-sm"
-                >
-                  <UIcon name="i-tabler-school" class="size-4 shrink-0" />
-                  <span>{{ selectedAssignment.member.degree }}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="selectedAssignment.member.description">
-            <h4 class="text-foreground mb-2 font-semibold">
-              {{ t('team.about', { name: selectedAssignment.member.name }) }}
-            </h4>
-            <div class="text-muted prose prose-sm dark:prose-invert max-w-none whitespace-pre-line">
-              {{ selectedAssignment.member.description }}
-            </div>
-          </div>
-
-          <div v-if="getSocialButtons(selectedAssignment.member).length > 0">
-            <h4 class="text-foreground mb-3 font-semibold">{{ t('members.socialNetworks') }}</h4>
-            <div class="flex flex-wrap gap-2">
-              <UButton
-                v-for="sn in getSocialButtons(selectedAssignment.member)"
-                :key="`${sn.network}-${sn.href}`"
-                :to="sn.href"
-                target="_blank"
-                :icon="networkIcons[sn.network]"
-                color="neutral"
-                variant="soft"
-                size="sm"
-              >
-                {{ t(`members.networks.${sn.network}`) }}
-              </UButton>
-            </div>
-          </div>
-        </div>
+        <TeamPersonModal
+          v-if="selectedAssignment"
+          :member="selectedAssignment.member"
+          :display-name="getFullName(selectedAssignment.member)"
+          :badge-label="selectedAreaName"
+          :assignment-start="modalAssignmentStart"
+          :assignment-end="modalAssignmentEnd"
+          :assignment-duration="modalAssignmentDuration"
+        />
       </template>
     </UModal>
   </div>

@@ -15,6 +15,7 @@ import {
   createNewsletterUnsubscribeToken,
   getNewsletterConsentEvidence,
   recordNewsletterSubscriptionEvent,
+  sendNewsletterAlreadySubscribedEmail,
   sendNewsletterConfirmationEmail,
 } from '../utils/newsletterSubscribers'
 
@@ -51,12 +52,18 @@ export default defineEventHandler(async (event) => {
     const confirmTokenExpiresAt = createConfirmTokenExpiresAt()
     const consentEvidence = getNewsletterConsentEvidence(event)
 
+    // Track what email to send after the transaction completes.
+    // This keeps the DB transaction short and avoids sending emails
+    // that get rolled back if the transaction fails.
+    let pendingEmailType: 'confirmation' | 'already_subscribed' | null = null
+
     await db.transaction(async (tx) => {
       const existing = await tx.query.newsletterSubscribers.findFirst({
         where: eq(newsletterSubscribers.email, email),
       })
 
       if (existing && existing.active) {
+        pendingEmailType = 'already_subscribed'
         return
       }
 
@@ -135,6 +142,12 @@ export default defineEventHandler(async (event) => {
         )
       }
 
+      pendingEmailType = 'confirmation'
+    })
+
+    // Send email after transaction is committed to avoid sending emails
+    // for changes that may later be rolled back.
+    if (pendingEmailType === 'confirmation') {
       try {
         await sendNewsletterConfirmationEmail(
           email,
@@ -148,43 +161,26 @@ export default defineEventHandler(async (event) => {
           message: newsletterEmailDeliveryFailedMessage,
         })
       }
-    })
+    } else if (pendingEmailType === 'already_subscribed') {
+      // Best-effort: don't fail the request if this secondary email errors
+      sendNewsletterAlreadySubscribedEmail(email, newsletterSubscriptionFailedMessage).catch(
+        () => {}
+      )
+    }
 
     return { success: true }
   } catch (error) {
+    // Hide Zod validation details from public callers; re-throw all other errors as-is
+    // (errors thrown inside this handler already carry the correct status and message).
     if (
       error &&
       typeof error === 'object' &&
       'statusCode' in error &&
-      typeof error.statusCode === 'number'
+      (error as { statusCode: unknown }).statusCode === 400
     ) {
-      if (error.statusCode === 400) {
-        throw createError({
-          statusCode: 400,
-          message: newsletterInvalidDataMessage,
-        })
-      }
-
-      if (error.statusCode === 503) {
-        throw createError({
-          statusCode: 503,
-          message: newsletterEmailDeliveryFailedMessage,
-        })
-      }
-
-      if (error.statusCode >= 500) {
-        throw createError({
-          statusCode: 500,
-          message: newsletterSubscriptionFailedMessage,
-        })
-      }
-
-      throw error
+      throw createError({ statusCode: 400, message: newsletterInvalidDataMessage })
     }
 
-    throw createError({
-      statusCode: 500,
-      message: newsletterSubscriptionFailedMessage,
-    })
+    throw error
   }
 })

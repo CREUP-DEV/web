@@ -11,13 +11,13 @@ interface Newsletter {
   coverImage: string
   pdfUrl: string
   active: boolean
-  sending: boolean
+  isSending: boolean
   sentAt: string | null
   createdAt: string
   lastDeliveryTotal: number | null
   lastDeliverySentCount: number | null
   lastDeliveryErrorCount: number | null
-  lastDeliveryFailedRecipients: string | null
+  lastDeliveryFailedRecipients: string[] | null
 }
 
 const toast = useToast()
@@ -122,6 +122,17 @@ function getErrorMessage(error: unknown, fallback: string) {
   }
 
   return fallback
+}
+
+function formatFailedRecipients(recipients: string[] | null) {
+  if (!recipients?.length) {
+    return ''
+  }
+
+  const visibleRecipients = recipients.slice(0, 5).join(', ')
+  const remainingCount = recipients.length - 5
+
+  return remainingCount > 0 ? `${visibleRecipients} +${remainingCount} más` : visibleRecipients
 }
 
 function getDefaultMonthValue() {
@@ -276,7 +287,7 @@ watch(
 
 onMounted(() => {
   sendingRefreshTimer = setInterval(() => {
-    if (items.value.some((item) => item.sending)) {
+    if (items.value.some((item) => item.isSending)) {
       void refresh()
     }
   }, 10_000)
@@ -324,7 +335,7 @@ onBeforeUnmount(() => {
           <div v-if="item.sentAt" class="text-muted mt-0.5 text-sm">
             Enviada {{ formatDate(item.sentAt) }}
           </div>
-          <div v-else-if="item.sending" class="text-muted mt-0.5 text-sm">Enviándose ahora</div>
+          <div v-else-if="item.isSending" class="text-muted mt-0.5 text-sm">Enviándose ahora</div>
           <div v-else class="text-muted mt-0.5 text-sm">Pendiente de envío</div>
           <div class="mt-1 flex flex-wrap items-center gap-2">
             <span
@@ -335,7 +346,7 @@ onBeforeUnmount(() => {
             </span>
             <span
               :class="
-                item.sending
+                item.isSending
                   ? 'bg-primary/10 text-primary'
                   : item.sentAt
                     ? 'bg-success/10 text-success'
@@ -343,7 +354,7 @@ onBeforeUnmount(() => {
               "
               class="rounded-full px-2 py-0.5 text-xs"
             >
-              {{ item.sending ? 'Enviándose' : item.sentAt ? 'Ya enviada' : 'Pendiente' }}
+              {{ item.isSending ? 'Enviándose' : item.sentAt ? 'Ya enviada' : 'Pendiente' }}
             </span>
             <a
               :href="item.pdfUrl"
@@ -368,12 +379,7 @@ onBeforeUnmount(() => {
             </span>
             <UTooltip
               v-if="item.lastDeliveryFailedRecipients"
-              :text="
-                (JSON.parse(item.lastDeliveryFailedRecipients) as string[]).slice(0, 5).join(', ') +
-                ((JSON.parse(item.lastDeliveryFailedRecipients) as string[]).length > 5
-                  ? ` +${(JSON.parse(item.lastDeliveryFailedRecipients) as string[]).length - 5} más`
-                  : '')
-              "
+              :text="formatFailedRecipients(item.lastDeliveryFailedRecipients)"
             >
               <span class="text-error cursor-help underline decoration-dotted"
                 >ver destinatarios</span
@@ -388,9 +394,9 @@ onBeforeUnmount(() => {
             variant="ghost"
             size="sm"
             :loading="sendingItemId === item.id"
-            :disabled="!item.active || sendingItemId === item.id || item.sending"
+            :disabled="!item.active || sendingItemId === item.id || item.isSending"
             :title="
-              item.sending
+              item.isSending
                 ? 'Ya se está enviando'
                 : !item.active
                   ? 'Activa la newsletter para poder enviarla'

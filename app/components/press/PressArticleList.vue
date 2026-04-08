@@ -13,7 +13,7 @@ const { t } = useI18n()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 const LIMIT = 12
-const selectedTag = ref<string>('all')
+const selectedTag = ref<string | null>(null)
 const page = ref(1)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
@@ -41,7 +41,7 @@ const formatDate = (iso: string) => {
   })
 }
 
-const onTagSelect = (tagSlug: string) => {
+const onTagSelect = (tagSlug: string | null) => {
   selectedTag.value = tagSlug
 }
 </script>
@@ -86,6 +86,7 @@ const onTagSelect = (tagSlug: string) => {
           >
             <div class="bg-muted aspect-video overflow-hidden">
               <NuxtImg
+                v-if="article.image"
                 :src="article.image"
                 :alt="article.alt || article.title"
                 width="640"
@@ -93,6 +94,13 @@ const onTagSelect = (tagSlug: string) => {
                 class="motion-link-media size-full object-cover"
                 loading="lazy"
               />
+              <div
+                v-else
+                class="text-muted flex size-full items-center justify-center"
+                aria-hidden="true"
+              >
+                <UIcon name="i-tabler-news" class="size-12" />
+              </div>
             </div>
 
             <div class="p-4">
@@ -132,13 +140,9 @@ const onTagSelect = (tagSlug: string) => {
               </div>
 
               <div
-                v-if="article.contentHtml || article.pdfUrl"
+                v-if="article.pdfUrl"
                 class="text-muted mt-3 flex flex-wrap items-center gap-3 text-xs"
               >
-                <div v-if="article.contentHtml" class="flex items-center gap-1">
-                  <UIcon name="i-tabler-align-box-left-top" class="size-4" />
-                  <span>{{ t('press.readFull') }}</span>
-                </div>
                 <div v-if="article.pdfUrl" class="flex items-center gap-1">
                   <UIcon name="i-tabler-file-type-pdf" class="size-4" />
                   <span>{{ t('press.downloadPdf') }}</span>

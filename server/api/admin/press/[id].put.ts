@@ -1,4 +1,5 @@
 import { defineEventHandler, readBody } from 'h3'
+import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import {
   idRouteParamSchema,
   updatePressArticleSchema,
@@ -12,5 +13,6 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const validated = validateBody(updatePressArticleSchema, body)
   const item = await updatePressArticle(id, validated, event)
+  await invalidatePressRelatedCaches()
   return { item }
 })

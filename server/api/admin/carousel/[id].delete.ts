@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
+import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import {
   HOME_CAROUSEL_FALLBACK_IMAGE,
@@ -32,5 +33,6 @@ export default defineEventHandler(async (event) => {
     event
   )
 
+  await invalidateHomeDataCache()
   return { success: true }
 })

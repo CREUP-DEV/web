@@ -54,6 +54,7 @@ export const carouselItemTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.carouselItemId),
     check('carousel_item_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_carousel_item_translations_item_id').on(table.carouselItemId),
   ]
 )
 
@@ -95,6 +96,7 @@ export const tagTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.tagId),
     check('tag_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_tag_translations_tag_id').on(table.tagId),
   ]
 )
 
@@ -119,14 +121,18 @@ export const pressArticles = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     type: pressArticleTypeEnum('type').notNull(),
     slug: text('slug').notNull().unique(),
-    image: text('image').notNull(),
+    image: text('image'),
     pdfUrl: text('pdf_url'), // For press_release and statement
     externalUrl: text('external_url'), // For media_appearance
     mediaOutletId: text('media_outlet_id').references(() => mediaOutlets.id, {
       onDelete: 'set null',
     }),
     active: boolean('active').default(true).notNull(),
-    publishedAt: date('published_at').defaultNow().notNull(),
+    // Use CURRENT_DATE so the default reflects the calendar date in the DB timezone,
+    // not a timestamp cast — avoids off-by-one-day issues near midnight for UTC+1/+2.
+    publishedAt: date('published_at')
+      .default(sql`CURRENT_DATE`)
+      .notNull(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .defaultNow()
@@ -164,6 +170,7 @@ export const pressArticleTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.pressArticleId),
     check('press_article_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_press_article_translations_article_id').on(table.pressArticleId),
   ]
 )
 
@@ -258,6 +265,7 @@ export const featuredLinkTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.featuredLinkId),
     check('featured_link_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_featured_link_translations_link_id').on(table.featuredLinkId),
   ]
 )
 
@@ -381,6 +389,7 @@ export const teamAreaTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.teamAreaId),
     check('team_area_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_team_area_translations_area_id').on(table.teamAreaId),
   ]
 )
 
@@ -434,6 +443,7 @@ export const teamMemberTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.teamMemberId),
     check('team_member_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_team_member_translations_member_id').on(table.teamMemberId),
   ]
 )
 
@@ -469,25 +479,34 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 
 // Organization members
 
-export const organizationMembers = pgTable('organization_members', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  slug: text('slug').notNull().unique(),
-  logo: text('logo'),
-  website: text('website'),
-  email: text('email'),
-  socials: jsonb('socials')
-    .$type<Array<{ network: string; value: string }>>()
-    .default([])
-    .notNull(),
-  autonomousCommunity: text('autonomous_community').notNull(),
-  order: integer('order').default(0).notNull(),
-  active: boolean('active').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export type OrganizationMemberSocial = { network: string; value: string }
+
+export const organizationMembers = pgTable(
+  'organization_members',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    slug: text('slug').notNull().unique(),
+    logo: text('logo'),
+    website: text('website'),
+    email: text('email'),
+    /** Each element must have { network: string, value: string }. */
+    socials: jsonb('socials').$type<OrganizationMemberSocial[]>().default([]).notNull(),
+    autonomousCommunity: text('autonomous_community').notNull(),
+    order: integer('order').default(0).notNull(),
+    active: boolean('active').default(true).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    check(
+      'organization_members_socials_shape_check',
+      sql`is_valid_organization_member_socials(${table.socials})`
+    ),
+  ]
+)
 
 export const organizationMemberTranslations = pgTable(
   'organization_member_translations',
@@ -506,6 +525,7 @@ export const organizationMemberTranslations = pgTable(
       table.organizationMemberId
     ),
     check('organization_member_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_organization_member_translations_member_id').on(table.organizationMemberId),
   ]
 )
 
@@ -537,7 +557,11 @@ export const newsletters = pgTable(
     coverImage: text('cover_image').notNull(),
     pdfUrl: text('pdf_url').notNull(),
     active: boolean('active').default(true).notNull(),
-    sending: boolean('sending').default(false).notNull(),
+    /**
+     * A non-null worker token signals "delivery in progress."
+     * The `sending` boolean was redundant with this token; it has been removed.
+     * Use `lastDeliveryWorkerToken IS NOT NULL` to check delivery state.
+     */
     sentAt: timestamp('sent_at', { mode: 'date' }),
     lastDeliveryStartedAt: timestamp('last_delivery_started_at', { mode: 'date' }),
     lastDeliveryHeartbeatAt: timestamp('last_delivery_heartbeat_at', { mode: 'date' }),
@@ -545,7 +569,8 @@ export const newsletters = pgTable(
     lastDeliveryTotal: integer('last_delivery_total'),
     lastDeliverySentCount: integer('last_delivery_sent_count'),
     lastDeliveryErrorCount: integer('last_delivery_error_count'),
-    lastDeliveryFailedRecipients: text('last_delivery_failed_recipients'),
+    /** Array of email addresses that failed delivery (stored as JSONB). */
+    lastDeliveryFailedRecipients: jsonb('last_delivery_failed_recipients').$type<string[]>(),
     lastDeliveryWorkerToken: text('last_delivery_worker_token'),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'date' })
@@ -554,7 +579,11 @@ export const newsletters = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    index('idx_newsletters_active_sent_sending').on(table.active, table.sentAt, table.sending),
+    index('idx_newsletters_active_sent_worker').on(
+      table.active,
+      table.sentAt,
+      table.lastDeliveryWorkerToken
+    ),
   ]
 )
 
@@ -743,6 +772,7 @@ export const equalityDocumentTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.equalityDocumentId),
     check('equality_document_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_equality_document_translations_document_id').on(table.equalityDocumentId),
   ]
 )
 
@@ -788,6 +818,7 @@ export const financialReportTranslations = pgTable(
   (table) => [
     unique().on(table.locale, table.financialReportId),
     check('financial_report_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    index('idx_financial_report_translations_report_id').on(table.financialReportId),
   ]
 )
 

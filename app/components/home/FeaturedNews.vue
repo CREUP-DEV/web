@@ -3,7 +3,7 @@ import type { PressArticle, PressArticleType } from '@/composables/usePress'
 
 type NewsItem = {
   title: string
-  image: string
+  image: string | null
   to: string
   alt?: string
   description?: string
@@ -21,7 +21,7 @@ const { t } = useI18n()
 const hasProvidedItems = computed(() => Array.isArray(props.items))
 const loadedImageKeys = reactive<Record<string, boolean>>({})
 
-const selectedTag = ref<string>('all')
+const selectedTag = ref<string | null>(null)
 const { data: pressData, pending } = usePress(null, selectedTag, 4)
 
 const typeUrlPrefix: Record<PressArticleType, string> = {
@@ -78,7 +78,7 @@ const markItemImageAsLoaded = (item: NewsItem) => {
 
 const isItemImageLoaded = (item: NewsItem) => loadedImageKeys[getItemKey(item)] === true
 
-const onTagSelect = (tagSlug: string) => {
+const onTagSelect = (tagSlug: string | null) => {
   selectedTag.value = tagSlug
 }
 </script>
@@ -123,6 +123,7 @@ const onTagSelect = (tagSlug: string) => {
           >
             <div class="bg-muted relative aspect-video">
               <NuxtImg
+                v-if="item.image"
                 :src="item.image"
                 :alt="item.alt ?? ''"
                 width="640"
@@ -132,7 +133,14 @@ const onTagSelect = (tagSlug: string) => {
                 @load="markItemImageAsLoaded(item)"
               />
               <div
-                v-if="item.mediaOutletLogo && isItemImageLoaded(item)"
+                v-else
+                class="text-muted flex size-full items-center justify-center"
+                aria-hidden="true"
+              >
+                <UIcon name="i-tabler-news" class="size-12" />
+              </div>
+              <div
+                v-if="item.image && item.mediaOutletLogo && isItemImageLoaded(item)"
                 class="absolute right-2 bottom-2 rounded bg-white/70 p-1 backdrop-blur-sm"
               >
                 <img

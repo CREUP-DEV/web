@@ -6,6 +6,7 @@ import {
   filterTranslationsByContent,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import { assertTagSlugAvailable } from '../../../utils/tagMutations'
 import { createTagSchema, validateBody } from '../../../utils/validation'
 
@@ -71,6 +72,7 @@ export default defineEventHandler(async (event) => {
         })
       })
 
+      await invalidatePressRelatedCaches()
       return { item: completeItem }
     } catch (e) {
       if (e && typeof e === 'object' && 'statusCode' in e) {

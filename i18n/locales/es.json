@@ -73,7 +73,9 @@
     "carousel": {
       "label": "Carrusel de anuncios destacados",
       "previous": "Diapositiva anterior",
-      "next": "Siguiente diapositiva"
+      "next": "Siguiente diapositiva",
+      "defaultButtonText": "Más información",
+      "goToSlide": "Ir a la diapositiva {n}"
     },
     "calendar": {
       "label": "Calendario de eventos",
@@ -89,6 +91,7 @@
     }
   },
   "accessibility": {
+    "skipToNavigation": "Saltar a la navegación",
     "skipToMain": "Saltar al contenido principal",
     "mainNavigation": "Navegación principal",
     "mobileNavigation": "Navegación móvil",

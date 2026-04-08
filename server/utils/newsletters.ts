@@ -1,6 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { createError } from 'h3'
-import { and, asc, eq, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, isNotNull, isNull, lt, lte, ne, or, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterDeliveries, newsletters, newsletterSubscribers } from '../db/schema'
 import { sendNewsletterEmail } from './newsletterMailer'
@@ -92,8 +92,7 @@ async function setNewsletterDeliverySnapshot(newsletterId: string) {
     .update(newsletters)
     .set({
       lastDeliveryErrorCount: summary?.errorCount ?? 0,
-      lastDeliveryFailedRecipients:
-        failedRecipients.length > 0 ? JSON.stringify(failedRecipients) : null,
+      lastDeliveryFailedRecipients: failedRecipients.length > 0 ? failedRecipients : null,
       lastDeliverySentCount: summary?.sentCount ?? 0,
       lastDeliveryTotal: summary?.total ?? 0,
     })
@@ -188,19 +187,18 @@ async function claimNewsletterDeliveryWorker(id: string) {
       lastDeliveryHeartbeatAt: now,
       lastDeliveryStartedAt: sql`coalesce(${newsletters.lastDeliveryStartedAt}, ${now})`,
       lastDeliveryWorkerToken: workerToken,
-      sending: true,
     })
     .where(
       and(
         eq(newsletters.id, id),
         eq(newsletters.active, true),
         isNull(newsletters.sentAt),
+        // Claim when idle (no worker token) or when the existing worker is stale
         or(
-          eq(newsletters.sending, false),
+          isNull(newsletters.lastDeliveryWorkerToken),
           and(
-            eq(newsletters.sending, true),
+            isNotNull(newsletters.lastDeliveryWorkerToken),
             or(
-              isNull(newsletters.lastDeliveryWorkerToken),
               isNull(newsletters.lastDeliveryHeartbeatAt),
               lte(newsletters.lastDeliveryHeartbeatAt, staleBefore)
             )
@@ -375,7 +373,6 @@ export async function processNewsletterDeliveryRun(item: NewsletterRecord) {
     await releaseNewsletterDeliveryWorker(item.id, workerToken, {
       lastDeliveryFinishedAt: now,
       lastDeliveryHeartbeatAt: null,
-      sending: false,
       sentAt: completedSuccessfully ? now : null,
     })
 
@@ -392,16 +389,16 @@ export async function processNewsletterDeliveryRun(item: NewsletterRecord) {
     logError('newsletter.delivery.batch', error, { newsletterId: item.id })
     await releaseNewsletterDeliveryWorker(item.id, workerToken, {
       lastDeliveryHeartbeatAt: null,
-      sending: false,
     })
     return false
   }
 }
 
 export async function processPendingNewsletterDeliveries() {
+  // A non-null worker token means delivery is in progress (or was interrupted).
   const pendingItems = await db.query.newsletters.findMany({
     orderBy: asc(newsletters.lastDeliveryStartedAt),
-    where: and(eq(newsletters.sending, true), isNull(newsletters.sentAt)),
+    where: and(isNotNull(newsletters.lastDeliveryWorkerToken), isNull(newsletters.sentAt)),
   })
 
   for (const item of pendingItems) {
@@ -468,9 +465,7 @@ export async function claimNewsletterForSending(id: string): Promise<NewsletterR
       ...claimedItem,
       lastDeliveryErrorCount: preparedSnapshot.errorCount,
       lastDeliveryFailedRecipients:
-        preparedSnapshot.failedRecipients.length > 0
-          ? JSON.stringify(preparedSnapshot.failedRecipients)
-          : null,
+        preparedSnapshot.failedRecipients.length > 0 ? preparedSnapshot.failedRecipients : null,
       lastDeliverySentCount: preparedSnapshot.sentCount,
       lastDeliveryTotal: preparedSnapshot.total,
     }
@@ -498,7 +493,7 @@ export async function claimNewsletterForSending(id: string): Promise<NewsletterR
     })
   }
 
-  if (current.sending) {
+  if (current.lastDeliveryWorkerToken) {
     throw createError({
       statusCode: 409,
       message: 'La newsletter ya se está enviando',

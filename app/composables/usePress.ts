@@ -17,13 +17,13 @@ export interface PressArticle {
   id: string
   type: PressArticleType
   slug: string
-  image: string
+  image: string | null
   pdfUrl: string | null
   externalUrl: string | null
   title: string
   description: string
   alt: string
-  contentHtml: string | null
+  contentHtml?: string | null
   publishedAt: string
   tags: PressArticleTag[]
   mediaOutlet: PressArticleMediaOutlet | null
@@ -67,7 +67,7 @@ export function usePress(
   })
 
   const pressKey = computed(() => {
-    return `press-${locale.value}-${typeValue.value || 'all'}-${tagValue.value || 'all'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
+    return `press-${locale.value}-${typeValue.value || 'all'}-${tagValue.value || 'none'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
   })
 
   return useAsyncData<PressResponse>(
@@ -77,7 +77,7 @@ export function usePress(
       if (typeValue.value) {
         params.set('type', typeValue.value)
       }
-      if (tagValue.value && tagValue.value !== 'all') {
+      if (tagValue.value) {
         params.set('tag', tagValue.value)
       }
       if (limitValue.value != null) {

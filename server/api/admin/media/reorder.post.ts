@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
+import { invalidatePressCache } from '../../../utils/adminCacheInvalidation'
 import { assertCompleteReorderSet } from '../../../utils/adminReorder'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
@@ -28,6 +29,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
+    await invalidatePressCache()
     return { success: true }
   } catch (e) {
     throw createError({

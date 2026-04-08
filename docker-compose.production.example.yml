@@ -15,6 +15,9 @@ services:
     volumes:
       - ${APP_PUBLIC_DIR:-./data/public}:/app/.output/public
       - ${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}:/app/.output/.data/admin-assets
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   postgres:
     image: postgres:18-alpine

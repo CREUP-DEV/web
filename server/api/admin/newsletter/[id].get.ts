@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
   return {
     item: {
       ...item,
+      isSending: Boolean(item.lastDeliveryWorkerToken),
       month: monthKeyToDate(item.monthKey),
     },
   }

@@ -5,6 +5,7 @@ import { pressArticles } from '../../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../utils/externalAssetProxy'
+import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { isDatabaseUnavailableError } from '../../utils/databaseErrors'
 import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
 import { logError } from '../../utils/logger'
@@ -54,10 +55,11 @@ export default defineEventHandler(async (event) => {
         id: article.id,
         type: article.type,
         slug: article.slug,
-        image:
-          toExternalImageProxyUrl(article.image, {
-            publicPathBase: '/prensa/imagenes',
-          }) ?? article.image,
+        image: article.image
+          ? (toExternalImageProxyUrl(article.image, {
+              publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
+            }) ?? article.image)
+          : null,
         pdfUrl:
           toExternalPdfProxyUrl(article.pdfUrl, {
             publicPathBase: '/prensa/documentos',
@@ -74,7 +76,7 @@ export default defineEventHandler(async (event) => {
               name: article.mediaOutlet.name,
               logo:
                 toExternalImageProxyUrl(article.mediaOutlet.logo, {
-                  publicPathBase: '/prensa/imagenes',
+                  publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
                 }) ?? article.mediaOutlet.logo,
               website: article.mediaOutlet.website,
             }

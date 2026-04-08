@@ -140,6 +140,10 @@ If a handler becomes hard to read, extract helpers into `server/utils/`.
 - `/api/admin/**` is protected globally by `server/middleware/admin-auth.ts`.
 - `requireAuth(event)` is still the shared way to obtain the verified session inside handlers.
 - The middleware and helper cache the session on `event.context.adminSession`; do not re-implement auth checks per route.
+- **Authorization model**: Google OAuth controls who can authenticate (only accounts that pass Google's flow). Authorization (who may access the admin area) is controlled by two complementary mechanisms:
+  1. `ADMIN_EMAILS` env var — a comma-separated list of emails that always have access, regardless of DB state.
+  2. `admin_access` DB table — additional emails granted access by existing admins at runtime.
+- There is no email domain allowlist. Do not re-introduce `ADMIN_EMAIL_DOMAIN` or similar domain-based checks.
 
 ### Locale Handling
 
@@ -206,6 +210,7 @@ ci: run lint and tests on push
 - Default-locale database translations remain required.
 - Rich text rendered publicly is sanitized.
 - Admin auth still relies on the global middleware path.
+- No `ADMIN_EMAIL_DOMAIN` or domain-based access checks were introduced.
 - Added or updated translations when public copy changed.
 - Accessibility was verified.
 - Lint passes (`pnpm lint`).

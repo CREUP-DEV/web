@@ -25,31 +25,54 @@ const tooltip = ref({
 let tooltipAnimationFrameId = 0
 let pendingTooltipPointerPosition: { clientX: number; clientY: number } | null = null
 
-const getCommunityName = (community: string) => {
-  const key = `members.communities.${community}`
-  const translated = t(key)
-  return translated === key ? community : translated
-}
+// Precomputed maps — only recompute when locale, selection, or counts change.
+// This avoids re-evaluating every region's class/label on every render tick.
+
+const communityNames = computed(() => {
+  const map = new Map<string, string>()
+  for (const { community } of SPAIN_REGION_PATHS) {
+    const key = `members.communities.${community}`
+    const translated = t(key)
+    map.set(community, translated === key ? community : translated)
+  }
+  return map
+})
+
+const regionClasses = computed(() => {
+  const map = new Map<string, Record<string, boolean>>()
+  for (const { community } of SPAIN_REGION_PATHS) {
+    const hasMembers = (props.memberCounts?.[community] ?? 0) > 0
+    const isSelected = props.selectedCommunity === community
+    map.set(community, {
+      'map-region': true,
+      'map-region--selected': isSelected,
+      'map-region--active': hasMembers && !isSelected,
+      'map-region--inactive': !hasMembers && !isSelected,
+    })
+  }
+  return map
+})
+
+const regionAriaLabels = computed(() => {
+  const map = new Map<string, string>()
+  for (const { community } of SPAIN_REGION_PATHS) {
+    const name = communityNames.value.get(community) ?? community
+    const count = props.memberCounts?.[community] ?? 0
+    const countLabel =
+      count > 0 ? t('members.mapTooltipCount', count) : t('members.mapTooltipEmpty')
+    const stateLabel =
+      props.selectedCommunity === community
+        ? t('members.mapSelectedState')
+        : count > 0
+          ? t('members.mapAvailableState')
+          : t('members.mapUnavailableState')
+    map.set(community, [name, countLabel, stateLabel].join('. '))
+  }
+  return map
+})
 
 const handleSelect = (community: string) => {
-  if (props.selectedCommunity === community) {
-    emit('select', null)
-    return
-  }
-
-  emit('select', community)
-}
-
-const getRegionClass = (community: string) => {
-  const hasMembers = (props.memberCounts?.[community] ?? 0) > 0
-  const isSelected = props.selectedCommunity === community
-
-  return {
-    'map-region': true,
-    'map-region--selected': isSelected,
-    'map-region--active': hasMembers && !isSelected,
-    'map-region--inactive': !hasMembers && !isSelected,
-  }
+  emit('select', props.selectedCommunity === community ? null : community)
 }
 
 const getCommunityCount = (community: string) => props.memberCounts?.[community] ?? 0
@@ -57,24 +80,6 @@ const getCommunityCount = (community: string) => props.memberCounts?.[community]
 const getCommunityCountLabel = (community: string) => {
   const count = getCommunityCount(community)
   return count > 0 ? t('members.mapTooltipCount', count) : t('members.mapTooltipEmpty')
-}
-
-const getCommunityStateLabel = (community: string) => {
-  if (props.selectedCommunity === community) {
-    return t('members.mapSelectedState')
-  }
-
-  return getCommunityCount(community) > 0
-    ? t('members.mapAvailableState')
-    : t('members.mapUnavailableState')
-}
-
-const getRegionLabel = (community: string) => {
-  return [
-    getCommunityName(community),
-    getCommunityCountLabel(community),
-    getCommunityStateLabel(community),
-  ].join('. ')
 }
 
 const setTooltipCoordinates = (x: number, y: number) => {
@@ -139,7 +144,7 @@ const scheduleTooltipPosition = (clientX: number, clientY: number) => {
 }
 
 const showTooltipFromPointer = (event: MouseEvent, community: string) => {
-  tooltip.value.title = getCommunityName(community)
+  tooltip.value.title = communityNames.value.get(community) ?? community
   tooltip.value.meta = getCommunityCountLabel(community)
   tooltip.value.visible = true
   scheduleTooltipPosition(event.clientX, event.clientY)
@@ -155,7 +160,7 @@ const updateTooltipPosition = (event: MouseEvent) => {
 
 const showTooltipFromFocus = (event: FocusEvent, community: string) => {
   setTooltipPositionFromTarget(event.currentTarget ?? event.target)
-  tooltip.value.title = getCommunityName(community)
+  tooltip.value.title = communityNames.value.get(community) ?? community
   tooltip.value.meta = getCommunityCountLabel(community)
   tooltip.value.visible = true
 }
@@ -178,7 +183,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="mapContainerRef" class="relative w-full">
+  <div
+    ref="mapContainerRef"
+    class="relative w-full [--map-active-fill:#fecaca] [--map-active-hover-fill:#fb7185] [--map-active-hover-opacity:1] [--map-active-hover-stroke:#991b1b] [--map-active-opacity:1] [--map-active-stroke:#b91c1c] [--map-inactive-fill:#d1d5db] [--map-inactive-hover-fill:#94a3b8] [--map-inactive-hover-stroke:#64748b] [--map-inactive-stroke:#9ca3af] [--map-selected-fill:#dc2626] [--map-selected-hover-fill:#ef4444] [--map-selected-hover-stroke:#7f1d1d] [--map-selected-stroke:#991b1b] [--map-watermark-fill:#000] dark:[--map-active-fill:#dc2626] dark:[--map-active-hover-fill:#f87171] dark:[--map-active-hover-opacity:0.95] dark:[--map-active-hover-stroke:#fee2e2] dark:[--map-active-opacity:0.8] dark:[--map-active-stroke:#fca5a5] dark:[--map-inactive-fill:#4b5563] dark:[--map-inactive-hover-fill:#9ca3af] dark:[--map-inactive-hover-stroke:#cbd5e1] dark:[--map-inactive-stroke:#6b7280] dark:[--map-selected-fill:#f87171] dark:[--map-selected-hover-fill:#fca5a5] dark:[--map-selected-hover-stroke:#fee2e2] dark:[--map-selected-stroke:#fca5a5] dark:[--map-watermark-fill:#d1d5db]"
+  >
     <svg
       viewBox="0 0 1282.91 843.72"
       class="h-auto w-full"
@@ -191,10 +199,11 @@ onBeforeUnmount(() => {
         v-for="region in SPAIN_REGION_PATHS"
         :key="region.svgId"
         :d="region.d"
-        :class="getRegionClass(region.community)"
+        :class="regionClasses.get(region.community)"
         tabindex="0"
         role="button"
-        :aria-label="getRegionLabel(region.community)"
+        :aria-label="regionAriaLabels.get(region.community)"
+        :aria-describedby="tooltipId"
         :aria-pressed="selectedCommunity === region.community"
         @click="handleSelect(region.community)"
         @keydown.enter.prevent="handleSelect(region.community)"
@@ -205,7 +214,7 @@ onBeforeUnmount(() => {
         @focus="showTooltipFromFocus($event, region.community)"
         @blur="hideTooltip"
       >
-        <title>{{ getCommunityName(region.community) }}</title>
+        <title>{{ communityNames.get(region.community) }}</title>
       </path>
 
       <g class="map-overlay" aria-hidden="true">
@@ -240,13 +249,11 @@ onBeforeUnmount(() => {
   stroke-width: 1.5;
   transition:
     fill 0.15s ease,
-    stroke 0.15s ease,
     transform 0.15s ease,
     filter 0.15s ease;
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
-  will-change: fill, stroke, transform, filter;
 }
 
 .map-region:focus {
@@ -264,36 +271,38 @@ onBeforeUnmount(() => {
 }
 
 .map-region--selected {
-  fill: #dc2626;
-  stroke: #991b1b;
+  fill: var(--map-selected-fill);
+  stroke: var(--map-selected-stroke);
 }
 
 .map-region--selected:hover,
 .map-region--selected:focus-visible {
-  fill: #ef4444;
-  stroke: #7f1d1d;
+  fill: var(--map-selected-hover-fill);
+  stroke: var(--map-selected-hover-stroke);
 }
 
 .map-region--active {
-  fill: #fecaca;
-  stroke: #b91c1c;
+  fill: var(--map-active-fill);
+  stroke: var(--map-active-stroke);
+  opacity: var(--map-active-opacity);
 }
 
 .map-region--active:hover,
 .map-region--active:focus-visible {
-  fill: #fb7185;
-  stroke: #991b1b;
+  fill: var(--map-active-hover-fill);
+  stroke: var(--map-active-hover-stroke);
+  opacity: var(--map-active-hover-opacity);
 }
 
 .map-region--inactive {
-  fill: #d1d5db;
-  stroke: #9ca3af;
+  fill: var(--map-inactive-fill);
+  stroke: var(--map-inactive-stroke);
 }
 
 .map-region--inactive:hover,
 .map-region--inactive:focus-visible {
-  fill: #94a3b8;
-  stroke: #64748b;
+  fill: var(--map-inactive-hover-fill);
+  stroke: var(--map-inactive-hover-stroke);
 }
 
 .map-overlay {
@@ -308,48 +317,9 @@ onBeforeUnmount(() => {
 }
 
 .map-watermark-text {
-  fill: #000;
+  fill: var(--map-watermark-fill);
   font-family: 'Century Gothic', 'Segoe UI', 'Lucida Grande', sans-serif;
   font-size: 7.5px;
   font-weight: 700;
-}
-
-:global(.dark) .map-region--selected {
-  fill: #f87171;
-  stroke: #fca5a5;
-}
-
-:global(.dark) .map-region--selected:hover,
-:global(.dark) .map-region--selected:focus-visible {
-  fill: #fca5a5;
-  stroke: #fee2e2;
-}
-
-:global(.dark) .map-region--active {
-  fill: #dc2626;
-  stroke: #fca5a5;
-  opacity: 0.8;
-}
-
-:global(.dark) .map-region--active:hover,
-:global(.dark) .map-region--active:focus-visible {
-  fill: #f87171;
-  stroke: #fee2e2;
-  opacity: 0.95;
-}
-
-:global(.dark) .map-region--inactive {
-  fill: #4b5563;
-  stroke: #6b7280;
-}
-
-:global(.dark) .map-region--inactive:hover,
-:global(.dark) .map-region--inactive:focus-visible {
-  fill: #9ca3af;
-  stroke: #cbd5e1;
-}
-
-:global(.dark) .map-watermark-text {
-  fill: #d1d5db;
 }
 </style>

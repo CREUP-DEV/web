@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { getClientIp } from './urlBuilder'
+import { logWarn } from './logger'
 
 // NOTE: This rate limiter uses a module-level Map for atomic in-process rate limiting.
 // Node.js is single-threaded, so synchronous Map operations have no race conditions.
@@ -34,8 +35,16 @@ interface RateLimitOptions {
 }
 
 export function enforceRateLimit(event: H3Event, options: RateLimitOptions): void {
-  const clientIp = getClientIp(event) || 'unknown'
-  const key = `rate-limit:${options.namespace}:${clientIp}`
+  const clientIp = getClientIp(event)
+
+  if (!clientIp) {
+    // This means the reverse proxy is not forwarding the real client IP.
+    // All IP-less requests share one bucket, which can cause false positives
+    // or allow bypassing if the header is deliberately omitted.
+    logWarn('rate-limit.missing-ip', { namespace: options.namespace }, event)
+  }
+
+  const key = `rate-limit:${options.namespace}:${clientIp ?? 'unknown'}`
   const now = Date.now()
   const existing = rateLimitStore.get(key)
 

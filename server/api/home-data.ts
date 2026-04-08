@@ -16,17 +16,19 @@ export default defineCachedEventHandler(
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
 
     try {
-      const carouselItemsList = await db.query.carouselItems.findMany({
-        where: eq(carouselItems.active, true),
-        orderBy: [asc(carouselItems.order), asc(carouselItems.id)],
-        with: { translations: true },
-      })
-
-      const linkItemsList = await db.query.featuredLinks.findMany({
-        where: eq(featuredLinks.active, true),
-        orderBy: [asc(featuredLinks.order), asc(featuredLinks.id)],
-        with: { translations: true },
-      })
+      // Run both queries in parallel — they are independent
+      const [carouselItemsList, linkItemsList] = await Promise.all([
+        db.query.carouselItems.findMany({
+          where: eq(carouselItems.active, true),
+          orderBy: [asc(carouselItems.order), asc(carouselItems.id)],
+          with: { translations: true },
+        }),
+        db.query.featuredLinks.findMany({
+          where: eq(featuredLinks.active, true),
+          orderBy: [asc(featuredLinks.order), asc(featuredLinks.id)],
+          with: { translations: true },
+        }),
+      ])
 
       const carousel = carouselItemsList.map((item) => {
         const translation = pickLocalizedEntry(

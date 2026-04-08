@@ -95,7 +95,6 @@ export default defineEventHandler(async (event) => {
         coverImage,
         pdfUrl,
         active: validated.active,
-        sending: false,
       })
       .returning()
 

@@ -161,9 +161,11 @@ export default defineNuxtConfig({
         'X-Content-Type-Options': 'nosniff',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-        // CSP: unsafe-inline/unsafe-eval required by Nuxt SSR + Tailwind; tighten once a nonce strategy is in place
+        // CSP: unsafe-inline still required by Nuxt SSR inline scripts + Tailwind CSS-in-JS.
+        // unsafe-eval has been removed — if a dependency reintroduces it, audit before re-adding.
+        // TODO: replace unsafe-inline with a nonce strategy once Nuxt supports it end-to-end.
         'Content-Security-Policy':
-          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
       },
     },
     '/admin/**': {

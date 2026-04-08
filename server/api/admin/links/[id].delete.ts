@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
+import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
@@ -28,5 +29,6 @@ export default defineEventHandler(async (event) => {
     event
   )
 
+  await invalidateHomeDataCache()
   return { success: true }
 })

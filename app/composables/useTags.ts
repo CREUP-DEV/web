@@ -15,7 +15,7 @@ export function useTags(type?: MaybeRefOrGetter<string | null | undefined>) {
   const typeValue = computed(() => toValue(type) ?? null)
 
   return useAsyncData<TagsResponse>(
-    () => `tags-${locale.value}-${typeValue.value || 'all'}`,
+    () => `tags-${locale.value}-${typeValue.value || 'none'}`,
     () => {
       const params = new URLSearchParams()
 

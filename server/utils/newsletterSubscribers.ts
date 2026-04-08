@@ -3,6 +3,7 @@ import type { H3Event } from 'h3'
 import { and, eq, isNotNull, isNull, lte } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterSubscribers, newsletterSubscriptionEvents } from '../db/schema'
+import { logError } from './logger'
 import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
 import { buildAbsoluteUrl, getClientIp, getUserAgent, normalizeBaseUrl } from './urlBuilder'
 import { getSmtpTransporter } from './smtpTransporter'
@@ -122,6 +123,77 @@ ${privacyUrl}
 `
 }
 
+function buildAlreadySubscribedEmailHtml(siteUrl: string): string {
+  const newsletterArchiveUrl = buildAbsoluteUrl(siteUrl, '/prensa/newsletter')
+  const unsubscribePath = buildAbsoluteUrl(siteUrl, '/desuscribirse')
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ya estás suscrito/a a la newsletter de CREUP</title>
+</head>
+<body style="margin:0; padding:24px; background:#f6f4f1; color:#1f2937; font-family:Arial, sans-serif;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
+    <tr>
+      <td style="padding:32px 24px 16px 24px;">
+        <h1 style="margin:0 0 16px 0; font-size:28px; line-height:1.2; color:#792225;">Ya estás suscrito/a</h1>
+        <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6;">
+          Hemos recibido una nueva solicitud de suscripción para esta dirección, pero ya estás suscrito/a a la newsletter de CREUP.
+        </p>
+        <p style="margin:0 0 24px 0; font-size:16px; line-height:1.6;">
+          No es necesario que hagas nada. Seguirás recibiendo nuestras newsletters normalmente.
+        </p>
+        <p style="margin:0 0 16px 0; font-size:14px; line-height:1.6; color:#4b5563;">
+          Si no fuiste tú quien envió esta solicitud, puedes ignorar este correo con total tranquilidad.
+        </p>
+        <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280;">
+          ¿Quieres darte de baja?
+          <a href="${unsubscribePath}" style="color:#792225;">Gestionar suscripción</a>
+          · <a href="${newsletterArchiveUrl}" style="color:#792225;">Ver todas las newsletters</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
+function buildAlreadySubscribedEmailText(siteUrl: string): string {
+  const newsletterArchiveUrl = buildAbsoluteUrl(siteUrl, '/prensa/newsletter')
+  const unsubscribePath = buildAbsoluteUrl(siteUrl, '/desuscribirse')
+
+  return `Ya estás suscrito/a a la newsletter de CREUP
+
+Hemos recibido una nueva solicitud de suscripción para esta dirección, pero ya estás suscrito/a.
+
+No es necesario que hagas nada. Seguirás recibiendo nuestras newsletters normalmente.
+
+Si no fuiste tú quien envió esta solicitud, puedes ignorar este correo con total tranquilidad.
+
+¿Quieres gestionar tu suscripción? ${unsubscribePath}
+Todas las newsletters: ${newsletterArchiveUrl}
+`
+}
+
+export async function sendNewsletterAlreadySubscribedEmail(
+  email: string,
+  configErrorMessage = 'Server configuration error.'
+): Promise<void> {
+  const transporter = getSmtpTransporter(configErrorMessage)
+  const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
+  const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
+
+  await transporter.sendMail({
+    from: `"CREUP Newsletter" <${fromEmail}>`,
+    to: email,
+    subject: 'Ya estás suscrito/a a la newsletter de CREUP',
+    text: buildAlreadySubscribedEmailText(siteUrl),
+    html: buildAlreadySubscribedEmailHtml(siteUrl),
+  })
+}
+
 export async function sendNewsletterConfirmationEmail(
   email: string,
   confirmToken: string,
@@ -159,9 +231,19 @@ export function createConfirmTokenExpiresAt(): Date {
   return new Date(Date.now() + NEWSLETTER_CONFIRM_TOKEN_TTL_MS)
 }
 
+/**
+ * Expires pending (unconfirmed) confirmation tokens that have passed their TTL.
+ *
+ * Instead of deleting the subscriber row — which would orphan audit events and
+ * force a full re-insert on re-subscribe — we null out the token fields and
+ * record a `confirmation_expired` event so the audit trail stays complete.
+ * The subscriber row remains in an inactive state and will be naturally
+ * overwritten if the same email re-subscribes.
+ */
 export async function cleanupExpiredNewsletterConfirmTokens(now: Date = new Date()) {
-  const deleted = await db
-    .delete(newsletterSubscribers)
+  const expiredRows = await db
+    .select({ id: newsletterSubscribers.id, email: newsletterSubscribers.email })
+    .from(newsletterSubscribers)
     .where(
       and(
         eq(newsletterSubscribers.active, false),
@@ -171,7 +253,33 @@ export async function cleanupExpiredNewsletterConfirmTokens(now: Date = new Date
         lte(newsletterSubscribers.confirmTokenExpiresAt, now)
       )
     )
-    .returning({ id: newsletterSubscribers.id })
 
-  return deleted.length
+  if (expiredRows.length === 0) {
+    return 0
+  }
+
+  let clearedCount = 0
+
+  for (const row of expiredRows) {
+    try {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(newsletterSubscribers)
+          .set({ confirmToken: null, confirmTokenExpiresAt: null })
+          .where(eq(newsletterSubscribers.id, row.id))
+
+        await tx.insert(newsletterSubscriptionEvents).values({
+          email: row.email,
+          eventType: NEWSLETTER_SUBSCRIPTION_EVENT_TYPES.confirmationExpired,
+          eventSource: NEWSLETTER_CONSENT_SOURCES.system,
+          subscriberId: row.id,
+        })
+      })
+      clearedCount++
+    } catch (error) {
+      logError('newsletter.confirm-token.cleanup.row', error, { subscriberId: row.id })
+    }
+  }
+
+  return clearedCount
 }

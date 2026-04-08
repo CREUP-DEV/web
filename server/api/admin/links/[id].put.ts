@@ -9,6 +9,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import {
   idRouteParamSchema,
@@ -98,6 +99,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    await invalidateHomeDataCache()
     return { item }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.links.update.rollback', event)

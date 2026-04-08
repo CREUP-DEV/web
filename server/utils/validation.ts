@@ -51,14 +51,14 @@ const getRequiredTranslation = <T extends { locale: string }>(translations: T[])
 
 export const carouselTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string(),
-  buttonText: z.string().optional(),
-  alt: z.string().optional(),
+  title: z.string().max(200),
+  buttonText: z.string().max(100).optional(),
+  alt: z.string().max(200).optional(),
 })
 
 export const createCarouselItemSchema = z
   .object({
-    image: z.string().min(1, 'La imagen es requerida'),
+    image: z.string().min(1, 'La imagen es requerida').max(2048),
     href: safeHrefSchema,
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
@@ -80,10 +80,10 @@ export const updateCarouselItemSchema = createCarouselItemSchema
 
 export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string(),
-  description: z.string().optional(),
-  contentHtml: z.string().optional().nullable(),
-  alt: z.string().optional(),
+  title: z.string().max(200),
+  description: z.string().max(2000).optional(),
+  contentHtml: z.string().max(200_000).optional().nullable(),
+  alt: z.string().max(200).optional(),
 })
 
 export const pressArticleTypeSchema = z.enum(PRESS_ARTICLE_TYPES)
@@ -146,7 +146,17 @@ function refinePressArticle(
 
 const basePressArticleSchema = z.object({
   type: pressArticleTypeSchema,
-  image: z.string().min(1, 'La imagen es requerida'),
+  image: z
+    .string()
+    .trim()
+    .min(1)
+    .max(2048)
+    .refine(
+      (v) => !v.startsWith('http://') && !v.startsWith('https://'),
+      'La imagen debe ser una ruta de almacenamiento, no una URL'
+    )
+    .optional()
+    .nullable(),
   pdfUrl: toOptionalSingleStringSchema(z.string().trim().min(1)),
   externalUrl: toOptionalSingleStringSchema(z.string().trim().url('La URL externa no es válida')),
   mediaOutletId: toOptionalSingleStringSchema(z.string().trim().min(1)),
@@ -168,13 +178,13 @@ export const updatePressArticleSchema = basePressArticleSchema.superRefine(refin
 
 export const featuredLinkTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string(),
-  alt: z.string().optional(),
+  title: z.string().max(200),
+  alt: z.string().max(200).optional(),
 })
 
 export const createFeaturedLinkSchema = z
   .object({
-    image: z.string().min(1, 'La imagen es requerida'),
+    image: z.string().min(1, 'La imagen es requerida').max(2048),
     to: safeHrefSchema,
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
@@ -198,7 +208,7 @@ export const updateFeaturedLinkSchema = createFeaturedLinkSchema
 
 export const tagTranslationSchema = z.object({
   locale: localeSchema,
-  name: z.string(),
+  name: z.string().max(100),
 })
 
 export const createTagSchema = z
@@ -206,7 +216,9 @@ export const createTagSchema = z
     slug: z
       .string()
       .min(1, 'El slug es requerido')
-      .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones'),
+      .max(100)
+      .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones')
+      .refine((v) => v !== 'all', "El slug 'all' está reservado"),
     order: z.number().int().min(0).default(0),
     translations: z.array(tagTranslationSchema).min(1, 'Se requiere al menos una traducción'),
   })
@@ -270,7 +282,14 @@ export const pressListQuerySchema = z.object({
     (value) => (Array.isArray(value) ? value[0] : value),
     pressArticleTypeSchema.optional()
   ),
-  tag: toOptionalSingleStringSchema(z.string().trim()),
+  tag: toOptionalSingleStringSchema(
+    z
+      .string()
+      .trim()
+      .min(1)
+      .max(100)
+      .refine((value) => value !== 'all', "El slug 'all' no es válido como filtro")
+  ),
   limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(50).default(12)),
   offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
 })
@@ -594,9 +613,9 @@ export const policyDocumentTypeRouteParamSchema = z.object({
 
 // Media Outlet schemas
 export const createMediaOutletSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido'),
-  website: z.string().url('La URL no es válida'),
-  logo: z.string().min(1, 'El logo es requerido'),
+  name: z.string().min(1, 'El nombre es requerido').max(200),
+  website: z.string().url('La URL no es válida').max(2048),
+  logo: z.string().min(1, 'El logo es requerido').max(2048),
   order: z.number().int().min(0).default(0),
 })
 
@@ -611,9 +630,9 @@ export const updateAboutPageContentSchema = z.object({
 // Equality Document schemas
 export const equalityDocumentTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string(),
-  description: z.string(),
-  meta: z.string().optional().nullable(),
+  title: z.string().max(200),
+  description: z.string().max(2000),
+  meta: z.string().max(500).optional().nullable(),
 })
 
 export const createEqualityDocumentSchema = z
@@ -650,7 +669,7 @@ export const updateEqualityDocumentSchema = createEqualityDocumentSchema
 // Financial Report schemas
 export const financialReportTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string(),
+  title: z.string().max(200),
 })
 
 export const createFinancialReportSchema = z
@@ -684,12 +703,17 @@ export const updatePressDossierSchema = z.object({
 
 export const createNewsletterSchema = z.object({
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
-  coverImage: z.string().min(1, 'La imagen de portada es requerida'),
-  pdfUrl: z.string().min(1, 'El PDF es requerido'),
+  coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
+  pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
   active: z.boolean().default(true),
 })
 
-export const updateNewsletterSchema = createNewsletterSchema
+export const updateNewsletterSchema = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
+  coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
+  pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
+  active: z.boolean().default(true),
+})
 
 export const createNewsletterRequestSchema = createNewsletterSchema.extend({
   sendEmail: z.boolean().default(false),

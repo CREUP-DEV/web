@@ -17,11 +17,7 @@ defineOgImage('NuxtSeoSatori', {
 
 usePageSeo('meta.title', 'meta.description')
 useSeoMeta({
-  ogType: 'website',
-  ogUrl: 'https://www.creup.es',
   twitterCard: 'summary_large_image',
-  twitterTitle: () => t('meta.title'),
-  twitterDescription: () => t('meta.description'),
 })
 </script>
 

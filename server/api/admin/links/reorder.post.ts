@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks } from '../../../db/schema'
 import { assertCompleteReorderSet } from '../../../utils/adminReorder'
+import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
 // POST - Reorder featured links
@@ -32,6 +33,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
+    await invalidateHomeDataCache()
     return { success: true }
   } catch (e) {
     throw createError({

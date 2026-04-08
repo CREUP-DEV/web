@@ -6,6 +6,7 @@ import {
   filterTranslationsByContent,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import { assertTagSlugAvailable } from '../../../utils/tagMutations'
 import {
   idRouteParamSchema,
@@ -78,6 +79,7 @@ export default defineEventHandler(async (event) => {
         })
       })
 
+      await invalidatePressRelatedCaches()
       return { item }
     } catch (e) {
       if (e && typeof e === 'object' && 'statusCode' in e) {
@@ -95,6 +97,7 @@ export default defineEventHandler(async (event) => {
   if (event.method === 'DELETE') {
     await db.delete(tags).where(eq(tags.id, id))
 
+    await invalidatePressRelatedCaches()
     return { success: true }
   }
 

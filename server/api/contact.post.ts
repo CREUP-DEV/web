@@ -3,6 +3,7 @@ import {
   getRequiredSmtpFromEmail,
   getRequiredSmtpPressEmail,
   getRequiredSmtpToEmail,
+  getRequiredSiteUrl,
 } from '../utils/runtimeConfig'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { contactFormSchema, validateBody } from '../utils/validation'
@@ -10,6 +11,7 @@ import { enforceRateLimit } from '../utils/rateLimit'
 import { getSmtpTransporter } from '../utils/smtpTransporter'
 import { logError } from '../utils/logger'
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
+import { normalizeBaseUrl, buildAbsoluteUrl } from '../utils/urlBuilder'
 
 const SPAM_PATTERNS = [
   /\[url=/i,
@@ -25,15 +27,19 @@ function hasSpamPatterns(text: string): boolean {
 }
 
 function sanitize(input: string, maxLen = 5000): string {
-  return input.replace(/[<>]/g, '').trim().slice(0, maxLen)
+  return input.trim().slice(0, maxLen)
 }
 
-function escapeHtmlText(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
-function escapeHtmlAttribute(value: string): string {
-  return escapeHtmlText(value).replace(/"/g, '&quot;')
+function escapeHtmlForAttribute(value: string): string {
+  return escapeHtml(value)
 }
 
 export default defineEventHandler(async (event) => {
@@ -60,7 +66,8 @@ export default defineEventHandler(async (event) => {
   const message = sanitize(body.message, 5000)
   const isPress = contactType === 'press'
 
-  if (hasSpamPatterns(`${name} ${subject} ${message}`)) {
+  // Check all user-provided fields for spam patterns
+  if (hasSpamPatterns(`${name} ${email} ${subject} ${message}`)) {
     throw createError({
       statusCode: 400,
       message: getPublicApiErrorMessage(event, 'contactSpamDetected'),
@@ -72,20 +79,23 @@ export default defineEventHandler(async (event) => {
     ? getRequiredSmtpPressEmail(event, publicConfigMessage)
     : getRequiredSmtpToEmail(event, publicConfigMessage)
   const fromEmail = getRequiredSmtpFromEmail(event, publicConfigMessage)
+  const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(event, publicConfigMessage))
 
   const transporter = getSmtpTransporter(publicConfigMessage)
 
   const sentAt = new Date().toISOString()
+  const contactPageUrl = buildAbsoluteUrl(siteUrl, '/contacto')
+  const bannerImageUrl = buildAbsoluteUrl(siteUrl, NEWSLETTER_BRAND_BANNER_PATH)
 
   const contactLabel = isPress ? 'prensa' : 'contacto'
-  const escapedName = escapeHtmlText(name)
-  const escapedEmail = escapeHtmlAttribute(email)
-  const escapedEmailText = escapeHtmlText(email)
-  const escapedSubject = escapeHtmlText(subject)
-  const escapedPhone = escapeHtmlText(phone || '(no indicado)')
-  const escapedMediaName = escapeHtmlText(mediaName)
-  const escapedMessage = escapeHtmlText(message).replace(/\n/g, '<br />')
-  const escapedContactLabel = escapeHtmlText(contactLabel)
+  const escapedName = escapeHtml(name)
+  const escapedEmail = escapeHtmlForAttribute(email)
+  const escapedEmailText = escapeHtml(email)
+  const escapedSubject = escapeHtml(subject)
+  const escapedPhone = escapeHtml(phone || '(no indicado)')
+  const escapedMediaName = escapeHtml(mediaName)
+  const escapedMessage = escapeHtml(message).replace(/\n/g, '<br />')
+  const escapedContactLabel = escapeHtml(contactLabel)
 
   const textBody = `
 Nuevo mensaje de ${contactLabel} desde la web de CREUP
@@ -98,7 +108,7 @@ Asunto: ${subject}
 ${message}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Enviado desde: https://www.creup.es/contacto
+Enviado desde: ${contactPageUrl}
 Fecha: ${sentAt}
 `.trim()
 
@@ -170,7 +180,7 @@ Fecha: ${sentAt}
                 <tr>
                   <td style="padding: 12px 16px 16px 16px; font-family: Arial, sans-serif; font-size:12px; color:#999999; line-height:18px;">
                     Enviado desde
-                    <a href="https://www.creup.es/contacto" style="color:#792225; text-decoration:none;">www.creup.es/contacto</a>
+                    <a href="${contactPageUrl}" style="color:#792225; text-decoration:none;">${contactPageUrl}</a>
                     · ${sentAt}
                     <br />
                     Puedes responder a este correo para contactar directamente con <strong>${escapedName}</strong>.
@@ -181,7 +191,7 @@ Fecha: ${sentAt}
           </tr>
           <tr>
             <td align="center" style="padding: 0 8px 20px 8px;">
-              <img src="https://www.creup.es${NEWSLETTER_BRAND_BANNER_PATH}" alt="CREUP" width="600"
+              <img src="${bannerImageUrl}" alt="CREUP" width="600"
                 style="display:block; width:100%; height:auto; margin:0 auto;" />
             </td>
           </tr>

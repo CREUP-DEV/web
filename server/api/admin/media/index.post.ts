@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { invalidatePressCache } from '../../../utils/adminCacheInvalidation'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
@@ -53,6 +54,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    await invalidatePressCache()
     return { item }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.media.create.rollback', event)

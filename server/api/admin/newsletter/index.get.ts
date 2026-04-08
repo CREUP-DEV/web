@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
   return {
     items: items.map((item) => ({
       ...item,
+      isSending: Boolean(item.lastDeliveryWorkerToken),
       month: monthKeyToDate(item.monthKey),
     })),
     total: countResult[0]?.count ?? 0,

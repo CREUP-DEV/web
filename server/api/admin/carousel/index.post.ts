@@ -10,6 +10,7 @@ import {
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import { createCarouselItemSchema, validateBody } from '../../../utils/validation'
 import {
@@ -97,6 +98,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    await invalidateHomeDataCache()
     return { item: completeItem }
   } catch (error) {
     await cleanupAdminAssetFinalizationsSafely(

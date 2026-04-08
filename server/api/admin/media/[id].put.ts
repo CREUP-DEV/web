@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { invalidatePressCache } from '../../../utils/adminCacheInvalidation'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
@@ -74,6 +75,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    await invalidatePressCache()
     return { item }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.media.update.rollback', event)

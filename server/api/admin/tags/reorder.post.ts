@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { tags } from '../../../db/schema'
+import { invalidateTagsCache } from '../../../utils/adminCacheInvalidation'
 import { assertCompleteReorderSet } from '../../../utils/adminReorder'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
@@ -29,6 +30,7 @@ export default defineEventHandler(async (event) => {
       }
     })
 
+    await invalidateTagsCache()
     return { success: true }
   } catch (e) {
     throw createError({

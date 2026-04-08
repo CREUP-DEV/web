@@ -283,51 +283,23 @@ const getMemberAnimationStyle = (index: number) => {
   }
 }
 
-type OrganizationModalData = {
-  eyebrow: string
-  heading: string
-  aboutTitle: string
-  imageAlt: string
-  description: string | null
-  initials: string | null
-  communityLabel: string | null
-  logoSrc: string | null
-  website: ReturnType<typeof getWebsiteData>
-  email: ReturnType<typeof getEmailData>
-  socialButtons: ReturnType<typeof getSocialButtons>
-  copyEmailAriaLabel: string | null
-}
-
-const buildOrganizationModalData = (
-  entity: SocialEntity,
-  options: {
-    eyebrow: string
-    heading: string
-    aboutTitle: string
-    imageAlt: string
-    description?: string | null
-    initials?: string | null
-    communityLabel?: string | null
+// Resolve logo once per entity to avoid calling getEntityLogo multiple times per render.
+// Keys are entity IDs; values are the resolved logo URL (or null).
+const resolvedMemberLogos = computed(() => {
+  const map = new Map<string, string | null>()
+  for (const member of allMembers.value) {
+    map.set(member.id, getEntityLogo(member))
   }
-): OrganizationModalData => {
-  const website = getWebsiteData(entity)
-  const email = getEmailData(entity)
+  return map
+})
 
-  return {
-    eyebrow: options.eyebrow,
-    heading: options.heading,
-    aboutTitle: options.aboutTitle,
-    imageAlt: options.imageAlt,
-    description: options.description ?? null,
-    initials: options.initials ?? null,
-    communityLabel: options.communityLabel ?? null,
-    logoSrc: getEntityLogo(entity),
-    website,
-    email,
-    socialButtons: getSocialButtons(entity),
-    copyEmailAriaLabel: email ? getCopyEmailAriaLabel(email.email) : null,
+const resolvedSectorialLogos = computed(() => {
+  const map = new Map<string, string | null>()
+  for (const sectorial of allSectoriales.value) {
+    map.set(sectorial.id, getEntityLogo(sectorial))
   }
-}
+  return map
+})
 
 const selectedMemberModalData = computed(() => {
   if (!selectedMember.value) {
@@ -335,8 +307,10 @@ const selectedMemberModalData = computed(() => {
   }
 
   const member = selectedMember.value
+  const website = getWebsiteData(member)
+  const email = getEmailData(member)
 
-  return buildOrganizationModalData(member, {
+  return {
     eyebrow: getMemberUniversityLabel(member),
     heading: getMemberDenominationLabel(member),
     aboutTitle: t('members.descriptionLabel'),
@@ -344,7 +318,12 @@ const selectedMemberModalData = computed(() => {
     description: member.description,
     initials: member.initials,
     communityLabel: getCommunityLabel(member.autonomousCommunity, member.autonomousCommunityName),
-  })
+    logoSrc: resolvedMemberLogos.value.get(member.id) ?? null,
+    website,
+    email,
+    socialButtons: getSocialButtons(member),
+    copyEmailAriaLabel: email ? getCopyEmailAriaLabel(email.email) : null,
+  }
 })
 
 const selectedSectorialModalData = computed(() => {
@@ -353,15 +332,23 @@ const selectedSectorialModalData = computed(() => {
   }
 
   const sectorial = selectedSectorial.value
+  const website = getWebsiteData(sectorial)
+  const email = getEmailData(sectorial)
 
-  return buildOrganizationModalData(sectorial, {
+  return {
     eyebrow: t('members.sectoriales.title'),
     heading: getSectorialDenominationLabel(sectorial),
     aboutTitle: t('members.descriptionLabel'),
     imageAlt: getSectorialImageAlt(sectorial),
     description: sectorial.description,
     initials: sectorial.initials,
-  })
+    communityLabel: null,
+    logoSrc: resolvedSectorialLogos.value.get(sectorial.id) ?? null,
+    website,
+    email,
+    socialButtons: getSocialButtons(sectorial),
+    copyEmailAriaLabel: email ? getCopyEmailAriaLabel(email.email) : null,
+  }
 })
 </script>
 
@@ -512,68 +499,22 @@ const selectedSectorialModalData = computed(() => {
               name="stagger-list"
               class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
             >
-              <button
+              <MembersOrganizationCard
                 v-for="(member, index) in filteredMembers"
                 :key="member.id"
-                class="motion-card-strong group bg-surface/50 hover:bg-surface rounded-2xl p-5 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
-                :style="getMemberAnimationStyle(index)"
-                type="button"
+                :logo-src="resolvedMemberLogos.get(member.id) ?? null"
+                :image-alt="getMemberImageAlt(member)"
+                :title="getMemberUniversityLabel(member)"
+                :subtitle="getMemberDenominationLabel(member)"
+                :initials="member.initials"
+                :community-label="
+                  getCommunityLabel(member.autonomousCommunity, member.autonomousCommunityName)
+                "
                 :aria-label="getMemberDetailsAriaLabel(member)"
+                :animation-style="getMemberAnimationStyle(index)"
                 @click="openMemberModal(member)"
-              >
-                <div class="flex items-start gap-4">
-                  <div
-                    class="ring-primary/20 group-hover:ring-primary/40 flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-2 transition-all dark:bg-gray-800"
-                  >
-                    <NuxtImg
-                      v-if="getEntityLogo(member)"
-                      :src="getEntityLogo(member)!"
-                      :alt="getMemberImageAlt(member)"
-                      class="size-full object-contain p-2"
-                      @error="handleLogoError(getEntityLogo(member))"
-                    />
-                    <UIcon v-else name="i-tabler-building" class="text-muted size-10" />
-                  </div>
-
-                  <div class="min-w-0 flex-1">
-                    <h3 class="text-base leading-tight font-semibold sm:text-lg">
-                      {{ getMemberUniversityLabel(member) }}
-                    </h3>
-                    <p class="text-muted mt-2 text-sm leading-snug">
-                      {{ getMemberDenominationLabel(member) }}
-                    </p>
-                    <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-                      <UBadge
-                        v-if="member.initials"
-                        size="sm"
-                        color="neutral"
-                        variant="soft"
-                        class="px-2 py-0.5 text-xs font-semibold"
-                      >
-                        {{ member.initials }}
-                      </UBadge>
-                      <UBadge
-                        size="sm"
-                        color="neutral"
-                        variant="outline"
-                        class="px-2 py-0.5 text-xs font-semibold"
-                      >
-                        {{
-                          getCommunityLabel(
-                            member.autonomousCommunity,
-                            member.autonomousCommunityName
-                          )
-                        }}
-                      </UBadge>
-                    </div>
-                  </div>
-
-                  <UIcon
-                    name="i-tabler-chevron-right"
-                    class="text-muted group-hover:text-primary mt-1 size-5 shrink-0 transition-colors"
-                  />
-                </div>
-              </button>
+                @logo-error="handleLogoError"
+              />
             </TransitionGroup>
           </div>
         </section>
@@ -607,52 +548,18 @@ const selectedSectorialModalData = computed(() => {
           name="stagger-list"
           class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
         >
-          <button
+          <MembersOrganizationCard
             v-for="(sectorial, index) in allSectoriales"
             :key="sectorial.id"
-            class="motion-card-strong group bg-surface/50 hover:bg-surface rounded-2xl p-5 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
-            :style="getMemberAnimationStyle(index)"
-            type="button"
+            :logo-src="resolvedSectorialLogos.get(sectorial.id) ?? null"
+            :image-alt="getSectorialImageAlt(sectorial)"
+            :title="getSectorialDenominationLabel(sectorial)"
+            :initials="sectorial.initials"
             :aria-label="getSectorialDetailsAriaLabel(sectorial)"
+            :animation-style="getMemberAnimationStyle(index)"
             @click="openSectorialModal(sectorial)"
-          >
-            <div class="flex items-start gap-4">
-              <div
-                class="ring-primary/20 group-hover:ring-primary/40 flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-2 transition-all dark:bg-gray-800"
-              >
-                <NuxtImg
-                  v-if="getEntityLogo(sectorial)"
-                  :src="getEntityLogo(sectorial)!"
-                  :alt="getSectorialImageAlt(sectorial)"
-                  class="size-full object-contain p-2"
-                  @error="handleLogoError(getEntityLogo(sectorial))"
-                />
-                <UIcon v-else name="i-tabler-building" class="text-muted size-10" />
-              </div>
-
-              <div class="min-w-0 flex-1">
-                <h3 class="text-base leading-tight font-semibold sm:text-lg">
-                  {{ getSectorialDenominationLabel(sectorial) }}
-                </h3>
-                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-                  <UBadge
-                    v-if="sectorial.initials"
-                    size="sm"
-                    color="neutral"
-                    variant="soft"
-                    class="px-2 py-0.5 text-xs font-semibold"
-                  >
-                    {{ sectorial.initials }}
-                  </UBadge>
-                </div>
-              </div>
-
-              <UIcon
-                name="i-tabler-chevron-right"
-                class="text-muted group-hover:text-primary mt-1 size-5 shrink-0 transition-colors"
-              />
-            </div>
-          </button>
+            @logo-error="handleLogoError"
+          />
         </TransitionGroup>
       </section>
     </UContainer>

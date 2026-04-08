@@ -9,6 +9,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import { createFeaturedLinkSchema, validateBody } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
@@ -85,6 +86,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    await invalidateHomeDataCache()
     return { item: completeItem }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.links.create.rollback', event)

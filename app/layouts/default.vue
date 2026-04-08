@@ -1,12 +1,23 @@
 <script setup lang="ts">
 const { t } = useI18n()
+
+// Inject locale-aware <link rel="alternate" hreflang="..."> and canonical
+// tags on every public page so search engines can find the correct locale.
+const head = useLocaleHead({ addDirAttribute: true, addSeoAttributes: true })
+useHead(head)
 </script>
 
 <template>
   <div class="flex min-h-screen flex-col">
     <a
-      href="#main-content"
+      href="#main-navigation"
       class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
+    >
+      {{ t('accessibility.skipToNavigation') }}
+    </a>
+    <a
+      href="#main-content"
+      class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-20"
     >
       {{ t('accessibility.skipToMain') }}
     </a>

@@ -355,6 +355,56 @@ export const proxyExternalAssetBySource = async (
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
+  // Maximum number of redirects to follow before giving up
+  const MAX_REDIRECTS = 5
+
+  /**
+   * Follow redirects manually so every hop's destination is validated against
+   * the allowed-origins list before the request is made. This prevents SSRF
+   * attacks where a trusted origin redirects to an internal host: with
+   * `redirect: 'follow'` the internal host receives the connection and its
+   * response is only rejected after the fact.
+   */
+  async function fetchWithSafeRedirects(url: string, hops = 0): Promise<Response> {
+    if (hops > MAX_REDIRECTS) {
+      throw createError({ statusCode: 502, statusMessage: messages.unavailable })
+    }
+
+    const response = await fetch(url, {
+      method: method === 'HEAD' ? 'HEAD' : 'GET',
+      headers: requestHeaders,
+      redirect: 'manual',
+      signal: controller.signal,
+    })
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location')
+      if (!location) {
+        throw createError({ statusCode: 502, statusMessage: messages.unavailable })
+      }
+
+      let nextUrl: URL
+      try {
+        // location may be relative — resolve it against the current URL
+        nextUrl = new URL(location, url)
+      } catch {
+        throw createError({ statusCode: 400, statusMessage: messages.invalidOrigin })
+      }
+
+      if (!['http:', 'https:'].includes(nextUrl.protocol)) {
+        throw createError({ statusCode: 400, statusMessage: messages.invalidProtocol })
+      }
+
+      if (!allowedOrigins.has(nextUrl.origin)) {
+        throw createError({ statusCode: 400, statusMessage: messages.invalidOrigin })
+      }
+
+      return fetchWithSafeRedirects(nextUrl.toString(), hops + 1)
+    }
+
+    return response
+  }
+
   try {
     const requestHeaders = new Headers()
     requestHeaders.set('accept', getAssetAcceptHeader(type))
@@ -379,12 +429,7 @@ export const proxyExternalAssetBySource = async (
       requestHeaders.set('if-range', ifRangeHeader)
     }
 
-    const upstreamResponse = await fetch(sourceUrl.toString(), {
-      method: method === 'HEAD' ? 'HEAD' : 'GET',
-      headers: requestHeaders,
-      redirect: 'follow',
-      signal: controller.signal,
-    })
+    const upstreamResponse = await fetchWithSafeRedirects(sourceUrl.toString())
 
     if (upstreamResponse.status === 404) {
       throw createError({

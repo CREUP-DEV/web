@@ -127,6 +127,30 @@ const printPage = () => {
   window.print()
 }
 
+useHead(
+  computed(() => ({
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'NewsArticle',
+          headline: props.article.title,
+          description: props.article.description || undefined,
+          datePublished: props.article.publishedAt,
+          image: props.article.image || undefined,
+          url: canonicalUrl.value,
+          publisher: {
+            '@type': 'Organization',
+            name: siteConfig.name,
+            url: String(siteConfig.url ?? '').trim() || undefined,
+          },
+        }),
+      },
+    ],
+  }))
+)
+
 const shareActions = computed<ShareAction[]>(() => {
   const actions: ShareAction[] = [
     {
@@ -285,6 +309,7 @@ usePageSeo(
       </header>
 
       <figure
+        v-if="article.image"
         ref="coverRef"
         class="mb-8"
         :class="entranceClasses(coverShouldAnimate, coverVisible, coverPending)"

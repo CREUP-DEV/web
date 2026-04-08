@@ -4,6 +4,7 @@ import { db } from '../db'
 import { pressArticles, tags, pressArticleTags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
+import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { logError } from '../utils/logger'
 import { resolvePressTranslation } from '../utils/pressTranslation'
@@ -29,7 +30,7 @@ export default defineCachedEventHandler(
         conditions.push(eq(pressArticles.type, type))
       }
 
-      if (tagSlug && tagSlug !== 'all') {
+      if (tagSlug) {
         const articleIdsByTag = db
           .select({ pressArticleId: pressArticleTags.pressArticleId })
           .from(pressArticleTags)
@@ -44,7 +45,8 @@ export default defineCachedEventHandler(
       const [articlesList, countResult] = await Promise.all([
         db.query.pressArticles.findMany({
           where: whereClause,
-          orderBy: desc(pressArticles.publishedAt),
+          // Secondary sort on createdAt breaks ties between same-day articles
+          orderBy: [desc(pressArticles.publishedAt), desc(pressArticles.createdAt)],
           limit,
           offset,
           with: {
@@ -79,10 +81,11 @@ export default defineCachedEventHandler(
           id: item.id,
           type: item.type,
           slug: item.slug,
-          image:
-            toExternalImageProxyUrl(item.image, {
-              publicPathBase: '/prensa/imagenes',
-            }) ?? item.image,
+          image: item.image
+            ? (toExternalImageProxyUrl(item.image, {
+                publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
+              }) ?? item.image)
+            : null,
           pdfUrl:
             toExternalPdfProxyUrl(item.pdfUrl, {
               publicPathBase: '/prensa/documentos',
@@ -91,7 +94,6 @@ export default defineCachedEventHandler(
           title: trans?.title ?? '',
           description: trans?.description ?? '',
           alt: trans?.alt ?? '',
-          contentHtml: trans?.contentHtml ?? null,
           publishedAt: dateValueToDateOnly(item.publishedAt),
           tags: articleTags,
           mediaOutlet: item.mediaOutlet
@@ -99,7 +101,7 @@ export default defineCachedEventHandler(
                 name: item.mediaOutlet.name,
                 logo:
                   toExternalImageProxyUrl(item.mediaOutlet.logo, {
-                    publicPathBase: '/prensa/imagenes',
+                    publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
                   }) ?? item.mediaOutlet.logo,
                 website: item.mediaOutlet.website,
               }

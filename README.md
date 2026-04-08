@@ -69,8 +69,7 @@ pnpm db:seed
 
 ### Acceso de administración
 
-- `ADMIN_EMAILS`
-- `ADMIN_EMAIL_DOMAIN`
+- `ADMIN_EMAILS` — lista de correos separados por comas con acceso admin permanente (independiente de la tabla `admin_access`)
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 

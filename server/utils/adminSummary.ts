@@ -136,13 +136,18 @@ async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics> {
       (select coalesce(sum(case when active then 1 else 0 end), 0)::int from newsletter_subscribers) as newsletter_subscribers_active,
       (
         select coalesce(
-          sum(case when active and sent_at is null and not sending then 1 else 0 end),
+          sum(
+            case
+              when active and sent_at is null and last_delivery_worker_token is null then 1
+              else 0
+            end
+          ),
           0
         )::int
         from newsletters
       ) as newsletter_delivery_pending,
       (
-        select coalesce(sum(case when sending then 1 else 0 end), 0)::int
+        select coalesce(sum(case when last_delivery_worker_token is not null then 1 else 0 end), 0)::int
         from newsletters
       ) as newsletter_delivery_sending
   `)
@@ -224,8 +229,8 @@ async function getAdminDashboardData() {
       columns: {
         monthKey: true,
         active: true,
-        sending: true,
         sentAt: true,
+        lastDeliveryWorkerToken: true,
         updatedAt: true,
       },
       orderBy: desc(newsletters.updatedAt),
@@ -575,7 +580,7 @@ export async function getAdminDashboardSummary() {
       ? {
           sectionKey: 'newsletter',
           title: `Newsletter ${formatNewsletterMonth(latestNewsletter.monthKey)}`,
-          description: latestNewsletter.sending
+          description: latestNewsletter.lastDeliveryWorkerToken
             ? 'Enviándose ahora'
             : latestNewsletter.sentAt
               ? 'Ya enviada'

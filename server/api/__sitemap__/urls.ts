@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { db } from '../../db'
-import { pressArticles } from '../../db/schema'
+import { newsletters, pressArticles } from '../../db/schema'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
@@ -34,11 +34,31 @@ const buildMandateSlug = (mandate: MandateInfoOutput, mandates: MandateInfoOutpu
   return mandate.startDate
 }
 
+/**
+ * Build an i18n-aware sitemap entry for a given path.
+ * With `prefix_except_default` strategy:
+ *   - Spanish (default): /path
+ *   - English:           /en/path
+ */
+function buildI18nEntry(loc: string, extra: Record<string, unknown> = {}) {
+  return {
+    loc,
+    _i18n: {
+      alternatives: [
+        { hreflang: 'es', href: loc },
+        { hreflang: 'en', href: `/en${loc}` },
+        { hreflang: 'x-default', href: loc },
+      ],
+    },
+    ...extra,
+  }
+}
+
 export default defineSitemapEventHandler(async (event) => {
   const cacheOptions = getExternalApiCacheOptions(event)
   setExternalApiCacheHeaders(event, cacheOptions)
 
-  const [articles, eventsPayload, mandates] = await Promise.all([
+  const [articles, eventsPayload, mandates, latestNewsletter] = await Promise.all([
     db.query.pressArticles.findMany({
       where: eq(pressArticles.active, true),
       columns: {
@@ -61,6 +81,13 @@ export default defineSitemapEventHandler(async (event) => {
         return []
       }
     })(),
+    db
+      .select({ updatedAt: newsletters.updatedAt })
+      .from(newsletters)
+      .where(eq(newsletters.active, true))
+      .orderBy(desc(newsletters.updatedAt))
+      .limit(1)
+      .then((rows) => rows[0] ?? null),
   ])
 
   const articleRoutes = articles.flatMap((article) => {
@@ -70,21 +97,29 @@ export default defineSitemapEventHandler(async (event) => {
     }
 
     return [
-      {
-        loc: `${basePath}/${article.slug}`,
+      buildI18nEntry(`${basePath}/${article.slug}`, {
         lastmod: (article.updatedAt ?? article.publishedAt).toISOString(),
-      },
+      }),
     ]
   })
 
-  const eventRoutes = eventsPayload.events.map((entry) => ({
-    loc: `/conocenos/eventos/${entry.slug}`,
-    lastmod: eventsPayload.generatedAt ?? undefined,
-  }))
+  const eventRoutes = eventsPayload.events.map((entry) =>
+    buildI18nEntry(`/conocenos/eventos/${entry.slug}`, {
+      lastmod: eventsPayload.generatedAt ?? undefined,
+    })
+  )
 
-  const mandateRoutes = mandates.map((mandate) => ({
-    loc: `/conocenos/equipo/historico/${buildMandateSlug(mandate, mandates)}`,
-  }))
+  const mandateRoutes = mandates.map((mandate) =>
+    buildI18nEntry(`/conocenos/equipo/historico/${buildMandateSlug(mandate, mandates)}`)
+  )
 
-  return [...articleRoutes, ...eventRoutes, ...mandateRoutes]
+  const newsletterRoute = latestNewsletter
+    ? [
+        buildI18nEntry('/prensa/newsletter', {
+          lastmod: latestNewsletter.updatedAt?.toISOString(),
+        }),
+      ]
+    : []
+
+  return [...articleRoutes, ...eventRoutes, ...mandateRoutes, ...newsletterRoute]
 })

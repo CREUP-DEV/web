@@ -10,6 +10,7 @@ import {
 } from '../../../utils/adminAssetPublication'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import {
   idRouteParamSchema,
@@ -114,6 +115,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    await invalidateHomeDataCache()
     return { item }
   } catch (error) {
     await cleanupAdminAssetFinalizationsSafely(

@@ -78,19 +78,21 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
     const completeItem = await db.transaction(async (tx) => {
       const slug = await generatePressSlug(defaultTitle, publishedAt, { executor: tx })
 
-      image = await finalizeAdminImage({
-        storagePath: data.image,
-        uploadDir: IMAGE_UPLOAD_DIR,
-        publicPath: PRESS_IMAGE_PUBLIC_BASE,
-        slug,
-        publish: data.active,
-        fallbackBaseName: 'prensa',
-      })
-      trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: data.image,
-        storagePath: image,
-        allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
-      })
+      if (data.image) {
+        image = await finalizeAdminImage({
+          storagePath: data.image,
+          uploadDir: IMAGE_UPLOAD_DIR,
+          publicPath: PRESS_IMAGE_PUBLIC_BASE,
+          slug,
+          publish: data.active,
+          fallbackBaseName: 'prensa',
+        })
+        trackAdminAssetFinalization(cleanupTargets, {
+          sourceStoragePath: data.image,
+          storagePath: image,
+          allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
+        })
+      }
 
       pdfUrl = data.pdfUrl
         ? await finalizeAdminDocument({
@@ -113,7 +115,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
         .values({
           type: data.type,
           slug,
-          image: image!,
+          image: image ?? null,
           pdfUrl,
           externalUrl: data.externalUrl || null,
           mediaOutletId: data.mediaOutletId || null,
@@ -142,7 +144,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
       })
     })
 
-    if (data.image !== image) {
+    if (data.image && data.image !== image) {
       await cleanupUnusedAdminAssetSafely(
         { storagePath: data.image, allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE] },
         'admin.press.create.cleanup.image',
@@ -194,20 +196,22 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
         executor: tx,
       })
 
-      image = await finalizeAdminImage({
-        storagePath: data.image,
-        uploadDir: IMAGE_UPLOAD_DIR,
-        publicPath: PRESS_IMAGE_PUBLIC_BASE,
-        slug,
-        publish: data.active,
-        fallbackBaseName: 'prensa',
-        replaceStoragePath: existingItem.image,
-      })
-      trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: data.image,
-        storagePath: image,
-        allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
-      })
+      if (data.image) {
+        image = await finalizeAdminImage({
+          storagePath: data.image,
+          uploadDir: IMAGE_UPLOAD_DIR,
+          publicPath: PRESS_IMAGE_PUBLIC_BASE,
+          slug,
+          publish: data.active,
+          fallbackBaseName: 'prensa',
+          replaceStoragePath: existingItem.image ?? undefined,
+        })
+        trackAdminAssetFinalization(cleanupTargets, {
+          sourceStoragePath: data.image,
+          storagePath: image,
+          allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
+        })
+      }
 
       pdfUrl = data.pdfUrl
         ? await finalizeAdminDocument({
@@ -231,7 +235,7 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
         .set({
           type: data.type,
           slug,
-          image: image!,
+          image: image ?? null,
           pdfUrl,
           externalUrl: data.externalUrl || null,
           mediaOutletId: data.mediaOutletId || null,

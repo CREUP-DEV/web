@@ -6,10 +6,22 @@ const DELIVERY_RECOVERY_INTERVAL_MS = 5 * 60 * 1000
 const CONFIRM_TOKEN_CLEANUP_INTERVAL_MS = 60 * 60 * 1000
 
 export default defineNitroPlugin((nitro) => {
-  const runRecovery = () =>
-    processPendingNewsletterDeliveries().catch((error) => {
-      logError('newsletter.delivery.recovery', error)
-    })
+  // Simple in-process lock: Node.js is single-threaded, so this boolean
+  // prevents concurrent recovery runs within the same process instance.
+  // Cross-process coordination is handled by the DB worker token mechanism.
+  let recovering = false
+
+  const runRecovery = () => {
+    if (recovering) return
+    recovering = true
+    processPendingNewsletterDeliveries()
+      .catch((error) => {
+        logError('newsletter.delivery.recovery', error)
+      })
+      .finally(() => {
+        recovering = false
+      })
+  }
 
   const runConfirmTokenCleanup = () =>
     cleanupExpiredNewsletterConfirmTokens()
@@ -25,7 +37,7 @@ export default defineNitroPlugin((nitro) => {
   void runRecovery()
   void runConfirmTokenCleanup()
 
-  const recoveryIntervalId = setInterval(() => void runRecovery(), DELIVERY_RECOVERY_INTERVAL_MS)
+  const recoveryIntervalId = setInterval(() => runRecovery(), DELIVERY_RECOVERY_INTERVAL_MS)
   const cleanupIntervalId = setInterval(
     () => void runConfirmTokenCleanup(),
     CONFIRM_TOKEN_CLEANUP_INTERVAL_MS

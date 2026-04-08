@@ -210,6 +210,7 @@ const items = computed<NavigationMenuItem[]>(() => [
 
 <template>
   <UHeader
+    id="main-navigation"
     :ui="{
       center: 'lg:hidden! xl:flex!',
       toggle: 'lg:inline-flex! xl:hidden!',

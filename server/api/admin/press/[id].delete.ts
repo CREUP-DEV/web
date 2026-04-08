@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
+import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 
@@ -39,5 +40,6 @@ export default defineEventHandler(async (event) => {
     )
   }
 
+  await invalidatePressRelatedCaches()
   return { success: true }
 })
