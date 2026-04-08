@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { createMediaOutletSchema } from '~~/shared/utils/adminSchemas'
+
 definePageMeta({
   layout: 'admin',
   title: 'Medios',
 })
 
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
 interface MediaOutlet {
   id: string
@@ -17,13 +21,7 @@ interface MediaOutlet {
 const { data, refresh } = await useFetch<{ items: MediaOutlet[] }>('/api/admin/media')
 
 const items = computed(() => data.value?.items ?? [])
-
-const showModal = ref(false)
-const editingItem = ref<MediaOutlet | null>(null)
 const isSubmitting = ref(false)
-
-const showDeleteModal = ref(false)
-const itemToDelete = ref<MediaOutlet | null>(null)
 const isDeleting = ref(false)
 
 const form = reactive({
@@ -32,21 +30,6 @@ const form = reactive({
   logo: '',
   order: 0,
 })
-
-const listRef = ref<HTMLElement | null>(null)
-const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
-  useReorderableAdminList({
-    items,
-    listRef,
-    persist: async (updates) => {
-      await $fetch('/api/admin/media/reorder', {
-        method: 'POST',
-        body: { items: updates },
-      })
-
-      await refresh()
-    },
-  })
 
 const {
   inputRef: fileInputRef,
@@ -64,6 +47,50 @@ const {
   getFallbackPreview: () => form.logo || null,
 })
 
+const {
+  cancelOrderChanges,
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  editingItem,
+  hasOrderChanges,
+  isSavingOrder,
+  itemToDelete,
+  listRef,
+  localItems,
+  openCreate,
+  openEdit,
+  persistOrder,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<MediaOutlet>({
+  items,
+  persistOrder: async (updates) => {
+    await $fetch('/api/admin/media/reorder', {
+      method: 'POST',
+      body: { items: updates },
+    })
+
+    await refresh()
+  },
+  prepareCreate: () => {
+    clearErrors()
+    form.name = ''
+    form.website = ''
+    form.logo = ''
+    form.order = items.value.length
+    logoPreview.value = null
+  },
+  prepareEdit: (item) => {
+    clearErrors()
+    form.name = item.name
+    form.website = item.website
+    form.logo = item.logo
+    form.order = item.order
+    logoPreview.value = item.logo
+  },
+})
+
 const saveOrder = async () => {
   try {
     await persistOrder()
@@ -74,41 +101,20 @@ const saveOrder = async () => {
   }
 }
 
-const openCreate = () => {
-  editingItem.value = null
-  form.name = ''
-  form.website = ''
-  form.logo = ''
-  form.order = items.value.length
-  logoPreview.value = null
-  showModal.value = true
-}
-
-const openEdit = (item: MediaOutlet) => {
-  editingItem.value = item
-  form.name = item.name
-  form.website = item.website
-  form.logo = item.logo
-  form.order = item.order
-  logoPreview.value = item.logo
-  showModal.value = true
-}
-
 const handleSubmit = async () => {
-  if (!form.logo) {
-    toast.add({ title: 'El logo es obligatorio', color: 'error' })
+  const payload = {
+    name: form.name,
+    website: form.website,
+    logo: form.logo,
+    order: form.order,
+  }
+
+  if (!validate(createMediaOutletSchema, payload)) {
     return
   }
 
   isSubmitting.value = true
   try {
-    const payload = {
-      name: form.name,
-      website: form.website,
-      logo: form.logo,
-      order: form.order,
-    }
-
     if (editingItem.value) {
       await $fetch(`/api/admin/media/${editingItem.value.id}`, {
         method: 'PUT',
@@ -122,19 +128,15 @@ const handleSubmit = async () => {
       })
       toast.add({ title: 'Medio creado', color: 'success' })
     }
-    showModal.value = false
+    closeModal()
+    clearErrors()
     await refresh()
   } catch (e) {
     console.error('Error saving:', e)
-    toast.add({ title: 'No se pudo guardar el medio', color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, 'No se pudo guardar el medio'), color: 'error' })
   } finally {
     isSubmitting.value = false
   }
-}
-
-const confirmDelete = (item: MediaOutlet) => {
-  itemToDelete.value = item
-  showDeleteModal.value = true
 }
 
 const handleDelete = async () => {
@@ -142,8 +144,7 @@ const handleDelete = async () => {
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/media/${itemToDelete.value.id}`, { method: 'DELETE' })
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
     toast.add({ title: 'Medio eliminado', color: 'success' })
   } catch (e) {
@@ -253,15 +254,15 @@ const handleDelete = async () => {
             </h2>
 
             <form id="media-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Nombre">
+              <UFormField label="Nombre" :error="getFieldError('name')">
                 <UInput v-model="form.name" placeholder="Nombre del medio" class="w-full" />
               </UFormField>
 
-              <UFormField label="Web">
+              <UFormField label="Web" :error="getFieldError('website')">
                 <UInput v-model="form.website" placeholder="https://..." class="w-full" />
               </UFormField>
 
-              <UFormField label="Logo">
+              <UFormField label="Logo" :error="getFieldError('logo')">
                 <div class="space-y-3">
                   <div
                     v-if="logoPreview"

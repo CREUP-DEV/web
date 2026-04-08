@@ -213,4 +213,4 @@ ci: run lint and tests on push
 - No `ADMIN_EMAIL_DOMAIN` or domain-based access checks were introduced.
 - Added or updated translations when public copy changed.
 - Accessibility was verified.
-- Lint passes (`pnpm lint`).
+- Lint passes (`pnpm lint:fix`).

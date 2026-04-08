@@ -4,8 +4,9 @@ import { db } from '../db'
 import { newsletterSubscribers } from '../db/schema'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
-import { newsletterSubscribeSchema, validateBody } from '../utils/validation'
+import { validateBody } from '../utils/validation'
 import { enforceRateLimit } from '../utils/rateLimit'
+import { newsletterSubscribeSchema } from '~~/shared/utils/newsletterValidation'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_CONSENT_TEXT_VERSION,

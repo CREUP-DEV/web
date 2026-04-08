@@ -22,8 +22,10 @@ export function useHomeData() {
   const { locale } = useI18n()
   const localeApiHeaders = useLocaleApiHeaders()
 
+  const key = computed(() => `home-data-${locale.value}`)
+
   return useAsyncData<HomeDataResponse>(
-    () => `home-data-${locale.value}`,
+    key,
     () =>
       $fetch<HomeDataResponse>('/api/home-data', {
         headers: localeApiHeaders.value,

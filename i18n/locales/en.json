@@ -86,6 +86,7 @@
       "selectDay": "Select a day to see scheduled events.",
       "upcomingEvents": "Upcoming events",
       "noUpcomingEvents": "No upcoming events scheduled.",
+      "loadError": "Could not load the calendar. Please try again later.",
       "multiDay": "Multi-day",
       "allDay": "All day"
     }
@@ -536,8 +537,7 @@
     "shareActions": {
       "copy": "Copy link",
       "whatsapp": "Share on WhatsApp",
-      "instagram": "Share on Instagram",
-      "tiktok": "Share on TikTok",
+      "native": "Share",
       "x": "Share on X",
       "linkedin": "Share on LinkedIn",
       "facebook": "Share on Facebook",

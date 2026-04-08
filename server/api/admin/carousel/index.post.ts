@@ -12,11 +12,12 @@ import {
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
-import { createCarouselItemSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
 import {
   HOME_CAROUSEL_FALLBACK_IMAGE,
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
 } from '~~/shared/constants/assetPaths'
+import { createCarouselItemSchema } from '~~/shared/utils/adminSchemas'
 
 const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/carrusel'
 

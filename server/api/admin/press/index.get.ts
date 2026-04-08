@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3'
-import { desc, eq, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, or, ilike, sql } from 'drizzle-orm'
 import { db } from '../../../db'
-import { pressArticles } from '../../../db/schema'
+import { pressArticles, pressArticleTranslations } from '../../../db/schema'
 import { sanitizePressTranslations } from '../../../utils/pressTranslation'
 import {
   adminPressListQuerySchema,
@@ -14,9 +14,37 @@ const adminPressQuerySchema = adminPressListQuerySchema.merge(paginationQuerySch
 
 export default defineEventHandler(async (event) => {
   const query = validateQuery(event, adminPressQuerySchema)
-  const { type, limit, offset } = query
+  const { type, search, limit, offset } = query
 
-  const whereClause = type ? eq(pressArticles.type, type) : undefined
+  // Build WHERE conditions
+  const conditions = []
+
+  if (type) {
+    conditions.push(eq(pressArticles.type, type))
+  }
+
+  if (search) {
+    const pattern = `%${search}%`
+    const matchingIds = await db
+      .selectDistinct({ id: pressArticleTranslations.pressArticleId })
+      .from(pressArticleTranslations)
+      .where(
+        or(
+          ilike(pressArticleTranslations.title, pattern),
+          ilike(pressArticleTranslations.description, pattern)
+        )
+      )
+
+    const idList = matchingIds.map((r) => r.id)
+
+    if (idList.length === 0) {
+      return { items: [], total: 0 }
+    }
+
+    conditions.push(inArray(pressArticles.id, idList))
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
   const [items, countResult] = await Promise.all([
     db.query.pressArticles.findMany({

@@ -88,6 +88,8 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
 
 interface UseAdminDocumentUploadOptions {
   endpoint: string
+  successMessage?: string
+  errorMessage?: string
   onUploaded: (storagePath: string) => void
 }
 
@@ -127,11 +129,14 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
         body: formData,
       })
       options.onUploaded(result.storagePath)
-      toast.add({ title: 'PDF subido correctamente', color: 'success' })
+      toast.add({
+        title: options.successMessage ?? 'Archivo subido correctamente',
+        color: 'success',
+      })
     } catch (error) {
       console.error('Error uploading admin document:', error)
       fileName.value = null
-      toast.add({ title: 'No se pudo subir el PDF', color: 'error' })
+      toast.add({ title: options.errorMessage ?? 'No se pudo subir el archivo', color: 'error' })
     } finally {
       isUploading.value = false
       target.value = ''

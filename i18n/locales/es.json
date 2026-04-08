@@ -86,6 +86,7 @@
       "selectDay": "Selecciona un día para ver los eventos programados.",
       "upcomingEvents": "Próximos eventos",
       "noUpcomingEvents": "No hay eventos próximos programados.",
+      "loadError": "No se pudo cargar la agenda. Inténtalo más tarde.",
       "multiDay": "Varios días",
       "allDay": "Todo el día"
     }
@@ -536,8 +537,7 @@
     "shareActions": {
       "copy": "Copiar enlace",
       "whatsapp": "Compartir en WhatsApp",
-      "instagram": "Compartir en Instagram",
-      "tiktok": "Compartir en TikTok",
+      "native": "Compartir",
       "x": "Compartir en X",
       "linkedin": "Compartir en LinkedIn",
       "facebook": "Compartir en Facebook",

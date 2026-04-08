@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
+const cookiesPath = computed(() => `${localePath('/legal')}#cookies`)
 
 const socials = useSocials()
 </script>
@@ -31,14 +33,14 @@ const socials = useSocials()
         :aria-label="t('footer.legalNav')"
       >
         <NuxtLink
-          to="/legal"
+          :to="localePath('/legal')"
           class="text-muted hover:text-highlighted focus-visible:ring-primary/60 rounded-sm transition focus-visible:ring-2 focus-visible:outline-none"
         >
           {{ t('footer.legal') }}
         </NuxtLink>
         <span class="text-muted" aria-hidden="true">&middot;</span>
         <NuxtLink
-          to="/legal#cookies"
+          :to="cookiesPath"
           class="text-muted hover:text-highlighted focus-visible:ring-primary/60 cursor-pointer rounded-sm transition focus-visible:ring-2 focus-visible:outline-none"
         >
           {{ t('cookies.footerLink') }}

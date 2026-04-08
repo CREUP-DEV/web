@@ -8,6 +8,8 @@ type PressTranslationLike = {
   alt?: string | null
   contentHtml?: string | null
 }
+type RichTextElement = InstanceType<JSDOM['window']['Element']>
+type RichTextAnchorElement = InstanceType<JSDOM['window']['HTMLAnchorElement']>
 
 const richTextPurifier = createDOMPurify(new JSDOM('').window as unknown as WindowLike)
 
@@ -85,7 +87,7 @@ const sanitizeRichTextLinkHref = (value?: string | null) => {
   return null
 }
 
-const replaceElementTag = (element: Element, tagName: 'strong' | 'em') => {
+const replaceElementTag = (element: RichTextElement, tagName: 'strong' | 'em') => {
   const ownerDocument = element.ownerDocument
   const replacement = ownerDocument.createElement(tagName)
 
@@ -96,7 +98,7 @@ const replaceElementTag = (element: Element, tagName: 'strong' | 'em') => {
   element.replaceWith(replacement)
 }
 
-const unwrapElement = (element: Element) => {
+const unwrapElement = (element: RichTextElement) => {
   const parentNode = element.parentNode
   if (!parentNode) {
     return
@@ -126,15 +128,19 @@ export const sanitizeRichTextHtml = (value?: string | null) => {
 
   const document = new JSDOM(`<body>${sanitizedSource}</body>`).window.document
 
-  for (const boldElement of Array.from(document.body.querySelectorAll('b'))) {
+  for (const boldElement of Array.from(document.body.querySelectorAll('b')) as RichTextElement[]) {
     replaceElementTag(boldElement, 'strong')
   }
 
-  for (const italicElement of Array.from(document.body.querySelectorAll('i'))) {
+  for (const italicElement of Array.from(
+    document.body.querySelectorAll('i')
+  ) as RichTextElement[]) {
     replaceElementTag(italicElement, 'em')
   }
 
-  for (const anchorElement of Array.from(document.body.querySelectorAll('a'))) {
+  for (const anchorElement of Array.from(
+    document.body.querySelectorAll('a')
+  ) as RichTextAnchorElement[]) {
     const href = sanitizeRichTextLinkHref(anchorElement.getAttribute('href'))
 
     if (!href) {

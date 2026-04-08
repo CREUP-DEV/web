@@ -21,6 +21,7 @@ const tooltip = ref({
   title: '',
   meta: '',
 })
+const hoveredCommunity = ref<string | null>(null)
 
 let tooltipAnimationFrameId = 0
 let pendingTooltipPointerPosition: { clientX: number; clientY: number } | null = null
@@ -38,7 +39,7 @@ const communityNames = computed(() => {
   return map
 })
 
-const regionClasses = computed(() => {
+const regionClassesStatic = computed(() => {
   const map = new Map<string, Record<string, boolean>>()
   for (const { community } of SPAIN_REGION_PATHS) {
     const hasMembers = (props.memberCounts?.[community] ?? 0) > 0
@@ -73,6 +74,10 @@ const regionAriaLabels = computed(() => {
 
 const handleSelect = (community: string) => {
   emit('select', props.selectedCommunity === community ? null : community)
+}
+
+const setHoverCommunity = (community: string) => {
+  hoveredCommunity.value = community
 }
 
 const getCommunityCount = (community: string) => props.memberCounts?.[community] ?? 0
@@ -144,6 +149,7 @@ const scheduleTooltipPosition = (clientX: number, clientY: number) => {
 }
 
 const showTooltipFromPointer = (event: MouseEvent, community: string) => {
+  setHoverCommunity(community)
   tooltip.value.title = communityNames.value.get(community) ?? community
   tooltip.value.meta = getCommunityCountLabel(community)
   tooltip.value.visible = true
@@ -159,6 +165,7 @@ const updateTooltipPosition = (event: MouseEvent) => {
 }
 
 const showTooltipFromFocus = (event: FocusEvent, community: string) => {
+  setHoverCommunity(community)
   setTooltipPositionFromTarget(event.currentTarget ?? event.target)
   tooltip.value.title = communityNames.value.get(community) ?? community
   tooltip.value.meta = getCommunityCountLabel(community)
@@ -167,6 +174,7 @@ const showTooltipFromFocus = (event: FocusEvent, community: string) => {
 
 const hideTooltip = () => {
   tooltip.value.visible = false
+  hoveredCommunity.value = null
   pendingTooltipPointerPosition = null
 
   if (tooltipAnimationFrameId) {
@@ -185,7 +193,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="mapContainerRef"
-    class="relative w-full [--map-active-fill:#fecaca] [--map-active-hover-fill:#fb7185] [--map-active-hover-opacity:1] [--map-active-hover-stroke:#991b1b] [--map-active-opacity:1] [--map-active-stroke:#b91c1c] [--map-inactive-fill:#d1d5db] [--map-inactive-hover-fill:#94a3b8] [--map-inactive-hover-stroke:#64748b] [--map-inactive-stroke:#9ca3af] [--map-selected-fill:#dc2626] [--map-selected-hover-fill:#ef4444] [--map-selected-hover-stroke:#7f1d1d] [--map-selected-stroke:#991b1b] [--map-watermark-fill:#000] dark:[--map-active-fill:#dc2626] dark:[--map-active-hover-fill:#f87171] dark:[--map-active-hover-opacity:0.95] dark:[--map-active-hover-stroke:#fee2e2] dark:[--map-active-opacity:0.8] dark:[--map-active-stroke:#fca5a5] dark:[--map-inactive-fill:#4b5563] dark:[--map-inactive-hover-fill:#9ca3af] dark:[--map-inactive-hover-stroke:#cbd5e1] dark:[--map-inactive-stroke:#6b7280] dark:[--map-selected-fill:#f87171] dark:[--map-selected-hover-fill:#fca5a5] dark:[--map-selected-hover-stroke:#fee2e2] dark:[--map-selected-stroke:#fca5a5] dark:[--map-watermark-fill:#d1d5db]"
+    class="relative w-full [--map-active-fill:#fecaca] [--map-active-hover-fill:#fb7185] [--map-active-hover-opacity:1] [--map-active-hover-stroke:#991b1b] [--map-active-opacity:1] [--map-active-stroke:#b91c1c] [--map-inactive-fill:#d1d5db] [--map-inactive-hover-fill:#94a3b8] [--map-inactive-hover-stroke:#64748b] [--map-inactive-stroke:#9ca3af] [--map-selected-fill:#dc2626] [--map-selected-hover-fill:#ef4444] [--map-selected-hover-stroke:#7f1d1d] [--map-selected-stroke:#991b1b] [--map-watermark-fill:#000] dark:[--map-active-fill:#b23c50] dark:[--map-active-hover-fill:#c95769] dark:[--map-active-hover-opacity:1] dark:[--map-active-hover-stroke:#ffd7dd] dark:[--map-active-opacity:1] dark:[--map-active-stroke:#f1a7b1] dark:[--map-inactive-fill:#3b475d] dark:[--map-inactive-hover-fill:#51627d] dark:[--map-inactive-hover-stroke:#d7dee8] dark:[--map-inactive-stroke:#71839e] dark:[--map-selected-fill:#e16b7e] dark:[--map-selected-hover-fill:#f08a99] dark:[--map-selected-hover-stroke:#ffe5e9] dark:[--map-selected-stroke:#ffd0d7] dark:[--map-watermark-fill:#d1d5db]"
   >
     <svg
       viewBox="0 0 1282.91 843.72"
@@ -197,11 +205,30 @@ onBeforeUnmount(() => {
 
       <path
         v-for="region in SPAIN_REGION_PATHS"
+        :key="`${region.svgId}-hit`"
+        :d="region.d"
+        class="map-region-hit"
+        aria-hidden="true"
+        tabindex="-1"
+        @click="handleSelect(region.community)"
+        @mouseenter="showTooltipFromPointer($event, region.community)"
+        @mousemove="updateTooltipPosition($event)"
+        @mouseleave="hideTooltip"
+      />
+
+      <path
+        v-for="region in SPAIN_REGION_PATHS"
         :key="region.svgId"
         :d="region.d"
-        :class="regionClasses.get(region.community)"
+        :class="[
+          regionClassesStatic.get(region.community),
+          hoveredCommunity === region.community && selectedCommunity !== region.community
+            ? 'map-region--hovered'
+            : '',
+        ]"
         tabindex="0"
         role="button"
+        focusable="true"
         :aria-label="regionAriaLabels.get(region.community)"
         :aria-describedby="tooltipId"
         :aria-pressed="selectedCommunity === region.community"
@@ -217,13 +244,8 @@ onBeforeUnmount(() => {
         <title>{{ communityNames.get(region.community) }}</title>
       </path>
 
-      <g class="map-overlay" aria-hidden="true">
-        <rect x="914" y="677" width="362" height="164" rx="4" class="map-canary-frame" />
-        <text id="credit-text-svg" class="map-watermark-text">
-          <tspan id="credit-tspan-svg" x="1164.6756326293946" y="834.3450009536743" dy="0">
-            Created with mapchart.net
-          </tspan>
-        </text>
+      <g class="map-inset" aria-hidden="true">
+        <rect x="914" y="677" width="362" height="164" rx="6" class="map-inset-frame" />
       </g>
     </svg>
 
@@ -238,12 +260,22 @@ onBeforeUnmount(() => {
       <p class="font-semibold">{{ tooltip.title }}</p>
       <p class="mt-0.5 text-white/80">{{ tooltip.meta }}</p>
     </div>
+
+    <div class="mt-4 flex justify-end px-1">
+      <a
+        href="https://www.mapchart.net/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-muted rounded-full bg-white/85 px-2.5 py-1 text-[11px] leading-none shadow-sm ring-1 ring-gray-200/70 backdrop-blur transition-colors hover:text-gray-900 dark:bg-gray-900/85 dark:ring-gray-700/70 dark:hover:text-white"
+      >
+        Created with mapchart.net
+      </a>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .map-region {
-  cursor: pointer;
   fill: #d1dbdd;
   stroke: #6a0707;
   stroke-width: 1.5;
@@ -254,6 +286,15 @@ onBeforeUnmount(() => {
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
+  pointer-events: none;
+}
+
+.map-region-hit {
+  cursor: pointer;
+  fill: rgb(255 255 255 / 0.001);
+  stroke: transparent;
+  stroke-width: 22;
+  pointer-events: all;
 }
 
 .map-region:focus {
@@ -264,7 +305,7 @@ onBeforeUnmount(() => {
   stroke-width: 2.5;
 }
 
-.map-region:hover,
+.map-region--hovered,
 .map-region:focus-visible {
   filter: drop-shadow(0 8px 18px rgb(106 7 7 / 0.18));
   transform: translateY(-1px) scale(1.01);
@@ -305,21 +346,11 @@ onBeforeUnmount(() => {
   stroke: var(--map-inactive-hover-stroke);
 }
 
-.map-overlay {
-  pointer-events: none;
-}
-
-.map-canary-frame {
+.map-inset-frame {
   fill: none;
-  stroke: #000;
-  stroke-width: 1;
-  stroke-dasharray: 5 4;
-}
-
-.map-watermark-text {
-  fill: var(--map-watermark-fill);
-  font-family: 'Century Gothic', 'Segoe UI', 'Lucida Grande', sans-serif;
-  font-size: 7.5px;
-  font-weight: 700;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-dasharray: 7 6;
+  opacity: 0.55;
 }
 </style>

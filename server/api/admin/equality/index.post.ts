@@ -13,8 +13,9 @@ import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
 } from '../../../utils/localizedContent'
-import { createEqualityDocumentSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
 
 const PDF_UPLOAD_DIR = 'public/documentos/igualdad'
 

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
+const cookiesPath = computed(() => `${localePath('/legal')}#cookies`)
 const { showBanner, dismissBanner } = useCookieConsent()
 </script>
 
@@ -33,7 +35,7 @@ const { showBanner, dismissBanner } = useCookieConsent()
 
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <NuxtLink
-            to="/legal#cookies"
+            :to="cookiesPath"
             class="text-primary inline-flex items-center text-sm font-medium hover:underline"
           >
             {{ t('cookies.banner.learnMore') }}

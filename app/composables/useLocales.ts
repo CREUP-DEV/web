@@ -9,38 +9,32 @@ export type LocaleConfig = ReturnType<typeof normalizeLocaleDefinitions>[number]
 
 export function useLocales() {
   const runtimeConfig = useRuntimeConfig()
-  const runtimeI18n = computed(
-    () =>
-      ((
-        runtimeConfig.public as {
-          i18n?: {
-            defaultLocale?: unknown
-            fallbackLocale?: unknown
-            locales?: unknown
-          }
-        }
-      ).i18n ?? {}) as {
-        defaultLocale?: unknown
-        fallbackLocale?: unknown
-        locales?: unknown
+
+  const getRawI18n = () =>
+    ((
+      runtimeConfig.public as {
+        i18n?: { defaultLocale?: unknown; fallbackLocale?: unknown; locales?: unknown }
       }
+    ).i18n ?? {}) as { defaultLocale?: unknown; fallbackLocale?: unknown; locales?: unknown }
+
+  // Cache static config derivations — these never change at runtime.
+  const localeConfigs = useState<LocaleConfig[]>('locale-configs', () =>
+    normalizeLocaleDefinitions(getRawI18n().locales)
   )
 
-  const localeConfigs = computed<LocaleConfig[]>(() =>
-    normalizeLocaleDefinitions(runtimeI18n.value.locales)
-  )
+  const defaultLocaleCode = useState<string>('locale-default', () => {
+    const i18n = getRawI18n()
+    return resolveConfiguredLocaleCode(i18n.defaultLocale, localeConfigs.value)
+  })
 
-  const defaultLocaleCode = computed(() =>
-    resolveConfiguredLocaleCode(runtimeI18n.value.defaultLocale, localeConfigs.value)
-  )
-
-  const fallbackLocaleCode = computed(() =>
-    resolveConfiguredLocaleCode(
-      runtimeI18n.value.fallbackLocale ?? defaultLocaleCode.value,
+  const fallbackLocaleCode = useState<string>('locale-fallback', () => {
+    const i18n = getRawI18n()
+    return resolveConfiguredLocaleCode(
+      i18n.fallbackLocale ?? defaultLocaleCode.value,
       localeConfigs.value,
       defaultLocaleCode.value
     )
-  )
+  })
 
   const availableLocales = computed(() => localeConfigs.value.map((locale) => locale.code))
 

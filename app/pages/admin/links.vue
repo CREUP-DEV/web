@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { createFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'
+
 definePageMeta({
   layout: 'admin',
   title: 'Enlaces',
@@ -13,6 +16,7 @@ const {
   mapTranslationsToForm,
 } = useLocales()
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
 interface Translation {
   locale: string
@@ -32,13 +36,7 @@ interface FeaturedLink {
 const { data, refresh } = await useFetch<{ items: FeaturedLink[] }>('/api/admin/links')
 
 const items = computed(() => data.value?.items ?? [])
-
-const showModal = ref(false)
-const editingItem = ref<FeaturedLink | null>(null)
 const isSubmitting = ref(false)
-
-const showDeleteModal = ref(false)
-const itemToDelete = ref<FeaturedLink | null>(null)
 const isDeleting = ref(false)
 
 const form = reactive({
@@ -53,21 +51,6 @@ const form = reactive({
 })
 
 const currentImagePreview = computed(() => imagePreview.value || form.image || '')
-
-const listRef = ref<HTMLElement | null>(null)
-const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
-  useReorderableAdminList({
-    items,
-    listRef,
-    persist: async (updates) => {
-      await $fetch('/api/admin/links/reorder', {
-        method: 'POST',
-        body: { items: updates },
-      })
-
-      await refresh()
-    },
-  })
 
 const {
   inputRef: imageInputRef,
@@ -88,6 +71,58 @@ const {
   getFallbackPreview: () => form.image || null,
 })
 
+const {
+  cancelOrderChanges,
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  editingItem,
+  hasOrderChanges,
+  isSavingOrder,
+  itemToDelete,
+  listRef,
+  localItems,
+  openCreate,
+  openEdit,
+  persistOrder,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<FeaturedLink>({
+  items,
+  persistOrder: async (updates) => {
+    await $fetch('/api/admin/links/reorder', {
+      method: 'POST',
+      body: { items: updates },
+    })
+
+    await refresh()
+  },
+  prepareCreate: () => {
+    clearErrors()
+    form.image = ''
+    form.to = ''
+    form.order = items.value.length
+    form.active = true
+    form.translations = createEmptyTranslations<Translation>({
+      title: '',
+      alt: '',
+    })
+    imagePreview.value = null
+  },
+  prepareEdit: (item) => {
+    clearErrors()
+    form.image = item.image
+    form.to = item.to
+    form.order = item.order
+    form.active = item.active
+    form.translations = mapTranslationsToForm(item.translations, {
+      title: '',
+      alt: '',
+    }) as Translation[]
+    imagePreview.value = item.image
+  },
+})
+
 const saveOrder = async () => {
   try {
     await persistOrder()
@@ -104,53 +139,21 @@ const saveOrder = async () => {
   }
 }
 
-const openCreate = () => {
-  editingItem.value = null
-  form.image = ''
-  form.to = ''
-  form.order = items.value.length
-  form.active = true
-  form.translations = createEmptyTranslations<Translation>({
-    title: '',
-    alt: '',
-  })
-  imagePreview.value = null
-  showModal.value = true
-}
-
-const openEdit = (item: FeaturedLink) => {
-  editingItem.value = item
-  form.image = item.image
-  form.to = item.to
-  form.order = item.order
-  form.active = item.active
-  form.translations = mapTranslationsToForm(item.translations, {
-    title: '',
-    alt: '',
-  }) as Translation[]
-  imagePreview.value = item.image
-  showModal.value = true
-}
-
 const handleSubmit = async () => {
-  if (!form.image) {
-    toast.add({
-      title: 'La imagen es obligatoria',
-      color: 'error',
-    })
+  const payload = {
+    image: form.image,
+    to: form.to,
+    order: form.order,
+    active: form.active,
+    translations: filterNonEmptyTranslations(form.translations, 'title'),
+  }
+
+  if (!validate(createFeaturedLinkSchema, payload)) {
     return
   }
 
   isSubmitting.value = true
   try {
-    const payload = {
-      image: form.image,
-      to: form.to,
-      order: form.order,
-      active: form.active,
-      translations: filterNonEmptyTranslations(form.translations, 'title'),
-    }
-
     if (editingItem.value) {
       await $fetch(`/api/admin/links/${editingItem.value.id}`, {
         method: 'PUT',
@@ -170,12 +173,13 @@ const handleSubmit = async () => {
         color: 'success',
       })
     }
-    showModal.value = false
+    closeModal()
+    clearErrors()
     await refresh()
   } catch (e) {
     console.error('Error saving:', e)
     toast.add({
-      title: 'No se pudo guardar el enlace',
+      title: getApiErrorMessage(e, 'No se pudo guardar el enlace'),
       color: 'error',
     })
   } finally {
@@ -183,18 +187,12 @@ const handleSubmit = async () => {
   }
 }
 
-const confirmDelete = (item: FeaturedLink) => {
-  itemToDelete.value = item
-  showDeleteModal.value = true
-}
-
 const handleDelete = async () => {
   if (!itemToDelete.value) return
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/links/${itemToDelete.value.id}`, { method: 'DELETE' })
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
     toast.add({
       title: 'Enlace eliminado',
@@ -316,7 +314,7 @@ const handleDelete = async () => {
             </h2>
 
             <form id="links-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Imagen">
+              <UFormField label="Imagen" :error="getFieldError('image')">
                 <div class="space-y-3">
                   <div
                     class="bg-muted/30 flex min-h-44 items-center justify-center overflow-hidden rounded-xl border p-4"
@@ -357,7 +355,7 @@ const handleDelete = async () => {
                 </div>
               </UFormField>
 
-              <UFormField label="Enlace (URL)">
+              <UFormField label="Enlace (URL)" :error="getFieldError('to')">
                 <UInput v-model="form.to" placeholder="https://..." class="w-full" />
               </UFormField>
 
@@ -369,7 +367,7 @@ const handleDelete = async () => {
               </UFormField>
 
               <div
-                v-for="trans in form.translations"
+                v-for="(trans, index) in form.translations"
                 :key="trans.locale"
                 class="rounded-lg border p-4"
               >
@@ -380,6 +378,7 @@ const handleDelete = async () => {
                 <div class="space-y-3">
                   <UFormField
                     :label="`Título ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
+                    :error="getFieldError(`translations.${index}.title`)"
                   >
                     <UInput v-model="trans.title" class="w-full" />
                   </UFormField>

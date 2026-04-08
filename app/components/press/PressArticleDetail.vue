@@ -1,15 +1,5 @@
 <script setup lang="ts">
 import type { PressArticle } from '@/composables/usePress'
-import { toAbsoluteUrl } from '~~/shared/utils/url'
-
-type ShareAction = {
-  key: string
-  label: string
-  icon: string
-  class?: string
-  to?: string
-  onClick?: () => void | Promise<void>
-}
 
 const props = defineProps<{
   article: PressArticle
@@ -18,44 +8,19 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const toast = useToast()
+const localePath = useLocalePath()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
-const canNativeShare = ref(false)
-const route = useRoute()
+const articleRef = toRef(props, 'article')
 const siteConfig = useSiteConfig()
-const {
-  elRef: navRef,
-  isVisible: navVisible,
-  isPending: navPending,
-  shouldAnimate: navShouldAnimate,
-} = useEntranceObserver(0.12)
-const {
-  elRef: headerRef,
-  isVisible: headerVisible,
-  isPending: headerPending,
-  shouldAnimate: headerShouldAnimate,
-} = useEntranceObserver(0.12)
-const {
-  elRef: coverRef,
-  isVisible: coverVisible,
-  isPending: coverPending,
-  shouldAnimate: coverShouldAnimate,
-} = useEntranceObserver(0.12)
-const {
-  elRef: bodyRef,
-  isVisible: bodyVisible,
-  isPending: bodyPending,
-  shouldAnimate: bodyShouldAnimate,
-} = useEntranceObserver(0.08)
-const {
-  elRef: actionsRef,
-  isVisible: actionsVisible,
-  isPending: actionsPending,
-  shouldAnimate: actionsShouldAnimate,
-} = useEntranceObserver(0.08)
+const { canonicalUrl, shareActions } = usePressShareActions(articleRef)
 
-onMounted(() => {
-  canNativeShare.value = typeof navigator.share === 'function'
+const articleTypeBasePath = computed(() => {
+  const map: Record<string, string> = {
+    press_release: '/prensa/notas-prensa',
+    statement: '/prensa/comunicados',
+    media_appearance: '/prensa/en-los-medios',
+  }
+  return map[props.article.type] ?? '/prensa/notas-prensa'
 })
 
 const formatDate = (iso: string) => {
@@ -64,67 +29,6 @@ const formatDate = (iso: string) => {
     month: 'long',
     day: 'numeric',
   })
-}
-
-const canonicalUrl = computed(
-  () => toAbsoluteUrl(route.path, String(siteConfig.url ?? '').trim()) ?? route.path
-)
-
-const shareText = computed(() => props.article.title)
-const twitterShareUrl = computed(
-  () =>
-    `https://twitter.com/intent/tweet?url=${encodeURIComponent(canonicalUrl.value)}&text=${encodeURIComponent(shareText.value)}`
-)
-const linkedinShareUrl = computed(
-  () =>
-    `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(canonicalUrl.value)}`
-)
-const facebookShareUrl = computed(
-  () => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl.value)}`
-)
-const telegramShareUrl = computed(
-  () =>
-    `https://t.me/share/url?url=${encodeURIComponent(canonicalUrl.value)}&text=${encodeURIComponent(shareText.value)}`
-)
-const whatsappShareUrl = computed(
-  () => `https://wa.me/?text=${encodeURIComponent(`${shareText.value} ${canonicalUrl.value}`)}`
-)
-const emailShareUrl = computed(
-  () =>
-    `mailto:?subject=${encodeURIComponent(shareText.value)}&body=${encodeURIComponent(`${shareText.value}\n\n${canonicalUrl.value}`)}`
-)
-const shareNative = async () => {
-  if (!import.meta.client || !navigator.share) return
-  try {
-    await navigator.share({
-      title: shareText.value,
-      text: shareText.value,
-      url: canonicalUrl.value,
-    })
-  } catch {
-    // User cancelled share dialog
-  }
-}
-
-const copyLink = async () => {
-  if (!import.meta.client || !navigator.clipboard) return
-  try {
-    await navigator.clipboard.writeText(canonicalUrl.value)
-    toast.add({
-      title: t('press.copy.success'),
-      color: 'success',
-    })
-  } catch {
-    toast.add({
-      title: t('press.copy.error'),
-      color: 'error',
-    })
-  }
-}
-
-const printPage = () => {
-  if (!import.meta.client) return
-  window.print()
 }
 
 useHead(
@@ -151,82 +55,6 @@ useHead(
   }))
 )
 
-const shareActions = computed<ShareAction[]>(() => {
-  const actions: ShareAction[] = [
-    {
-      key: 'copy',
-      label: t('press.shareActions.copy'),
-      icon: 'i-tabler-link',
-      onClick: copyLink,
-    },
-    {
-      key: 'whatsapp',
-      label: t('press.shareActions.whatsapp'),
-      icon: 'i-tabler-brand-whatsapp',
-      to: whatsappShareUrl.value,
-    },
-    {
-      key: 'x',
-      label: t('press.shareActions.x'),
-      icon: 'i-tabler-brand-x',
-      to: twitterShareUrl.value,
-    },
-    {
-      key: 'linkedin',
-      label: t('press.shareActions.linkedin'),
-      icon: 'i-tabler-brand-linkedin',
-      to: linkedinShareUrl.value,
-    },
-    {
-      key: 'facebook',
-      label: t('press.shareActions.facebook'),
-      icon: 'i-tabler-brand-facebook',
-      to: facebookShareUrl.value,
-    },
-    {
-      key: 'telegram',
-      label: t('press.shareActions.telegram'),
-      icon: 'i-tabler-brand-telegram',
-      to: telegramShareUrl.value,
-    },
-    {
-      key: 'email',
-      label: t('press.shareActions.email'),
-      icon: 'i-tabler-mail',
-      to: emailShareUrl.value,
-    },
-    {
-      key: 'print',
-      label: t('press.shareActions.print'),
-      icon: 'i-tabler-printer',
-      onClick: printPage,
-    },
-  ]
-
-  if (canNativeShare.value) {
-    actions.splice(
-      2,
-      0,
-      {
-        key: 'instagram',
-        label: t('press.shareActions.instagram'),
-        icon: 'i-tabler-brand-instagram',
-        class: 'sm:hidden',
-        onClick: shareNative,
-      },
-      {
-        key: 'tiktok',
-        label: t('press.shareActions.tiktok'),
-        icon: 'i-tabler-brand-tiktok',
-        class: 'sm:hidden',
-        onClick: shareNative,
-      }
-    )
-  }
-
-  return actions
-})
-
 const externalLinkLabel = computed(() => {
   if (props.article.type === 'media_appearance') {
     return t('press.readOriginal')
@@ -247,12 +75,7 @@ usePageSeo(
 <template>
   <article class="press-print py-8 sm:py-12">
     <UContainer class="max-w-4xl">
-      <nav
-        ref="navRef"
-        class="no-print mb-6"
-        :class="entranceClasses(navShouldAnimate, navVisible, navPending)"
-        :style="entranceStyle(navVisible, navShouldAnimate, 0)"
-      >
+      <AnimateIn tag="nav" :index="0" :threshold="0.12" class="no-print mb-6">
         <NuxtLink
           :to="backTo"
           class="text-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
@@ -260,14 +83,9 @@ usePageSeo(
           <UIcon name="i-tabler-arrow-left" class="size-4" />
           {{ backLabel }}
         </NuxtLink>
-      </nav>
+      </AnimateIn>
 
-      <header
-        ref="headerRef"
-        class="mb-8"
-        :class="entranceClasses(headerShouldAnimate, headerVisible, headerPending)"
-        :style="entranceStyle(headerVisible, headerShouldAnimate, 1)"
-      >
+      <AnimateIn tag="header" :index="1" :threshold="0.12" class="mb-8">
         <div class="text-muted mb-3 flex flex-wrap items-center gap-2 text-sm">
           <time :datetime="article.publishedAt">{{ formatDate(article.publishedAt) }}</time>
           <template v-if="article.mediaOutlet">
@@ -278,11 +96,15 @@ usePageSeo(
               rel="noopener noreferrer"
               class="hover:text-primary inline-flex items-center gap-1.5 transition-colors"
             >
-              <NuxtImg
-                :src="article.mediaOutlet.logo"
-                :alt="article.mediaOutlet.name"
-                class="inline-block h-4 w-auto"
-              />
+              <span class="inline-flex h-5 max-w-24 items-center">
+                <NuxtImg
+                  :src="article.mediaOutlet.logo"
+                  :alt="article.mediaOutlet.name"
+                  height="20"
+                  width="96"
+                  class="h-5 w-auto max-w-24 object-contain"
+                />
+              </span>
               {{ article.mediaOutlet.name }}
               <UIcon name="i-tabler-external-link" class="size-3.5" />
             </a>
@@ -298,23 +120,18 @@ usePageSeo(
         </p>
 
         <div v-if="article.tags.length" class="mt-4 flex flex-wrap gap-2">
-          <span
+          <NuxtLink
             v-for="tag in article.tags"
             :key="tag.slug"
-            class="bg-secondary/10 text-secondary rounded-full px-3 py-1 text-sm"
+            :to="localePath(`${articleTypeBasePath}?tag=${tag.slug}`)"
+            class="bg-secondary/10 text-secondary hover:bg-secondary/20 rounded-full px-3 py-1 text-sm transition-colors"
           >
             {{ tag.name }}
-          </span>
+          </NuxtLink>
         </div>
-      </header>
+      </AnimateIn>
 
-      <figure
-        v-if="article.image"
-        ref="coverRef"
-        class="mb-8"
-        :class="entranceClasses(coverShouldAnimate, coverVisible, coverPending)"
-        :style="entranceStyle(coverVisible, coverShouldAnimate, 2)"
-      >
+      <AnimateIn v-if="article.image" tag="figure" :index="2" :threshold="0.12" class="mb-8">
         <div class="motion-card-subtle bg-muted overflow-hidden rounded-xl">
           <NuxtImg
             :src="article.image"
@@ -324,32 +141,17 @@ usePageSeo(
             class="w-full object-cover"
           />
         </div>
-      </figure>
+      </AnimateIn>
 
-      <div
-        ref="bodyRef"
-        :class="entranceClasses(bodyShouldAnimate, bodyVisible, bodyPending)"
-        :style="entranceStyle(bodyVisible, bodyShouldAnimate, 3)"
-      >
+      <AnimateIn :index="3" :threshold="0.08">
         <div v-if="article.description" class="prose prose-lg dark:prose-invert mb-8 max-w-none">
           <p class="text-lg leading-relaxed">{{ article.description }}</p>
         </div>
 
-        <!-- eslint-disable vue/no-v-html -->
-        <div
-          v-if="article.contentHtml"
-          class="article-body press-rich-text"
-          v-html="article.contentHtml"
-        />
-        <!-- eslint-enable vue/no-v-html -->
-      </div>
+        <PressRichText :html="article.contentHtml" />
+      </AnimateIn>
 
-      <div
-        ref="actionsRef"
-        class="no-print"
-        :class="entranceClasses(actionsShouldAnimate, actionsVisible, actionsPending)"
-        :style="entranceStyle(actionsVisible, actionsShouldAnimate, 4)"
-      >
+      <AnimateIn :index="4" :threshold="0.08" class="no-print">
         <div v-if="article.pdfUrl || article.externalUrl" class="mt-8 flex flex-wrap gap-3">
           <UButton
             v-if="article.pdfUrl"
@@ -392,7 +194,7 @@ usePageSeo(
             </UTooltip>
           </div>
         </div>
-      </div>
+      </AnimateIn>
     </UContainer>
   </article>
 </template>

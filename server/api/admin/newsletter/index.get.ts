@@ -7,9 +7,16 @@ import { monthKeyToDate, NEWSLETTER_DELIVERY_MAX_ATTEMPTS } from '../../../utils
 
 export default defineEventHandler(async (event) => {
   const { limit, offset } = validateQuery(event, paginationQuerySchema)
+  const normalizedLimit = limit ?? 20
+  const normalizedOffset = offset ?? 0
 
   const [items, countResult] = await Promise.all([
-    db.select().from(newsletters).orderBy(desc(newsletters.month)).limit(limit).offset(offset),
+    db
+      .select()
+      .from(newsletters)
+      .orderBy(desc(newsletters.month))
+      .limit(normalizedLimit)
+      .offset(normalizedOffset),
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(newsletters),
   ])
 

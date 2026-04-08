@@ -12,7 +12,7 @@ import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { runInBackground } from '../../../utils/backgroundTask'
 import { getSmtpTransporter } from '../../../utils/smtpTransporter'
-import { createNewsletterRequestSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
   claimNewsletterForSending,
@@ -24,6 +24,7 @@ import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
 } from '~~/shared/constants/assetPaths'
+import { createNewsletterRequestSchema } from '~~/shared/utils/adminSchemas'
 
 const COVER_IMAGE_UPLOAD_DIR = 'public/prensa/newsletter/portadas'
 const DOCUMENT_UPLOAD_DIR = 'public/prensa/newsletter/documentos'

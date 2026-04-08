@@ -42,7 +42,10 @@ export function usePress(
   type?: MaybeRef<PressArticleType | null | undefined>,
   tagSlug?: MaybeRef<string | null | undefined>,
   limit?: MaybeRef<number | undefined>,
-  offset?: MaybeRef<number | undefined>
+  offset?: MaybeRef<number | undefined>,
+  options?: {
+    enabled?: MaybeRef<boolean | undefined>
+  }
 ) {
   const { locale } = useI18n()
   const localeApiHeaders = useLocaleApiHeaders()
@@ -65,6 +68,7 @@ export function usePress(
 
     return 0
   })
+  const enabledValue = computed(() => unref(options?.enabled) !== false)
 
   const pressKey = computed(() => {
     return `press-${locale.value}-${typeValue.value || 'all'}-${tagValue.value || 'none'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
@@ -73,6 +77,13 @@ export function usePress(
   return useAsyncData<PressResponse>(
     pressKey,
     () => {
+      if (!enabledValue.value) {
+        return Promise.resolve({
+          articles: [],
+          total: 0,
+        })
+      }
+
       const params = new URLSearchParams()
       if (typeValue.value) {
         params.set('type', typeValue.value)
@@ -112,6 +123,7 @@ export function usePressArticle(slug: string) {
         headers: localeApiHeaders.value,
       }),
     {
+      default: () => ({ article: null }),
       watch: [locale],
     }
   )

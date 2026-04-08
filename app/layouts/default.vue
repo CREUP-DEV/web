@@ -1,9 +1,10 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const { data: pressDossierLink } = await usePressDossierLink()
 
 // Inject locale-aware <link rel="alternate" hreflang="..."> and canonical
 // tags on every public page so search engines can find the correct locale.
-const head = useLocaleHead({ addDirAttribute: true, addSeoAttributes: true })
+const head = useLocaleHead({ seo: true })
 useHead(head)
 </script>
 
@@ -22,7 +23,7 @@ useHead(head)
       {{ t('accessibility.skipToMain') }}
     </a>
 
-    <AppHeader />
+    <AppHeader :press-dossier-link="pressDossierLink" />
 
     <UMain id="main-content" class="flex-1">
       <slot />

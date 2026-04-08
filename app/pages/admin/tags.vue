@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { createTagSchema } from '~~/shared/utils/adminSchemas'
+
 definePageMeta({
   layout: 'admin',
   title: 'Etiquetas',
@@ -6,6 +8,7 @@ definePageMeta({
 
 const { t } = useI18n()
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 const {
   getLocaleFlag,
   getLocaleName,
@@ -30,13 +33,7 @@ interface Tag {
 const { data, refresh } = await useFetch<{ items: Tag[] }>('/api/admin/tags')
 
 const items = computed(() => data.value?.items ?? [])
-
-const showModal = ref(false)
-const editingItem = ref<Tag | null>(null)
 const isSubmitting = ref(false)
-
-const showDeleteModal = ref(false)
-const itemToDelete = ref<Tag | null>(null)
 const isDeleting = ref(false)
 
 const form = reactive({
@@ -47,20 +44,49 @@ const form = reactive({
   }),
 })
 
-const listRef = ref<HTMLElement | null>(null)
-const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
-  useReorderableAdminList({
-    items,
-    listRef,
-    persist: async (updates) => {
-      await $fetch('/api/admin/tags/reorder', {
-        method: 'POST',
-        body: { items: updates },
-      })
+const {
+  cancelOrderChanges,
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  editingItem,
+  hasOrderChanges,
+  isSavingOrder,
+  itemToDelete,
+  listRef,
+  localItems,
+  openCreate,
+  openEdit,
+  persistOrder,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<Tag>({
+  items,
+  persistOrder: async (updates) => {
+    await $fetch('/api/admin/tags/reorder', {
+      method: 'POST',
+      body: { items: updates },
+    })
 
-      await refresh()
-    },
-  })
+    await refresh()
+  },
+  prepareCreate: () => {
+    clearErrors()
+    form.slug = ''
+    form.order = items.value.length
+    form.translations = createEmptyTranslations<Translation>({
+      name: '',
+    })
+  },
+  prepareEdit: (item) => {
+    clearErrors()
+    form.slug = item.slug
+    form.order = item.order
+    form.translations = mapTranslationsToForm(item.translations, {
+      name: '',
+    }) as Translation[]
+  },
+})
 
 const saveOrder = async () => {
   try {
@@ -78,35 +104,19 @@ const saveOrder = async () => {
   }
 }
 
-const openCreate = () => {
-  editingItem.value = null
-  form.slug = ''
-  form.order = items.value.length
-  form.translations = createEmptyTranslations<Translation>({
-    name: '',
-  })
-  showModal.value = true
-}
-
-const openEdit = (item: Tag) => {
-  editingItem.value = item
-  form.slug = item.slug
-  form.order = item.order
-  form.translations = mapTranslationsToForm(item.translations, {
-    name: '',
-  }) as Translation[]
-  showModal.value = true
-}
-
 const handleSubmit = async () => {
+  const payload = {
+    slug: form.slug,
+    order: form.order,
+    translations: filterNonEmptyTranslations(form.translations, 'name'),
+  }
+
+  if (!validate(createTagSchema, payload)) {
+    return
+  }
+
   isSubmitting.value = true
   try {
-    const payload = {
-      slug: form.slug,
-      order: form.order,
-      translations: filterNonEmptyTranslations(form.translations, 'name'),
-    }
-
     if (editingItem.value) {
       await $fetch(`/api/admin/tags/${editingItem.value.id}`, {
         method: 'PUT',
@@ -126,7 +136,8 @@ const handleSubmit = async () => {
         color: 'success',
       })
     }
-    showModal.value = false
+    closeModal()
+    clearErrors()
     await refresh()
   } catch (e: unknown) {
     const err = e as { status?: number; data?: { message?: string } }
@@ -147,18 +158,12 @@ const handleSubmit = async () => {
   }
 }
 
-const confirmDelete = (item: Tag) => {
-  itemToDelete.value = item
-  showDeleteModal.value = true
-}
-
 const handleDelete = async () => {
   if (!itemToDelete.value) return
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/tags/${itemToDelete.value.id}`, { method: 'DELETE' })
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
     toast.add({
       title: t('admin.messages.tagDeleted'),
@@ -226,12 +231,12 @@ const handleDelete = async () => {
             </h2>
 
             <form id="tags-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Slug (identificador único)">
+              <UFormField label="Slug (identificador único)" :error="getFieldError('slug')">
                 <UInput v-model="form.slug" placeholder="mi-etiqueta" class="w-full" />
               </UFormField>
 
               <div
-                v-for="trans in form.translations"
+                v-for="(trans, index) in form.translations"
                 :key="trans.locale"
                 class="rounded-lg border p-4"
               >
@@ -239,7 +244,10 @@ const handleDelete = async () => {
                   <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
                   {{ getLocaleName(trans.locale) }}
                 </h4>
-                <UFormField :label="`Nombre ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`">
+                <UFormField
+                  :label="`Nombre ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
+                  :error="getFieldError(`translations.${index}.name`)"
+                >
                   <UInput v-model="trans.name" class="w-full" />
                 </UFormField>
               </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import Sortable from 'sortablejs'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -23,6 +24,7 @@ interface EqualityDocument {
 }
 
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -34,35 +36,12 @@ const {
 
 const { data, refresh } = await useFetch<{ items: EqualityDocument[] }>('/api/admin/equality')
 const items = computed(() => data.value?.items ?? [])
-const localItems = ref<EqualityDocument[]>([])
-const isSavingOrder = ref(false)
-
-const hasOrderChanges = computed(() => {
-  if (localItems.value.length !== items.value.length) return false
-  return localItems.value.some((item, index) => item.id !== items.value[index]?.id)
-})
-
-watch(
-  items,
-  (newItems: EqualityDocument[]) => {
-    localItems.value = [...newItems]
-  },
-  { immediate: true }
-)
-
-const showModal = ref(false)
-const editingItem = ref<EqualityDocument | null>(null)
 const isSubmitting = ref(false)
-
-const showDeleteModal = ref(false)
-const itemToDelete = ref<EqualityDocument | null>(null)
 const isDeleting = ref(false)
 
 const pdfInputRef = ref<HTMLInputElement | null>(null)
 const pdfName = ref<string | null>(null)
 const isUploadingPdf = ref(false)
-const listRef = ref<HTMLElement | null>(null)
-let sortableInstance: Sortable | null = null
 
 const createEmptyTranslationSet = () =>
   createEmptyTranslations<EqualityDocumentTranslation>({
@@ -78,33 +57,52 @@ const form = reactive({
   translations: createEmptyTranslationSet(),
 })
 
-const initializeSortable = (element: HTMLElement | null) => {
-  sortableInstance?.destroy()
-  sortableInstance = null
+const {
+  cancelOrderChanges,
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  editingItem,
+  hasOrderChanges,
+  isSavingOrder,
+  itemToDelete,
+  listRef,
+  localItems,
+  openCreate,
+  openEdit,
+  persistOrder,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<EqualityDocument>({
+  items,
+  persistOrder: async (updates) => {
+    await $fetch('/api/admin/equality/reorder', {
+      method: 'POST',
+      body: { items: updates },
+    })
 
-  if (!element) return
-
-  sortableInstance = Sortable.create(element, {
-    animation: 150,
-    handle: '.drag-handle',
-    ghostClass: 'opacity-50',
-    onEnd: (event) => {
-      if (event.oldIndex === undefined || event.newIndex === undefined) return
-
-      const movedItem = localItems.value.splice(event.oldIndex, 1)[0]
-      if (movedItem) {
-        localItems.value.splice(event.newIndex, 0, movedItem)
-      }
-    },
-  })
-}
-
-watch(listRef, (element) => {
-  initializeSortable(element)
-})
-
-onUnmounted(() => {
-  sortableInstance?.destroy()
+    await refresh()
+  },
+  prepareCreate: () => {
+    clearErrors()
+    form.pdfUrl = ''
+    form.order = items.value.length
+    form.active = true
+    form.translations = createEmptyTranslationSet()
+    pdfName.value = null
+  },
+  prepareEdit: (item) => {
+    clearErrors()
+    form.pdfUrl = item.pdfUrl
+    form.order = item.order
+    form.active = item.active
+    form.translations = mapTranslationsToForm(item.translations, {
+      title: '',
+      description: '',
+      meta: '',
+    }) as EqualityDocumentTranslation[]
+    pdfName.value = item.pdfUrl.split('/').pop() ?? null
+  },
 })
 
 function getDocumentTitle(item: EqualityDocument | null) {
@@ -131,85 +129,29 @@ function getAdditionalTranslationLabel(item: EqualityDocument) {
   return `${count} idioma adicional${count > 1 ? 'es' : ''}`
 }
 
-const openCreate = () => {
-  editingItem.value = null
-  form.pdfUrl = ''
-  form.order = items.value.length
-  form.active = true
-  form.translations = createEmptyTranslationSet()
-  pdfName.value = null
-  showModal.value = true
-}
-
-const openEdit = (item: EqualityDocument) => {
-  editingItem.value = item
-  form.pdfUrl = item.pdfUrl
-  form.order = item.order
-  form.active = item.active
-  form.translations = mapTranslationsToForm(item.translations, {
-    title: '',
-    description: '',
-    meta: '',
-  }) as EqualityDocumentTranslation[]
-  pdfName.value = item.pdfUrl.split('/').pop() ?? null
-  showModal.value = true
-}
-
 const saveOrder = async () => {
-  isSavingOrder.value = true
   try {
-    const updates = localItems.value.map((item, index) => ({
-      id: item.id,
-      order: index,
-    }))
-
-    await $fetch('/api/admin/equality/reorder', {
-      method: 'POST',
-      body: { items: updates },
-    })
-
-    await refresh()
+    await persistOrder()
     toast.add({ title: 'Orden guardado', color: 'success' })
   } catch {
     toast.add({ title: 'No se pudo guardar el orden', color: 'error' })
-  } finally {
-    isSavingOrder.value = false
   }
-}
-
-const cancelOrderChanges = () => {
-  localItems.value = [...items.value]
 }
 
 const handleSubmit = async () => {
-  const defaultTranslation = form.translations.find((translation) =>
-    isDefaultLocale(translation.locale)
-  )
-
-  if (!defaultTranslation?.title.trim()) {
-    toast.add({ title: 'El título en español es obligatorio', color: 'error' })
-    return
+  const payload = {
+    pdfUrl: form.pdfUrl,
+    order: form.order,
+    active: form.active,
+    translations: form.translations,
   }
 
-  if (!defaultTranslation.description.trim()) {
-    toast.add({ title: 'La descripción en español es obligatoria', color: 'error' })
-    return
-  }
-
-  if (!form.pdfUrl) {
-    toast.add({ title: 'Debes subir un PDF', color: 'error' })
+  if (!validate(createEqualityDocumentSchema, payload)) {
     return
   }
 
   isSubmitting.value = true
   try {
-    const payload = {
-      pdfUrl: form.pdfUrl,
-      order: form.order,
-      active: form.active,
-      translations: form.translations,
-    }
-
     if (editingItem.value) {
       await $fetch(`/api/admin/equality/${editingItem.value.id}`, {
         method: 'PUT',
@@ -224,18 +166,17 @@ const handleSubmit = async () => {
       toast.add({ title: 'Documento creado', color: 'success' })
     }
 
-    showModal.value = false
+    closeModal()
+    clearErrors()
     await refresh()
-  } catch {
-    toast.add({ title: 'No se pudo guardar el documento', color: 'error' })
+  } catch (error) {
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudo guardar el documento'),
+      color: 'error',
+    })
   } finally {
     isSubmitting.value = false
   }
-}
-
-const confirmDelete = (item: EqualityDocument) => {
-  itemToDelete.value = item
-  showDeleteModal.value = true
 }
 
 const handleDelete = async () => {
@@ -247,8 +188,7 @@ const handleDelete = async () => {
       method: 'DELETE',
     })
     toast.add({ title: 'Documento eliminado', color: 'success' })
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
   } catch {
     toast.add({ title: 'No se pudo eliminar el documento', color: 'error' })
@@ -448,7 +388,7 @@ const handlePdfSelect = async (event: Event) => {
                 </UFormField>
               </div>
 
-              <UFormField label="PDF">
+              <UFormField label="PDF" :error="getFieldError('pdfUrl')">
                 <div class="space-y-3">
                   <input
                     ref="pdfInputRef"
@@ -482,7 +422,7 @@ const handlePdfSelect = async (event: Event) => {
               </UFormField>
 
               <div
-                v-for="translation in form.translations"
+                v-for="(translation, index) in form.translations"
                 :key="translation.locale"
                 class="rounded-lg border p-4"
               >
@@ -495,12 +435,16 @@ const handlePdfSelect = async (event: Event) => {
                 </h3>
 
                 <div class="space-y-3">
-                  <UFormField :label="isDefaultLocale(translation.locale) ? 'Título *' : 'Título'">
+                  <UFormField
+                    :label="isDefaultLocale(translation.locale) ? 'Título *' : 'Título'"
+                    :error="getFieldError(`translations.${index}.title`)"
+                  >
                     <UInput v-model="translation.title" class="w-full" />
                   </UFormField>
 
                   <UFormField
                     :label="isDefaultLocale(translation.locale) ? 'Descripción *' : 'Descripción'"
+                    :error="getFieldError(`translations.${index}.description`)"
                   >
                     <UTextarea v-model="translation.description" :rows="4" class="w-full" />
                   </UFormField>

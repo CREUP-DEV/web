@@ -90,7 +90,12 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
     <UContainer class="py-8 sm:py-12">
       <header class="mb-8 text-center sm:mb-12">
         <div class="mb-4">
-          <UButton to="/conocenos/equipo" variant="ghost" icon="i-tabler-arrow-left" size="sm">
+          <UButton
+            :to="localePath('/conocenos/equipo')"
+            variant="ghost"
+            icon="i-tabler-arrow-left"
+            size="sm"
+          >
             {{ t('mandates.backToTeam') }}
           </UButton>
         </div>

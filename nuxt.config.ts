@@ -92,6 +92,8 @@ export default defineNuxtConfig({
   ],
 
   icon: {
+    provider: 'server',
+    fallbackToApi: false,
     collections: ['tabler', 'circle-flags', 'lucide'],
   },
 
@@ -135,10 +137,6 @@ export default defineNuxtConfig({
     defaults: {
       width: 1200,
       height: 630,
-    },
-    security: {
-      secret: process.env.OG_IMAGE_SECRET,
-      restrictRuntimeImagesToOrigin: true,
     },
   },
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { RouteLocationRaw } from 'vue-router'
 import type { SocialNetworkEntry } from '~~/shared/utils/social'
 
 interface Member {
@@ -7,7 +8,6 @@ interface Member {
   email: string
   publicAgenda: boolean
   socialNetworks: SocialNetworkEntry[]
-  [key: string]: unknown
 }
 
 defineProps<{
@@ -18,6 +18,7 @@ defineProps<{
   copyEmailAriaLabel: string
   publicAgendaAriaLabel?: string
   entranceDelay?: string | Record<string, string>
+  to?: RouteLocationRaw
 }>()
 
 const emit = defineEmits<{
@@ -28,12 +29,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const obfuscateEmail = (email: string) => {
-  const atIndex = email.indexOf('@')
-  if (atIndex === -1) return email
-  return `${email.slice(0, atIndex)}@···`
-}
-
 const cardClass =
   'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl p-5 ring-1 ring-gray-200/50 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50'
 const triggerClass =
@@ -42,11 +37,12 @@ const triggerClass =
 
 <template>
   <article :class="cardClass" :style="entranceDelay">
-    <button
-      type="button"
+    <component
+      :is="to ? 'NuxtLink' : 'button'"
       :class="triggerClass"
       :aria-label="viewProfileAriaLabel"
-      @click="emit('clickCard')"
+      v-bind="to ? { to } : { type: 'button' }"
+      @click="!to && emit('clickCard')"
     >
       <div class="mb-4 flex justify-center">
         <div
@@ -71,7 +67,7 @@ const triggerClass =
         <p class="text-foreground mt-1 font-semibold">{{ displayName }}</p>
         <p v-if="areaLabel" class="text-muted mt-1 text-xs">{{ areaLabel }}</p>
       </div>
-    </button>
+    </component>
 
     <div class="mt-3 flex flex-col items-center gap-2">
       <button
@@ -81,7 +77,7 @@ const triggerClass =
         @click="emit('copyEmail', member.email)"
       >
         <UIcon name="i-tabler-mail" class="size-4" />
-        <span aria-hidden="true">{{ obfuscateEmail(member.email) }}</span>
+        <span aria-hidden="true" class="text-center break-all">{{ member.email }}</span>
       </button>
 
       <UButton

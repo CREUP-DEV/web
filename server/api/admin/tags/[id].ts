@@ -8,12 +8,8 @@ import {
 } from '../../../utils/localizedContent'
 import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import { assertTagSlugAvailable } from '../../../utils/tagMutations'
-import {
-  idRouteParamSchema,
-  updateTagSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
+import { updateTagSchema } from '~~/shared/utils/adminSchemas'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)

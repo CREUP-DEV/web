@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1774548926316,
-      "tag": "0000_petite_whiplash",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1775490188359,
-      "tag": "0001_dusty_blue_blade",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1775493117032,
-      "tag": "0002_foamy_lethal_legion",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1775493117033,
-      "tag": "0003_lively_amber_kite",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1775502397782,
-      "tag": "0004_flawless_landau",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1775516060703,
-      "tag": "0005_sticky_mimic",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1744070400000,
-      "tag": "0006_refactor_schema",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1775645574906,
-      "tag": "0007_closed_logan",
+      "when": 1775666941841,
+      "tag": "0000_lowly_the_enforcers",
       "breakpoints": true
     }
   ]

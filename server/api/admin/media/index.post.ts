@@ -9,8 +9,9 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
-import { createMediaOutletSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { createMediaOutletSchema } from '~~/shared/utils/adminSchemas'
 
 const LOGO_UPLOAD_DIR = 'public/prensa/imagenes/medios'
 

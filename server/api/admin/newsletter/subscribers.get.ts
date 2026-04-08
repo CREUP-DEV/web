@@ -6,14 +6,16 @@ import { paginationQuerySchema, validateQuery } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
   const { limit, offset } = validateQuery(event, paginationQuerySchema)
+  const normalizedLimit = limit ?? 20
+  const normalizedOffset = offset ?? 0
 
   const [items, countResult] = await Promise.all([
     db
       .select()
       .from(newsletterSubscribers)
       .orderBy(desc(newsletterSubscribers.subscribedAt))
-      .limit(limit)
-      .offset(offset),
+      .limit(normalizedLimit)
+      .offset(normalizedOffset),
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(newsletterSubscribers),
   ])
 

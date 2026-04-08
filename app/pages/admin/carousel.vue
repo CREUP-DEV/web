@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { createCarouselItemSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -23,6 +25,7 @@ interface CarouselItem {
 }
 
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
 const defaultCarouselImage = HOME_CAROUSEL_FALLBACK_IMAGE
 
@@ -38,12 +41,7 @@ const {
   mapTranslationsToForm,
 } = useLocales()
 
-const showModal = ref(false)
-const editingItem = ref<CarouselItem | null>(null)
 const isSubmitting = ref(false)
-
-const showDeleteModal = ref(false)
-const itemToDelete = ref<CarouselItem | null>(null)
 const isDeleting = ref(false)
 
 const emptyTranslation = { title: '', buttonText: '', alt: '' }
@@ -56,21 +54,6 @@ const form = reactive({
 })
 
 const currentImagePreview = computed(() => imagePreview.value || form.image || defaultCarouselImage)
-
-const listRef = ref<HTMLElement | null>(null)
-const { localItems, hasOrderChanges, isSavingOrder, persistOrder, cancelOrderChanges } =
-  useReorderableAdminList({
-    items,
-    listRef,
-    persist: async (updates) => {
-      await $fetch('/api/admin/carousel/reorder', {
-        method: 'POST',
-        body: { items: updates },
-      })
-
-      await refresh()
-    },
-  })
 
 const {
   inputRef: imageInputRef,
@@ -91,6 +74,52 @@ const {
   getFallbackPreview: () => form.image || null,
 })
 
+const {
+  cancelOrderChanges,
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  editingItem,
+  hasOrderChanges,
+  isSavingOrder,
+  itemToDelete,
+  listRef,
+  localItems,
+  openCreate,
+  openEdit,
+  persistOrder,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<CarouselItem>({
+  items,
+  persistOrder: async (updates) => {
+    await $fetch('/api/admin/carousel/reorder', {
+      method: 'POST',
+      body: { items: updates },
+    })
+
+    await refresh()
+  },
+  prepareCreate: () => {
+    clearErrors()
+    form.image = ''
+    form.href = ''
+    form.order = items.value.length
+    form.active = true
+    form.translations = createEmptyTranslations<Translation>(emptyTranslation)
+    imagePreview.value = null
+  },
+  prepareEdit: (item) => {
+    clearErrors()
+    form.image = item.image
+    form.href = item.href
+    form.order = item.order
+    form.active = item.active
+    form.translations = mapTranslationsToForm(item.translations, emptyTranslation) as Translation[]
+    imagePreview.value = item.image
+  },
+})
+
 const saveOrder = async () => {
   try {
     await persistOrder()
@@ -107,36 +136,19 @@ const saveOrder = async () => {
   }
 }
 
-const openCreate = () => {
-  editingItem.value = null
-  form.image = ''
-  form.href = ''
-  form.order = items.value.length
-  form.active = true
-  form.translations = createEmptyTranslations<Translation>(emptyTranslation)
-  imagePreview.value = null
-  showModal.value = true
-}
-
-const openEdit = (item: CarouselItem) => {
-  editingItem.value = item
-  form.image = item.image
-  form.href = item.href
-  form.order = item.order
-  form.active = item.active
-  form.translations = mapTranslationsToForm(item.translations, emptyTranslation) as Translation[]
-  imagePreview.value = item.image
-  showModal.value = true
-}
-
 const handleSubmit = async () => {
+  const payload = {
+    ...form,
+    image: form.image.trim() || defaultCarouselImage,
+    href: form.href.trim(),
+  }
+
+  if (!validate(createCarouselItemSchema, payload)) {
+    return
+  }
+
   isSubmitting.value = true
   try {
-    const payload = {
-      ...form,
-      image: form.image.trim() || defaultCarouselImage,
-      href: form.href.trim(),
-    }
     if (editingItem.value) {
       await $fetch(`/api/admin/carousel/${editingItem.value.id}`, {
         method: 'PUT',
@@ -156,12 +168,13 @@ const handleSubmit = async () => {
         color: 'success',
       })
     }
-    showModal.value = false
+    closeModal()
+    clearErrors()
     await refresh()
   } catch (e) {
     console.error('Error saving:', e)
     toast.add({
-      title: 'No se pudo guardar el elemento del carrusel',
+      title: getApiErrorMessage(e, 'No se pudo guardar el elemento del carrusel'),
       color: 'error',
     })
   } finally {
@@ -169,18 +182,12 @@ const handleSubmit = async () => {
   }
 }
 
-const confirmDelete = (item: CarouselItem) => {
-  itemToDelete.value = item
-  showDeleteModal.value = true
-}
-
 const handleDelete = async () => {
   if (!itemToDelete.value) return
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/carousel/${itemToDelete.value.id}`, { method: 'DELETE' })
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
     toast.add({
       title: 'Elemento del carrusel eliminado',
@@ -306,7 +313,7 @@ const handleDelete = async () => {
             </h2>
 
             <form id="carousel-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Imagen (opcional)">
+              <UFormField label="Imagen (opcional)" :error="getFieldError('image')">
                 <div class="space-y-3">
                   <div class="bg-muted aspect-1925/550 overflow-hidden rounded-xl border">
                     <img
@@ -343,7 +350,7 @@ const handleDelete = async () => {
                 </div>
               </UFormField>
 
-              <UFormField label="Enlace">
+              <UFormField label="Enlace" :error="getFieldError('href')">
                 <UInput v-model="form.href" placeholder="/pagina" class="w-full" />
               </UFormField>
 
@@ -355,7 +362,7 @@ const handleDelete = async () => {
               </UFormField>
 
               <div
-                v-for="trans in form.translations"
+                v-for="(trans, index) in form.translations"
                 :key="trans.locale"
                 class="rounded-lg border p-4"
               >
@@ -367,7 +374,10 @@ const handleDelete = async () => {
                   </span>
                 </h4>
                 <div class="space-y-3">
-                  <UFormField :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'">
+                  <UFormField
+                    :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'"
+                    :error="getFieldError(`translations.${index}.title`)"
+                  >
                     <UTextarea
                       v-model="trans.title"
                       :rows="2"

@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue'
-import Sortable from 'sortablejs'
+import type Sortable from 'sortablejs'
 
 interface ReorderableAdminEntity {
   id: string
@@ -39,20 +39,28 @@ export function useReorderableAdminList<T extends ReorderableAdminEntity>(
       return
     }
 
-    sortableInstance = Sortable.create(options.listRef.value, {
-      animation: 150,
-      handle: '.drag-handle',
-      ghostClass: 'opacity-50',
-      onEnd: (event) => {
-        if (event.oldIndex === undefined || event.newIndex === undefined) {
-          return
-        }
+    void (async () => {
+      const { default: SortableJs } = await import('sortablejs')
 
-        const movedItem = localItems.value.splice(event.oldIndex, 1)[0]
-        if (movedItem) {
-          localItems.value.splice(event.newIndex, 0, movedItem)
-        }
-      },
+      if (!options.listRef.value) {
+        return
+      }
+
+      sortableInstance = SortableJs.create(options.listRef.value, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'opacity-50',
+        onEnd: (event) => {
+          if (event.oldIndex === undefined || event.newIndex === undefined) {
+            return
+          }
+
+          const movedItem = localItems.value.splice(event.oldIndex, 1)[0]
+          if (movedItem) {
+            localItems.value.splice(event.newIndex, 0, movedItem)
+          }
+        },
+      })
     })
   })
 

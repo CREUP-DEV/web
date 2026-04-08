@@ -1,13 +1,7 @@
 import type { H3Event, MultiPartData } from 'h3'
 import { createError, getQuery, getRouterParam } from 'h3'
-import {
-  CONTACT_FIELD_LIMITS,
-  isValidOptionalContactPhone,
-} from '~~/shared/utils/contactValidation'
-import { EMAIL_MAX_LENGTH } from '~~/shared/utils/emailValidation'
 import { DATE_ONLY_PATTERN, parseDateOnlyString } from '~~/shared/utils/date'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
-import { NEWSLETTER_FIELD_LIMITS } from '~~/shared/utils/newsletterValidation'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 import { z } from 'zod'
 import { hasMeaningfulRichTextHtml } from './pressTranslation'
@@ -49,14 +43,14 @@ const toOptionalSingleStringSchema = <T extends z.ZodTypeAny>(schema: T) =>
 const getRequiredTranslation = <T extends { locale: string }>(translations: T[]) =>
   translations.find((translation) => translation.locale === DEFAULT_LOCALE_CODE)
 
-export const carouselTranslationSchema = z.object({
+const carouselTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
   buttonText: z.string().max(100).optional(),
   alt: z.string().max(200).optional(),
 })
 
-export const createCarouselItemSchema = z
+const createCarouselItemSchema = z
   .object({
     image: z.string().min(1, 'La imagen es requerida').max(2048),
     href: safeHrefSchema,
@@ -76,7 +70,7 @@ export const createCarouselItemSchema = z
     }
   })
 
-export const updateCarouselItemSchema = createCarouselItemSchema
+const _updateCarouselItemSchema = createCarouselItemSchema
 
 export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
@@ -176,13 +170,13 @@ export const createPressArticleSchema = basePressArticleSchema.superRefine(refin
 
 export const updatePressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
 
-export const featuredLinkTranslationSchema = z.object({
+const featuredLinkTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
   alt: z.string().max(200).optional(),
 })
 
-export const createFeaturedLinkSchema = z
+const createFeaturedLinkSchema = z
   .object({
     image: z.string().min(1, 'La imagen es requerida').max(2048),
     to: safeHrefSchema,
@@ -204,14 +198,14 @@ export const createFeaturedLinkSchema = z
     }
   })
 
-export const updateFeaturedLinkSchema = createFeaturedLinkSchema
+const _updateFeaturedLinkSchema = createFeaturedLinkSchema
 
-export const tagTranslationSchema = z.object({
+const tagTranslationSchema = z.object({
   locale: localeSchema,
   name: z.string().max(100),
 })
 
-export const createTagSchema = z
+const createTagSchema = z
   .object({
     slug: z
       .string()
@@ -243,7 +237,7 @@ export const createTagSchema = z
     }
   })
 
-export const updateTagSchema = createTagSchema
+const _updateTagSchema = createTagSchema
 
 export const updateOrderSchema = z.object({
   items: z.array(
@@ -306,6 +300,7 @@ export const adminPressListQuerySchema = z.object({
     (value) => (Array.isArray(value) ? value[0] : value),
     pressArticleTypeSchema.optional()
   ),
+  search: toOptionalSingleStringSchema(z.string().trim().max(200)),
 })
 
 export const memberCalendarQuerySchema = z.object({
@@ -612,14 +607,14 @@ export const policyDocumentTypeRouteParamSchema = z.object({
 })
 
 // Media Outlet schemas
-export const createMediaOutletSchema = z.object({
+const createMediaOutletSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(200),
   website: z.string().url('La URL no es válida').max(2048),
   logo: z.string().min(1, 'El logo es requerido').max(2048),
   order: z.number().int().min(0).default(0),
 })
 
-export const updateMediaOutletSchema = createMediaOutletSchema
+const _updateMediaOutletSchema = createMediaOutletSchema
 
 // About page schemas
 export const updateAboutPageContentSchema = z.object({
@@ -628,14 +623,14 @@ export const updateAboutPageContentSchema = z.object({
 })
 
 // Equality Document schemas
-export const equalityDocumentTranslationSchema = z.object({
+const equalityDocumentTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
   description: z.string().max(2000),
   meta: z.string().max(500).optional().nullable(),
 })
 
-export const createEqualityDocumentSchema = z
+const createEqualityDocumentSchema = z
   .object({
     pdfUrl: z.string().min(1, 'El PDF es requerido'),
     order: z.number().int().min(0).default(0),
@@ -664,15 +659,15 @@ export const createEqualityDocumentSchema = z
     }
   })
 
-export const updateEqualityDocumentSchema = createEqualityDocumentSchema
+const _updateEqualityDocumentSchema = createEqualityDocumentSchema
 
 // Financial Report schemas
-export const financialReportTranslationSchema = z.object({
+const financialReportTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
 })
 
-export const createFinancialReportSchema = z
+const createFinancialReportSchema = z
   .object({
     pdfUrl: z.string().min(1, 'El PDF es requerido'),
     approvedAt: dateOnlySchema,
@@ -694,28 +689,28 @@ export const createFinancialReportSchema = z
     }
   })
 
-export const updateFinancialReportSchema = createFinancialReportSchema
+const _updateFinancialReportSchema = createFinancialReportSchema
 
-export const updatePressDossierSchema = z.object({
+const _updatePressDossierSchema = z.object({
   pdfUrl: z.string().min(1, 'El PDF es requerido').nullable(),
   active: z.boolean().default(false),
 })
 
-export const createNewsletterSchema = z.object({
+const createNewsletterSchema = z.object({
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
   coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
   pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
   active: z.boolean().default(true),
 })
 
-export const updateNewsletterSchema = z.object({
+const _updateNewsletterSchema = z.object({
   month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
   coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
   pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
   active: z.boolean().default(true),
 })
 
-export const createNewsletterRequestSchema = createNewsletterSchema.extend({
+const _createNewsletterRequestSchema = createNewsletterSchema.extend({
   sendEmail: z.boolean().default(false),
 })
 
@@ -735,62 +730,6 @@ export const createAdminAccessSchema = z.object({
 export const updateAdminAccessSchema = z.object({
   active: z.boolean(),
 })
-
-export const newsletterSubscribeSchema = z
-  .object({
-    email: z.string().email().max(NEWSLETTER_FIELD_LIMITS.emailMax),
-    consent: z.boolean(),
-    ageConfirmed: z.boolean(),
-    website: z.string().max(NEWSLETTER_FIELD_LIMITS.websiteMax).optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (!data.consent) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Debes aceptar la política de privacidad',
-        path: ['consent'],
-      })
-    }
-
-    if (!data.ageConfirmed) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Debes confirmar que tienes al menos 14 años o autorización legal',
-        path: ['ageConfirmed'],
-      })
-    }
-  })
-
-export const contactFormSchema = z
-  .object({
-    contactType: z.enum(['general', 'press']).default('general'),
-    name: z.string().min(CONTACT_FIELD_LIMITS.name.min).max(CONTACT_FIELD_LIMITS.name.max),
-    email: z.string().email().max(Math.min(CONTACT_FIELD_LIMITS.emailMax, EMAIL_MAX_LENGTH)),
-    phone: z.string().max(CONTACT_FIELD_LIMITS.phoneMax).optional(),
-    mediaName: z.string().max(CONTACT_FIELD_LIMITS.mediaNameMax).optional(),
-    subject: z.string().min(CONTACT_FIELD_LIMITS.subject.min).max(CONTACT_FIELD_LIMITS.subject.max),
-    message: z.string().min(CONTACT_FIELD_LIMITS.message.min).max(CONTACT_FIELD_LIMITS.message.max),
-    website: z.string().max(NEWSLETTER_FIELD_LIMITS.websiteMax).optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (!isValidOptionalContactPhone(data.phone)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El teléfono no es válido',
-        path: ['phone'],
-      })
-    }
-
-    if (data.contactType === 'press') {
-      if (!data.mediaName || data.mediaName.trim().length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'El nombre del medio es obligatorio para contacto de prensa',
-          path: ['mediaName'],
-        })
-      }
-    }
-  })
 
 export const adminUploadKindSchema = z.object({
   kind: z.enum(['carousel', 'featured_link']),

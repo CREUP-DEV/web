@@ -12,16 +12,12 @@ import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
-import {
-  idRouteParamSchema,
-  updateCarouselItemSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import {
   HOME_CAROUSEL_FALLBACK_IMAGE,
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
 } from '~~/shared/constants/assetPaths'
+import { updateCarouselItemSchema } from '~~/shared/utils/adminSchemas'
 
 const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/carrusel'
 

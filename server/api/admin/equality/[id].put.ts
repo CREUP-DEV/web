@@ -13,13 +13,9 @@ import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
 } from '../../../utils/localizedContent'
-import {
-  idRouteParamSchema,
-  updateEqualityDocumentSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { updateEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
 
 const PDF_UPLOAD_DIR = 'public/documentos/igualdad'
 

@@ -25,6 +25,59 @@ export function resolveObservableElement(target: ObservableTarget): ObservableEl
   return null
 }
 
+// ---------------------------------------------------------------------------
+// Shared IntersectionObserver pool — one observer per threshold value.
+// Ref-counted: the observer is created on first use and disconnected when the
+// last element unobserves, so the pool never leaks idle observers.
+// ---------------------------------------------------------------------------
+type IOCallback = (isIntersecting: boolean) => void
+
+const _observers = new Map<number, IntersectionObserver>()
+const _refCounts = new Map<number, number>()
+const _callbacks = new WeakMap<Element, IOCallback>()
+
+function getSharedObserver(threshold: number): IntersectionObserver {
+  const existing = _observers.get(threshold)
+  if (existing) return existing
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        _callbacks.get(entry.target)?.(entry.isIntersecting)
+      }
+    },
+    { threshold }
+  )
+
+  _observers.set(threshold, observer)
+  return observer
+}
+
+function observeElement(el: Element, threshold: number, callback: IOCallback) {
+  _callbacks.set(el, callback)
+  _refCounts.set(threshold, (_refCounts.get(threshold) ?? 0) + 1)
+  getSharedObserver(threshold).observe(el)
+}
+
+function unobserveElement(el: Element, threshold: number) {
+  const observer = _observers.get(threshold)
+  if (observer) {
+    observer.unobserve(el)
+  }
+  _callbacks.delete(el)
+
+  const count = (_refCounts.get(threshold) ?? 1) - 1
+  if (count <= 0) {
+    observer?.disconnect()
+    _observers.delete(threshold)
+    _refCounts.delete(threshold)
+  } else {
+    _refCounts.set(threshold, count)
+  }
+}
+
+// ---------------------------------------------------------------------------
+
 export function useEntranceObserver(options: number | EntranceObserverOptions = 0.1) {
   const threshold = typeof options === 'number' ? options : (options.threshold ?? 0.1)
   const animateVisibleOnMount =
@@ -34,7 +87,7 @@ export function useEntranceObserver(options: number | EntranceObserverOptions = 
   const isPending = ref(false)
   const shouldAnimate = ref(false)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
-  let observer: IntersectionObserver | null = null
+  let observedEl: ObservableElement | null = null
 
   onMounted(() => {
     if (prefersReducedMotion.value) {
@@ -68,21 +121,15 @@ export function useEntranceObserver(options: number | EntranceObserverOptions = 
       return
     }
 
-    observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0]
-        if (!entry?.isIntersecting) {
-          return
-        }
-
-        isVisible.value = true
-        observer?.disconnect()
-        observer = null
-      },
-      { threshold }
-    )
-
-    observer.observe(el)
+    observedEl = el
+    observeElement(el, threshold, (isIntersecting) => {
+      if (!isIntersecting) return
+      isVisible.value = true
+      if (observedEl) {
+        unobserveElement(observedEl, threshold)
+        observedEl = null
+      }
+    })
   })
 
   watch(prefersReducedMotion, (reduced) => {
@@ -90,8 +137,10 @@ export function useEntranceObserver(options: number | EntranceObserverOptions = 
       shouldAnimate.value = false
       isPending.value = false
       isVisible.value = true
-      observer?.disconnect()
-      observer = null
+      if (observedEl) {
+        unobserveElement(observedEl, threshold)
+        observedEl = null
+      }
     }
   })
 
@@ -102,10 +151,23 @@ export function useEntranceObserver(options: number | EntranceObserverOptions = 
   })
 
   onBeforeUnmount(() => {
-    observer?.disconnect()
+    if (observedEl) {
+      unobserveElement(observedEl, threshold)
+      observedEl = null
+    }
   })
 
-  return { elRef, isVisible, isPending, shouldAnimate }
+  // Convenience computed / method so consumers never touch the free functions
+  // directly. Using `shouldAnimate`, `isVisible`, `isPending` from this scope.
+  const animClasses = computed(() =>
+    entranceClasses(shouldAnimate.value, isVisible.value, isPending.value)
+  )
+
+  function animStyle(index: number, step = 80) {
+    return entranceStyle(shouldAnimate.value, isVisible.value, index, step)
+  }
+
+  return { elRef, isVisible, isPending, shouldAnimate, animClasses, animStyle }
 }
 
 export function useEntranceDelay(index: number, step = 80) {
@@ -113,6 +175,10 @@ export function useEntranceDelay(index: number, step = 80) {
     '--entrance-delay': `${index * step}ms`,
   }
 }
+
+// Both free functions share the same argument order:
+//   (shouldAnimate, isVisible, ...)
+// so callers never have to remember which comes first.
 
 export function entranceClasses(shouldAnimate: boolean, isVisible: boolean, isPending: boolean) {
   if (!shouldAnimate) return undefined
@@ -122,8 +188,8 @@ export function entranceClasses(shouldAnimate: boolean, isVisible: boolean, isPe
 }
 
 export function entranceStyle(
-  isVisible: boolean,
   shouldAnimate: boolean,
+  isVisible: boolean,
   index: number,
   step = 80
 ) {

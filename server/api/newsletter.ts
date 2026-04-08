@@ -7,6 +7,8 @@ import { publicPaginationQuerySchema, validateQuery } from '../utils/validation'
 
 export default defineEventHandler(async (event) => {
   const { limit, offset } = validateQuery(event, publicPaginationQuerySchema)
+  const normalizedLimit = limit ?? 12
+  const normalizedOffset = offset ?? 0
 
   const [items, countResult] = await Promise.all([
     db
@@ -14,8 +16,8 @@ export default defineEventHandler(async (event) => {
       .from(newsletters)
       .where(eq(newsletters.active, true))
       .orderBy(desc(newsletters.month))
-      .limit(limit)
-      .offset(offset),
+      .limit(normalizedLimit)
+      .offset(normalizedOffset),
     db
       .select({ count: sql<number>`count(*)`.mapWith(Number) })
       .from(newsletters)

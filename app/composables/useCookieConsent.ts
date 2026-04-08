@@ -7,7 +7,7 @@ export function useCookieConsent() {
 
   if (import.meta.client) {
     onMounted(() => {
-      dismissed.value = window.sessionStorage.getItem(STORAGE_KEY) === '1'
+      dismissed.value = window.localStorage.getItem(STORAGE_KEY) === '1'
       isReady.value = true
     })
   }
@@ -16,7 +16,7 @@ export function useCookieConsent() {
     dismissed.value = true
 
     if (import.meta.client) {
-      window.sessionStorage.setItem(STORAGE_KEY, '1')
+      window.localStorage.setItem(STORAGE_KEY, '1')
     }
   }
 

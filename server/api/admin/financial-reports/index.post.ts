@@ -14,9 +14,10 @@ import {
   getPreferredTranslationValue,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
-import { createFinancialReportSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
 import { FINANCIAL_REPORTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { createFinancialReportSchema } from '~~/shared/utils/adminSchemas'
 
 const PDF_UPLOAD_DIR = 'public/documentos/informes-economicos'
 

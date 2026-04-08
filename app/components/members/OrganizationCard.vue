@@ -1,39 +1,46 @@
 <script setup lang="ts">
-defineProps<{
-  logoSrc: string | null
+import type { RouteLocationRaw } from 'vue-router'
+
+const props = defineProps<{
+  logoLight: string | null
+  logoDark: string | null
   imageAlt: string
   title: string
   subtitle?: string | null
   initials?: string | null
   communityLabel?: string | null
-  ariaLabel: string
+  detailsAriaLabel?: string
   animationStyle?: Record<string, string>
+  to?: RouteLocationRaw
 }>()
+
+const lightLogo = computed(() => props.logoLight ?? props.logoDark ?? '')
+const darkLogo = computed(() => props.logoDark ?? props.logoLight ?? '')
 
 const emit = defineEmits<{
   (e: 'click'): void
-  (e: 'logo-error', logoSrc: string): void
 }>()
 </script>
 
 <template>
-  <button
-    type="button"
+  <component
+    :is="to ? 'NuxtLink' : 'button'"
     class="motion-card-strong group bg-surface/50 hover:bg-surface rounded-2xl p-5 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
     :style="animationStyle"
-    :aria-label="ariaLabel"
-    @click="emit('click')"
+    :aria-label="detailsAriaLabel"
+    v-bind="to ? { to } : { type: 'button' }"
+    @click="!to && emit('click')"
   >
     <div class="flex items-start gap-4">
       <div
         class="ring-primary/20 group-hover:ring-primary/40 flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-2 transition-all dark:bg-gray-800"
       >
-        <NuxtImg
-          v-if="logoSrc"
-          :src="logoSrc"
+        <UColorModeImage
+          v-if="lightLogo || darkLogo"
+          :light="lightLogo"
+          :dark="darkLogo"
           :alt="imageAlt"
           class="size-full object-contain p-2"
-          @error="emit('logo-error', logoSrc)"
         />
         <UIcon v-else name="i-tabler-building" class="text-muted size-10" />
       </div>
@@ -71,5 +78,5 @@ const emit = defineEmits<{
         class="text-muted group-hover:text-primary mt-1 size-5 shrink-0 transition-colors"
       />
     </div>
-  </button>
+  </component>
 </template>

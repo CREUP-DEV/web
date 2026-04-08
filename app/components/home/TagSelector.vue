@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   type?: string
+  selectedSlug: string | null
 }>()
 
 const { t } = useI18n()
@@ -23,22 +24,9 @@ const emit = defineEmits<{
   (e: 'select', tagSlug: string | null): void
 }>()
 
-const selectedSlug = ref<string | null>(null)
-
 const onSelectTag = (slug: string | null) => {
-  selectedSlug.value = slug
   emit('select', slug)
 }
-
-watch(
-  tagList,
-  (list: Array<{ slug: string | null; name: string }>) => {
-    if (!list.find((tag) => tag.slug === selectedSlug.value)) {
-      onSelectTag(null)
-    }
-  },
-  { immediate: true }
-)
 </script>
 
 <template>

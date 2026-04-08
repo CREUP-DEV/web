@@ -5,23 +5,29 @@ import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 const { session, signOut } = useAuth()
 
-const { locale, setLocale } = useI18n()
+// Admin is always in the default locale (Spanish). Force it on first mount.
+const { setLocale } = useI18n()
 const { defaultLocale } = useLocales()
+await setLocale(defaultLocale as Locale)
 
-if (locale.value !== defaultLocale) {
-  await setLocale(defaultLocale as Locale)
-}
+const route = useRoute()
 
 const navigation = [
   { name: 'Panel', to: '/admin', icon: 'i-tabler-layout-dashboard' },
   ...ADMIN_SECTION_DEFINITIONS,
 ]
 
+const isNavItemActive = (to: string) => {
+  if (to === '/admin') return route.path === '/admin'
+  return route.path === to || route.path.startsWith(to + '/')
+}
+
 useHead({
   titleTemplate: (titleChunk) => (titleChunk ? `${titleChunk} | Admin CREUP` : 'Admin CREUP'),
 })
 
-const sidebarOpen = ref(false)
+// Persist sidebar state across admin page navigations.
+const sidebarOpen = useState('admin-sidebar-open', () => false)
 </script>
 
 <template>
@@ -66,7 +72,7 @@ const sidebarOpen = ref(false)
           :key="item.to"
           :to="item.to"
           class="text-foreground/70 hover:bg-muted flex items-center gap-3 rounded-lg px-3 py-2 transition-colors"
-          active-class="!bg-primary/10 !text-primary"
+          :class="{ '!bg-primary/10 !text-primary': isNavItemActive(item.to) }"
           @click="sidebarOpen = false"
         >
           <UIcon :name="item.icon" class="size-5" />
@@ -83,7 +89,7 @@ const sidebarOpen = ref(false)
               session.data.user.name ? `Avatar de ${session.data.user.name}` : 'Avatar de usuario'
             "
             class="size-8 rounded-full text-xs"
-            loading="lazy"
+            loading="eager"
             decoding="async"
           />
           <div class="flex-1 truncate">

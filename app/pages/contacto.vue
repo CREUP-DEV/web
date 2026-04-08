@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import {
-  CONTACT_FIELD_LIMITS,
-  isValidOptionalContactPhone,
-} from '~~/shared/utils/contactValidation'
-import { isValidEmailAddress } from '~~/shared/utils/emailValidation'
+import { CONTACT_FIELD_LIMITS, contactFormSchema } from '~~/shared/utils/contactValidation'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const toast = useToast()
+const { fieldErrors, getFieldError: getValidationFieldError, validate } = useZodFormValidation()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const {
   elRef: headerRef,
@@ -68,6 +65,17 @@ const form = reactive({
   website: '',
 })
 
+const contactPayload = computed(() => ({
+  contactType: contactType.value,
+  email: form.email.trim(),
+  message: form.message.trim(),
+  mediaName: form.mediaName.trim() || undefined,
+  name: form.name.trim(),
+  phone: form.phone.trim() || undefined,
+  subject: form.subject.trim(),
+  website: form.website.trim() || undefined,
+}))
+
 const touched = reactive({
   name: false,
   email: false,
@@ -80,84 +88,76 @@ const touched = reactive({
 const isSubmitting = ref(false)
 const formSubmitted = ref(false)
 
-const validations = computed(() => ({
-  name: {
-    valid:
-      form.name.trim().length >= CONTACT_FIELD_LIMITS.name.min &&
-      form.name.trim().length <= CONTACT_FIELD_LIMITS.name.max,
-    error:
-      form.name.trim().length === 0
-        ? t('contactPage.form.errors.nameRequired')
-        : form.name.trim().length < CONTACT_FIELD_LIMITS.name.min
-          ? t('contactPage.form.errors.nameMin')
-          : t('contactPage.form.errors.nameMax'),
-  },
-  email: {
-    valid:
-      form.email.trim().length <= CONTACT_FIELD_LIMITS.emailMax && isValidEmailAddress(form.email),
-    error:
-      form.email.trim().length === 0
-        ? t('contactPage.form.errors.emailRequired')
-        : t('contactPage.form.errors.emailInvalid'),
-  },
-  phone: {
-    valid: !isPress.value || isValidOptionalContactPhone(form.phone),
-    error: t('contactPage.form.errors.phoneInvalid'),
-  },
-  mediaName: {
-    valid:
-      !isPress.value ||
-      (form.mediaName.trim().length >= 1 &&
-        form.mediaName.trim().length <= CONTACT_FIELD_LIMITS.mediaNameMax),
-    error:
-      form.mediaName.trim().length === 0
-        ? t('contactPage.form.errors.mediaNameRequired')
-        : t('contactPage.form.errors.mediaNameMax'),
-  },
-  subject: {
-    valid:
-      form.subject.trim().length >= CONTACT_FIELD_LIMITS.subject.min &&
-      form.subject.trim().length <= CONTACT_FIELD_LIMITS.subject.max,
-    error:
-      form.subject.trim().length === 0
-        ? t('contactPage.form.errors.subjectRequired')
-        : form.subject.trim().length < CONTACT_FIELD_LIMITS.subject.min
-          ? t('contactPage.form.errors.subjectMin')
-          : t('contactPage.form.errors.subjectMax'),
-  },
-  message: {
-    valid:
-      form.message.trim().length >= CONTACT_FIELD_LIMITS.message.min &&
-      form.message.trim().length <= CONTACT_FIELD_LIMITS.message.max,
-    error:
-      form.message.trim().length === 0
-        ? t('contactPage.form.errors.messageRequired')
-        : form.message.trim().length < CONTACT_FIELD_LIMITS.message.min
-          ? t('contactPage.form.errors.messageMin')
-          : t('contactPage.form.errors.messageMax'),
-  },
-}))
+watchEffect(() => {
+  validate(contactFormSchema, contactPayload.value)
+})
 
 type ValidatedField = 'name' | 'email' | 'phone' | 'mediaName' | 'subject' | 'message'
 
+const validationFieldOrder = computed<ValidatedField[]>(() =>
+  isPress.value
+    ? ['name', 'email', 'phone', 'mediaName', 'subject', 'message']
+    : ['name', 'email', 'phone', 'subject', 'message']
+)
+
 function shouldShowError(field: ValidatedField): boolean {
-  return (touched[field] || formSubmitted.value) && !validations.value[field].valid
+  return (touched[field] || formSubmitted.value) && !!getValidationFieldError(field)
 }
 
 function getFieldError(field: ValidatedField): string | undefined {
-  return shouldShowError(field) ? validations.value[field].error : undefined
+  if (!shouldShowError(field)) return undefined
+
+  if (field === 'name') {
+    return form.name.trim().length === 0
+      ? t('contactPage.form.errors.nameRequired')
+      : form.name.trim().length < CONTACT_FIELD_LIMITS.name.min
+        ? t('contactPage.form.errors.nameMin')
+        : t('contactPage.form.errors.nameMax')
+  }
+
+  if (field === 'email') {
+    return form.email.trim().length === 0
+      ? t('contactPage.form.errors.emailRequired')
+      : t('contactPage.form.errors.emailInvalid')
+  }
+
+  if (field === 'phone') {
+    return t('contactPage.form.errors.phoneInvalid')
+  }
+
+  if (field === 'mediaName') {
+    return form.mediaName.trim().length === 0
+      ? t('contactPage.form.errors.mediaNameRequired')
+      : t('contactPage.form.errors.mediaNameMax')
+  }
+
+  if (field === 'subject') {
+    return form.subject.trim().length === 0
+      ? t('contactPage.form.errors.subjectRequired')
+      : form.subject.trim().length < CONTACT_FIELD_LIMITS.subject.min
+        ? t('contactPage.form.errors.subjectMin')
+        : t('contactPage.form.errors.subjectMax')
+  }
+
+  return form.message.trim().length === 0
+    ? t('contactPage.form.errors.messageRequired')
+    : form.message.trim().length < CONTACT_FIELD_LIMITS.message.min
+      ? t('contactPage.form.errors.messageMin')
+      : t('contactPage.form.errors.messageMax')
 }
 
-const isFormValid = computed(() => Object.values(validations.value).every((v) => v.valid))
+const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
 
 async function handleSubmit() {
   formSubmitted.value = true
 
-  if (!isFormValid.value || isSubmitting.value) {
-    // Focus first invalid field for a11y
-    const firstInvalid = (Object.keys(validations.value) as ValidatedField[]).find(
-      (k) => !validations.value[k].valid
-    )
+  if (isSubmitting.value) {
+    return
+  }
+
+  if (!isFormValid.value) {
+    const firstInvalid = validationFieldOrder.value.find((field) => getValidationFieldError(field))
+
     if (firstInvalid) {
       document.getElementById(`contact-${firstInvalid}`)?.focus()
     }
@@ -169,18 +169,7 @@ async function handleSubmit() {
   try {
     await $fetch('/api/contact', {
       method: 'POST',
-      body: {
-        contactType: contactType.value,
-        name: form.name.trim(),
-        email: form.email.trim(),
-        ...(isPress.value && {
-          phone: form.phone.trim() || undefined,
-          mediaName: form.mediaName.trim(),
-        }),
-        subject: form.subject.trim(),
-        message: form.message.trim(),
-        website: form.website,
-      },
+      body: contactPayload.value,
     })
 
     toast.add({

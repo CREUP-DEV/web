@@ -1,24 +1,43 @@
 <script setup lang="ts">
+import { useSwipe } from '@vueuse/core'
 import type { CalendarEvent } from '@/composables/useGoogleCalendar'
 import { collectUpcomingCalendarSeries } from '@/composables/useCalendarEventSeries'
 
 const props = defineProps<{
   events: CalendarEvent[]
   pending?: boolean
+  error?: Error | null
 }>()
 
 const { t } = useI18n()
 const { currentLanguageTag, formatDate: formatLocaleDate } = useLocaleFormatting()
 const { formatShortDate } = useDatePresets()
 
-const today = new Date()
-const currentYear = ref(today.getFullYear())
-const currentMonth = ref(today.getMonth())
+// Fix 2 — reactive today that updates at midnight
+const today = ref(new Date())
+const currentYear = ref(today.value.getFullYear())
+const currentMonth = ref(today.value.getMonth())
+
+onMounted(() => {
+  const msUntilMidnight = () => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime()
+  }
+  const scheduleMidnightUpdate = () => {
+    setTimeout(() => {
+      today.value = new Date()
+      scheduleMidnightUpdate()
+    }, msUntilMidnight())
+  }
+  scheduleMidnightUpdate()
+})
 
 const selectedDay = ref<number>(-1)
 const isSelectingDay = ref(false)
-const touchStartX = ref(0)
-const touchStartY = ref(0)
+
+const currentDatePrefix = computed(
+  () => `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-`
+)
 
 const weekDays = computed(() => {
   const formatter = new Intl.DateTimeFormat(currentLanguageTag.value, { weekday: 'narrow' })
@@ -38,11 +57,11 @@ const monthName = computed(() => {
 })
 
 const minMonthDate = computed(() => {
-  return new Date(today.getFullYear(), today.getMonth() - 3, 1)
+  return new Date(today.value.getFullYear(), today.value.getMonth() - 3, 1)
 })
 
 const maxMonthDate = computed(() => {
-  return new Date(today.getFullYear(), today.getMonth() + 3, 1)
+  return new Date(today.value.getFullYear(), today.value.getMonth() + 3, 1)
 })
 
 const canGoToPreviousMonth = computed(() => {
@@ -77,17 +96,31 @@ const calendarDays = computed(() => {
   return days
 })
 
-// Check if a day has events
-const hasEvents = (day: number): boolean => {
-  const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  return props.events.some((event: CalendarEvent) => event.date === dateStr)
-}
+const visibleMonthEvents = computed(() => {
+  const monthPrefix = currentDatePrefix.value
+  const eventsByDate = new Map<string, CalendarEvent[]>()
 
-// Get events for a specific day
-const getEventsForDay = (day: number): CalendarEvent[] => {
-  const dateStr = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  return props.events.filter((event: CalendarEvent) => event.date === dateStr)
-}
+  for (const event of props.events) {
+    if (!event.date.startsWith(monthPrefix)) continue
+
+    const existing = eventsByDate.get(event.date)
+    if (existing) {
+      existing.push(event)
+      continue
+    }
+
+    eventsByDate.set(event.date, [event])
+  }
+
+  return eventsByDate
+})
+
+const getDayDate = (day: number) => `${currentDatePrefix.value}${String(day).padStart(2, '0')}`
+
+const hasEvents = (day: number): boolean => visibleMonthEvents.value.has(getDayDate(day))
+
+const getEventsForDay = (day: number): CalendarEvent[] =>
+  visibleMonthEvents.value.get(getDayDate(day)) ?? []
 
 // Upcoming events (next 4 events from today)
 const upcomingEvents = computed(() => {
@@ -107,12 +140,12 @@ const formatUpcomingTime = (event: CalendarEvent): string => {
   return event.timeSlot
 }
 
-// Check if it's today
+// Fix 2 — isToday uses today.value
 const isToday = (day: number): boolean => {
   return (
-    day === today.getDate() &&
-    currentMonth.value === today.getMonth() &&
-    currentYear.value === today.getFullYear()
+    day === today.value.getDate() &&
+    currentMonth.value === today.value.getMonth() &&
+    currentYear.value === today.value.getFullYear()
   )
 }
 
@@ -178,29 +211,16 @@ const onPopoverClose = (open: boolean, day: number | null) => {
   }
 }
 
-const onTouchStart = (event: TouchEvent) => {
-  const touch = event.touches[0]
-  if (!touch) return
-  touchStartX.value = touch.clientX
-  touchStartY.value = touch.clientY
-}
-
-const onTouchEnd = (event: TouchEvent) => {
-  const touch = event.changedTouches[0]
-  if (!touch) return
-
-  const deltaX = touch.clientX - touchStartX.value
-  const deltaY = touch.clientY - touchStartY.value
-  const minDistance = 40
-
-  if (Math.abs(deltaX) < minDistance || Math.abs(deltaX) < Math.abs(deltaY)) return
-
-  if (deltaX < 0) {
-    goToNextMonth()
-  } else {
-    goToPreviousMonth()
-  }
-}
+// Fix 3 — useSwipe from VueUse replaces manual touch tracking
+const calendarEl = ref<HTMLElement | null>(null)
+useSwipe(calendarEl, {
+  onSwipeEnd(_e, direction) {
+    if (direction === 'left') goToNextMonth()
+    else if (direction === 'right') goToPreviousMonth()
+  },
+  threshold: 40,
+  passive: true,
+})
 </script>
 
 <template>
@@ -224,7 +244,10 @@ const onTouchEnd = (event: TouchEvent) => {
           :disabled="!canGoToPreviousMonth"
           @click="goToPreviousMonth"
         />
-        <span class="text-sm font-medium capitalize sm:text-base">{{ monthName }}</span>
+        <!-- Fix 4 — aria-live so screen readers announce month changes -->
+        <span aria-live="polite" class="text-sm font-medium capitalize sm:text-base">{{
+          monthName
+        }}</span>
         <UButton
           variant="ghost"
           color="neutral"
@@ -242,76 +265,78 @@ const onTouchEnd = (event: TouchEvent) => {
         </div>
       </div>
 
+      <!-- Fix 3 — ref="calendarEl" for useSwipe; Fix 1 — null cells rendered as plain divs -->
       <div
+        ref="calendarEl"
         class="relative grid grid-cols-7 gap-1"
         :aria-label="t('home.calendar.label')"
-        @touchstart.passive="onTouchStart"
-        @touchend.passive="onTouchEnd"
       >
-        <UPopover
+        <!-- Fix 1 & 5 — null cells skip UPopover; stable keys for all cells -->
+        <template
           v-for="(day, idx) in calendarDays"
-          :key="idx"
-          :open="day !== null && day === selectedDay"
-          @update:open="(open: boolean) => onPopoverClose(open, day)"
+          :key="day === null ? `empty-${idx}` : `day-${day}`"
         >
-          <template #default="{ open }">
-            <div
-              v-if="day === null"
-              aria-hidden="true"
-              class="relative flex aspect-square items-center justify-center rounded-lg"
-            />
-            <button
-              v-else
-              type="button"
-              :aria-label="`${day} ${monthName}`"
-              :aria-expanded="open"
-              class="focus-visible:ring-primary-500 relative flex aspect-square items-center justify-center rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2"
-              :class="[
-                'hover:bg-muted cursor-pointer',
-                selectedDay === day ? 'ring-primary bg-primary/10 ring-2' : '',
-                isToday(day) && selectedDay === -1 && !isSelectingDay
-                  ? 'ring-primary bg-primary/10 ring-2'
-                  : '',
-                hasEvents(day) ? 'text-primary font-bold' : '',
-              ]"
-              @click="onDayClick(day)"
-              @pointerdown="onDayPointerDown(day)"
-            >
-              <span>{{ day }}</span>
-            </button>
-          </template>
-          <template #content>
-            <div class="max-w-72 min-w-56 p-3">
-              <h3 class="text-muted mb-2 text-sm font-medium capitalize">
-                {{
-                  day
-                    ? formatEventDate(
-                        `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                      )
-                    : ''
-                }}
-              </h3>
-              <ul v-if="day && getEventsForDay(day).length > 0" class="space-y-2">
-                <li
-                  v-for="(event, eventIdx) in getEventsForDay(day)"
-                  :key="eventIdx"
-                  class="bg-surface rounded-lg p-2.5"
-                >
-                  <p class="text-foreground text-sm font-medium">
-                    {{ event.title }}
-                  </p>
-                  <p class="text-muted mt-1 flex items-center gap-1 text-xs">
-                    <UIcon name="i-tabler-clock" class="size-3.5 shrink-0" />
-                    <span>{{ event.timeSlot }}</span>
-                  </p>
-                </li>
-              </ul>
-              <p v-else class="text-muted text-sm">
-                {{ t('home.calendar.noEvents') }}
-              </p>
-            </div>
-          </template>
-        </UPopover>
+          <div
+            v-if="day === null"
+            aria-hidden="true"
+            class="relative flex aspect-square items-center justify-center rounded-lg"
+          />
+          <UPopover
+            v-else
+            :open="day === selectedDay"
+            @update:open="(open: boolean) => onPopoverClose(open, day)"
+          >
+            <template #default="{ open }">
+              <button
+                type="button"
+                :aria-label="`${day} ${monthName}`"
+                :aria-expanded="open"
+                class="focus-visible:ring-primary-500 relative flex aspect-square items-center justify-center rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2"
+                :class="[
+                  'hover:bg-muted cursor-pointer',
+                  selectedDay === day ? 'ring-primary bg-primary/10 ring-2' : '',
+                  isToday(day) && selectedDay === -1 && !isSelectingDay
+                    ? 'ring-primary bg-primary/10 ring-2'
+                    : '',
+                  hasEvents(day) ? 'text-primary font-bold' : '',
+                ]"
+                @click="onDayClick(day)"
+                @pointerdown="onDayPointerDown(day)"
+              >
+                <span>{{ day }}</span>
+              </button>
+            </template>
+            <template #content>
+              <div class="max-w-72 min-w-56 p-3">
+                <h3 class="text-muted mb-2 text-sm font-medium capitalize">
+                  {{
+                    formatEventDate(
+                      `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                    )
+                  }}
+                </h3>
+                <ul v-if="getEventsForDay(day).length > 0" class="space-y-2">
+                  <li
+                    v-for="(event, eventIdx) in getEventsForDay(day)"
+                    :key="eventIdx"
+                    class="bg-surface rounded-lg p-2.5"
+                  >
+                    <p class="text-foreground text-sm font-medium">
+                      {{ event.title }}
+                    </p>
+                    <p class="text-muted mt-1 flex items-center gap-1 text-xs">
+                      <UIcon name="i-tabler-clock" class="size-3.5 shrink-0" />
+                      <span>{{ event.timeSlot }}</span>
+                    </p>
+                  </li>
+                </ul>
+                <p v-else class="text-muted text-sm">
+                  {{ t('home.calendar.noEvents') }}
+                </p>
+              </div>
+            </template>
+          </UPopover>
+        </template>
       </div>
 
       <div class="mt-4 flex-1">
@@ -357,6 +382,9 @@ const onTouchEnd = (event: TouchEvent) => {
             </div>
           </li>
         </ul>
+        <p v-else-if="error" class="text-muted text-sm">
+          {{ t('home.calendar.loadError') }}
+        </p>
         <p v-else class="text-muted text-sm">
           {{ t('home.calendar.noUpcomingEvents') }}
         </p>

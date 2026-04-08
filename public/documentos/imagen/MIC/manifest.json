@@ -1,0 +1,56 @@
+{
+  "basePath": "/documentos/imagen/MIC",
+  "logoVariants": [
+    {
+      "key": "granate",
+      "slug": "granate",
+      "labelKey": "mic.variants.granate"
+    },
+    {
+      "key": "grisOscuro",
+      "slug": "gris-oscuro",
+      "labelKey": "mic.variants.grisOscuro"
+    },
+    {
+      "key": "grisClaro",
+      "slug": "gris-claro",
+      "labelKey": "mic.variants.grisClaro"
+    },
+    {
+      "key": "azul",
+      "slug": "azul",
+      "labelKey": "mic.variants.azul"
+    },
+    {
+      "key": "beige",
+      "slug": "beige",
+      "labelKey": "mic.variants.beige"
+    },
+    {
+      "key": "blancoPuro",
+      "slug": "blanco",
+      "labelKey": "mic.variants.blancoPuro"
+    }
+  ],
+  "logoSections": [
+    {
+      "titleKey": "mic.logos.horizontalFull",
+      "slug": "horizontal-completo",
+      "zip": "horizontal-completo.zip",
+      "zipLabelKey": "mic.logos.downloadAllHorizontalFull"
+    },
+    {
+      "titleKey": "mic.logos.horizontalShort",
+      "slug": "horizontal-corto",
+      "zip": "horizontal-corto.zip",
+      "zipLabelKey": "mic.logos.downloadAllHorizontalShort"
+    },
+    {
+      "titleKey": "mic.logos.vertical",
+      "slug": "vertical",
+      "zip": "vertical.zip",
+      "zipLabelKey": "mic.logos.downloadAllVertical"
+    }
+  ],
+  "pdf": "MIC.pdf"
+}

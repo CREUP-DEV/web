@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { createNewsletterRequestSchema } from '~~/shared/utils/adminSchemas'
+
 definePageMeta({
   layout: 'admin',
   title: 'Newsletter',
@@ -23,6 +26,7 @@ interface Newsletter {
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
 const { data, refresh } = await useFetch<{
   items: Newsletter[]
@@ -30,13 +34,7 @@ const { data, refresh } = await useFetch<{
   maxDeliveryAttempts: number
 }>('/api/admin/newsletter')
 const items = computed(() => data.value?.items ?? [])
-
-const showModal = ref(false)
-const editingItem = ref<Newsletter | null>(null)
 const isSubmitting = ref(false)
-
-const showDeleteModal = ref(false)
-const itemToDelete = ref<Newsletter | null>(null)
 const isDeleting = ref(false)
 const sendingItemId = ref<string | null>(null)
 let sendingRefreshTimer: ReturnType<typeof setInterval> | null = null
@@ -65,6 +63,40 @@ const form = reactive({
   sendEmail: false,
 })
 
+const {
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  editingItem,
+  itemToDelete,
+  openCreate,
+  openEdit,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<Newsletter>({
+  items,
+  prepareCreate: () => {
+    clearErrors()
+    form.month = getDefaultMonthValue()
+    form.coverImage = ''
+    form.pdfUrl = ''
+    form.active = true
+    form.sendEmail = false
+    imageUpload.setPreview(null)
+    pdfUpload.setFile(null)
+  },
+  prepareEdit: (item) => {
+    clearErrors()
+    form.month = `${item.monthKey}-01`
+    form.coverImage = item.coverImage
+    form.pdfUrl = item.pdfUrl
+    form.active = item.active
+    form.sendEmail = false
+    imageUpload.setPreview(item.coverImage || null)
+    pdfUpload.setFile(item.pdfUrl)
+  },
+})
+
 function buildMonthValue(year: number, monthIndex: number) {
   const mm = String(monthIndex + 1).padStart(2, '0')
   return `${year}-${mm}-01`
@@ -75,7 +107,8 @@ function getMonthKey(value: string) {
 }
 
 function buildMonthDate(monthKey: string) {
-  return new Date(`${monthKey}-01T00:00:00.000Z`)
+  const [yearStr, monthStr] = monthKey.split('-')
+  return new Date(Date.UTC(Number(yearStr), Number(monthStr) - 1, 1))
 }
 
 const reservedMonthKeys = computed(() => {
@@ -104,26 +137,6 @@ function formatDate(iso: string) {
   })
 }
 
-function getErrorMessage(error: unknown, fallback: string) {
-  if (error && typeof error === 'object') {
-    const statusMessage =
-      'statusMessage' in error && typeof error.statusMessage === 'string' ? error.statusMessage : ''
-
-    const dataMessage =
-      'data' in error &&
-      error.data &&
-      typeof error.data === 'object' &&
-      'message' in error.data &&
-      typeof error.data.message === 'string'
-        ? error.data.message
-        : ''
-
-    return dataMessage || statusMessage || fallback
-  }
-
-  return fallback
-}
-
 function formatFailedRecipients(recipients: string[] | null) {
   if (!recipients?.length) {
     return ''
@@ -149,18 +162,6 @@ function getDefaultMonthValue() {
   return buildMonthValue(now.getFullYear(), now.getMonth())
 }
 
-function openCreate() {
-  editingItem.value = null
-  form.month = getDefaultMonthValue()
-  form.coverImage = ''
-  form.pdfUrl = ''
-  form.active = true
-  form.sendEmail = false
-  imageUpload.setPreview(null)
-  pdfUpload.setFile(null)
-  showModal.value = true
-}
-
 async function openCreateFromQuery() {
   if (route.query.open !== 'create') return
 
@@ -172,20 +173,20 @@ async function openCreateFromQuery() {
   await router.replace({ query: nextQuery })
 }
 
-function openEdit(item: Newsletter) {
-  editingItem.value = item
-  form.month = `${item.monthKey}-01`
-  form.coverImage = item.coverImage
-  form.pdfUrl = item.pdfUrl
-  form.active = item.active
-  form.sendEmail = false
-  imageUpload.setPreview(item.coverImage || null)
-  pdfUpload.setFile(item.pdfUrl)
-  showModal.value = true
-}
-
 // Submit
 async function handleSubmit() {
+  const basePayload = {
+    month: form.month,
+    coverImage: form.coverImage,
+    pdfUrl: form.pdfUrl,
+    active: form.active,
+    sendEmail: editingItem.value ? false : form.sendEmail,
+  }
+
+  if (!validate(createNewsletterRequestSchema, basePayload)) {
+    return
+  }
+
   isSubmitting.value = true
   try {
     if (editingItem.value) {
@@ -213,11 +214,12 @@ async function handleSubmit() {
       const msg = response.emailQueued ? 'Newsletter creada y envío iniciado' : 'Newsletter creada'
       toast.add({ title: msg, color: 'success' })
     }
-    showModal.value = false
+    closeModal()
+    clearErrors()
     await refresh()
   } catch (error) {
     toast.add({
-      title: getErrorMessage(error, 'No se pudo guardar la newsletter'),
+      title: getApiErrorMessage(error, 'No se pudo guardar la newsletter'),
       color: 'error',
     })
   } finally {
@@ -238,7 +240,7 @@ async function handleManualSend(item: Newsletter) {
     await refresh()
   } catch (error) {
     toast.add({
-      title: getErrorMessage(error, 'No se pudo enviar la newsletter'),
+      title: getApiErrorMessage(error, 'No se pudo enviar la newsletter'),
       color: 'error',
     })
   } finally {
@@ -246,19 +248,12 @@ async function handleManualSend(item: Newsletter) {
   }
 }
 
-// Delete
-function confirmDelete(item: Newsletter) {
-  itemToDelete.value = item
-  showDeleteModal.value = true
-}
-
 async function handleDelete() {
   if (!itemToDelete.value) return
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/newsletter/${itemToDelete.value.id}`, { method: 'DELETE' })
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
     toast.add({ title: 'Newsletter eliminada', color: 'success' })
   } catch {
@@ -432,7 +427,7 @@ onBeforeUnmount(() => {
       </template>
       <template #body>
         <form class="space-y-5" @submit.prevent="handleSubmit">
-          <UFormField label="Mes *">
+          <UFormField label="Mes *" :error="getFieldError('month')">
             <AdminNewsletterMonthPicker
               v-model="form.month"
               :disabled-months="reservedMonthKeys"
@@ -440,7 +435,7 @@ onBeforeUnmount(() => {
             />
           </UFormField>
 
-          <UFormField label="Imagen de portada *">
+          <UFormField label="Imagen de portada *" :error="getFieldError('coverImage')">
             <div class="flex items-center gap-4">
               <div
                 role="button"
@@ -477,7 +472,7 @@ onBeforeUnmount(() => {
             </div>
           </UFormField>
 
-          <UFormField label="PDF *">
+          <UFormField label="PDF *" :error="getFieldError('pdfUrl')">
             <div class="flex items-center gap-4">
               <UIcon
                 :name="pdfUpload.fileName.value ? 'i-tabler-file-check' : 'i-tabler-file-upload'"
@@ -519,7 +514,7 @@ onBeforeUnmount(() => {
           </UFormField>
 
           <div class="flex justify-end gap-2 pt-2">
-            <UButton variant="outline" @click="showModal = false">Cancelar</UButton>
+            <UButton variant="outline" @click="closeModal">Cancelar</UButton>
             <UButton type="submit" :loading="isSubmitting" :disabled="!canSubmit">
               {{ editingItem ? 'Guardar' : 'Crear' }}
             </UButton>

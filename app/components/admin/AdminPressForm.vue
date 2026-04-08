@@ -79,9 +79,10 @@ const {
 
 const isEditing = computed(() => !!props.article)
 
-// Unsaved changes detection (must be defined before await)
 const hasUnsavedChanges = ref(false)
 defineExpose({ hasUnsavedChanges })
+const isHydratingForm = ref(false)
+const initialFormSnapshot = ref('')
 
 // Fetch supporting data
 const [{ data: tagsData }, { data: mediaData }] = await Promise.all([
@@ -134,6 +135,30 @@ const form = reactive({
     alt: '',
   }),
 })
+
+const buildFormSnapshot = () =>
+  JSON.stringify({
+    type: form.type,
+    image: form.image,
+    pdfUrl: form.pdfUrl,
+    externalUrl: form.externalUrl,
+    mediaOutletId: form.mediaOutletId,
+    active: form.active,
+    tagIds: [...form.tagIds].sort(),
+    publishedAt: calendarDateToDateOnly(publishedAt.value),
+    translations: form.translations.map((translation) => ({
+      locale: translation.locale,
+      title: translation.title,
+      description: translation.description,
+      contentHtml: translation.contentHtml,
+      alt: translation.alt,
+    })),
+  })
+
+const resetUnsavedChangesBaseline = () => {
+  initialFormSnapshot.value = buildFormSnapshot()
+  hasUnsavedChanges.value = false
+}
 
 const typeLabels: Record<PressArticleType, string> = {
   press_release: 'Notas de prensa',
@@ -206,6 +231,7 @@ const getTagName = (tag: Tag) => {
 
 // Populate form from article when editing
 const populateForm = (article: PressArticle) => {
+  isHydratingForm.value = true
   form.type = article.type
   form.image = article.image
   form.pdfUrl = article.pdfUrl
@@ -222,6 +248,10 @@ const populateForm = (article: PressArticle) => {
     contentHtml: '',
     alt: '',
   }) as Translation[]
+  nextTick(() => {
+    resetUnsavedChangesBaseline()
+    isHydratingForm.value = false
+  })
 }
 
 // Watch for article changes (when data loads)
@@ -238,6 +268,7 @@ watch(
   (initialType) => {
     if (!isEditing.value && initialType) {
       form.type = initialType
+      nextTick(resetUnsavedChangesBaseline)
     }
   },
   { immediate: true }
@@ -249,9 +280,10 @@ const handleRemovePdf = () => {
 }
 
 watch(
-  form,
-  () => {
-    hasUnsavedChanges.value = true
+  [() => buildFormSnapshot(), publishedAt],
+  ([snapshot]) => {
+    if (isHydratingForm.value || !initialFormSnapshot.value) return
+    hasUnsavedChanges.value = snapshot !== initialFormSnapshot.value
   },
   { deep: true }
 )

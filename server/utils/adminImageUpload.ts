@@ -35,6 +35,8 @@ const blockedSvgTags = new Set([
   'handler',
 ])
 const svgReferenceAttributes = new Set(['href', 'xlink:href', 'src'])
+type SvgDocument = JSDOM['window']['document']
+type SvgElement = InstanceType<JSDOM['window']['Element']>
 
 const hasUnsafeSvgReference = (value: string) => {
   const normalized = value.trim().toLowerCase()
@@ -113,7 +115,7 @@ function sanitizeSvgContent(data: Buffer): Buffer {
     throw invalidSvgError()
   }
 
-  let svgDocument: JSDOM['window']['document']
+  let svgDocument: SvgDocument
 
   try {
     svgDocument = new JSDOM(sanitized, { contentType: 'image/svg+xml' }).window.document
@@ -130,13 +132,13 @@ function sanitizeSvgContent(data: Buffer): Buffer {
     throw invalidSvgError()
   }
 
-  for (const element of Array.from(svgDocument.querySelectorAll('*'))) {
+  for (const element of Array.from(svgDocument.querySelectorAll('*')) as SvgElement[]) {
     const tagName = element.tagName.toLowerCase()
     if (blockedSvgTags.has(tagName)) {
       throw disallowedSvgError()
     }
 
-    for (const attributeName of element.getAttributeNames()) {
+    for (const attributeName of element.getAttributeNames() as string[]) {
       const normalizedAttributeName = attributeName.toLowerCase()
       const attributeValue = element.getAttribute(attributeName)?.trim() ?? ''
 

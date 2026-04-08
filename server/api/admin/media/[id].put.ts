@@ -10,13 +10,9 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
-import {
-  idRouteParamSchema,
-  updateMediaOutletSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { updateMediaOutletSchema } from '~~/shared/utils/adminSchemas'
 
 const LOGO_UPLOAD_DIR = 'public/prensa/imagenes/medios'
 

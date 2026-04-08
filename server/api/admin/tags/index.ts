@@ -8,7 +8,8 @@ import {
 } from '../../../utils/localizedContent'
 import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import { assertTagSlugAvailable } from '../../../utils/tagMutations'
-import { createTagSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
+import { createTagSchema } from '~~/shared/utils/adminSchemas'
 
 // GET - List all tags
 export default defineEventHandler(async (event) => {

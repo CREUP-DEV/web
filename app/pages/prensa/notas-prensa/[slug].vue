@@ -3,7 +3,9 @@ import type { PressArticle } from '@/composables/usePress'
 
 const { t } = useI18n()
 const route = useRoute()
-const slug = route.params.slug as string
+const localePath = useLocalePath()
+const slug = Array.isArray(route.params.slug) ? route.params.slug[0] : route.params.slug
+if (!slug) throw createError({ statusCode: 404 })
 
 const { data, error } = await usePressArticle(slug)
 
@@ -17,7 +19,7 @@ const article = computed<PressArticle>(() => data.value!.article as PressArticle
 <template>
   <PressArticleDetail
     :article="article"
-    back-to="/prensa/notas-prensa/"
+    :back-to="localePath('/prensa/notas-prensa/')"
     :back-label="t('press.releases.backToList')"
   />
 </template>

@@ -9,7 +9,8 @@ const props = defineProps<{
   description?: string | null
   initials?: string | null
   communityLabel?: string | null
-  logoSrc?: string | null
+  logoLight?: string | null
+  logoDark?: string | null
   website?: {
     href: string
     label: string
@@ -25,9 +26,11 @@ const props = defineProps<{
   copyEmailAriaLabel?: string | null
 }>()
 
+const lightLogo = computed(() => props.logoLight ?? props.logoDark ?? '')
+const darkLogo = computed(() => props.logoDark ?? props.logoLight ?? '')
+
 const emit = defineEmits<{
   (e: 'copy-email', email: string): void
-  (e: 'logo-error', logoSrc: string | null): void
 }>()
 
 const { t } = useI18n()
@@ -55,12 +58,15 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
 
         <div class="relative grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_240px] lg:gap-8">
           <div class="space-y-6">
-            <div
-              class="bg-surface/80 dark:bg-surface/70 inline-flex max-w-full items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-sm ring-1 ring-gray-200/70 backdrop-blur dark:ring-gray-800/70"
+            <UBadge
+              color="neutral"
+              variant="soft"
+              size="md"
+              icon="i-tabler-building-community"
+              class="bg-surface/80 dark:bg-surface/70 inline-flex max-w-full px-4 py-2 text-sm font-medium shadow-sm ring-1 ring-gray-200/70 backdrop-blur dark:ring-gray-800/70"
             >
-              <UIcon name="i-tabler-building-community" class="text-primary size-4 shrink-0" />
               <span class="truncate">{{ eyebrow }}</span>
-            </div>
+            </UBadge>
 
             <div class="space-y-4">
               <h3 class="max-w-3xl text-3xl leading-tight font-semibold sm:text-4xl">
@@ -94,12 +100,12 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
             <div
               class="bg-surface/90 dark:bg-surface/80 mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center rounded-[1.75rem] p-5 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] ring-1 ring-gray-200/70 backdrop-blur lg:mx-0 lg:max-w-55 lg:p-6 dark:ring-gray-800/70"
             >
-              <NuxtImg
-                v-if="logoSrc"
-                :src="logoSrc"
+              <UColorModeImage
+                v-if="lightLogo || darkLogo"
+                :light="lightLogo"
+                :dark="darkLogo"
                 :alt="imageAlt"
                 class="size-full object-contain"
-                @error="emit('logo-error', logoSrc)"
               />
               <UIcon v-else name="i-tabler-building" class="text-muted size-14" />
             </div>
@@ -168,7 +174,7 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
                   <div class="flex items-center gap-2">
                     <a
                       :href="email.href"
-                      class="block truncate text-sm font-medium hover:underline"
+                      class="block text-sm font-medium break-all hover:underline"
                     >
                       {{ email.email }}
                     </a>

@@ -6,11 +6,12 @@ import {
   getRequiredSiteUrl,
 } from '../utils/runtimeConfig'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { contactFormSchema, validateBody } from '../utils/validation'
+import { validateBody } from '../utils/validation'
 import { enforceRateLimit } from '../utils/rateLimit'
 import { getSmtpTransporter } from '../utils/smtpTransporter'
 import { logError } from '../utils/logger'
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
+import { contactFormSchema } from '~~/shared/utils/contactValidation'
 import { normalizeBaseUrl, buildAbsoluteUrl } from '../utils/urlBuilder'
 
 const SPAM_PATTERNS = [

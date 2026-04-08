@@ -10,14 +10,18 @@ const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
 const siteConfig = useSiteConfig()
-const slug = computed(() => String(route.params.slug))
+const slug = computed(() =>
+  Array.isArray(route.params.slug) ? route.params.slug[0] : route.params.slug
+)
+if (!slug.value) throw createError({ statusCode: 404 })
+const resolvedSlug = computed(() => slug.value as string)
 const {
   formatDateRange: formatDateRangeText,
   isDateRangeOngoing,
   isDateRangeUpcoming,
 } = useDatePresets()
 
-const { data, error } = await useEvent(slug)
+const { data, error } = await useEvent(resolvedSlug)
 
 if (error.value) {
   throw createError({
@@ -111,8 +115,6 @@ const galleryImages = computed<EventGalleryImageWithUrl[]>(() =>
 const photosPerPage = 12
 const currentGalleryPage = ref(1)
 const loadedGalleryImages = reactive(new Set<string>())
-const galleryImageAspectRatios = ref<Record<number, number>>({})
-const galleryImageAspectRatioPreloads = new Map<number, Promise<number | null>>()
 
 const totalGalleryImages = computed(() => galleryImages.value.length)
 const totalGalleryPages = computed(() => Math.ceil(totalGalleryImages.value / photosPerPage))
@@ -128,12 +130,8 @@ watch(currentGalleryPage, () => {
 watch(slug, () => {
   currentGalleryPage.value = 1
   loadedGalleryImages.clear()
-  galleryImageAspectRatios.value = {}
-  galleryImageAspectRatioPreloads.clear()
   selectedPhotoIndex.value = 0
   isLightboxOpen.value = false
-  initialLightboxAspectRatio.value = null
-  initialLightboxAspectRatioIndex.value = null
 })
 
 watch(totalGalleryPages, (pageCount) => {
@@ -142,13 +140,8 @@ watch(totalGalleryPages, (pageCount) => {
   }
 })
 
-function onGalleryImageLoad(pageIndex: number, absoluteIndex: number, event?: Event) {
+function onGalleryImageLoad(pageIndex: number) {
   loadedGalleryImages.add(`${currentGalleryPage.value}-${pageIndex}`)
-
-  const image = event?.target as HTMLImageElement | null
-  if (image?.naturalWidth && image.naturalHeight) {
-    galleryImageAspectRatios.value[absoluteIndex] = image.naturalWidth / image.naturalHeight
-  }
 }
 
 function isGalleryImageLoading(index: number) {
@@ -157,68 +150,10 @@ function isGalleryImageLoading(index: number) {
 
 const isLightboxOpen = ref(false)
 const selectedPhotoIndex = ref(0)
-const initialLightboxAspectRatio = ref<number | null>(null)
-const initialLightboxAspectRatioIndex = ref<number | null>(null)
 
-function preloadGalleryImageAspectRatio(index: number, src: string) {
-  const knownRatio = galleryImageAspectRatios.value[index]
-  if (knownRatio && Number.isFinite(knownRatio)) {
-    return Promise.resolve(knownRatio)
-  }
-
-  const existingPreload = galleryImageAspectRatioPreloads.get(index)
-  if (existingPreload) {
-    return existingPreload
-  }
-
-  if (!import.meta.client) {
-    return Promise.resolve(null)
-  }
-
-  const preload = new Promise<number | null>((resolve) => {
-    const image = new Image()
-    const finalize = () => {
-      const ratio =
-        image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : null
-
-      if (ratio) {
-        galleryImageAspectRatios.value[index] = ratio
-      }
-
-      galleryImageAspectRatioPreloads.delete(index)
-      resolve(ratio)
-    }
-
-    image.decoding = 'async'
-    image.onload = finalize
-    image.onerror = finalize
-    image.src = src
-
-    if (image.complete) {
-      finalize()
-    }
-  })
-
-  galleryImageAspectRatioPreloads.set(index, preload)
-  return preload
-}
-
-function openLightbox(event: MouseEvent, index: number, src: string) {
-  const trigger = event.currentTarget as HTMLElement | null
-  const image = trigger?.querySelector('img')
-
-  initialLightboxAspectRatio.value =
-    image?.naturalWidth && image?.naturalHeight ? image.naturalWidth / image.naturalHeight : null
-  initialLightboxAspectRatioIndex.value = index
+function openLightbox(index: number) {
   selectedPhotoIndex.value = index
   isLightboxOpen.value = true
-
-  void preloadGalleryImageAspectRatio(index, src).then((ratio) => {
-    if (selectedPhotoIndex.value !== index || !isLightboxOpen.value || !ratio) return
-
-    initialLightboxAspectRatio.value = ratio
-    initialLightboxAspectRatioIndex.value = index
-  })
 }
 
 function getPhotoAlt(index: number): string {
@@ -429,13 +364,7 @@ function getPhotoAlt(index: number): string {
                   type="button"
                   :aria-label="getPhotoAlt((currentGalleryPage - 1) * photosPerPage + pageIndex)"
                   class="motion-link-card focus-visible:ring-primary group relative aspect-square w-full overflow-hidden rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                  @click="
-                    openLightbox(
-                      $event,
-                      (currentGalleryPage - 1) * photosPerPage + pageIndex,
-                      img.url!
-                    )
-                  "
+                  @click="openLightbox((currentGalleryPage - 1) * photosPerPage + pageIndex)"
                 >
                   <NuxtImg
                     :src="img.url!"
@@ -449,13 +378,7 @@ function getPhotoAlt(index: number): string {
                     placeholder
                     format="webp"
                     quality="72"
-                    @load="
-                      onGalleryImageLoad(
-                        pageIndex,
-                        (currentGalleryPage - 1) * photosPerPage + pageIndex,
-                        $event
-                      )
-                    "
+                    @load="onGalleryImageLoad(pageIndex)"
                   />
 
                   <USkeleton
@@ -494,9 +417,6 @@ function getPhotoAlt(index: number): string {
         v-model:index="selectedPhotoIndex"
         :photos="galleryImages"
         :event-title="event.name"
-        :aspect-ratios="galleryImageAspectRatios"
-        :initial-aspect-ratio="initialLightboxAspectRatio"
-        :initial-aspect-ratio-index="initialLightboxAspectRatioIndex"
       />
     </div>
   </UContainer>

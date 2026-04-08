@@ -17,6 +17,7 @@ const foundationDate = new Date(Date.UTC(2003, 9, 24))
 const fallbackMemberCount = 38
 
 const { t, locale } = useI18n()
+const localePath = useLocalePath()
 
 const { data } = await useFetch<{
   content: AboutPageContent | null
@@ -206,7 +207,7 @@ usePageSeo(
             :label="t('aboutPage.ctaIdentity')"
           />
           <UButton
-            to="/conocenos/miembros"
+            :to="localePath('/conocenos/miembros')"
             color="neutral"
             variant="soft"
             icon="i-tabler-users-group"
@@ -364,7 +365,7 @@ usePageSeo(
 
             <UButton
               class="mt-5"
-              :to="section.to"
+              :to="localePath(section.to)"
               variant="soft"
               icon="i-tabler-arrow-right"
               trailing

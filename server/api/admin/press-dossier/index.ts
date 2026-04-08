@@ -8,8 +8,9 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
-import { updatePressDossierSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
 
 const PDF_UPLOAD_DIR = 'public/prensa/dossier'
 const PRESS_DOSSIER_FILE_SLUG = 'dossier-prensa'

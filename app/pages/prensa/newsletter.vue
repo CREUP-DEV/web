@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { isValidNewsletterEmail } from '~~/shared/utils/newsletterValidation'
+import { newsletterSubscribeSchema } from '~~/shared/utils/newsletterValidation'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const toast = useToast()
+const { fieldErrors, getFieldError: getValidationFieldError, validate } = useZodFormValidation()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const showConfirmedMessage = computed(() => route.query.confirmed === '1')
 const showExpiredConfirmationMessage = computed(() => route.query.confirmed === 'expired')
@@ -52,26 +54,42 @@ const touched = reactive({
 const isSubmitting = ref(false)
 const formSubmitted = ref(false)
 
-const emailValid = computed(() => isValidNewsletterEmail(form.email))
-const consentValid = computed(() => form.consent === true)
-const ageConfirmedValid = computed(() => form.ageConfirmed === true)
+const newsletterPayload = computed(() => ({
+  ageConfirmed: form.ageConfirmed,
+  consent: form.consent,
+  email: form.email.trim(),
+  website: form.website.trim() || undefined,
+}))
 
-function getEmailError(): string | undefined {
-  if (!(touched.email || formSubmitted.value) || emailValid.value) return undefined
-  return form.email.trim().length === 0
-    ? t('newsletterPage.form.errors.emailRequired')
-    : t('newsletterPage.form.errors.emailInvalid')
+watchEffect(() => {
+  validate(newsletterSubscribeSchema, newsletterPayload.value)
+})
+
+type NewsletterField = 'email' | 'consent' | 'ageConfirmed'
+
+const validationFieldOrder: NewsletterField[] = ['email', 'consent', 'ageConfirmed']
+
+function shouldShowError(field: NewsletterField): boolean {
+  return (touched[field] || formSubmitted.value) && !!getValidationFieldError(field)
 }
 
-function getConsentError(): string | undefined {
-  if (!(touched.consent || formSubmitted.value) || consentValid.value) return undefined
-  return t('newsletterPage.form.errors.consentRequired')
-}
+function getFieldError(field: NewsletterField): string | undefined {
+  if (!shouldShowError(field)) return undefined
 
-function getAgeConfirmedError(): string | undefined {
-  if (!(touched.ageConfirmed || formSubmitted.value) || ageConfirmedValid.value) return undefined
+  if (field === 'email') {
+    return form.email.trim().length === 0
+      ? t('newsletterPage.form.errors.emailRequired')
+      : t('newsletterPage.form.errors.emailInvalid')
+  }
+
+  if (field === 'consent') {
+    return t('newsletterPage.form.errors.consentRequired')
+  }
+
   return t('newsletterPage.form.errors.ageConfirmedRequired')
 }
+
+const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
 
 async function handleSubscribe() {
   formSubmitted.value = true
@@ -80,18 +98,11 @@ async function handleSubscribe() {
     return
   }
 
-  if (!emailValid.value) {
-    document.getElementById('newsletter-email')?.focus()
-    return
-  }
-
-  if (!consentValid.value) {
-    document.getElementById('newsletter-consent')?.focus()
-    return
-  }
-
-  if (!ageConfirmedValid.value) {
-    document.getElementById('newsletter-age-confirmed')?.focus()
+  if (!isFormValid.value) {
+    const firstInvalid = validationFieldOrder.find((field) => getValidationFieldError(field))
+    if (firstInvalid) {
+      document.getElementById(`newsletter-${firstInvalid}`)?.focus()
+    }
     return
   }
 
@@ -99,12 +110,7 @@ async function handleSubscribe() {
   try {
     await $fetch('/api/newsletter-subscribe', {
       method: 'POST',
-      body: {
-        ageConfirmed: form.ageConfirmed,
-        consent: form.consent,
-        email: form.email.trim(),
-        website: form.website,
-      },
+      body: newsletterPayload.value,
     })
     toast.add({
       title: t('newsletterPage.form.pendingConfirmation'),
@@ -119,19 +125,8 @@ async function handleSubscribe() {
     touched.consent = false
     touched.email = false
   } catch (error) {
-    const errorTitle =
-      error &&
-      typeof error === 'object' &&
-      'data' in error &&
-      error.data &&
-      typeof error.data === 'object' &&
-      'message' in error.data &&
-      typeof error.data.message === 'string'
-        ? error.data.message
-        : t('newsletterPage.form.errorGeneric')
-
     toast.add({
-      title: errorTitle,
+      title: getApiErrorMessage(error, t('newsletterPage.form.errorGeneric')),
       icon: 'i-tabler-alert-circle',
       color: 'error',
     })
@@ -151,17 +146,32 @@ const LIMIT = 12
 const page = ref(1)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
-const { data } = await useFetch<{ items: Newsletter[]; total: number }>('/api/newsletter', {
-  query: computed(() => ({ limit: LIMIT, offset: offset.value })),
-})
+const { data, pending: archivePendingPage } = await useFetch<{
+  items: Newsletter[]
+  total: number
+}>('/api/newsletter', { query: computed(() => ({ limit: LIMIT, offset: offset.value })) })
 const newsletters = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
 
-function formatMonth(iso: string): string {
-  const d = new Date(iso)
+// Scroll back to archive heading when page changes
+watch(page, () => {
+  nextTick(() => {
+    if (archiveRef.value instanceof HTMLElement) {
+      archiveRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
+})
+
+function formatMonth(dateStr: string): string {
+  // Parse as date-only parts to avoid UTC-offset day-rollback issues.
+  const [yearStr, monthStr] = dateStr.split('-')
+  const year = Number(yearStr)
+  const month = Number(monthStr) - 1
+  const d = new Date(Date.UTC(year, month, 1))
   const formatted = d.toLocaleDateString(t('newsletterPage.dateLocale'), {
     year: 'numeric',
     month: 'long',
+    timeZone: 'UTC',
   })
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
@@ -259,7 +269,10 @@ function formatMonth(iso: string): string {
               />
             </div>
 
-            <UFormField :label="`${t('newsletterPage.form.email')} *`" :error="getEmailError()">
+            <UFormField
+              :label="`${t('newsletterPage.form.email')} *`"
+              :error="getFieldError('email')"
+            >
               <UInput
                 id="newsletter-email"
                 v-model="form.email"
@@ -267,13 +280,13 @@ function formatMonth(iso: string): string {
                 :placeholder="t('newsletterPage.form.emailPlaceholder')"
                 required
                 :disabled="isSubmitting"
-                :color="getEmailError() ? 'error' : undefined"
+                :color="shouldShowError('email') ? 'error' : undefined"
                 class="w-full"
                 @blur="touched.email = true"
               />
             </UFormField>
 
-            <UFormField :error="getConsentError()">
+            <UFormField :error="getFieldError('consent')">
               <UCheckbox
                 id="newsletter-consent"
                 v-model="form.consent"
@@ -295,7 +308,7 @@ function formatMonth(iso: string): string {
               </UCheckbox>
             </UFormField>
 
-            <UFormField :error="getAgeConfirmedError()">
+            <UFormField :error="getFieldError('ageConfirmed')">
               <UCheckbox
                 id="newsletter-age-confirmed"
                 v-model="form.ageConfirmed"
@@ -310,7 +323,7 @@ function formatMonth(iso: string): string {
               color="primary"
               block
               :loading="isSubmitting"
-              :disabled="!emailValid || !consentValid || !ageConfirmedValid || isSubmitting"
+              :disabled="!isFormValid || isSubmitting"
               icon="i-tabler-mail-plus"
             >
               {{
@@ -353,12 +366,18 @@ function formatMonth(iso: string): string {
           {{ t('newsletterPage.archive.title') }}
         </h2>
 
-        <div v-if="newsletters.length === 0" class="text-muted py-12 text-center">
+        <div
+          v-if="newsletters.length === 0 && !archivePendingPage"
+          class="text-muted py-12 text-center"
+        >
           {{ t('newsletterPage.archive.empty') }}
         </div>
 
         <template v-else>
-          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            :class="archivePendingPage ? 'pointer-events-none opacity-50' : ''"
+          >
             <UCard
               v-for="(nl, index) in newsletters"
               :key="nl.id"

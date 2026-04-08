@@ -11,13 +11,9 @@ import {
 } from '../../../utils/adminAssetPublication'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
-import {
-  idRouteParamSchema,
-  updateFeaturedLinkSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { updateFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'
 
 const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/enlaces-destacados'
 

@@ -55,7 +55,10 @@ interface MandateDetailResponse {
   generatedAt?: string | null
 }
 
-const slug = computed(() => route.params.slug as string)
+const slug = computed(() =>
+  Array.isArray(route.params.slug) ? route.params.slug[0] : route.params.slug
+)
+if (!slug.value) throw createError({ statusCode: 404 })
 
 type SlugResponse =
   | ({ ambiguous: false } & MandateDetailResponse)
@@ -167,7 +170,7 @@ const modalAssignmentDuration = computed(() =>
       <header class="mb-8 text-center sm:mb-12">
         <div class="mb-4">
           <UButton
-            to="/conocenos/equipo/historico"
+            :to="localePath('/conocenos/equipo/historico')"
             variant="ghost"
             icon="i-tabler-arrow-left"
             size="sm"

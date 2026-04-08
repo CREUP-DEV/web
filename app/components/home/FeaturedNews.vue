@@ -17,12 +17,16 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 
-const hasProvidedItems = computed(() => Array.isArray(props.items))
+const hasProvidedItems = computed(() => Array.isArray(props.items) && selectedTag.value === null)
 const loadedImageKeys = reactive<Record<string, boolean>>({})
 
 const selectedTag = ref<string | null>(null)
-const { data: pressData, pending } = usePress(null, selectedTag, 4)
+const shouldFetchPress = computed(() => !hasProvidedItems.value)
+const { data: pressData, pending } = usePress(null, selectedTag, 4, undefined, {
+  enabled: shouldFetchPress,
+})
 
 const typeUrlPrefix: Record<PressArticleType, string> = {
   press_release: '/prensa/notas-prensa',
@@ -31,7 +35,7 @@ const typeUrlPrefix: Record<PressArticleType, string> = {
 }
 
 const displayItems = computed<NewsItem[]>(() => {
-  if (props.items && props.items.length > 0) {
+  if (hasProvidedItems.value && props.items && props.items.length > 0) {
     return props.items
   }
   return (
@@ -51,6 +55,8 @@ const isLoading = computed(() => {
   if (hasProvidedItems.value) return false
   return pending.value || pressData.value == null
 })
+
+const getLocalizedItemLink = (to: string) => (to.startsWith('/') ? localePath(to) : to)
 
 const visibleNewsCount = computed(() => displayItems.value.length)
 
@@ -98,7 +104,7 @@ const onTagSelect = (tagSlug: string | null) => {
         </h2>
       </header>
 
-      <HomeTagSelector class="mb-4" @select="onTagSelect" />
+      <HomeTagSelector :selected-slug="selectedTag" class="mb-4" @select="onTagSelect" />
 
       <div
         v-if="isLoading"
@@ -118,7 +124,7 @@ const onTagSelect = (tagSlug: string | null) => {
       <ul v-else class="grid flex-1 gap-3 sm:gap-4" :class="newsGridClass" role="list">
         <li v-for="(item, idx) in displayItems" :key="getItemKey(item)" :class="newsItemClass(idx)">
           <NuxtLink
-            :to="item.to"
+            :to="getLocalizedItemLink(item.to)"
             class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
           >
             <div class="bg-muted relative aspect-video">

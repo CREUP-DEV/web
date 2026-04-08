@@ -14,14 +14,10 @@ import {
   getPreferredTranslationValue,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
-import {
-  idRouteParamSchema,
-  updateFinancialReportSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
 import { FINANCIAL_REPORTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { updateFinancialReportSchema } from '~~/shared/utils/adminSchemas'
 
 const PDF_UPLOAD_DIR = 'public/documentos/informes-economicos'
 

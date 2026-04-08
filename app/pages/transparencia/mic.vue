@@ -1,22 +1,11 @@
 <script setup lang="ts">
+import { DEFAULT_MIC_MANIFEST } from '@/composables/useMicManifest'
+
 const { t } = useI18n()
 const { copyToClipboard } = useCopyToClipboard()
+const { data: micManifest } = await useMicManifest()
 
 usePageSeo('mic.title', 'mic.description')
-
-interface LogoVariant {
-  key: string
-  preview: string
-  svg: string
-  png: string
-}
-
-interface LogoSection {
-  titleKey: string
-  prefix: string
-  zipUrl: string
-  zipLabelKey: string
-}
 
 interface CorporateColor {
   nameKey: string
@@ -25,48 +14,6 @@ interface CorporateColor {
   cmyk: string
   pantone: string
 }
-
-const colorKeys = ['granate', 'grisOscuro', 'grisClaro', 'azul', 'beige', 'blancoPuro'] as const
-
-const BASE = 'https://www.creup.es/documentos/imagen/MIC'
-
-function buildVariants(prefix: string): LogoVariant[] {
-  const variants: { slug: string; key: string }[] = [
-    { slug: 'granate', key: 'granate' },
-    { slug: 'gris-oscuro', key: 'grisOscuro' },
-    { slug: 'gris-claro', key: 'grisClaro' },
-    { slug: 'azul', key: 'azul' },
-    { slug: 'beige', key: 'beige' },
-    { slug: 'blanco', key: 'blancoPuro' },
-  ]
-  return variants.map((v) => ({
-    key: v.key,
-    preview: `${BASE}/${prefix}-${v.slug}-preview.jpg`,
-    svg: `${BASE}/${prefix}-${v.slug}.svg`,
-    png: `${BASE}/${prefix}-${v.slug}.png`,
-  }))
-}
-
-const logoSections: LogoSection[] = [
-  {
-    titleKey: 'mic.logos.horizontalFull',
-    prefix: 'horizontal-completo',
-    zipUrl: `${BASE}/horizontal-completo.zip`,
-    zipLabelKey: 'mic.logos.downloadAllHorizontalFull',
-  },
-  {
-    titleKey: 'mic.logos.horizontalShort',
-    prefix: 'horizontal-corto',
-    zipUrl: `${BASE}/horizontal-corto.zip`,
-    zipLabelKey: 'mic.logos.downloadAllHorizontalShort',
-  },
-  {
-    titleKey: 'mic.logos.vertical',
-    prefix: 'vertical',
-    zipUrl: `${BASE}/vertical.zip`,
-    zipLabelKey: 'mic.logos.downloadAllVertical',
-  },
-]
 
 const corporateColors: CorporateColor[] = [
   {
@@ -105,6 +52,10 @@ const corporateColors: CorporateColor[] = [
     pantone: 'PANTONE Cool Gray 6 C',
   },
 ]
+
+const micAssets = computed(() => micManifest.value ?? DEFAULT_MIC_MANIFEST)
+
+const assetUrl = (path: string) => `${micAssets.value.basePath}/${path}`
 
 const {
   elRef: introRef,
@@ -175,8 +126,8 @@ const copyColorToClipboard = (text: string) =>
         </p>
 
         <div
-          v-for="(section, index) in logoSections"
-          :key="section.prefix"
+          v-for="(section, index) in micAssets.logoSections"
+          :key="section.slug"
           class="mt-8 space-y-4"
           :class="entranceClasses(logosShouldAnimate, logosVisible, logosPending)"
           :style="entranceStyle(logosVisible, logosShouldAnimate, index + 1)"
@@ -190,24 +141,24 @@ const copyColorToClipboard = (text: string) =>
               <thead>
                 <tr class="border-default border-b">
                   <th
-                    v-for="colorKey in colorKeys"
-                    :key="colorKey"
+                    v-for="variant in micAssets.logoVariants"
+                    :key="variant.key"
                     class="text-muted px-2 py-2 text-center font-medium"
                   >
-                    {{ t(`mic.variants.${colorKey}`) }}
+                    {{ t(variant.labelKey) }}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr class="border-default border-b">
                   <td
-                    v-for="variant in buildVariants(section.prefix)"
+                    v-for="variant in micAssets.logoVariants"
                     :key="`preview-${variant.key}`"
                     class="px-2 py-3 text-center"
                   >
                     <img
-                      :src="variant.preview"
-                      :alt="t(`mic.logoAlt`, { version: t(`mic.variants.${variant.key}`) })"
+                      :src="assetUrl(`${section.slug}-${variant.slug}-preview.jpg`)"
+                      :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
                       class="mx-auto h-auto max-h-20 w-auto max-w-full rounded"
                       loading="lazy"
                     />
@@ -215,12 +166,12 @@ const copyColorToClipboard = (text: string) =>
                 </tr>
                 <tr class="border-default border-b">
                   <td
-                    v-for="variant in buildVariants(section.prefix)"
+                    v-for="variant in micAssets.logoVariants"
                     :key="`svg-${variant.key}`"
                     class="px-2 py-2 text-center"
                   >
                     <UButton
-                      :to="variant.svg"
+                      :to="assetUrl(`${section.slug}-${variant.slug}.svg`)"
                       variant="link"
                       size="xs"
                       icon="i-tabler-download"
@@ -232,12 +183,12 @@ const copyColorToClipboard = (text: string) =>
                 </tr>
                 <tr>
                   <td
-                    v-for="variant in buildVariants(section.prefix)"
+                    v-for="variant in micAssets.logoVariants"
                     :key="`png-${variant.key}`"
                     class="px-2 py-2 text-center"
                   >
                     <UButton
-                      :to="variant.png"
+                      :to="assetUrl(`${section.slug}-${variant.slug}.png`)"
                       variant="link"
                       size="xs"
                       icon="i-tabler-download"
@@ -253,22 +204,22 @@ const copyColorToClipboard = (text: string) =>
 
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
             <div
-              v-for="variant in buildVariants(section.prefix)"
+              v-for="variant in micAssets.logoVariants"
               :key="`card-${variant.key}`"
               class="bg-elevated border-default flex flex-col items-center gap-2 rounded-lg border p-3"
             >
               <span class="text-muted text-xs font-medium">
-                {{ t(`mic.variants.${variant.key}`) }}
+                {{ t(variant.labelKey) }}
               </span>
               <img
-                :src="variant.preview"
-                :alt="t(`mic.logoAlt`, { version: t(`mic.variants.${variant.key}`) })"
+                :src="assetUrl(`${section.slug}-${variant.slug}-preview.jpg`)"
+                :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
                 class="h-auto max-h-16 w-auto max-w-full rounded"
                 loading="lazy"
               />
               <div class="flex gap-1">
                 <UButton
-                  :to="variant.svg"
+                  :to="assetUrl(`${section.slug}-${variant.slug}.svg`)"
                   variant="soft"
                   size="xs"
                   icon="i-tabler-download"
@@ -277,7 +228,7 @@ const copyColorToClipboard = (text: string) =>
                   label="SVG"
                 />
                 <UButton
-                  :to="variant.png"
+                  :to="assetUrl(`${section.slug}-${variant.slug}.png`)"
                   variant="soft"
                   size="xs"
                   icon="i-tabler-download"
@@ -291,7 +242,7 @@ const copyColorToClipboard = (text: string) =>
 
           <div class="flex justify-center">
             <UButton
-              :to="section.zipUrl"
+              :to="assetUrl(section.zip)"
               variant="soft"
               icon="i-tabler-file-zip"
               download
@@ -451,7 +402,7 @@ const copyColorToClipboard = (text: string) =>
         </p>
         <div class="mt-6">
           <UButton
-            to="https://www.creup.es/documentos/MIC.pdf"
+            :to="assetUrl(micAssets.pdf)"
             size="lg"
             icon="i-tabler-file-type-pdf"
             download

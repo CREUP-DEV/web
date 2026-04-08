@@ -11,12 +11,7 @@ import {
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
-import {
-  idRouteParamSchema,
-  updateNewsletterSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
   monthKeyToDate,
@@ -26,6 +21,7 @@ import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
 } from '~~/shared/constants/assetPaths'
+import { updateNewsletterSchema } from '~~/shared/utils/adminSchemas'
 
 const COVER_IMAGE_UPLOAD_DIR = 'public/prensa/newsletter/portadas'
 const DOCUMENT_UPLOAD_DIR = 'public/prensa/newsletter/documentos'

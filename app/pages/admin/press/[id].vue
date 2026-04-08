@@ -9,7 +9,10 @@ const router = useRouter()
 const toast = useToast()
 const isSubmitting = ref(false)
 
-const articleId = computed(() => route.params.id as string)
+const articleId = computed(() =>
+  Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
+)
+if (!articleId.value) throw createError({ statusCode: 404 })
 
 const { data, error: fetchError } = await useFetch(`/api/admin/press/${articleId.value}`)
 

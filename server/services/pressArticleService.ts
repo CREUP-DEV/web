@@ -28,6 +28,18 @@ const IMAGE_UPLOAD_DIR = 'public/prensa/imagenes'
 const PDF_UPLOAD_DIR = 'public/prensa/documentos'
 
 type PressArticleData = z.infer<typeof createPressArticleSchema>
+type PressArticleTranslationRow = {
+  locale: string
+  title: string
+  description: string | null
+  contentHtml: string | null
+  alt: string | null
+}
+type PressArticleQueryItem = NonNullable<
+  Awaited<ReturnType<typeof db.query.pressArticles.findFirst>>
+> & {
+  translations: PressArticleTranslationRow[]
+}
 
 const WITH_FULL_RELATIONS = {
   translations: true,
@@ -55,7 +67,7 @@ function buildTranslationValues(
   }))
 }
 
-function formatItem(item: Awaited<ReturnType<typeof db.query.pressArticles.findFirst>>) {
+function formatItem(item: PressArticleQueryItem | null) {
   if (!item) return null
   return {
     ...item,
@@ -73,10 +85,11 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
     const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
     if (!defaultTitle) throw new Error('El título en español es obligatorio')
 
-    const publishedAt = dateOnlyToStorageDate(data.publishedAt ?? dateValueToDateOnly(new Date()))
+    const publishedAt = data.publishedAt ?? dateValueToDateOnly(new Date())
+    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
 
     const completeItem = await db.transaction(async (tx) => {
-      const slug = await generatePressSlug(defaultTitle, publishedAt, { executor: tx })
+      const slug = await generatePressSlug(defaultTitle, publishedAtDate, { executor: tx })
 
       if (data.image) {
         image = await finalizeAdminImage({
@@ -138,10 +151,10 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
           .values(data.tagIds.map((tagId) => ({ pressArticleId: item.id, tagId })))
       }
 
-      return tx.query.pressArticles.findFirst({
+      return (await tx.query.pressArticles.findFirst({
         where: eq(pressArticles.id, item.id),
         with: WITH_FULL_RELATIONS,
-      })
+      })) as PressArticleQueryItem | null
     })
 
     if (data.image && data.image !== image) {
@@ -183,15 +196,14 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
     const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
     if (!defaultTitle) throw new Error('El título en español es obligatorio')
 
-    const publishedAt = data.publishedAt
-      ? dateOnlyToStorageDate(data.publishedAt)
-      : existingItem.publishedAt
+    const publishedAt = data.publishedAt ?? existingItem.publishedAt
+    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
 
     previousImage = existingItem.image
     previousPdfUrl = existingItem.pdfUrl
 
     const item = await db.transaction(async (tx) => {
-      const slug = await generatePressSlug(defaultTitle, publishedAt, {
+      const slug = await generatePressSlug(defaultTitle, publishedAtDate, {
         excludeId: id,
         executor: tx,
       })
@@ -293,10 +305,10 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
         await tx.delete(pressArticleTags).where(eq(pressArticleTags.pressArticleId, id))
       }
 
-      return tx.query.pressArticles.findFirst({
+      return (await tx.query.pressArticles.findFirst({
         where: eq(pressArticles.id, id),
         with: WITH_FULL_RELATIONS,
-      })
+      })) as PressArticleQueryItem | null
     })
 
     if (previousImage !== image) {

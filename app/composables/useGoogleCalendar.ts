@@ -18,24 +18,25 @@ export function useGoogleCalendar() {
   const { locale } = useI18n()
   const localeApiHeaders = useLocaleApiHeaders()
 
+  const key = computed(() => `google-calendar-events-${locale.value}`)
+
   const { data, pending, error, refresh } = useAsyncData<{ events: CalendarEvent[] }>(
-    () => `google-calendar-events-${locale.value}`,
+    key,
     () =>
       $fetch<{ events: CalendarEvent[] }>('/api/calendar', {
         headers: localeApiHeaders.value,
       }),
     {
+      default: () => ({ events: [] as CalendarEvent[] }),
       watch: [locale],
     }
   )
 
   const events = computed(() => data.value?.events ?? [])
-  const isLoading = computed(() => pending.value || data.value == null)
 
   return {
     events,
     pending,
-    isLoading,
     error,
     refresh,
   }

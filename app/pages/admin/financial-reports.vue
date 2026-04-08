@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { createFinancialReportSchema } from '~~/shared/utils/adminSchemas'
 import {
   calendarDateLikeToDateOnly,
   dateValueToDateOnly,
@@ -27,6 +29,7 @@ interface FinancialReport {
 }
 
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -41,13 +44,7 @@ const { data, refresh } = await useFetch<{ items: FinancialReport[] }>(
   '/api/admin/financial-reports'
 )
 const items = computed(() => data.value?.items ?? [])
-
-const showModal = ref(false)
-const editingItem = ref<FinancialReport | null>(null)
 const isSubmitting = ref(false)
-
-const showDeleteModal = ref(false)
-const itemToDelete = ref<FinancialReport | null>(null)
 const isDeleting = ref(false)
 
 const pdfInputRef = ref<HTMLInputElement | null>(null)
@@ -72,6 +69,40 @@ const form = reactive({
   translations: createEmptyTranslationSet(),
 })
 
+const {
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  editingItem,
+  itemToDelete,
+  openCreate,
+  openEdit,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<FinancialReport>({
+  items,
+  prepareCreate: () => {
+    clearErrors()
+    form.pdfUrl = ''
+    form.order = items.value.length
+    form.active = true
+    form.translations = createEmptyTranslationSet()
+    pdfName.value = null
+    approvedAt.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+  },
+  prepareEdit: (item) => {
+    clearErrors()
+    form.pdfUrl = item.pdfUrl
+    form.order = item.order
+    form.active = item.active
+    form.translations = mapTranslationsToForm(item.translations, {
+      title: '',
+    }) as FinancialReportTranslation[]
+    pdfName.value = item.pdfUrl.split('/').pop() ?? null
+    approvedAt.value = valueToCalendarDate(item.approvedAt)
+  },
+})
+
 const calendarDateToDateOnly = (date: CalendarDate) => calendarDateLikeToDateOnly(date)
 
 const valueToCalendarDate = (value: string): CalendarDate => {
@@ -92,10 +123,6 @@ function formatDate(iso: string) {
   })
 }
 
-function getRequiredTitle(translations: FinancialReportTranslation[]) {
-  return getDefaultTranslationValue(translations, 'title')?.trim() ?? ''
-}
-
 function getReportTitle(item: FinancialReport | null) {
   if (!item) return ''
 
@@ -114,51 +141,21 @@ function getAdditionalTranslationLabel(item: FinancialReport) {
   return `${count} idioma adicional${count > 1 ? 'es' : ''}`
 }
 
-const openCreate = () => {
-  editingItem.value = null
-  form.pdfUrl = ''
-  form.order = items.value.length
-  form.active = true
-  form.translations = createEmptyTranslationSet()
-  pdfName.value = null
-  approvedAt.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
-  showModal.value = true
-}
-
-const openEdit = (item: FinancialReport) => {
-  editingItem.value = item
-  form.pdfUrl = item.pdfUrl
-  form.order = item.order
-  form.active = item.active
-  form.translations = mapTranslationsToForm(item.translations, {
-    title: '',
-  }) as FinancialReportTranslation[]
-  pdfName.value = item.pdfUrl.split('/').pop() ?? null
-  approvedAt.value = valueToCalendarDate(item.approvedAt)
-  showModal.value = true
-}
-
 const handleSubmit = async () => {
-  if (!getRequiredTitle(form.translations)) {
-    toast.add({ title: 'El título en español es obligatorio', color: 'error' })
-    return
+  const payload = {
+    pdfUrl: form.pdfUrl,
+    order: form.order,
+    active: form.active,
+    approvedAt: calendarDateToDateOnly(approvedAt.value),
+    translations: filterNonEmptyTranslations(form.translations, 'title'),
   }
 
-  if (!form.pdfUrl) {
-    toast.add({ title: 'Debes subir un PDF', color: 'error' })
+  if (!validate(createFinancialReportSchema, payload)) {
     return
   }
 
   isSubmitting.value = true
   try {
-    const payload = {
-      pdfUrl: form.pdfUrl,
-      order: form.order,
-      active: form.active,
-      approvedAt: calendarDateToDateOnly(approvedAt.value),
-      translations: filterNonEmptyTranslations(form.translations, 'title'),
-    }
-
     if (editingItem.value) {
       await $fetch(`/api/admin/financial-reports/${editingItem.value.id}`, {
         method: 'PUT',
@@ -173,18 +170,14 @@ const handleSubmit = async () => {
       toast.add({ title: 'Informe creado', color: 'success' })
     }
 
-    showModal.value = false
+    closeModal()
+    clearErrors()
     await refresh()
-  } catch {
-    toast.add({ title: 'No se pudo guardar el informe', color: 'error' })
+  } catch (error) {
+    toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el informe'), color: 'error' })
   } finally {
     isSubmitting.value = false
   }
-}
-
-const confirmDelete = (item: FinancialReport) => {
-  itemToDelete.value = item
-  showDeleteModal.value = true
 }
 
 const handleDelete = async () => {
@@ -196,8 +189,7 @@ const handleDelete = async () => {
       method: 'DELETE',
     })
     toast.add({ title: 'Informe eliminado', color: 'success' })
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
   } catch {
     toast.add({ title: 'No se pudo eliminar el informe', color: 'error' })
@@ -334,7 +326,7 @@ const handlePdfSelect = async (event: Event) => {
           <form class="space-y-5" @submit.prevent="handleSubmit">
             <div class="space-y-4">
               <div
-                v-for="translation in form.translations"
+                v-for="(translation, index) in form.translations"
                 :key="translation.locale"
                 class="rounded-lg border p-4"
               >
@@ -352,7 +344,10 @@ const handlePdfSelect = async (event: Event) => {
                   <span v-else class="text-muted text-xs">(opcional)</span>
                 </div>
 
-                <UFormField :label="isDefaultLocale(translation.locale) ? 'Título *' : 'Título'">
+                <UFormField
+                  :label="isDefaultLocale(translation.locale) ? 'Título *' : 'Título'"
+                  :error="getFieldError(`translations.${index}.title`)"
+                >
                   <UInput
                     v-model="translation.title"
                     class="w-full"
@@ -366,11 +361,11 @@ const handlePdfSelect = async (event: Event) => {
               </div>
             </div>
 
-            <UFormField label="Fecha de aprobación *">
+            <UFormField label="Fecha de aprobación *" :error="getFieldError('approvedAt')">
               <UInputDate v-model="approvedAt" class="w-full" />
             </UFormField>
 
-            <UFormField label="Documento PDF *">
+            <UFormField label="Documento PDF *" :error="getFieldError('pdfUrl')">
               <div
                 v-if="pdfName"
                 class="bg-muted/30 mb-2 flex items-center gap-2 rounded-lg border p-3"

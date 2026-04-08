@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
+
 definePageMeta({
   layout: 'admin',
   title: 'Dossier de prensa',
@@ -11,6 +14,7 @@ interface PressDossierItem {
 }
 
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
 const { data: dossierData, refresh: refreshDossier } = await useFetch<{
   item: PressDossierItem | null
@@ -83,8 +87,12 @@ const uploadPdf = async (file: File) => {
 }
 
 const saveDossier = async () => {
-  if (form.active && !selectedPdfFile.value && !form.pdfUrl) {
-    toast.add({ title: 'Debes subir un PDF para activar el dossier', color: 'error' })
+  if (
+    !validate(updatePressDossierSchema, {
+      pdfUrl: form.pdfUrl,
+      active: form.active,
+    })
+  ) {
     return
   }
 
@@ -97,19 +105,22 @@ const saveDossier = async () => {
       form.pdfUrl = result.storagePath
     }
 
+    const payload = {
+      pdfUrl: form.pdfUrl,
+      active: form.active,
+    }
+
     await $fetch('/api/admin/press-dossier', {
       method: 'PUT',
-      body: {
-        pdfUrl: form.pdfUrl,
-        active: form.active,
-      },
+      body: payload,
     })
 
     await refreshDossier()
+    clearErrors()
     toast.add({ title: 'Dossier guardado', color: 'success' })
   } catch (error) {
     console.error('Error saving press dossier:', error)
-    toast.add({ title: 'No se pudo guardar el dossier', color: 'error' })
+    toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el dossier'), color: 'error' })
   } finally {
     isUploadingPdf.value = false
     isSaving.value = false
@@ -151,48 +162,50 @@ const saveDossier = async () => {
                 </div>
               </div>
 
-              <div class="flex flex-wrap gap-2">
-                <input
-                  ref="pdfInputRef"
-                  type="file"
-                  accept=".pdf"
-                  class="hidden"
-                  @change="handlePdfSelect"
-                />
+              <UFormField :error="getFieldError('pdfUrl')">
+                <div class="flex flex-wrap gap-2">
+                  <input
+                    ref="pdfInputRef"
+                    type="file"
+                    accept=".pdf"
+                    class="hidden"
+                    @change="handlePdfSelect"
+                  />
 
-                <UButton
-                  type="button"
-                  variant="outline"
-                  icon="i-tabler-upload"
-                  :loading="isUploadingPdf"
-                  @click="triggerPdfUpload"
-                >
-                  {{ form.pdfUrl ? 'Cambiar PDF' : 'Subir PDF' }}
-                </UButton>
+                  <UButton
+                    type="button"
+                    variant="outline"
+                    icon="i-tabler-upload"
+                    :loading="isUploadingPdf"
+                    @click="triggerPdfUpload"
+                  >
+                    {{ form.pdfUrl ? 'Cambiar PDF' : 'Subir PDF' }}
+                  </UButton>
 
-                <UButton
-                  v-if="form.pdfUrl"
-                  :to="form.pdfUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="ghost"
-                  color="neutral"
-                  icon="i-tabler-external-link"
-                >
-                  Ver PDF actual
-                </UButton>
+                  <UButton
+                    v-if="form.pdfUrl"
+                    :to="form.pdfUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="ghost"
+                    color="neutral"
+                    icon="i-tabler-external-link"
+                  >
+                    Ver PDF actual
+                  </UButton>
 
-                <UButton
-                  v-if="form.pdfUrl || pendingPdfName"
-                  type="button"
-                  variant="ghost"
-                  color="error"
-                  icon="i-tabler-trash"
-                  @click="clearPdf"
-                >
-                  Quitar PDF
-                </UButton>
-              </div>
+                  <UButton
+                    v-if="form.pdfUrl || pendingPdfName"
+                    type="button"
+                    variant="ghost"
+                    color="error"
+                    icon="i-tabler-trash"
+                    @click="clearPdf"
+                  >
+                    Quitar PDF
+                  </UButton>
+                </div>
+              </UFormField>
             </div>
 
             <div class="rounded-xl border px-4 py-3">

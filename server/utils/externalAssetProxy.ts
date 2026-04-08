@@ -305,6 +305,7 @@ export const proxyExternalAssetBySource = async (
 ) => {
   const messages = getMessages(event)
   const method = getMethod(event).toUpperCase()
+  const requestHeaders = new Headers()
   if (method !== 'GET' && method !== 'HEAD') {
     throw createError({
       statusCode: 405,
@@ -406,7 +407,6 @@ export const proxyExternalAssetBySource = async (
   }
 
   try {
-    const requestHeaders = new Headers()
     requestHeaders.set('accept', getAssetAcceptHeader(type))
 
     const rangeHeader = getHeader(event, 'range')

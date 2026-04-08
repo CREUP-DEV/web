@@ -13,19 +13,14 @@ const { t } = useI18n()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 const LIMIT = 12
-const selectedTag = ref<string | null>(null)
-const page = ref(1)
+const { page, selectTag, selectedTag, tagQuery } = usePressArchiveFilters(() => props.type)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
-const { data, pending, error } = usePress(props.type, selectedTag, LIMIT, offset)
+const { data, pending, error } = usePress(props.type, tagQuery, LIMIT, offset)
 
 const articles = computed(() => data.value?.articles ?? [])
 const total = computed(() => data.value?.total ?? 0)
 const isLoading = computed(() => pending.value || data.value == null)
-
-watch(selectedTag, () => {
-  page.value = 1
-})
 
 const typeUrlPrefix: Record<PressArticleType, string> = {
   press_release: '/prensa/notas-prensa',
@@ -40,10 +35,6 @@ const formatDate = (iso: string) => {
     day: 'numeric',
   })
 }
-
-const onTagSelect = (tagSlug: string | null) => {
-  selectedTag.value = tagSlug
-}
 </script>
 
 <template>
@@ -54,7 +45,7 @@ const onTagSelect = (tagSlug: string | null) => {
         <p class="text-muted mt-2 max-w-2xl text-lg">{{ description }}</p>
       </header>
 
-      <HomeTagSelector :type="type" class="mb-6" @select="onTagSelect" />
+      <HomeTagSelector :type="type" :selected-slug="selectedTag" class="mb-6" @select="selectTag" />
 
       <div
         v-if="isLoading"
