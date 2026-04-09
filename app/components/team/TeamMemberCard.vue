@@ -13,7 +13,6 @@ interface Member {
 defineProps<{
   member: Member
   displayName: string
-  areaLabel?: string
   viewProfileAriaLabel: string
   copyEmailAriaLabel: string
   publicAgendaAriaLabel?: string
@@ -28,6 +27,11 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+function encodeEmail(email: string) {
+  const [user = '', domain = ''] = email.split('@')
+  return { eu: btoa(user), ed: btoa(domain) }
+}
 
 const cardClass =
   'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl p-5 ring-1 ring-gray-200/50 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50'
@@ -65,7 +69,6 @@ const triggerClass =
           {{ member.denomination }}
         </p>
         <p class="text-foreground mt-1 font-semibold">{{ displayName }}</p>
-        <p v-if="areaLabel" class="text-muted mt-1 text-xs">{{ areaLabel }}</p>
       </div>
     </component>
 
@@ -77,7 +80,7 @@ const triggerClass =
         @click="emit('copyEmail', member.email)"
       >
         <UIcon name="i-tabler-mail" class="size-4" />
-        <span aria-hidden="true" class="text-center break-all">{{ member.email }}</span>
+        <ObfuscatedEmail v-bind="encodeEmail(member.email)" class="text-center break-all" />
       </button>
 
       <UButton

@@ -8,12 +8,17 @@ import { logError } from '../utils/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicRouteVaryHeaders,
+} from '../utils/publicRouteCache'
 import { publicPaginationQuerySchema, validateQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 
 export default defineCachedEventHandler(
   async (event) => {
+    setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
     const { limit, offset } = validateQuery(event, publicPaginationQuerySchema)
 

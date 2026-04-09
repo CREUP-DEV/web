@@ -29,7 +29,7 @@ const verifyAdminAccess = async () => {
     await $fetch('/api/admin/session')
     await navigateTo('/admin')
   } catch {
-    error.value = 'Esta cuenta ha iniciado sesión, pero no tiene acceso al panel de administración'
+    error.value = 'No tienes permiso para acceder a esta página'
   } finally {
     isCheckingAccess.value = false
   }
@@ -80,13 +80,6 @@ const handleLogin = async () => {
       </header>
 
       <UAlert v-if="error" color="error" :title="error" class="mt-4" />
-
-      <UAlert
-        v-if="isLoggedIn && !isCheckingAccess && error"
-        color="warning"
-        title="Sesión iniciada sin permisos"
-        description="Cierra sesión y accede con una cuenta autorizada para entrar al panel."
-      />
 
       <UButton
         block

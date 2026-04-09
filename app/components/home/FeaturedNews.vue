@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { PressArticle, PressArticleType } from '@/composables/usePress'
+import type { PressArticle } from '@/composables/usePress'
+import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 
 type NewsItem = {
   title: string
@@ -28,12 +29,6 @@ const { data: pressData, pending } = usePress(null, selectedTag, 4, undefined, {
   enabled: shouldFetchPress,
 })
 
-const typeUrlPrefix: Record<PressArticleType, string> = {
-  press_release: '/prensa/notas-prensa',
-  statement: '/prensa/comunicados',
-  media_appearance: '/prensa/en-los-medios',
-}
-
 const displayItems = computed<NewsItem[]>(() => {
   if (hasProvidedItems.value && props.items && props.items.length > 0) {
     return props.items
@@ -42,7 +37,7 @@ const displayItems = computed<NewsItem[]>(() => {
     pressData.value?.articles.map((a: PressArticle) => ({
       title: a.title,
       image: a.image,
-      to: `${typeUrlPrefix[a.type]}/${a.slug}`,
+      to: `${getPressArticlePublicListPath(a.type)}/${a.slug}`,
       alt: a.alt || undefined,
       description: a.description || undefined,
       mediaOutletName: a.mediaOutlet?.name,

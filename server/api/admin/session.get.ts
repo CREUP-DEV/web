@@ -1,8 +1,8 @@
 import { defineEventHandler, setHeader } from 'h3'
-import { getAdminSession } from '../../utils/requireAuth'
+import { requireAuth } from '../../utils/requireAuth'
 
 export default defineEventHandler(async (event) => {
-  getAdminSession(event)
+  await requireAuth(event)
   setHeader(event, 'cache-control', 'no-store')
 
   return {

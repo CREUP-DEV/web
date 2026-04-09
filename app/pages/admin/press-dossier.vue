@@ -184,7 +184,8 @@ const saveDossier = async () => {
 
                   <UButton
                     v-if="form.pdfUrl"
-                    :to="form.pdfUrl"
+                    :href="form.pdfUrl"
+                    external
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="ghost"

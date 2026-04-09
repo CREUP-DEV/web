@@ -137,7 +137,7 @@ If a handler becomes hard to read, extract helpers into `server/utils/`.
 
 ### Admin Auth
 
-- `/api/admin/**` is protected globally by `server/middleware/admin-auth.ts`.
+- `/api/admin/**` is protected globally by the server handler configured in `nuxt.config.ts` (`server/handlers/admin-auth.ts`).
 - `requireAuth(event)` is still the shared way to obtain the verified session inside handlers.
 - The middleware and helper cache the session on `event.context.adminSession`; do not re-implement auth checks per route.
 - **Authorization model**: Google OAuth controls who can authenticate (only accounts that pass Google's flow). Authorization (who may access the admin area) is controlled by two complementary mechanisms:
@@ -213,4 +213,4 @@ ci: run lint and tests on push
 - No `ADMIN_EMAIL_DOMAIN` or domain-based access checks were introduced.
 - Added or updated translations when public copy changed.
 - Accessibility was verified.
-- Lint passes (`pnpm lint:fix`).
+- Lint passes (use `pnpm lint:fix` to check).

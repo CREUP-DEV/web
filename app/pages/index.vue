@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { OgImageComponents } from '#og-image/components'
 import { useHomeData } from '@/composables/useHomeData'
 import { useGoogleCalendar } from '@/composables/useGoogleCalendar'
-import { usePress, type PressArticle, type PressArticleType } from '@/composables/usePress'
+import { usePress, type PressArticle } from '@/composables/usePress'
+import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -14,16 +14,10 @@ const { data: featuredPressData } = usePress(null, undefined, 4)
 const carouselItems = computed(() => homeData.value?.carousel ?? [])
 const links = computed(() => homeData.value?.featuredLinks ?? [])
 const featuredNewsItems = computed(() => {
-  const typeUrlPrefix: Record<PressArticleType, string> = {
-    press_release: '/prensa/notas-prensa',
-    statement: '/prensa/comunicados',
-    media_appearance: '/prensa/en-los-medios',
-  }
-
   return (featuredPressData.value?.articles ?? []).map((article: PressArticle) => ({
     title: article.title,
     image: article.image,
-    to: localePath(`${typeUrlPrefix[article.type]}/${article.slug}`),
+    to: localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`),
     alt: article.alt || undefined,
     description: article.description || undefined,
     mediaOutletName: article.mediaOutlet?.name,
@@ -31,17 +25,7 @@ const featuredNewsItems = computed(() => {
   }))
 })
 
-const homeOgImageComponent = 'NuxtSeo' as keyof OgImageComponents
-
-defineOgImage(homeOgImageComponent, {
-  title: t('meta.title'),
-  description: t('meta.description'),
-})
-
 usePageSeo('meta.title', 'meta.description')
-useSeoMeta({
-  twitterCard: 'summary_large_image',
-})
 </script>
 
 <template>

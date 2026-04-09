@@ -7,11 +7,16 @@ import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { getRequestLocaleContext } from '../utils/requestLocale'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicRouteVaryHeaders,
+} from '../utils/publicRouteCache'
 import { tagsListQuerySchema, validateQuery } from '../utils/validation'
 
 export default defineCachedEventHandler(
   async (event) => {
+    setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
     const query = validateQuery(event, tagsListQuerySchema)
     const type = query.type

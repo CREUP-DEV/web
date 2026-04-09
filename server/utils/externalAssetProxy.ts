@@ -23,6 +23,7 @@ interface ExternalAssetProxyUrlOptions {
 }
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
+const CACHE_CONTROL_FLOOR_SECONDS = 24 * 60 * 60
 
 const PROXIED_PATH_PREFIXES = INTERNAL_ASSET_PROXY_PATH_BASES.map((path) => `${path}/`)
 
@@ -70,6 +71,14 @@ const getMessages = (event?: H3Event) => {
   return pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
 }
 
+interface CachedExternalAssetProxyConfig {
+  allowedOrigins: Set<string>
+  baseOrigin: string | null
+  baseUrl: string
+}
+
+let cachedExternalAssetProxyConfig: CachedExternalAssetProxyConfig | null = null
+
 const normalizeOrigin = (value: string) => {
   try {
     return new URL(value).origin
@@ -89,6 +98,30 @@ const parseAllowedOrigins = (value: string) => {
   }
 
   return origins
+}
+
+const getExternalAssetProxyConfig = (event?: H3Event) => {
+  if (cachedExternalAssetProxyConfig) {
+    return cachedExternalAssetProxyConfig
+  }
+
+  const baseUrl = getRequiredExternalApiBaseUrl(event, getMessages(event).proxyNotConfigured)
+  const baseOrigin = normalizeOrigin(baseUrl)
+  const allowedOrigins = parseAllowedOrigins(
+    getRequiredExternalAssetProxyAllowedOrigins(event, getMessages(event).proxyNotConfigured)
+  )
+
+  if (baseOrigin) {
+    allowedOrigins.add(baseOrigin)
+  }
+
+  cachedExternalAssetProxyConfig = {
+    allowedOrigins,
+    baseOrigin,
+    baseUrl,
+  }
+
+  return cachedExternalAssetProxyConfig
 }
 
 const resolveSourceUrl = (src: string, baseUrl: string) => {
@@ -125,7 +158,7 @@ const getDefaultAssetPathBase = (type: ExternalAssetType) =>
   type === 'image' ? '/imagenes/externas' : '/documentos/externos'
 
 const getConfiguredBaseUrl = (event?: H3Event) => {
-  return getRequiredExternalApiBaseUrl(event, getMessages(event).proxyNotConfigured)
+  return getExternalAssetProxyConfig(event).baseUrl
 }
 
 const buildAssetPath = (pathBase: string, pathname: string, search = '') => {
@@ -155,7 +188,7 @@ const buildSemanticAssetPath = (
     sourceUrl.hash = ''
     const pathParts = { pathname: sourceUrl.pathname, search: sourceUrl.search }
 
-    if (configuredBaseUrl && normalizeOrigin(configuredBaseUrl) === sourceUrl.origin) {
+    if (getExternalAssetProxyConfig(options.event).baseOrigin === sourceUrl.origin) {
       return buildAssetPath(pathBase, pathParts.pathname, pathParts.search)
     }
 
@@ -247,6 +280,87 @@ const getMaxBytesForType = (event: H3Event, type: ExternalAssetType) => {
   return getRequiredExternalAssetProxyPdfMaxBytes(event)
 }
 
+interface ParsedCacheControl {
+  hasNoCache: boolean
+  hasNoStore: boolean
+  maxAgeSeconds: number | null
+  sMaxAgeSeconds: number | null
+}
+
+const parseCacheControlHeader = (value: string): ParsedCacheControl | null => {
+  let maxAgeSeconds: number | null = null
+  let sMaxAgeSeconds: number | null = null
+  let hasNoCache = false
+  let hasNoStore = false
+  let sawSupportedDirective = false
+
+  for (const directive of value.split(',')) {
+    const normalizedDirective = directive.trim().toLowerCase()
+
+    if (!normalizedDirective) {
+      continue
+    }
+
+    if (normalizedDirective === 'no-cache') {
+      hasNoCache = true
+      sawSupportedDirective = true
+      continue
+    }
+
+    if (normalizedDirective === 'no-store') {
+      hasNoStore = true
+      sawSupportedDirective = true
+      continue
+    }
+
+    const maxAgeMatch = /^(s-maxage|max-age)=(\d+)$/.exec(normalizedDirective)
+    if (maxAgeMatch) {
+      const seconds = Number(maxAgeMatch[2])
+      if (Number.isFinite(seconds)) {
+        sawSupportedDirective = true
+        if (maxAgeMatch[1] === 's-maxage') {
+          sMaxAgeSeconds = seconds
+        } else {
+          maxAgeSeconds = seconds
+        }
+      }
+    }
+  }
+
+  if (!sawSupportedDirective) {
+    return null
+  }
+
+  return {
+    hasNoCache,
+    hasNoStore,
+    maxAgeSeconds,
+    sMaxAgeSeconds,
+  }
+}
+
+const buildCacheControlHeader = (upstreamCacheControl: string | null) => {
+  if (!upstreamCacheControl) {
+    return DEFAULT_CACHE_CONTROL
+  }
+
+  const parsed = parseCacheControlHeader(upstreamCacheControl)
+  if (!parsed) {
+    return DEFAULT_CACHE_CONTROL
+  }
+
+  if (parsed.hasNoCache || parsed.hasNoStore) {
+    return DEFAULT_CACHE_CONTROL
+  }
+
+  const maxAgeSeconds = Math.max(parsed.maxAgeSeconds ?? -1, parsed.sMaxAgeSeconds ?? -1)
+  if (maxAgeSeconds >= CACHE_CONTROL_FLOOR_SECONDS) {
+    return upstreamCacheControl
+  }
+
+  return DEFAULT_CACHE_CONTROL
+}
+
 const buildOutgoingHeaders = (
   upstreamResponse: Response,
   type: ExternalAssetType,
@@ -254,8 +368,10 @@ const buildOutgoingHeaders = (
 ) => {
   const headers = new Headers()
 
-  const cacheControl = upstreamResponse.headers.get('cache-control') || DEFAULT_CACHE_CONTROL
-  headers.set('cache-control', cacheControl)
+  headers.set(
+    'cache-control',
+    buildCacheControlHeader(upstreamResponse.headers.get('cache-control'))
+  )
   headers.set('x-content-type-options', 'nosniff')
 
   const contentType = upstreamResponse.headers.get('content-type')
@@ -290,9 +406,13 @@ const buildOutgoingHeaders = (
     headers.set('last-modified', lastModified)
   }
 
-  const contentDisposition = upstreamResponse.headers.get('content-disposition')
-  if (contentDisposition) {
-    headers.set('content-disposition', contentDisposition)
+  if (type === 'pdf') {
+    headers.set('content-disposition', 'attachment')
+  } else {
+    const contentDisposition = upstreamResponse.headers.get('content-disposition')
+    if (contentDisposition) {
+      headers.set('content-disposition', contentDisposition)
+    }
   }
 
   return headers
@@ -314,12 +434,7 @@ export const proxyExternalAssetBySource = async (
   }
 
   const normalizedSource = source.trim()
-  const configuredBaseUrl = getConfiguredBaseUrl(event)
-  const configuredBaseOrigin = normalizeOrigin(configuredBaseUrl)
-  const allowedOrigins = parseAllowedOrigins(getRequiredExternalAssetProxyAllowedOrigins(event))
-  if (configuredBaseOrigin) {
-    allowedOrigins.add(configuredBaseOrigin)
-  }
+  const { allowedOrigins, baseUrl: configuredBaseUrl } = getExternalAssetProxyConfig(event)
 
   if (allowedOrigins.size === 0) {
     throw createError({

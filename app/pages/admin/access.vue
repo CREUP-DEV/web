@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getInitials } from '@/utils/initials'
+
 definePageMeta({
   layout: 'admin',
   title: 'Accesos',
@@ -38,6 +40,8 @@ const isSubmitting = ref(false)
 const isTogglingId = ref<string | null>(null)
 const isDeleting = ref(false)
 const itemToDelete = ref<AdminAccessItem | null>(null)
+const accessImageFailures = reactive<Record<string, boolean>>({})
+const accessImageLoaded = reactive<Record<string, boolean>>({})
 
 const form = reactive({
   email: '',
@@ -80,6 +84,18 @@ const getSourceLabel = (source: AdminAccessItem['source']) => {
     default:
       return 'Desde panel'
   }
+}
+
+const getAccessInitials = (item: AdminAccessItem) => {
+  return getInitials(item.name?.trim() || item.email.trim())
+}
+
+const markAccessImageFailed = (id: string) => {
+  accessImageFailures[id] = true
+}
+
+const markAccessImageLoaded = (id: string) => {
+  accessImageLoaded[id] = true
 }
 
 const openCreateModal = () => {
@@ -207,17 +223,23 @@ const handleDelete = async () => {
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-start gap-4">
             <div
-              class="bg-muted flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full"
+              class="bg-muted text-muted-foreground relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full"
             >
+              <span class="text-sm font-semibold">
+                {{ getAccessInitials(item) }}
+              </span>
               <img
-                v-if="item.image"
+                v-if="item.image && !accessImageFailures[item.id]"
                 :src="item.image"
-                :alt="item.name ? `Foto de perfil de ${item.name}` : 'Foto de perfil de Google'"
-                class="size-full object-cover"
+                alt=""
+                aria-hidden="true"
+                class="absolute inset-0 size-full object-cover transition-opacity"
+                :class="accessImageLoaded[item.id] ? 'opacity-100' : 'opacity-0'"
                 loading="lazy"
                 decoding="async"
+                @load="markAccessImageLoaded(item.id)"
+                @error="markAccessImageFailed(item.id)"
               />
-              <UIcon v-else name="i-tabler-user" class="text-muted size-7" />
             </div>
 
             <div class="min-w-0 space-y-2">

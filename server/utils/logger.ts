@@ -7,24 +7,88 @@ interface LogMeta {
   [key: string]: unknown
 }
 
+const SENSITIVE_KEY_PATTERN =
+  /(?:^|[_-])(password|pass|secret|token|authorization|cookie|apikey|api_key|access_token|refresh_token|confirm_token|unsubscribe_token)(?:$|[_-])/i
+const EMAIL_KEY_PATTERN = /(?:^|[_-])email(?:$|[_-])/i
+const EMAIL_VALUE_PATTERN = /[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return (
+    Boolean(value) && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype
+  )
+}
+
+function sanitizeLogString(value: string) {
+  return value.replace(EMAIL_VALUE_PATTERN, '[REDACTED_EMAIL]')
+}
+
+function sanitizeLogValue(value: unknown): unknown {
+  if (value === null || value === undefined) {
+    return value
+  }
+
+  if (typeof value === 'string') {
+    return sanitizeLogString(value)
+  }
+
+  if (typeof value !== 'object') {
+    return value
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString()
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeLogValue(item))
+  }
+
+  if (value instanceof Error) {
+    return {
+      message: sanitizeLogString(value.message),
+      name: value.name,
+      stack: value.stack ? sanitizeLogString(value.stack) : undefined,
+    }
+  }
+
+  if (!isPlainObject(value)) {
+    return value
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([entryKey, entryValue]) => {
+      const normalizedKey = entryKey.toLowerCase()
+      const shouldRedact =
+        SENSITIVE_KEY_PATTERN.test(normalizedKey) || EMAIL_KEY_PATTERN.test(normalizedKey)
+
+      if (shouldRedact) {
+        return [entryKey, '[REDACTED]']
+      }
+
+      return [entryKey, sanitizeLogValue(entryValue)]
+    })
+  )
+}
+
 function serializeError(error: unknown) {
   if (!(error instanceof Error)) {
-    return error
+    return sanitizeLogValue(error)
   }
 
   return {
-    message: error.message,
+    message: sanitizeLogString(error.message),
     name: error.name,
-    stack: error.stack,
+    stack: error.stack ? sanitizeLogString(error.stack) : undefined,
   }
 }
 
 function buildLogPayload(level: LogLevel, scope: string, meta: LogMeta = {}, event?: H3Event) {
+  const sanitizedMeta = sanitizeLogValue(meta) as Record<string, unknown>
   const payload: Record<string, unknown> = {
     level,
     scope,
     timestamp: new Date().toISOString(),
-    ...meta,
+    ...sanitizedMeta,
   }
 
   if (event) {

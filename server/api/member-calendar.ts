@@ -1,76 +1,106 @@
-import { defineEventHandler } from 'h3'
+import { createError, setHeader } from 'h3'
 import { type GoogleCalendarEvent, transformGoogleCalendarItems } from '../utils/calendarEvents'
 import { getRequiredGoogleCalendarApiKey } from '../utils/googleCalendarConfig'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
 import { assertMemberCalendarIsPublic, normalizeMemberCalendarId } from '../utils/memberCalendar'
 import { getRequestLocaleContext } from '../utils/requestLocale'
+import {
+  buildPublicRouteCacheKey,
+  PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicRouteVaryHeaders,
+} from '../utils/publicRouteCache'
 import { memberCalendarQuerySchema, validateQuery } from '../utils/validation'
 
 interface GoogleCalendarResponse {
   items: GoogleCalendarEvent[]
 }
 
-export default defineEventHandler(async (event) => {
-  const { calendarId } = validateQuery(event, memberCalendarQuerySchema)
-  const { locale, fallbackLocale, languageTag } = getRequestLocaleContext(event)
+export default defineCachedEventHandler(
+  async (event) => {
+    setPublicRouteVaryHeaders(event)
+    const { calendarId } = validateQuery(event, memberCalendarQuerySchema)
+    const { locale, fallbackLocale, languageTag } = getRequestLocaleContext(event)
 
-  if (!calendarId) {
-    return { events: [] }
-  }
-
-  const normalizedCalendarId = normalizeMemberCalendarId(calendarId)
-  await assertMemberCalendarIsPublic(event, normalizedCalendarId)
-
-  const apiKey = getRequiredGoogleCalendarApiKey()
-
-  const now = new Date()
-  const threeMonthsLaterMonthEnd = new Date(
-    now.getFullYear(),
-    now.getMonth() + 4,
-    0,
-    23,
-    59,
-    59,
-    999
-  )
-
-  try {
-    const url = new URL(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(normalizedCalendarId)}/events`
-    )
-    url.searchParams.set('key', apiKey)
-    url.searchParams.set('timeMin', now.toISOString())
-    url.searchParams.set('timeMax', threeMonthsLaterMonthEnd.toISOString())
-    url.searchParams.set('singleEvents', 'true')
-    url.searchParams.set('orderBy', 'startTime')
-    url.searchParams.set('maxResults', '50')
-
-    const response = await fetch(url.toString(), { signal: AbortSignal.timeout(10_000) })
-
-    if (!response.ok) {
-      logError(
-        'member-calendar.fetch.response',
-        new Error('Google Calendar response error'),
-        {
-          calendarId: normalizedCalendarId,
-          statusCode: response.status,
-        },
-        event
-      )
+    if (!calendarId) {
       return { events: [] }
     }
 
-    const data: GoogleCalendarResponse = await response.json()
+    const normalizedCalendarId = normalizeMemberCalendarId(calendarId)
+    await assertMemberCalendarIsPublic(event, normalizedCalendarId)
 
-    return {
-      events: transformGoogleCalendarItems(data.items || [], {
-        languageTag,
-        locale,
-        fallbackLocale,
-      }),
+    const apiKey = getRequiredGoogleCalendarApiKey()
+
+    const now = new Date()
+    const threeMonthsLaterMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 4,
+      0,
+      23,
+      59,
+      59,
+      999
+    )
+
+    try {
+      const url = new URL(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(normalizedCalendarId)}/events`
+      )
+      url.searchParams.set('key', apiKey)
+      url.searchParams.set('timeMin', now.toISOString())
+      url.searchParams.set('timeMax', threeMonthsLaterMonthEnd.toISOString())
+      url.searchParams.set('singleEvents', 'true')
+      url.searchParams.set('orderBy', 'startTime')
+      url.searchParams.set('maxResults', '50')
+
+      const response = await fetch(url.toString(), { signal: AbortSignal.timeout(10_000) })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        logError(
+          'member-calendar.fetch.response',
+          errorData,
+          {
+            calendarId: normalizedCalendarId,
+            statusCode: response.status,
+          },
+          event
+        )
+        setHeader(event, 'retry-after', 60)
+        throw createError({
+          statusCode: 503,
+          message: getPublicApiErrorMessage(event, 'googleCalendarUnavailable'),
+        })
+      }
+
+      const data: GoogleCalendarResponse = await response.json()
+
+      return {
+        events: transformGoogleCalendarItems(data.items || [], {
+          languageTag,
+          locale,
+          fallbackLocale,
+        }),
+      }
+    } catch (error) {
+      if (error && typeof error === 'object' && 'statusCode' in error) {
+        throw error
+      }
+
+      logError('member-calendar.fetch', error, { calendarId: normalizedCalendarId }, event)
+      setHeader(event, 'retry-after', 60)
+
+      throw createError({
+        statusCode: 503,
+        message: getPublicApiErrorMessage(event, 'googleCalendarUnavailable'),
+      })
     }
-  } catch (error) {
-    logError('member-calendar.fetch', error, { calendarId: normalizedCalendarId }, event)
-    return { events: [] }
+  },
+  {
+    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    getKey: (event) =>
+      buildPublicRouteCacheKey(event, 'public-member-calendar', {
+        queryKeys: ['calendarId'],
+      }),
   }
-})
+)

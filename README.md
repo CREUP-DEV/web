@@ -64,8 +64,10 @@ pnpm db:seed
 - `SITE_URL`
 - `DATABASE_URL`
 - `BETTER_AUTH_URL`
-- `BETTER_AUTH_SECRET`
-- `OG_IMAGE_SECRET`
+- `APP_SECRET` - secreto compartido de fallback para auth, newsletter y OG images
+- `BETTER_AUTH_SECRET` - opcional; si falta, se usa `APP_SECRET`
+- `NEWSLETTER_TOKEN_SECRET` - opcional; si falta, se usa `APP_SECRET`
+- `NUXT_OG_IMAGE_SECRET` - opcional; si falta, se usa `APP_SECRET`
 
 ### Acceso de administración
 

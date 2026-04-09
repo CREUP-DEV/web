@@ -49,6 +49,7 @@ export function usePageSeo(
 
   const title = () => resolveTranslatedValue(titleValue, t)
   const description = () => resolveTranslatedValue(descriptionValue, t)
+  const explicitOgImage = computed(() => resolveLiteralValue(options.ogImage))
 
   const canonicalUrl = computed(() => {
     const canonicalPath = resolveLiteralValue(options.canonicalPath) ?? route.path
@@ -56,12 +57,19 @@ export function usePageSeo(
   })
 
   const ogImage = computed(() => {
-    const imagePath = resolveLiteralValue(options.ogImage)
+    const imagePath = explicitOgImage.value
     return toAbsoluteUrl(imagePath, String(siteConfig.url ?? '').trim()) ?? undefined
   })
 
   const ogType = () => resolveLiteralValue(options.ogType) ?? 'website'
   const languageTag = computed(() => getLanguageTag(locale.value))
+
+  if (!explicitOgImage.value) {
+    defineOgImage('NuxtSeo.satori', {
+      title,
+      description,
+    })
+  }
 
   useSeoMeta({
     title,
@@ -71,7 +79,7 @@ export function usePageSeo(
     ogUrl: () => canonicalUrl.value,
     ogImage: () => ogImage.value,
     ogType,
-    twitterCard: () => (ogImage.value ? 'summary_large_image' : 'summary'),
+    twitterCard: 'summary_large_image',
     twitterTitle: title,
     twitterDescription: description,
     twitterImage: () => ogImage.value,

@@ -9,19 +9,6 @@ export interface AdminAuthEventContext {
   adminSession?: AdminSession
 }
 
-export function getAdminSession(event: H3Event) {
-  const context = event.context as AdminAuthEventContext
-
-  if (!context.adminSession) {
-    throw createError({
-      statusCode: 401,
-      message: 'No autorizado',
-    })
-  }
-
-  return context.adminSession
-}
-
 export async function requireAuth(event: H3Event) {
   const context = event.context as AdminAuthEventContext
 

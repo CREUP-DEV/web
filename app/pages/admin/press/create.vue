@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
+
 definePageMeta({
   layout: 'admin',
   title: 'Crear artículo de prensa',
@@ -9,9 +11,9 @@ const route = useRoute()
 const router = useRouter()
 const isSubmitting = ref(false)
 
-type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
+type PressArticleType = (typeof PRESS_ARTICLE_TYPES)[number]
 
-const validPressTypes: PressArticleType[] = ['press_release', 'statement', 'media_appearance']
+const validPressTypes: PressArticleType[] = [...PRESS_ARTICLE_TYPES]
 const initialType = computed<PressArticleType>(() => {
   const requestedType = String(route.query.type ?? '')
   return validPressTypes.includes(requestedType as PressArticleType)

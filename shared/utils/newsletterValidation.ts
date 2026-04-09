@@ -15,7 +15,6 @@ export const newsletterSubscribeSchema = z
   .object({
     email: z.string().trim().email().max(NEWSLETTER_FIELD_LIMITS.emailMax),
     consent: z.boolean(),
-    ageConfirmed: z.boolean(),
     website: z.string().trim().max(NEWSLETTER_FIELD_LIMITS.websiteMax).optional(),
   })
   .superRefine((data, ctx) => {
@@ -24,14 +23,6 @@ export const newsletterSubscribeSchema = z
         code: z.ZodIssueCode.custom,
         message: 'Debes aceptar la política de privacidad',
         path: ['consent'],
-      })
-    }
-
-    if (!data.ageConfirmed) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Debes confirmar que tienes al menos 14 años o autorización legal',
-        path: ['ageConfirmed'],
       })
     }
   })

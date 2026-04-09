@@ -20,13 +20,17 @@ interface TeamMemberModalPerson {
 const props = defineProps<{
   member: TeamMemberModalPerson
   displayName: string
-  badgeLabel: string
   contactEmail?: string | null
   copyEmailAriaLabel?: string
   assignmentStart?: string | null
   assignmentEnd?: string | null
   assignmentDuration?: string | null
 }>()
+
+function encodeEmail(email: string) {
+  const [user = '', domain = ''] = email.split('@')
+  return { eu: btoa(user), ed: btoa(domain) }
+}
 
 const emit = defineEmits<{
   copyEmail: [email: string]
@@ -58,31 +62,36 @@ const hasAcademicInfo = computed(() => Boolean(props.member.university || props.
 
         <div class="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-8">
           <div class="space-y-5">
-            <UBadge
-              color="neutral"
-              variant="soft"
-              size="md"
-              icon="i-tabler-building-community"
-              class="bg-surface/80 dark:bg-surface/70 inline-flex max-w-full px-4 py-2 text-sm font-medium shadow-sm ring-1 ring-gray-200/70 backdrop-blur dark:ring-gray-800/70"
-            >
-              <span class="truncate">{{ badgeLabel }}</span>
-            </UBadge>
-
             <div class="space-y-3">
               <div>
-                <p v-if="member.denomination" class="text-primary text-sm font-medium">
+                <p
+                  v-if="member.denomination"
+                  class="text-primary text-lg leading-tight font-semibold sm:text-xl"
+                >
                   {{ member.denomination }}
                 </p>
-                <h3 class="mt-1 max-w-3xl text-3xl leading-tight font-semibold sm:text-4xl">
+                <h3 class="mt-2 max-w-3xl text-3xl leading-tight font-semibold sm:text-4xl">
                   {{ displayName }}
                 </h3>
               </div>
 
               <div class="flex flex-wrap gap-2">
-                <UBadge v-if="member.university" size="sm" color="neutral" variant="soft">
+                <UBadge
+                  v-if="member.university"
+                  size="sm"
+                  color="neutral"
+                  variant="soft"
+                  class="px-3 py-1 text-sm"
+                >
                   {{ member.university }}
                 </UBadge>
-                <UBadge v-if="member.degree" size="sm" color="neutral" variant="outline">
+                <UBadge
+                  v-if="member.degree"
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
+                  class="px-3 py-1 text-sm"
+                >
                   {{ member.degree }}
                 </UBadge>
               </div>
@@ -106,7 +115,7 @@ const hasAcademicInfo = computed(() => Boolean(props.member.university || props.
 
           <div class="self-start">
             <div
-              class="bg-surface/90 dark:bg-surface/80 mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center overflow-hidden rounded-[1.75rem] shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] ring-1 ring-gray-200/70 backdrop-blur lg:mx-0 lg:max-w-55 dark:ring-gray-800/70"
+              class="bg-surface/90 dark:bg-surface/80 mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center overflow-hidden rounded-full shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] ring-1 ring-gray-200/70 backdrop-blur lg:mx-0 lg:max-w-55 dark:ring-gray-800/70"
             >
               <NuxtImg
                 v-if="member.photo"
@@ -126,7 +135,7 @@ const hasAcademicInfo = computed(() => Boolean(props.member.university || props.
 
         <div v-if="hasDescription" class="mt-6 max-w-3xl space-y-3">
           <p class="text-muted text-xs font-semibold tracking-[0.24em] uppercase">
-            {{ t('team.about', { name: displayName }) }}
+            {{ t('team.about', { name: member.name }) }}
           </p>
           <p class="text-base leading-8 sm:text-[1.05rem]">
             {{ member.description }}
@@ -160,12 +169,11 @@ const hasAcademicInfo = computed(() => Boolean(props.member.university || props.
                     {{ t('team.email') }}
                   </p>
                   <div class="flex items-center gap-2">
-                    <a
-                      :href="`mailto:${contactEmail}`"
+                    <ObfuscatedEmail
+                      v-if="contactEmail"
+                      v-bind="encodeEmail(contactEmail)"
                       class="block text-sm font-medium break-all hover:underline"
-                    >
-                      {{ contactEmail }}
-                    </a>
+                    />
                     <UButton
                       variant="ghost"
                       color="neutral"

@@ -1,17 +1,23 @@
-import { randomBytes } from 'node:crypto'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import type { H3Event } from 'h3'
-import { and, eq, isNotNull, isNull, lte } from 'drizzle-orm'
+import { and, eq, isNotNull, lte } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterSubscribers, newsletterSubscriptionEvents } from '../db/schema'
 import { logError } from './logger'
 import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
 import { buildAbsoluteUrl, getClientIp, getUserAgent, normalizeBaseUrl } from './urlBuilder'
 import { getSmtpTransporter } from './smtpTransporter'
+import { getOptionalConfigString, requireConfigString } from '~~/shared/utils/config'
+import { buildLocalizedPathFromLocale, type LocaleDefinition } from '~~/shared/utils/locale'
 
 export const NEWSLETTER_CONSENT_TEXT_VERSION = '2026-03-06'
 
 /** Confirmation tokens expire after 48 hours */
 export const NEWSLETTER_CONFIRM_TOKEN_TTL_MS = 48 * 60 * 60 * 1000
+const NEWSLETTER_TOKEN_VERSION = 'v1'
+const NEWSLETTER_TOKEN_SEPARATOR = '.'
+const NEWSLETTER_TOKEN_KIND_CONFIRM = 'confirm'
+const NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE = 'unsubscribe'
 
 export const NEWSLETTER_CONSENT_SOURCES = {
   adminManual: 'admin_manual',
@@ -51,6 +57,129 @@ export function getNewsletterConsentEvidence(event: H3Event) {
     consentSource: NEWSLETTER_CONSENT_SOURCES.webForm,
     consentTextVersion: NEWSLETTER_CONSENT_TEXT_VERSION,
     consentUserAgent: getUserAgent(event),
+  }
+}
+
+function getNewsletterTokenSecret() {
+  const tokenSecret =
+    getOptionalConfigString(process.env.NEWSLETTER_TOKEN_SECRET) ??
+    getOptionalConfigString(process.env.APP_SECRET)
+
+  return requireConfigString(tokenSecret, 'NEWSLETTER_TOKEN_SECRET or APP_SECRET')
+}
+
+function buildNewsletterTokenSignature(
+  kind: typeof NEWSLETTER_TOKEN_KIND_CONFIRM | typeof NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE,
+  subscriberId: string,
+  extra: string
+) {
+  return createHmac('sha256', getNewsletterTokenSecret())
+    .update(`${NEWSLETTER_TOKEN_VERSION}:${kind}:${subscriberId}:${extra}`)
+    .digest('base64url')
+}
+
+function createNewsletterToken(
+  kind: typeof NEWSLETTER_TOKEN_KIND_CONFIRM | typeof NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE,
+  subscriberId: string,
+  extra: string
+) {
+  return [
+    NEWSLETTER_TOKEN_VERSION,
+    subscriberId,
+    extra,
+    buildNewsletterTokenSignature(kind, subscriberId, extra),
+  ].join(NEWSLETTER_TOKEN_SEPARATOR)
+}
+
+function parseSignedNewsletterToken(
+  token: string,
+  kind: typeof NEWSLETTER_TOKEN_KIND_CONFIRM | typeof NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE
+) {
+  const parts = token.trim().split(NEWSLETTER_TOKEN_SEPARATOR)
+
+  if (parts.length !== 4) {
+    return null
+  }
+
+  const [version, subscriberId, extra, signature] = parts
+  if (version !== NEWSLETTER_TOKEN_VERSION || !subscriberId || !extra || !signature) {
+    return null
+  }
+
+  const expectedSignature = buildNewsletterTokenSignature(kind, subscriberId, extra)
+  const expectedBuffer = Buffer.from(expectedSignature)
+  const signatureBuffer = Buffer.from(signature)
+
+  if (expectedBuffer.length !== signatureBuffer.length) {
+    return null
+  }
+
+  if (!timingSafeEqual(expectedBuffer, signatureBuffer)) {
+    return null
+  }
+
+  return { subscriberId, extra }
+}
+
+export function createNewsletterConfirmToken(subscriberId: string, expiresAt: Date) {
+  return createNewsletterToken(
+    NEWSLETTER_TOKEN_KIND_CONFIRM,
+    subscriberId,
+    String(expiresAt.getTime())
+  )
+}
+
+export function parseNewsletterConfirmToken(token: string) {
+  const parsed = parseSignedNewsletterToken(token, NEWSLETTER_TOKEN_KIND_CONFIRM)
+
+  if (!parsed) {
+    return null
+  }
+
+  const expiresAtMs = Number(parsed.extra)
+  if (!Number.isInteger(expiresAtMs) || expiresAtMs <= 0) {
+    return null
+  }
+
+  return {
+    expiresAt: new Date(expiresAtMs),
+    subscriberId: parsed.subscriberId,
+  }
+}
+
+export function createNewsletterUnsubscribeToken(
+  subscriberId: string,
+  subscribedAt: Date | string
+) {
+  const subscriptionStartedAt =
+    subscribedAt instanceof Date ? subscribedAt.getTime() : new Date(subscribedAt).getTime()
+
+  if (!Number.isInteger(subscriptionStartedAt) || subscriptionStartedAt <= 0) {
+    throw new Error('Invalid newsletter subscription timestamp')
+  }
+
+  return createNewsletterToken(
+    NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE,
+    subscriberId,
+    String(subscriptionStartedAt)
+  )
+}
+
+export function parseNewsletterUnsubscribeToken(token: string) {
+  const parsed = parseSignedNewsletterToken(token, NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE)
+
+  if (!parsed) {
+    return null
+  }
+
+  const subscribedAtMs = Number(parsed.extra)
+  if (!Number.isInteger(subscribedAtMs) || subscribedAtMs <= 0) {
+    return null
+  }
+
+  return {
+    subscriberId: parsed.subscriberId,
+    subscribedAt: new Date(subscribedAtMs),
   }
 }
 
@@ -123,10 +252,7 @@ ${privacyUrl}
 `
 }
 
-function buildAlreadySubscribedEmailHtml(siteUrl: string): string {
-  const newsletterArchiveUrl = buildAbsoluteUrl(siteUrl, '/prensa/newsletter')
-  const unsubscribePath = buildAbsoluteUrl(siteUrl, '/desuscribirse')
-
+function buildAlreadySubscribedEmailHtml(unsubscribeUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -150,8 +276,7 @@ function buildAlreadySubscribedEmailHtml(siteUrl: string): string {
         </p>
         <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280;">
           ¿Quieres darte de baja?
-          <a href="${unsubscribePath}" style="color:#792225;">Gestionar suscripción</a>
-          · <a href="${newsletterArchiveUrl}" style="color:#792225;">Ver todas las newsletters</a>
+          <a href="${unsubscribeUrl}" style="color:#792225;">Darme de baja</a>
         </p>
       </td>
     </tr>
@@ -160,10 +285,7 @@ function buildAlreadySubscribedEmailHtml(siteUrl: string): string {
 </html>`
 }
 
-function buildAlreadySubscribedEmailText(siteUrl: string): string {
-  const newsletterArchiveUrl = buildAbsoluteUrl(siteUrl, '/prensa/newsletter')
-  const unsubscribePath = buildAbsoluteUrl(siteUrl, '/desuscribirse')
-
+function buildAlreadySubscribedEmailText(unsubscribeUrl: string): string {
   return `Ya estás suscrito/a a la newsletter de CREUP
 
 Hemos recibido una nueva solicitud de suscripción para esta dirección, pero ya estás suscrito/a.
@@ -172,41 +294,56 @@ No es necesario que hagas nada. Seguirás recibiendo nuestras newsletters normal
 
 Si no fuiste tú quien envió esta solicitud, puedes ignorar este correo con total tranquilidad.
 
-¿Quieres gestionar tu suscripción? ${unsubscribePath}
-Todas las newsletters: ${newsletterArchiveUrl}
+¿Quieres gestionar tu suscripción? ${unsubscribeUrl}
 `
 }
 
 export async function sendNewsletterAlreadySubscribedEmail(
   email: string,
+  subscriberId: string,
+  subscribedAt: Date,
   configErrorMessage = 'Server configuration error.'
 ): Promise<void> {
   const transporter = getSmtpTransporter(configErrorMessage)
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
+  const unsubscribeToken = createNewsletterUnsubscribeToken(subscriberId, subscribedAt)
+  const unsubscribeUrl = buildAbsoluteUrl(
+    siteUrl,
+    `/desuscribirse?token=${encodeURIComponent(unsubscribeToken)}`
+  )
 
   await transporter.sendMail({
     from: `"CREUP Newsletter" <${fromEmail}>`,
     to: email,
     subject: 'Ya estás suscrito/a a la newsletter de CREUP',
-    text: buildAlreadySubscribedEmailText(siteUrl),
-    html: buildAlreadySubscribedEmailHtml(siteUrl),
+    text: buildAlreadySubscribedEmailText(unsubscribeUrl),
+    html: buildAlreadySubscribedEmailHtml(unsubscribeUrl),
   })
 }
 
 export async function sendNewsletterConfirmationEmail(
   email: string,
-  confirmToken: string,
-  locale: string = 'es',
+  subscriberId: string,
+  confirmTokenExpiresAt: Date,
+  locale: string,
+  locales: LocaleDefinition[],
+  defaultLocale: string,
   configErrorMessage = 'Server configuration error.'
 ): Promise<void> {
   const transporter = getSmtpTransporter(configErrorMessage)
 
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
-  const localePath = locale === 'en' ? '/en/confirmar-suscripcion' : '/confirmar-suscripcion'
+  const confirmToken = createNewsletterConfirmToken(subscriberId, confirmTokenExpiresAt)
+  const confirmPath = buildLocalizedPathFromLocale(
+    '/confirmar-suscripcion',
+    locale,
+    locales,
+    defaultLocale
+  )
   const confirmUrl = buildAbsoluteUrl(
     siteUrl,
-    `${localePath}?token=${encodeURIComponent(confirmToken)}`
+    `${confirmPath}?token=${encodeURIComponent(confirmToken)}`
   )
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
 
@@ -217,14 +354,6 @@ export async function sendNewsletterConfirmationEmail(
     text: buildConfirmationEmailText(confirmUrl, siteUrl),
     html: buildConfirmationEmailHtml(confirmUrl, siteUrl),
   })
-}
-
-export function createNewsletterConfirmToken(): string {
-  return randomBytes(32).toString('base64url')
-}
-
-export function createNewsletterUnsubscribeToken(): string {
-  return randomBytes(32).toString('base64url')
 }
 
 export function createConfirmTokenExpiresAt(): Date {
@@ -247,8 +376,6 @@ export async function cleanupExpiredNewsletterConfirmTokens(now: Date = new Date
     .where(
       and(
         eq(newsletterSubscribers.active, false),
-        isNull(newsletterSubscribers.confirmedAt),
-        isNotNull(newsletterSubscribers.confirmToken),
         isNotNull(newsletterSubscribers.confirmTokenExpiresAt),
         lte(newsletterSubscribers.confirmTokenExpiresAt, now)
       )

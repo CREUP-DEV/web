@@ -141,6 +141,7 @@
     "degree": "Titulación",
     "publicAgenda": "Agenda pública",
     "publicAgendaOf": "Agenda pública de {name}",
+    "memberModalTitle": "Perfil del equipo",
     "memberModalDescription": "Detalles del perfil de la persona.",
     "agendaModalDescription": "Próximos eventos de su agenda pública.",
     "noEvents": "No hay eventos programados próximamente.",
@@ -337,6 +338,7 @@
     "unknownUniversity": "Universidad no especificada",
     "unknownDenomination": "Designación no especificada",
     "viewDetails": "Ver detalles",
+    "memberModalTitle": "Detalles de la organización",
     "memberModalDescription": "Detalles de la organización seleccionada.",
     "descriptionLabel": "Descripción",
     "info": "Información y contacto",
@@ -652,9 +654,17 @@
       "title": "Suscripción confirmada",
       "description": "Tu dirección ha quedado activada para recibir la newsletter de CREUP."
     },
+    "alreadyConfirmed": {
+      "title": "La suscripción ya estaba confirmada",
+      "description": "Esta dirección ya estaba activa para recibir la newsletter de CREUP."
+    },
     "confirmedExpired": {
       "title": "El enlace de confirmación ha caducado",
       "description": "Vuelve a enviar el formulario de suscripción para recibir un enlace nuevo."
+    },
+    "confirmedInvalid": {
+      "title": "El enlace de confirmación no es válido",
+      "description": "Comprueba el correo que recibiste o vuelve a suscribirte para generar un enlace nuevo."
     },
     "unsubscribe": {
       "title": "Te has dado de baja de la newsletter",
@@ -676,7 +686,6 @@
       "consentPrefix": "Acepto el tratamiento de mis datos para gestionar la suscripción a la newsletter conforme al ",
       "consentLink": "aviso legal y política de privacidad",
       "consentSuffix": ".",
-      "ageConfirmedLabel": "Declaro que tengo al menos 14 años o que cuento con la autorización de mis representantes legales.",
       "privacyInfoTitle": "Información básica sobre protección de datos",
       "privacyInfoController": "Titular del sitio (art. 10 LSSI-CE) y responsable del tratamiento: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP).",
       "privacyInfoPurpose": "Finalidad: gestionar la suscripción a la newsletter y enviar comunicaciones periódicas sobre las actividades de CREUP.",
@@ -689,8 +698,7 @@
       "errors": {
         "emailRequired": "El correo electrónico es obligatorio",
         "emailInvalid": "Introduce un correo electrónico válido",
-        "consentRequired": "Debes aceptar la política de privacidad para suscribirte",
-        "ageConfirmedRequired": "Debes confirmar que tienes al menos 14 años o autorización legal"
+        "consentRequired": "Debes aceptar la política de privacidad para suscribirte"
       }
     },
     "archive": {
@@ -727,6 +735,12 @@
       "title": "Confirmar suscripción a la newsletter",
       "description": "Confirma tu suscripción a la newsletter de CREUP."
     },
+    "confirmedTitle": "Suscripción confirmada",
+    "confirmedDescription": "Tu dirección ya ha quedado activada para recibir la newsletter de CREUP.",
+    "alreadyConfirmedTitle": "La suscripción ya estaba confirmada",
+    "alreadyConfirmedDescription": "Esta dirección ya estaba activa para recibir la newsletter de CREUP.",
+    "expiredTitle": "El enlace de confirmación ha caducado",
+    "expiredDescription": "Vuelve a enviar el formulario de suscripción para recibir un enlace nuevo.",
     "processingTitle": "Confirmando tu suscripción",
     "processingDescription": "Estamos activando tu suscripción a la newsletter de CREUP.",
     "invalidTitle": "Enlace no válido",

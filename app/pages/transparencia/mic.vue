@@ -171,7 +171,8 @@ const copyColorToClipboard = (text: string) =>
                     class="px-2 py-2 text-center"
                   >
                     <UButton
-                      :to="assetUrl(`${section.slug}-${variant.slug}.svg`)"
+                      :href="assetUrl(`${section.slug}-${variant.slug}.svg`)"
+                      external
                       variant="link"
                       size="xs"
                       icon="i-tabler-download"
@@ -188,7 +189,8 @@ const copyColorToClipboard = (text: string) =>
                     class="px-2 py-2 text-center"
                   >
                     <UButton
-                      :to="assetUrl(`${section.slug}-${variant.slug}.png`)"
+                      :href="assetUrl(`${section.slug}-${variant.slug}.png`)"
+                      external
                       variant="link"
                       size="xs"
                       icon="i-tabler-download"
@@ -219,7 +221,8 @@ const copyColorToClipboard = (text: string) =>
               />
               <div class="flex gap-1">
                 <UButton
-                  :to="assetUrl(`${section.slug}-${variant.slug}.svg`)"
+                  :href="assetUrl(`${section.slug}-${variant.slug}.svg`)"
+                  external
                   variant="soft"
                   size="xs"
                   icon="i-tabler-download"
@@ -228,7 +231,8 @@ const copyColorToClipboard = (text: string) =>
                   label="SVG"
                 />
                 <UButton
-                  :to="assetUrl(`${section.slug}-${variant.slug}.png`)"
+                  :href="assetUrl(`${section.slug}-${variant.slug}.png`)"
+                  external
                   variant="soft"
                   size="xs"
                   icon="i-tabler-download"
@@ -242,7 +246,8 @@ const copyColorToClipboard = (text: string) =>
 
           <div class="flex justify-center">
             <UButton
-              :to="assetUrl(section.zip)"
+              :href="assetUrl(section.zip)"
+              external
               variant="soft"
               icon="i-tabler-file-zip"
               download
@@ -402,7 +407,8 @@ const copyColorToClipboard = (text: string) =>
         </p>
         <div class="mt-6">
           <UButton
-            :to="assetUrl(micAssets.pdf)"
+            :href="assetUrl(micAssets.pdf)"
+            external
             size="lg"
             icon="i-tabler-file-type-pdf"
             download

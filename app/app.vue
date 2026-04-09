@@ -18,10 +18,12 @@ const currentUiLocale = computed(
 
 const lang = computed(() => getLanguageTag(locale.value))
 const dir = computed(() => currentUiLocale.value.dir)
-const pageTransition = {
-  name: 'page-shell',
-  mode: 'out-in' as const,
-}
+const pageTransition = import.meta.dev
+  ? false
+  : {
+      name: 'page-shell',
+      mode: 'out-in' as const,
+    }
 
 useHead(() => ({
   htmlAttrs: {

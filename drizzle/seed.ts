@@ -7,6 +7,7 @@ import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from '../server/db/schema'
 import { requireConfigString } from '../shared/utils/config'
+import { dateValueToDateOnly } from '../shared/utils/date'
 import {
   ABOUT_HERO_DEFAULT_IMAGE,
   EQUALITY_DOCUMENTS_PUBLIC_PATH,
@@ -37,6 +38,7 @@ async function main() {
   // Clear existing data (in correct order for foreign keys)
   console.log('🗑️ Clearing existing data...')
   await db.delete(schema.aboutPageContent)
+  await db.delete(schema.pressDossier)
   await db.delete(schema.equalityDocumentTranslations)
   await db.delete(schema.equalityDocuments)
   await db.delete(schema.carouselItemTranslations)
@@ -194,6 +196,12 @@ async function main() {
   await db.insert(schema.aboutPageContent).values({
     heroImage: ABOUT_HERO_DEFAULT_IMAGE,
     heroVisible: true,
+  })
+
+  console.log('📋 Creating press dossier singleton...')
+  await db.insert(schema.pressDossier).values({
+    pdfUrl: null,
+    active: false,
   })
 
   console.log('🗞️ Creating media outlets...')
@@ -555,8 +563,9 @@ async function main() {
   for (let i = 0; i < pressData.length; i++) {
     const item = pressData[i]
     const esTranslation = item.translations.find((t) => t.locale === 'es')!
-    const publishedAt = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-    const slug = await generatePressSlug(esTranslation.title, publishedAt)
+    const publishedAtDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+    const publishedAt = dateValueToDateOnly(publishedAtDate)
+    const slug = await generatePressSlug(esTranslation.title, publishedAtDate)
     const resolvedMediaOutletId = item.mediaOutletId ? mediaOutlets[item.mediaOutletId] : null
 
     if (item.type === 'media_appearance' && !resolvedMediaOutletId) {
@@ -582,7 +591,7 @@ async function main() {
         locale: t.locale,
         title: t.title,
         description: t.description,
-        contentHtml: t.contentHtml ?? null,
+        contentHtml: 'contentHtml' in t ? (t.contentHtml ?? null) : null,
         pressArticleId: article.id,
       }))
     )
@@ -617,7 +626,7 @@ async function main() {
         HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
         'Suscríbete a nuestra Newsletter'
       ),
-      to: 'https://www.creup.es/comunicacion/newsletter/',
+      to: '/prensa/newsletter/',
       translations: [
         { locale: 'es', title: 'Suscríbete a nuestra Newsletter' },
         { locale: 'en', title: 'Subscribe to our Newsletter' },
@@ -711,7 +720,7 @@ async function main() {
       ],
     },
     {
-      pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-acoso-sexual-creup.pdf`,
+      pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-de-prevencion-y-actuacion-frente-a-casos-de-acoso.pdf`,
       translations: [
         {
           locale: 'es',

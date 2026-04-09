@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { AccordionItem } from '@nuxt/ui'
 import { newsletterSubscribeSchema } from '~~/shared/utils/newsletterValidation'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 
@@ -9,7 +10,9 @@ const toast = useToast()
 const { fieldErrors, getFieldError: getValidationFieldError, validate } = useZodFormValidation()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const showConfirmedMessage = computed(() => route.query.confirmed === '1')
+const showAlreadyConfirmedMessage = computed(() => route.query.confirmed === 'already')
 const showExpiredConfirmationMessage = computed(() => route.query.confirmed === 'expired')
+const showInvalidConfirmationMessage = computed(() => route.query.confirmed === 'invalid')
 const showUnsubscribeMessage = computed(() => route.query.unsubscribed === '1')
 const showInvalidUnsubscribeMessage = computed(() => route.query.unsubscribed === 'invalid')
 const {
@@ -40,14 +43,12 @@ const {
 usePageSeo('newsletterPage.seo.title', 'newsletterPage.seo.description')
 
 const form = reactive({
-  ageConfirmed: false,
   consent: false,
   email: '',
   website: '',
 })
 
 const touched = reactive({
-  ageConfirmed: false,
   consent: false,
   email: false,
 })
@@ -55,7 +56,6 @@ const isSubmitting = ref(false)
 const formSubmitted = ref(false)
 
 const newsletterPayload = computed(() => ({
-  ageConfirmed: form.ageConfirmed,
   consent: form.consent,
   email: form.email.trim(),
   website: form.website.trim() || undefined,
@@ -65,9 +65,9 @@ watchEffect(() => {
   validate(newsletterSubscribeSchema, newsletterPayload.value)
 })
 
-type NewsletterField = 'email' | 'consent' | 'ageConfirmed'
+type NewsletterField = 'email' | 'consent'
 
-const validationFieldOrder: NewsletterField[] = ['email', 'consent', 'ageConfirmed']
+const validationFieldOrder: NewsletterField[] = ['email', 'consent']
 
 function shouldShowError(field: NewsletterField): boolean {
   return (touched[field] || formSubmitted.value) && !!getValidationFieldError(field)
@@ -85,8 +85,6 @@ function getFieldError(field: NewsletterField): string | undefined {
   if (field === 'consent') {
     return t('newsletterPage.form.errors.consentRequired')
   }
-
-  return t('newsletterPage.form.errors.ageConfirmedRequired')
 }
 
 const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
@@ -117,11 +115,9 @@ async function handleSubscribe() {
       icon: 'i-tabler-check',
       color: 'success',
     })
-    form.ageConfirmed = false
     form.consent = false
     form.email = ''
     formSubmitted.value = false
-    touched.ageConfirmed = false
     touched.consent = false
     touched.email = false
   } catch (error) {
@@ -152,6 +148,13 @@ const { data, pending: archivePendingPage } = await useFetch<{
 }>('/api/newsletter', { query: computed(() => ({ limit: LIMIT, offset: offset.value })) })
 const newsletters = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
+const privacyAccordionItems = computed<AccordionItem[]>(() => [
+  {
+    label: t('newsletterPage.form.privacyInfoTitle'),
+    icon: 'i-tabler-shield-lock',
+    value: 'privacy-info',
+  },
+])
 
 // Scroll back to archive heading when page changes
 watch(page, () => {
@@ -197,7 +200,9 @@ function formatMonth(dateStr: string): string {
       <div
         v-if="
           showConfirmedMessage ||
+          showAlreadyConfirmedMessage ||
           showExpiredConfirmationMessage ||
+          showInvalidConfirmationMessage ||
           showUnsubscribeMessage ||
           showInvalidUnsubscribeMessage
         "
@@ -216,12 +221,30 @@ function formatMonth(dateStr: string): string {
         />
 
         <UAlert
+          v-if="showAlreadyConfirmedMessage"
+          color="success"
+          variant="soft"
+          icon="i-tabler-mail-check"
+          :title="t('newsletterPage.alreadyConfirmed.title')"
+          :description="t('newsletterPage.alreadyConfirmed.description')"
+        />
+
+        <UAlert
           v-if="showExpiredConfirmationMessage"
           color="warning"
           variant="soft"
           icon="i-tabler-mail-x"
           :title="t('newsletterPage.confirmedExpired.title')"
           :description="t('newsletterPage.confirmedExpired.description')"
+        />
+
+        <UAlert
+          v-if="showInvalidConfirmationMessage"
+          color="warning"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('newsletterPage.confirmedInvalid.title')"
+          :description="t('newsletterPage.confirmedInvalid.description')"
         />
 
         <UAlert
@@ -308,16 +331,6 @@ function formatMonth(dateStr: string): string {
               </UCheckbox>
             </UFormField>
 
-            <UFormField :error="getFieldError('ageConfirmed')">
-              <UCheckbox
-                id="newsletter-age-confirmed"
-                v-model="form.ageConfirmed"
-                required
-                :label="t('newsletterPage.form.ageConfirmedLabel')"
-                @change="touched.ageConfirmed = true"
-              />
-            </UFormField>
-
             <UButton
               type="submit"
               color="primary"
@@ -331,32 +344,38 @@ function formatMonth(dateStr: string): string {
               }}
             </UButton>
 
-            <section
-              class="text-dimmed space-y-2 text-sm"
-              :aria-label="t('newsletterPage.form.privacyInfoTitle')"
+            <UAccordion
+              :items="privacyAccordionItems"
+              type="multiple"
+              :ui="{
+                root: 'rounded-xl border',
+                trigger: 'px-4 py-3 text-sm font-medium',
+                body: 'px-4 pb-4 pt-0',
+              }"
             >
-              <p class="font-medium">
-                {{ t('newsletterPage.form.privacyInfoTitle') }}
-              </p>
-              <ul class="list-disc space-y-1 pl-5">
-                <li>{{ t('newsletterPage.form.privacyInfoController') }}</li>
-                <li>{{ t('newsletterPage.form.privacyInfoPurpose') }}</li>
-                <li>{{ t('newsletterPage.form.privacyInfoLegalBasis') }}</li>
-                <li>{{ t('newsletterPage.form.privacyInfoRecipients') }}</li>
-                <li>{{ t('newsletterPage.form.privacyInfoRetention') }}</li>
-                <li>{{ t('newsletterPage.form.privacyInfoRights') }}</li>
-              </ul>
-              <p>
-                {{ t('newsletterPage.form.privacyInfoMorePrefix') }}
-                <NuxtLink
-                  :to="privacyPolicyPath"
-                  class="text-primary underline underline-offset-2 hover:no-underline"
-                >
-                  {{ t('newsletterPage.form.privacyInfoMoreLink') }}
-                </NuxtLink>
-                .
-              </p>
-            </section>
+              <template #body>
+                <section class="text-dimmed space-y-2 text-sm">
+                  <ul class="list-disc space-y-1 pl-5">
+                    <li>{{ t('newsletterPage.form.privacyInfoController') }}</li>
+                    <li>{{ t('newsletterPage.form.privacyInfoPurpose') }}</li>
+                    <li>{{ t('newsletterPage.form.privacyInfoLegalBasis') }}</li>
+                    <li>{{ t('newsletterPage.form.privacyInfoRecipients') }}</li>
+                    <li>{{ t('newsletterPage.form.privacyInfoRetention') }}</li>
+                    <li>{{ t('newsletterPage.form.privacyInfoRights') }}</li>
+                  </ul>
+                  <p>
+                    {{ t('newsletterPage.form.privacyInfoMorePrefix') }}
+                    <NuxtLink
+                      :to="privacyPolicyPath"
+                      class="text-primary underline underline-offset-2 hover:no-underline"
+                    >
+                      {{ t('newsletterPage.form.privacyInfoMoreLink') }}
+                    </NuxtLink>
+                    .
+                  </p>
+                </section>
+              </template>
+            </UAccordion>
           </form>
         </UCard>
       </section>

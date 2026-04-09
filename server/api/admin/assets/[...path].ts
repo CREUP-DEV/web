@@ -50,7 +50,7 @@ export default defineEventHandler(async (event) => {
     setHeader(event, 'content-length', metadata.size)
     setHeader(event, 'content-type', contentType)
     setHeader(event, 'x-content-type-options', 'nosniff')
-    setHeader(event, 'content-disposition', 'inline')
+    setHeader(event, 'content-disposition', extension === '.pdf' ? 'attachment' : 'inline')
 
     if (method === 'HEAD') {
       return null

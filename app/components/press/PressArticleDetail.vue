@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { PressArticle } from '@/composables/usePress'
+import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
+import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
 
 const props = defineProps<{
   article: PressArticle
@@ -14,15 +16,6 @@ const articleRef = toRef(props, 'article')
 const siteConfig = useSiteConfig()
 const { canonicalUrl, shareActions } = usePressShareActions(articleRef)
 
-const articleTypeBasePath = computed(() => {
-  const map: Record<string, string> = {
-    press_release: '/prensa/notas-prensa',
-    statement: '/prensa/comunicados',
-    media_appearance: '/prensa/en-los-medios',
-  }
-  return map[props.article.type] ?? '/prensa/notas-prensa'
-})
-
 const formatDate = (iso: string) => {
   return formatLocaleDate(iso, {
     year: 'numeric',
@@ -36,7 +29,7 @@ useHead(
     script: [
       {
         type: 'application/ld+json',
-        innerHTML: JSON.stringify({
+        innerHTML: serializeJsonForHtmlScript({
           '@context': 'https://schema.org',
           '@type': 'NewsArticle',
           headline: props.article.title,
@@ -123,7 +116,7 @@ usePageSeo(
           <NuxtLink
             v-for="tag in article.tags"
             :key="tag.slug"
-            :to="localePath(`${articleTypeBasePath}?tag=${tag.slug}`)"
+            :to="localePath(`${getPressArticlePublicListPath(props.article.type)}?tag=${tag.slug}`)"
             class="bg-secondary/10 text-secondary hover:bg-secondary/20 rounded-full px-3 py-1 text-sm transition-colors"
           >
             {{ tag.name }}

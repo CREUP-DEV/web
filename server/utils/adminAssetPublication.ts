@@ -118,13 +118,28 @@ async function reconcileStoredImage(options: {
     return normalizedStoragePath ?? null
   }
 
-  return finalizeAdminImage({
-    storagePath: normalizedStoragePath,
-    uploadDir: options.uploadDir,
-    publicPath: options.publicPath,
-    publish: options.publish,
-    protectedPublicPaths: options.protectedPublicPaths,
-  })
+  try {
+    return await finalizeAdminImage({
+      storagePath: normalizedStoragePath,
+      uploadDir: options.uploadDir,
+      publicPath: options.publicPath,
+      publish: options.publish,
+      protectedPublicPaths: options.protectedPublicPaths,
+    })
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'statusCode' in error &&
+      error.statusCode === 400 &&
+      'message' in error &&
+      error.message === 'El archivo ya no está disponible'
+    ) {
+      return normalizedStoragePath
+    }
+
+    throw error
+  }
 }
 
 async function reconcileStoredDocument(options: {
@@ -139,12 +154,27 @@ async function reconcileStoredDocument(options: {
     return null
   }
 
-  return finalizeAdminDocument({
-    storagePath: normalizedStoragePath,
-    uploadDir: options.uploadDir,
-    publicPath: options.publicPath,
-    publish: options.publish,
-  })
+  try {
+    return await finalizeAdminDocument({
+      storagePath: normalizedStoragePath,
+      uploadDir: options.uploadDir,
+      publicPath: options.publicPath,
+      publish: options.publish,
+    })
+  } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'statusCode' in error &&
+      error.statusCode === 400 &&
+      'message' in error &&
+      error.message === 'El archivo ya no está disponible'
+    ) {
+      return normalizedStoragePath
+    }
+
+    throw error
+  }
 }
 
 export async function reconcileAdminAssetPublication() {

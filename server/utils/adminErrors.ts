@@ -2,7 +2,7 @@ import { createError } from 'h3'
 import type { H3Event } from 'h3'
 import { logError } from './logger'
 
-function isUniqueConstraintViolation(error: unknown): boolean {
+export function isUniqueConstraintViolation(error: unknown): boolean {
   return (
     error !== null &&
     typeof error === 'object' &&

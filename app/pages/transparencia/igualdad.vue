@@ -243,6 +243,7 @@ const {
                 <div class="mt-auto">
                   <UButton
                     :href="resource.pdfUrl"
+                    external
                     target="_blank"
                     rel="noopener noreferrer"
                     icon="i-tabler-file-download"

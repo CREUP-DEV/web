@@ -1,10 +1,14 @@
 import type { H3Event } from 'h3'
-import { getQuery } from 'h3'
+import { getQuery, setHeader } from 'h3'
 import { getRequestLocaleContext } from './requestLocale'
 
 interface PublicRouteCacheKeyOptions {
   includeLocale?: boolean
   queryKeys?: string[]
+}
+
+export function setPublicRouteVaryHeaders(event: H3Event) {
+  setHeader(event, 'vary', 'x-request-locale')
 }
 
 export const PUBLIC_ROUTE_CACHE_OPTIONS = {

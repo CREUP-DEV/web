@@ -60,6 +60,8 @@ type PressSlugExecutor = Pick<typeof db, 'execute' | 'query'>
 interface GeneratePressSlugOptions {
   excludeId?: string
   executor?: PressSlugExecutor
+  /** When provided, skip the uniqueness check and append this suffix directly. */
+  forcedSuffix?: string
 }
 
 export async function generatePressSlug(
@@ -72,6 +74,12 @@ export async function generatePressSlug(
   const base = slugify(title) || 'articulo'
   const baseSlug = `${base}-${year}-${month}`
   const executor = options.executor ?? db
+
+  // If a forced suffix is provided (collision retry), skip the lock and
+  // uniqueness loop — just return the suffixed slug directly.
+  if (options.forcedSuffix) {
+    return `${baseSlug}-${options.forcedSuffix}`.slice(0, 100)
+  }
 
   // Serialize slug generation per base slug so concurrent mutations cannot
   // claim the same value between the uniqueness check and the write.

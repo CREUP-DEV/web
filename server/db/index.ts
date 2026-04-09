@@ -8,13 +8,12 @@ const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE
 
 const pool = new Pool({
   connectionString,
-  // Keep enough connections to serve concurrent API requests and the newsletter
-  // delivery worker without exhausting the DB. node-postgres default is 10.
-  max: Number(process.env.DB_POOL_MAX) || 20,
-  // Release idle connections after 30 s to free server-side resources.
-  idleTimeoutMillis: Number(process.env.DB_POOL_IDLE_TIMEOUT_MS) || 30_000,
-  // Fail fast if the pool is exhausted (better than silently hanging).
-  connectionTimeoutMillis: Number(process.env.DB_POOL_CONNECTION_TIMEOUT_MS) || 5_000,
+  // Cap concurrent DB connections. Tune to match your Postgres plan's limit.
+  max: Number(process.env.DATABASE_MAX_CONNECTIONS) || 10,
+  // Release idle connections after 10 s to free server-side resources.
+  idleTimeoutMillis: 10_000,
+  // Fail fast if a connection cannot be acquired within 30 s.
+  connectionTimeoutMillis: 30_000,
 })
 
 export const db = drizzle(pool, { schema })

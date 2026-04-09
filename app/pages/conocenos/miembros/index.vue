@@ -274,6 +274,7 @@ watch(filteredMembers, async () => {
     <UModal
       v-model:open="organizationModalOpen"
       :ui="organizationModalUi"
+      :title="t('members.memberModalTitle')"
       @close="closeOrganizationModal"
     >
       <template #body>

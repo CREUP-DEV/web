@@ -1,4 +1,5 @@
 import { createError } from 'h3'
+import { sql, type AnyColumn } from 'drizzle-orm'
 
 interface ReorderItem {
   id: string
@@ -7,6 +8,21 @@ interface ReorderItem {
 
 const REORDER_ERROR_MESSAGE =
   'La lista enviada no coincide con el estado actual. Recarga la página antes de reordenar.'
+
+export function buildReorderOrderExpression(
+  idColumn: AnyColumn,
+  orderColumn: AnyColumn,
+  items: ReorderItem[]
+): ReturnType<typeof sql<number>> {
+  if (items.length === 0) {
+    return sql<number>`${orderColumn}`
+  }
+
+  return sql<number>`case ${idColumn} ${sql.join(
+    items.map((item) => sql`when ${item.id} then ${item.order}`),
+    sql.raw(' ')
+  )} else ${orderColumn} end`
+}
 
 export function assertCompleteReorderSet(items: ReorderItem[], existingIds: string[]) {
   if (items.length !== existingIds.length) {

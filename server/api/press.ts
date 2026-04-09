@@ -1,5 +1,5 @@
 import { createError, setHeader } from 'h3'
-import { eq, desc, and, inArray, sql, type SQL } from 'drizzle-orm'
+import { eq, desc, and, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, tags, pressArticleTags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
@@ -10,12 +10,17 @@ import { logError } from '../utils/logger'
 import { resolvePressTranslation } from '../utils/pressTranslation'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicRouteVaryHeaders,
+} from '../utils/publicRouteCache'
 import { pressListQuerySchema, validateQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 
 export default defineCachedEventHandler(
   async (event) => {
+    setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
     const query = validateQuery(event, pressListQuerySchema)
     const type = query.type
@@ -24,7 +29,10 @@ export default defineCachedEventHandler(
     const offset = query.offset
 
     try {
-      const conditions: SQL[] = [eq(pressArticles.active, true)]
+      const conditions: SQL[] = [
+        eq(pressArticles.active, true),
+        lte(pressArticles.publishedAt, sql`CURRENT_DATE`),
+      ]
 
       if (type) {
         conditions.push(eq(pressArticles.type, type))

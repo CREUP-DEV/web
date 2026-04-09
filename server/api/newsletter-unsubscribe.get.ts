@@ -1,9 +1,8 @@
 import { createError, defineEventHandler } from 'h3'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 
-// This action is now a POST to prevent mail scanners from triggering unsubscription.
-// The unsubscribe link in emails points to the /desuscribirse interstitial page,
-// which submits the token via POST to /api/newsletter-unsubscribe.
+// This endpoint stays disabled. Browser flow uses /desuscribirse page,
+// which auto-submits POST on mount.
 export default defineEventHandler((event) => {
   throw createError({
     statusCode: 405,

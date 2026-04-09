@@ -5,27 +5,13 @@ interface UseTeamDirectoryOptions {
   areas: Ref<OrgArea[]>
 }
 
-const slugify = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-
 export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
   const { t, locale } = useI18n()
   const { fallbackLocale } = useLocales()
-  const localePath = useLocalePath()
   const { getDisplayName: getMemberDisplayName } = usePersonHelpers()
 
   const getAreaName = (area: OrgArea) =>
     pickLocalizedValue(area.nameTranslations ?? {}, locale.value, fallbackLocale) ?? area.name
-
-  const buildMemberSlug = (member: OrgMember, area: OrgArea) => {
-    const seed = `${area.id}-${member.order}-${member.name}-${member.surname}`
-    return slugify(seed) || `${area.id}-${member.order}`
-  }
 
   const toEnrichedMember = (
     member: OrgMember,
@@ -36,7 +22,6 @@ export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
     areaName: getAreaName(area),
     areaId: area.id,
     isLeader,
-    slug: buildMemberSlug(member, area),
   })
 
   const executiveMembers = computed<EnrichedMember[]>(() => {
@@ -63,22 +48,15 @@ export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
     )
   )
 
-  const getMemberHref = (member: EnrichedMember) => localePath(`/conocenos/equipo/${member.slug}`)
-
   const getViewProfileAriaLabel = (fullName: string) => `${t('team.viewProfile')}: ${fullName}`
   const getPublicAgendaAriaLabel = (fullName: string) => `${t('team.publicAgenda')}: ${fullName}`
-
-  const findMemberBySlug = (slug: string) =>
-    allMembers.value.find((member) => member.slug === slug) ?? null
 
   return {
     allMembers,
     executiveMembers,
     extendedMembers,
-    findMemberBySlug,
     getAreaName,
     getMemberDisplayName,
-    getMemberHref,
     getPublicAgendaAriaLabel,
     getViewProfileAriaLabel,
     toEnrichedMember,

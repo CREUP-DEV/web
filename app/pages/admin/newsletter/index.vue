@@ -34,9 +34,13 @@ const { data, refresh } = await useFetch<{
   maxDeliveryAttempts: number
 }>('/api/admin/newsletter')
 const items = computed(() => data.value?.items ?? [])
+const maxDeliveryAttempts = computed(() => data.value?.maxDeliveryAttempts ?? 3)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
+const isCancelling = ref(false)
 const sendingItemId = ref<string | null>(null)
+const itemToCancel = ref<Newsletter | null>(null)
+const showCancelModal = ref(false)
 let sendingRefreshTimer: ReturnType<typeof setInterval> | null = null
 
 const imageUpload = useAdminFileUpload({
@@ -248,6 +252,30 @@ async function handleManualSend(item: Newsletter) {
   }
 }
 
+function confirmCancel(item: Newsletter) {
+  itemToCancel.value = item
+  showCancelModal.value = true
+}
+
+async function handleCancelSend() {
+  if (!itemToCancel.value) return
+  isCancelling.value = true
+  try {
+    await $fetch(`/api/admin/newsletter/${itemToCancel.value.id}/send`, { method: 'DELETE' })
+    showCancelModal.value = false
+    itemToCancel.value = null
+    await refresh()
+    toast.add({ title: 'Envío cancelado', color: 'success' })
+  } catch (error) {
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudo cancelar el envío'),
+      color: 'error',
+    })
+  } finally {
+    isCancelling.value = false
+  }
+}
+
 async function handleDelete() {
   if (!itemToDelete.value) return
   isDeleting.value = true
@@ -380,23 +408,38 @@ onBeforeUnmount(() => {
                 >ver destinatarios</span
               >
             </UTooltip>
+            <UTooltip
+              v-if="(item.lastDeliveryErrorCount ?? 0) > 0"
+              :text="`Los envíos fallidos no se reintentan automáticamente (máx. ${maxDeliveryAttempts} intentos por destinatario). Usa el botón de envío manual para volver a intentarlo.`"
+            >
+              <UIcon
+                name="i-tabler-info-circle"
+                class="text-error size-3.5 cursor-help"
+                aria-label="Los envíos fallidos requieren reenvío manual"
+              />
+            </UTooltip>
           </div>
         </div>
         <div class="flex gap-1">
           <UButton
-            v-if="!item.sentAt"
+            v-if="item.isSending"
+            icon="i-tabler-player-stop"
+            variant="ghost"
+            color="error"
+            size="sm"
+            :loading="isCancelling && itemToCancel?.id === item.id"
+            :aria-label="`Cancelar envío de newsletter de ${formatMonth(item.monthKey)}`"
+            title="Cancelar envío"
+            @click="confirmCancel(item)"
+          />
+          <UButton
+            v-else-if="!item.sentAt"
             icon="i-tabler-send"
             variant="ghost"
             size="sm"
             :loading="sendingItemId === item.id"
-            :disabled="!item.active || sendingItemId === item.id || item.isSending"
-            :title="
-              item.isSending
-                ? 'Ya se está enviando'
-                : !item.active
-                  ? 'Activa la newsletter para poder enviarla'
-                  : undefined
-            "
+            :disabled="!item.active || sendingItemId === item.id"
+            :title="!item.active ? 'Activa la newsletter para poder enviarla' : undefined"
             :aria-label="`Enviar newsletter de ${formatMonth(item.monthKey)}`"
             @click="handleManualSend(item)"
           />
@@ -520,6 +563,32 @@ onBeforeUnmount(() => {
             </UButton>
           </div>
         </form>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showCancelModal">
+      <template #content>
+        <div class="p-6">
+          <div class="mb-4 flex items-center gap-3">
+            <div
+              class="bg-warning/10 flex size-10 shrink-0 items-center justify-center rounded-full"
+            >
+              <UIcon name="i-tabler-player-stop" class="text-warning size-6" />
+            </div>
+            <h2 class="text-lg font-bold">Cancelar envío</h2>
+          </div>
+          <p class="text-muted mb-6">
+            ¿Seguro que quieres cancelar el envío de la newsletter de
+            <strong>{{ itemToCancel ? formatMonth(itemToCancel.monthKey) : '' }}</strong
+            >? Los correos ya enviados no se revertirán.
+          </p>
+          <div class="flex justify-end gap-2">
+            <UButton variant="ghost" @click="showCancelModal = false">Volver</UButton>
+            <UButton color="error" :loading="isCancelling" @click="handleCancelSend">
+              Cancelar envío
+            </UButton>
+          </div>
+        </div>
       </template>
     </UModal>
 

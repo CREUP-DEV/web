@@ -13,6 +13,7 @@ usePageSeo('team.title', 'team.description')
 const { areas, error, pending } = await useTeamPageData()
 
 type ViewMode = 'hierarchy' | 'area'
+
 const viewMode = useSyncedQueryParam<ViewMode>('view', {
   parse: (rawValue) => (rawValue === 'area' ? 'area' : 'hierarchy'),
   serialize: (value) => (value === 'hierarchy' ? null : value),
@@ -31,7 +32,7 @@ const {
 const copyEmail = (email: string) => copyToClipboard(email, t('common.emailCopied'))
 const selectedMember = ref<EnrichedMember | null>(null)
 const memberModalOpen = ref(false)
-
+const queuedAgendaMember = ref<EnrichedMember | null>(null)
 const agendaMember = ref<EnrichedMember | null>(null)
 const agendaOpen = ref(false)
 const agendaEvents = ref<CalendarEvent[]>([])
@@ -46,14 +47,15 @@ const agendaBodyClass = 'min-h-[220px] space-y-4 overflow-hidden px-1 pt-1'
 
 const openMemberModal = (member: EnrichedMember) => {
   selectedMember.value = member
+  queuedAgendaMember.value = null
   memberModalOpen.value = true
 }
 
 const openAgenda = async (member: EnrichedMember) => {
   agendaMember.value = member
-  agendaOpen.value = true
-  agendaEvents.value = []
   agendaLoading.value = true
+  agendaEvents.value = []
+  agendaOpen.value = true
 
   try {
     const response = await $fetch<{ events: CalendarEvent[] }>('/api/member-calendar', {
@@ -72,21 +74,36 @@ const openAgenda = async (member: EnrichedMember) => {
 
 const closeAgenda = () => {
   agendaOpen.value = false
-  agendaMember.value = null
-  agendaEvents.value = []
 }
 
 const closeMemberModal = () => {
   memberModalOpen.value = false
-  selectedMember.value = null
 }
 
-const openSelectedMemberAgenda = () => {
-  if (!selectedMember.value) {
+const handleMemberModalAfterLeave = () => {
+  const member = queuedAgendaMember.value
+
+  if (!member) {
+    selectedMember.value = null
     return
   }
 
-  void openAgenda(selectedMember.value)
+  queuedAgendaMember.value = null
+  selectedMember.value = null
+
+  requestAnimationFrame(() => {
+    void openAgenda(member)
+  })
+}
+
+const openSelectedMemberAgenda = () => {
+  const member = selectedMember.value
+
+  if (!member) {
+    return
+  }
+
+  queuedAgendaMember.value = member
   closeMemberModal()
 }
 
@@ -159,7 +176,6 @@ const tabItems = computed(() => [
                 :key="`exec-${member.areaId}`"
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
-                :area-label="member.areaName"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 :copy-email-aria-label="getCopyEmailAriaLabel(member.email)"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
@@ -190,7 +206,6 @@ const tabItems = computed(() => [
                 :key="`ext-${member.areaId}-${idx}`"
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
-                :area-label="member.areaName"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 :copy-email-aria-label="getCopyEmailAriaLabel(member.email)"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
@@ -241,13 +256,18 @@ const tabItems = computed(() => [
       </Transition>
     </UContainer>
 
-    <UModal v-model:open="memberModalOpen" :ui="memberModalUi" @close="closeMemberModal">
+    <UModal
+      v-model:open="memberModalOpen"
+      :ui="memberModalUi"
+      :title="t('team.memberModalTitle')"
+      @close="closeMemberModal"
+      @after:leave="handleMemberModalAfterLeave"
+    >
       <template #body>
         <TeamPersonModal
           v-if="selectedMember"
           :member="selectedMember"
           :display-name="getMemberDisplayName(selectedMember)"
-          :badge-label="selectedMember.areaName"
           :contact-email="getContactEmail(selectedMember)"
           :copy-email-aria-label="getCopyEmailAriaLabel(getContactEmail(selectedMember))"
           @copy-email="copyEmail"

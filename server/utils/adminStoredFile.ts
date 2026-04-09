@@ -89,20 +89,6 @@ function resolveRelativeFilename(storagePath: string | null | undefined, publicP
   return normalizedStoragePath.slice(publicPath.length + 1)
 }
 
-function resolveInactiveRelativeFilename(
-  storagePath: string | null | undefined,
-  publicPath: string
-) {
-  const normalizedStoragePath = storagePath?.trim()
-  const inactiveBasePath = `${INACTIVE_ADMIN_ASSET_BASE_PATH}${publicPath}`
-
-  if (!normalizedStoragePath || !normalizedStoragePath.startsWith(`${inactiveBasePath}/`)) {
-    return ''
-  }
-
-  return normalizedStoragePath.slice(inactiveBasePath.length + 1)
-}
-
 export function isTemporaryAdminStoragePath(storagePath: string) {
   return storagePath.trim().startsWith(`${TEMP_ADMIN_ASSET_BASE_PATH}/`)
 }
@@ -143,6 +129,8 @@ async function cleanupExpiredTempFiles(absoluteTempDir: string) {
 
   const expirationThreshold = Date.now() - TEMP_FILE_MAX_AGE_MS
 
+  const getFileAgeMs = (metadata: Awaited<ReturnType<typeof stat>>) => metadata.mtimeMs
+
   await Promise.all(
     entries.map(async (entry) => {
       if (entry === TEMP_CLEANUP_MARKER_FILENAME) {
@@ -153,7 +141,7 @@ async function cleanupExpiredTempFiles(absoluteTempDir: string) {
 
       try {
         const metadata = await stat(absoluteEntryPath)
-        if (metadata.isFile() && metadata.mtimeMs < expirationThreshold) {
+        if (metadata.isFile() && getFileAgeMs(metadata) < expirationThreshold) {
           await unlink(absoluteEntryPath)
         }
       } catch {
@@ -208,7 +196,10 @@ function resolveAdminFileSource(storagePath: string, publicPath: string) {
 
   const relativeFilename = resolveRelativeFilename(storagePath, publicPath)
   if (!relativeFilename || relativeFilename.includes('/')) {
-    return null
+    throw createError({
+      statusCode: 400,
+      message: 'La ruta del archivo no es válida',
+    })
   }
 
   return {
@@ -216,6 +207,46 @@ function resolveAdminFileSource(storagePath: string, publicPath: string) {
     currentFilename: basename(relativeFilename),
     kind: 'public' as const,
   }
+}
+
+async function resolveAdminReplacementFilename(
+  storagePath: string | null | undefined,
+  publicPath: string,
+  protectedPublicPaths?: string[]
+) {
+  const normalizedStoragePath = storagePath?.trim()
+
+  if (!normalizedStoragePath || protectedPublicPaths?.includes(normalizedStoragePath)) {
+    return ''
+  }
+
+  const isInternalStoragePath =
+    isTemporaryAdminStoragePath(normalizedStoragePath) ||
+    isInactiveAdminStoragePath(normalizedStoragePath)
+
+  const relativeFilename = isInternalStoragePath
+    ? basename(normalizedStoragePath)
+    : resolveRelativeFilename(normalizedStoragePath, publicPath)
+
+  if (!relativeFilename || (!isInternalStoragePath && relativeFilename.includes('/'))) {
+    throw createError({
+      statusCode: 400,
+      message: 'La ruta del archivo no es válida',
+    })
+  }
+
+  const absolutePath = isInternalStoragePath
+    ? resolveInternalAbsolutePath(normalizedStoragePath)
+    : resolvePublicAbsolutePath(normalizedStoragePath)
+
+  if (!(await fileExists(absolutePath))) {
+    throw createError({
+      statusCode: 400,
+      message: 'El archivo ya no está disponible',
+    })
+  }
+
+  return basename(relativeFilename)
 }
 
 export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
@@ -226,8 +257,11 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
   }
 
   const sourceFile = resolveAdminFileSource(normalizedStoragePath, options.publicPath)
-  if (!sourceFile || !(await fileExists(sourceFile.absolutePath))) {
-    return normalizedStoragePath
+  if (!(await fileExists(sourceFile.absolutePath))) {
+    throw createError({
+      statusCode: 400,
+      message: 'El archivo ya no está disponible',
+    })
   }
 
   const extension = extname(normalizedStoragePath).toLowerCase()
@@ -240,9 +274,10 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
     ? join(process.cwd(), options.uploadDir)
     : resolveInactiveUploadDir(options.publicPath)
   const currentFilename = sourceFile.currentFilename
-  const replaceFilename = basename(
-    resolveRelativeFilename(options.replaceStoragePath, options.publicPath) ||
-      resolveInactiveRelativeFilename(options.replaceStoragePath, options.publicPath)
+  const replaceFilename = await resolveAdminReplacementFilename(
+    options.replaceStoragePath,
+    options.publicPath,
+    options.protectedPublicPaths
   )
 
   await mkdir(absoluteUploadDir, { recursive: true })

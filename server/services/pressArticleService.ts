@@ -11,7 +11,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../utils/adminAssetPublication'
-import { throwAdminMutationError } from '../utils/adminErrors'
+import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/adminErrors'
 import { getRequiredTranslationValue } from '../utils/localizedContent'
 import {
   hasMeaningfulRichTextHtml,
@@ -23,6 +23,20 @@ import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date
 import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import type { z } from 'zod'
 import type { createPressArticleSchema } from '../utils/validation'
+
+function randomSlugSuffix(): string {
+  return Math.random().toString(16).slice(2, 6)
+}
+
+function isSlugUniqueConstraintViolation(error: unknown): boolean {
+  if (!isUniqueConstraintViolation(error)) return false
+  const e = error as { constraint?: string; detail?: string }
+  // If constraint name or detail mention slug, it's a slug collision.
+  // Fall back to accepting any unique violation if constraint info is absent.
+  if (e.constraint) return e.constraint.toLowerCase().includes('slug')
+  if (e.detail) return e.detail.toLowerCase().includes('slug')
+  return true
+}
 
 const IMAGE_UPLOAD_DIR = 'public/prensa/imagenes'
 const PDF_UPLOAD_DIR = 'public/prensa/documentos'
@@ -81,19 +95,26 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
   let pdfUrl: string | null = null
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
-  try {
-    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
-    if (!defaultTitle) throw new Error('El título en español es obligatorio')
+  // Runs one create transaction. imageSource/pdfSource allow a retry to pass
+  // the already-moved file paths from a failed first attempt.
+  async function runTransaction(
+    defaultTitle: string,
+    publishedAt: string,
+    publishedAtDate: Date,
+    opts: { forcedSlugSuffix?: string; imageSource?: string | null; pdfSource?: string | null }
+  ) {
+    return db.transaction(async (tx) => {
+      const slug = await generatePressSlug(defaultTitle, publishedAtDate, {
+        executor: tx,
+        forcedSuffix: opts.forcedSlugSuffix,
+      })
 
-    const publishedAt = data.publishedAt ?? dateValueToDateOnly(new Date())
-    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
+      const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
+      const effectivePdfSource = opts.pdfSource !== undefined ? opts.pdfSource : data.pdfUrl
 
-    const completeItem = await db.transaction(async (tx) => {
-      const slug = await generatePressSlug(defaultTitle, publishedAtDate, { executor: tx })
-
-      if (data.image) {
+      if (effectiveImageSource) {
         image = await finalizeAdminImage({
-          storagePath: data.image,
+          storagePath: effectiveImageSource,
           uploadDir: IMAGE_UPLOAD_DIR,
           publicPath: PRESS_IMAGE_PUBLIC_BASE,
           slug,
@@ -101,15 +122,15 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
           fallbackBaseName: 'prensa',
         })
         trackAdminAssetFinalization(cleanupTargets, {
-          sourceStoragePath: data.image,
+          sourceStoragePath: effectiveImageSource,
           storagePath: image,
           allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
         })
       }
 
-      pdfUrl = data.pdfUrl
+      pdfUrl = effectivePdfSource
         ? await finalizeAdminDocument({
-            storagePath: data.pdfUrl,
+            storagePath: effectivePdfSource,
             uploadDir: PDF_UPLOAD_DIR,
             publicPath: PRESS_DOCUMENT_PUBLIC_PATH,
             slug,
@@ -118,7 +139,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
           })
         : null
       trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: data.pdfUrl,
+        sourceStoragePath: effectivePdfSource,
         storagePath: pdfUrl,
         allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
       })
@@ -156,6 +177,46 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
         with: WITH_FULL_RELATIONS,
       })) as PressArticleQueryItem | null
     })
+  }
+
+  try {
+    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
+    if (!defaultTitle) throw new Error('El título en español es obligatorio')
+
+    const publishedAt = data.publishedAt ?? dateValueToDateOnly(new Date())
+    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
+
+    let completeItem: PressArticleQueryItem | null
+
+    try {
+      completeItem = await runTransaction(defaultTitle, publishedAt, publishedAtDate, {})
+    } catch (firstError) {
+      if (!isSlugUniqueConstraintViolation(firstError)) throw firstError
+
+      // Slug collision on insert — retry once with a random suffix on the slug.
+      // Capture the paths where assets were moved in the failed attempt so the
+      // retry can rename them to match the new slug instead of re-reading the
+      // (now-gone) temp source.
+      const firstImage = image
+      const firstPdfUrl = pdfUrl
+      image = null
+      pdfUrl = null
+      // Clear tracking so rollback cleanup doesn't double-delete on retry failure.
+      cleanupTargets.splice(0)
+
+      completeItem = await runTransaction(defaultTitle, publishedAt, publishedAtDate, {
+        forcedSlugSuffix: randomSlugSuffix(),
+        // Only override source if the first attempt actually moved the file;
+        // otherwise fall back to the original data path (file still in place).
+        imageSource: firstImage ?? undefined,
+        pdfSource: firstPdfUrl ?? undefined,
+      }).catch(() => {
+        throw createError({
+          statusCode: 409,
+          message: 'No se pudo generar un slug único para el artículo',
+        })
+      })
+    }
 
     if (data.image && data.image !== image) {
       await cleanupUnusedAdminAssetSafely(
@@ -186,31 +247,28 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
   let pdfUrl: string | null = null
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
-  try {
-    const existingItem = await db.query.pressArticles.findFirst({
-      where: eq(pressArticles.id, id),
-    })
-
-    if (!existingItem) throw createError({ statusCode: 404, message: 'No encontrado' })
-
-    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
-    if (!defaultTitle) throw new Error('El título en español es obligatorio')
-
-    const publishedAt = data.publishedAt ?? existingItem.publishedAt
-    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
-
-    previousImage = existingItem.image
-    previousPdfUrl = existingItem.pdfUrl
-
-    const item = await db.transaction(async (tx) => {
+  // Runs one update transaction. imageSource/pdfSource allow a retry to pass
+  // the already-moved file paths from a failed first attempt.
+  async function runTransaction(
+    existingItem: NonNullable<Awaited<ReturnType<typeof db.query.pressArticles.findFirst>>>,
+    publishedAt: string,
+    publishedAtDate: Date,
+    defaultTitle: string,
+    opts: { forcedSlugSuffix?: string; imageSource?: string | null; pdfSource?: string | null }
+  ) {
+    return db.transaction(async (tx) => {
       const slug = await generatePressSlug(defaultTitle, publishedAtDate, {
         excludeId: id,
         executor: tx,
+        forcedSuffix: opts.forcedSlugSuffix,
       })
 
-      if (data.image) {
+      const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
+      const effectivePdfSource = opts.pdfSource !== undefined ? opts.pdfSource : data.pdfUrl
+
+      if (effectiveImageSource) {
         image = await finalizeAdminImage({
-          storagePath: data.image,
+          storagePath: effectiveImageSource,
           uploadDir: IMAGE_UPLOAD_DIR,
           publicPath: PRESS_IMAGE_PUBLIC_BASE,
           slug,
@@ -219,15 +277,15 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
           replaceStoragePath: existingItem.image ?? undefined,
         })
         trackAdminAssetFinalization(cleanupTargets, {
-          sourceStoragePath: data.image,
+          sourceStoragePath: effectiveImageSource,
           storagePath: image,
           allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
         })
       }
 
-      pdfUrl = data.pdfUrl
+      pdfUrl = effectivePdfSource
         ? await finalizeAdminDocument({
-            storagePath: data.pdfUrl,
+            storagePath: effectivePdfSource,
             uploadDir: PDF_UPLOAD_DIR,
             publicPath: PRESS_DOCUMENT_PUBLIC_PATH,
             slug,
@@ -237,7 +295,7 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
           })
         : null
       trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: data.pdfUrl,
+        sourceStoragePath: effectivePdfSource,
         storagePath: pdfUrl,
         allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
       })
@@ -310,6 +368,55 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
         with: WITH_FULL_RELATIONS,
       })) as PressArticleQueryItem | null
     })
+  }
+
+  try {
+    const existingItem = await db.query.pressArticles.findFirst({
+      where: eq(pressArticles.id, id),
+    })
+
+    if (!existingItem) throw createError({ statusCode: 404, message: 'No encontrado' })
+
+    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
+    if (!defaultTitle) throw new Error('El título en español es obligatorio')
+
+    const publishedAt = data.publishedAt ?? existingItem.publishedAt
+    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
+
+    previousImage = existingItem.image
+    previousPdfUrl = existingItem.pdfUrl
+
+    let item: PressArticleQueryItem | null
+
+    try {
+      item = await runTransaction(existingItem, publishedAt, publishedAtDate, defaultTitle, {})
+    } catch (firstError) {
+      if (!isSlugUniqueConstraintViolation(firstError)) throw firstError
+
+      // Slug collision on update — retry once with a random suffix on the slug.
+      // Capture the paths where assets were moved in the failed attempt so the
+      // retry can rename them to match the new slug instead of re-reading the
+      // (now-gone) temp source.
+      const firstImage = image
+      const firstPdfUrl = pdfUrl
+      image = null
+      pdfUrl = null
+      // Clear tracking so rollback cleanup doesn't double-delete on retry failure.
+      cleanupTargets.splice(0)
+
+      item = await runTransaction(existingItem, publishedAt, publishedAtDate, defaultTitle, {
+        forcedSlugSuffix: randomSlugSuffix(),
+        // Only override source if the first attempt actually moved the file;
+        // otherwise fall back to the original data path (file still in place).
+        imageSource: firstImage ?? undefined,
+        pdfSource: firstPdfUrl ?? undefined,
+      }).catch(() => {
+        throw createError({
+          statusCode: 409,
+          message: 'No se pudo generar un slug único para el artículo',
+        })
+      })
+    }
 
     if (previousImage !== image) {
       await cleanupUnusedAdminAssetSafely(

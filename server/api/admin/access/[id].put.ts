@@ -2,7 +2,7 @@ import { createError, defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
-import { assertAdminAccessCanBeRevoked, getAdminAccessById } from '../../../utils/adminAccess'
+import { assertAdminAccessCanBeRevoked, getAdminAccessForUpdate } from '../../../utils/adminAccess'
 import {
   idRouteParamSchema,
   updateAdminAccessSchema,
@@ -16,25 +16,36 @@ export default defineEventHandler(async (event) => {
 
   try {
     const validated = validateBody(updateAdminAccessSchema, body)
-    const entry = await getAdminAccessById(id)
+    const item = await db.transaction(async (tx) => {
+      const entry = await getAdminAccessForUpdate(tx, id)
 
-    if (!entry) {
-      throw createError({ statusCode: 404, message: 'Acceso no encontrado' })
-    }
+      if (!entry) {
+        throw createError({ statusCode: 404, message: 'Acceso no encontrado' })
+      }
 
-    if (!validated.active) {
-      await assertAdminAccessCanBeRevoked(entry)
-    }
+      if (!validated.active) {
+        await assertAdminAccessCanBeRevoked(tx, entry)
+      }
 
-    const [item] = await db
-      .update(adminAccess)
-      .set({ active: validated.active })
-      .where(eq(adminAccess.id, id))
-      .returning()
+      const [updated] = await tx
+        .update(adminAccess)
+        .set({ active: validated.active })
+        .where(eq(adminAccess.id, id))
+        .returning()
+
+      if (!updated) {
+        throw createError({
+          statusCode: 500,
+          message: 'No se pudo actualizar el acceso',
+        })
+      }
+
+      return updated
+    })
 
     return { item }
   } catch (error) {
-    if (error instanceof Error && 'statusCode' in error) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
 

@@ -13,8 +13,17 @@ import {
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
+import { SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
 
 const cuid = () => createId()
+
+const SUPPORTED_LOCALE_SQL = sql.join(
+  SUPPORTED_LOCALE_CODES.map((locale) => sql`${locale}`),
+  sql.raw(', ')
+)
+
+const buildSupportedLocaleCheck = (localeColumn: unknown) =>
+  sql`${localeColumn} in (${SUPPORTED_LOCALE_SQL})`
 
 // Enums
 
@@ -53,7 +62,7 @@ export const carouselItemTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.carouselItemId),
-    check('carousel_item_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('carousel_item_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_carousel_item_translations_item_id').on(table.carouselItemId),
   ]
 )
@@ -95,7 +104,7 @@ export const tagTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.tagId),
-    check('tag_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('tag_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_tag_translations_tag_id').on(table.tagId),
   ]
 )
@@ -169,7 +178,7 @@ export const pressArticleTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.pressArticleId),
-    check('press_article_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('press_article_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_press_article_translations_article_id').on(table.pressArticleId),
   ]
 )
@@ -264,7 +273,7 @@ export const featuredLinkTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.featuredLinkId),
-    check('featured_link_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('featured_link_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_featured_link_translations_link_id').on(table.featuredLinkId),
   ]
 )
@@ -388,7 +397,7 @@ export const teamAreaTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.teamAreaId),
-    check('team_area_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('team_area_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_team_area_translations_area_id').on(table.teamAreaId),
   ]
 )
@@ -442,7 +451,7 @@ export const teamMemberTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.teamMemberId),
-    check('team_member_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('team_member_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_team_member_translations_member_id').on(table.teamMemberId),
   ]
 )
@@ -524,7 +533,7 @@ export const organizationMemberTranslations = pgTable(
       table.locale,
       table.organizationMemberId
     ),
-    check('organization_member_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('organization_member_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_organization_member_translations_member_id').on(table.organizationMemberId),
   ]
 )
@@ -600,17 +609,18 @@ export const newsletterSubscribers = pgTable(
     unsubscribedAt: timestamp('unsubscribed_at', { mode: 'date' }),
     /**
      * Pending double opt-in confirmation token.
-     * NULL means no pending confirmation. UNIQUE so tokens cannot collide
-     * (PostgreSQL UNIQUE allows multiple NULLs — they are treated as distinct).
+     * New confirmation links are signed and not stored in clear; this column
+     * remains for legacy rows that still need to be consumed or expired.
+     * UNIQUE so legacy tokens cannot collide.
      */
     confirmToken: text('confirm_token').unique(),
     /** Expiry timestamp for the confirmation token (48h TTL) */
     confirmTokenExpiresAt: timestamp('confirm_token_expires_at', { mode: 'date' }),
     /**
-     * Token for one-click unsubscribe links.
-     * UNIQUE ensures no two subscribers share the same token.
+     * Legacy unsubscribe token column kept for backward compatibility with
+     * old email links. New flows use signed tokens and leave this NULL.
      */
-    unsubscribeToken: text('unsubscribe_token').notNull().unique().$defaultFn(cuid),
+    unsubscribeToken: text('unsubscribe_token').unique(),
     /** Minimal evidence to demonstrate the consent request */
     consentIp: text('consent_ip'),
     consentUserAgent: text('consent_user_agent'),
@@ -771,7 +781,7 @@ export const equalityDocumentTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.equalityDocumentId),
-    check('equality_document_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('equality_document_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_equality_document_translations_document_id').on(table.equalityDocumentId),
   ]
 )
@@ -817,7 +827,7 @@ export const financialReportTranslations = pgTable(
   },
   (table) => [
     unique().on(table.locale, table.financialReportId),
-    check('financial_report_translations_locale_check', sql`${table.locale} in ('es', 'en')`),
+    check('financial_report_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_financial_report_translations_report_id').on(table.financialReportId),
   ]
 )

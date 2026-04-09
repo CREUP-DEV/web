@@ -1,6 +1,10 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { getOptionalConfigUrl, requireConfigString } from '~~/shared/utils/config'
+import {
+  getOptionalConfigString,
+  getOptionalConfigUrl,
+  requireConfigString,
+} from '~~/shared/utils/config'
 import { db } from '../db'
 import { users, sessions, accounts, verifications } from '../db/schema'
 import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
@@ -24,6 +28,11 @@ function getTrustedOrigins() {
 }
 
 export const auth = betterAuth({
+  secret: requireConfigString(
+    getOptionalConfigString(process.env.BETTER_AUTH_SECRET) ??
+      getOptionalConfigString(process.env.APP_SECRET),
+    'BETTER_AUTH_SECRET or APP_SECRET'
+  ),
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: {
@@ -35,6 +44,25 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: false,
+  },
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+    customRules: {
+      '/sign-in/email': {
+        window: 60,
+        max: 10,
+      },
+      '/sign-in/social': {
+        window: 60,
+        max: 20,
+      },
+      '/callback/*': {
+        window: 60,
+        max: 20,
+      },
+    },
   },
   socialProviders: {
     google: {

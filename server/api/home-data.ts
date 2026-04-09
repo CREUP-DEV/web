@@ -9,10 +9,15 @@ import { HOME_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicRouteVaryHeaders,
+} from '../utils/publicRouteCache'
 
 export default defineCachedEventHandler(
   async (event) => {
+    setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
 
     try {

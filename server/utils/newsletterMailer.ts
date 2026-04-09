@@ -1,4 +1,5 @@
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
+import { createNewsletterUnsubscribeToken } from './newsletterSubscribers'
 import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
 import { getSmtpTransporter } from './smtpTransporter'
 import { buildAbsoluteUrl, normalizeBaseUrl } from './urlBuilder'
@@ -13,25 +14,20 @@ interface Newsletter {
 interface Subscriber {
   id: string
   email: string
-  unsubscribeToken: string
+  subscribedAt: Date
 }
 
 function formatMonth(date: Date): string {
-  const months = [
-    'enero',
-    'febrero',
-    'marzo',
-    'abril',
-    'mayo',
-    'junio',
-    'julio',
-    'agosto',
-    'septiembre',
-    'octubre',
-    'noviembre',
-    'diciembre',
-  ]
-  return `${months[date.getMonth()]} de ${date.getFullYear()}`
+  const month = new Intl.DateTimeFormat('es-ES', {
+    month: 'long',
+    timeZone: 'Europe/Madrid',
+  }).format(date)
+  const year = new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    timeZone: 'Europe/Madrid',
+  }).format(date)
+  const monthCapitalized = month.charAt(0).toUpperCase() + month.slice(1)
+  return `${monthCapitalized} de ${year}`
 }
 
 function buildEmailHtml(newsletter: Newsletter, unsubscribeUrl: string, siteUrl: string): string {
@@ -69,7 +65,7 @@ function buildEmailHtml(newsletter: Newsletter, unsubscribeUrl: string, siteUrl:
                 style="background:#ffffff; border-top: 4px solid #792225; border-top-left-radius:5px; border-top-right-radius:5px;">
                 <tr>
                   <td align="center" style="padding: 24px 16px 8px 16px; font-family: Arial, sans-serif; font-size:20px; font-weight:bold; color:#2c2c2c;">
-                    ${monthStr.charAt(0).toUpperCase() + monthStr.slice(1)}
+                    ${monthStr}
                   </td>
                 </tr>
                 <tr>
@@ -153,10 +149,11 @@ export async function sendNewsletterEmail(
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
   const monthStr = formatMonth(new Date(newsletter.month))
-  const subject = `Newsletter CREUP — ${monthStr.charAt(0).toUpperCase() + monthStr.slice(1)}`
+  const subject = `Newsletter CREUP — ${monthStr}`
+  const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, subscriber.subscribedAt)
   const unsubscribeUrl = buildAbsoluteUrl(
     siteUrl,
-    `/desuscribirse?token=${encodeURIComponent(subscriber.unsubscribeToken)}`
+    `/desuscribirse?token=${encodeURIComponent(unsubscribeToken)}`
   )
 
   await transporter.sendMail({
@@ -168,7 +165,6 @@ export async function sendNewsletterEmail(
     messageId: buildNewsletterMessageId(newsletter.id, subscriber.id, siteUrl),
     headers: {
       'List-Unsubscribe': `<${unsubscribeUrl}>`,
-      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     },
   })
 }

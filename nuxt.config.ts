@@ -3,6 +3,7 @@ import { requireConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
 
 const isDev = process.env.NODE_ENV !== 'production'
+const appSecret = process.env.APP_SECRET?.trim() || undefined
 const siteUrl = isDev
   ? requireConfigUrl(process.env.SITE_URL || 'http://localhost:3000', 'SITE_URL')
   : requireConfigUrl(process.env.SITE_URL, 'SITE_URL')
@@ -19,10 +20,11 @@ const internalImageAlias = Object.fromEntries(
 const siteName = 'CREUP'
 const siteDescription =
   'Coordinadora de Representantes de Estudiantes de Universidades Públicas - Representando a más de 1.000.000 de estudiantes en toda España.'
+const adminAuthHandler = './server/handlers/admin-auth.ts'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
+  compatibilityDate: '2026-04-09',
   devtools: { enabled: true },
   vite: {
     plugins: [tailwindcss()],
@@ -41,6 +43,7 @@ export default defineNuxtConfig({
         '@formkit/auto-animate/vue',
         'sortablejs',
         '@internationalized/date',
+        'zod',
       ],
     },
     build: {
@@ -134,6 +137,9 @@ export default defineNuxtConfig({
 
   // OG Image configuration
   ogImage: {
+    security: {
+      secret: appSecret,
+    },
     defaults: {
       width: 1200,
       height: 630,
@@ -157,18 +163,18 @@ export default defineNuxtConfig({
     '/**': {
       headers: {
         'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
         // CSP: unsafe-inline still required by Nuxt SSR inline scripts + Tailwind CSS-in-JS.
         // unsafe-eval has been removed — if a dependency reintroduces it, audit before re-adding.
         // TODO: replace unsafe-inline with a nonce strategy once Nuxt supports it end-to-end.
         'Content-Security-Policy':
-          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
       },
     },
     '/admin/**': {
       headers: {
-        'X-Frame-Options': 'DENY',
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     },
@@ -178,6 +184,14 @@ export default defineNuxtConfig({
       },
     },
   },
+
+  serverHandlers: [
+    {
+      route: '/api/admin/**',
+      middleware: true,
+      handler: adminAuthHandler,
+    },
+  ],
 
   // Link checker (disabled in dev for performance)
   linkChecker: {
@@ -225,7 +239,7 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     prerender: {
       crawlLinks: false,
-      failOnError: false,
+      failOnError: true,
     },
   },
 

@@ -1,21 +1,23 @@
 import { createError, defineEventHandler } from 'h3'
+import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
-import { assertAdminAccessCanBeRevoked, getAdminAccessById } from '../../../utils/adminAccess'
+import { assertAdminAccessCanBeRevoked, getAdminAccessForUpdate } from '../../../utils/adminAccess'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
-import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
 
-  const entry = await getAdminAccessById(id)
+  await db.transaction(async (tx) => {
+    const entry = await getAdminAccessForUpdate(tx, id)
 
-  if (!entry) {
-    throw createError({ statusCode: 404, message: 'Acceso no encontrado' })
-  }
+    if (!entry) {
+      throw createError({ statusCode: 404, message: 'Acceso no encontrado' })
+    }
 
-  await assertAdminAccessCanBeRevoked(entry)
-  await db.delete(adminAccess).where(eq(adminAccess.id, id))
+    await assertAdminAccessCanBeRevoked(tx, entry)
+    await tx.delete(adminAccess).where(eq(adminAccess.id, id))
+  })
 
   return { success: true }
 })

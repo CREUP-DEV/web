@@ -12,8 +12,6 @@ import {
   NEWSLETTER_CONSENT_TEXT_VERSION,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   createConfirmTokenExpiresAt,
-  createNewsletterConfirmToken,
-  createNewsletterUnsubscribeToken,
   getNewsletterConsentEvidence,
   recordNewsletterSubscriptionEvent,
   sendNewsletterAlreadySubscribedEmail,
@@ -21,7 +19,7 @@ import {
 } from '../utils/newsletterSubscribers'
 
 export default defineEventHandler(async (event) => {
-  const { locale } = getRequestLocaleContext(event)
+  const { locale, locales, defaultLocale } = getRequestLocaleContext(event)
   const newsletterRateLimitedMessage = getPublicApiErrorMessage(event, 'newsletterRateLimited')
   const newsletterSubscriptionFailedMessage = getPublicApiErrorMessage(
     event,
@@ -49,7 +47,6 @@ export default defineEventHandler(async (event) => {
     }
 
     const email = body.email.trim().toLowerCase()
-    const confirmToken = createNewsletterConfirmToken()
     const confirmTokenExpiresAt = createConfirmTokenExpiresAt()
     const consentEvidence = getNewsletterConsentEvidence(event)
 
@@ -57,6 +54,8 @@ export default defineEventHandler(async (event) => {
     // This keeps the DB transaction short and avoids sending emails
     // that get rolled back if the transaction fails.
     let pendingEmailType: 'confirmation' | 'already_subscribed' | null = null
+    let pendingSubscriberId: string | null = null
+    let pendingSubscriberSubscribedAt: Date | null = null
 
     await db.transaction(async (tx) => {
       const existing = await tx.query.newsletterSubscribers.findFirst({
@@ -65,6 +64,8 @@ export default defineEventHandler(async (event) => {
 
       if (existing && existing.active) {
         pendingEmailType = 'already_subscribed'
+        pendingSubscriberId = existing.id
+        pendingSubscriberSubscribedAt = existing.subscribedAt
         return
       }
 
@@ -74,9 +75,8 @@ export default defineEventHandler(async (event) => {
           .set({
             active: false,
             ageConfirmed: true,
-            confirmToken,
             confirmTokenExpiresAt,
-            confirmedAt: null,
+            confirmedAt: existing.confirmedAt ?? null,
             consentIp: consentEvidence.consentIp,
             consentSource: NEWSLETTER_CONSENT_SOURCES.webForm,
             consentTextVersion: NEWSLETTER_CONSENT_TEXT_VERSION,
@@ -84,7 +84,7 @@ export default defineEventHandler(async (event) => {
             locale,
             subscribedAt: new Date(),
             unsubscribedAt: null,
-            unsubscribeToken: createNewsletterUnsubscribeToken(),
+            unsubscribeToken: null,
           })
           .where(eq(newsletterSubscribers.id, existing.id))
           .returning()
@@ -95,6 +95,8 @@ export default defineEventHandler(async (event) => {
             message: newsletterSubscriptionFailedMessage,
           })
         }
+
+        pendingSubscriberId = item.id
 
         await recordNewsletterSubscriptionEvent(
           {
@@ -112,7 +114,6 @@ export default defineEventHandler(async (event) => {
             ...consentEvidence,
             active: false,
             ageConfirmed: true,
-            confirmToken,
             confirmTokenExpiresAt,
             confirmedAt: null,
             consentSource: NEWSLETTER_CONSENT_SOURCES.webForm,
@@ -121,7 +122,7 @@ export default defineEventHandler(async (event) => {
             locale,
             subscribedAt: new Date(),
             unsubscribedAt: null,
-            unsubscribeToken: createNewsletterUnsubscribeToken(),
+            unsubscribeToken: null,
           })
           .returning()
 
@@ -131,6 +132,8 @@ export default defineEventHandler(async (event) => {
             message: newsletterSubscriptionFailedMessage,
           })
         }
+
+        pendingSubscriberId = item.id
 
         await recordNewsletterSubscriptionEvent(
           {
@@ -148,12 +151,15 @@ export default defineEventHandler(async (event) => {
 
     // Send email after transaction is committed to avoid sending emails
     // for changes that may later be rolled back.
-    if (pendingEmailType === 'confirmation') {
+    if (pendingEmailType === 'confirmation' && pendingSubscriberId) {
       try {
         await sendNewsletterConfirmationEmail(
           email,
-          confirmToken,
+          pendingSubscriberId,
+          confirmTokenExpiresAt,
           locale,
+          locales,
+          defaultLocale,
           newsletterSubscriptionFailedMessage
         )
       } catch {
@@ -164,9 +170,14 @@ export default defineEventHandler(async (event) => {
       }
     } else if (pendingEmailType === 'already_subscribed') {
       // Best-effort: don't fail the request if this secondary email errors
-      sendNewsletterAlreadySubscribedEmail(email, newsletterSubscriptionFailedMessage).catch(
-        () => {}
-      )
+      if (pendingSubscriberId && pendingSubscriberSubscribedAt) {
+        sendNewsletterAlreadySubscribedEmail(
+          email,
+          pendingSubscriberId,
+          pendingSubscriberSubscribedAt,
+          newsletterSubscriptionFailedMessage
+        ).catch(() => {})
+      }
     }
 
     return { success: true }

@@ -38,7 +38,6 @@ export const useMembersDirectory = ({
 }: UseMembersDirectoryOptions) => {
   const { t, locale } = useI18n()
   const { getLanguageTag } = useLocales()
-  const localePath = useLocalePath()
   const { getCopyEmailAriaLabel } = usePersonHelpers()
 
   const selectedCommunity = externalSelectedCommunity ?? ref<string | null>(null)
@@ -78,12 +77,6 @@ export const useMembersDirectory = ({
 
   const getSectorialDetailsAriaLabel = (sectorial: SectorialMember) =>
     `${t('members.sectoriales.viewDetails')}: ${getSectorialImageAlt(sectorial)}`
-
-  const getMemberHref = (member: OrganizationMember) =>
-    localePath(`/conocenos/miembros/${member.slug}`)
-
-  const getSectorialHref = (sectorial: SectorialMember) =>
-    localePath(`/conocenos/miembros/sectoriales/${sectorial.id}`)
 
   const filteredMembers = computed(() => {
     if (!selectedCommunity.value) {
@@ -219,12 +212,10 @@ export const useMembersDirectory = ({
     getMemberAnimationStyle,
     getMemberDenominationLabel,
     getMemberDetailsAriaLabel,
-    getMemberHref,
     getMemberImageAlt,
     getMemberUniversityLabel,
     getSectorialDenominationLabel,
     getSectorialDetailsAriaLabel,
-    getSectorialHref,
     getSectorialImageAlt,
     handleCommunitySelect,
     memberCounts,

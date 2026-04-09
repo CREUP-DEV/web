@@ -1,5 +1,5 @@
 import { defineEventHandler, createError, setHeader } from 'h3'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, lte, sql } from 'drizzle-orm'
 import { db } from '../../db'
 import { pressArticles } from '../../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
@@ -19,7 +19,11 @@ export default defineEventHandler(async (event) => {
 
   try {
     const article = await db.query.pressArticles.findFirst({
-      where: and(eq(pressArticles.slug, slug), eq(pressArticles.active, true)),
+      where: and(
+        eq(pressArticles.slug, slug),
+        eq(pressArticles.active, true),
+        lte(pressArticles.publishedAt, sql`CURRENT_DATE`)
+      ),
       with: {
         translations: true,
         tags: {

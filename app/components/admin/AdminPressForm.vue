@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
+import type { PressArticleType } from '~~/shared/constants/pressTypes'
+import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import {
   calendarDateLikeToDateOnly,
   dateValueToDateOnly,
   parseDateOnlyString,
 } from '~~/shared/utils/date'
-
-type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
 
 interface Translation {
   locale: string
@@ -174,12 +174,7 @@ const typeIcons: Record<PressArticleType, string> = {
 
 const publicArticleUrl = computed(() => {
   if (!props.article?.slug) return null
-  const prefixes: Record<PressArticleType, string> = {
-    press_release: '/prensa/notas-prensa',
-    statement: '/prensa/comunicados',
-    media_appearance: '/prensa/en-los-medios',
-  }
-  return `${prefixes[props.article.type]}/${props.article.slug}`
+  return `${getPressArticlePublicListPath(props.article.type)}/${props.article.slug}`
 })
 
 const submitAttempted = ref(false)

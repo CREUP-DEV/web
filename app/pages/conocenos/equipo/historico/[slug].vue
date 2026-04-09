@@ -320,7 +320,7 @@ const modalAssignmentDuration = computed(() =>
 
     <UModal
       v-model:open="modalOpen"
-      :title="selectedAssignment?.member.denomination || selectedAreaName"
+      :title="selectedAssignment ? getFullName(selectedAssignment.member) : undefined"
       :description="t('team.memberModalDescription')"
       @close="closeMemberModal"
     >
@@ -329,7 +329,6 @@ const modalAssignmentDuration = computed(() =>
           v-if="selectedAssignment"
           :member="selectedAssignment.member"
           :display-name="getFullName(selectedAssignment.member)"
-          :badge-label="selectedAreaName"
           :assignment-start="modalAssignmentStart"
           :assignment-end="modalAssignmentEnd"
           :assignment-duration="modalAssignmentDuration"

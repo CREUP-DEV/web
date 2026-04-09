@@ -81,21 +81,6 @@ export async function isAdminEmailAuthorized(email: string) {
   return Boolean(authorizedEmail)
 }
 
-export async function getAdminAccessById(id: string) {
-  const [entry] = await db.select().from(adminAccess).where(eq(adminAccess.id, id)).limit(1)
-  return entry ?? null
-}
-
-export async function countEffectiveActiveAdmins() {
-  const envEmails = getEnvAdminEmails()
-  const dbAdmins = await db
-    .select({ email: adminAccess.email })
-    .from(adminAccess)
-    .where(eq(adminAccess.active, true))
-
-  return new Set([...envEmails, ...dbAdmins.map((entry) => normalizeAdminEmail(entry.email))]).size
-}
-
 export async function getAdminAccessSummary() {
   const envEmails = getEnvAdminEmails()
   const dbEntries = await db
@@ -128,7 +113,33 @@ export async function getAdminAccessSummary() {
   }
 }
 
-export async function assertAdminAccessCanBeRevoked(entry: { email: string; active: boolean }) {
+type AdminAccessTx = Pick<typeof db, 'select' | 'delete' | 'update'>
+
+async function countActiveDatabaseAdmins(tx: AdminAccessTx) {
+  const rows = await tx
+    .select({ id: adminAccess.id })
+    .from(adminAccess)
+    .where(eq(adminAccess.active, true))
+    .for('update')
+
+  return rows.length
+}
+
+export async function getAdminAccessForUpdate(tx: AdminAccessTx, id: string) {
+  const [entry] = await tx
+    .select()
+    .from(adminAccess)
+    .where(eq(adminAccess.id, id))
+    .for('update')
+    .limit(1)
+
+  return entry ?? null
+}
+
+export async function assertAdminAccessCanBeRevoked(
+  tx: AdminAccessTx,
+  entry: { email: string; active: boolean }
+) {
   const normalizedEmail = normalizeAdminEmail(entry.email)
 
   if (isEnvAdminEmail(normalizedEmail)) {
@@ -142,8 +153,12 @@ export async function assertAdminAccessCanBeRevoked(entry: { email: string; acti
     return
   }
 
-  const activeAdminCount = await countEffectiveActiveAdmins()
-  if (activeAdminCount <= 1) {
+  if (getEnvAdminEmails().length > 0) {
+    return
+  }
+
+  const activeDbAdminCount = await countActiveDatabaseAdmins(tx)
+  if (activeDbAdminCount <= 1) {
     throw createError({
       statusCode: 400,
       message: 'No puedes dejar el panel sin administradores activos.',

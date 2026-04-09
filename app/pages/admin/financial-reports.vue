@@ -285,6 +285,7 @@ const handlePdfSelect = async (event: Event) => {
           <div class="flex flex-wrap items-center gap-2 md:justify-end">
             <UButton
               :href="item.pdfUrl"
+              external
               target="_blank"
               rel="noopener noreferrer"
               variant="outline"

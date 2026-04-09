@@ -3,6 +3,7 @@ import createDOMPurify, { type WindowLike } from 'dompurify'
 import { JSDOM } from 'jsdom'
 import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
+import sharp from 'sharp'
 import { slugify } from './slug'
 import { finalizeAdminFile, saveTemporaryAdminFile } from './adminStoredFile'
 import { logError } from './logger'
@@ -20,6 +21,9 @@ export const ALLOWED_ADMIN_IMAGE_EXTENSIONS = [
 const VECTOR_IMAGE_EXTENSIONS = new Set(['.svg'])
 const OUTPUT_IMAGE_EXTENSIONS = new Set([...ALLOWED_ADMIN_IMAGE_EXTENSIONS, '.webp'])
 const OUTPUT_IMAGE_EXTENSION_LIST = Array.from(OUTPUT_IMAGE_EXTENSIONS)
+const MAX_RASTER_IMAGE_DIMENSION = 10000
+const MAX_RASTER_IMAGE_PIXELS = 80_000_000
+const MAX_RASTER_IMAGE_FRAMES = 100
 
 const svgPurifier = createDOMPurify(new JSDOM('').window as unknown as WindowLike)
 const blockedSvgTags = new Set([
@@ -95,6 +99,41 @@ const disallowedSvgError = () =>
     statusCode: 400,
     message: 'El SVG contiene elementos no permitidos',
   })
+
+const invalidRasterImageError = (reason: string) =>
+  createError({
+    statusCode: 400,
+    message: `La imagen subida no es válida (${reason})`,
+  })
+
+function validateRasterImageMetadata(metadata: sharp.Metadata) {
+  const width = metadata.width
+  const height = metadata.height
+
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
+    throw invalidRasterImageError('dimensiones no válidas')
+  }
+
+  if (width > MAX_RASTER_IMAGE_DIMENSION || height > MAX_RASTER_IMAGE_DIMENSION) {
+    throw invalidRasterImageError(
+      `dimensiones demasiado grandes (máximo ${MAX_RASTER_IMAGE_DIMENSION}px por lado)`
+    )
+  }
+
+  const frames = metadata.pages ?? 1
+  if (!Number.isInteger(frames) || frames <= 0) {
+    throw invalidRasterImageError('número de fotogramas no válido')
+  }
+
+  if (frames > MAX_RASTER_IMAGE_FRAMES) {
+    throw invalidRasterImageError(`demasiados fotogramas (máximo ${MAX_RASTER_IMAGE_FRAMES})`)
+  }
+
+  const totalPixels = width * height * frames
+  if (totalPixels > MAX_RASTER_IMAGE_PIXELS) {
+    throw invalidRasterImageError('demasiados píxeles para procesar de forma segura')
+  }
+}
 
 function sanitizeSvgContent(data: Buffer): Buffer {
   const source = data.toString('utf8').trim()
@@ -193,21 +232,17 @@ interface SaveAdminImageOptions {
 const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024
 
 async function convertRasterImageToWebp(data: Buffer) {
-  let sharp: typeof import('sharp')
+  const metadata = await sharp(data, { animated: true }).metadata()
+  validateRasterImageMetadata(metadata)
 
   try {
-    const sharpModule = await import('sharp')
-    sharp = sharpModule.default
-  } catch (error) {
-    logError('admin-image-upload.load-sharp', error)
-    throw createError({
-      statusCode: 500,
-      message: 'No se ha podido procesar la imagen subida',
+    return await sharp(data, {
+      animated: true,
+      limitInputPixels: MAX_RASTER_IMAGE_PIXELS,
     })
-  }
-
-  try {
-    return await sharp(data, { animated: true }).rotate().webp({ quality: 82 }).toBuffer()
+      .rotate()
+      .webp({ quality: 82 })
+      .toBuffer()
   } catch (error) {
     logError('admin-image-upload.convert-raster', error)
     throw createError({

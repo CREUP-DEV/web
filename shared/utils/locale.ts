@@ -211,6 +211,51 @@ export const extractLocaleCodeFromPathname = (
   return locales.find((locale) => locale.code === firstSegment.toLowerCase())?.code ?? null
 }
 
+const normalizeLocalizedPath = (path: string) => {
+  const trimmedPath = path.trim()
+  if (!trimmedPath) {
+    return '/'
+  }
+
+  return trimmedPath.startsWith('/') ? trimmedPath : `/${trimmedPath}`
+}
+
+export function buildLocalizedPathFromLocale(
+  path: string,
+  locale: string | null | undefined,
+  locales: LocaleDefinition[],
+  defaultLocale: string
+) {
+  const normalizedPath = normalizeLocalizedPath(path)
+  const normalizedDefaultLocale =
+    String(defaultLocale ?? '')
+      .trim()
+      .toLowerCase() || DEFAULT_LOCALE_CODE
+  const normalizedLocale = resolveLocaleCode(locale, locales, normalizedDefaultLocale)
+
+  if (!normalizedLocale || normalizedLocale === normalizedDefaultLocale) {
+    return normalizedPath
+  }
+
+  return `/${normalizedLocale}${normalizedPath}`
+}
+
+export function buildLocalizedAlternates(
+  path: string,
+  locales: LocaleDefinition[],
+  defaultLocale: string
+) {
+  const normalizedPath = normalizeLocalizedPath(path)
+  const alternates = locales.map((locale) => ({
+    hreflang: locale.code,
+    href: buildLocalizedPathFromLocale(normalizedPath, locale.code, locales, defaultLocale),
+  }))
+  const defaultHref =
+    alternates.find((alternate) => alternate.hreflang === defaultLocale)?.href ?? normalizedPath
+
+  return [...alternates, { hreflang: 'x-default', href: defaultHref }]
+}
+
 export const pickLocalizedEntry = <T extends { locale: string }>(
   entries: T[],
   locale: string | null | undefined,

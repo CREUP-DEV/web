@@ -92,6 +92,11 @@ const closeMemberModal = () => {
 }
 
 const copyEmail = (email: string) => copyToClipboard(email, t('common.emailCopied'))
+
+function encodeEmail(email: string) {
+  const [user = '', domain = ''] = email.split('@')
+  return { eu: btoa(user), ed: btoa(domain) }
+}
 </script>
 
 <template>
@@ -188,7 +193,7 @@ const copyEmail = (email: string) => copyToClipboard(email, t('common.emailCopie
                   @click="copyEmail(member.email)"
                 >
                   <UIcon name="i-tabler-mail" class="size-4" />
-                  <span>{{ member.email }}</span>
+                  <ObfuscatedEmail v-bind="encodeEmail(member.email)" />
                 </button>
               </div>
             </article>

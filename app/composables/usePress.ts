@@ -1,6 +1,7 @@
 import type { MaybeRef } from 'vue'
+import type { PressArticleType } from '~~/shared/constants/pressTypes'
 
-export type PressArticleType = 'press_release' | 'statement' | 'media_appearance'
+export type { PressArticleType }
 
 export interface PressArticleTag {
   slug: string

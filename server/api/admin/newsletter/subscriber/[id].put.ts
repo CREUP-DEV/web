@@ -13,7 +13,6 @@ import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_CONSENT_TEXT_VERSION,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
-  createNewsletterUnsubscribeToken,
   recordNewsletterSubscriptionEvent,
 } from '../../../../utils/newsletterSubscribers'
 
@@ -44,9 +43,7 @@ function buildSubscriberUpdateValues(
       confirmTokenExpiresAt: null,
       subscribedAt: isReactivation ? now : existing.subscribedAt,
       unsubscribedAt: null,
-      unsubscribeToken: isReactivation
-        ? createNewsletterUnsubscribeToken()
-        : existing.unsubscribeToken,
+      unsubscribeToken: null,
     }
   }
 
@@ -61,9 +58,7 @@ function buildSubscriberUpdateValues(
     consentTextVersion: NEWSLETTER_CONSENT_TEXT_VERSION,
     consentUserAgent: null,
     unsubscribedAt: existing.active ? now : (existing.unsubscribedAt ?? now),
-    unsubscribeToken: existing.active
-      ? createNewsletterUnsubscribeToken()
-      : existing.unsubscribeToken,
+    unsubscribeToken: null,
   }
 }
 

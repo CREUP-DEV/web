@@ -141,6 +141,7 @@
     "degree": "Degree",
     "publicAgenda": "Public agenda",
     "publicAgendaOf": "{name}'s public agenda",
+    "memberModalTitle": "Team profile",
     "memberModalDescription": "Profile details for the person.",
     "agendaModalDescription": "Upcoming events in the person's public agenda.",
     "noEvents": "No upcoming events scheduled.",
@@ -337,6 +338,7 @@
     "unknownUniversity": "University not specified",
     "unknownDenomination": "Designation not specified",
     "viewDetails": "View details",
+    "memberModalTitle": "Organisation details",
     "memberModalDescription": "Details of the selected organization.",
     "descriptionLabel": "Description",
     "info": "Information and contact",
@@ -652,9 +654,17 @@
       "title": "Subscription confirmed",
       "description": "Your address is now active for receiving the CREUP newsletter."
     },
+    "alreadyConfirmed": {
+      "title": "Subscription already confirmed",
+      "description": "This address was already active for the CREUP newsletter."
+    },
     "confirmedExpired": {
       "title": "The confirmation link has expired",
       "description": "Submit the subscription form again to receive a new link."
+    },
+    "confirmedInvalid": {
+      "title": "The confirmation link is not valid",
+      "description": "Check the email you received or subscribe again to generate a new link."
     },
     "unsubscribe": {
       "title": "You have unsubscribed from the newsletter",
@@ -676,7 +686,6 @@
       "consentPrefix": "I accept the processing of my data to manage the newsletter subscription in accordance with the ",
       "consentLink": "legal notice and privacy policy",
       "consentSuffix": ".",
-      "ageConfirmedLabel": "I confirm that I am at least 14 years old or that I have authorisation from my legal representatives.",
       "privacyInfoTitle": "Basic data protection information",
       "privacyInfoController": "Website owner (art. 10 LSSI-CE) and data controller: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP).",
       "privacyInfoPurpose": "Purpose: manage the newsletter subscription and send periodic communications about CREUP's activities.",
@@ -689,8 +698,7 @@
       "errors": {
         "emailRequired": "Email is required",
         "emailInvalid": "Enter a valid email address",
-        "consentRequired": "You must accept the privacy policy to subscribe",
-        "ageConfirmedRequired": "You must confirm that you are at least 14 or have legal authorisation"
+        "consentRequired": "You must accept the privacy policy to subscribe"
       }
     },
     "archive": {
@@ -727,6 +735,12 @@
       "title": "Confirm newsletter subscription",
       "description": "Confirm your subscription to the CREUP newsletter."
     },
+    "confirmedTitle": "Subscription confirmed",
+    "confirmedDescription": "Your address is now active for receiving the CREUP newsletter.",
+    "alreadyConfirmedTitle": "Subscription already confirmed",
+    "alreadyConfirmedDescription": "This address was already active for the CREUP newsletter.",
+    "expiredTitle": "The confirmation link has expired",
+    "expiredDescription": "Submit the subscription form again to receive a new link.",
     "processingTitle": "Confirming your subscription",
     "processingDescription": "We are activating your CREUP newsletter subscription.",
     "invalidTitle": "Invalid link",

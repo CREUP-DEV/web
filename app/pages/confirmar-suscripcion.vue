@@ -2,13 +2,21 @@
 const localePath = useLocalePath()
 const { t } = useI18n()
 const route = useRoute()
-
 const token = computed(() => {
   const raw = route.query.token
   return typeof raw === 'string' ? raw.trim() : ''
 })
 
-const state = ref<'idle' | 'loading' | 'success' | 'expired' | 'error'>('idle')
+type ConfirmState =
+  | 'idle'
+  | 'loading'
+  | 'confirmed'
+  | 'already-confirmed'
+  | 'expired'
+  | 'invalid'
+  | 'error'
+
+const state = ref<ConfirmState>('idle')
 
 useSeoMeta({
   title: t('confirmSubscription.seo.title'),
@@ -22,7 +30,7 @@ async function confirm() {
   state.value = 'loading'
 
   try {
-    const result = await $fetch<{ success: boolean; redirectTo: string }>(
+    const result = await $fetch<{ redirectTo: string; status: ConfirmState; success: boolean }>(
       '/api/newsletter-confirm',
       {
         method: 'POST',
@@ -30,13 +38,8 @@ async function confirm() {
       }
     )
 
-    if (result.success) {
-      state.value = 'success'
-      await navigateTo(localePath(result.redirectTo))
-    } else {
-      state.value = 'expired'
-      await navigateTo(localePath(result.redirectTo))
-    }
+    state.value = result.status
+    await navigateTo(localePath(result.redirectTo))
   } catch {
     state.value = 'error'
   }
@@ -65,7 +68,6 @@ onMounted(() => {
             {{ t('confirmSubscription.backToNewsletter') }}
           </UButton>
         </template>
-
         <template v-else-if="state === 'error'">
           <UIcon name="i-tabler-alert-circle" class="text-error mx-auto mb-4 size-12" />
           <h1 class="mb-2 text-xl font-bold">
@@ -78,7 +80,51 @@ onMounted(() => {
             {{ t('confirmSubscription.backToNewsletter') }}
           </UButton>
         </template>
-
+        <template v-else-if="state === 'already-confirmed'">
+          <UIcon name="i-tabler-mail-check" class="text-success mx-auto mb-4 size-12" />
+          <h1 class="mb-2 text-xl font-bold">
+            {{ t('confirmSubscription.alreadyConfirmedTitle') }}
+          </h1>
+          <p class="text-muted mb-6">
+            {{ t('confirmSubscription.alreadyConfirmedDescription') }}
+          </p>
+          <UButton :to="localePath('/prensa/newsletter')" variant="outline">
+            {{ t('confirmSubscription.backToNewsletter') }}
+          </UButton>
+        </template>
+        <template v-else-if="state === 'expired'">
+          <UIcon name="i-tabler-mail-x" class="text-warning mx-auto mb-4 size-12" />
+          <h1 class="mb-2 text-xl font-bold">
+            {{ t('confirmSubscription.expiredTitle') }}
+          </h1>
+          <p class="text-muted mb-6">
+            {{ t('confirmSubscription.expiredDescription') }}
+          </p>
+          <UButton :to="localePath('/prensa/newsletter')" variant="outline">
+            {{ t('confirmSubscription.backToNewsletter') }}
+          </UButton>
+        </template>
+        <template v-else-if="state === 'invalid'">
+          <UIcon name="i-tabler-alert-circle" class="text-error mx-auto mb-4 size-12" />
+          <h1 class="mb-2 text-xl font-bold">
+            {{ t('confirmSubscription.invalidTitle') }}
+          </h1>
+          <p class="text-muted mb-6">
+            {{ t('confirmSubscription.invalidDescription') }}
+          </p>
+          <UButton :to="localePath('/prensa/newsletter')" variant="outline">
+            {{ t('confirmSubscription.backToNewsletter') }}
+          </UButton>
+        </template>
+        <template v-else-if="state === 'confirmed'">
+          <UIcon name="i-tabler-mail-check" class="text-success mx-auto mb-4 size-12" />
+          <h1 class="mb-2 text-xl font-bold">
+            {{ t('confirmSubscription.confirmedTitle') }}
+          </h1>
+          <p class="text-muted mb-6">
+            {{ t('confirmSubscription.confirmedDescription') }}
+          </p>
+        </template>
         <template v-else>
           <UIcon name="i-tabler-loader-2" class="text-primary mx-auto mb-4 size-12 animate-spin" />
           <h1 class="mb-2 text-xl font-bold">

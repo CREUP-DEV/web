@@ -29,13 +29,8 @@ export interface OrgResponse {
   generatedAt?: string | null
 }
 
-export interface TeamMemberDetailResponse {
-  member: EnrichedMember
-}
-
 export interface EnrichedMember extends OrgMember {
   areaName: string
   areaId: number
   isLeader: boolean
-  slug: string
 }

@@ -22,10 +22,6 @@ export interface MembersResponse {
   generatedAt?: string | null
 }
 
-export interface OrganizationMemberDetailResponse {
-  member: OrganizationMember
-}
-
 export interface SectorialMember {
   id: string
   order: number
@@ -40,10 +36,6 @@ export interface SectorialMember {
 export interface SectorialesResponse {
   sectoriales: SectorialMember[]
   generatedAt?: string | null
-}
-
-export interface SectorialMemberDetailResponse {
-  sectorial: SectorialMember
 }
 
 export interface SocialEntity {

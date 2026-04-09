@@ -10,18 +10,6 @@ const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
   message: 'Invalid locale / El locale no es válido',
 })
 
-/** Validates that a URL/path is safe (no javascript: protocol) */
-const safeHrefSchema = z
-  .string()
-  .min(1)
-  .refine(
-    (value) =>
-      (value.startsWith('/') && !value.startsWith('//')) ||
-      value.startsWith('#') ||
-      value.startsWith('http://') ||
-      value.startsWith('https://'),
-    'El enlace debe ser una ruta relativa o una URL http/https'
-  )
 const dateOnlySchema = z
   .string()
   .regex(DATE_ONLY_PATTERN, 'La fecha no es válida')
@@ -42,35 +30,6 @@ const toOptionalSingleStringSchema = <T extends z.ZodTypeAny>(schema: T) =>
 
 const getRequiredTranslation = <T extends { locale: string }>(translations: T[]) =>
   translations.find((translation) => translation.locale === DEFAULT_LOCALE_CODE)
-
-const carouselTranslationSchema = z.object({
-  locale: localeSchema,
-  title: z.string().max(200),
-  buttonText: z.string().max(100).optional(),
-  alt: z.string().max(200).optional(),
-})
-
-const createCarouselItemSchema = z
-  .object({
-    image: z.string().min(1, 'La imagen es requerida').max(2048),
-    href: safeHrefSchema,
-    order: z.number().int().min(0).default(0),
-    active: z.boolean().default(true),
-    translations: z.array(carouselTranslationSchema).min(1, 'Se requiere al menos una traducción'),
-  })
-  .superRefine((data, ctx) => {
-    const requiredTranslation = getRequiredTranslation(data.translations)
-
-    if (!requiredTranslation?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El título en español es obligatorio',
-        path: ['translations'],
-      })
-    }
-  })
-
-const _updateCarouselItemSchema = createCarouselItemSchema
 
 export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
@@ -169,75 +128,6 @@ const basePressArticleSchema = z.object({
 export const createPressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
 
 export const updatePressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
-
-const featuredLinkTranslationSchema = z.object({
-  locale: localeSchema,
-  title: z.string().max(200),
-  alt: z.string().max(200).optional(),
-})
-
-const createFeaturedLinkSchema = z
-  .object({
-    image: z.string().min(1, 'La imagen es requerida').max(2048),
-    to: safeHrefSchema,
-    order: z.number().int().min(0).default(0),
-    active: z.boolean().default(true),
-    translations: z
-      .array(featuredLinkTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
-  })
-  .superRefine((data, ctx) => {
-    const requiredTranslation = getRequiredTranslation(data.translations)
-
-    if (!requiredTranslation?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El título en español es obligatorio',
-        path: ['translations'],
-      })
-    }
-  })
-
-const _updateFeaturedLinkSchema = createFeaturedLinkSchema
-
-const tagTranslationSchema = z.object({
-  locale: localeSchema,
-  name: z.string().max(100),
-})
-
-const createTagSchema = z
-  .object({
-    slug: z
-      .string()
-      .min(1, 'El slug es requerido')
-      .max(100)
-      .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones')
-      .refine((v) => v !== 'all', "El slug 'all' está reservado"),
-    order: z.number().int().min(0).default(0),
-    translations: z.array(tagTranslationSchema).min(1, 'Se requiere al menos una traducción'),
-  })
-  .superRefine((data, ctx) => {
-    const requiredTranslation = getRequiredTranslation(data.translations)
-
-    if (!requiredTranslation?.name?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El nombre en español es obligatorio',
-        path: ['translations'],
-      })
-    }
-
-    const locales = data.translations.map((t) => t.locale)
-    if (new Set(locales).size !== locales.length) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'No puede haber traducciones duplicadas para el mismo idioma',
-        path: ['translations'],
-      })
-    }
-  })
-
-const _updateTagSchema = createTagSchema
 
 export const updateOrderSchema = z.object({
   items: z.array(
@@ -607,15 +497,6 @@ export const policyDocumentTypeRouteParamSchema = z.object({
 })
 
 // Media Outlet schemas
-const createMediaOutletSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido').max(200),
-  website: z.string().url('La URL no es válida').max(2048),
-  logo: z.string().min(1, 'El logo es requerido').max(2048),
-  order: z.number().int().min(0).default(0),
-})
-
-const _updateMediaOutletSchema = createMediaOutletSchema
-
 // About page schemas
 export const updateAboutPageContentSchema = z.object({
   heroImage: z.string().min(1, 'La imagen es requerida').nullable(),
@@ -623,97 +504,7 @@ export const updateAboutPageContentSchema = z.object({
 })
 
 // Equality Document schemas
-const equalityDocumentTranslationSchema = z.object({
-  locale: localeSchema,
-  title: z.string().max(200),
-  description: z.string().max(2000),
-  meta: z.string().max(500).optional().nullable(),
-})
-
-const createEqualityDocumentSchema = z
-  .object({
-    pdfUrl: z.string().min(1, 'El PDF es requerido'),
-    order: z.number().int().min(0).default(0),
-    active: z.boolean().default(true),
-    translations: z
-      .array(equalityDocumentTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
-  })
-  .superRefine((data, ctx) => {
-    const requiredTranslation = getRequiredTranslation(data.translations)
-
-    if (!requiredTranslation?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El título en español es obligatorio',
-        path: ['translations'],
-      })
-    }
-
-    if (!requiredTranslation?.description?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La descripción en español es obligatoria',
-        path: ['translations'],
-      })
-    }
-  })
-
-const _updateEqualityDocumentSchema = createEqualityDocumentSchema
-
 // Financial Report schemas
-const financialReportTranslationSchema = z.object({
-  locale: localeSchema,
-  title: z.string().max(200),
-})
-
-const createFinancialReportSchema = z
-  .object({
-    pdfUrl: z.string().min(1, 'El PDF es requerido'),
-    approvedAt: dateOnlySchema,
-    order: z.number().int().min(0).default(0),
-    active: z.boolean().default(true),
-    translations: z
-      .array(financialReportTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
-  })
-  .superRefine((data, ctx) => {
-    const requiredTranslation = getRequiredTranslation(data.translations)
-
-    if (!requiredTranslation?.title?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El título en español es obligatorio',
-        path: ['translations'],
-      })
-    }
-  })
-
-const _updateFinancialReportSchema = createFinancialReportSchema
-
-const _updatePressDossierSchema = z.object({
-  pdfUrl: z.string().min(1, 'El PDF es requerido').nullable(),
-  active: z.boolean().default(false),
-})
-
-const createNewsletterSchema = z.object({
-  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
-  coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
-  pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
-  active: z.boolean().default(true),
-})
-
-const _updateNewsletterSchema = z.object({
-  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido'),
-  coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
-  pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
-  active: z.boolean().default(true),
-})
-
-const _createNewsletterRequestSchema = createNewsletterSchema.extend({
-  sendEmail: z.boolean().default(false),
-})
-
 export const updateSubscriberSchema = z.object({
   email: z.string().email('El email no es válido'),
   active: z.boolean(),

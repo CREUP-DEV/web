@@ -72,7 +72,6 @@ onMounted(() => {
             {{ t('unsubscribePage.backToNewsletter') }}
           </UButton>
         </template>
-
         <template v-else>
           <UIcon name="i-tabler-loader-2" class="text-primary mx-auto mb-4 size-12 animate-spin" />
           <h1 class="mb-2 text-xl font-bold">

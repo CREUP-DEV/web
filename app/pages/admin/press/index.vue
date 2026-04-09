@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
+import {
+  PRESS_ARTICLE_ADMIN_CREATE_PATHS,
+  getPressArticlePublicListPath,
+} from '~~/shared/constants/pressRoutes'
+import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 import { hasMeaningfulHtml } from '~~/shared/utils/richText'
 import type {
   AdminPressArticle,
@@ -31,18 +36,6 @@ const typeIcons: Record<AdminPressArticleType, string> = {
   press_release: 'i-tabler-file-text',
   statement: 'i-tabler-speakerphone',
   media_appearance: 'i-tabler-broadcast',
-}
-
-const typeUrlPrefix: Record<AdminPressArticleType, string> = {
-  press_release: '/prensa/notas-prensa',
-  statement: '/prensa/comunicados',
-  media_appearance: '/prensa/en-los-medios',
-}
-
-const createPathByType: Record<AdminPressArticleType, string> = {
-  press_release: '/admin/press/create?type=press_release',
-  statement: '/admin/press/create?type=statement',
-  media_appearance: '/admin/press/create?type=media_appearance',
 }
 
 // Delete confirmation
@@ -90,7 +83,7 @@ const handleDelete = async () => {
 
 const tabItems = computed(() => [
   { key: 'all' as const, label: 'Todos', icon: 'i-tabler-list' },
-  ...(['press_release', 'statement', 'media_appearance'] as AdminPressArticleType[]).map((t) => ({
+  ...PRESS_ARTICLE_TYPES.map((t) => ({
     key: t,
     label: typeLabels[t],
     icon: typeIcons[t],
@@ -105,7 +98,9 @@ const activeTab = computed({
 })
 
 const emptyStateCreatePath = computed(() =>
-  currentType.value ? createPathByType[currentType.value] : createPathByType.press_release
+  currentType.value
+    ? PRESS_ARTICLE_ADMIN_CREATE_PATHS[currentType.value]
+    : PRESS_ARTICLE_ADMIN_CREATE_PATHS.press_release
 )
 
 const emptyStateTypeLabel = computed(() =>
@@ -263,7 +258,7 @@ const emptyStateTypeLabel = computed(() =>
               @click.prevent.stop
             >
               <UButton
-                :to="`${typeUrlPrefix[item.type]}/${item.slug}`"
+                :to="`${getPressArticlePublicListPath(item.type)}/${item.slug}`"
                 icon="i-tabler-external-link"
                 variant="ghost"
                 size="sm"

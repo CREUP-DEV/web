@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Locale } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
+import { getInitials } from '@/utils/initials'
 import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 const { session, signOut } = useAuth()
@@ -16,6 +17,22 @@ const navigation = [
   { name: 'Panel', to: '/admin', icon: 'i-tabler-layout-dashboard' },
   ...ADMIN_SECTION_DEFINITIONS,
 ]
+
+const avatarLoadFailed = ref(false)
+const adminInitials = computed(() => {
+  const source =
+    session.value.data?.user?.name?.trim() ||
+    session.value.data?.user?.email?.trim() ||
+    'Administración'
+  return getInitials(source)
+})
+
+watch(
+  () => session.value.data?.user?.image,
+  () => {
+    avatarLoadFailed.value = false
+  }
+)
 
 const isNavItemActive = (to: string) => {
   if (to === '/admin') return route.path === '/admin'
@@ -81,29 +98,49 @@ const sidebarOpen = useState('admin-sidebar-open', () => false)
       </nav>
 
       <div class="border-t p-4">
-        <div class="flex items-center gap-3">
-          <img
-            v-if="session.data?.user?.image"
-            :src="session.data.user.image"
-            :alt="
-              session.data.user.name ? `Avatar de ${session.data.user.name}` : 'Avatar de usuario'
-            "
-            class="size-8 rounded-full text-xs"
-            loading="eager"
-            decoding="async"
-          />
-          <div class="flex-1 truncate">
-            <p class="truncate text-sm font-medium">{{ session.data?.user?.name }}</p>
-            <p class="text-muted truncate text-xs">{{ session.data?.user?.email }}</p>
+        <ClientOnly>
+          <div class="flex items-center gap-3">
+            <img
+              v-if="session.data?.user?.image && !avatarLoadFailed"
+              :src="session.data.user.image"
+              :alt="
+                session.data.user.name ? `Avatar de ${session.data.user.name}` : 'Avatar de usuario'
+              "
+              class="size-8 rounded-full text-xs"
+              loading="eager"
+              decoding="async"
+              @error="avatarLoadFailed = true"
+            />
+            <div
+              v-else
+              class="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold"
+              aria-hidden="true"
+            >
+              {{ adminInitials }}
+            </div>
+            <div class="flex-1 truncate">
+              <p class="truncate text-sm font-medium">{{ session.data?.user?.name }}</p>
+              <p class="text-muted truncate text-xs">{{ session.data?.user?.email }}</p>
+            </div>
+            <UButton
+              icon="i-tabler-logout"
+              variant="ghost"
+              size="sm"
+              title="Cerrar sesión"
+              @click="signOut"
+            />
           </div>
-          <UButton
-            icon="i-tabler-logout"
-            variant="ghost"
-            size="sm"
-            title="Cerrar sesión"
-            @click="signOut"
-          />
-        </div>
+
+          <template #fallback>
+            <div class="flex items-center gap-3">
+              <div class="bg-muted size-8 rounded-full" aria-hidden="true" />
+              <div class="flex-1 truncate">
+                <p class="truncate text-sm font-medium">Administración</p>
+                <p class="text-muted truncate text-xs">Cargando sesión...</p>
+              </div>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
     </aside>
 
