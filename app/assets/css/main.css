@@ -178,21 +178,25 @@ html {
 
 @layer components {
   .equality-accent-button {
-    @apply text-white focus-visible:ring-2 focus-visible:outline-none;
-    background-color: var(--color-equality-purple-800);
-    --tw-ring-color: rgb(81 50 105 / 0.4);
+    color: white !important;
+    background-color: var(--color-equality-purple-800) !important;
   }
 
   .equality-accent-button:hover {
-    background-color: var(--color-equality-purple-900);
+    background-color: var(--color-equality-purple-900) !important;
+  }
+
+  .equality-accent-button:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgb(81 50 105 / 0.4) !important;
   }
 
   .dark .equality-accent-button {
-    background-color: var(--color-equality-purple-700);
+    background-color: var(--color-equality-purple-700) !important;
   }
 
   .dark .equality-accent-button:hover {
-    background-color: var(--color-equality-purple-600);
+    background-color: var(--color-equality-purple-600) !important;
   }
 
   .equality-hero-surface {
