@@ -1,3 +1,5 @@
+import type { MaybeRef } from 'vue'
+
 export interface EventBanner {
   url: string | null
 }
@@ -40,6 +42,8 @@ export interface CREUPEvent {
 
 interface EventsResponse {
   events: CREUPEvent[]
+  total: number
+  eventTypes: string[]
   generatedAt: string | null
 }
 
@@ -48,22 +52,51 @@ interface EventDetailResponse {
   generatedAt: string | null
 }
 
-export function useEvents() {
+export function useEvents(options?: {
+  type?: MaybeRef<string | null | undefined>
+  limit?: MaybeRef<number | undefined>
+  offset?: MaybeRef<number | undefined>
+}) {
   const { locale } = useI18n()
   const { getLanguageTag } = useLocales()
   const localeApiHeaders = useLocaleApiHeaders()
-  const { data, error, status } = useFetch<EventsResponse>('/api/eventos', {
+
+  const typeValue = computed(() => unref(options?.type) ?? null)
+  const limitValue = computed(() => {
+    const value = unref(options?.limit)
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      return Math.floor(value)
+    }
+
+    return 12
+  })
+  const offsetValue = computed(() => {
+    const value = unref(options?.offset)
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      return Math.floor(value)
+    }
+
+    return 0
+  })
+
+  const { data, error, status, refresh } = useFetch<EventsResponse>('/api/eventos', {
     headers: localeApiHeaders,
+    query: computed(() => ({
+      type: typeValue.value || undefined,
+      limit: limitValue.value,
+      offset: offsetValue.value,
+    })),
+    watch: [locale, typeValue, limitValue, offsetValue],
   })
 
   const events = computed(() => data.value?.events ?? [])
+  const total = computed(() => data.value?.total ?? 0)
+  const pageCount = computed(() => Math.ceil(total.value / limitValue.value))
 
   const eventTypes = computed(() => {
-    const types = new Set<string>()
-    for (const event of events.value) {
-      if (event.type) types.add(event.type)
-    }
-    return Array.from(types).sort((a, b) => a.localeCompare(b, getLanguageTag(locale.value)))
+    return [...(data.value?.eventTypes ?? [])].sort((a, b) =>
+      a.localeCompare(b, getLanguageTag(locale.value))
+    )
   })
 
   const findBySlug = (slug: string) =>
@@ -72,8 +105,11 @@ export function useEvents() {
   return {
     events,
     eventTypes,
+    total,
+    pageCount,
     error,
     status,
+    refresh,
     findBySlug,
   }
 }

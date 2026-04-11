@@ -14,6 +14,7 @@ interface PolicyDocument {
 
 interface PolicyDocumentsResponse {
   documents: PolicyDocument[]
+  total: number
   generatedAt?: string | null
 }
 
@@ -27,11 +28,22 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
+const PAGE_SIZE = 12
+const page = ref(1)
+const offset = computed(() => (page.value - 1) * PAGE_SIZE)
 
-const { data, pending, error } = useFetch<PolicyDocumentsResponse>(props.apiEndpoint)
+const { data, pending, error, refresh } = useFetch<PolicyDocumentsResponse>(props.apiEndpoint, {
+  query: computed(() => ({
+    limit: PAGE_SIZE,
+    offset: offset.value,
+  })),
+})
 
 const documents = computed(() => data.value?.documents ?? [])
+const total = computed(() => data.value?.total ?? 0)
 const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
+
+const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, documents, error)
 
 function formatDate(dateStr: string): string {
   try {
@@ -58,8 +70,8 @@ function formatDate(dateStr: string): string {
         </p>
       </header>
 
-      <div aria-live="polite" :aria-busy="pending || undefined">
-        <div v-if="pending" aria-hidden="true" class="space-y-3">
+      <div ref="resultsRef" aria-live="polite" :aria-busy="pending || undefined">
+        <div v-if="isLoading" aria-hidden="true" class="space-y-3">
           <USkeleton v-for="n in 5" :key="n" class="h-20 rounded-xl" />
         </div>
 
@@ -69,6 +81,9 @@ function formatDate(dateStr: string): string {
             <p class="text-muted">
               {{ t(errorKey) }}
             </p>
+            <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+              {{ t('home.retry') }}
+            </UButton>
           </div>
         </UCard>
 
@@ -87,6 +102,7 @@ function formatDate(dateStr: string): string {
           tag="ul"
           name="stagger-list"
           class="space-y-3"
+          :class="isRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
           :aria-label="t(titleKey)"
         >
           <li v-for="(doc, index) in documents" :key="doc.order">
@@ -123,6 +139,10 @@ function formatDate(dateStr: string): string {
             </UCard>
           </li>
         </TransitionGroup>
+
+        <div v-if="total > PAGE_SIZE" class="flex justify-center pt-4">
+          <UPagination v-model:page="page" :total="total" :items-per-page="PAGE_SIZE" />
+        </div>
       </div>
     </article>
   </UContainer>

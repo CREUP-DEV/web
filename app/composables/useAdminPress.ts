@@ -76,7 +76,7 @@ export function useAdminPress(
     () => `admin-press-${typeValue.value ?? 'all'}-${debouncedSearch.value}-p${page.value}`
   )
 
-  const { data, pending, refresh } = useAsyncData<AdminPressResponse>(
+  const { data, pending, error, refresh } = useAsyncData<AdminPressResponse>(
     key,
     () => {
       const params = new URLSearchParams()
@@ -96,5 +96,5 @@ export function useAdminPress(
   const total = computed(() => data.value?.total ?? 0)
   const pageCount = computed(() => Math.ceil(total.value / ADMIN_PRESS_PAGE_SIZE))
 
-  return { items, total, pageCount, page, pending, refresh }
+  return { items, total, pageCount, page, pending, error, refresh }
 }

@@ -9,6 +9,8 @@ const {
   isDateRangeUpcoming,
 } = useDatePresets()
 
+const EVENTS_PAGE_SIZE = 12
+
 usePageSeo('events.title', 'events.description', {
   webPageType: 'CollectionPage',
   breadcrumbs: () => [
@@ -23,19 +25,24 @@ usePageSeo('events.title', 'events.description', {
   ],
 })
 
-const { events, eventTypes, error, status } = useEvents()
-
 const selectedType = ref<string | null>(null)
+const page = ref(1)
+const offset = computed(() => (page.value - 1) * EVENTS_PAGE_SIZE)
+
+const { events, eventTypes, total, pageCount, error, status, refresh } = useEvents({
+  type: selectedType,
+  limit: EVENTS_PAGE_SIZE,
+  offset,
+})
+
+watch(selectedType, () => {
+  page.value = 1
+})
 
 const typeOptions = computed(() => [
   { label: t('events.allTypes'), value: null },
   ...eventTypes.value.map((type) => ({ label: type, value: type })),
 ])
-
-const filteredEvents = computed(() => {
-  if (!selectedType.value) return events.value
-  return events.value.filter((e) => e.type === selectedType.value)
-})
 
 const formatDateRange = (event: CREUPEvent): string => {
   return formatDateRangeText(event.startDate, event.endDate, {
@@ -66,12 +73,12 @@ const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
         </p>
       </header>
 
-      <UAlert
-        v-if="error"
-        color="error"
-        icon="i-tabler-alert-circle"
-        :title="t('events.loadError')"
-      />
+      <div v-if="error" class="space-y-3">
+        <UAlert color="error" icon="i-tabler-alert-circle" :title="t('events.loadError')" />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
 
       <div
         v-else-if="status === 'pending'"
@@ -112,7 +119,7 @@ const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
           </UButton>
         </div>
 
-        <div v-if="filteredEvents.length === 0" class="text-muted py-12 text-center">
+        <div v-if="events.length === 0" class="text-muted py-12 text-center">
           {{ t('events.noEvents') }}
         </div>
 
@@ -124,7 +131,7 @@ const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
           class="grid gap-6 sm:grid-cols-2"
         >
           <NuxtLink
-            v-for="(event, index) in filteredEvents"
+            v-for="(event, index) in events"
             :key="event.id"
             :to="localePath(`/conocenos/eventos/${event.slug}`)"
             class="group focus-visible:ring-primary block rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -186,6 +193,10 @@ const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
             </UCard>
           </NuxtLink>
         </TransitionGroup>
+
+        <div v-if="pageCount > 1" class="flex justify-center pt-4">
+          <UPagination v-model:page="page" :total="total" :items-per-page="EVENTS_PAGE_SIZE" />
+        </div>
       </template>
     </article>
   </UContainer>

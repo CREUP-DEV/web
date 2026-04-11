@@ -1,7 +1,11 @@
 import type { H3Event } from 'h3'
 import { fetchExternalDocumentCollection } from './externalDocumentCollection'
 import { toPolicyDocumentPublicPdfPathAsync } from './policyDocumentDownloads'
-import { externalPolicyDocumentsResponseSchema } from './validation'
+import {
+  externalPolicyDocumentsResponseSchema,
+  publicPaginationQuerySchema,
+  validatePublicQuery,
+} from './validation'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from './publicRouteCache'
 
 const POLICY_DOCUMENTS_CACHE_VERSION = 2
@@ -87,11 +91,25 @@ export function createPolicyDocumentCollectionRouteHandler(
   collection: PolicyDocumentCollectionKey
 ) {
   return defineCachedEventHandler(
-    async (event: H3Event) => fetchPolicyDocumentCollection(event, collection),
+    async (event: H3Event) => {
+      const { limit, offset } = validatePublicQuery(event, publicPaginationQuerySchema)
+      const normalizedLimit = limit ?? 12
+      const normalizedOffset = offset ?? 0
+      const payload = await fetchPolicyDocumentCollection(event, collection)
+
+      return {
+        documents: payload.documents.slice(normalizedOffset, normalizedOffset + normalizedLimit),
+        total: payload.documents.length,
+        generatedAt: payload.generatedAt,
+      }
+    },
     {
       ...PUBLIC_ROUTE_CACHE_OPTIONS,
       getKey: (event: H3Event) =>
-        buildPublicRouteCacheKey(event, collection, { includeLocale: false }),
+        buildPublicRouteCacheKey(event, collection, {
+          includeLocale: false,
+          queryKeys: ['limit', 'offset'],
+        }),
     }
   )
 }

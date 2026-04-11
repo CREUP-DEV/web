@@ -23,7 +23,15 @@ const { getDefaultTranslationValue } = useLocales()
 const currentType = ref<AdminPressArticleType | null>(null)
 const searchQuery = ref('')
 
-const { items, total, pageCount, page, pending, refresh } = useAdminPress(currentType, searchQuery)
+const {
+  items,
+  total,
+  pageCount,
+  page,
+  pending,
+  error: fetchError,
+  refresh,
+} = useAdminPress(currentType, searchQuery)
 
 const typeLabels: Record<AdminPressArticleType, string> = {
   press_release: 'Notas de prensa',
@@ -164,7 +172,19 @@ const emptyStateTypeLabel = computed(() =>
       />
     </div>
 
-    <div class="space-y-3">
+    <div v-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar los artículos de prensa"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <div v-else class="space-y-3">
       <div v-if="pending" aria-hidden="true" class="space-y-3">
         <div v-for="n in 5" :key="n" class="rounded-xl border p-4">
           <div class="flex gap-4">

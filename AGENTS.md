@@ -343,6 +343,34 @@ const {
 
 Use `createEmptyTranslations` to initialize form translation arrays. Use `filterNonEmptyTranslations(array, 'title')` before submitting — strips empty optional-locale entries.
 
+### Paginated Content Transition (`app/composables/usePaginatedTransition.ts`)
+
+Handles the loading/refreshing state split for paginated lists so skeleton only shows on initial load and existing content dims in-place on page change:
+
+```typescript
+const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, items, error)
+```
+
+- `isLoading` — `true` only when `pending && items.length === 0 && !error` (first load, nothing to show yet)
+- `isRefreshing` — `true` when `pending && items.length > 0` (page change, old items still visible)
+- `resultsRef` — attach to the wrapper `div` to get smooth height animation when new page data arrives
+
+Template pattern:
+
+```html
+<div ref="resultsRef" aria-live="polite" :aria-busy="pending || undefined">
+  <div v-if="isLoading" aria-hidden="true"><!-- skeletons --></div>
+  <div v-else-if="error"><!-- error state --></div>
+  <div v-else-if="!items.length"><!-- empty state --></div>
+  <TransitionGroup
+    v-else
+    :class="isRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
+  ><!-- items --></TransitionGroup>
+</div>
+```
+
+Use for any public page with a `useFetch` + `UPagination` list. **Do not re-implement inline** — see `PolicyDocumentList.vue` and `informes-economicos.vue` as reference.
+
 ---
 
 ## Server/API Conventions
