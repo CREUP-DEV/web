@@ -192,6 +192,8 @@
     "description": "We are the leading student representation platform for public universities in Spain.",
     "lead": "We are a state association that brings together the student councils of public universities, giving a voice to more than one million students across Spain.",
     "intro": "We coordinate national student representation and defend our rights and participation in university policymaking.",
+    "dynamicContentLoadErrorTitle": "Could not refresh dynamic content",
+    "dynamicContentLoadErrorDescription": "Reference values are shown while the connection recovers.",
     "snapshotTitle": "CREUP at a glance",
     "ctaIdentity": "How we work",
     "ctaMembers": "View members",

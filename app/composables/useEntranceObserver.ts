@@ -170,7 +170,7 @@ export function useEntranceObserver(options: number | EntranceObserverOptions = 
   return { elRef, isVisible, isPending, shouldAnimate, animClasses, animStyle }
 }
 
-export function useEntranceDelay(index: number, step = 80) {
+export function getEntranceDelayStyle(index: number, step = 80) {
   return {
     '--entrance-delay': `${index * step}ms`,
   }
@@ -194,5 +194,5 @@ export function entranceStyle(
   step = 80
 ) {
   if (!isVisible || !shouldAnimate) return undefined
-  return useEntranceDelay(index, step)
+  return getEntranceDelayStyle(index, step)
 }

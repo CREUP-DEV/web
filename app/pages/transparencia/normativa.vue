@@ -61,7 +61,7 @@ usePageSeo('regulations.title', 'regulations.description', {
 const { data, pending, error } = useFetch<NormativaResponse>('/api/normativa')
 
 const categories = computed(() => data.value?.categories ?? [])
-const getEntranceDelay = (index: number) => useEntranceDelay(index, 90)
+const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 90)
 
 function formatDate(dateStr: string): string {
   try {

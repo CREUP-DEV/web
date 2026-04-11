@@ -192,6 +192,8 @@
     "description": "Somos la principal plataforma de representación del estudiantado de las universidades públicas en España.",
     "lead": "Somos una asociación estatal que reúne a los consejos de estudiantes de las universidades públicas, dando voz a más de un millón de estudiantes de toda España.",
     "intro": "Coordinamos la representación estatal del estudiantado y defendemos nuestros derechos y participación en la política universitaria.",
+    "dynamicContentLoadErrorTitle": "No se pudo actualizar el contenido dinámico",
+    "dynamicContentLoadErrorDescription": "Se muestran valores de referencia mientras se recupera la conexión.",
     "snapshotTitle": "CREUP en cifras",
     "ctaIdentity": "Cómo trabajamos",
     "ctaMembers": "Ver miembros",

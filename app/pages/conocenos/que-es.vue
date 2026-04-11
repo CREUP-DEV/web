@@ -213,8 +213,8 @@ usePageSeo(
           v-if="error"
           color="warning"
           variant="soft"
-          title="No se pudo actualizar el contenido dinámico"
-          description="Se muestran valores de referencia mientras se recupera la conexión."
+          :title="t('aboutPage.dynamicContentLoadErrorTitle')"
+          :description="t('aboutPage.dynamicContentLoadErrorDescription')"
         />
 
         <section

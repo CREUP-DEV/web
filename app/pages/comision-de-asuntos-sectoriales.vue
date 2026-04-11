@@ -282,7 +282,7 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
               :view-profile-aria-label="
                 getCommitteeMemberViewProfileAriaLabel(getMemberDisplayName(member))
               "
-              :entrance-delay="useEntranceDelay(index, 70)"
+              :entrance-delay="getEntranceDelayStyle(index, 70)"
               @click-card="openCommitteeMemberModal(member)"
             />
           </TransitionGroup>

@@ -234,9 +234,9 @@ export default defineNuxtConfig({
     },
   ],
 
-  // Link checker (disabled in dev for performance)
+  // Link checker (enabled to catch broken internal links in all environments)
   linkChecker: {
-    enabled: false,
+    enabled: true,
   },
 
   i18n: {

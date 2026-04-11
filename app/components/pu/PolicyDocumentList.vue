@@ -41,7 +41,7 @@ const { data, pending, error, refresh } = useFetch<PolicyDocumentsResponse>(prop
 
 const documents = computed(() => data.value?.documents ?? [])
 const total = computed(() => data.value?.total ?? 0)
-const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
+const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, documents, error)
 

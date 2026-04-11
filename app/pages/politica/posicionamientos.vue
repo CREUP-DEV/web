@@ -1,5 +1,24 @@
 <script setup lang="ts">
-usePageSeo('policy.positions.title', 'policy.positions.description')
+const { t } = useI18n()
+const localePath = useLocalePath()
+
+usePageSeo('policy.positions.title', 'policy.positions.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.policy.label'),
+      path: localePath('/politica/posicionamientos'),
+    },
+    {
+      name: t('nav.policy.positions'),
+      path: localePath('/politica/posicionamientos'),
+    },
+  ],
+})
 </script>
 
 <template>

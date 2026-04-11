@@ -63,7 +63,7 @@ const { data, pending, error } = useFetch<CommitteesResponse>('/api/comites', {
 })
 
 const committees = computed(() => data.value?.committees ?? [])
-const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
+const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const getCommitteeName = (committee: Committee) =>
   pickLocalizedValue(committee.nameTranslations ?? {}, locale.value, fallbackLocale) ??

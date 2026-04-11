@@ -30,7 +30,7 @@ const viewMode = useSyncedQueryParam<ViewMode>('view', {
   parse: (rawValue) => (rawValue === 'area' ? 'area' : 'hierarchy'),
   serialize: (value) => (value === 'hierarchy' ? null : value),
 })
-const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
+const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 const {
   executiveMembers,
   extendedMembers,

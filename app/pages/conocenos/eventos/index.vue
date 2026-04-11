@@ -58,7 +58,7 @@ const isOngoing = (event: CREUPEvent): boolean => {
   return isDateRangeOngoing(event.startDate, event.endDate)
 }
 
-const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
+const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 </script>
 
 <template>
