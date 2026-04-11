@@ -204,6 +204,21 @@ async function touchNewsletterDeliveryWorker(newsletterId: string, workerToken: 
     )
 }
 
+async function isNewsletterDeliveryWorkerCurrent(newsletterId: string, workerToken: string) {
+  const item = await db.query.newsletters.findFirst({
+    where: eq(newsletters.id, newsletterId),
+    columns: {
+      id: true,
+      lastDeliveryFinishedAt: true,
+      lastDeliveryWorkerToken: true,
+    },
+  })
+
+  return Boolean(
+    item && item.lastDeliveryFinishedAt === null && item.lastDeliveryWorkerToken === workerToken
+  )
+}
+
 async function claimNewsletterDeliveryWorker(id: string) {
   const workerToken = createId()
   const now = new Date()
@@ -398,6 +413,31 @@ async function markDeliveryFailed(deliveryId: string, error: unknown) {
     .where(eq(newsletterDeliveries.id, deliveryId))
 }
 
+async function requeueDelivery(deliveryId: string, message: string) {
+  await db
+    .update(newsletterDeliveries)
+    .set({
+      lastError: message,
+      status: NEWSLETTER_DELIVERY_STATUS.queued,
+    })
+    .where(eq(newsletterDeliveries.id, deliveryId))
+}
+
+async function requeueSendingNewsletterDeliveries(newsletterId: string, message: string) {
+  await db
+    .update(newsletterDeliveries)
+    .set({
+      lastError: message,
+      status: NEWSLETTER_DELIVERY_STATUS.queued,
+    })
+    .where(
+      and(
+        eq(newsletterDeliveries.newsletterId, newsletterId),
+        eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.sending)
+      )
+    )
+}
+
 async function markInterruptedNewsletterDeliveries(newsletterId: string, error: unknown) {
   await db
     .update(newsletterDeliveries)
@@ -417,6 +457,7 @@ export async function processNewsletterDeliveryRun(
   item: NewsletterRecord
 ): Promise<NewsletterDeliveryResult | false> {
   const workerToken = item.lastDeliveryWorkerToken ?? ''
+  let cancelled = false
 
   if (!workerToken) {
     return false
@@ -435,6 +476,12 @@ export async function processNewsletterDeliveryRun(
         break
       }
 
+      if (!(await isNewsletterDeliveryWorkerCurrent(item.id, workerToken))) {
+        cancelled = true
+        await requeueSendingNewsletterDeliveries(item.id, 'Envío cancelado por administración')
+        break
+      }
+
       const batch = await claimNewsletterDeliveryBatch(item)
 
       if (batch.length === 0) {
@@ -445,6 +492,12 @@ export async function processNewsletterDeliveryRun(
 
       const tasks = batch.map(({ delivery, subscriber }) =>
         limit(async () => {
+          if (!(await isNewsletterDeliveryWorkerCurrent(item.id, workerToken))) {
+            cancelled = true
+            await requeueDelivery(delivery.id, 'Envío cancelado por administración')
+            return
+          }
+
           if (!subscriber || !subscriber.active) {
             await markDeliveryFailed(delivery.id, new Error('La suscripción ya no está activa'))
             await touchNewsletterDeliveryWorker(item.id, workerToken)
@@ -491,7 +544,7 @@ export async function processNewsletterDeliveryRun(
 
     const snapshot = await setNewsletterDeliverySnapshot(item.id)
     const now = new Date()
-    const completedSuccessfully = snapshot.total === 0 || snapshot.errorCount === 0
+    const completedSuccessfully = !cancelled && (snapshot.total === 0 || snapshot.errorCount === 0)
 
     releaseArgs = {
       lastDeliveryFinishedAt: now,
@@ -551,6 +604,21 @@ export async function processPendingNewsletterDeliveries() {
 
     await processNewsletterDeliveryRun(item)
   }
+}
+
+export async function processClaimedNewsletterDelivery(
+  newsletterId: string,
+  workerToken: string
+): Promise<NewsletterDeliveryResult | false> {
+  const item = await db.query.newsletters.findFirst({
+    where: eq(newsletters.id, newsletterId),
+  })
+
+  if (!item || item.lastDeliveryWorkerToken !== workerToken) {
+    return false
+  }
+
+  return processNewsletterDeliveryRun(item)
 }
 
 export function requestNewsletterDeliveryShutdown() {

@@ -2,6 +2,7 @@ import { createError, defineEventHandler } from 'h3'
 import { and, eq, isNotNull, isNull } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletters } from '../../../../db/schema'
+import { removeNewsletterSendJob } from '../../../../utils/backgroundJobs'
 import { monthKeyToDate } from '../../../../utils/newsletters'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 
@@ -22,6 +23,8 @@ export default defineEventHandler(async (event) => {
       message: 'La newsletter no se está enviando en este momento',
     })
   }
+
+  const workerToken = item.lastDeliveryWorkerToken
 
   const now = new Date()
 
@@ -47,6 +50,8 @@ export default defineEventHandler(async (event) => {
       message: 'La newsletter no se está enviando en este momento',
     })
   }
+
+  await removeNewsletterSendJob(id, workerToken)
 
   return {
     item: {

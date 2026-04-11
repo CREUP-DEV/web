@@ -1,6 +1,6 @@
 # CREUP Web
 
-Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL, Redis y Drizzle ORM. Incluye un panel de administración para gestionar el contenido visible del sitio y varias integraciones externas para calendario, contenido institucional y correo.
+Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL, Redis, BullMQ y Drizzle ORM. Incluye un panel de administración para gestionar el contenido visible del sitio y varias integraciones externas para calendario, contenido institucional y correo.
 
 ## Qué incluye
 
@@ -9,6 +9,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL, Redis y Drizzle 
 - Integración con Google Calendar para la agenda pública y agendas individuales.
 - Integración con una API externa para miembros, organigrama, comités, eventos y documentos.
 - Caché SSR/API, caché SWR de integraciones externas y limitación de peticiones compartidas en Redis.
+- Cola BullMQ para envío de newsletters y tareas periódicas de mantenimiento.
 - Envío de correos mediante SMTP.
 - Mailpit en local para revisar correos salientes.
 
@@ -18,6 +19,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL, Redis y Drizzle 
 - Nuxt UI v4 + Tailwind CSS
 - `@nuxtjs/i18n`
 - Redis
+- BullMQ
 - PostgreSQL + Drizzle ORM
 - `better-auth` con Google OAuth para el panel de administración
 
@@ -111,10 +113,10 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
   `X-Real-IP`. La ruta `/health` rechaza peticiones que lleven cabecera `X-Forwarded-For` (responde 404),
   por lo que solo son válidos los health checks directos sin pasar por proxy.
 - Redis es obligatorio para caché de handlers Nitro, caché SWR de APIs externas, rate limiting
-  público y almacenamiento secundario de Better Auth.
+  público, almacenamiento secundario de Better Auth y colas BullMQ.
 - El envío de newsletters usa una cola persistida en PostgreSQL y un worker ligero dentro de Nitro
-  que reanuda lotes pendientes al arrancar y los revisa periódicamente. Al menos una instancia de
-  Nitro debe permanecer activa para drenar esa cola.
+  para el estado de entregas, pero la orquestación de envíos y tareas periódicas corre por BullMQ
+  sobre Redis. Al menos una instancia de Nitro debe permanecer activa para procesar esa cola.
 - En despliegue Docker en mismo VPS, usa `REDIS_URL=redis://redis:6379` dentro de `app`.
 - Los archivos subidos por administración viven en `.data/admin-assets/` y en subdirectorios de
   `public/`. Ese contenido no está versionado y debe entrar en la estrategia de copias de

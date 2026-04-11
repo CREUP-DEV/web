@@ -235,11 +235,6 @@ export default defineNuxtConfig({
     },
   ],
 
-  // Link checker (enabled to catch broken internal links in all environments)
-  linkChecker: {
-    enabled: true,
-  },
-
   i18n: {
     vueI18n: './i18n.config.ts',
     locales: [

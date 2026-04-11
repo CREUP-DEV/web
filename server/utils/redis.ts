@@ -40,39 +40,11 @@ export function getRedisClient(event?: H3Event) {
   return redisClient
 }
 
-export async function tryAcquireRedisLock(
-  namespace: string,
-  key: string,
-  ttlMs: number,
-  event?: H3Event
-) {
-  const redis = getRedisClient(event)
-  const lockToken = `${process.pid}:${Date.now()}:${Math.random().toString(36).slice(2)}`
-  const lockKey = buildRedisKey('lock', namespace, key)
-  const result = await redis.set(lockKey, lockToken, 'PX', ttlMs, 'NX')
+export function createBullMqConnection(event?: H3Event) {
+  const redisUrl = getRequiredRedisUrl(event)
 
-  if (result !== 'OK') {
-    return null
-  }
-
-  return {
-    key: lockKey,
-    token: lockToken,
-  }
-}
-
-export async function releaseRedisLock(lock: { key: string; token: string }, event?: H3Event) {
-  const redis = getRedisClient(event)
-
-  await redis.eval(
-    `
-      if redis.call('get', KEYS[1]) == ARGV[1] then
-        return redis.call('del', KEYS[1])
-      end
-      return 0
-    `,
-    1,
-    lock.key,
-    lock.token
-  )
+  return new Redis(redisUrl, {
+    enableAutoPipelining: true,
+    maxRetriesPerRequest: null,
+  })
 }

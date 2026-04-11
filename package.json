@@ -34,6 +34,7 @@
     "@vueuse/integrations": "^14.2.1",
     "@vueuse/nuxt": "14.2.1",
     "better-auth": "^1.6.1",
+    "bullmq": "^5.73.4",
     "dompurify": "^3.3.3",
     "drizzle-orm": "^0.45.2",
     "ioredis": "^5.8.2",

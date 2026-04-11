@@ -7,10 +7,10 @@ import {
   type CleanupUnusedAdminAssetOptions,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { enqueueNewsletterSendJob } from '../../../utils/backgroundJobs'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { runInBackground } from '../../../utils/backgroundTask'
 import { getSmtpTransporter } from '../../../utils/smtpTransporter'
 import { validateBody } from '../../../utils/validation'
 import {
@@ -18,10 +18,7 @@ import {
   monthKeyToDate,
   normalizeNewsletterMonthInput,
 } from '../../../utils/newsletters'
-import {
-  claimNewsletterForSending,
-  processNewsletterDeliveryRun,
-} from '../../../services/newsletterDeliveryService'
+import { claimNewsletterForSending } from '../../../services/newsletterDeliveryService'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
@@ -132,11 +129,10 @@ export default defineEventHandler(async (event) => {
     const queuedItem = sendEmail && item.active ? await claimNewsletterForSending(item.id) : item
 
     if (sendEmail && queuedItem.active) {
-      runInBackground(
-        event,
-        'admin.newsletter.create-send',
-        processNewsletterDeliveryRun(queuedItem)
-      )
+      await enqueueNewsletterSendJob({
+        newsletterId: queuedItem.id,
+        workerToken: queuedItem.lastDeliveryWorkerToken ?? '',
+      })
     }
 
     return {

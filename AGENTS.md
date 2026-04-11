@@ -41,7 +41,7 @@ server/
   api/              Nitro route handlers (admin/** protected, public routes)
   handlers/         admin-auth.ts (global admin middleware)
   middleware/       locale.ts
-  plugins/          newsletter-delivery.ts, admin-asset-publication.ts, redis-storage.ts
+  plugins/          background-jobs.ts, admin-asset-publication.ts, redis-storage.ts
   routes/           Non-API server routes (health.ts, asset proxy routes)
   services/         pressArticleService.ts (complex mutations)
   utils/            All server helpers — see Key Helpers section below
@@ -247,8 +247,7 @@ Cache is shared through Redis and coordinates refreshes with Redis locks so stal
 - Sends run in parallel with `p-limit(5)` concurrency per batch
 - Subscribers with ≥ 3 total failed deliveries are auto-deactivated (`deactivateSubscriberOnBounce`)
 - Stale `sending` rows (older than 2 min) are reset to `queued` on next batch claim
-- Startup recovery runs immediately via `server/plugins/newsletter-delivery.ts`
-- Periodic newsletter recovery and confirm-token cleanup use Redis locks so only one Nitro instance runs each scheduler tick
+- Newsletter sending and maintenance scheduling run through BullMQ via `server/plugins/background-jobs.ts`
 
 Do not bypass the worker token system when triggering newsletter sends. Use `sendNewsletterById` or `claimNewsletterForSending`.
 

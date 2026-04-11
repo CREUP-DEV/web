@@ -1,17 +1,17 @@
 import { defineEventHandler } from 'h3'
-import { runInBackground } from '../../../../utils/backgroundTask'
+import { enqueueNewsletterSendJob } from '../../../../utils/backgroundJobs'
 import { monthKeyToDate } from '../../../../utils/newsletters'
-import {
-  claimNewsletterForSending,
-  processNewsletterDeliveryRun,
-} from '../../../../services/newsletterDeliveryService'
+import { claimNewsletterForSending } from '../../../../services/newsletterDeliveryService'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
   const item = await claimNewsletterForSending(id)
 
-  runInBackground(event, 'admin.newsletter.manual-send', processNewsletterDeliveryRun(item))
+  await enqueueNewsletterSendJob({
+    newsletterId: item.id,
+    workerToken: item.lastDeliveryWorkerToken ?? '',
+  })
 
   return {
     item: {
