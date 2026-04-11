@@ -21,6 +21,7 @@ Current admin scope: access control, home carousel, "Qué es CREUP" hero, equali
 - **i18n:** `@nuxtjs/i18n` (JSON message files) + `@nuxtjs/seo`
 - **Accessibility:** `@nuxt/a11y`
 - **Database:** PostgreSQL + Drizzle ORM
+- **Cache / Rate limiting:** Redis
 - **Auth (admin):** `better-auth` (Google OAuth), backed by Drizzle
 - **Icons:** `@iconify-json/circle-flags` and `@iconify-json/tabler`
 - **Concurrency:** `p-limit` (newsletter batch sends)
@@ -40,7 +41,7 @@ server/
   api/              Nitro route handlers (admin/** protected, public routes)
   handlers/         admin-auth.ts (global admin middleware)
   middleware/       locale.ts
-  plugins/          newsletter-delivery.ts, admin-asset-publication.ts
+  plugins/          newsletter-delivery.ts, admin-asset-publication.ts, redis-storage.ts
   routes/           Non-API server routes (health.ts, asset proxy routes)
   services/         pressArticleService.ts (complex mutations)
   utils/            All server helpers — see Key Helpers section below
@@ -133,10 +134,10 @@ Use this in all admin form catch blocks instead of hardcoded strings.
 
 ### Rate Limiting (`server/utils/rateLimit.ts`)
 
-In-process, per-IP rate limiter. Use for all public mutation endpoints:
+Redis-backed, per-IP rate limiter. Use for all public mutation endpoints:
 
 ```typescript
-enforceRateLimit(event, {
+await enforceRateLimit(event, {
   namespace: 'my-endpoint', // unique string per endpoint
   maxRequests: 5,
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -144,7 +145,7 @@ enforceRateLimit(event, {
 })
 ```
 
-**Note:** Store is process-local and clears on restart. Adequate for low-volume public forms; not suitable for multi-instance deployments without a Redis backend.
+**Note:** Redis is required. App assumes `REDIS_URL` points to shared Redis instance so limits survive restarts and apply across all Nitro instances.
 
 ### Validation (`server/utils/validation.ts`)
 
@@ -226,7 +227,7 @@ Max file size (5 MB) is enforced before sanitization runs. Do not bypass this fo
 
 ### External API Cache (`server/utils/externalApiCache.ts`)
 
-Stale-while-revalidate cache for external API calls. Avoids hammering external dependencies:
+Redis-backed stale-while-revalidate cache for external API calls. Avoids hammering external dependencies:
 
 ```typescript
 await withExternalApiSWRCache(
@@ -236,7 +237,7 @@ await withExternalApiSWRCache(
 )
 ```
 
-Cache is in-process LRU (max 500 entries, evicts by last-access time via Map ordering).
+Cache is shared through Redis and coordinates refreshes with Redis locks so stale values can be served while one request refreshes upstream data.
 
 ### Newsletter Delivery (`server/utils/newsletters.ts`)
 
@@ -247,6 +248,7 @@ Cache is in-process LRU (max 500 entries, evicts by last-access time via Map ord
 - Subscribers with ≥ 3 total failed deliveries are auto-deactivated (`deactivateSubscriberOnBounce`)
 - Stale `sending` rows (older than 2 min) are reset to `queued` on next batch claim
 - Startup recovery runs immediately via `server/plugins/newsletter-delivery.ts`
+- Periodic newsletter recovery and confirm-token cleanup use Redis locks so only one Nitro instance runs each scheduler tick
 
 Do not bypass the worker token system when triggering newsletter sends. Use `sendNewsletterById` or `claimNewsletterForSending`.
 

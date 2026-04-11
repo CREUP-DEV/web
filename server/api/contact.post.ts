@@ -49,7 +49,7 @@ function escapeHtmlForAttribute(value: string): string {
 }
 
 export default defineEventHandler(async (event) => {
-  enforceRateLimit(event, {
+  await enforceRateLimit(event, {
     namespace: 'contact',
     maxRequests: 5,
     windowMs: 60 * 60 * 1000,

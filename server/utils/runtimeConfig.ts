@@ -176,6 +176,14 @@ export const getRequiredExternalApiCacheStaleSeconds = (
   )
 }
 
+export const getRequiredRedisUrl = (
+  event?: H3Event,
+  publicMessage = 'Redis is not configured.'
+) => {
+  const runtimeConfig = getRuntimeConfig(event)
+  return getRequiredRuntimeConfigUrl(runtimeConfig.redisUrl, 'REDIS_URL', publicMessage)
+}
+
 export const getRequiredSmtpTransportConfig = (
   event?: H3Event,
   publicMessage = 'Server configuration error.'

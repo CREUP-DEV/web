@@ -1,6 +1,6 @@
 # CREUP Web
 
-Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL y Drizzle ORM. Incluye un panel de administración para gestionar el contenido visible del sitio y varias integraciones externas para calendario, contenido institucional y correo.
+Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL, Redis y Drizzle ORM. Incluye un panel de administración para gestionar el contenido visible del sitio y varias integraciones externas para calendario, contenido institucional y correo.
 
 ## Qué incluye
 
@@ -8,6 +8,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL y Drizzle ORM. In
 - Panel de administración para accesos, carrusel, "Qué es CREUP", igualdad, newsletter, prensa, dossier de prensa, enlaces, etiquetas, medios e informes económicos.
 - Integración con Google Calendar para la agenda pública y agendas individuales.
 - Integración con una API externa para miembros, organigrama, comités, eventos y documentos.
+- Caché SSR/API, caché SWR de integraciones externas y limitación de peticiones compartidas en Redis.
 - Envío de correos mediante SMTP.
 - Mailpit en local para revisar correos salientes.
 
@@ -16,6 +17,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL y Drizzle ORM. In
 - Nuxt 4 + Nitro
 - Nuxt UI v4 + Tailwind CSS
 - `@nuxtjs/i18n`
+- Redis
 - PostgreSQL + Drizzle ORM
 - `better-auth` con Google OAuth para el panel de administración
 
@@ -23,7 +25,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL y Drizzle ORM. In
 
 - Node.js compatible con Nuxt 4
 - `pnpm`
-- Docker y Docker Compose para el entorno local con PostgreSQL, Adminer y Mailpit
+- Docker y Docker Compose para el entorno local con PostgreSQL, Redis, Adminer y Mailpit
 - En producción, un proxy inverso delante de Nitro. Esta aplicación asume NGINX configurado para
   sobrescribir `X-Forwarded-For` con la IP real del cliente.
 
@@ -40,7 +42,7 @@ pnpm install
 3. Levanta los servicios auxiliares:
 
 ```sh
-docker compose up -d postgres adminer mailpit
+docker compose up -d postgres redis adminer mailpit
 ```
 
 4. Ejecuta la aplicación:
@@ -68,7 +70,7 @@ Variables leídas en build:
 
 Variables leídas en runtime:
 
-- Requeridas: `DATABASE_URL`, `BETTER_AUTH_URL`, `APP_SECRET`, `ADMIN_EMAILS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- Requeridas: `DATABASE_URL`, `REDIS_URL`, `BETTER_AUTH_URL`, `APP_SECRET`, `ADMIN_EMAILS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 - Según funcionalidades activas: `SMTP_*`, `GOOGLE_CALENDAR_API_KEY`, `GOOGLE_CALENDAR_ID`, `EXTERNAL_*`
 - Si habilitas formularios públicos con verificación anti-spam: `TURNSTILE_SECRET_KEY`
 
@@ -78,6 +80,7 @@ Si cambias una variable de build, hay que reconstruir la imagen. Si cambias una 
 
 - `SITE_URL`
 - `DATABASE_URL`
+- `REDIS_URL`
 - `BETTER_AUTH_URL`
 - `APP_SECRET` - secreto maestro para Better Auth, tokens de newsletter y firma de OG images
 - `TURNSTILE_SECRET_KEY` - clave secreta de Cloudflare Turnstile para validar formularios públicos
@@ -107,13 +110,12 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - Nitro debe ejecutarse detrás de NGINX u otro proxy de confianza que fije `X-Forwarded-For` y
   `X-Real-IP`. La ruta `/health` rechaza peticiones que lleven cabecera `X-Forwarded-For` (responde 404),
   por lo que solo son válidos los health checks directos sin pasar por proxy.
-- El limitador de peticiones usa almacenamiento de caché del proceso por defecto. Protege frente a
-  ráfagas locales, pero no sobrevive reinicios ni escalado horizontal sin un backend compartido.
+- Redis es obligatorio para caché de handlers Nitro, caché SWR de APIs externas, rate limiting
+  público y almacenamiento secundario de Better Auth.
 - El envío de newsletters usa una cola persistida en PostgreSQL y un worker ligero dentro de Nitro
   que reanuda lotes pendientes al arrancar y los revisa periódicamente. Al menos una instancia de
   Nitro debe permanecer activa para drenar esa cola.
-- Si el despliegue pasa a más de una instancia, mover a Redis el envío de newsletters, la caché de
-  API externas y el limitador de peticiones.
+- En despliegue Docker en mismo VPS, usa `REDIS_URL=redis://redis:6379` dentro de `app`.
 - Los archivos subidos por administración viven en `.data/admin-assets/` y en subdirectorios de
   `public/`. Ese contenido no está versionado y debe entrar en la estrategia de copias de
   seguridad del despliegue.
@@ -151,6 +153,7 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - `POSTGRES_PASSWORD`
 - `POSTGRES_DB`
 - `POSTGRES_PORT`
+- `REDIS_PORT`
 - `ADMINER_PORT`
 - `MAILPIT_SMTP_PORT`
 - `MAILPIT_WEB_PORT`
@@ -172,6 +175,7 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 
 - Aplicación: `http://localhost:3000`
 - Health check: `http://localhost:3000/health`
+- Redis: `localhost:6379` por defecto
 - Adminer: `http://localhost:8088` por defecto
 - Mailpit web: `http://localhost:8025` por defecto
 - Mailpit SMTP: `localhost:1025` por defecto
@@ -195,11 +199,12 @@ acoplar NGINX dentro del mismo stack). Puedes copiarlo como `docker-compose.yml`
 del servicio web en el VPS.
 
 El ejemplo usa `env_file: .env` para inyectar variables de entorno, bind mounts para datos de app
-y volumen nombrado para PostgreSQL:
+y volúmenes nombrados para PostgreSQL y Redis:
 
 - `${APP_PUBLIC_DIR}` -> `/app/.output/public`
 - `${APP_ADMIN_ASSETS_DIR}` -> `/app/.output/.data/admin-assets`
 - `creup_web_postgres_data` -> `/var/lib/postgresql/data` (si habilitas `postgres` local)
+- `creup_web_redis_data` -> `/data`
 
 ### 1) Preparar VPS una sola vez
 
@@ -208,7 +213,8 @@ y volumen nombrado para PostgreSQL:
 3. Ajusta `DATABASE_URL`, secretos OAuth, SMTP y resto de variables reales.
 4. Si usas GHCR privado, ejecuta una vez en el VPS: `docker login ghcr.io`.
 5. Si usas PostgreSQL en el mismo compose de producción, usa `DATABASE_URL` con host `postgres`.
-6. Asegura que Docker y Docker Compose estén instalados en el VPS.
+6. Si usas Redis en el mismo compose de producción, usa `REDIS_URL=redis://redis:6379`.
+7. Asegura que Docker y Docker Compose estén instalados en el VPS.
 
 ### 2) Configurar variables en tu equipo local
 

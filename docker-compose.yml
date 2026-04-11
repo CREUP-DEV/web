@@ -17,6 +17,21 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:8-alpine
+    container_name: creup-web-redis
+    restart: no
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - creup_web_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   adminer:
     image: adminer:latest
     container_name: creup-web-adminer
@@ -42,3 +57,4 @@ services:
 
 volumes:
   creup_web_postgres_data:
+  creup_web_redis_data:

@@ -139,6 +139,7 @@ export default defineNuxtConfig({
     externalAssetProxyPdfMaxBytes: process.env.EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES,
     externalApiCacheMaxAgeSeconds: process.env.EXTERNAL_API_CACHE_MAX_AGE_SECONDS,
     externalApiCacheStaleSeconds: process.env.EXTERNAL_API_CACHE_STALE_SECONDS,
+    redisUrl: process.env.REDIS_URL,
     siteUrl,
     smtpHost: process.env.SMTP_HOST,
     smtpPort: process.env.SMTP_PORT,

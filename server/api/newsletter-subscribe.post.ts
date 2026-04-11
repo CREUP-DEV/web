@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
     'antiSpamValidationFailed'
   )
 
-  enforceRateLimit(event, {
+  await enforceRateLimit(event, {
     namespace: 'newsletter-subscribe',
     maxRequests: 5,
     windowMs: 60 * 60 * 1000,

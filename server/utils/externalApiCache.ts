@@ -4,6 +4,7 @@ import {
   getRequiredExternalApiCacheMaxAgeSeconds,
   getRequiredExternalApiCacheStaleSeconds,
 } from './runtimeConfig'
+import { buildRedisKey, getRedisClient } from './redis'
 import { logError } from './logger'
 
 export interface ExternalApiCacheOptions {
@@ -12,67 +13,135 @@ export interface ExternalApiCacheOptions {
 }
 
 interface CacheEntry<T> {
-  value: T | null
+  value: T
   freshUntil: number
   staleUntil: number
   updatedAt: number
-  pending?: Promise<T>
 }
 
-const cacheStore = new Map<string, CacheEntry<unknown>>()
-const MAX_CACHE_ENTRIES = 500
+const EXTERNAL_API_CACHE_LOCK_TTL_MS = 30_000
+const EXTERNAL_API_CACHE_WAIT_TIMEOUT_MS = 5_000
+const EXTERNAL_API_CACHE_WAIT_INTERVAL_MS = 100
+const EXTERNAL_API_CACHE_TTL_BUFFER_SECONDS = 60
+const externalApiPendingRefreshes = new Map<string, Promise<unknown>>()
 
-const touchCacheEntry = (key: string, entry: CacheEntry<unknown>) => {
-  cacheStore.delete(key)
-  cacheStore.set(key, entry)
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-  while (cacheStore.size > MAX_CACHE_ENTRIES) {
-    const oldestKey = cacheStore.keys().next().value
-    if (!oldestKey) {
-      break
-    }
-    cacheStore.delete(oldestKey)
+const buildExternalApiCacheKeys = (key: string) => ({
+  dataKey: buildRedisKey('external-api-cache', key),
+  lockKey: buildRedisKey('external-api-cache-lock', key),
+})
+
+const readCacheEntry = async <T>(key: string) => {
+  const redis = getRedisClient()
+  const { dataKey } = buildExternalApiCacheKeys(key)
+  const rawValue = await redis.get(dataKey)
+
+  if (!rawValue) {
+    return null
+  }
+
+  try {
+    return JSON.parse(rawValue) as CacheEntry<T>
+  } catch (error) {
+    await redis.del(dataKey)
+    logError('external-api-cache.deserialize', error, { cacheKey: key })
+    return null
   }
 }
 
-const startRefresh = <T>(
+const writeCacheEntry = async <T>(key: string, value: T, options: ExternalApiCacheOptions) => {
+  const redis = getRedisClient()
+  const { dataKey } = buildExternalApiCacheKeys(key)
+  const now = Date.now()
+  const record: CacheEntry<T> = {
+    value,
+    freshUntil: now + options.maxAgeSeconds * 1000,
+    staleUntil: now + options.staleSeconds * 1000,
+    updatedAt: now,
+  }
+  const ttlSeconds =
+    Math.max(options.maxAgeSeconds, options.staleSeconds) + EXTERNAL_API_CACHE_TTL_BUFFER_SECONDS
+
+  await redis.set(dataKey, JSON.stringify(record), 'EX', ttlSeconds)
+  return record
+}
+
+const acquireRefreshLock = async (key: string, token: string) => {
+  const redis = getRedisClient()
+  const { lockKey } = buildExternalApiCacheKeys(key)
+  const result = await redis.set(lockKey, token, 'PX', EXTERNAL_API_CACHE_LOCK_TTL_MS, 'NX')
+  return result === 'OK'
+}
+
+const releaseRefreshLock = async (key: string, token: string) => {
+  const redis = getRedisClient()
+  const { lockKey } = buildExternalApiCacheKeys(key)
+
+  await redis.eval(
+    `
+      if redis.call('get', KEYS[1]) == ARGV[1] then
+        return redis.call('del', KEYS[1])
+      end
+      return 0
+    `,
+    1,
+    lockKey,
+    token
+  )
+}
+
+const waitForCacheEntry = async <T>(key: string, timeoutMs: number) => {
+  const deadline = Date.now() + timeoutMs
+
+  while (Date.now() < deadline) {
+    const entry = await readCacheEntry<T>(key)
+    if (entry) {
+      return entry
+    }
+
+    await sleep(EXTERNAL_API_CACHE_WAIT_INTERVAL_MS)
+  }
+
+  return null
+}
+
+const refreshCacheEntry = async <T>(
   key: string,
-  entry: CacheEntry<T>,
   fetcher: () => Promise<T>,
-  options: ExternalApiCacheOptions,
-  isBackgroundRefresh: boolean
+  options: ExternalApiCacheOptions
 ) => {
-  let resolveRefresh!: (value: T) => void
-  let rejectRefresh!: (reason: unknown) => void
+  const existingPromise = externalApiPendingRefreshes.get(key) as Promise<T> | undefined
+  if (existingPromise) {
+    return existingPromise
+  }
 
-  const refreshPromise = new Promise<T>((resolve, reject) => {
-    resolveRefresh = resolve
-    rejectRefresh = reject
-  })
+  const refreshPromise = (async () => {
+    const lockToken = `${process.pid}:${Date.now()}:${Math.random().toString(36).slice(2)}`
+    const hasLock = await acquireRefreshLock(key, lockToken)
 
-  entry.pending = refreshPromise
-  touchCacheEntry(key, entry as CacheEntry<unknown>)
+    if (!hasLock) {
+      const entry = await waitForCacheEntry<T>(key, EXTERNAL_API_CACHE_WAIT_TIMEOUT_MS)
+      if (entry) {
+        return entry.value
+      }
+    }
 
-  void (async () => {
     try {
       const value = await fetcher()
-      const now = Date.now()
-      entry.value = value
-      entry.freshUntil = now + options.maxAgeSeconds * 1000
-      entry.staleUntil = now + options.staleSeconds * 1000
-      entry.updatedAt = now
-      touchCacheEntry(key, entry as CacheEntry<unknown>)
-      resolveRefresh(value)
-    } catch (error) {
-      entry.updatedAt = Date.now()
-      if (!isBackgroundRefresh && entry.value === null) {
-        cacheStore.delete(key)
-      }
-      rejectRefresh(error)
+      await writeCacheEntry(key, value, options)
+      return value
     } finally {
-      entry.pending = undefined
+      if (hasLock) {
+        await releaseRefreshLock(key, lockToken)
+      }
     }
   })()
+
+  externalApiPendingRefreshes.set(key, refreshPromise)
+  refreshPromise.finally(() => {
+    externalApiPendingRefreshes.delete(key)
+  })
 
   return refreshPromise
 }
@@ -105,37 +174,20 @@ export async function withExternalApiSWRCache<T>(
   options: ExternalApiCacheOptions
 ): Promise<T> {
   const now = Date.now()
-  const existingEntry = cacheStore.get(key) as CacheEntry<T> | undefined
+  const existingEntry = await readCacheEntry<T>(key)
 
   if (existingEntry) {
-    existingEntry.updatedAt = now
-    touchCacheEntry(key, existingEntry as CacheEntry<unknown>)
-
-    if (existingEntry.value !== null && now <= existingEntry.freshUntil) {
+    if (now <= existingEntry.freshUntil) {
       return existingEntry.value
     }
 
-    if (existingEntry.pending) {
-      if (existingEntry.value !== null && now <= existingEntry.staleUntil) {
-        return existingEntry.value
-      }
-      return existingEntry.pending
-    }
-
-    if (existingEntry.value !== null && now <= existingEntry.staleUntil) {
-      void startRefresh(key, existingEntry, fetcher, options, true).catch((error) => {
+    if (now <= existingEntry.staleUntil) {
+      void refreshCacheEntry(key, fetcher, options).catch((error) => {
         logError('external-api-cache.refresh', error, { cacheKey: key })
       })
       return existingEntry.value
     }
   }
 
-  const entry: CacheEntry<T> = existingEntry ?? {
-    value: null,
-    freshUntil: 0,
-    staleUntil: 0,
-    updatedAt: now,
-  }
-
-  return startRefresh(key, entry, fetcher, options, false)
+  return refreshCacheEntry(key, fetcher, options)
 }

@@ -1,7 +1,9 @@
 import { cleanupExpiredAuthRows } from '../utils/authHousekeeping'
 import { logError, logInfo } from '../utils/logger'
+import { releaseRedisLock, tryAcquireRedisLock } from '../utils/redis'
 
 const AUTH_HOUSEKEEPING_INTERVAL_MS = 60 * 60 * 1000
+const AUTH_HOUSEKEEPING_LOCK_TTL_MS = 10 * 60 * 1000
 
 export default defineNitroPlugin((nitro) => {
   let running = false
@@ -14,10 +16,26 @@ export default defineNitroPlugin((nitro) => {
 
     running = true
     activeRunPromise = (async () => {
-      const cleanupResult = await cleanupExpiredAuthRows()
+      const lock = await tryAcquireRedisLock(
+        'scheduler',
+        'auth-housekeeping',
+        AUTH_HOUSEKEEPING_LOCK_TTL_MS
+      )
 
-      if (cleanupResult.deletedSessionCount > 0) {
-        logInfo('auth.expired-row.cleanup', cleanupResult)
+      if (!lock) {
+        return
+      }
+
+      try {
+        const cleanupResult = await cleanupExpiredAuthRows()
+
+        if (cleanupResult.deletedSessionCount > 0) {
+          logInfo('auth.expired-row.cleanup', cleanupResult)
+        }
+      } finally {
+        await releaseRedisLock(lock).catch((error) => {
+          logError('auth.housekeeping.lock-release', error)
+        })
       }
     })()
       .catch((error) => {

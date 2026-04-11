@@ -6,7 +6,7 @@ import { enforceRateLimit } from '../utils/rateLimit'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 
 export default defineEventHandler(async (event) => {
-  enforceRateLimit(event, {
+  await enforceRateLimit(event, {
     namespace: 'newsletter-unsubscribe',
     maxRequests: 10,
     windowMs: 15 * 60 * 1000,

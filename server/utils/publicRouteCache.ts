@@ -46,6 +46,7 @@ export function setPublicApiCacheHeaders(
 }
 
 export const PUBLIC_ROUTE_CACHE_OPTIONS = {
+  base: 'cache',
   maxAge: 300,
   swr: true,
 } as const

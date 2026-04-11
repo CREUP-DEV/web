@@ -8,6 +8,7 @@ import {
 import { db } from '../db'
 import { users, sessions, accounts, verifications } from '../db/schema'
 import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
+import { buildRedisKey, getRedisClient } from './redis'
 
 interface SignInUser {
   id: string
@@ -25,6 +26,26 @@ function getTrustedOrigins() {
       ].filter((origin): origin is string => Boolean(origin))
     )
   )
+}
+
+const authSecondaryStorage = {
+  delete: async (key: string) => {
+    await getRedisClient().del(buildRedisKey('better-auth', key))
+  },
+  get: async (key: string) => {
+    return getRedisClient().get(buildRedisKey('better-auth', key))
+  },
+  set: async (key: string, value: string, ttl?: number) => {
+    const redis = getRedisClient()
+    const storageKey = buildRedisKey('better-auth', key)
+
+    if (ttl && ttl > 0) {
+      await redis.set(storageKey, value, 'EX', ttl)
+      return
+    }
+
+    await redis.set(storageKey, value)
+  },
 }
 
 export const auth = betterAuth({
@@ -51,6 +72,7 @@ export const auth = betterAuth({
   },
   rateLimit: {
     enabled: true,
+    storage: 'secondary-storage',
     window: 60,
     max: 100,
     customRules: {
@@ -68,6 +90,7 @@ export const auth = betterAuth({
       },
     },
   },
+  secondaryStorage: authSecondaryStorage,
   socialProviders: {
     google: {
       clientId: requireConfigString(process.env.GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_ID'),

@@ -36,6 +36,7 @@
     "better-auth": "^1.6.1",
     "dompurify": "^3.3.3",
     "drizzle-orm": "^0.45.2",
+    "ioredis": "^5.8.2",
     "linkedom": "^0.18.12",
     "nodemailer": "^8.0.5",
     "nuxt": "^4.4.2",
@@ -48,6 +49,7 @@
     "sortablejs": "^1.15.7",
     "tailwindcss": "^4.2.2",
     "undici": "7.24.7",
+    "unstorage": "^1.17.5",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4",
     "zod": "^4.3.6"

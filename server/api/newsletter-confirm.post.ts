@@ -15,7 +15,7 @@ function buildConfirmRedirect(redirectPath: string, status: NewsletterConfirmSta
 }
 
 export default defineEventHandler(async (event) => {
-  enforceRateLimit(event, {
+  await enforceRateLimit(event, {
     namespace: 'newsletter-confirm',
     maxRequests: 10,
     windowMs: 15 * 60 * 1000,
