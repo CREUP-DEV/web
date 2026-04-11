@@ -16,13 +16,13 @@ import {
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
 } from '../../utils/publicRouteCache'
-import { slugRouteParamSchema, validateRouteParams } from '../../utils/validation'
+import { slugRouteParamSchema, validatePublicRouteParams } from '../../utils/validation'
 
 export default defineCachedEventHandler(
   async (event) => {
     setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
-    const { slug } = validateRouteParams(event, slugRouteParamSchema)
+    const { slug } = validatePublicRouteParams(event, slugRouteParamSchema)
 
     try {
       const article = await db.query.pressArticles.findFirst({

@@ -10,7 +10,7 @@ import {
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
-import { memberCalendarQuerySchema, validateQuery } from '../utils/validation'
+import { memberCalendarQuerySchema, validatePublicQuery } from '../utils/validation'
 
 interface GoogleCalendarResponse {
   items: GoogleCalendarEvent[]
@@ -19,7 +19,7 @@ interface GoogleCalendarResponse {
 export default defineCachedEventHandler(
   async (event) => {
     setPublicRouteVaryHeaders(event)
-    const { calendarId } = validateQuery(event, memberCalendarQuerySchema)
+    const { calendarId } = validatePublicQuery(event, memberCalendarQuerySchema)
     const { locale, fallbackLocale, languageTag } = getRequestLocaleContext(event)
 
     if (!calendarId) {

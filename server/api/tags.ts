@@ -12,13 +12,13 @@ import {
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
-import { tagsListQuerySchema, validateQuery } from '../utils/validation'
+import { tagsListQuerySchema, validatePublicQuery } from '../utils/validation'
 
 export default defineCachedEventHandler(
   async (event) => {
     setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
-    const query = validateQuery(event, tagsListQuerySchema)
+    const query = validatePublicQuery(event, tagsListQuerySchema)
     const type = query.type
 
     try {

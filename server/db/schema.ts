@@ -378,7 +378,10 @@ export const accounts = pgTable(
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (table) => [index('idx_accounts_user_id').on(table.userId)]
+  (table) => [
+    index('idx_accounts_user_id').on(table.userId),
+    unique().on(table.providerId, table.accountId),
+  ]
 )
 
 export const verifications = pgTable('verifications', {

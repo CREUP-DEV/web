@@ -5,12 +5,12 @@ import {
   setExternalApiCacheHeaders,
 } from '../../utils/externalApiCache'
 import { getEventBySlug } from '../../utils/events'
-import { slugRouteParamSchema, validateRouteParams } from '../../utils/validation'
+import { slugRouteParamSchema, validatePublicRouteParams } from '../../utils/validation'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../../utils/publicRouteCache'
 
 export default defineCachedEventHandler(
   async (event) => {
-    const { slug } = validateRouteParams(event, slugRouteParamSchema)
+    const { slug } = validatePublicRouteParams(event, slugRouteParamSchema)
 
     setExternalApiCacheHeaders(event, getExternalApiCacheOptions(event))
 

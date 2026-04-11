@@ -12,12 +12,12 @@ import {
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
-import { publicPaginationQuerySchema, validateQuery } from '../utils/validation'
+import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
 
 export default defineCachedEventHandler(
   async (event) => {
     setPublicRouteVaryHeaders(event)
-    const { limit, offset } = validateQuery(event, publicPaginationQuerySchema)
+    const { limit, offset } = validatePublicQuery(event, publicPaginationQuerySchema)
     const normalizedLimit = limit ?? 12
     const normalizedOffset = offset ?? 0
 

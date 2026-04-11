@@ -15,14 +15,14 @@ import {
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
-import { pressListQuerySchema, validateQuery } from '../utils/validation'
+import { pressListQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 
 export default defineCachedEventHandler(
   async (event) => {
     setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
-    const query = validateQuery(event, pressListQuerySchema)
+    const query = validatePublicQuery(event, pressListQuerySchema)
     const type = query.type
     const tagSlug = query.tag
     const limit = query.limit

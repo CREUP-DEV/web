@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody, setHeader } from 'h3'
 import { buildLocalizedPath } from '../utils/urlBuilder'
-import { newsletterTokenQuerySchema, validateBody } from '../utils/validation'
+import { newsletterTokenQuerySchema, validatePublicBody } from '../utils/validation'
 import { performNewsletterConfirmAction } from '../utils/newsletterSubscriptionActions'
 import { enforceRateLimit } from '../utils/rateLimit'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
 
   setHeader(event, 'cache-control', 'no-store')
 
-  const { token } = validateBody(newsletterTokenQuerySchema, await readBody(event))
+  const { token } = validatePublicBody(event, newsletterTokenQuerySchema, await readBody(event))
   const redirectPath = buildLocalizedPath(event, '/prensa/newsletter')
   const action = await performNewsletterConfirmAction(token)
   return {

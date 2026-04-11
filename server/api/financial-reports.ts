@@ -13,14 +13,14 @@ import {
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
-import { publicPaginationQuerySchema, validateQuery } from '../utils/validation'
+import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 
 export default defineCachedEventHandler(
   async (event) => {
     setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
-    const { limit, offset } = validateQuery(event, publicPaginationQuerySchema)
+    const { limit, offset } = validatePublicQuery(event, publicPaginationQuerySchema)
 
     try {
       const activeWhere = eq(financialReports.active, true)

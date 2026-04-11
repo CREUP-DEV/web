@@ -7,6 +7,7 @@ import {
   normalizeAdminStoredPath,
   resolveAdminStoredAbsolutePath,
 } from '../../../utils/adminStoredFile'
+import { logError } from '../../../utils/logger'
 import { throwMethodNotAllowed } from '../../../utils/throwMethodNotAllowed'
 import { adminAssetPathRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 
@@ -68,6 +69,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, message: 'Archivo no encontrado' })
     }
 
-    throw error
+    logError('admin.assets.read-unexpected-error', error, { storagePath }, event)
+    throw createError({ statusCode: 500, message: 'Error interno del servidor' })
   }
 })

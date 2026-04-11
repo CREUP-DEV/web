@@ -57,7 +57,7 @@ export default defineCachedEventHandler(
             )
             throw createError({
               statusCode: 502,
-              message: 'Invalid associated members count payload',
+              message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
             })
           }
 

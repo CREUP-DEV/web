@@ -5,7 +5,7 @@ import {
 } from '../../../utils/externalApiCache'
 import { fetchMandateDetail } from '../../../utils/mandateDetail'
 import { getRequiredExternalApiBaseUrl } from '../../../utils/runtimeConfig'
-import { numericIdRouteParamSchema, validateRouteParams } from '../../../utils/validation'
+import { numericIdRouteParamSchema, validatePublicRouteParams } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
   setExternalApiCacheHeaders(event, cacheOptions)
 
-  const { id: mandateId } = validateRouteParams(event, numericIdRouteParamSchema)
+  const { id: mandateId } = validatePublicRouteParams(event, numericIdRouteParamSchema)
 
   return fetchMandateDetail(configuredBaseUrl, mandateId, cacheOptions, event)
 })

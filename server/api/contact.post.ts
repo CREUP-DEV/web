@@ -6,7 +6,7 @@ import {
   getRequiredSiteUrl,
 } from '../utils/runtimeConfig'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { validateBody } from '../utils/validation'
+import { validatePublicBody } from '../utils/validation'
 import { enforceRateLimit } from '../utils/rateLimit'
 import { getSmtpTransporter } from '../utils/smtpTransporter'
 import { logError } from '../utils/logger'
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
   })
 
   const raw = await readBody(event)
-  const body = validateBody(contactFormSchema, raw)
+  const body = validatePublicBody(event, contactFormSchema, raw)
 
   if (body.website && body.website.trim() !== '') {
     return { success: true }

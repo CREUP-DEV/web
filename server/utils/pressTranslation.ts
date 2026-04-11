@@ -1,5 +1,5 @@
 import createDOMPurify, { type WindowLike } from 'dompurify'
-import { JSDOM } from 'jsdom'
+import { parseHTML } from 'linkedom'
 import { getBaseLanguage } from '~~/shared/utils/locale'
 
 type PressTranslationLike = {
@@ -9,10 +9,11 @@ type PressTranslationLike = {
   alt?: string | null
   contentHtml?: string | null
 }
-type RichTextElement = InstanceType<JSDOM['window']['Element']>
-type RichTextAnchorElement = InstanceType<JSDOM['window']['HTMLAnchorElement']>
+type RichTextElement = Element
+type RichTextAnchorElement = HTMLAnchorElement
 
-const richTextPurifier = createDOMPurify(new JSDOM('').window as unknown as WindowLike)
+const { window: richTextSanitizerWindow } = parseHTML('<!doctype html><html><body></body></html>')
+const richTextPurifier = createDOMPurify(richTextSanitizerWindow as unknown as WindowLike)
 
 const allowedRichTextTags = [
   'a',
@@ -37,7 +38,8 @@ const extractPlainText = (value?: string | null) => {
     return ''
   }
 
-  const textContent = JSDOM.fragment(normalized).textContent ?? ''
+  const { document } = parseHTML(`<body>${normalized}</body>`)
+  const textContent = document.body.textContent ?? ''
 
   return textContent
     .replace(/\u00A0/g, ' ')
@@ -133,7 +135,7 @@ export const sanitizeRichTextHtml = (value?: string | null) => {
     RETURN_TRUSTED_TYPE: false,
   }) as string
 
-  const document = new JSDOM(`<body>${sanitizedSource}</body>`).window.document
+  const { document } = parseHTML(`<body>${sanitizedSource}</body>`)
 
   for (const boldElement of Array.from(document.body.querySelectorAll('b')) as RichTextElement[]) {
     replaceElementTag(boldElement, 'strong')

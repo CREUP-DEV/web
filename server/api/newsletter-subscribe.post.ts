@@ -4,7 +4,7 @@ import { db } from '../db'
 import { newsletterSubscribers } from '../db/schema'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
-import { validateBody } from '../utils/validation'
+import { validatePublicBody } from '../utils/validation'
 import { enforceRateLimit } from '../utils/rateLimit'
 import { newsletterSubscribeSchema } from '~~/shared/utils/newsletterValidation'
 import {
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     event,
     'newsletterEmailDeliveryFailed'
   )
-  const newsletterInvalidDataMessage = getPublicApiErrorMessage(event, 'newsletterInvalidData')
+  const newsletterInvalidDataMessage = getPublicApiErrorMessage(event, 'invalidInput')
 
   enforceRateLimit(event, {
     namespace: 'newsletter-subscribe',
@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const raw = await readBody(event)
-    const body = validateBody(newsletterSubscribeSchema, raw)
+    const body = validatePublicBody(event, newsletterSubscribeSchema, raw)
 
     if (body.website && body.website.trim() !== '') {
       return { success: true }

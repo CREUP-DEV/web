@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 import createDOMPurify, { type WindowLike } from 'dompurify'
-import { JSDOM } from 'jsdom'
+import { DOMParser, parseHTML } from 'linkedom'
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import sharp from 'sharp'
@@ -28,7 +28,8 @@ const MAX_RASTER_IMAGE_PIXELS = 80_000_000
 // 100 frame limit for animated GIFs/WebP; prevents CPU exhaustion on crafted animations
 const MAX_RASTER_IMAGE_FRAMES = 100
 
-const svgPurifier = createDOMPurify(new JSDOM('').window as unknown as WindowLike)
+const svgSanitizerWindow = parseHTML('<!doctype html><html><body></body></html>')
+const svgPurifier = createDOMPurify(svgSanitizerWindow as unknown as WindowLike)
 const blockedSvgTags = new Set([
   'script',
   'foreignobject',
@@ -42,8 +43,12 @@ const blockedSvgTags = new Set([
   'handler',
 ])
 const svgReferenceAttributes = new Set(['href', 'xlink:href', 'src'])
-type SvgDocument = JSDOM['window']['document']
-type SvgElement = InstanceType<JSDOM['window']['Element']>
+type SanitizedSvgElement = {
+  tagName: string
+  getAttributeNames: () => string[]
+  getAttribute: (name: string) => string | null
+  removeAttribute: (name: string) => void
+}
 
 const hasUnsafeSvgReference = (value: string) => {
   const normalized = value.trim().toLowerCase()
@@ -157,10 +162,10 @@ function sanitizeSvgContent(data: Buffer): Buffer {
     throw invalidSvgError()
   }
 
-  let svgDocument: SvgDocument
+  let svgDocument: ReturnType<DOMParser['parseFromString']>
 
   try {
-    svgDocument = new JSDOM(sanitized, { contentType: 'image/svg+xml' }).window.document
+    svgDocument = new DOMParser().parseFromString(sanitized, 'image/svg+xml')
   } catch {
     throw invalidSvgError()
   }
@@ -174,13 +179,13 @@ function sanitizeSvgContent(data: Buffer): Buffer {
     throw invalidSvgError()
   }
 
-  for (const element of Array.from(svgDocument.querySelectorAll('*')) as SvgElement[]) {
+  for (const element of Array.from(svgDocument.querySelectorAll('*')) as SanitizedSvgElement[]) {
     const tagName = element.tagName.toLowerCase()
     if (blockedSvgTags.has(tagName)) {
       throw disallowedSvgError()
     }
 
-    for (const attributeName of element.getAttributeNames() as string[]) {
+    for (const attributeName of element.getAttributeNames()) {
       const normalizedAttributeName = attributeName.toLowerCase()
       const attributeValue = element.getAttribute(attributeName)?.trim() ?? ''
 
@@ -213,7 +218,7 @@ function sanitizeSvgContent(data: Buffer): Buffer {
     }
   }
 
-  const serializedSvg = new svgDocument.defaultView!.XMLSerializer().serializeToString(rootElement)
+  const serializedSvg = rootElement.outerHTML
 
   if (!serializedSvg.trim()) {
     throw invalidSvgError()
