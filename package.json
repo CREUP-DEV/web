@@ -13,7 +13,6 @@
     "typecheck": "nuxt typecheck",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx drizzle/seed.ts",
     "i18n:check": "tsx scripts/check-i18n-parity.ts"
@@ -47,6 +46,7 @@
     "sharp": "^0.34.5",
     "sortablejs": "^1.15.7",
     "tailwindcss": "^4.2.2",
+    "undici": "7.24.7",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4",
     "zod": "^4.3.6"

@@ -1,7 +1,7 @@
 import { createError } from 'h3'
 import createDOMPurify, { type WindowLike } from 'dompurify'
 import { JSDOM } from 'jsdom'
-import { mkdir, readdir, writeFile } from 'node:fs/promises'
+import { access, mkdir, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import sharp from 'sharp'
 import { slugify } from './slug'
@@ -256,8 +256,17 @@ async function convertRasterImageToWebp(data: Buffer) {
   }
 }
 
-function matchesBaseSlug(filename: string, baseSlug: string) {
-  return OUTPUT_IMAGE_EXTENSION_LIST.some((extension) => filename === `${baseSlug}${extension}`)
+async function isBaseSlugTaken(absoluteUploadDir: string, candidateBaseSlug: string) {
+  for (const extension of OUTPUT_IMAGE_EXTENSION_LIST) {
+    try {
+      await access(join(absoluteUploadDir, `${candidateBaseSlug}${extension}`))
+      return true
+    } catch {
+      // No file for this candidate extension.
+    }
+  }
+
+  return false
 }
 
 export async function saveAdminImage(options: SaveAdminImageOptions) {
@@ -298,15 +307,12 @@ export async function saveAdminImage(options: SaveAdminImageOptions) {
   }
 
   await mkdir(absoluteUploadDir, { recursive: true })
-  const existingFiles = await readdir(absoluteUploadDir)
-  const isBaseSlugTaken = (candidateBaseSlug: string) =>
-    existingFiles.some((candidate) => matchesBaseSlug(candidate, candidateBaseSlug))
 
   let resolvedBaseSlug = baseSlug
-  if (isBaseSlugTaken(resolvedBaseSlug)) {
+  if (await isBaseSlugTaken(absoluteUploadDir, resolvedBaseSlug)) {
     let suffix = 2
 
-    while (isBaseSlugTaken(`${baseSlug}-${suffix}`)) {
+    while (await isBaseSlugTaken(absoluteUploadDir, `${baseSlug}-${suffix}`)) {
       suffix++
     }
 

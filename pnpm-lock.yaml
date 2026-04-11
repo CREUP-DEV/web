@@ -92,6 +92,9 @@ importers:
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
+      undici:
+        specifier: 7.24.7
+        version: 7.24.7
       vue:
         specifier: ^3.5.32
         version: 3.5.32(typescript@6.0.2)

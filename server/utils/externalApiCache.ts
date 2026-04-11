@@ -42,29 +42,38 @@ const startRefresh = <T>(
   options: ExternalApiCacheOptions,
   isBackgroundRefresh: boolean
 ) => {
-  const refreshPromise = fetcher()
-    .then((value) => {
+  let resolveRefresh!: (value: T) => void
+  let rejectRefresh!: (reason: unknown) => void
+
+  const refreshPromise = new Promise<T>((resolve, reject) => {
+    resolveRefresh = resolve
+    rejectRefresh = reject
+  })
+
+  entry.pending = refreshPromise
+  touchCacheEntry(key, entry as CacheEntry<unknown>)
+
+  void (async () => {
+    try {
+      const value = await fetcher()
       const now = Date.now()
       entry.value = value
       entry.freshUntil = now + options.maxAgeSeconds * 1000
       entry.staleUntil = now + options.staleSeconds * 1000
       entry.updatedAt = now
       touchCacheEntry(key, entry as CacheEntry<unknown>)
-      return value
-    })
-    .catch((error) => {
+      resolveRefresh(value)
+    } catch (error) {
       entry.updatedAt = Date.now()
       if (!isBackgroundRefresh && entry.value === null) {
         cacheStore.delete(key)
       }
-      throw error
-    })
-    .finally(() => {
+      rejectRefresh(error)
+    } finally {
       entry.pending = undefined
-    })
+    }
+  })()
 
-  entry.pending = refreshPromise
-  touchCacheEntry(key, entry as CacheEntry<unknown>)
   return refreshPromise
 }
 

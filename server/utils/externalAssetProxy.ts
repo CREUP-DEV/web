@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { createError, getHeader, getMethod, getQuery, getRequestURL } from 'h3'
+import { Agent, type Dispatcher } from 'undici'
 import {
   getDefaultPublicApiErrorMessage,
   getPublicApiErrorMessage,
@@ -27,6 +28,28 @@ interface ExternalAssetProxyUrlOptions {
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
 const CACHE_CONTROL_FLOOR_SECONDS = 24 * 60 * 60
+const EXTERNAL_ASSET_PROXY_CONNECTIONS = 8
+const EXTERNAL_ASSET_PROXY_CONNECT_TIMEOUT_MS = 5_000
+const EXTERNAL_ASSET_PROXY_HEADERS_TIMEOUT_MS = 30_000
+const EXTERNAL_ASSET_PROXY_BODY_TIMEOUT_MS = 30_000
+const EXTERNAL_ASSET_PROXY_KEEP_ALIVE_TIMEOUT_MS = 5_000
+const EXTERNAL_ASSET_PROXY_KEEP_ALIVE_MAX_TIMEOUT_MS = 60_000
+const EXTERNAL_ASSET_PROXY_MAX_ORIGINS = 16
+
+const externalAssetProxyDispatcher = new Agent({
+  bodyTimeout: EXTERNAL_ASSET_PROXY_BODY_TIMEOUT_MS,
+  connectTimeout: EXTERNAL_ASSET_PROXY_CONNECT_TIMEOUT_MS,
+  connections: EXTERNAL_ASSET_PROXY_CONNECTIONS,
+  headersTimeout: EXTERNAL_ASSET_PROXY_HEADERS_TIMEOUT_MS,
+  keepAliveMaxTimeout: EXTERNAL_ASSET_PROXY_KEEP_ALIVE_MAX_TIMEOUT_MS,
+  keepAliveTimeout: EXTERNAL_ASSET_PROXY_KEEP_ALIVE_TIMEOUT_MS,
+  maxOrigins: EXTERNAL_ASSET_PROXY_MAX_ORIGINS,
+  pipelining: 1,
+})
+
+interface ExternalAssetProxyRequestInit extends RequestInit {
+  dispatcher?: Dispatcher
+}
 
 const PROXIED_PATH_PREFIXES = INTERNAL_ASSET_PROXY_PATH_BASES.map((path) => `${path}/`)
 
@@ -452,12 +475,14 @@ export const proxyExternalAssetBySource = async (
       throw createError({ statusCode: 502, message: getPublicMessage('assetUnavailable', event) })
     }
 
-    const response = await fetch(url, {
+    const requestInit: ExternalAssetProxyRequestInit = {
+      dispatcher: externalAssetProxyDispatcher,
       method: method === 'HEAD' ? 'HEAD' : 'GET',
       headers: requestHeaders,
       redirect: 'manual',
       signal: controller.signal,
-    })
+    }
+    const response = await fetch(url, requestInit)
 
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location')
