@@ -7,8 +7,42 @@ interface PublicRouteCacheKeyOptions {
   queryKeys?: string[]
 }
 
+interface PublicApiCacheHeaderOptions {
+  browserMaxAgeSeconds?: number
+  sharedMaxAgeSeconds?: number
+  staleWhileRevalidateSeconds?: number
+}
+
+const DEFAULT_PUBLIC_API_BROWSER_MAX_AGE_SECONDS = 0
+const DEFAULT_PUBLIC_API_SHARED_MAX_AGE_SECONDS = 5
+const DEFAULT_PUBLIC_API_STALE_WHILE_REVALIDATE_SECONDS = 5
+
 export function setPublicRouteVaryHeaders(event: H3Event) {
   setHeader(event, 'vary', 'x-request-locale')
+}
+
+export function setPublicApiCacheHeaders(
+  event: H3Event,
+  options: PublicApiCacheHeaderOptions = {}
+) {
+  const browserMaxAgeSeconds = Math.max(
+    0,
+    options.browserMaxAgeSeconds ?? DEFAULT_PUBLIC_API_BROWSER_MAX_AGE_SECONDS
+  )
+  const sharedMaxAgeSeconds = Math.max(
+    0,
+    options.sharedMaxAgeSeconds ?? DEFAULT_PUBLIC_API_SHARED_MAX_AGE_SECONDS
+  )
+  const staleWhileRevalidateSeconds = Math.max(
+    0,
+    options.staleWhileRevalidateSeconds ?? DEFAULT_PUBLIC_API_STALE_WHILE_REVALIDATE_SECONDS
+  )
+
+  setHeader(
+    event,
+    'cache-control',
+    `public, max-age=${browserMaxAgeSeconds}, s-maxage=${sharedMaxAgeSeconds}, stale-while-revalidate=${staleWhileRevalidateSeconds}`
+  )
 }
 
 export const PUBLIC_ROUTE_CACHE_OPTIONS = {

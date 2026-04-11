@@ -4,7 +4,7 @@ import {
   setExternalApiCacheHeaders,
 } from '../../../../utils/externalApiCache'
 import { getPublicApiErrorMessage } from '../../../../utils/apiErrorMessages'
-import { fetchMandatesList, fetchMandateDetail } from '../../../../utils/mandateDetail'
+import { fetchMandatesBySlug, fetchMandateDetail } from '../../../../utils/mandateDetail'
 import { getRequiredExternalApiBaseUrl } from '../../../../utils/runtimeConfig'
 import {
   mandateSlugRouteParamSchema,
@@ -19,8 +19,7 @@ export default defineEventHandler(async (event) => {
 
   const { slug } = validatePublicRouteParams(event, mandateSlugRouteParamSchema)
 
-  const mandates = await fetchMandatesList(configuredBaseUrl, cacheOptions, event)
-  const matches = mandates.filter((m) => m.startDate.startsWith(slug))
+  const matches = await fetchMandatesBySlug(configuredBaseUrl, slug, cacheOptions, event)
 
   if (matches.length === 0) {
     throw createError({

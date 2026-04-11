@@ -82,6 +82,10 @@ export interface MandateDetailOutput {
   generatedAt: string | null
 }
 
+interface MandateSlugIndex {
+  slugToMandates: Record<string, MandateInfoOutput[]>
+}
+
 const networkAliasMap: Record<string, SupportedNetwork> = {
   website: 'website',
   webpage: 'website',
@@ -156,6 +160,67 @@ const transformMemberSocials = (socialNetworks: ExternalMember[]): MemberSocialO
   })
 }
 
+const mapExternalMandate = (mandate: {
+  id: number
+  start_date: string
+  end_date: string | null
+  is_current: boolean
+}): MandateInfoOutput => ({
+  id: mandate.id,
+  startDate: mandate.start_date,
+  endDate: mandate.end_date,
+  isCurrent: mandate.is_current,
+})
+
+const mandateSlugCandidates = (startDate: string) => {
+  const [year, month, day] = startDate.split('-')
+  const candidates: string[] = []
+
+  if (year) {
+    candidates.push(year)
+  }
+
+  if (year && month) {
+    candidates.push(`${year}-${month}`)
+  }
+
+  if (year && month && day) {
+    candidates.push(`${year}-${month}-${day}`)
+  }
+
+  return candidates
+}
+
+async function fetchExternalMandates(
+  externalBaseUrl: string,
+  unavailableMessage: string,
+  event?: H3Event
+) {
+  const endpoint = new URL('/api/organigrama/mandatos', externalBaseUrl).toString()
+
+  let payload: unknown
+  try {
+    payload = await $fetch(endpoint)
+  } catch (error) {
+    logError('external.mandates.fetch', error, { endpoint }, event)
+    throw createError({
+      statusCode: 502,
+      message: unavailableMessage,
+    })
+  }
+
+  const parsed = externalMandatesResponseSchema.safeParse(payload)
+  if (!parsed.success) {
+    logError('external.mandates.invalid-payload', parsed.error, { endpoint }, event)
+    throw createError({
+      statusCode: 502,
+      message: unavailableMessage,
+    })
+  }
+
+  return parsed.data.data
+}
+
 export async function fetchMandatesList(
   externalBaseUrl: string,
   cacheOptions: ExternalApiCacheOptions,
@@ -166,39 +231,52 @@ export async function fetchMandatesList(
   return withExternalApiSWRCache(
     `external-api:organigrama-mandates:${externalBaseUrl}`,
     async () => {
-      const endpoint = new URL('/api/organigrama/mandatos', externalBaseUrl).toString()
+      const mandates = await fetchExternalMandates(externalBaseUrl, unavailableMessage, event)
 
-      let payload: unknown
-      try {
-        payload = await $fetch(endpoint)
-      } catch (error) {
-        logError('external.mandates.fetch', error, { endpoint }, event)
-        throw createError({
-          statusCode: 502,
-          message: unavailableMessage,
-        })
-      }
-
-      const parsed = externalMandatesResponseSchema.safeParse(payload)
-      if (!parsed.success) {
-        logError('external.mandates.invalid-payload', parsed.error, { endpoint }, event)
-        throw createError({
-          statusCode: 502,
-          message: unavailableMessage,
-        })
-      }
-
-      return parsed.data.data
+      return mandates
         .sort((a, b) => b.start_date.localeCompare(a.start_date))
-        .map((m) => ({
-          id: m.id,
-          startDate: m.start_date,
-          endDate: m.end_date,
-          isCurrent: m.is_current,
-        }))
+        .map(mapExternalMandate)
     },
     cacheOptions
   )
+}
+
+export async function fetchMandatesBySlug(
+  externalBaseUrl: string,
+  slug: string,
+  cacheOptions: ExternalApiCacheOptions,
+  event?: H3Event
+): Promise<MandateInfoOutput[]> {
+  const unavailableMessage = getMandatesUnavailableMessage(event)
+
+  const index = await withExternalApiSWRCache(
+    `external-api:organigrama-mandates-slug-index:${externalBaseUrl}`,
+    async (): Promise<MandateSlugIndex> => {
+      const mandates = await fetchExternalMandates(externalBaseUrl, unavailableMessage, event)
+      const sortedMandates = mandates
+        .sort((a, b) => b.start_date.localeCompare(a.start_date))
+        .map(mapExternalMandate)
+
+      const slugToMandates: Record<string, MandateInfoOutput[]> = {}
+
+      for (const mandate of sortedMandates) {
+        for (const candidate of mandateSlugCandidates(mandate.startDate)) {
+          const list = slugToMandates[candidate]
+          if (list) {
+            list.push(mandate)
+            continue
+          }
+
+          slugToMandates[candidate] = [mandate]
+        }
+      }
+
+      return { slugToMandates }
+    },
+    cacheOptions
+  )
+
+  return index.slugToMandates[slug] ?? []
 }
 
 export async function fetchMandateDetail(

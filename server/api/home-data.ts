@@ -12,11 +12,16 @@ import { getRequestLocaleContext } from '../utils/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicApiCacheHeaders,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
 
 export default defineCachedEventHandler(
   async (event) => {
+    setPublicApiCacheHeaders(event, {
+      sharedMaxAgeSeconds: 5,
+      staleWhileRevalidateSeconds: 5,
+    })
     setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
 

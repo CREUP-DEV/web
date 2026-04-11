@@ -13,6 +13,7 @@ import { getRequestLocaleContext } from '../utils/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicApiCacheHeaders,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
 import { pressListQuerySchema, validatePublicQuery } from '../utils/validation'
@@ -20,6 +21,7 @@ import { dateValueToDateOnly } from '~~/shared/utils/date'
 
 export default defineCachedEventHandler(
   async (event) => {
+    setPublicApiCacheHeaders(event)
     setPublicRouteVaryHeaders(event)
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
     const query = validatePublicQuery(event, pressListQuerySchema)

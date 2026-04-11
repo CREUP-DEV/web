@@ -1,10 +1,9 @@
 import { defineEventHandler } from 'h3'
-import { getExternalApiCacheOptions, setExternalApiCacheHeaders } from '../utils/externalApiCache'
 import { getAssociatedMembersResponse } from '../utils/publicMembers'
+import { setPublicApiCacheHeaders } from '../utils/publicRouteCache'
 
 export default defineEventHandler(async (event) => {
-  const cacheOptions = getExternalApiCacheOptions(event)
-  setExternalApiCacheHeaders(event, cacheOptions)
+  setPublicApiCacheHeaders(event)
 
   return getAssociatedMembersResponse(event)
 })

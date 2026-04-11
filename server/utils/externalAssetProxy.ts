@@ -62,7 +62,18 @@ interface CachedExternalAssetProxyConfig {
   baseUrl: string
 }
 
-let cachedExternalAssetProxyConfig: CachedExternalAssetProxyConfig | null = null
+interface CachedExternalAssetProxyConfigState {
+  expiresAt: number
+  value: CachedExternalAssetProxyConfig
+}
+
+const EXTERNAL_ASSET_PROXY_CONFIG_TTL_MS = 60_000
+
+let cachedExternalAssetProxyConfig: CachedExternalAssetProxyConfigState | null = null
+
+export function invalidateExternalAssetProxyConfigCache() {
+  cachedExternalAssetProxyConfig = null
+}
 
 const normalizeOrigin = (value: string) => {
   try {
@@ -86,8 +97,10 @@ const parseAllowedOrigins = (value: string) => {
 }
 
 const getExternalAssetProxyConfig = (event?: H3Event) => {
-  if (cachedExternalAssetProxyConfig) {
-    return cachedExternalAssetProxyConfig
+  const now = Date.now()
+
+  if (cachedExternalAssetProxyConfig && cachedExternalAssetProxyConfig.expiresAt > now) {
+    return cachedExternalAssetProxyConfig.value
   }
 
   const baseUrl = getRequiredExternalApiBaseUrl(
@@ -106,13 +119,18 @@ const getExternalAssetProxyConfig = (event?: H3Event) => {
     allowedOrigins.add(baseOrigin)
   }
 
-  cachedExternalAssetProxyConfig = {
+  const config = {
     allowedOrigins,
     baseOrigin,
     baseUrl,
   }
 
-  return cachedExternalAssetProxyConfig
+  cachedExternalAssetProxyConfig = {
+    value: config,
+    expiresAt: now + EXTERNAL_ASSET_PROXY_CONFIG_TTL_MS,
+  }
+
+  return config
 }
 
 const resolveSourceUrl = (src: string, baseUrl: string) => {

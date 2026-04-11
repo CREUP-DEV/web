@@ -1,7 +1,17 @@
 import { fetchNormativa } from '../utils/normativa'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  PUBLIC_ROUTE_CACHE_OPTIONS,
+  setPublicApiCacheHeaders,
+} from '../utils/publicRouteCache'
 
-export default defineCachedEventHandler(async (event) => fetchNormativa(event), {
-  ...PUBLIC_ROUTE_CACHE_OPTIONS,
-  getKey: (event) => buildPublicRouteCacheKey(event, 'normativa', { includeLocale: false }),
-})
+export default defineCachedEventHandler(
+  async (event) => {
+    setPublicApiCacheHeaders(event)
+    return fetchNormativa(event)
+  },
+  {
+    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    getKey: (event) => buildPublicRouteCacheKey(event, 'normativa', { includeLocale: false }),
+  }
+)
