@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { EMAIL_MAX_LENGTH, isValidEmailAddress } from './emailValidation'
+import { EMAIL_MAX_LENGTH } from './emailValidation'
 
 export const NEWSLETTER_FIELD_LIMITS = {
   emailMax: EMAIL_MAX_LENGTH,
@@ -8,7 +8,7 @@ export const NEWSLETTER_FIELD_LIMITS = {
 } as const
 
 export function isValidNewsletterEmail(value?: string | null) {
-  return isValidEmailAddress(value)
+  return z.string().trim().email().max(NEWSLETTER_FIELD_LIMITS.emailMax).safeParse(value).success
 }
 
 export const newsletterSubscribeSchema = z

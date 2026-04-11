@@ -59,6 +59,11 @@ export const carouselItemTranslations = pgTable(
     title: text('title').notNull(),
     buttonText: text('button_text').notNull(),
     alt: text('alt'),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     carouselItemId: text('carousel_item_id')
       .notNull()
       .references(() => carouselItems.id, { onDelete: 'cascade' }),
@@ -101,6 +106,11 @@ export const tagTranslations = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     locale: text('locale').notNull(),
     name: text('name').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     tagId: text('tag_id')
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
@@ -175,6 +185,11 @@ export const pressArticleTranslations = pgTable(
     description: text('description'),
     contentHtml: text('content_html'),
     alt: text('alt'),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     pressArticleId: text('press_article_id')
       .notNull()
       .references(() => pressArticles.id, { onDelete: 'cascade' }),
@@ -285,6 +300,11 @@ export const featuredLinkTranslations = pgTable(
     locale: text('locale').notNull(),
     title: text('title').notNull(),
     alt: text('alt'),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     featuredLinkId: text('featured_link_id')
       .notNull()
       .references(() => featuredLinks.id, { onDelete: 'cascade' }),
@@ -421,6 +441,11 @@ export const teamAreaTranslations = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     locale: text('locale').notNull(),
     name: text('name').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     teamAreaId: text('team_area_id')
       .notNull()
       .references(() => teamAreas.id, { onDelete: 'cascade' }),
@@ -479,6 +504,11 @@ export const teamMemberTranslations = pgTable(
     university: text('university'),
     degree: text('degree'),
     description: text('description'),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     teamMemberId: text('team_member_id')
       .notNull()
       .references(() => teamMembers.id, { onDelete: 'cascade' }),
@@ -530,7 +560,7 @@ export const organizationMembers = pgTable('organization_members', {
   logo: text('logo'),
   website: text('website'),
   email: text('email'),
-  /** Each element must have { network: string, value: string }. */
+  /** App-level Zod validation enforces { network: string, value: string } per entry. */
   socials: jsonb('socials').$type<OrganizationMemberSocial[]>().default([]).notNull(),
   autonomousCommunity: text('autonomous_community').notNull(),
   order: integer('order').default(0).notNull(),
@@ -549,6 +579,11 @@ export const organizationMemberTranslations = pgTable(
     locale: text('locale').notNull(),
     name: text('name').notNull(),
     university: text('university').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     organizationMemberId: text('organization_member_id')
       .notNull()
       .references(() => organizationMembers.id, { onDelete: 'cascade' }),
@@ -815,6 +850,11 @@ export const equalityDocumentTranslations = pgTable(
     title: text('title').notNull(),
     description: text('description').notNull(),
     meta: text('meta'),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     equalityDocumentId: text('equality_document_id')
       .notNull()
       .references(() => equalityDocuments.id, { onDelete: 'cascade' }),
@@ -865,6 +905,11 @@ export const financialReportTranslations = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     locale: text('locale').notNull(),
     title: text('title').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
     financialReportId: text('financial_report_id')
       .notNull()
       .references(() => financialReports.id, { onDelete: 'cascade' }),

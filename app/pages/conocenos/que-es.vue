@@ -14,12 +14,13 @@ interface AboutPageContent {
 }
 
 const foundationDate = new Date(Date.UTC(2003, 9, 24))
-const fallbackMemberCount = 38
+const fallbackMemberCount = 30
+const fallbackMemberCountLabel = '+30'
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const { data, pending } = await useFetch<{
+const { data, error, pending } = await useFetch<{
   content: AboutPageContent | null
   memberCount: number | null
 }>('/api/about-page')
@@ -27,7 +28,9 @@ const { data, pending } = await useFetch<{
 const memberCount = computed(() => data.value?.memberCount ?? fallbackMemberCount)
 
 const formattedMemberCount = computed(() =>
-  new Intl.NumberFormat(locale.value).format(memberCount.value)
+  error.value
+    ? fallbackMemberCountLabel
+    : new Intl.NumberFormat(locale.value).format(memberCount.value)
 )
 
 const completedYears = computed(() => {
@@ -65,7 +68,9 @@ watch(statsVisible, (visible) => {
 })
 
 const formattedCountUniversities = computed(() =>
-  new Intl.NumberFormat(locale.value).format(countUniversities.value)
+  error.value
+    ? fallbackMemberCountLabel
+    : new Intl.NumberFormat(locale.value).format(countUniversities.value)
 )
 const formattedCountStudents = computed(
   () => `+${new Intl.NumberFormat(locale.value).format(countStudents.value)}`
@@ -204,6 +209,14 @@ usePageSeo(
       </div>
 
       <template v-else>
+        <UAlert
+          v-if="error"
+          color="warning"
+          variant="soft"
+          title="No se pudo actualizar el contenido dinámico"
+          description="Se muestran valores de referencia mientras se recupera la conexión."
+        />
+
         <section
           v-if="pageContent.heroVisible && pageContent.heroImage"
           :aria-label="pageContent.title"

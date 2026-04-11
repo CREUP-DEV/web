@@ -18,7 +18,11 @@ interface MediaOutlet {
   order: number
 }
 
-const { data, refresh } = await useFetch<{ items: MediaOutlet[] }>('/api/admin/media')
+const {
+  data,
+  error: fetchError,
+  refresh,
+} = await useFetch<{ items: MediaOutlet[] }>('/api/admin/media')
 
 const items = computed(() => data.value?.items ?? [])
 const isSubmitting = ref(false)
@@ -166,7 +170,19 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div ref="listRef" class="space-y-4">
+    <div v-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar los medios"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <div v-else ref="listRef" class="space-y-4">
       <div
         v-for="item in localItems"
         :key="item.id"

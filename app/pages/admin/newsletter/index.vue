@@ -27,7 +27,11 @@ const route = useRoute()
 const router = useRouter()
 const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
-const { data, refresh } = await useFetch<{
+const {
+  data,
+  error: fetchError,
+  refresh,
+} = await useFetch<{
   items: Newsletter[]
   total: number
   maxDeliveryAttempts: number
@@ -342,11 +346,23 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div v-if="items.length === 0" class="text-muted py-12 text-center">
+    <div v-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar las newsletters"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <div v-else-if="items.length === 0" class="text-muted py-12 text-center">
       No hay newsletters. Pulsa «Añadir» para crear la primera.
     </div>
 
-    <div class="space-y-4">
+    <div v-else class="space-y-4">
       <div
         v-for="item in items"
         :key="item.id"

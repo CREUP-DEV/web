@@ -33,7 +33,11 @@ interface FeaturedLink {
   translations: Translation[]
 }
 
-const { data, refresh } = await useFetch<{ items: FeaturedLink[] }>('/api/admin/links')
+const {
+  data,
+  error: fetchError,
+  refresh,
+} = await useFetch<{ items: FeaturedLink[] }>('/api/admin/links')
 
 const items = computed(() => data.value?.items ?? [])
 const isSubmitting = ref(false)
@@ -220,7 +224,19 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div ref="listRef" class="space-y-4">
+    <div v-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar los enlaces"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <div v-else ref="listRef" class="space-y-4">
       <div
         v-for="item in localItems"
         :key="item.id"

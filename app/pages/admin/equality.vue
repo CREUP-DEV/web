@@ -34,7 +34,11 @@ const {
   mapTranslationsToForm,
 } = useLocales()
 
-const { data, refresh } = await useFetch<{ items: EqualityDocument[] }>('/api/admin/equality')
+const {
+  data,
+  error: fetchError,
+  refresh,
+} = await useFetch<{ items: EqualityDocument[] }>('/api/admin/equality')
 const items = computed(() => data.value?.items ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
@@ -250,7 +254,19 @@ const handlePdfSelect = async (event: Event) => {
       </div>
     </div>
 
-    <UCard v-if="items.length === 0" class="text-center">
+    <div v-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar los documentos"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <UCard v-else-if="items.length === 0" class="text-center">
       <div class="flex flex-col items-center gap-3 py-8">
         <UIcon name="i-tabler-files-off" class="text-muted size-10" />
         <p class="text-muted">No hay documentos de igualdad todavía.</p>

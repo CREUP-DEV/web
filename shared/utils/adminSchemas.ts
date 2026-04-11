@@ -35,6 +35,21 @@ const addRequiredTranslationIssue = (
   })
 }
 
+const addNoDuplicateLocalesIssue = (
+  ctx: z.RefinementCtx,
+  translations: Array<{ locale: string }>
+) => {
+  const locales = translations.map((translation) => translation.locale)
+
+  if (new Set(locales).size !== locales.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'No puede haber traducciones duplicadas para el mismo idioma',
+      path: ['translations'],
+    })
+  }
+}
+
 export const carouselTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
@@ -51,6 +66,8 @@ export const createCarouselItemSchema = z
     translations: z.array(carouselTranslationSchema).min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
+    addNoDuplicateLocalesIssue(ctx, data.translations)
+
     const requiredTranslation = data.translations.find(
       (translation) => translation.locale === DEFAULT_LOCALE_CODE
     )
@@ -84,6 +101,8 @@ export const createFeaturedLinkSchema = z
       .min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
+    addNoDuplicateLocalesIssue(ctx, data.translations)
+
     const requiredTranslation = data.translations.find(
       (translation) => translation.locale === DEFAULT_LOCALE_CODE
     )
@@ -126,6 +145,8 @@ export const createTagSchema = z
     translations: z.array(tagTranslationSchema).min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
+    addNoDuplicateLocalesIssue(ctx, data.translations)
+
     const requiredTranslation = data.translations.find(
       (translation) => translation.locale === DEFAULT_LOCALE_CODE
     )
@@ -139,14 +160,7 @@ export const createTagSchema = z
       )
     }
 
-    const locales = data.translations.map((translation) => translation.locale)
-    if (new Set(locales).size !== locales.length) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'No puede haber traducciones duplicadas para el mismo idioma',
-        path: ['translations'],
-      })
-    }
+    addNoDuplicateLocalesIssue(ctx, data.translations)
   })
 
 export const updateTagSchema = createTagSchema
@@ -168,6 +182,8 @@ export const createEqualityDocumentSchema = z
       .min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
+    addNoDuplicateLocalesIssue(ctx, data.translations)
+
     const requiredTranslation = data.translations.find(
       (translation) => translation.locale === DEFAULT_LOCALE_CODE
     )
@@ -211,6 +227,8 @@ export const createFinancialReportSchema = z
       .min(1, 'Se requiere al menos una traducción'),
   })
   .superRefine((data, ctx) => {
+    addNoDuplicateLocalesIssue(ctx, data.translations)
+
     const requiredTranslation = data.translations.find(
       (translation) => translation.locale === DEFAULT_LOCALE_CODE
     )

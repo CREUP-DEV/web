@@ -14,9 +14,11 @@ interface Subscriber {
 
 const toast = useToast()
 
-const { data, refresh } = await useFetch<{ items: Subscriber[] }>(
-  '/api/admin/newsletter/subscribers'
-)
+const {
+  data,
+  error: fetchError,
+  refresh,
+} = await useFetch<{ items: Subscriber[] }>('/api/admin/newsletter/subscribers')
 const allItems = computed(() => data.value?.items ?? [])
 
 // Filter
@@ -151,11 +153,23 @@ function formatDate(iso: string) {
       </UButton>
     </div>
 
-    <div v-if="filteredItems.length === 0" class="text-muted py-12 text-center">
+    <div v-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar los suscriptores"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <div v-else-if="filteredItems.length === 0" class="text-muted py-12 text-center">
       No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
     </div>
 
-    <div class="space-y-2">
+    <div v-else class="space-y-2">
       <div
         v-for="item in filteredItems"
         :key="item.id"

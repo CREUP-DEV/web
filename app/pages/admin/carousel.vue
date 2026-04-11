@@ -29,7 +29,11 @@ const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
 const defaultCarouselImage = HOME_CAROUSEL_FALLBACK_IMAGE
 
-const { data, refresh } = await useFetch<{ items: CarouselItem[] }>('/api/admin/carousel')
+const {
+  data,
+  error: fetchError,
+  refresh,
+} = await useFetch<{ items: CarouselItem[] }>('/api/admin/carousel')
 
 const items = computed(() => data.value?.items ?? [])
 
@@ -215,7 +219,19 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div ref="listRef" class="space-y-4">
+    <div v-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar los elementos del carrusel"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <div v-else ref="listRef" class="space-y-4">
       <div
         v-for="item in localItems"
         :key="item.id"

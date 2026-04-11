@@ -418,13 +418,24 @@ export const widgets = pgTable('widgets', { id, ..., updatedAt })
 
 // Translation table
 export const widgetTranslations = pgTable('widget_translations', {
-  id, locale, name, widgetId
+  id,
+  locale,
+  name,
+  createdAt,
+  updatedAt,
+  widgetId,
 }, (t) => [
   unique().on(t.locale, t.widgetId),
   check('widget_translations_locale_check', buildSupportedLocaleCheck(t.locale)),
   index('idx_widget_translations_widget_id').on(t.widgetId),
 ])
 ```
+
+### JSONB Shape Validation
+
+- `organization_members.socials` is stored as JSONB and does not have a DB-level shape CHECK.
+- Shape is validated at the app boundary via Zod schemas before write operations.
+- Treat this as an accepted tradeoff for JSONB flexibility unless explicit DB constraints are required.
 
 ### Migration Workflow
 

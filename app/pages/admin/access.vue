@@ -30,7 +30,12 @@ interface AdminAccessResponse {
   }
 }
 
-const { data, refresh, pending } = await useFetch<AdminAccessResponse>('/api/admin/access')
+const {
+  data,
+  error: fetchError,
+  refresh,
+  pending,
+} = await useFetch<AdminAccessResponse>('/api/admin/access')
 
 const items = computed(() => data.value?.items ?? [])
 const summary = computed(() => data.value?.summary ?? { total: 0, active: 0, env: 0 })
@@ -250,6 +255,18 @@ const handleDelete = async () => {
           </div>
         </div>
       </div>
+    </div>
+
+    <div v-else-if="fetchError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudieron cargar los accesos"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        Reintentar
+      </UButton>
     </div>
 
     <div v-else class="space-y-4">
