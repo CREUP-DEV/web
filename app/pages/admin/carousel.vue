@@ -312,8 +312,11 @@ const handleDelete = async () => {
         </div>
       </div>
 
-      <div v-if="!localItems.length" class="text-muted py-12 text-center">
-        No hay elementos en el carrusel
+      <div v-if="!localItems.length" class="py-12 text-center">
+        <p class="text-muted">No hay elementos en el carrusel todavía.</p>
+        <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
+          Añadir elemento
+        </UButton>
       </div>
     </div>
 

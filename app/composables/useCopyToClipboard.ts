@@ -1,7 +1,8 @@
 export function useCopyToClipboard() {
   const toast = useToast()
+  const { t } = useI18n()
 
-  const copyToClipboard = async (text: string, successTitle: string) => {
+  const copyToClipboard = async (text: string, successTitle: string, errorTitle?: string) => {
     try {
       await navigator.clipboard.writeText(text)
       toast.add({
@@ -9,7 +10,10 @@ export function useCopyToClipboard() {
         color: 'success',
       })
     } catch {
-      // Silently ignore clipboard errors (e.g. permission denied)
+      toast.add({
+        title: errorTitle ?? t('press.copy.error'),
+        color: 'error',
+      })
     }
   }
 

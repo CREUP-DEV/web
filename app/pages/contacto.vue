@@ -338,7 +338,7 @@ async function handleSubmit() {
           </p>
 
           <div class="sr-only" aria-hidden="true">
-            <label for="contact-middleName">Middle name</label>
+            <label for="contact-middleName">{{ t('contactPage.form.honeypotLabel') }}</label>
             <input
               id="contact-middleName"
               v-model="form.middleName"

@@ -465,6 +465,7 @@
       "lightGray": "Gris claro"
     },
     "copied": "Copiado: {value}",
+    "copyError": "No se pudo copiar al portapapeles",
     "downloadTitle": "Descarga el Manual de Identidad Corporativa",
     "downloadDescription": "Aquí puedes descargar el manual completo en PDF.",
     "downloadButton": "Descargar MIC"
@@ -640,6 +641,7 @@
       "subjectPlaceholder": "Asunto del mensaje",
       "message": "Mensaje",
       "messagePlaceholder": "Escribe tu mensaje aquí...",
+      "honeypotLabel": "Segundo nombre",
       "turnstile": "Verificación anti-spam",
       "turnstileHelp": "Completa la verificación para enviar el formulario.",
       "turnstileLoading": "Cargando verificación anti-spam...",
@@ -712,6 +714,7 @@
       "heading": "Suscríbete a la newsletter",
       "email": "Correo electrónico",
       "emailPlaceholder": "tu{'@'}correo.com",
+      "honeypotLabel": "Segundo nombre",
       "turnstile": "Verificación anti-spam",
       "turnstileHelp": "Completa la verificación para finalizar la suscripción.",
       "turnstileLoading": "Cargando verificación anti-spam...",

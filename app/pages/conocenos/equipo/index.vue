@@ -22,7 +22,7 @@ usePageSeo('team.title', 'team.description', {
   ],
 })
 
-const { areas, error, pending } = await useTeamPageData()
+const { areas, error, pending, refresh } = await useTeamPageData()
 
 type ViewMode = 'hierarchy' | 'area'
 
@@ -142,14 +142,17 @@ const tabItems = computed(() => [
         </div>
       </header>
 
-      <UAlert
-        v-if="error"
-        class="mb-6"
-        color="error"
-        variant="soft"
-        icon="i-tabler-alert-triangle"
-        :title="t('team.loadError')"
-      />
+      <div v-if="error" class="mb-6 space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('team.loadError')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
 
       <div class="mb-8 flex justify-center">
         <UTabs

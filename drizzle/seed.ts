@@ -1,6 +1,6 @@
 /**
  * Database seed script for Drizzle ORM
- * Run with: pnpm db:seed
+ * Run with: pnpm db:seed -- --confirm
  */
 
 import 'dotenv/config'
@@ -33,6 +33,19 @@ const buildHomeImagePath = (publicPath: string, title: string) =>
   `${publicPath}/${slugify(title) || 'imagen'}.webp`
 
 async function main() {
+  const cliArgs = new Set(process.argv.slice(2))
+  const hasConfirmFlag = cliArgs.has('--confirm')
+  const isProduction = process.env.NODE_ENV === 'production'
+  const allowProductionSeed = process.env.ALLOW_PRODUCTION_SEED === 'true'
+
+  if (!hasConfirmFlag) {
+    throw new Error('Refusing to run destructive seed without --confirm.')
+  }
+
+  if (isProduction && !allowProductionSeed) {
+    throw new Error('Refusing to run seed in production unless ALLOW_PRODUCTION_SEED=true.')
+  }
+
   console.log('🌱 Starting database seeding...')
 
   // Clear existing data (in correct order for foreign keys)

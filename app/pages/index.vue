@@ -13,7 +13,12 @@ const {
   error: homeDataError,
   refresh: refreshHomeData,
 } = useHomeData()
-const { events, pending: eventsLoading, error: eventsError } = useGoogleCalendar()
+const {
+  events,
+  pending: eventsLoading,
+  error: eventsError,
+  refresh: refreshEvents,
+} = useGoogleCalendar()
 const {
   data: featuredPressData,
   pending: featuredPressPending,
@@ -69,7 +74,12 @@ usePageSeo('meta.title', 'meta.description', {
             />
           </div>
           <div class="md:col-span-1">
-            <HomePublicAgenda :events="events" :pending="eventsLoading" :error="eventsError" />
+            <HomePublicAgenda
+              :events="events"
+              :pending="eventsLoading"
+              :error="eventsError"
+              @retry="refreshEvents()"
+            />
           </div>
         </div>
       </UContainer>

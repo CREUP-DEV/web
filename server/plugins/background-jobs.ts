@@ -54,9 +54,10 @@ export default defineNitroPlugin((nitro) => {
         }
         case BACKGROUND_JOB_NAMES.authHousekeeping: {
           const cleanupResult = await cleanupExpiredAuthRows()
-          if (cleanupResult.deletedSessionCount > 0) {
+          if (cleanupResult.deletedSessionCount > 0 || cleanupResult.deletedVerificationCount > 0) {
             logInfo('auth.expired-row.cleanup', {
               deletedSessionCount: cleanupResult.deletedSessionCount,
+              deletedVerificationCount: cleanupResult.deletedVerificationCount,
             })
           }
           return

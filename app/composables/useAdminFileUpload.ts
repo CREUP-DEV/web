@@ -107,8 +107,6 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
         return
       }
 
-      console.error('Error uploading admin file:', error)
-
       if (isUnmounted.value || activeUploadId.value !== uploadId) {
         return
       }
@@ -230,8 +228,6 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
       if (isAbortError && (isUnmounted.value || activeUploadId.value !== uploadId)) {
         return
       }
-
-      console.error('Error uploading admin document:', error)
 
       if (isUnmounted.value || activeUploadId.value !== uploadId) {
         return

@@ -465,6 +465,7 @@
       "lightGray": "Light Grey"
     },
     "copied": "Copied: {value}",
+    "copyError": "Could not copy to clipboard",
     "downloadTitle": "Download the Corporate Identity Manual",
     "downloadDescription": "Here you can download the full manual in PDF format.",
     "downloadButton": "Download MIC"
@@ -640,6 +641,7 @@
       "subjectPlaceholder": "Message subject",
       "message": "Message",
       "messagePlaceholder": "Write your message here...",
+      "honeypotLabel": "Middle name",
       "turnstile": "Anti-spam verification",
       "turnstileHelp": "Complete the verification to submit the form.",
       "turnstileLoading": "Loading anti-spam verification...",
@@ -712,6 +714,7 @@
       "heading": "Subscribe to the newsletter",
       "email": "Email",
       "emailPlaceholder": "you{'@'}email.com",
+      "honeypotLabel": "Middle name",
       "turnstile": "Anti-spam verification",
       "turnstileHelp": "Complete the verification to finish your subscription.",
       "turnstileLoading": "Loading anti-spam verification...",

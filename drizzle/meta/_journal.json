@@ -50,6 +50,13 @@
       "when": 1775934139808,
       "tag": "0006_sloppy_toro",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775950621323,
+      "tag": "0007_tricky_bastion",
+      "breakpoints": true
     }
   ]
 }

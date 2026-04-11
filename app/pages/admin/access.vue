@@ -334,8 +334,11 @@ const handleDelete = async () => {
         </div>
       </div>
 
-      <div v-if="!items.length" class="text-muted py-12 text-center">
-        No hay accesos configurados todavía.
+      <div v-if="!items.length" class="py-12 text-center">
+        <p class="text-muted">No hay accesos configurados todavía.</p>
+        <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreateModal">
+          Añadir acceso
+        </UButton>
       </div>
     </div>
 

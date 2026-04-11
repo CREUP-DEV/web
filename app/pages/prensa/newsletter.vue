@@ -348,7 +348,9 @@ function formatMonth(dateStr: string): string {
             </p>
 
             <div class="sr-only" aria-hidden="true">
-              <label for="newsletter-middleName">Middle name</label>
+              <label for="newsletter-middleName">{{
+                t('newsletterPage.form.honeypotLabel')
+              }}</label>
               <input
                 id="newsletter-middleName"
                 v-model="form.middleName"

@@ -117,6 +117,7 @@ const {
   data: documentsData,
   pending: documentsLoading,
   error: documentsError,
+  refresh: refreshDocuments,
 } = await useFetch<EqualityDocumentsResponse>('/api/equality-documents', {
   headers: localeApiHeaders,
   query: computed(() => ({ limit: LIMIT, offset: docsOffset.value })),
@@ -234,6 +235,14 @@ const {
           <div class="flex flex-col items-center gap-3 py-6">
             <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
             <p class="text-muted">{{ t('equalityPage.loadError') }}</p>
+            <UButton
+              variant="outline"
+              color="neutral"
+              icon="i-tabler-refresh"
+              @click="refreshDocuments()"
+            >
+              {{ t('home.retry') }}
+            </UButton>
           </div>
         </UCard>
 

@@ -20,7 +20,7 @@ const fallbackMemberCountLabel = '+30'
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const { data, error, pending } = await useFetch<{
+const { data, error, pending, refresh } = await useFetch<{
   content: AboutPageContent | null
   memberCount: number | null
 }>('/api/about-page')
@@ -209,13 +209,17 @@ usePageSeo(
       </div>
 
       <template v-else>
-        <UAlert
-          v-if="error"
-          color="warning"
-          variant="soft"
-          :title="t('aboutPage.dynamicContentLoadErrorTitle')"
-          :description="t('aboutPage.dynamicContentLoadErrorDescription')"
-        />
+        <div v-if="error" class="space-y-3">
+          <UAlert
+            color="warning"
+            variant="soft"
+            :title="t('aboutPage.dynamicContentLoadErrorTitle')"
+            :description="t('aboutPage.dynamicContentLoadErrorDescription')"
+          />
+          <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+            {{ t('home.retry') }}
+          </UButton>
+        </div>
 
         <section
           v-if="pageContent.heroVisible && pageContent.heroImage"

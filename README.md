@@ -58,7 +58,7 @@ pnpm dev
 ```sh
 pnpm db:generate
 pnpm db:migrate
-pnpm db:seed
+pnpm db:seed -- --confirm
 ```
 
 ## Variables de entorno
@@ -171,7 +171,7 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - `pnpm db:generate`
 - `pnpm db:migrate`
 - `pnpm db:studio`
-- `pnpm db:seed`
+- `pnpm db:seed -- --confirm`
 
 ## Servicios locales
 
@@ -288,3 +288,7 @@ en proxy/CDN una vez confirmado que todo el tráfico público entra por HTTPS.
 - `server/db/` — cliente y esquema de Drizzle
 - `i18n/locales/` — mensajes de traducción
 - `drizzle/` — migraciones y seeds
+
+## Pendientes técnicos
+
+- #26 — Las formas de envelope de respuesta son inconsistentes. Definir un envelope compartido `{ data, meta? }` en `shared/` y migrar de forma incremental. Empezar a exigir este formato en endpoints nuevos.

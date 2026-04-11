@@ -34,9 +34,12 @@ interface MandatesResponse {
   generatedAt?: string | null
 }
 
-const { data, error, status } = await useFetch<MandatesResponse>('/api/organigrama/mandatos', {
-  headers: localeApiHeaders,
-})
+const { data, error, status, refresh } = await useFetch<MandatesResponse>(
+  '/api/organigrama/mandatos',
+  {
+    headers: localeApiHeaders,
+  }
+)
 
 const mandates = computed(() => data.value?.mandates ?? [])
 const {
@@ -119,14 +122,17 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
         <p class="text-muted mt-3 text-lg">{{ t('mandates.description') }}</p>
       </header>
 
-      <UAlert
-        v-if="error"
-        class="mb-6"
-        color="error"
-        variant="soft"
-        icon="i-tabler-alert-triangle"
-        :title="t('mandates.loadError')"
-      />
+      <div v-if="error" class="mb-6 space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('mandates.loadError')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
 
       <div v-else-if="status === 'pending'" aria-hidden="true" class="space-y-4">
         <div v-for="n in 3" :key="n" class="bg-surface/50 ring-default rounded-xl p-6 ring-1">

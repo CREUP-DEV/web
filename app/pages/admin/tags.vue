@@ -229,7 +229,12 @@ const handleDelete = async () => {
         </div>
       </div>
 
-      <div v-if="!localItems.length" class="text-muted py-12 text-center">No hay etiquetas</div>
+      <div v-if="!localItems.length" class="py-12 text-center">
+        <p class="text-muted">No hay etiquetas todavía.</p>
+        <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
+          Añadir etiqueta
+        </UButton>
+      </div>
     </div>
 
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">

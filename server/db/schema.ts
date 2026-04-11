@@ -8,6 +8,7 @@ import {
   unique,
   index,
   check,
+  primaryKey,
   date,
   jsonb,
 } from 'drizzle-orm/pg-core'
@@ -163,6 +164,7 @@ export const pressArticles = pgTable(
   },
   (table) => [
     index('idx_press_articles_active_published').on(table.active, table.publishedAt),
+    index('idx_press_articles_slug_active').on(table.slug, table.active),
     index('idx_press_articles_type').on(table.type),
     // Subtype invariants: media_appearance requires externalUrl and mediaOutletId
     check(
@@ -213,7 +215,6 @@ export const pressArticleTranslations = pgTable(
 export const pressArticleTags = pgTable(
   'press_article_tags',
   {
-    id: text('id').primaryKey().$defaultFn(cuid),
     pressArticleId: text('press_article_id')
       .notNull()
       .references(() => pressArticles.id, { onDelete: 'cascade' }),
@@ -222,7 +223,7 @@ export const pressArticleTags = pgTable(
       .references(() => tags.id, { onDelete: 'cascade' }),
   },
   (table) => [
-    unique().on(table.pressArticleId, table.tagId),
+    primaryKey({ columns: [table.pressArticleId, table.tagId] }),
     index('idx_press_article_tags_tag_id').on(table.tagId),
   ]
 )
@@ -689,7 +690,7 @@ export const newsletterSubscribers = pgTable(
     consentIp: text('consent_ip'),
     consentUserAgent: text('consent_user_agent'),
     consentSource: text('consent_source').default('web_form').notNull(),
-    consentTextVersion: text('consent_text_version').default('2026-03-06').notNull(),
+    consentTextVersion: text('consent_text_version').notNull(),
     ageConfirmed: boolean('age_confirmed').default(false).notNull(),
     locale: text('locale'),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),

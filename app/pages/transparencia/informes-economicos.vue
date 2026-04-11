@@ -38,7 +38,7 @@ const LIMIT = 12
 const page = ref(1)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
-const { data, pending, error } = await useFetch<FinancialReportsResponse>(
+const { data, pending, error, refresh } = await useFetch<FinancialReportsResponse>(
   '/api/financial-reports',
   {
     headers: localeApiHeaders,
@@ -92,6 +92,9 @@ function formatDate(dateStr: string): string {
             <p class="text-muted">
               {{ t('financialReports.loadError') }}
             </p>
+            <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+              {{ t('home.retry') }}
+            </UButton>
           </div>
         </UCard>
 

@@ -4,8 +4,13 @@ export const useMembersPageData = async () => {
   const localeApiHeaders = useLocaleApiHeaders()
 
   const [
-    { data: membersData, error: membersError, pending: membersPending },
-    { data: sectorialesData, error: sectorialesError, pending: sectorialesPending },
+    { data: membersData, error: membersError, pending: membersPending, refresh: refreshMembers },
+    {
+      data: sectorialesData,
+      error: sectorialesError,
+      pending: sectorialesPending,
+      refresh: refreshSectoriales,
+    },
   ] = await Promise.all([
     useFetch<MembersResponse>('/api/members', {
       headers: localeApiHeaders,
@@ -22,5 +27,8 @@ export const useMembersPageData = async () => {
     allSectoriales: computed(() => sectorialesData.value?.sectoriales ?? []),
     pending: computed(() => membersPending.value || sectorialesPending.value),
     error: computed(() => membersError.value ?? sectorialesError.value ?? null),
+    refresh: async () => {
+      await Promise.all([refreshMembers(), refreshSectoriales()])
+    },
   }
 }

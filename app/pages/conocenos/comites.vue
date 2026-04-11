@@ -58,7 +58,7 @@ interface EnrichedMember extends CommitteeMember {
   committeeId: number
 }
 
-const { data, pending, error } = useFetch<CommitteesResponse>('/api/comites', {
+const { data, pending, error, refresh } = useFetch<CommitteesResponse>('/api/comites', {
   headers: localeApiHeaders,
 })
 
@@ -144,14 +144,17 @@ function encodeEmail(email: string) {
         </div>
       </div>
 
-      <UAlert
-        v-else-if="error"
-        class="mb-6"
-        color="error"
-        variant="soft"
-        icon="i-tabler-alert-triangle"
-        :title="t('committees.loadError')"
-      />
+      <div v-else-if="error" class="mb-6 space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('committees.loadError')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
 
       <div v-else class="space-y-16">
         <section

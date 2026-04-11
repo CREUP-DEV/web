@@ -58,7 +58,7 @@ usePageSeo('regulations.title', 'regulations.description', {
   ],
 })
 
-const { data, pending, error } = useFetch<NormativaResponse>('/api/normativa')
+const { data, pending, error, refresh } = useFetch<NormativaResponse>('/api/normativa')
 
 const categories = computed(() => data.value?.categories ?? [])
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 90)
@@ -97,6 +97,9 @@ function formatDate(dateStr: string): string {
           <p class="text-muted">
             {{ t('regulations.loadError') }}
           </p>
+          <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+            {{ t('home.retry') }}
+          </UButton>
         </div>
       </UCard>
 

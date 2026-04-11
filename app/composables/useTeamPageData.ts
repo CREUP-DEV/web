@@ -3,7 +3,7 @@ import type { OrgResponse } from '@/types/team'
 export const useTeamPageData = async () => {
   const localeApiHeaders = useLocaleApiHeaders()
 
-  const { data, error, pending } = await useFetch<OrgResponse>('/api/organigrama', {
+  const { data, error, pending, refresh } = await useFetch<OrgResponse>('/api/organigrama', {
     headers: localeApiHeaders,
     lazy: true,
   })
@@ -12,5 +12,6 @@ export const useTeamPageData = async () => {
     areas: computed(() => data.value?.areas ?? []),
     error,
     pending,
+    refresh,
   }
 }

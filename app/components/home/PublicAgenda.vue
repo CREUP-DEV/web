@@ -8,6 +8,9 @@ const props = defineProps<{
   pending?: boolean
   error?: Error | null
 }>()
+const emit = defineEmits<{
+  retry: []
+}>()
 
 const { t } = useI18n()
 const { currentLanguageTag, formatDate: formatLocaleDate } = useLocaleFormatting()
@@ -387,9 +390,14 @@ useSwipe(calendarEl, {
             </div>
           </li>
         </ul>
-        <p v-else-if="error" class="text-muted text-sm">
-          {{ t('home.calendar.loadError') }}
-        </p>
+        <div v-else-if="error" class="space-y-2">
+          <p class="text-muted text-sm">
+            {{ t('home.calendar.loadError') }}
+          </p>
+          <UButton variant="outline" color="neutral" size="xs" @click="emit('retry')">
+            {{ t('home.retry') }}
+          </UButton>
+        </div>
         <p v-else class="text-muted text-sm">
           {{ t('home.calendar.noUpcomingEvents') }}
         </p>

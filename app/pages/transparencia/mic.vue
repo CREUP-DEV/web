@@ -104,7 +104,7 @@ const {
   shouldAnimate: downloadShouldAnimate,
 } = useEntranceObserver(0.1)
 const copyColorToClipboard = (text: string) =>
-  copyToClipboard(text, t('mic.copied', { value: text }))
+  copyToClipboard(text, t('mic.copied', { value: text }), t('mic.copyError'))
 </script>
 
 <template>

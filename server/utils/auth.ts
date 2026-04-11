@@ -1,10 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import {
-  getOptionalConfigString,
-  getOptionalConfigUrl,
-  requireConfigString,
-} from '~~/shared/utils/config'
+import { getOptionalConfigUrl, requireConfigString } from '~~/shared/utils/config'
 import { db } from '../db'
 import { users, sessions, accounts, verifications } from '../db/schema'
 import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
@@ -49,11 +45,7 @@ const authSecondaryStorage = {
 }
 
 export const auth = betterAuth({
-  secret: requireConfigString(
-    getOptionalConfigString(process.env.BETTER_AUTH_SECRET) ??
-      getOptionalConfigString(process.env.APP_SECRET),
-    'BETTER_AUTH_SECRET or APP_SECRET'
-  ),
+  secret: requireConfigString(process.env.APP_SECRET, 'APP_SECRET'),
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: {

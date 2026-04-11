@@ -165,8 +165,19 @@ function formatDate(iso: string) {
       </UButton>
     </div>
 
-    <div v-else-if="filteredItems.length === 0" class="text-muted py-12 text-center">
-      No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
+    <div v-else-if="filteredItems.length === 0" class="py-12 text-center">
+      <p class="text-muted">
+        No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
+      </p>
+      <UButton
+        v-if="!search"
+        class="mt-4"
+        size="sm"
+        icon="i-tabler-plus"
+        @click="showAddModal = true"
+      >
+        Añadir suscriptor
+      </UButton>
     </div>
 
     <div v-else class="space-y-2">

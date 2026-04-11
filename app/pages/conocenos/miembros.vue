@@ -18,7 +18,7 @@ usePageSeo('members.title', 'members.description', {
   ],
 })
 
-const { allMembers, allSectoriales, pending, error } = await useMembersPageData()
+const { allMembers, allSectoriales, pending, error, refresh } = await useMembersPageData()
 const { buildMemberDetailData, buildSectorialDetailData } = useOrganizationDetailData()
 
 const communityQuery = useSyncedQueryParam<string | null>('community', {
@@ -197,14 +197,17 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <UAlert
-        v-if="error"
-        class="mb-6"
-        color="error"
-        variant="soft"
-        icon="i-tabler-alert-triangle"
-        :title="t('members.loadError')"
-      />
+      <div v-if="error" class="mb-6 space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('members.loadError')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
 
       <div v-if="pending" class="space-y-10" aria-hidden="true">
         <section class="space-y-6">

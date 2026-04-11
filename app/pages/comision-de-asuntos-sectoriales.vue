@@ -49,8 +49,18 @@ useSeoMeta({
 })
 
 const [
-  { data: committeesData, error: committeesError, pending: committeesPending },
-  { data: sectorialesData, error: sectorialesError, pending: sectorialesPending },
+  {
+    data: committeesData,
+    error: committeesError,
+    pending: committeesPending,
+    refresh: refreshCommittees,
+  },
+  {
+    data: sectorialesData,
+    error: sectorialesError,
+    pending: sectorialesPending,
+    refresh: refreshSectoriales,
+  },
 ] = await Promise.all([
   useFetch<CommitteesResponse>('/api/comites', {
     headers: localeApiHeaders,
@@ -122,6 +132,9 @@ const committeeIntro = computed(
 
 const pending = computed(() => committeesPending.value || sectorialesPending.value)
 const hasLoadError = computed(() => Boolean(committeesError.value || sectorialesError.value))
+const refreshData = async () => {
+  await Promise.all([refreshCommittees(), refreshSectoriales()])
+}
 
 const selectedSectorial = ref<SectorialMember | null>(null)
 const sectorialModalOpen = ref(false)
@@ -173,14 +186,17 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
         </p>
       </header>
 
-      <UAlert
-        v-if="hasLoadError"
-        class="mb-6"
-        color="error"
-        variant="soft"
-        icon="i-tabler-alert-triangle"
-        :title="t('sectorialCommitteePage.loadError')"
-      />
+      <div v-if="hasLoadError" class="mb-6 space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('sectorialCommitteePage.loadError')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshData()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
 
       <div v-if="pending" class="space-y-12" aria-hidden="true">
         <section class="space-y-4">

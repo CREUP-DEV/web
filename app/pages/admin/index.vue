@@ -203,8 +203,16 @@ const formatActivityDate = (value: string) =>
             </NuxtLink>
           </div>
 
-          <div v-else class="text-muted rounded-2xl border px-4 py-10 text-center text-sm">
-            Todavía no hay actividad reciente que mostrar.
+          <div v-else class="rounded-2xl border px-4 py-10 text-center text-sm">
+            <p class="text-muted">Todavía no hay actividad reciente que mostrar.</p>
+            <UButton
+              to="/admin/press/create?type=press_release"
+              size="sm"
+              icon="i-tabler-plus"
+              class="mt-4"
+            >
+              Crear nota de prensa
+            </UButton>
           </div>
         </div>
       </UCard>
