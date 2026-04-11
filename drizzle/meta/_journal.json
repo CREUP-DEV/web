@@ -36,6 +36,13 @@
       "when": 1775931959230,
       "tag": "0004_grey_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775932916417,
+      "tag": "0005_regular_sway",
+      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,6 @@ import { defineEventHandler } from 'h3'
 import { and, desc, eq, sql, type SQL } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles, pressArticleTranslations } from '../../../db/schema'
-import { sanitizePressTranslations } from '../../../utils/pressTranslation'
 import {
   adminPressListQuerySchema,
   paginationQuerySchema,
@@ -60,14 +59,62 @@ export default defineEventHandler(async (event) => {
       orderBy: desc(pressArticles.publishedAt),
       limit,
       offset,
+      columns: {
+        id: true,
+        type: true,
+        slug: true,
+        image: true,
+        pdfUrl: true,
+        externalUrl: true,
+        mediaOutletId: true,
+        active: true,
+        publishedAt: true,
+        updatedAt: true,
+      },
       with: {
-        translations: true,
-        tags: {
-          with: {
-            tag: { with: { translations: true } },
+        translations: {
+          columns: {
+            id: true,
+            locale: true,
+            title: true,
+            description: true,
+            alt: true,
+            pressArticleId: true,
           },
         },
-        mediaOutlet: true,
+        tags: {
+          columns: {
+            id: true,
+            pressArticleId: true,
+            tagId: true,
+          },
+          with: {
+            tag: {
+              columns: {
+                id: true,
+                slug: true,
+              },
+              with: {
+                translations: {
+                  columns: {
+                    id: true,
+                    locale: true,
+                    name: true,
+                    tagId: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        mediaOutlet: {
+          columns: {
+            id: true,
+            name: true,
+            website: true,
+            logo: true,
+          },
+        },
       },
     }),
     db
@@ -80,7 +127,6 @@ export default defineEventHandler(async (event) => {
     items: items.map((item) => ({
       ...item,
       publishedAt: dateValueToDateOnly(item.publishedAt),
-      translations: sanitizePressTranslations(item.translations),
     })),
     total: countResult[0]?.count ?? 0,
   }

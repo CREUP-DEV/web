@@ -202,6 +202,7 @@ watch(resultsTransitionKey, async () => {
                         :src="article.mediaOutlet.logo"
                         :alt="article.mediaOutlet.name"
                         class="inline-block h-3.5 w-auto"
+                        loading="lazy"
                       />
                       {{ article.mediaOutlet.name }}
                     </span>

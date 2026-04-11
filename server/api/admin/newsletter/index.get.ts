@@ -12,7 +12,19 @@ export default defineEventHandler(async (event) => {
 
   const [items, countResult] = await Promise.all([
     db
-      .select()
+      .select({
+        id: newsletters.id,
+        monthKey: newsletters.monthKey,
+        month: newsletters.month,
+        coverImage: newsletters.coverImage,
+        active: newsletters.active,
+        publicVisible: newsletters.publicVisible,
+        sentAt: newsletters.sentAt,
+        lastDeliverySentCount: newsletters.lastDeliverySentCount,
+        lastDeliveryErrorCount: newsletters.lastDeliveryErrorCount,
+        createdAt: newsletters.createdAt,
+        lastDeliveryWorkerToken: newsletters.lastDeliveryWorkerToken,
+      })
       .from(newsletters)
       .orderBy(desc(newsletters.month))
       .limit(normalizedLimit)
@@ -22,8 +34,16 @@ export default defineEventHandler(async (event) => {
 
   return {
     items: items.map((item) => ({
-      ...item,
+      id: item.id,
+      monthKey: item.monthKey,
       isSending: Boolean(item.lastDeliveryWorkerToken),
+      coverImage: item.coverImage,
+      active: item.active,
+      publicVisible: item.publicVisible,
+      sentAt: item.sentAt,
+      lastDeliverySentCount: item.lastDeliverySentCount,
+      lastDeliveryErrorCount: item.lastDeliveryErrorCount,
+      createdAt: item.createdAt,
       month: monthKeyToDate(item.monthKey),
     })),
     total: countResult[0]?.count ?? 0,

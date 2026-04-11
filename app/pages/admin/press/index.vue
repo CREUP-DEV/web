@@ -5,7 +5,6 @@ import {
   getPressArticlePublicListPath,
 } from '~~/shared/constants/pressRoutes'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
-import { hasMeaningfulHtml } from '~~/shared/utils/richText'
 import type {
   AdminPressArticle,
   AdminPressArticleType,
@@ -53,9 +52,6 @@ const getItemDescription = (item: AdminPressArticle) =>
   getDefaultTranslationValue(item.translations, 'description') ??
   item.translations[0]?.description ??
   ''
-
-const hasItemContent = (item: AdminPressArticle) =>
-  item.translations.some((t) => hasMeaningfulHtml(t.contentHtml))
 
 const formatDate = (iso: string) =>
   formatLocaleDate(iso, { year: 'numeric', month: 'short', day: 'numeric' })
@@ -230,11 +226,6 @@ const emptyStateTypeLabel = computed(() =>
                 <UBadge v-if="item.pdfUrl" variant="subtle" color="warning" size="sm">
                   <UIcon name="i-tabler-file-type-pdf" class="mr-0.5 size-3" />
                   PDF
-                </UBadge>
-
-                <UBadge v-if="hasItemContent(item)" variant="subtle" color="info" size="sm">
-                  <UIcon name="i-tabler-file-text" class="mr-0.5 size-3" />
-                  Texto
                 </UBadge>
 
                 <UBadge v-if="item.mediaOutlet" variant="subtle" size="sm">

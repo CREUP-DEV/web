@@ -451,6 +451,7 @@ function formatMonth(dateStr: string): string {
                   width="240"
                   height="240"
                   class="mb-4 aspect-square w-full max-w-60 rounded-lg object-cover"
+                  loading="lazy"
                 />
                 <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
                 <UButton

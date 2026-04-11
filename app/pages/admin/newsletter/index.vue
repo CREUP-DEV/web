@@ -18,10 +18,8 @@ interface Newsletter {
   isSending: boolean
   sentAt: string | null
   createdAt: string
-  lastDeliveryTotal: number | null
   lastDeliverySentCount: number | null
   lastDeliveryErrorCount: number | null
-  lastDeliveryFailedRecipients: string[] | null
 }
 
 const toast = useToast()
@@ -145,17 +143,6 @@ function formatDate(iso: string) {
     month: 'short',
     day: 'numeric',
   })
-}
-
-function formatFailedRecipients(recipients: string[] | null) {
-  if (!recipients?.length) {
-    return ''
-  }
-
-  const visibleRecipients = recipients.slice(0, 5).join(', ')
-  const remainingCount = recipients.length - 5
-
-  return remainingCount > 0 ? `${visibleRecipients} +${remainingCount} más` : visibleRecipients
 }
 
 function getDefaultMonthValue() {
@@ -415,24 +402,15 @@ onBeforeUnmount(() => {
           </div>
           <!-- Delivery stats: shown once a delivery has been attempted -->
           <div
-            v-if="item.lastDeliveryTotal !== null"
+            v-if="item.lastDeliverySentCount !== null || item.lastDeliveryErrorCount !== null"
             class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs"
           >
             <span class="text-muted">
-              <span class="font-medium">{{ item.lastDeliverySentCount ?? 0 }}</span
-              >/{{ item.lastDeliveryTotal }} enviados
+              <span class="font-medium">{{ item.lastDeliverySentCount ?? 0 }}</span> enviados
             </span>
             <span v-if="(item.lastDeliveryErrorCount ?? 0) > 0" class="text-error font-medium">
               {{ item.lastDeliveryErrorCount }} fallidos
             </span>
-            <UTooltip
-              v-if="item.lastDeliveryFailedRecipients"
-              :text="formatFailedRecipients(item.lastDeliveryFailedRecipients)"
-            >
-              <span class="text-error cursor-help underline decoration-dotted"
-                >ver destinatarios</span
-              >
-            </UTooltip>
             <UTooltip
               v-if="(item.lastDeliveryErrorCount ?? 0) > 0"
               :text="`Los envíos fallidos no se reintentan automáticamente (máx. ${maxDeliveryAttempts} intentos por destinatario). Usa el botón de envío manual para volver a intentarlo.`"

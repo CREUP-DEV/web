@@ -8,7 +8,6 @@ export interface AdminPressTranslation {
   locale: string
   title: string
   description: string
-  contentHtml: string
   alt: string
 }
 

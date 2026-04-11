@@ -55,6 +55,7 @@ const triggerClass =
             :src="member.photo"
             :alt="displayName"
             class="size-full object-cover"
+            loading="lazy"
           />
           <div v-else class="bg-primary/10 text-primary flex size-full items-center justify-center">
             <UIcon name="i-tabler-user" class="size-12" />

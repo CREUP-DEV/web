@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { watchDebounced } from '@vueuse/core'
 import { CONTACT_FIELD_LIMITS, contactFormSchema } from '~~/shared/utils/contactValidation'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const toast = useToast()
-const { fieldErrors, getFieldError: getValidationFieldError, validate } = useZodFormValidation()
+const {
+  fieldErrors,
+  clearErrors,
+  getFieldError: getValidationFieldError,
+  validate,
+} = useZodFormValidation()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const {
   elRef: headerRef,
@@ -100,9 +106,17 @@ const touched = reactive({
 const isSubmitting = ref(false)
 const formSubmitted = ref(false)
 
-watchEffect(() => {
-  validate(contactFormSchema, contactPayload.value)
-})
+const hasAnyTouchedField = computed(() => Object.values(touched).some(Boolean))
+
+watchDebounced(
+  contactPayload,
+  () => {
+    if (formSubmitted.value || hasAnyTouchedField.value) {
+      validate(contactFormSchema, contactPayload.value)
+    }
+  },
+  { debounce: 250, maxWait: 800 }
+)
 
 type ValidatedField = 'name' | 'email' | 'phone' | 'mediaName' | 'subject' | 'message'
 
@@ -160,6 +174,11 @@ function getFieldError(field: ValidatedField): string | undefined {
 
 const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
 
+function markFieldTouched(field: keyof typeof touched) {
+  touched[field] = true
+  validate(contactFormSchema, contactPayload.value)
+}
+
 async function handleSubmit() {
   formSubmitted.value = true
 
@@ -167,7 +186,9 @@ async function handleSubmit() {
     return
   }
 
-  if (!isFormValid.value) {
+  const isValid = validate(contactFormSchema, contactPayload.value)
+
+  if (!isValid) {
     const firstInvalid = validationFieldOrder.value.find((field) => getValidationFieldError(field))
 
     if (firstInvalid) {
@@ -196,8 +217,10 @@ async function handleSubmit() {
     form.mediaName = ''
     form.subject = ''
     form.message = ''
+    form.website = ''
     formSubmitted.value = false
     Object.keys(touched).forEach((k) => (touched[k as keyof typeof touched] = false))
+    clearErrors()
   } catch (error: unknown) {
     const fetchError = error as {
       data?: { message?: string; statusMessage?: string }
@@ -294,7 +317,7 @@ async function handleSubmit() {
               :disabled="isSubmitting"
               :color="shouldShowError('name') ? 'error' : undefined"
               class="w-full"
-              @blur="touched.name = true"
+              @blur="markFieldTouched('name')"
             />
           </UFormField>
 
@@ -309,7 +332,7 @@ async function handleSubmit() {
               :disabled="isSubmitting"
               :color="shouldShowError('email') ? 'error' : undefined"
               class="w-full"
-              @blur="touched.email = true"
+              @blur="markFieldTouched('email')"
             />
           </UFormField>
 
@@ -325,7 +348,7 @@ async function handleSubmit() {
                   :disabled="isSubmitting"
                   :color="shouldShowError('phone') ? 'error' : undefined"
                   class="w-full"
-                  @blur="touched.phone = true"
+                  @blur="markFieldTouched('phone')"
                 />
               </UFormField>
 
@@ -342,7 +365,7 @@ async function handleSubmit() {
                   :disabled="isSubmitting"
                   :color="shouldShowError('mediaName') ? 'error' : undefined"
                   class="w-full"
-                  @blur="touched.mediaName = true"
+                  @blur="markFieldTouched('mediaName')"
                 />
               </UFormField>
             </div>
@@ -361,7 +384,7 @@ async function handleSubmit() {
               :disabled="isSubmitting"
               :color="shouldShowError('subject') ? 'error' : undefined"
               class="w-full"
-              @blur="touched.subject = true"
+              @blur="markFieldTouched('subject')"
             />
           </UFormField>
 
@@ -378,7 +401,7 @@ async function handleSubmit() {
               :disabled="isSubmitting"
               :color="shouldShowError('message') ? 'error' : undefined"
               class="w-full"
-              @blur="touched.message = true"
+              @blur="markFieldTouched('message')"
             />
             <template #hint>
               <span :class="form.message.trim().length < 10 ? 'text-error' : 'text-muted'">

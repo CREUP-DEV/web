@@ -587,7 +587,7 @@ export const newsletters = pgTable(
     /** Stable year-month key (YYYY-MM) used to prevent duplicates */
     monthKey: text('month_key').notNull().unique(),
     /** Month the newsletter covers (stored as first day of month) */
-    month: timestamp('month', { mode: 'date' }).notNull(),
+    month: date('month', { mode: 'date' }).notNull(),
     coverImage: text('cover_image').notNull(),
     pdfUrl: text('pdf_url').notNull(),
     /** Controls whether the newsletter can be sent to subscribers */
