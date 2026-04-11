@@ -128,9 +128,8 @@ const saveOrder = async () => {
       color: 'success',
     })
   } catch (e) {
-    console.error('Error saving order:', e)
     toast.add({
-      title: 'No se pudo guardar el orden del carrusel',
+      title: getApiErrorMessage(e, 'No se pudo guardar el orden del carrusel'),
       color: 'error',
     })
   }
@@ -172,7 +171,6 @@ const handleSubmit = async () => {
     clearErrors()
     await refresh()
   } catch (e) {
-    console.error('Error saving:', e)
     toast.add({
       title: getApiErrorMessage(e, 'No se pudo guardar el elemento del carrusel'),
       color: 'error',
@@ -194,9 +192,8 @@ const handleDelete = async () => {
       color: 'success',
     })
   } catch (e) {
-    console.error('Error deleting:', e)
     toast.add({
-      title: 'No se pudo eliminar el elemento del carrusel',
+      title: getApiErrorMessage(e, 'No se pudo eliminar el elemento del carrusel'),
       color: 'error',
     })
   } finally {
@@ -222,7 +219,7 @@ const handleDelete = async () => {
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface ring-default rounded-xl p-4 shadow-sm ring-1"
       >
         <div class="hidden items-center gap-4 md:flex">
           <div class="drag-handle cursor-grab active:cursor-grabbing">

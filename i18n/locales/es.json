@@ -64,6 +64,13 @@
     "name": "CREUP",
     "description": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) es la asociación estatal que representa a más de 1.000.000 de estudiantes de toda España."
   },
+  "ogImage": {
+    "brandTagline": "Coordinadora de Representantes de Estudiantes de Universidades Públicas",
+    "sectionLabel": "Representación estudiantil",
+    "statsEyebrow": "Más de 1.000.000",
+    "statsHeadline": "estudiantes representados en toda España",
+    "supportText": "Voz, coordinación y defensa del estudiantado"
+  },
   "home": {
     "newsAndEventsLabel": "Prensa y eventos",
     "latestNews": "Última hora",
@@ -100,7 +107,9 @@
     "closeMenu": "Cerrar menú",
     "siteLogo": "Logotipo de CREUP",
     "externalLink": "Se abre en una nueva pestaña",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "breadcrumb": "Ruta de navegación",
+    "contentImage": "Imagen de contenido"
   },
   "common": {
     "all": "Todos",
@@ -139,12 +148,15 @@
     "email": "Correo electrónico",
     "university": "Universidad",
     "degree": "Titulación",
+    "period": "Periodo",
+    "duration": "Duración",
     "publicAgenda": "Agenda pública",
     "publicAgendaOf": "Agenda pública de {name}",
     "memberModalTitle": "Perfil del equipo",
     "memberModalDescription": "Detalles del perfil de la persona.",
     "agendaModalDescription": "Próximos eventos de su agenda pública.",
     "noEvents": "No hay eventos programados próximamente.",
+    "agendaLoadError": "No se pudo cargar la agenda. Inténtalo de nuevo.",
     "about": "Sobre {name}",
     "hierarchyView": "Por jerarquía",
     "areaView": "Por área",
@@ -341,6 +353,8 @@
     "memberModalTitle": "Detalles de la organización",
     "memberModalDescription": "Detalles de la organización seleccionada.",
     "descriptionLabel": "Descripción",
+    "initials": "Siglas",
+    "community": "Comunidad",
     "info": "Información y contacto",
     "socialNetworks": "Redes sociales",
     "networks": {
@@ -490,6 +504,15 @@
     "copyEmail": "Copiar correo",
     "university": "Universidad",
     "degree": "Titulación"
+  },
+  "sectorialCommitteePage": {
+    "title": "Comisión de Asuntos Sectoriales",
+    "description": "Espacio técnico dedicado al Comité de Asuntos Sectoriales.",
+    "intro": "Página específica del Comité de Asuntos Sectoriales con el listado de asociaciones sectoriales y el equipo del comité.",
+    "loadError": "No se pudo cargar la información de esta comisión en este momento.",
+    "committeeNotFound": "No se ha encontrado el Comité de Asuntos Sectoriales en la fuente de comités.",
+    "teamDescription": "Personas que forman parte de {committee}.",
+    "fallbackCommitteeTitle": "Comité de Asuntos Sectoriales"
   },
   "policy": {
     "download": "Descargar",

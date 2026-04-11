@@ -87,27 +87,25 @@ const uploadPdf = async (file: File) => {
 }
 
 const saveDossier = async () => {
-  if (
-    !validate(updatePressDossierSchema, {
-      pdfUrl: form.pdfUrl,
-      active: form.active,
-    })
-  ) {
-    return
-  }
-
   isSaving.value = true
 
   try {
+    let pdfUrl = form.pdfUrl
+
     if (selectedPdfFile.value) {
       isUploadingPdf.value = true
       const result = await uploadPdf(selectedPdfFile.value)
+      pdfUrl = result.storagePath
       form.pdfUrl = result.storagePath
     }
 
     const payload = {
-      pdfUrl: form.pdfUrl,
+      pdfUrl,
       active: form.active,
+    }
+
+    if (!validate(updatePressDossierSchema, payload)) {
+      return
     }
 
     await $fetch('/api/admin/press-dossier', {
@@ -119,7 +117,6 @@ const saveDossier = async () => {
     clearErrors()
     toast.add({ title: 'Dossier guardado', color: 'success' })
   } catch (error) {
-    console.error('Error saving press dossier:', error)
     toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el dossier'), color: 'error' })
   } finally {
     isUploadingPdf.value = false

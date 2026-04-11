@@ -2,9 +2,14 @@
 import { computed } from 'vue'
 
 const props = defineProps({
+  brandTagline: { type: String, required: false, default: '' },
   colorMode: { type: String, required: false, default: 'light' },
-  title: { type: String, required: false, default: 'CREUP' },
   description: { type: String, required: false, default: '' },
+  sectionLabel: { type: String, required: false, default: '' },
+  statsEyebrow: { type: String, required: false, default: '' },
+  statsHeadline: { type: String, required: false, default: '' },
+  supportText: { type: String, required: false, default: '' },
+  title: { type: String, required: false, default: 'CREUP' },
 })
 
 const isDark = computed(() => props.colorMode === 'dark')
@@ -86,7 +91,7 @@ const descriptionText = computed(() => props.description)
               class="max-w-[520px] text-[18px] leading-tight font-medium"
               :style="{ color: palette.textMuted }"
             >
-              Coordinadora de Representantes de Estudiantes de Universidades Públicas
+              {{ props.brandTagline }}
             </span>
           </div>
         </div>
@@ -109,7 +114,7 @@ const descriptionText = computed(() => props.description)
             class="mb-5 text-[18px] font-semibold tracking-[0.24em] uppercase"
             :style="{ color: palette.accentStrong }"
           >
-            Representación estudiantil
+            {{ props.sectionLabel }}
           </p>
 
           <h1
@@ -140,10 +145,10 @@ const descriptionText = computed(() => props.description)
               class="text-[16px] font-semibold tracking-[0.18em] uppercase"
               :style="{ color: palette.accentStrong }"
             >
-              Más de 1.000.000
+              {{ props.statsEyebrow }}
             </p>
             <p class="mt-2 text-[28px] leading-tight font-bold tracking-[-0.04em]">
-              estudiantes representados en toda España
+              {{ props.statsHeadline }}
             </p>
             <div
               class="mt-6 h-px w-full"
@@ -152,11 +157,7 @@ const descriptionText = computed(() => props.description)
               }"
             />
             <p class="mt-5 text-[18px] leading-relaxed" :style="{ color: palette.textMuted }">
-              {{
-                isDark
-                  ? 'Voz, coordinación y defensa'
-                  : 'Voz, coordinación y defensa del estudiantado'
-              }}
+              {{ props.supportText }}
             </p>
           </div>
         </div>

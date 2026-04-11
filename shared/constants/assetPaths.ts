@@ -18,7 +18,7 @@ export const PRESS_DOCUMENT_PUBLIC_PATH = '/prensa/documentos'
 export const PRESS_DOSSIER_PUBLIC_PATH = '/prensa/dossier'
 export const NEWSLETTER_COVER_IMAGE_PUBLIC_PATH = '/prensa/newsletter/portadas'
 export const NEWSLETTER_DOCUMENT_PUBLIC_PATH = '/prensa/newsletter/documentos'
-export const NEWSLETTER_BRAND_BANNER_PATH = '/documentos/imagen/MIC/horizontal-completo-granate.png'
+export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.png'
 
 export const INTERNAL_IMAGE_PROXY_PATH_BASES = [
   EXTERNAL_IMAGE_PUBLIC_BASE,

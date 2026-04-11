@@ -11,7 +11,7 @@ import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
 import { logError } from '../../utils/logger'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
-import { buildLocalizedAlternates } from '~~/shared/utils/locale'
+import { buildLocalizedAlternatesForLocaleCodes } from '~~/shared/utils/locale'
 import { getRequestLocaleContext } from '../../utils/requestLocale'
 
 const buildMandateSlug = (mandate: MandateInfoOutput, mandates: MandateInfoOutput[]) => {
@@ -34,12 +34,18 @@ function buildI18nEntry(
   loc: string,
   locales: ReturnType<typeof getRequestLocaleContext>['locales'],
   defaultLocale: string,
+  translatedLocales: Iterable<string> | null | undefined = locales.map((locale) => locale.code),
   extra: Record<string, unknown> = {}
 ) {
   return {
     loc,
     _i18n: {
-      alternatives: buildLocalizedAlternates(loc, locales, defaultLocale),
+      alternatives: buildLocalizedAlternatesForLocaleCodes(
+        loc,
+        locales,
+        defaultLocale,
+        translatedLocales
+      ),
     },
     ...extra,
   }
@@ -59,6 +65,13 @@ export default defineSitemapEventHandler(async (event) => {
         updatedAt: true,
         publishedAt: true,
       },
+      with: {
+        translations: {
+          columns: {
+            locale: true,
+          },
+        },
+      },
     }),
     getEventsPayload(event).catch((error) => {
       logError('sitemap.events', error, undefined, event)
@@ -76,7 +89,7 @@ export default defineSitemapEventHandler(async (event) => {
     db
       .select({ updatedAt: newsletters.updatedAt })
       .from(newsletters)
-      .where(eq(newsletters.active, true))
+      .where(eq(newsletters.publicVisible, true))
       .orderBy(desc(newsletters.updatedAt))
       .limit(1)
       .then((rows) => rows[0] ?? null),
@@ -89,14 +102,20 @@ export default defineSitemapEventHandler(async (event) => {
     }
 
     return [
-      buildI18nEntry(`${basePath}/${article.slug}`, locales, defaultLocale, {
-        lastmod: (article.updatedAt ?? article.publishedAt).toISOString(),
-      }),
+      buildI18nEntry(
+        `${basePath}/${article.slug}`,
+        locales,
+        defaultLocale,
+        article.translations.map((translation) => translation.locale),
+        {
+          lastmod: (article.updatedAt ?? article.publishedAt).toISOString(),
+        }
+      ),
     ]
   })
 
   const eventRoutes = eventsPayload.events.map((entry) =>
-    buildI18nEntry(`/conocenos/eventos/${entry.slug}`, locales, defaultLocale, {
+    buildI18nEntry(`/conocenos/eventos/${entry.slug}`, locales, defaultLocale, undefined, {
       lastmod: eventsPayload.generatedAt ?? undefined,
     })
   )
@@ -111,7 +130,7 @@ export default defineSitemapEventHandler(async (event) => {
 
   const newsletterRoute = latestNewsletter
     ? [
-        buildI18nEntry('/prensa/newsletter', locales, defaultLocale, {
+        buildI18nEntry('/prensa/newsletter', locales, defaultLocale, undefined, {
           lastmod: latestNewsletter.updatedAt?.toISOString(),
         }),
       ]

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CREUPEvent } from '~/composables/useEvents'
+import type { CREUPEvent } from '@/composables/useEvents'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -63,12 +63,19 @@ const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
 
       <div
         v-else-if="status === 'pending'"
-        class="flex justify-center py-12"
+        class="grid gap-6 sm:grid-cols-2"
         role="status"
         aria-live="polite"
+        :aria-label="t('accessibility.loading')"
       >
-        <UIcon name="i-tabler-loader-2" class="text-muted size-8 animate-spin" aria-hidden="true" />
-        <span class="sr-only">{{ t('accessibility.loading') }}</span>
+        <div v-for="n in 6" :key="n" class="space-y-3">
+          <USkeleton class="aspect-7/2 w-full rounded-lg" />
+          <div class="space-y-2 px-1">
+            <USkeleton class="h-3 w-20 rounded" />
+            <USkeleton class="h-5 w-3/4 rounded" />
+            <USkeleton class="h-3 w-40 rounded" />
+          </div>
+        </div>
       </div>
 
       <template v-else>
@@ -83,7 +90,7 @@ const getEntranceDelay = (index: number) => useEntranceDelay(index, 70)
             :key="option.value ?? 'all'"
             type="button"
             size="sm"
-            color="neutral"
+            color="secondary"
             :variant="selectedType === option.value ? 'solid' : 'outline'"
             class="rounded-full"
             :aria-pressed="selectedType === option.value"

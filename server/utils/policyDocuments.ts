@@ -1,26 +1,10 @@
 import type { H3Event } from 'h3'
-import { createError } from 'h3'
-import {
-  getExternalApiCacheOptions,
-  setExternalApiCacheHeaders,
-  withExternalApiSWRCache,
-} from './externalApiCache'
+import { fetchExternalDocumentCollection } from './externalDocumentCollection'
 import { toPolicyDocumentPublicPdfPathAsync } from './policyDocumentDownloads'
-import { getRequestLocaleContext } from './requestLocale'
-import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
 import { externalPolicyDocumentsResponseSchema } from './validation'
-import { logError } from './logger'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
+import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from './publicRouteCache'
 
 const POLICY_DOCUMENTS_CACHE_VERSION = 2
-const messagesByLocale = {
-  en: {
-    unavailable: 'The requested documents are temporarily unavailable.',
-  },
-  es: {
-    unavailable: 'La documentación solicitada no está disponible temporalmente.',
-  },
-}
 
 interface PolicyDocumentFile {
   name: string | null
@@ -35,53 +19,38 @@ interface PolicyDocumentOutput {
   file: PolicyDocumentFile | null
 }
 
+const POLICY_DOCUMENT_COLLECTIONS = {
+  'informes-ejecutivos': {
+    apiPath: '/api/informes-ejecutivos',
+    label: 'Informes Ejecutivos',
+  },
+  posicionamientos: {
+    apiPath: '/api/posicionamientos',
+    label: 'Posicionamientos',
+  },
+  resoluciones: {
+    apiPath: '/api/resoluciones',
+    label: 'Resoluciones',
+  },
+} as const
+
+type PolicyDocumentCollectionKey = keyof typeof POLICY_DOCUMENT_COLLECTIONS
+
 export async function fetchPolicyDocuments(
   event: H3Event,
   apiPath: string,
   label: string
 ): Promise<{ documents: PolicyDocumentOutput[]; generatedAt: string | null }> {
-  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
-  const cacheOptions = getExternalApiCacheOptions(event)
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
-
-  setExternalApiCacheHeaders(event, cacheOptions)
-
-  return withExternalApiSWRCache(
-    `external-api:policy-documents:v${POLICY_DOCUMENTS_CACHE_VERSION}:${configuredBaseUrl}:${apiPath}`,
-    async () => {
-      const endpoint = new URL(apiPath, configuredBaseUrl).toString()
-
-      let payload: unknown
-      try {
-        payload = await $fetch(endpoint)
-      } catch (error) {
-        logError('external.policy-documents.fetch', error, { endpoint, label }, event)
-        throw createError({
-          statusCode: 502,
-          statusMessage: messages.unavailable,
-        })
-      }
-
-      const parsedPayload = externalPolicyDocumentsResponseSchema.safeParse(payload)
-      if (!parsedPayload.success) {
-        logError(
-          'external.policy-documents.invalid-payload',
-          parsedPayload.error,
-          {
-            endpoint,
-            label,
-          },
-          event
-        )
-        throw createError({
-          statusCode: 502,
-          statusMessage: messages.unavailable,
-        })
-      }
-
-      const sortedDocuments = [...parsedPayload.data.data].sort((a, b) => a.order - b.order)
+  return fetchExternalDocumentCollection(event, {
+    apiPath,
+    cacheKey: `external-api:policy-documents:v${POLICY_DOCUMENTS_CACHE_VERSION}:${apiPath}`,
+    errorMessageKey: 'policyDocumentsUnavailable',
+    fetchLogKey: 'external.policy-documents.fetch',
+    invalidPayloadLogKey: 'external.policy-documents.invalid-payload',
+    logMeta: { label },
+    responseSchema: externalPolicyDocumentsResponseSchema,
+    transform: async (parsedPayload) => {
+      const sortedDocuments = [...parsedPayload.data].sort((a, b) => a.order - b.order)
 
       const documents: PolicyDocumentOutput[] = await Promise.all(
         sortedDocuments.map(async (doc) => ({
@@ -100,9 +69,29 @@ export async function fetchPolicyDocuments(
 
       return {
         documents,
-        generatedAt: parsedPayload.data.generated_at ?? null,
+        generatedAt: parsedPayload.generated_at ?? null,
       }
     },
-    cacheOptions
+  })
+}
+
+export function fetchPolicyDocumentCollection(
+  event: H3Event,
+  collection: PolicyDocumentCollectionKey
+) {
+  const config = POLICY_DOCUMENT_COLLECTIONS[collection]
+  return fetchPolicyDocuments(event, config.apiPath, config.label)
+}
+
+export function createPolicyDocumentCollectionRouteHandler(
+  collection: PolicyDocumentCollectionKey
+) {
+  return defineCachedEventHandler(
+    async (event: H3Event) => fetchPolicyDocumentCollection(event, collection),
+    {
+      ...PUBLIC_ROUTE_CACHE_OPTIONS,
+      getKey: (event: H3Event) =>
+        buildPublicRouteCacheKey(event, collection, { includeLocale: false }),
+    }
   )
 }

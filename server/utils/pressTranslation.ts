@@ -1,5 +1,6 @@
 import createDOMPurify, { type WindowLike } from 'dompurify'
 import { JSDOM } from 'jsdom'
+import { getBaseLanguage } from '~~/shared/utils/locale'
 
 type PressTranslationLike = {
   locale: string
@@ -30,18 +31,6 @@ const allowedRichTextTags = [
 ]
 const allowedRichTextAttributes = ['href', 'target']
 
-const normalizeLocaleIdentifier = (value?: string | null) => {
-  const normalized = String(value ?? '')
-    .trim()
-    .toLowerCase()
-
-  if (!normalized) {
-    return ''
-  }
-
-  return normalized.split('-')[0] ?? normalized
-}
-
 const extractPlainText = (value?: string | null) => {
   const normalized = String(value ?? '').trim()
   if (!normalized) {
@@ -61,6 +50,23 @@ const pickTextValue = (value?: string | null) => {
   return normalized.length > 0 ? normalized : null
 }
 
+const resolvePressTranslationEntries = <T extends PressTranslationLike>(
+  translations: T[],
+  locale: string | null | undefined,
+  fallbackCode: string
+) => {
+  const targetLocale = getBaseLanguage(locale) || getBaseLanguage(fallbackCode)
+  const fallbackLocale = getBaseLanguage(fallbackCode)
+  const localized =
+    translations.find((translation) => getBaseLanguage(translation.locale) === targetLocale) ?? null
+  const fallback =
+    translations.find((translation) => getBaseLanguage(translation.locale) === fallbackLocale) ??
+    translations[0] ??
+    null
+
+  return { localized, fallback }
+}
+
 const sanitizeRichTextLinkHref = (value?: string | null) => {
   const normalized = String(value ?? '').trim()
   if (!normalized) {
@@ -76,7 +82,8 @@ const sanitizeRichTextLinkHref = (value?: string | null) => {
     if (
       parsedUrl.protocol === 'http:' ||
       parsedUrl.protocol === 'https:' ||
-      parsedUrl.protocol === 'mailto:'
+      parsedUrl.protocol === 'mailto:' ||
+      parsedUrl.protocol === 'tel:'
     ) {
       return parsedUrl.toString()
     }
@@ -180,29 +187,30 @@ const pickHtmlValue = (value?: string | null) => {
   return sanitizeRichTextHtml(value)
 }
 
-export const resolvePressTranslation = <T extends PressTranslationLike>(
+export const resolvePressTranslationSummary = <T extends PressTranslationLike>(
   translations: T[],
   locale: string | null | undefined,
   fallbackCode: string
 ) => {
-  const targetLocale = normalizeLocaleIdentifier(locale) || normalizeLocaleIdentifier(fallbackCode)
-  const fallbackLocale = normalizeLocaleIdentifier(fallbackCode)
-  const localized =
-    translations.find(
-      (translation) => normalizeLocaleIdentifier(translation.locale) === targetLocale
-    ) ?? null
-  const fallback =
-    translations.find(
-      (translation) => normalizeLocaleIdentifier(translation.locale) === fallbackLocale
-    ) ??
-    translations[0] ??
-    null
+  const { localized, fallback } = resolvePressTranslationEntries(translations, locale, fallbackCode)
 
   return {
     title: pickTextValue(localized?.title) ?? pickTextValue(fallback?.title) ?? '',
     description:
       pickTextValue(localized?.description) ?? pickTextValue(fallback?.description) ?? '',
     alt: pickTextValue(localized?.alt) ?? pickTextValue(fallback?.alt) ?? '',
+  }
+}
+
+export const resolvePressTranslation = <T extends PressTranslationLike>(
+  translations: T[],
+  locale: string | null | undefined,
+  fallbackCode: string
+) => {
+  const { localized, fallback } = resolvePressTranslationEntries(translations, locale, fallbackCode)
+
+  return {
+    ...resolvePressTranslationSummary(translations, locale, fallbackCode),
     contentHtml: pickHtmlValue(localized?.contentHtml) ?? pickHtmlValue(fallback?.contentHtml),
   }
 }

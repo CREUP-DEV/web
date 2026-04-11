@@ -26,12 +26,15 @@ export interface PressArticle {
   alt: string
   contentHtml?: string | null
   publishedAt: string
+  updatedAt?: string | null
+  /** Locale codes (e.g. 'es', 'en') for which a native translation exists in the database. */
+  translatedLocales?: string[]
   tags: PressArticleTag[]
   mediaOutlet: PressArticleMediaOutlet | null
 }
 
 export interface PressResponse {
-  articles: PressArticle[]
+  items: PressArticle[]
   total: number
 }
 
@@ -80,7 +83,7 @@ export function usePress(
     () => {
       if (!enabledValue.value) {
         return Promise.resolve({
-          articles: [],
+          items: [],
           total: 0,
         })
       }
@@ -104,10 +107,10 @@ export function usePress(
     },
     {
       default: () => ({
-        articles: [],
+        items: [],
         total: 0,
       }),
-      watch: [locale, typeValue, tagValue, limitValue, offsetValue],
+      watch: [locale, typeValue, tagValue, limitValue, offsetValue, enabledValue],
     }
   )
 }

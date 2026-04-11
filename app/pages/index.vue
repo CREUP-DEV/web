@@ -9,12 +9,12 @@ const localePath = useLocalePath()
 
 const { data: homeData, pending: homeDataPending } = useHomeData()
 const { events, pending: eventsLoading, error: eventsError } = useGoogleCalendar()
-const { data: featuredPressData } = usePress(null, undefined, 4)
+const { data: featuredPressData, pending: featuredPressPending } = usePress(null, undefined, 4)
 
 const carouselItems = computed(() => homeData.value?.carousel ?? [])
 const links = computed(() => homeData.value?.featuredLinks ?? [])
 const featuredNewsItems = computed(() => {
-  return (featuredPressData.value?.articles ?? []).map((article: PressArticle) => ({
+  return (featuredPressData.value?.items ?? []).map((article: PressArticle) => ({
     title: article.title,
     image: article.image,
     to: localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`),
@@ -38,7 +38,7 @@ usePageSeo('meta.title', 'meta.description')
       <UContainer>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-6 lg:gap-8">
           <div class="md:col-span-2">
-            <HomeFeaturedNews :items="featuredNewsItems" inline />
+            <HomeFeaturedNews :items="featuredNewsItems" :pending="featuredPressPending" inline />
           </div>
           <div class="md:col-span-1">
             <HomePublicAgenda :events="events" :pending="eventsLoading" :error="eventsError" />

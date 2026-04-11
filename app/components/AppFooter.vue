@@ -22,6 +22,7 @@ const socials = useSocials()
           variant="ghost"
           :to="social.to"
           target="_blank"
+          rel="noopener noreferrer"
           :aria-label="social.label"
         />
       </UTooltip>

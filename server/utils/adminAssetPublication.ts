@@ -196,7 +196,7 @@ export async function reconcileAdminAssetPublication() {
       }),
       db.query.pressDossier.findFirst({ columns: { id: true, pdfUrl: true, active: true } }),
       db.query.newsletters.findMany({
-        columns: { id: true, coverImage: true, pdfUrl: true, active: true },
+        columns: { id: true, coverImage: true, pdfUrl: true, publicVisible: true },
       }),
       db.query.aboutPageContent.findFirst({
         columns: { id: true, heroImage: true, heroVisible: true },
@@ -309,13 +309,13 @@ export async function reconcileAdminAssetPublication() {
     for (const item of newslettersList) {
       const nextCoverImage = await reconcileStoredImage({
         storagePath: item.coverImage,
-        publish: item.active,
+        publish: item.publicVisible,
         uploadDir: 'public/prensa/newsletter/portadas',
         publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
       })
       const nextPdfUrl = await reconcileStoredDocument({
         storagePath: item.pdfUrl,
-        publish: item.active,
+        publish: item.publicVisible,
         uploadDir: 'public/prensa/newsletter/documentos',
         publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
       })

@@ -261,7 +261,6 @@ async function handleSubmit() {
           </p>
 
           <div class="sr-only" aria-hidden="true">
-            <label for="website">Website</label>
             <input
               id="website"
               v-model="form.website"

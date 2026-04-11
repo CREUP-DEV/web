@@ -249,10 +249,21 @@ export const createNewsletterSchema = z.object({
   coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
   pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
   active: z.boolean().default(true),
+  publicVisible: z.boolean().default(false),
 })
 
 export const updateNewsletterSchema = createNewsletterSchema
 
-export const createNewsletterRequestSchema = createNewsletterSchema.extend({
-  sendEmail: z.boolean().default(false),
-})
+export const createNewsletterRequestSchema = createNewsletterSchema
+  .extend({
+    sendEmail: z.boolean().default(false),
+  })
+  .superRefine((data, ctx) => {
+    if (data.sendEmail && !data.active) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes habilitar el envío para enviar la newsletter ahora',
+        path: ['active'],
+      })
+    }
+  })

@@ -127,7 +127,9 @@ const basePressArticleSchema = z.object({
 
 export const createPressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
 
-export const updatePressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
+export const updatePressArticleSchema = basePressArticleSchema
+  .merge(z.object({ updatedAt: z.string().datetime().optional() }))
+  .superRefine(refinePressArticle)
 
 export const updateOrderSchema = z.object({
   items: z.array(

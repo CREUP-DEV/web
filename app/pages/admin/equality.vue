@@ -264,7 +264,7 @@ const handlePdfSelect = async (event: Event) => {
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface ring-default rounded-xl p-4 shadow-sm ring-1"
       >
         <div class="hidden items-start gap-4 md:flex">
           <div class="drag-handle flex cursor-grab items-center self-center active:cursor-grabbing">

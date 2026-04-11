@@ -15,13 +15,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <span
-    v-if="!mounted"
-    class="text-gray-400 select-none"
-    aria-label="Email address"
-    aria-hidden="true"
-  >
-    ••••@••••
-  </span>
+  <span v-if="!mounted" class="text-muted select-none" aria-hidden="true"> ••••@•••• </span>
   <a v-else :href="`mailto:${email}`" :class="props.class">{{ props.label ?? email }}</a>
 </template>

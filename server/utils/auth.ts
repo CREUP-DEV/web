@@ -78,6 +78,20 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
+  advanced: {
+    // Explicitly declare cookie attributes — SameSite=Lax + Secure in production is the
+    // baseline defense against CSRF without breaking redirect-based OAuth flows.
+    cookies: {
+      session_token: {
+        attributes: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax' as const,
+          path: '/',
+        },
+      },
+    },
+  },
   callbacks: {
     async signIn({ user }: { user: SignInUser }) {
       const normalizedEmail = user.email ? normalizeAdminEmail(user.email) : ''

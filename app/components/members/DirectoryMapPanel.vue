@@ -47,8 +47,8 @@ const handleSelect = (community: string | null) => {
 <template>
   <section aria-labelledby="map-heading">
     <h3 id="map-heading" class="sr-only">{{ t('members.selectCommunity') }}</h3>
-    <div class="bg-surface/50 rounded-xl p-4 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50">
-      <div class="mb-5 space-y-3 border-b border-gray-200/60 pb-4 dark:border-gray-800/60">
+    <div class="members-map-theme bg-surface/50 ring-default rounded-xl p-4 ring-1 sm:p-6">
+      <div class="border-default/60 mb-5 space-y-3 border-b pb-4">
         <div class="space-y-1">
           <p class="text-muted text-sm font-medium" aria-live="polite" aria-atomic="true">
             {{ selectionSummary }}
@@ -63,15 +63,24 @@ const handleSelect = (community: string | null) => {
           :aria-label="t('members.mapLegendLabel')"
         >
           <span class="inline-flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-red-600" aria-hidden="true" />
+            <span
+              class="members-map-legend-dot members-map-legend-dot--selected"
+              aria-hidden="true"
+            />
             {{ t('members.mapLegendSelected') }}
           </span>
           <span class="inline-flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-red-200" aria-hidden="true" />
+            <span
+              class="members-map-legend-dot members-map-legend-dot--active"
+              aria-hidden="true"
+            />
             {{ t('members.mapLegendActive') }}
           </span>
           <span class="inline-flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-gray-300" aria-hidden="true" />
+            <span
+              class="members-map-legend-dot members-map-legend-dot--inactive"
+              aria-hidden="true"
+            />
             {{ t('members.mapLegendInactive') }}
           </span>
         </div>
@@ -95,6 +104,7 @@ const handleSelect = (community: string | null) => {
             value-key="value"
             class="w-full sm:hidden"
             :placeholder="t('members.mapFilterTitle')"
+            :ui="{ placeholder: 'truncate text-muted' }"
             @update:model-value="handleSelect($event ?? null)"
           />
 

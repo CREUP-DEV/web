@@ -32,7 +32,14 @@ export default defineCachedEventHandler(
           limit,
           offset,
           with: {
-            translations: true,
+            translations: {
+              columns: {
+                locale: true,
+                title: true,
+                description: true,
+                meta: true,
+              },
+            },
           },
         }),
         db

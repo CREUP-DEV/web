@@ -64,14 +64,11 @@ pnpm db:seed
 - `SITE_URL`
 - `DATABASE_URL`
 - `BETTER_AUTH_URL`
-- `APP_SECRET` - secreto compartido de fallback para auth, newsletter y OG images
-- `BETTER_AUTH_SECRET` - opcional; si falta, se usa `APP_SECRET`
-- `NEWSLETTER_TOKEN_SECRET` - opcional; si falta, se usa `APP_SECRET`
-- `NUXT_OG_IMAGE_SECRET` - opcional; si falta, se usa `APP_SECRET`
+- `APP_SECRET` - secreto maestro para Better Auth, tokens de newsletter y firma de OG images
 
 ### Acceso de administración
 
-- `ADMIN_EMAILS` — lista de correos separados por comas con acceso admin permanente (independiente de la tabla `admin_access`)
+- `ADMIN_EMAILS` — lista de correos separados por comas o espacios con acceso admin permanente (independiente de la tabla `admin_access`)
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 
@@ -90,16 +87,25 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 
 ## Suposiciones de despliegue
 
-- Nitro debe ejecutarse detrás de NGINX u otro proxy de confianza que fije `X-Forwarded-For` y, si
-  se usa, `X-Real-IP`.
+- Nitro debe ejecutarse detrás de NGINX u otro proxy de confianza que fije `X-Forwarded-For` y
+  `X-Real-IP`. La ruta `/health` rechaza peticiones que lleven cabecera `X-Forwarded-For` (responde 404),
+  por lo que solo son válidos los health checks directos sin pasar por proxy.
 - El limitador de peticiones usa almacenamiento de caché del proceso por defecto. Protege frente a
   ráfagas locales, pero no sobrevive reinicios ni escalado horizontal sin un backend compartido.
 - El envío de newsletters usa una cola persistida en PostgreSQL y un worker ligero dentro de Nitro
   que reanuda lotes pendientes al arrancar y los revisa periódicamente. Al menos una instancia de
   Nitro debe permanecer activa para drenar esa cola.
+- Si el despliegue pasa a más de una instancia, mover a Redis el envío de newsletters, la caché de
+  API externas y el limitador de peticiones.
 - Los archivos subidos por administración viven en `.data/admin-assets/` y en subdirectorios de
   `public/`. Ese contenido no está versionado y debe entrar en la estrategia de copias de
   seguridad del despliegue.
+- Los assets estáticos de marca sí pueden versionarse en `public/`, pero los uploads gestionados
+  desde administración (`inicio/`, `prensa/`, `conocenos/`, `documentos/igualdad/`,
+  `documentos/informes-economicos/` y cualquier `_tmp/`) deben quedar fuera de Git.
+- Configura también un límite de cuerpo en el proxy frontal (`client_max_body_size` en NGINX o
+  equivalente) alineado con el mayor upload permitido por la app. Hoy la administración usa un
+  techo duro de 22 MB por petición y la app exige `Content-Length` en uploads.
 
 ### Google Calendar
 
@@ -109,7 +115,6 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 ### API externa y proxy de assets
 
 - `EXTERNAL_API_BASE_URL`
-- `EXTERNAL_ASSET_PROXY_SECRET`
 - `EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS`
 - `EXTERNAL_ASSET_PROXY_TIMEOUT_MS`
 - `EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES`
@@ -143,6 +148,7 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 ## Servicios locales
 
 - Aplicación: `http://localhost:3000`
+- Health check: `http://localhost:3000/health`
 - Adminer: `http://localhost:8088` por defecto
 - Mailpit web: `http://localhost:8025` por defecto
 - Mailpit SMTP: `localhost:1025` por defecto
@@ -186,15 +192,18 @@ y volumen nombrado para PostgreSQL:
 1. Mantén tu `.env` para desarrollo.
 2. Usa ese mismo `.env` como fuente para el deploy.
 3. Define al menos:
-  - `SITE_URL`
-  - `VPS_HOST` (ejemplo: `ubuntu@mi-vps`)
-  - `REMOTE_DIR` (ejemplo: `/opt/creup-web`)
+
+- `SITE_URL`
+- `VPS_HOST` (ejemplo: `ubuntu@mi-vps`)
+- `REMOTE_DIR` (ejemplo: `/opt/creup-web`)
+
 4. Opcional:
-  - `IMAGE_NAME`, `IMAGE_TAG` o `IMAGE`
-  - `GHCR_USERNAME` + `GHCR_TOKEN`
-  - `DOCKER_PLATFORM` (por defecto `linux/amd64`)
-  - `APPLY_MIGRATIONS_ON_DEPLOY=false` si no quieres ejecutar migraciones en `deploy.sh`
-  - `RUN_MIGRATIONS_ON_START=true` para ejecutar migraciones en cada arranque del contenedor
+
+- `IMAGE_NAME`, `IMAGE_TAG` o `IMAGE`
+- `GHCR_USERNAME` + `GHCR_TOKEN`
+- `DOCKER_PLATFORM` (por defecto `linux/amd64`)
+- `APPLY_MIGRATIONS_ON_DEPLOY=false` si no quieres ejecutar migraciones en `deploy.sh`
+- `RUN_MIGRATIONS_ON_START=true` para ejecutar migraciones en cada arranque del contenedor
 
 Antes del primer uso, marca scripts como ejecutables:
 
@@ -216,7 +225,7 @@ Qué hace `deploy.sh`:
 4. Se conecta por SSH al VPS.
 5. En el VPS ejecuta `cd`, `docker compose pull` y `docker compose up -d`.
 6. Si `APPLY_MIGRATIONS_ON_DEPLOY=true`, el `up -d` del deploy fuerza
-  `RUN_MIGRATIONS_ON_START=true` para aplicar migraciones en ese despliegue.
+   `RUN_MIGRATIONS_ON_START=true` para aplicar migraciones en ese despliegue.
 
 ### 4) Persistencia de uploads en producción
 
@@ -236,6 +245,9 @@ Para producción pública:
 
 NGINX puede vivir en un stack separado del stack web. El deploy de este repositorio no modifica
 la configuración de NGINX.
+
+La app no envía cabecera HSTS por sí sola. Si necesitas `Strict-Transport-Security`, configúrala
+en proxy/CDN una vez confirmado que todo el tráfico público entra por HTTPS.
 
 ## Estructura principal
 

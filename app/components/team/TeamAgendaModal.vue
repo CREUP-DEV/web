@@ -8,6 +8,7 @@ defineProps<{
   member: EnrichedMember | null
   events: CalendarEvent[]
   loading: boolean
+  error?: boolean
   bodyClass: string
   modalUi: { content: string }
 }>()
@@ -33,6 +34,7 @@ const { t } = useI18n()
         :member="member"
         :events="events"
         :loading="loading"
+        :error="error"
         :body-class="bodyClass"
       />
     </template>

@@ -7,6 +7,7 @@ const props = defineProps<{
   member: EnrichedMember
   events: CalendarEvent[]
   loading: boolean
+  error?: boolean
   bodyClass: string
 }>()
 
@@ -33,7 +34,7 @@ const upcomingAgendaEvents = computed(() => {
           class="size-full object-cover"
         />
         <div v-else class="bg-primary/10 text-primary flex size-full items-center justify-center">
-          <UIcon name="i-tabler-user" class="size-6" />
+          <UIcon name="i-tabler-user" class="size-6" aria-hidden="true" />
         </div>
       </div>
       <div>
@@ -44,8 +45,13 @@ const upcomingAgendaEvents = computed(() => {
       </div>
     </div>
 
-    <div>
-      <div v-if="loading" class="space-y-2">
+    <div aria-live="polite" :aria-busy="loading || undefined">
+      <div v-if="error" class="flex flex-col items-center py-6 text-center">
+        <UIcon name="i-tabler-alert-triangle" class="text-error mb-2 size-10" />
+        <p class="text-muted text-sm">{{ t('team.agendaLoadError') }}</p>
+      </div>
+
+      <div v-else-if="loading" class="space-y-2">
         <div
           v-for="n in 3"
           :key="n"
@@ -60,7 +66,7 @@ const upcomingAgendaEvents = computed(() => {
         </div>
       </div>
 
-      <ul v-else-if="upcomingAgendaEvents.length > 0" class="space-y-2">
+      <ul v-else-if="upcomingAgendaEvents.length" class="space-y-2">
         <li
           v-for="(event, idx) in upcomingAgendaEvents"
           :key="idx"
@@ -84,7 +90,7 @@ const upcomingAgendaEvents = computed(() => {
               {{ event.title }}
             </p>
             <p class="text-muted mt-0.5 flex items-center gap-1 text-xs">
-              <UIcon name="i-tabler-clock" class="size-3.5 shrink-0" />
+              <UIcon name="i-tabler-clock" class="size-3.5 shrink-0" aria-hidden="true" />
               <span>{{ event.timeSlot }}</span>
             </p>
           </div>

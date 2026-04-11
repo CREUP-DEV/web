@@ -19,6 +19,7 @@ export function useVisibilityRegistry(options: number | VisibilityRegistryOption
 
   const elementsById = new Map<string, HTMLElement | SVGElement>()
   const idsByElement = new WeakMap<Element, string>()
+  const refCallbacks = new Map<string, (target: Element | ComponentPublicInstance | null) => void>()
   let observer: IntersectionObserver | null = null
 
   function cloneSet(source: Set<string>) {
@@ -28,28 +29,28 @@ export function useVisibilityRegistry(options: number | VisibilityRegistryOption
   const resolveElement = resolveObservableElement
 
   function markVisible(id: string) {
+    if (visibleIds.value.has(id)) return
     const next = cloneSet(visibleIds.value)
     next.add(id)
     visibleIds.value = next
   }
 
   function markPending(id: string) {
+    if (pendingIds.value.has(id)) return
     const next = cloneSet(pendingIds.value)
     next.add(id)
     pendingIds.value = next
   }
 
   function clearPending(id: string) {
-    if (!pendingIds.value.has(id)) {
-      return
-    }
-
+    if (!pendingIds.value.has(id)) return
     const next = cloneSet(pendingIds.value)
     next.delete(id)
     pendingIds.value = next
   }
 
   function markAnimated(id: string) {
+    if (animatedIds.value.has(id)) return
     const next = cloneSet(animatedIds.value)
     next.add(id)
     animatedIds.value = next
@@ -103,7 +104,10 @@ export function useVisibilityRegistry(options: number | VisibilityRegistryOption
   function setRef(id: string | number) {
     const key = String(id)
 
-    return (target: Element | ComponentPublicInstance | null) => {
+    const existing = refCallbacks.get(key)
+    if (existing) return existing
+
+    const callback = (target: Element | ComponentPublicInstance | null) => {
       disconnectElement(key)
 
       if (!import.meta.client) {
@@ -143,6 +147,9 @@ export function useVisibilityRegistry(options: number | VisibilityRegistryOption
       markPending(key)
       observer?.observe(el)
     }
+
+    refCallbacks.set(key, callback)
+    return callback
   }
 
   onMounted(() => {

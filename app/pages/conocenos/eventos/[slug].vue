@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { CREUPEvent, EventGalleryImage, EventOrganization } from '~/composables/useEvents'
+import type { CREUPEvent, EventGalleryImage, EventOrganization } from '@/composables/useEvents'
 import { normalizeHostname, normalizeUrl } from '~~/shared/utils/url'
+import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
 
 type EventGalleryImageWithUrl = EventGalleryImage & {
   url: string
@@ -62,6 +63,100 @@ usePageSeo(
     ogImage: () => event.value.banner.url ?? undefined,
     ogType: () => 'article',
   }
+)
+
+const siteBaseUrl = computed(() => String(siteConfig.url ?? '').replace(/\/$/, ''))
+const eventUrl = computed(() => {
+  if (!siteBaseUrl.value) {
+    return undefined
+  }
+
+  return `${siteBaseUrl.value}${route.path}`
+})
+const eventStructuredDataImages = computed(() => {
+  return [event.value.banner.url, ...event.value.galleryImages.map((image) => image.url)].filter(
+    (image): image is string => Boolean(image)
+  )
+})
+const eventStructuredDataOrganizers = computed(() => {
+  const organizers = event.value.organizers
+    .filter((organizer) => organizer.name)
+    .map((organizer) => ({
+      '@type': 'Organization',
+      name: organizer.name,
+      url: organizer.link || undefined,
+    }))
+
+  if (organizers.length > 0) {
+    return organizers
+  }
+
+  return siteConfig.name
+    ? [
+        {
+          '@type': 'Organization',
+          name: siteConfig.name,
+          url: siteBaseUrl.value || undefined,
+        },
+      ]
+    : []
+})
+
+useHead(
+  computed(() => ({
+    script: [
+      {
+        type: 'application/ld+json',
+        innerHTML: serializeJsonForHtmlScript({
+          '@context': 'https://schema.org',
+          '@type': 'Event',
+          name: event.value.name,
+          description: event.value.description || undefined,
+          startDate: event.value.startDate,
+          endDate: event.value.endDate || undefined,
+          eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+          eventStatus: 'https://schema.org/EventScheduled',
+          image: eventStructuredDataImages.value.length
+            ? eventStructuredDataImages.value
+            : undefined,
+          location: event.value.location
+            ? {
+                '@type': 'Place',
+                name: event.value.location,
+              }
+            : undefined,
+          organizer: eventStructuredDataOrganizers.value,
+          url: eventUrl.value,
+        }),
+      },
+      {
+        type: 'application/ld+json',
+        innerHTML: serializeJsonForHtmlScript({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: siteConfig.name,
+              item: siteBaseUrl.value || undefined,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: t('events.title'),
+              item: `${siteBaseUrl.value}${localePath('/conocenos/eventos')}`,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: event.value.name,
+            },
+          ],
+        }),
+      },
+    ],
+  }))
 )
 
 const formatDateRange = computed(() => {
@@ -164,7 +259,7 @@ function getPhotoAlt(index: number): string {
 <template>
   <UContainer class="py-8 sm:py-12">
     <div class="mx-auto max-w-4xl">
-      <nav aria-label="Breadcrumb" class="mb-6">
+      <nav :aria-label="t('accessibility.breadcrumb')" class="mb-6">
         <ol class="text-muted flex min-w-0 items-center gap-2 text-sm">
           <li class="shrink-0">{{ t('nav.about.label') }}</li>
           <li class="shrink-0" aria-hidden="true">/</li>

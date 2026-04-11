@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { CalendarEvent } from '@/composables/useGoogleCalendar'
 import type { EnrichedMember } from '@/types/team'
+import { detailModalUi } from '@/utils/detailModalUi'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
-const { copyToClipboard } = useCopyToClipboard()
-const { getContactEmail, getCopyEmailAriaLabel } = usePersonHelpers()
+const { getContactEmail } = usePersonHelpers()
 
 usePageSeo('team.title', 'team.description')
 
@@ -29,7 +29,6 @@ const {
   toEnrichedMember,
 } = useTeamDirectory({ areas })
 
-const copyEmail = (email: string) => copyToClipboard(email, t('common.emailCopied'))
 const selectedMember = ref<EnrichedMember | null>(null)
 const memberModalOpen = ref(false)
 const queuedAgendaMember = ref<EnrichedMember | null>(null)
@@ -37,12 +36,11 @@ const agendaMember = ref<EnrichedMember | null>(null)
 const agendaOpen = ref(false)
 const agendaEvents = ref<CalendarEvent[]>([])
 const agendaLoading = ref(false)
+const agendaError = ref(false)
 const agendaModalUi = {
   content: 'sm:max-w-lg',
 }
-const memberModalUi = {
-  content: 'sm:max-w-5xl',
-}
+const memberModalUi = detailModalUi
 const agendaBodyClass = 'min-h-[220px] space-y-4 overflow-hidden px-1 pt-1'
 
 const openMemberModal = (member: EnrichedMember) => {
@@ -55,6 +53,7 @@ const openAgenda = async (member: EnrichedMember) => {
   agendaMember.value = member
   agendaLoading.value = true
   agendaEvents.value = []
+  agendaError.value = false
   agendaOpen.value = true
 
   try {
@@ -66,7 +65,7 @@ const openAgenda = async (member: EnrichedMember) => {
     })
     agendaEvents.value = response.events ?? []
   } catch {
-    agendaEvents.value = []
+    agendaError.value = true
   } finally {
     agendaLoading.value = false
   }
@@ -177,11 +176,9 @@ const tabItems = computed(() => [
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
-                :copy-email-aria-label="getCopyEmailAriaLabel(member.email)"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
                 :entrance-delay="getEntranceDelay(index)"
                 @click-card="openMemberModal(member)"
-                @copy-email="copyEmail"
                 @open-agenda="openAgenda(member)"
               />
             </TransitionGroup>
@@ -207,11 +204,9 @@ const tabItems = computed(() => [
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
-                :copy-email-aria-label="getCopyEmailAriaLabel(member.email)"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
                 :entrance-delay="getEntranceDelay(idx)"
                 @click-card="openMemberModal(member)"
-                @copy-email="copyEmail"
                 @open-agenda="openAgenda(member)"
               />
             </TransitionGroup>
@@ -243,11 +238,9 @@ const tabItems = computed(() => [
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
-                :copy-email-aria-label="getCopyEmailAriaLabel(member.email)"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
                 :entrance-delay="getEntranceDelay(idx)"
                 @click-card="openMemberModal(toEnrichedMember(member, area, idx === 0))"
-                @copy-email="copyEmail"
                 @open-agenda="openAgenda(toEnrichedMember(member, area, idx === 0))"
               />
             </TransitionGroup>
@@ -269,25 +262,12 @@ const tabItems = computed(() => [
           :member="selectedMember"
           :display-name="getMemberDisplayName(selectedMember)"
           :contact-email="getContactEmail(selectedMember)"
-          :copy-email-aria-label="getCopyEmailAriaLabel(getContactEmail(selectedMember))"
-          @copy-email="copyEmail"
+          :show-agenda-button="selectedMember.publicAgenda"
+          :public-agenda-label="t('team.publicAgenda')"
+          :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(selectedMember))"
+          @close="closeMemberModal"
+          @open-agenda="openSelectedMemberAgenda"
         />
-      </template>
-
-      <template #footer>
-        <div
-          v-if="selectedMember?.publicAgenda"
-          class="flex w-full items-center justify-center gap-2"
-        >
-          <UButton
-            variant="soft"
-            icon="i-tabler-calendar"
-            :aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(selectedMember))"
-            @click="openSelectedMemberAgenda"
-          >
-            {{ t('team.publicAgenda') }}
-          </UButton>
-        </div>
       </template>
     </UModal>
 
@@ -296,6 +276,7 @@ const tabItems = computed(() => [
       :member="agendaMember"
       :events="agendaEvents"
       :loading="agendaLoading"
+      :error="agendaError"
       :body-class="agendaBodyClass"
       :modal-ui="agendaModalUi"
       @update:open="!$event && closeAgenda()"

@@ -2,6 +2,8 @@ import { defineEventHandler, readBody, setHeader } from 'h3'
 import { buildLocalizedPath } from '../utils/urlBuilder'
 import { newsletterTokenQuerySchema, validateBody } from '../utils/validation'
 import { performNewsletterConfirmAction } from '../utils/newsletterSubscriptionActions'
+import { enforceRateLimit } from '../utils/rateLimit'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 
 type NewsletterConfirmStatus = 'confirmed' | 'already-confirmed' | 'expired' | 'invalid'
 
@@ -13,6 +15,13 @@ function buildConfirmRedirect(redirectPath: string, status: NewsletterConfirmSta
 }
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, {
+    namespace: 'newsletter-confirm',
+    maxRequests: 10,
+    windowMs: 15 * 60 * 1000,
+    errorMessage: getPublicApiErrorMessage(event, 'tooManyAttempts'),
+  })
+
   setHeader(event, 'cache-control', 'no-store')
 
   const { token } = validateBody(newsletterTokenQuerySchema, await readBody(event))

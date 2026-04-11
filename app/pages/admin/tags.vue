@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { createTagSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
@@ -96,9 +97,8 @@ const saveOrder = async () => {
       color: 'success',
     })
   } catch (e) {
-    console.error('Error saving order:', e)
     toast.add({
-      title: t('admin.errors.tagOrderSaveFailed'),
+      title: getApiErrorMessage(e, t('admin.errors.tagOrderSaveFailed')),
       color: 'error',
     })
   }
@@ -147,9 +147,8 @@ const handleSubmit = async () => {
         color: 'error',
       })
     } else {
-      console.error('Error saving:', e)
       toast.add({
-        title: t('admin.errors.tagSaveFailed'),
+        title: getApiErrorMessage(e, t('admin.errors.tagSaveFailed')),
         color: 'error',
       })
     }
@@ -170,9 +169,8 @@ const handleDelete = async () => {
       color: 'success',
     })
   } catch (e) {
-    console.error('Error deleting:', e)
     toast.add({
-      title: t('admin.errors.tagDeleteFailed'),
+      title: getApiErrorMessage(e, t('admin.errors.tagDeleteFailed')),
       color: 'error',
     })
   } finally {
@@ -198,7 +196,7 @@ const handleDelete = async () => {
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface ring-default flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1"
       >
         <div class="drag-handle cursor-grab active:cursor-grabbing">
           <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />

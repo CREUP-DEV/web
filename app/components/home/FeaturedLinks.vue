@@ -35,83 +35,81 @@ const localePath = useLocalePath()
         </h2>
       </header>
 
-      <div
-        v-if="props.pending"
-        aria-hidden="true"
-        class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-      >
+      <div aria-live="polite" :aria-busy="props.pending || undefined">
         <div
-          v-for="n in 6"
-          :key="n"
-          class="bg-surface/50 overflow-hidden rounded-xl ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+          v-if="props.pending"
+          aria-hidden="true"
+          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
         >
-          <USkeleton class="aspect-square" />
-          <div class="p-2.5 sm:p-3">
-            <USkeleton class="h-4 w-3/4" />
+          <div v-for="n in 6" :key="n" class="bg-surface/50 overflow-hidden rounded-xl">
+            <USkeleton class="aspect-square" />
+            <div class="p-2.5 sm:p-3">
+              <USkeleton class="h-4 w-3/4" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <ul
-        v-else
-        class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-        role="list"
-      >
-        <li v-for="(item, idx) in props.items" :key="idx">
-          <a
-            v-if="isExternalNavigationTarget(item.to)"
-            :href="item.to"
-            class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div class="bg-muted aspect-square">
-              <NuxtImg
-                :src="item.image"
-                :alt="item.alt ?? ''"
-                width="288"
-                height="288"
-                class="motion-link-media size-full object-cover"
-                loading="lazy"
-              />
-            </div>
-            <div class="p-2.5 sm:p-3">
-              <UTooltip :text="item.title">
-                <p
-                  class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
-                >
-                  {{ item.title }}
-                </p>
-              </UTooltip>
-            </div>
-          </a>
-          <NuxtLink
-            v-else
-            :to="localePath(item.to)"
-            class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
-          >
-            <div class="bg-muted aspect-square">
-              <NuxtImg
-                :src="item.image"
-                :alt="item.alt ?? ''"
-                width="288"
-                height="288"
-                class="motion-link-media size-full object-cover"
-                loading="lazy"
-              />
-            </div>
-            <div class="p-2.5 sm:p-3">
-              <UTooltip :text="item.title">
-                <p
-                  class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
-                >
-                  {{ item.title }}
-                </p>
-              </UTooltip>
-            </div>
-          </NuxtLink>
-        </li>
-      </ul>
+        <ul
+          v-else
+          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+          role="list"
+        >
+          <li v-for="(item, idx) in props.items" :key="idx">
+            <a
+              v-if="isExternalNavigationTarget(item.to)"
+              :href="item.to"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div class="bg-muted aspect-square">
+                <NuxtImg
+                  :src="item.image"
+                  :alt="item.alt ?? ''"
+                  width="288"
+                  height="288"
+                  class="motion-link-media size-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div class="p-2.5 sm:p-3">
+                <UTooltip :text="item.title">
+                  <p
+                    class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
+                  >
+                    {{ item.title }}
+                  </p>
+                </UTooltip>
+              </div>
+            </a>
+            <NuxtLink
+              v-else
+              :to="localePath(item.to)"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
+            >
+              <div class="bg-muted aspect-square">
+                <NuxtImg
+                  :src="item.image"
+                  :alt="item.alt ?? ''"
+                  width="288"
+                  height="288"
+                  class="motion-link-media size-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div class="p-2.5 sm:p-3">
+                <UTooltip :text="item.title">
+                  <p
+                    class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
+                  >
+                    {{ item.title }}
+                  </p>
+                </UTooltip>
+              </div>
+            </NuxtLink>
+          </li>
+        </ul>
+      </div>
     </UContainer>
   </section>
 </template>

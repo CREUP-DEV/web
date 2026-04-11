@@ -7,7 +7,7 @@ const rethrowGoogleCalendarConfigError = (error: unknown, publicMessage: string)
     logError('google-calendar.config', error)
     throw createError({
       statusCode: 500,
-      statusMessage: publicMessage,
+      message: publicMessage,
     })
   }
 

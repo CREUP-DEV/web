@@ -8,6 +8,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { throwMethodNotAllowed } from '../../../utils/throwMethodNotAllowed'
 import { validateBody } from '../../../utils/validation'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
@@ -99,5 +100,5 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  throw createError({ statusCode: 405, message: 'Método no permitido' })
+  throwMethodNotAllowed()
 })

@@ -27,7 +27,7 @@ const rethrowConfigError = (error: unknown, publicMessage: string): never => {
     logError('runtime-config.invalid', error)
     throw createError({
       statusCode: 500,
-      statusMessage: publicMessage,
+      message: publicMessage,
     })
   }
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { detailModalUi } from '@/utils/detailModalUi'
 import type { SocialNetworkEntry } from '~~/shared/utils/social'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 
@@ -89,6 +90,13 @@ if (data.value?.ambiguous === true) {
 const mandate = computed(() => (data.value && !data.value.ambiguous ? data.value.mandate : null))
 const areas = computed(() => (data.value && !data.value.ambiguous ? data.value.areas : []))
 const areaVisibility = useVisibilityRegistry({ threshold: 0.12, animateVisibleOnMount: true })
+
+const {
+  formatLongDate: formatDate,
+  formatMonthYear: formatShortDate,
+  formatShortDate: formatCompactDateText,
+} = useDatePresets()
+
 usePageSeo(
   () =>
     mandate.value
@@ -99,12 +107,6 @@ usePageSeo(
 
 const getAreaName = (area: AreaTerm) =>
   pickLocalizedValue(area.nameTranslations ?? {}, locale.value, fallbackLocale) ?? area.name
-
-const {
-  formatLongDate: formatDate,
-  formatMonthYear: formatShortDate,
-  formatShortDate: formatCompactDateText,
-} = useDatePresets()
 
 function formatCompactDate(dateStr: string): string {
   return formatCompactDateText(dateStr, {
@@ -130,19 +132,17 @@ function getDurationText(startDate: string, endDate: string | null): string {
 const getViewProfileAriaLabel = (fullName: string) => `${t('team.viewProfile')}: ${fullName}`
 
 const selectedAssignment = ref<Assignment | null>(null)
-const selectedAreaName = ref<string>('')
 const modalOpen = ref(false)
+const memberModalUi = detailModalUi
 
-const openMemberModal = (assignment: Assignment, areaName: string) => {
+const openMemberModal = (assignment: Assignment) => {
   selectedAssignment.value = assignment
-  selectedAreaName.value = areaName
   modalOpen.value = true
 }
 
 const closeMemberModal = () => {
   modalOpen.value = false
   selectedAssignment.value = null
-  selectedAreaName.value = ''
 }
 
 const modalAssignmentStart = computed(() =>
@@ -205,7 +205,7 @@ const modalAssignmentDuration = computed(() =>
             <div
               v-for="m in 2"
               :key="m"
-              class="bg-surface/50 w-full max-w-md rounded-xl p-5 ring-1 ring-gray-200/50 md:w-[calc(50%-0.75rem)] dark:ring-gray-800/50"
+              class="bg-surface/50 ring-default w-full max-w-md rounded-xl p-5 ring-1 md:w-[calc(50%-0.75rem)]"
             >
               <div class="mb-4 flex justify-center">
                 <USkeleton class="size-24 rounded-full" />
@@ -251,7 +251,7 @@ const modalAssignmentDuration = computed(() =>
               v-for="(assignment, index) in area.assignments"
               :key="`assignment-${assignment.id}`"
               type="button"
-              class="motion-card-strong bg-surface/50 hover:bg-surface group focus-visible:ring-primary w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 ring-gray-200/50 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50"
+              class="motion-card-strong bg-surface/50 hover:bg-surface group focus-visible:ring-primary ring-default w-full max-w-md cursor-pointer rounded-xl p-5 ring-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
               :class="
                 entranceClasses(
                   areaVisibility.shouldAnimate(`area-${area.areaTermId}`),
@@ -261,13 +261,14 @@ const modalAssignmentDuration = computed(() =>
               "
               :style="
                 entranceStyle(
-                  areaVisibility.isVisible(`area-${area.areaTermId}`),
                   areaVisibility.shouldAnimate(`area-${area.areaTermId}`),
-                  index
+                  areaVisibility.isVisible(`area-${area.areaTermId}`),
+                  index,
+                  50
                 )
               "
               :aria-label="getViewProfileAriaLabel(getFullName(assignment.member))"
-              @click="openMemberModal(assignment, getAreaName(area))"
+              @click="openMemberModal(assignment)"
             >
               <div class="mb-4 flex justify-center">
                 <div
@@ -320,8 +321,8 @@ const modalAssignmentDuration = computed(() =>
 
     <UModal
       v-model:open="modalOpen"
-      :title="selectedAssignment ? getFullName(selectedAssignment.member) : undefined"
-      :description="t('team.memberModalDescription')"
+      :ui="memberModalUi"
+      :title="t('team.memberModalTitle')"
       @close="closeMemberModal"
     >
       <template #body>
@@ -332,6 +333,7 @@ const modalAssignmentDuration = computed(() =>
           :assignment-start="modalAssignmentStart"
           :assignment-end="modalAssignmentEnd"
           :assignment-duration="modalAssignmentDuration"
+          @close="closeMemberModal"
         />
       </template>
     </UModal>

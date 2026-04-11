@@ -21,10 +21,17 @@ const props = defineProps<{
   member: TeamMemberModalPerson
   displayName: string
   contactEmail?: string | null
-  copyEmailAriaLabel?: string
   assignmentStart?: string | null
   assignmentEnd?: string | null
   assignmentDuration?: string | null
+  showAgendaButton?: boolean
+  publicAgendaLabel?: string
+  publicAgendaAriaLabel?: string
+}>()
+
+const emit = defineEmits<{
+  close: []
+  openAgenda: []
 }>()
 
 function encodeEmail(email: string) {
@@ -32,222 +39,246 @@ function encodeEmail(email: string) {
   return { eu: btoa(user), ed: btoa(domain) }
 }
 
-const emit = defineEmits<{
-  copyEmail: [email: string]
-}>()
-
 const { t } = useI18n()
 const networkIcons = socialNetworkIcons
 
 const socialButtons = computed(() => resolveSocialButtons(props.member.socialNetworks))
 const hasSocialButtons = computed(() => socialButtons.value.length > 0)
 const hasDescription = computed(() => Boolean(props.member.description?.trim()))
-const hasAcademicInfo = computed(() => Boolean(props.member.university || props.member.degree))
+const hasAssignmentInfo = computed(() =>
+  Boolean(props.assignmentStart || props.assignmentEnd || props.assignmentDuration)
+)
 </script>
 
 <template>
-  <div class="space-y-6">
-    <section
-      class="bg-surface/95 dark:bg-surface/90 overflow-hidden rounded-4xl border border-white/60 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.35)] ring-1 ring-gray-200/70 dark:border-white/10 dark:ring-gray-800/70"
-    >
-      <div class="relative px-5 py-6 sm:px-8 sm:py-8">
-        <div
-          class="pointer-events-none absolute top-0 right-0 h-44 w-44 rounded-full bg-red-200/35 blur-3xl dark:bg-red-500/8"
-          aria-hidden="true"
-        />
-        <div
-          class="pointer-events-none absolute bottom-0 left-0 h-36 w-36 rounded-full bg-sky-200/40 blur-3xl dark:bg-sky-500/8"
-          aria-hidden="true"
-        />
+  <div class="detail-modal-shell bg-default relative overflow-hidden px-5 py-6 sm:px-8 sm:py-8">
+    <UButton
+      :aria-label="t('common.close')"
+      icon="i-tabler-x"
+      color="neutral"
+      variant="ghost"
+      class="absolute top-4 right-4 z-10 rounded-full"
+      @click="emit('close')"
+    />
 
-        <div class="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-8">
-          <div class="space-y-5">
-            <div class="space-y-3">
-              <div>
-                <p
-                  v-if="member.denomination"
-                  class="text-primary text-lg leading-tight font-semibold sm:text-xl"
-                >
-                  {{ member.denomination }}
-                </p>
-                <h3 class="mt-2 max-w-3xl text-3xl leading-tight font-semibold sm:text-4xl">
-                  {{ displayName }}
-                </h3>
-              </div>
+    <div
+      class="bg-primary/[0.14] dark:bg-primary/8 pointer-events-none absolute top-0 right-0 h-44 w-44 rounded-full blur-3xl"
+      aria-hidden="true"
+    />
+    <div
+      class="bg-secondary/16 dark:bg-secondary/10 pointer-events-none absolute bottom-0 left-0 h-36 w-36 rounded-full blur-3xl"
+      aria-hidden="true"
+    />
 
-              <div class="flex flex-wrap gap-2">
-                <UBadge
-                  v-if="member.university"
-                  size="sm"
-                  color="neutral"
-                  variant="soft"
-                  class="px-3 py-1 text-sm"
-                >
-                  {{ member.university }}
-                </UBadge>
-                <UBadge
-                  v-if="member.degree"
-                  size="sm"
-                  color="neutral"
-                  variant="outline"
-                  class="px-3 py-1 text-sm"
-                >
-                  {{ member.degree }}
-                </UBadge>
-              </div>
-
-              <div
-                v-if="assignmentStart || assignmentEnd || assignmentDuration"
-                class="flex flex-wrap items-center gap-2 text-sm"
+    <div class="relative">
+      <div class="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-8">
+        <div class="space-y-5">
+          <div class="space-y-4">
+            <div>
+              <p
+                v-if="member.denomination"
+                class="text-primary pr-12 text-lg leading-tight font-semibold sm:text-xl"
               >
-                <UBadge
-                  v-if="assignmentStart || assignmentEnd"
-                  size="sm"
-                  color="primary"
-                  variant="soft"
-                >
-                  {{ assignmentStart }} - {{ assignmentEnd }}
-                </UBadge>
-                <span v-if="assignmentDuration" class="text-muted">{{ assignmentDuration }}</span>
-              </div>
+                {{ member.denomination }}
+              </p>
+              <h3 class="mt-2 max-w-3xl pr-12 text-3xl leading-tight font-semibold sm:text-4xl">
+                {{ displayName }}
+              </h3>
             </div>
-          </div>
 
-          <div class="self-start">
-            <div
-              class="bg-surface/90 dark:bg-surface/80 mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center overflow-hidden rounded-full shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] ring-1 ring-gray-200/70 backdrop-blur lg:mx-0 lg:max-w-55 dark:ring-gray-800/70"
-            >
-              <NuxtImg
-                v-if="member.photo"
-                :src="member.photo"
-                :alt="displayName"
-                class="size-full object-cover"
-              />
+            <div class="lg:hidden">
               <div
-                v-else
-                class="bg-primary/10 text-primary flex size-full items-center justify-center"
+                class="detail-modal-media bg-surface-elevated dark:bg-surface-elevated mx-auto flex aspect-square w-full max-w-48 items-center justify-center overflow-hidden rounded-full sm:max-w-56"
               >
-                <UIcon name="i-tabler-user" class="size-14" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="hasDescription" class="mt-6 max-w-3xl space-y-3">
-          <p class="text-muted text-xs font-semibold tracking-[0.24em] uppercase">
-            {{ t('team.about', { name: member.name }) }}
-          </p>
-          <p class="text-base leading-8 sm:text-[1.05rem]">
-            {{ member.description }}
-          </p>
-        </div>
-
-        <div
-          v-if="contactEmail || hasAcademicInfo || hasSocialButtons"
-          class="mt-6 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
-        >
-          <div
-            v-if="contactEmail || hasAcademicInfo"
-            class="bg-surface/80 dark:bg-surface/70 rounded-[1.5rem] p-4 shadow-sm ring-1 ring-gray-200/70 backdrop-blur dark:ring-gray-800/70"
-          >
-            <p class="text-muted text-xs font-semibold tracking-[0.2em] uppercase">
-              {{ t('members.info') }}
-            </p>
-
-            <div class="mt-4 space-y-3">
-              <div
-                v-if="contactEmail"
-                class="group flex items-center gap-3 rounded-2xl px-1 py-1.5 transition-colors hover:bg-white/60 dark:hover:bg-gray-800/40"
-              >
-                <span
-                  class="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full"
+                <NuxtImg
+                  v-if="member.photo"
+                  :src="member.photo"
+                  :alt="displayName"
+                  class="size-full object-cover"
+                />
+                <div
+                  v-else
+                  class="bg-primary/10 text-primary flex size-full items-center justify-center"
                 >
-                  <UIcon name="i-tabler-mail" class="size-5" />
-                </span>
-                <div class="min-w-0 space-y-1">
-                  <p class="text-muted text-[11px] font-semibold tracking-[0.16em] uppercase">
-                    {{ t('team.email') }}
-                  </p>
-                  <div class="flex items-center gap-2">
-                    <ObfuscatedEmail
-                      v-if="contactEmail"
-                      v-bind="encodeEmail(contactEmail)"
-                      class="block text-sm font-medium break-all hover:underline"
-                    />
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
-                      size="sm"
-                      icon="i-tabler-copy"
-                      class="shrink-0"
-                      :aria-label="copyEmailAriaLabel"
-                      @click="emit('copyEmail', contactEmail)"
-                    />
-                  </div>
+                  <UIcon name="i-tabler-user" class="size-12 sm:size-14" aria-hidden="true" />
                 </div>
               </div>
+            </div>
 
-              <div v-if="member.university" class="flex items-start gap-3 rounded-2xl px-1 py-1.5">
+            <div v-if="contactEmail" class="flex items-start justify-center lg:justify-start">
+              <div
+                class="bg-surface-elevated dark:bg-surface-elevated ring-primary/12 flex max-w-full min-w-0 items-center gap-2.5 rounded-full px-3.5 py-2 shadow-sm ring-1"
+              >
                 <span
-                  class="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full"
+                  class="bg-primary/12 text-primary flex size-8 shrink-0 items-center justify-center rounded-full"
                 >
-                  <UIcon name="i-tabler-school" class="size-5" />
+                  <UIcon name="i-tabler-mail" class="size-4.5" aria-hidden="true" />
                 </span>
-                <span class="min-w-0 space-y-1">
+                <div class="min-w-0 text-center lg:text-left">
+                  <p
+                    class="text-muted text-[10px] leading-none font-semibold tracking-[0.16em] uppercase"
+                  >
+                    {{ t('team.email') }}
+                  </p>
+                  <ObfuscatedEmail
+                    v-bind="encodeEmail(contactEmail)"
+                    class="mt-1 block text-sm font-medium break-all hover:underline"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              v-if="hasAssignmentInfo"
+              class="grid gap-2.5 sm:grid-cols-[minmax(0,1.8fr)_minmax(200px,1fr)]"
+            >
+              <div
+                v-if="assignmentStart || assignmentEnd"
+                class="bg-primary/10 ring-primary/15 flex items-start gap-3 rounded-[1.35rem] px-3.5 py-2.5 ring-1"
+              >
+                <span
+                  class="bg-primary/12 text-primary flex size-10 shrink-0 items-center justify-center rounded-full"
+                >
+                  <UIcon name="i-tabler-calendar-event" class="size-4.5" aria-hidden="true" />
+                </span>
+                <span class="min-w-0">
                   <span
                     class="text-muted block text-[11px] font-semibold tracking-[0.16em] uppercase"
                   >
-                    {{ t('team.university') }}
+                    {{ t('team.period') }}
                   </span>
-                  <span class="block text-sm font-medium">{{ member.university }}</span>
+                  <span class="mt-1 block text-base leading-tight font-semibold sm:text-[1.1rem]">
+                    {{ assignmentStart }} - {{ assignmentEnd }}
+                  </span>
                 </span>
               </div>
 
-              <div v-if="member.degree" class="flex items-start gap-3 rounded-2xl px-1 py-1.5">
+              <div
+                v-if="assignmentDuration"
+                class="bg-surface-elevated dark:bg-surface-elevated flex items-start gap-3 rounded-[1.35rem] px-3.5 py-2.5 shadow-sm"
+              >
                 <span
                   class="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full"
                 >
-                  <UIcon name="i-tabler-book" class="size-5" />
+                  <UIcon name="i-tabler-clock-hour-4" class="size-4.5" aria-hidden="true" />
                 </span>
-                <span class="min-w-0 space-y-1">
+                <span class="min-w-0">
                   <span
                     class="text-muted block text-[11px] font-semibold tracking-[0.16em] uppercase"
                   >
-                    {{ t('team.degree') }}
+                    {{ t('team.duration') }}
                   </span>
-                  <span class="block text-sm font-medium">{{ member.degree }}</span>
+                  <span class="mt-1 block text-sm leading-tight font-semibold sm:text-base">
+                    {{ assignmentDuration }}
+                  </span>
                 </span>
               </div>
             </div>
-          </div>
 
-          <div
-            v-if="hasSocialButtons"
-            class="bg-surface/70 dark:bg-surface/65 rounded-[1.5rem] p-4 ring-1 ring-gray-200/70 dark:ring-gray-800/70"
-          >
-            <h4 class="text-muted mb-4 text-xs font-semibold tracking-[0.2em] uppercase">
-              {{ t('members.socialNetworks') }}
-            </h4>
+            <div v-if="hasDescription" class="space-y-3">
+              <p class="text-muted text-xs font-semibold tracking-[0.24em] uppercase">
+                {{ t('team.about', { name: member.name }) }}
+              </p>
+              <p class="text-base leading-8 sm:text-[1.05rem]">
+                {{ member.description }}
+              </p>
+            </div>
 
-            <div class="grid gap-3 sm:grid-cols-2">
+            <div v-if="showAgendaButton" class="pt-1">
               <UButton
-                v-for="socialNetwork in socialButtons"
-                :key="`${socialNetwork.network}-${socialNetwork.href}`"
-                :to="socialNetwork.href"
-                target="_blank"
-                rel="noopener noreferrer"
-                :icon="networkIcons[socialNetwork.network]"
-                color="neutral"
-                variant="outline"
-                size="lg"
-                class="bg-surface/85 dark:bg-surface/75 justify-start rounded-2xl px-4 py-3"
+                variant="soft"
+                icon="i-tabler-calendar"
+                :aria-label="publicAgendaAriaLabel"
+                @click="emit('openAgenda')"
               >
-                {{ t(`members.networks.${socialNetwork.network}`) }}
+                {{ publicAgendaLabel }}
               </UButton>
             </div>
           </div>
         </div>
+
+        <div class="hidden self-start lg:block">
+          <div
+            class="detail-modal-media bg-surface-elevated dark:bg-surface-elevated mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center overflow-hidden rounded-full lg:mx-0 lg:max-w-55"
+          >
+            <NuxtImg
+              v-if="member.photo"
+              :src="member.photo"
+              :alt="displayName"
+              class="size-full object-cover"
+            />
+            <div
+              v-else
+              class="bg-primary/10 text-primary flex size-full items-center justify-center"
+            >
+              <UIcon name="i-tabler-user" class="size-14" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+
+      <div v-if="member.university || member.degree || hasSocialButtons" class="mt-6 space-y-4">
+        <div v-if="member.university || member.degree" class="grid gap-3 sm:grid-cols-2">
+          <div
+            v-if="member.university"
+            class="bg-surface-elevated dark:bg-surface-elevated flex min-w-0 items-start gap-3 rounded-[1.25rem] p-3 shadow-sm"
+          >
+            <span
+              class="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full"
+            >
+              <UIcon name="i-tabler-school" class="size-5" aria-hidden="true" />
+            </span>
+            <span class="min-w-0 space-y-1">
+              <span class="text-muted block text-[11px] font-semibold tracking-[0.16em] uppercase">
+                {{ t('team.university') }}
+              </span>
+              <span class="block text-sm font-medium sm:text-[0.95rem]">{{
+                member.university
+              }}</span>
+            </span>
+          </div>
+
+          <div
+            v-if="member.degree"
+            class="bg-surface-elevated dark:bg-surface-elevated flex min-w-0 items-start gap-3 rounded-[1.25rem] p-3 shadow-sm"
+          >
+            <span
+              class="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full"
+            >
+              <UIcon name="i-tabler-book" class="size-5" aria-hidden="true" />
+            </span>
+            <span class="min-w-0 space-y-1">
+              <span class="text-muted block text-[11px] font-semibold tracking-[0.16em] uppercase">
+                {{ t('team.degree') }}
+              </span>
+              <span class="block text-sm font-medium sm:text-[0.95rem]">{{ member.degree }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div v-if="hasSocialButtons">
+          <h4 class="text-muted mb-4 text-xs font-semibold tracking-[0.2em] uppercase">
+            {{ t('members.socialNetworks') }}
+          </h4>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <UButton
+              v-for="socialNetwork in socialButtons"
+              :key="`${socialNetwork.network}-${socialNetwork.href}`"
+              :to="socialNetwork.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              :icon="networkIcons[socialNetwork.network]"
+              color="neutral"
+              variant="outline"
+              size="lg"
+              class="bg-surface dark:bg-surface justify-start rounded-2xl px-4 py-3"
+            >
+              {{ t(`members.networks.${socialNetwork.network}`) }}
+            </UButton>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

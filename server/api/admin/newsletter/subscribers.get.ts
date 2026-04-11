@@ -11,7 +11,13 @@ export default defineEventHandler(async (event) => {
 
   const [items, countResult] = await Promise.all([
     db
-      .select()
+      .select({
+        id: newsletterSubscribers.id,
+        email: newsletterSubscribers.email,
+        active: newsletterSubscribers.active,
+        subscribedAt: newsletterSubscribers.subscribedAt,
+        unsubscribedAt: newsletterSubscribers.unsubscribedAt,
+      })
       .from(newsletterSubscribers)
       .orderBy(desc(newsletterSubscribers.subscribedAt))
       .limit(normalizedLimit)

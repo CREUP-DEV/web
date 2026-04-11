@@ -40,3 +40,13 @@ public/conocenos/**/*.gif
 public/conocenos/**/*.webp
 public/conocenos/**/*.avif
 public/conocenos/**/*.svg
+public/inicio/**/*.jpg
+public/inicio/**/*.jpeg
+public/inicio/**/*.png
+public/inicio/**/*.gif
+public/inicio/**/*.webp
+public/inicio/**/*.avif
+public/inicio/**/*.svg
+public/**/_tmp/**
+public/marca/*
+!public/marca/manifest.json

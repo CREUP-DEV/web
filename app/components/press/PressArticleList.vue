@@ -11,6 +11,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 const LIMIT = 12
@@ -19,7 +20,7 @@ const offset = computed(() => (page.value - 1) * LIMIT)
 
 const { data, pending, error } = usePress(props.type, tagQuery, LIMIT, offset)
 
-const articles = computed(() => data.value?.articles ?? [])
+const articles = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
 const isLoading = computed(() => pending.value && articles.value.length === 0 && !error.value)
 const isRefreshing = computed(() => pending.value && articles.value.length > 0)
@@ -94,9 +95,15 @@ watch(resultsTransitionKey, async () => {
         <p class="text-muted mt-2 max-w-2xl text-lg">{{ description }}</p>
       </header>
 
-      <HomeTagSelector :type="type" :selected-slug="selectedTag" class="mb-6" @select="selectTag" />
+      <HomeTagSelector
+        :type="type"
+        :selected-slug="selectedTag"
+        :aria-label="title"
+        class="mb-6"
+        @select="selectTag"
+      />
 
-      <div ref="resultsContainerRef">
+      <div ref="resultsContainerRef" aria-live="polite" :aria-busy="pending || undefined">
         <div
           v-if="isLoading"
           class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
@@ -124,7 +131,8 @@ watch(resultsTransitionKey, async () => {
           tag="ul"
           name="stagger-list"
           class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          :class="isRefreshing ? 'pointer-events-none opacity-70 transition-opacity' : ''"
+          :aria-busy="isRefreshing || undefined"
+          :class="isRefreshing ? 'opacity-70 transition-opacity' : ''"
           role="list"
         >
           <li
@@ -133,8 +141,8 @@ watch(resultsTransitionKey, async () => {
             :style="getArticleAnimationStyle(index)"
           >
             <NuxtLink
-              :to="`${getPressArticlePublicListPath(article.type)}/${article.slug}`"
-              class="motion-link-card group focus-visible:ring-primary/60 bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+              :to="localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`)"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
               <div class="bg-muted aspect-video overflow-hidden">
                 <NuxtImg

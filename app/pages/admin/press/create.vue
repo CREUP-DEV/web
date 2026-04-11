@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 
 definePageMeta({
@@ -31,8 +32,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
     toast.add({ title: 'Artículo creado correctamente', color: 'success' })
     router.push('/admin/press')
   } catch (e) {
-    console.error('Error creating article:', e)
-    toast.add({ title: 'No se pudo crear el artículo', color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, 'No se pudo crear el artículo'), color: 'error' })
   } finally {
     isSubmitting.value = false
   }

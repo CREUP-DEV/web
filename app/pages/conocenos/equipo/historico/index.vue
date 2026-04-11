@@ -113,11 +113,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
       />
 
       <div v-else-if="status === 'pending'" class="space-y-4">
-        <div
-          v-for="n in 3"
-          :key="n"
-          class="bg-surface/50 rounded-xl p-6 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
-        >
+        <div v-for="n in 3" :key="n" class="bg-surface/50 ring-default rounded-xl p-6 ring-1">
           <div class="flex items-center gap-4">
             <USkeleton class="size-12 rounded-lg" />
             <div class="flex-1 space-y-2">
@@ -138,7 +134,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
           v-for="(mandate, index) in mandates"
           :key="mandate.id"
           :to="localePath(`/conocenos/equipo/historico/${buildMandateSlug(mandate)}`)"
-          class="motion-card-strong group bg-surface/50 hover:bg-surface flex items-center gap-4 rounded-xl p-5 ring-1 ring-gray-200/50 sm:p-6 dark:ring-gray-800/50"
+          class="motion-card-strong group bg-surface/50 hover:bg-surface ring-default flex items-center gap-4 rounded-xl p-5 ring-1 sm:p-6"
           :class="entranceClasses(mandatesShouldAnimate, mandatesVisible, mandatesPending)"
           :style="entranceStyle(mandatesVisible, mandatesShouldAnimate, index)"
         >
@@ -197,7 +193,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
             v-for="mandate in disambiguateMandates"
             :key="mandate.id"
             :to="localePath(`/conocenos/equipo/historico/${buildMandateSlug(mandate)}`)"
-            class="motion-card group bg-surface/50 hover:bg-surface flex items-center gap-4 rounded-xl p-4 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+            class="motion-card group bg-surface/50 hover:bg-surface ring-default flex items-center gap-4 rounded-xl p-4 ring-1"
             @click="closeDisambiguateModal"
           >
             <div

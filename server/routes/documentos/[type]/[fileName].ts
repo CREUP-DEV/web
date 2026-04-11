@@ -1,26 +1,14 @@
 import { createError, defineEventHandler, getRouterParam, getRequestURL } from 'h3'
 import { proxyExternalAssetBySource } from '../../../utils/externalAssetProxy'
+import { getPublicApiErrorMessage } from '../../../utils/apiErrorMessages'
 import { resolvePolicyDocumentSourceByTypeAndFileName } from '../../../utils/policyDocumentDownloads'
-import { getRequestLocaleContext } from '../../../utils/requestLocale'
 import {
   policyDocumentFileNameParamSchema,
   policyDocumentTypeRouteParamSchema,
 } from '../../../utils/validation'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
-
-const messagesByLocale = {
-  en: {
-    notFound: 'Document not found.',
-  },
-  es: {
-    notFound: 'Documento no encontrado.',
-  },
-}
 
 export default defineEventHandler(async (event) => {
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
+  const notFoundMessage = getPublicApiErrorMessage(event, 'documentNotFound')
   const parsedType = policyDocumentTypeRouteParamSchema.safeParse({
     type: getRouterParam(event, 'type'),
   })
@@ -28,7 +16,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedType.success) {
     throw createError({
       statusCode: 404,
-      statusMessage: messages.notFound,
+      message: notFoundMessage,
     })
   }
 
@@ -40,7 +28,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedFileName.success) {
     throw createError({
       statusCode: 404,
-      statusMessage: messages.notFound,
+      message: notFoundMessage,
     })
   }
 
@@ -53,7 +41,7 @@ export default defineEventHandler(async (event) => {
   if (!sourceUrl) {
     throw createError({
       statusCode: 404,
-      statusMessage: messages.notFound,
+      message: notFoundMessage,
     })
   }
 

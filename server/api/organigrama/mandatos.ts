@@ -1,4 +1,4 @@
-import { createError, defineEventHandler } from 'h3'
+import { createError } from 'h3'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
@@ -8,6 +8,7 @@ import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
 import { logError } from '../../utils/logger'
 import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
 import { externalMandatesResponseSchema } from '../../utils/validation'
+import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../../utils/publicRouteCache'
 
 interface MandateOutput {
   id: number
@@ -16,51 +17,58 @@ interface MandateOutput {
   isCurrent: boolean
 }
 
-export default defineEventHandler(async (event) => {
-  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
-  const cacheOptions = getExternalApiCacheOptions(event)
+export default defineCachedEventHandler(
+  async (event) => {
+    const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
+    const cacheOptions = getExternalApiCacheOptions(event)
 
-  setExternalApiCacheHeaders(event, cacheOptions)
+    setExternalApiCacheHeaders(event, cacheOptions)
 
-  return withExternalApiSWRCache(
-    `external-api:organigrama-mandatos-route:${configuredBaseUrl}`,
-    async () => {
-      const endpoint = new URL('/api/organigrama/mandatos', configuredBaseUrl).toString()
+    return withExternalApiSWRCache(
+      `external-api:organigrama-mandatos-route:${configuredBaseUrl}`,
+      async () => {
+        const endpoint = new URL('/api/organigrama/mandatos', configuredBaseUrl).toString()
 
-      let payload: unknown
-      try {
-        payload = await $fetch(endpoint)
-      } catch (error) {
-        logError('external.mandates-route.fetch', error, { endpoint }, event)
-        throw createError({
-          statusCode: 502,
-          message: getPublicApiErrorMessage(event, 'mandatesUnavailable'),
-        })
-      }
+        let payload: unknown
+        try {
+          payload = await $fetch(endpoint)
+        } catch (error) {
+          logError('external.mandates-route.fetch', error, { endpoint }, event)
+          throw createError({
+            statusCode: 502,
+            message: getPublicApiErrorMessage(event, 'mandatesUnavailable'),
+          })
+        }
 
-      const parsed = externalMandatesResponseSchema.safeParse(payload)
-      if (!parsed.success) {
-        logError('external.mandates-route.invalid-payload', parsed.error, { endpoint }, event)
-        throw createError({
-          statusCode: 502,
-          message: getPublicApiErrorMessage(event, 'mandatesUnavailable'),
-        })
-      }
+        const parsed = externalMandatesResponseSchema.safeParse(payload)
+        if (!parsed.success) {
+          logError('external.mandates-route.invalid-payload', parsed.error, { endpoint }, event)
+          throw createError({
+            statusCode: 502,
+            message: getPublicApiErrorMessage(event, 'mandatesUnavailable'),
+          })
+        }
 
-      const mandates: MandateOutput[] = parsed.data.data
-        .sort((a, b) => b.start_date.localeCompare(a.start_date))
-        .map((m) => ({
-          id: m.id,
-          startDate: m.start_date,
-          endDate: m.end_date,
-          isCurrent: m.is_current,
-        }))
+        const mandates: MandateOutput[] = parsed.data.data
+          .sort((a, b) => b.start_date.localeCompare(a.start_date))
+          .map((m) => ({
+            id: m.id,
+            startDate: m.start_date,
+            endDate: m.end_date,
+            isCurrent: m.is_current,
+          }))
 
-      return {
-        mandates,
-        generatedAt: parsed.data.generated_at ?? null,
-      }
-    },
-    cacheOptions
-  )
-})
+        return {
+          mandates,
+          generatedAt: parsed.data.generated_at ?? null,
+        }
+      },
+      cacheOptions
+    )
+  },
+  {
+    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    getKey: (event) =>
+      buildPublicRouteCacheKey(event, 'organigrama-mandatos', { includeLocale: false }),
+  }
+)

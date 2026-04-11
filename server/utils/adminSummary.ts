@@ -229,6 +229,7 @@ async function getAdminDashboardData() {
       columns: {
         monthKey: true,
         active: true,
+        publicVisible: true,
         sentAt: true,
         lastDeliveryWorkerToken: true,
         updatedAt: true,
@@ -581,12 +582,12 @@ export async function getAdminDashboardSummary() {
           sectionKey: 'newsletter',
           title: `Newsletter ${formatNewsletterMonth(latestNewsletter.monthKey)}`,
           description: latestNewsletter.lastDeliveryWorkerToken
-            ? 'Enviándose ahora'
+            ? `Enviándose ahora · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`
             : latestNewsletter.sentAt
-              ? 'Ya enviada'
-              : latestNewsletter.active
-                ? 'Pendiente de envío'
-                : 'Guardada como inactiva',
+              ? `Ya enviada · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`
+              : `${latestNewsletter.active ? 'Envío habilitado' : 'Envío deshabilitado'} · ${
+                  latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'
+                }`,
           to: '/admin/newsletter',
           updatedAt: latestNewsletter.updatedAt,
         }

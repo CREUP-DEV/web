@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import LegalEn from '~/components/legal/LegalEn.vue'
-import LegalEs from '~/components/legal/LegalEs.vue'
+import LegalEn from '@/components/legal/LegalEn.vue'
+import LegalEs from '@/components/legal/LegalEs.vue'
 
 const { t, locale } = useI18n()
 const { defaultLocale } = useLocales()

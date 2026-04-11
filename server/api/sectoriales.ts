@@ -1,10 +1,16 @@
-import { defineEventHandler } from 'h3'
 import { getExternalApiCacheOptions, setExternalApiCacheHeaders } from '../utils/externalApiCache'
 import { getSectorialesResponse } from '../utils/publicMembers'
+import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 
-export default defineEventHandler(async (event) => {
-  const cacheOptions = getExternalApiCacheOptions(event)
-  setExternalApiCacheHeaders(event, cacheOptions)
+export default defineCachedEventHandler(
+  async (event) => {
+    const cacheOptions = getExternalApiCacheOptions(event)
+    setExternalApiCacheHeaders(event, cacheOptions)
 
-  return getSectorialesResponse(event)
-})
+    return getSectorialesResponse(event)
+  },
+  {
+    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    getKey: (event) => buildPublicRouteCacheKey(event, 'sectoriales', { includeLocale: false }),
+  }
+)

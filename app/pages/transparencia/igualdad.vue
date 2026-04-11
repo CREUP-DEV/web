@@ -27,8 +27,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const supportMailto = 'mailto:punto.seguro@creup.es'
 
-const accentButtonClass =
-  'bg-[#513269] text-white hover:bg-[#452a59] focus-visible:ring-2 focus-visible:ring-[#513269]/40 focus-visible:outline-none dark:bg-[#6d4a88] dark:hover:bg-[#7b5599]'
+const accentButtonClass = 'equality-accent-button'
 
 const actionSteps = computed(() => [
   {
@@ -156,9 +155,7 @@ const {
 <template>
   <UContainer class="py-8 sm:py-12">
     <article class="mx-auto max-w-6xl space-y-10">
-      <header
-        class="overflow-hidden rounded-3xl border border-[rgba(81,50,105,0.16)] bg-[linear-gradient(135deg,rgba(81,50,105,0.14),rgba(81,50,105,0.04))] p-6 sm:p-8 lg:p-10 dark:border-[rgba(216,190,231,0.2)] dark:bg-[linear-gradient(135deg,rgba(81,50,105,0.32),rgba(81,50,105,0.14))]"
-      >
+      <header class="equality-hero-surface overflow-hidden rounded-3xl border p-6 sm:p-8 lg:p-10">
         <div class="max-w-4xl space-y-4">
           <div class="space-y-3">
             <h1 class="text-3xl font-bold text-balance sm:text-4xl">
@@ -220,7 +217,7 @@ const {
                   <div class="flex items-start gap-3">
                     <span
                       aria-hidden="true"
-                      class="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                      class="equality-icon-badge mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl"
                     >
                       <UIcon :name="resource.icon" class="size-5" />
                     </span>
@@ -279,7 +276,7 @@ const {
               <div class="space-y-4">
                 <span
                   aria-hidden="true"
-                  class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                  class="equality-icon-badge flex size-11 items-center justify-center rounded-2xl"
                 >
                   <UIcon :name="step.icon" class="size-5" />
                 </span>
@@ -313,14 +310,14 @@ const {
           class="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.95fr)]"
         >
           <UCard
-            class="border-[rgba(81,50,105,0.16)] bg-[linear-gradient(135deg,rgba(81,50,105,0.1),rgba(81,50,105,0.03))] dark:border-[rgba(216,190,231,0.18)] dark:bg-[linear-gradient(135deg,rgba(81,50,105,0.28),rgba(81,50,105,0.1))]"
+            class="equality-panel-surface"
             :class="entranceClasses(pointSafeShouldAnimate, pointSafeVisible, pointSafePending)"
             :style="entranceStyle(pointSafeVisible, pointSafeShouldAnimate, 0)"
           >
             <div class="space-y-4">
               <span
                 aria-hidden="true"
-                class="flex size-11 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.14)] text-[#513269] dark:bg-[rgba(216,190,231,0.18)] dark:text-[#d8bee7]"
+                class="equality-icon-badge-strong flex size-11 items-center justify-center rounded-2xl"
               >
                 <UIcon name="i-tabler-shield-heart" class="size-5" />
               </span>
@@ -344,7 +341,7 @@ const {
           </UCard>
 
           <div
-            class="rounded-3xl border border-[rgba(81,50,105,0.12)] bg-white/70 p-6 backdrop-blur-sm dark:border-[rgba(216,190,231,0.16)] dark:bg-white/4"
+            class="equality-muted-surface bg-background/70 dark:bg-background/40 rounded-3xl border p-6 backdrop-blur-sm"
             :class="entranceClasses(pointSafeShouldAnimate, pointSafeVisible, pointSafePending)"
             :style="entranceStyle(pointSafeVisible, pointSafeShouldAnimate, 1)"
           >
@@ -352,11 +349,11 @@ const {
               <li
                 v-for="item in pointSafeItems"
                 :key="item.key"
-                class="flex items-start gap-4 border-b border-[rgba(81,50,105,0.08)] pb-5 last:border-b-0 last:pb-0 dark:border-[rgba(216,190,231,0.12)]"
+                class="equality-divider flex items-start gap-4 border-b pb-5 last:border-b-0 last:pb-0"
               >
                 <span
                   aria-hidden="true"
-                  class="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                  class="equality-icon-badge mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl"
                 >
                   <UIcon :name="item.icon" class="size-5" />
                 </span>
@@ -396,7 +393,7 @@ const {
               <div class="flex items-center gap-3">
                 <span
                   aria-hidden="true"
-                  class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[rgba(81,50,105,0.12)] text-[#513269] dark:bg-[rgba(216,190,231,0.16)] dark:text-[#d8bee7]"
+                  class="equality-icon-badge flex size-10 shrink-0 items-center justify-center rounded-2xl"
                 >
                   <UIcon :name="item.icon" class="size-5" />
                 </span>
@@ -411,7 +408,7 @@ const {
 
       <UCard
         ref="supportRef"
-        class="border-[rgba(81,50,105,0.16)] bg-[linear-gradient(135deg,rgba(81,50,105,0.1),rgba(81,50,105,0.03))] dark:border-[rgba(216,190,231,0.18)] dark:bg-[linear-gradient(135deg,rgba(81,50,105,0.28),rgba(81,50,105,0.1))]"
+        class="equality-panel-surface"
         :class="entranceClasses(supportShouldAnimate, supportVisible, supportPending)"
         :style="entranceStyle(supportVisible, supportShouldAnimate, 0)"
       >

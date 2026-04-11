@@ -1,32 +1,21 @@
 import type { externalOrganigramaMemberSocialSchema } from './validation'
 import type { ExternalApiCacheOptions } from './externalApiCache'
 import type { H3Event } from 'h3'
+import { getDefaultPublicApiErrorMessage, getPublicApiErrorMessage } from './apiErrorMessages'
 import { withExternalApiSWRCache } from './externalApiCache'
 import { toExternalImageProxyUrl } from './externalAssetProxy'
 import { logError } from './logger'
-import { getRequestLocaleContext } from './requestLocale'
 import { externalMandatesResponseSchema, externalMandateDetailResponseSchema } from './validation'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
 
-const messagesByLocale = {
-  en: {
-    mandatesUnavailable: 'Mandate data is temporarily unavailable.',
-    mandateDetailUnavailable: 'Mandate detail is temporarily unavailable.',
-  },
-  es: {
-    mandatesUnavailable: 'La información de los mandatos no está disponible temporalmente.',
-    mandateDetailUnavailable: 'El detalle del mandato no está disponible temporalmente.',
-  },
-}
+const getMandatesUnavailableMessage = (event?: H3Event) =>
+  event
+    ? getPublicApiErrorMessage(event, 'mandatesUnavailable')
+    : getDefaultPublicApiErrorMessage('mandatesUnavailable')
 
-const getMessages = (event?: H3Event) => {
-  if (!event) {
-    return messagesByLocale.es
-  }
-
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  return pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
-}
+const getMandateDetailUnavailableMessage = (event?: H3Event) =>
+  event
+    ? getPublicApiErrorMessage(event, 'mandateDetailUnavailable')
+    : getDefaultPublicApiErrorMessage('mandateDetailUnavailable')
 
 export const SUPPORTED_NETWORKS = [
   'website',
@@ -172,7 +161,7 @@ export async function fetchMandatesList(
   cacheOptions: ExternalApiCacheOptions,
   event?: H3Event
 ): Promise<MandateInfoOutput[]> {
-  const messages = getMessages(event)
+  const unavailableMessage = getMandatesUnavailableMessage(event)
 
   return withExternalApiSWRCache(
     `external-api:organigrama-mandates:${externalBaseUrl}`,
@@ -186,7 +175,7 @@ export async function fetchMandatesList(
         logError('external.mandates.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.mandatesUnavailable,
+          message: unavailableMessage,
         })
       }
 
@@ -195,7 +184,7 @@ export async function fetchMandatesList(
         logError('external.mandates.invalid-payload', parsed.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.mandatesUnavailable,
+          message: unavailableMessage,
         })
       }
 
@@ -218,7 +207,7 @@ export async function fetchMandateDetail(
   cacheOptions: ExternalApiCacheOptions,
   event?: H3Event
 ): Promise<MandateDetailOutput> {
-  const messages = getMessages(event)
+  const unavailableMessage = getMandateDetailUnavailableMessage(event)
 
   return withExternalApiSWRCache(
     `external-api:organigrama-mandate-detail:${externalBaseUrl}:${mandateId}`,
@@ -232,7 +221,7 @@ export async function fetchMandateDetail(
         logError('external.mandate-detail.fetch', error, { endpoint, mandateId }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.mandateDetailUnavailable,
+          message: unavailableMessage,
         })
       }
 
@@ -249,7 +238,7 @@ export async function fetchMandateDetail(
         )
         throw createError({
           statusCode: 502,
-          statusMessage: messages.mandateDetailUnavailable,
+          message: unavailableMessage,
         })
       }
 

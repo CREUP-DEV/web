@@ -1,33 +1,26 @@
 import type { MembersResponse, SectorialesResponse } from '@/types/members'
 
 export const useMembersPageData = async () => {
-  const { t } = useI18n()
   const localeApiHeaders = useLocaleApiHeaders()
 
   const [
-    { data: membersData, error: membersError },
-    { data: sectorialesData, error: sectorialesError },
+    { data: membersData, error: membersError, pending: membersPending },
+    { data: sectorialesData, error: sectorialesError, pending: sectorialesPending },
   ] = await Promise.all([
     useFetch<MembersResponse>('/api/members', {
       headers: localeApiHeaders,
+      lazy: true,
     }),
     useFetch<SectorialesResponse>('/api/sectoriales', {
       headers: localeApiHeaders,
+      lazy: true,
     }),
   ])
-
-  const loadError = membersError.value ?? sectorialesError.value
-
-  if (loadError) {
-    throw createError({
-      statusCode: loadError.statusCode === 404 ? 404 : 503,
-      fatal: true,
-      message: loadError.statusCode === 404 ? t('error.notFound') : t('members.loadError'),
-    })
-  }
 
   return {
     allMembers: computed(() => membersData.value?.members ?? []),
     allSectoriales: computed(() => sectorialesData.value?.sectoriales ?? []),
+    pending: computed(() => membersPending.value || sectorialesPending.value),
+    error: computed(() => membersError.value ?? sectorialesError.value ?? null),
   }
 }

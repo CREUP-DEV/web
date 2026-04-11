@@ -1,18 +1,13 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
 import { sanitizePressTranslations } from '../../../utils/pressTranslation'
-import {
-  idRouteParamSchema,
-  updatePressArticleSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { throwMethodNotAllowed } from '../../../utils/throwMethodNotAllowed'
+import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
-import { updatePressArticle } from '../../../services/pressArticleService'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
@@ -43,14 +38,6 @@ export default defineEventHandler(async (event) => {
         translations: sanitizePressTranslations(item.translations),
       },
     }
-  }
-
-  // PUT - Update press article
-  if (event.method === 'PUT') {
-    const body = await readBody(event)
-    const validated = validateBody(updatePressArticleSchema, body)
-    const item = await updatePressArticle(id, validated, event)
-    return { item }
   }
 
   // DELETE - Delete press article
@@ -88,5 +75,5 @@ export default defineEventHandler(async (event) => {
     return { success: true }
   }
 
-  throw createError({ statusCode: 405, message: 'Método no permitido' })
+  throwMethodNotAllowed()
 })

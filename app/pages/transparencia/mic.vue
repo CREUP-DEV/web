@@ -56,6 +56,11 @@ const corporateColors: CorporateColor[] = [
 const micAssets = computed(() => micManifest.value ?? DEFAULT_MIC_MANIFEST)
 
 const assetUrl = (path: string) => `${micAssets.value.basePath}/${path}`
+const previewAssetUrl = (sectionSlug: string, variantSlug: string) =>
+  assetUrl(`${sectionSlug}-${variantSlug}.png`)
+const previewSurfaceStyle = (variantSlug: string) => ({
+  backgroundColor: variantSlug === 'blanco' || variantSlug === 'beige' ? '#163866' : '#F5EEE6',
+})
 
 const {
   elRef: introRef,
@@ -156,12 +161,20 @@ const copyColorToClipboard = (text: string) =>
                     :key="`preview-${variant.key}`"
                     class="px-2 py-3 text-center"
                   >
-                    <img
-                      :src="assetUrl(`${section.slug}-${variant.slug}-preview.jpg`)"
-                      :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
-                      class="mx-auto h-auto max-h-20 w-auto max-w-full rounded"
-                      loading="lazy"
-                    />
+                    <div
+                      class="border-default mx-auto flex min-h-24 max-w-48 items-center justify-center rounded-lg border p-4"
+                      :style="previewSurfaceStyle(variant.slug)"
+                    >
+                      <NuxtImg
+                        :src="previewAssetUrl(section.slug, variant.slug)"
+                        :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
+                        class="h-auto max-h-16 w-auto max-w-full"
+                        width="320"
+                        height="120"
+                        sizes="(min-width: 1024px) 192px, 160px"
+                        loading="lazy"
+                      />
+                    </div>
                   </td>
                 </tr>
                 <tr class="border-default border-b">
@@ -213,12 +226,20 @@ const copyColorToClipboard = (text: string) =>
               <span class="text-muted text-xs font-medium">
                 {{ t(variant.labelKey) }}
               </span>
-              <img
-                :src="assetUrl(`${section.slug}-${variant.slug}-preview.jpg`)"
-                :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
-                class="h-auto max-h-16 w-auto max-w-full rounded"
-                loading="lazy"
-              />
+              <div
+                class="border-default flex min-h-24 w-full items-center justify-center rounded-lg border p-4"
+                :style="previewSurfaceStyle(variant.slug)"
+              >
+                <NuxtImg
+                  :src="previewAssetUrl(section.slug, variant.slug)"
+                  :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
+                  class="h-auto max-h-14 w-auto max-w-full"
+                  width="240"
+                  height="96"
+                  sizes="160px"
+                  loading="lazy"
+                />
+              </div>
               <div class="flex gap-1">
                 <UButton
                   :href="assetUrl(`${section.slug}-${variant.slug}.svg`)"

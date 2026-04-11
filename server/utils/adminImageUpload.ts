@@ -21,8 +21,11 @@ export const ALLOWED_ADMIN_IMAGE_EXTENSIONS = [
 const VECTOR_IMAGE_EXTENSIONS = new Set(['.svg'])
 const OUTPUT_IMAGE_EXTENSIONS = new Set([...ALLOWED_ADMIN_IMAGE_EXTENSIONS, '.webp'])
 const OUTPUT_IMAGE_EXTENSION_LIST = Array.from(OUTPUT_IMAGE_EXTENSIONS)
+// 10000px per side: above typical print resolution (300dpi × A4); prevents decompression bomb while covering legitimate large images
 const MAX_RASTER_IMAGE_DIMENSION = 10000
+// ~80MP total pixel cap across all frames; prevents memory exhaustion during Sharp processing
 const MAX_RASTER_IMAGE_PIXELS = 80_000_000
+// 100 frame limit for animated GIFs/WebP; prevents CPU exhaustion on crafted animations
 const MAX_RASTER_IMAGE_FRAMES = 100
 
 const svgPurifier = createDOMPurify(new JSDOM('').window as unknown as WindowLike)
@@ -229,6 +232,7 @@ interface SaveAdminImageOptions {
   temporary?: boolean
 }
 
+// 5MB default upload cap; individual endpoints can override with maxFileSizeBytes
 const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024
 
 async function convertRasterImageToWebp(data: Buffer) {

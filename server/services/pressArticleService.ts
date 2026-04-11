@@ -20,9 +20,10 @@ import {
 } from '../utils/pressTranslation'
 import { generatePressSlug } from '../utils/slug'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
+import { SUPPORTED_LOCALE_CODES, type SupportedLocaleCode } from '~~/shared/utils/locale'
 import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import type { z } from 'zod'
-import type { createPressArticleSchema } from '../utils/validation'
+import type { createPressArticleSchema, updatePressArticleSchema } from '../utils/validation'
 
 function randomSlugSuffix(): string {
   return Math.random().toString(16).slice(2, 6)
@@ -42,8 +43,9 @@ const IMAGE_UPLOAD_DIR = 'public/prensa/imagenes'
 const PDF_UPLOAD_DIR = 'public/prensa/documentos'
 
 type PressArticleData = z.infer<typeof createPressArticleSchema>
+type UpdatePressArticleData = z.infer<typeof updatePressArticleSchema>
 type PressArticleTranslationRow = {
-  locale: string
+  locale: SupportedLocaleCode
   title: string
   description: string | null
   contentHtml: string | null
@@ -86,7 +88,10 @@ function formatItem(item: PressArticleQueryItem | null) {
   return {
     ...item,
     publishedAt: dateValueToDateOnly(item.publishedAt),
-    translations: sanitizePressTranslations(item.translations),
+    translations: sanitizePressTranslations(item.translations).filter(
+      (t): t is typeof t & { locale: SupportedLocaleCode } =>
+        (SUPPORTED_LOCALE_CODES as readonly string[]).includes(t.locale)
+    ),
   }
 }
 
@@ -158,7 +163,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
         })
         .returning()
 
-      if (!item) throw createError({ statusCode: 500, statusMessage: 'Error al crear el artículo' })
+      if (!item) throw createError({ statusCode: 500, message: 'Error al crear el artículo' })
 
       if (data.translations.length > 0) {
         await tx
@@ -240,7 +245,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
   }
 }
 
-export async function updatePressArticle(id: string, data: PressArticleData, event: H3Event) {
+export async function updatePressArticle(id: string, data: UpdatePressArticleData, event: H3Event) {
   let previousImage: string | null = null
   let previousPdfUrl: string | null = null
   let image: string | null = null
@@ -376,6 +381,20 @@ export async function updatePressArticle(id: string, data: PressArticleData, eve
     })
 
     if (!existingItem) throw createError({ statusCode: 404, message: 'No encontrado' })
+
+    if (data.updatedAt) {
+      const clientUpdatedAt = new Date(data.updatedAt).getTime()
+      const serverUpdatedAt = existingItem.updatedAt
+        ? new Date(existingItem.updatedAt).getTime()
+        : 0
+      if (clientUpdatedAt !== serverUpdatedAt) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
+    }
 
     const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
     if (!defaultTitle) throw new Error('El título en español es obligatorio')

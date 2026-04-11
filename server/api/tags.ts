@@ -1,5 +1,5 @@
 import { createError, setHeader } from 'h3'
-import { and, asc, eq, inArray, type SQL } from 'drizzle-orm'
+import { and, asc, eq, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTags, tags } from '../db/schema'
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
@@ -22,7 +22,10 @@ export default defineCachedEventHandler(
     const type = query.type
 
     try {
-      const articleConditions: SQL[] = [eq(pressArticles.active, true)]
+      const articleConditions: SQL[] = [
+        eq(pressArticles.active, true),
+        lte(pressArticles.publishedAt, sql`CURRENT_DATE`),
+      ]
 
       if (type) {
         articleConditions.push(eq(pressArticles.type, type))
@@ -41,11 +44,18 @@ export default defineCachedEventHandler(
       const tagsList = await db.query.tags.findMany({
         where: inArray(tags.id, tagIdsWithArticles),
         orderBy: [asc(tags.order), asc(tags.id)],
-        with: { translations: true },
+        with: {
+          translations: {
+            columns: {
+              locale: true,
+              name: true,
+            },
+          },
+        },
       })
 
       return {
-        tags: tagsList.map((tag) => {
+        items: tagsList.map((tag) => {
           const trans = pickLocalizedEntry(tag.translations, locale, locales, fallbackLocale)
           return {
             slug: tag.slug,

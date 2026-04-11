@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+
 definePageMeta({
   layout: 'admin',
   title: 'Editar artículo de prensa',
@@ -29,13 +31,25 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
   try {
     await $fetch(`/api/admin/press/${articleId.value}`, {
       method: 'PUT',
-      body: payload,
+      body: { ...payload, updatedAt: article.value?.updatedAt },
     })
     toast.add({ title: 'Artículo actualizado correctamente', color: 'success' })
     router.push('/admin/press')
-  } catch (e) {
-    console.error('Error updating article:', e)
-    toast.add({ title: 'No se pudo actualizar el artículo', color: 'error' })
+  } catch (e: unknown) {
+    const status = (e as { statusCode?: number })?.statusCode
+    if (status === 409) {
+      toast.add({
+        title: 'Conflicto al guardar',
+        description:
+          'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        color: 'warning',
+      })
+    } else {
+      toast.add({
+        title: getApiErrorMessage(e, 'No se pudo actualizar el artículo'),
+        color: 'error',
+      })
+    }
   } finally {
     isSubmitting.value = false
   }

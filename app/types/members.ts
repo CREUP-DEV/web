@@ -50,7 +50,7 @@ export interface OrganizationDetailModalData {
   aboutTitle: string
   imageAlt: string
   description: string | null
-  initials: string
+  initials: string | null
   communityLabel: string | null
   logoLight: string | null
   logoDark: string | null
@@ -66,5 +66,4 @@ export interface OrganizationDetailModalData {
     network: Exclude<SocialNetworkEntry['network'], 'website' | 'email'>
     href: string
   }>
-  copyEmailAriaLabel: string | null
 }

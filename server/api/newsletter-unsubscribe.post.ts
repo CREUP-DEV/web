@@ -2,8 +2,17 @@ import { defineEventHandler, getQuery, readBody, setHeader } from 'h3'
 import { buildLocalizedPath } from '../utils/urlBuilder'
 import { newsletterTokenQuerySchema, validateBody } from '../utils/validation'
 import { performNewsletterUnsubscribeAction } from '../utils/newsletterSubscriptionActions'
+import { enforceRateLimit } from '../utils/rateLimit'
+import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, {
+    namespace: 'newsletter-unsubscribe',
+    maxRequests: 10,
+    windowMs: 15 * 60 * 1000,
+    errorMessage: getPublicApiErrorMessage(event, 'tooManyAttempts'),
+  })
+
   setHeader(event, 'cache-control', 'no-store')
 
   const body = await readBody(event)

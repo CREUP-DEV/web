@@ -102,7 +102,6 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     externalApiBaseUrl: process.env.EXTERNAL_API_BASE_URL,
-    externalAssetProxySecret: process.env.EXTERNAL_ASSET_PROXY_SECRET,
     externalAssetProxyAllowedOrigins:
       process.env.EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS || process.env.EXTERNAL_API_BASE_URL,
     externalAssetProxyTimeoutMs: process.env.EXTERNAL_ASSET_PROXY_TIMEOUT_MS,

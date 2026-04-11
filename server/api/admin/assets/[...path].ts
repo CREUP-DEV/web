@@ -6,6 +6,7 @@ import {
   isInternalAdminStoragePath,
   resolveAdminStoredAbsolutePath,
 } from '../../../utils/adminStoredFile'
+import { throwMethodNotAllowed } from '../../../utils/throwMethodNotAllowed'
 import { adminAssetPathRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 
 const contentTypeByExtension: Record<string, string> = {
@@ -23,7 +24,7 @@ export default defineEventHandler(async (event) => {
   const method = getMethod(event).toUpperCase()
 
   if (method !== 'GET' && method !== 'HEAD') {
-    throw createError({ statusCode: 405, message: 'Método no permitido' })
+    throwMethodNotAllowed()
   }
 
   const { path } = validateRouteParams(event, adminAssetPathRouteParamSchema)

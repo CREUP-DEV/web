@@ -191,10 +191,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    ref="mapContainerRef"
-    class="relative w-full [--map-active-fill:#fecaca] [--map-active-hover-fill:#fb7185] [--map-active-hover-opacity:1] [--map-active-hover-stroke:#991b1b] [--map-active-opacity:1] [--map-active-stroke:#b91c1c] [--map-inactive-fill:#d1d5db] [--map-inactive-hover-fill:#94a3b8] [--map-inactive-hover-stroke:#64748b] [--map-inactive-stroke:#9ca3af] [--map-selected-fill:#dc2626] [--map-selected-hover-fill:#ef4444] [--map-selected-hover-stroke:#7f1d1d] [--map-selected-stroke:#991b1b] [--map-watermark-fill:#000] dark:[--map-active-fill:#b23c50] dark:[--map-active-hover-fill:#c95769] dark:[--map-active-hover-opacity:1] dark:[--map-active-hover-stroke:#ffd7dd] dark:[--map-active-opacity:1] dark:[--map-active-stroke:#f1a7b1] dark:[--map-inactive-fill:#3b475d] dark:[--map-inactive-hover-fill:#51627d] dark:[--map-inactive-hover-stroke:#d7dee8] dark:[--map-inactive-stroke:#71839e] dark:[--map-selected-fill:#e16b7e] dark:[--map-selected-hover-fill:#f08a99] dark:[--map-selected-hover-stroke:#ffe5e9] dark:[--map-selected-stroke:#ffd0d7] dark:[--map-watermark-fill:#d1d5db]"
-  >
+  <div ref="mapContainerRef" class="relative w-full">
     <svg
       viewBox="0 0 1282.91 843.72"
       class="h-auto w-full"
@@ -253,12 +250,12 @@ onBeforeUnmount(() => {
       v-show="tooltip.visible"
       :id="tooltipId"
       ref="tooltipRef"
-      class="pointer-events-none absolute z-20 min-w-32 rounded-md bg-black/85 px-3 py-2 text-xs text-white shadow-lg"
+      class="members-map-tooltip pointer-events-none absolute z-20 min-w-32 rounded-md px-3 py-2 text-xs shadow-lg"
       style="left: 0; top: 0; transform: translate(-50%, calc(-100% - 0.5rem))"
       role="tooltip"
     >
       <p class="font-semibold">{{ tooltip.title }}</p>
-      <p class="mt-0.5 text-white/80">{{ tooltip.meta }}</p>
+      <p class="members-map-tooltip-meta mt-0.5">{{ tooltip.meta }}</p>
     </div>
 
     <div class="mt-4 flex justify-end px-1">
@@ -266,7 +263,7 @@ onBeforeUnmount(() => {
         href="https://www.mapchart.net/"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-muted rounded-full bg-white/85 px-2.5 py-1 text-[11px] leading-none shadow-sm ring-1 ring-gray-200/70 backdrop-blur transition-colors hover:text-gray-900 dark:bg-gray-900/85 dark:ring-gray-700/70 dark:hover:text-white"
+        class="text-muted hover:text-foreground bg-background/85 rounded-full px-2.5 py-1 text-[11px] leading-none shadow-sm backdrop-blur transition-colors"
       >
         Created with mapchart.net
       </a>
@@ -276,8 +273,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .map-region {
-  fill: #d1dbdd;
-  stroke: #6a0707;
+  fill: var(--members-map-base-fill);
+  stroke: var(--members-map-base-stroke);
   stroke-width: 1.5;
   transition:
     fill 0.15s ease,
@@ -307,43 +304,41 @@ onBeforeUnmount(() => {
 
 .map-region--hovered,
 .map-region:focus-visible {
-  filter: drop-shadow(0 8px 18px rgb(106 7 7 / 0.18));
+  filter: drop-shadow(0 8px 18px var(--members-map-hover-shadow));
   transform: translateY(-1px) scale(1.01);
 }
 
 .map-region--selected {
-  fill: var(--map-selected-fill);
-  stroke: var(--map-selected-stroke);
+  fill: var(--members-map-selected-fill);
+  stroke: var(--members-map-selected-stroke);
 }
 
 .map-region--selected:hover,
 .map-region--selected:focus-visible {
-  fill: var(--map-selected-hover-fill);
-  stroke: var(--map-selected-hover-stroke);
+  fill: var(--members-map-selected-hover-fill);
+  stroke: var(--members-map-selected-hover-stroke);
 }
 
 .map-region--active {
-  fill: var(--map-active-fill);
-  stroke: var(--map-active-stroke);
-  opacity: var(--map-active-opacity);
+  fill: var(--members-map-active-fill);
+  stroke: var(--members-map-active-stroke);
 }
 
 .map-region--active:hover,
 .map-region--active:focus-visible {
-  fill: var(--map-active-hover-fill);
-  stroke: var(--map-active-hover-stroke);
-  opacity: var(--map-active-hover-opacity);
+  fill: var(--members-map-active-hover-fill);
+  stroke: var(--members-map-active-hover-stroke);
 }
 
 .map-region--inactive {
-  fill: var(--map-inactive-fill);
-  stroke: var(--map-inactive-stroke);
+  fill: var(--members-map-inactive-fill);
+  stroke: var(--members-map-inactive-stroke);
 }
 
 .map-region--inactive:hover,
 .map-region--inactive:focus-visible {
-  fill: var(--map-inactive-hover-fill);
-  stroke: var(--map-inactive-hover-stroke);
+  fill: var(--members-map-inactive-hover-fill);
+  stroke: var(--members-map-inactive-hover-stroke);
 }
 
 .map-inset-frame {
@@ -351,6 +346,6 @@ onBeforeUnmount(() => {
   stroke: currentColor;
   stroke-width: 1.5;
   stroke-dasharray: 7 6;
-  opacity: 0.55;
+  opacity: var(--members-map-frame-opacity);
 }
 </style>

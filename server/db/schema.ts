@@ -13,13 +13,12 @@ import {
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
-import { SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
+import { SUPPORTED_LOCALE_CODES } from '../../shared/constants/locales'
 
 const cuid = () => createId()
 
-const SUPPORTED_LOCALE_SQL = sql.join(
-  SUPPORTED_LOCALE_CODES.map((locale) => sql`${locale}`),
-  sql.raw(', ')
+const SUPPORTED_LOCALE_SQL = sql.raw(
+  SUPPORTED_LOCALE_CODES.map((locale) => `'${locale.replace(/'/g, "''")}'`).join(', ')
 )
 
 const buildSupportedLocaleCheck = (localeColumn: unknown) =>
@@ -35,18 +34,22 @@ export const pressArticleTypeEnum = pgEnum('press_article_type', [
 
 // Carousel items
 
-export const carouselItems = pgTable('carousel_items', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  image: text('image').notNull(),
-  href: text('href').notNull(),
-  order: integer('order').default(0).notNull(),
-  active: boolean('active').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const carouselItems = pgTable(
+  'carousel_items',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    image: text('image').notNull(),
+    href: text('href').notNull(),
+    order: integer('order').default(0).notNull(),
+    active: boolean('active').default(true).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_carousel_items_active_order').on(table.active, table.order)]
+)
 
 export const carouselItemTranslations = pgTable(
   'carousel_item_translations',
@@ -180,6 +183,14 @@ export const pressArticleTranslations = pgTable(
     unique().on(table.locale, table.pressArticleId),
     check('press_article_translations_locale_check', buildSupportedLocaleCheck(table.locale)),
     index('idx_press_article_translations_article_id').on(table.pressArticleId),
+    index('idx_press_article_translations_title_trgm').using(
+      'gin',
+      sql`${table.title} gin_trgm_ops`
+    ),
+    index('idx_press_article_translations_description_trgm').using(
+      'gin',
+      sql`${table.description} gin_trgm_ops`
+    ),
   ]
 )
 
@@ -195,7 +206,10 @@ export const pressArticleTags = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique().on(table.pressArticleId, table.tagId)]
+  (table) => [
+    unique().on(table.pressArticleId, table.tagId),
+    index('idx_press_article_tags_tag_id').on(table.tagId),
+  ]
 )
 
 // Press Articles relations
@@ -247,18 +261,22 @@ export const pressDossier = pgTable(
 
 // Featured links
 
-export const featuredLinks = pgTable('featured_links', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  image: text('image').notNull(),
-  to: text('to').notNull(),
-  order: integer('order').default(0).notNull(),
-  active: boolean('active').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const featuredLinks = pgTable(
+  'featured_links',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    image: text('image').notNull(),
+    to: text('to').notNull(),
+    order: integer('order').default(0).notNull(),
+    active: boolean('active').default(true).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_featured_links_active_order').on(table.active, table.order)]
+)
 
 export const featuredLinkTranslations = pgTable(
   'featured_link_translations',
@@ -318,42 +336,50 @@ export const users = pgTable('users', {
     .$onUpdate(() => new Date()),
 })
 
-export const sessions = pgTable('sessions', {
-  id: text('id').primaryKey(),
-  expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
-  token: text('token').notNull().unique(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-  ipAddress: text('ip_address'),
-  userAgent: text('user_agent'),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-})
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
+    token: text('token').notNull().unique(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  (table) => [index('idx_sessions_user_id').on(table.userId)]
+)
 
-export const accounts = pgTable('accounts', {
-  id: text('id').primaryKey(),
-  accountId: text('account_id').notNull(),
-  providerId: text('provider_id').notNull(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  accessToken: text('access_token'),
-  refreshToken: text('refresh_token'),
-  idToken: text('id_token'),
-  accessTokenExpiresAt: timestamp('access_token_expires_at', { mode: 'date' }),
-  refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { mode: 'date' }),
-  scope: text('scope'),
-  password: text('password'),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const accounts = pgTable(
+  'accounts',
+  {
+    id: text('id').primaryKey(),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', { mode: 'date' }),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { mode: 'date' }),
+    scope: text('scope'),
+    password: text('password'),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_accounts_user_id').on(table.userId)]
+)
 
 export const verifications = pgTable('verifications', {
   id: text('id').primaryKey(),
@@ -417,23 +443,27 @@ export const teamAreaTranslationsRelations = relations(teamAreaTranslations, ({ 
 
 // Team members
 
-export const teamMembers = pgTable('team_members', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  slug: text('slug').notNull().unique(),
-  email: text('email').notNull(),
-  photo: text('photo'),
-  calendarId: text('calendar_id'),
-  order: integer('order').default(0).notNull(),
-  active: boolean('active').default(true).notNull(),
-  teamAreaId: text('team_area_id')
-    .notNull()
-    .references(() => teamAreas.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const teamMembers = pgTable(
+  'team_members',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    slug: text('slug').notNull().unique(),
+    email: text('email').notNull(),
+    photo: text('photo'),
+    calendarId: text('calendar_id'),
+    order: integer('order').default(0).notNull(),
+    active: boolean('active').default(true).notNull(),
+    teamAreaId: text('team_area_id')
+      .notNull()
+      .references(() => teamAreas.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_team_members_team_area_id').on(table.teamAreaId)]
+)
 
 export const teamMemberTranslations = pgTable(
   'team_member_translations',
@@ -490,32 +520,23 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 
 export type OrganizationMemberSocial = { network: string; value: string }
 
-export const organizationMembers = pgTable(
-  'organization_members',
-  {
-    id: text('id').primaryKey().$defaultFn(cuid),
-    slug: text('slug').notNull().unique(),
-    logo: text('logo'),
-    website: text('website'),
-    email: text('email'),
-    /** Each element must have { network: string, value: string }. */
-    socials: jsonb('socials').$type<OrganizationMemberSocial[]>().default([]).notNull(),
-    autonomousCommunity: text('autonomous_community').notNull(),
-    order: integer('order').default(0).notNull(),
-    active: boolean('active').default(true).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
-      .defaultNow()
-      .notNull()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    check(
-      'organization_members_socials_shape_check',
-      sql`is_valid_organization_member_socials(${table.socials})`
-    ),
-  ]
-)
+export const organizationMembers = pgTable('organization_members', {
+  id: text('id').primaryKey().$defaultFn(cuid),
+  slug: text('slug').notNull().unique(),
+  logo: text('logo'),
+  website: text('website'),
+  email: text('email'),
+  /** Each element must have { network: string, value: string }. */
+  socials: jsonb('socials').$type<OrganizationMemberSocial[]>().default([]).notNull(),
+  autonomousCommunity: text('autonomous_community').notNull(),
+  order: integer('order').default(0).notNull(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+})
 
 export const organizationMemberTranslations = pgTable(
   'organization_member_translations',
@@ -565,7 +586,10 @@ export const newsletters = pgTable(
     month: timestamp('month', { mode: 'date' }).notNull(),
     coverImage: text('cover_image').notNull(),
     pdfUrl: text('pdf_url').notNull(),
+    /** Controls whether the newsletter can be sent to subscribers */
     active: boolean('active').default(true).notNull(),
+    /** Controls whether the newsletter is visible in the public archive and sitemap */
+    publicVisible: boolean('public_visible').default(false).notNull(),
     /**
      * A non-null worker token signals "delivery in progress."
      * The `sending` boolean was redundant with this token; it has been removed.
@@ -593,6 +617,7 @@ export const newsletters = pgTable(
       table.sentAt,
       table.lastDeliveryWorkerToken
     ),
+    index('idx_newsletters_public_visible_month').on(table.publicVisible, table.month),
   ]
 )
 
@@ -639,6 +664,10 @@ export const newsletterSubscribers = pgTable(
     check(
       'newsletter_subscribers_consent_source_check',
       sql`${table.consentSource} in ('web_form', 'email_link', 'admin_manual', 'legacy_import', 'system')`
+    ),
+    check(
+      'newsletter_subscribers_locale_check',
+      sql`${table.locale} IS NULL OR ${buildSupportedLocaleCheck(table.locale)}`
     ),
   ]
 )
@@ -755,17 +784,21 @@ export const aboutPageContent = pgTable(
 
 // Equality documents
 
-export const equalityDocuments = pgTable('equality_documents', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  pdfUrl: text('pdf_url').notNull(),
-  order: integer('order').default(0).notNull(),
-  active: boolean('active').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const equalityDocuments = pgTable(
+  'equality_documents',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    pdfUrl: text('pdf_url').notNull(),
+    order: integer('order').default(0).notNull(),
+    active: boolean('active').default(true).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_equality_documents_active_order').on(table.active, table.order)]
+)
 
 export const equalityDocumentTranslations = pgTable(
   'equality_document_translations',
@@ -802,18 +835,22 @@ export const equalityDocumentTranslationsRelations = relations(
 
 // Financial reports
 
-export const financialReports = pgTable('financial_reports', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  pdfUrl: text('pdf_url').notNull(),
-  approvedAt: timestamp('approved_at', { mode: 'date' }).notNull(),
-  order: integer('order').default(0).notNull(),
-  active: boolean('active').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const financialReports = pgTable(
+  'financial_reports',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    pdfUrl: text('pdf_url').notNull(),
+    approvedAt: timestamp('approved_at', { mode: 'date' }).notNull(),
+    order: integer('order').default(0).notNull(),
+    active: boolean('active').default(true).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_financial_reports_active_order').on(table.active, table.order)]
+)
 
 export const financialReportTranslations = pgTable(
   'financial_report_translations',

@@ -7,7 +7,7 @@ import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externa
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { logError } from '../utils/logger'
-import { resolvePressTranslation } from '../utils/pressTranslation'
+import { resolvePressTranslationSummary } from '../utils/pressTranslation'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
 import {
@@ -58,15 +58,31 @@ export default defineCachedEventHandler(
           limit,
           offset,
           with: {
-            translations: true,
+            translations: {
+              columns: {
+                locale: true,
+                title: true,
+                description: true,
+                alt: true,
+              },
+            },
             tags: {
               with: {
                 tag: {
-                  with: { translations: true },
+                  with: {
+                    translations: {
+                      columns: {
+                        locale: true,
+                        name: true,
+                      },
+                    },
+                  },
                 },
               },
             },
-            mediaOutlet: true,
+            mediaOutlet: {
+              columns: { name: true, logo: true, website: true },
+            },
           },
         }),
         db
@@ -75,8 +91,8 @@ export default defineCachedEventHandler(
           .where(whereClause),
       ])
 
-      const articles = articlesList.map((item) => {
-        const trans = resolvePressTranslation(item.translations, locale, fallbackLocale)
+      const items = articlesList.map((item) => {
+        const trans = resolvePressTranslationSummary(item.translations, locale, fallbackLocale)
         const articleTags = item.tags.map((pt) => {
           const tagTrans = pickLocalizedEntry(pt.tag.translations, locale, locales, fallbackLocale)
           return {
@@ -117,7 +133,7 @@ export default defineCachedEventHandler(
         }
       })
 
-      return { articles, total: countResult[0]?.count ?? 0 }
+      return { items, total: countResult[0]?.count ?? 0 }
     } catch (error) {
       if (isDatabaseUnavailableError(error)) {
         logError('public.press.database-unavailable', error, undefined, event)

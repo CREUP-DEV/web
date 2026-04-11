@@ -1,4 +1,4 @@
-import { createError, defineEventHandler } from 'h3'
-export default defineEventHandler(() => {
-  throw createError({ statusCode: 405, message: 'Método no permitido' })
-})
+import { defineEventHandler } from 'h3'
+import { throwMethodNotAllowed } from '../../../../utils/throwMethodNotAllowed'
+
+export default defineEventHandler(() => throwMethodNotAllowed())

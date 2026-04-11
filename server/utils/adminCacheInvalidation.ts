@@ -7,7 +7,7 @@ async function invalidateCachedHandlerPrefix(prefix: string) {
 }
 
 export async function invalidateHomeDataCache() {
-  await invalidateCachedHandlerPrefix('nitro/handlers/api/home-data')
+  await invalidateCachedHandlerPrefix('nitro/handlers/public-home-data')
 }
 
 export async function invalidatePressCache() {
@@ -20,4 +20,8 @@ export async function invalidateTagsCache() {
 
 export async function invalidatePressRelatedCaches() {
   await Promise.all([invalidatePressCache(), invalidateTagsCache()])
+}
+
+export async function invalidatePressDossierCache() {
+  await invalidateCachedHandlerPrefix('nitro/handlers/public-press-dossier')
 }

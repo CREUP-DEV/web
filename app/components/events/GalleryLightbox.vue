@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import 'photoswipe/style.css'
 import type PhotoSwipeLightbox from 'photoswipe/lightbox'
-import type { EventGalleryImage } from '~/composables/useEvents'
+import type { EventGalleryImage } from '@/composables/useEvents'
 
 type GalleryLightboxPhoto = EventGalleryImage & {
   url: string

@@ -8,6 +8,7 @@ import {
 } from '../../../utils/localizedContent'
 import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import { assertTagSlugAvailable } from '../../../utils/tagMutations'
+import { throwMethodNotAllowed } from '../../../utils/throwMethodNotAllowed'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { updateTagSchema } from '~~/shared/utils/adminSchemas'
 
@@ -97,5 +98,5 @@ export default defineEventHandler(async (event) => {
     return { success: true }
   }
 
-  throw createError({ statusCode: 405, message: 'Método no permitido' })
+  throwMethodNotAllowed()
 })

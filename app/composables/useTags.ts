@@ -6,7 +6,7 @@ export interface Tag {
 }
 
 export interface TagsResponse {
-  tags: Tag[]
+  items: Tag[]
 }
 
 export function useTags(type?: MaybeRefOrGetter<string | null | undefined>) {
@@ -32,7 +32,7 @@ export function useTags(type?: MaybeRefOrGetter<string | null | undefined>) {
     },
     {
       default: () => ({
-        tags: [],
+        items: [],
       }),
       watch: [locale, typeValue],
     }

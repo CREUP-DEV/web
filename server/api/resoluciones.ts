@@ -1,6 +1,3 @@
-import { defineEventHandler } from 'h3'
-import { fetchPolicyDocuments } from '../utils/policyDocuments'
+import { createPolicyDocumentCollectionRouteHandler } from '../utils/policyDocuments'
 
-export default defineEventHandler(async (event) => {
-  return fetchPolicyDocuments(event, '/api/resoluciones', 'Resoluciones')
-})
+export default createPolicyDocumentCollectionRouteHandler('resoluciones')

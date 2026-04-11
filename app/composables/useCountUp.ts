@@ -2,6 +2,7 @@ export function useCountUp(target: Ref<number> | number, options?: { duration?: 
   const duration = options?.duration ?? 1800
   const displayValue = ref(0)
   const hasAnimated = ref(false)
+  let rafId: number | null = null
 
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
@@ -27,14 +28,22 @@ export function useCountUp(target: Ref<number> | number, options?: { duration?: 
       displayValue.value = Math.round(eased * end)
 
       if (progress < 1) {
-        requestAnimationFrame(tick)
+        rafId = requestAnimationFrame(tick)
       } else {
         displayValue.value = end
+        rafId = null
       }
     }
 
-    requestAnimationFrame(tick)
+    rafId = requestAnimationFrame(tick)
   }
+
+  onUnmounted(() => {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
+  })
 
   return { displayValue, start, hasAnimated }
 }

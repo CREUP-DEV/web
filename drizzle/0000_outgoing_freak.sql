@@ -147,7 +147,7 @@ CREATE TABLE "newsletter_subscribers" (
 	"unsubscribed_at" timestamp,
 	"confirm_token" text,
 	"confirm_token_expires_at" timestamp,
-	"unsubscribe_token" text NOT NULL,
+	"unsubscribe_token" text,
 	"consent_ip" text,
 	"consent_user_agent" text,
 	"consent_source" text DEFAULT 'web_form' NOT NULL,
@@ -159,7 +159,8 @@ CREATE TABLE "newsletter_subscribers" (
 	CONSTRAINT "newsletter_subscribers_email_unique" UNIQUE("email"),
 	CONSTRAINT "newsletter_subscribers_confirm_token_unique" UNIQUE("confirm_token"),
 	CONSTRAINT "newsletter_subscribers_unsubscribe_token_unique" UNIQUE("unsubscribe_token"),
-	CONSTRAINT "newsletter_subscribers_consent_source_check" CHECK ("newsletter_subscribers"."consent_source" in ('web_form', 'email_link', 'admin_manual', 'legacy_import', 'system'))
+	CONSTRAINT "newsletter_subscribers_consent_source_check" CHECK ("newsletter_subscribers"."consent_source" in ('web_form', 'email_link', 'admin_manual', 'legacy_import', 'system')),
+	CONSTRAINT "newsletter_subscribers_locale_check" CHECK ("newsletter_subscribers"."locale" IS NULL OR "newsletter_subscribers"."locale" in ('es', 'en'))
 );
 --> statement-breakpoint
 CREATE TABLE "newsletter_subscription_events" (
@@ -188,6 +189,7 @@ CREATE TABLE "newsletters" (
 	"cover_image" text NOT NULL,
 	"pdf_url" text NOT NULL,
 	"active" boolean DEFAULT true NOT NULL,
+	"public_visible" boolean DEFAULT false NOT NULL,
 	"sent_at" timestamp,
 	"last_delivery_started_at" timestamp,
 	"last_delivery_heartbeat_at" timestamp,
@@ -212,25 +214,6 @@ CREATE TABLE "organization_member_translations" (
 	CONSTRAINT "organization_member_translations_locale_check" CHECK ("organization_member_translations"."locale" in ('es', 'en'))
 );
 --> statement-breakpoint
-CREATE OR REPLACE FUNCTION "public"."is_valid_organization_member_socials"("socials" jsonb)
-RETURNS boolean
-LANGUAGE sql
-IMMUTABLE
-AS $$
-  SELECT
-    jsonb_typeof($1) = 'array'
-    AND COALESCE((
-      SELECT bool_and(
-        jsonb_typeof(elem) = 'object'
-        AND elem ? 'network'
-        AND elem ? 'value'
-        AND jsonb_typeof(elem->'network') = 'string'
-        AND jsonb_typeof(elem->'value') = 'string'
-      )
-      FROM jsonb_array_elements($1) AS elem
-    ), true);
-$$;
---> statement-breakpoint
 CREATE TABLE "organization_members" (
 	"id" text PRIMARY KEY NOT NULL,
 	"slug" text NOT NULL,
@@ -243,8 +226,7 @@ CREATE TABLE "organization_members" (
 	"active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "organization_members_slug_unique" UNIQUE("slug"),
-	CONSTRAINT "organization_members_socials_shape_check" CHECK (is_valid_organization_member_socials("organization_members"."socials"))
+	CONSTRAINT "organization_members_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "press_article_tags" (
@@ -405,20 +387,29 @@ ALTER TABLE "tag_translations" ADD CONSTRAINT "tag_translations_tag_id_tags_id_f
 ALTER TABLE "team_area_translations" ADD CONSTRAINT "team_area_translations_team_area_id_team_areas_id_fk" FOREIGN KEY ("team_area_id") REFERENCES "public"."team_areas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "team_member_translations" ADD CONSTRAINT "team_member_translations_team_member_id_team_members_id_fk" FOREIGN KEY ("team_member_id") REFERENCES "public"."team_members"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "team_members" ADD CONSTRAINT "team_members_team_area_id_team_areas_id_fk" FOREIGN KEY ("team_area_id") REFERENCES "public"."team_areas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_accounts_user_id" ON "accounts" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "idx_carousel_item_translations_item_id" ON "carousel_item_translations" USING btree ("carousel_item_id");--> statement-breakpoint
+CREATE INDEX "idx_carousel_items_active_order" ON "carousel_items" USING btree ("active","order");--> statement-breakpoint
 CREATE INDEX "idx_equality_document_translations_document_id" ON "equality_document_translations" USING btree ("equality_document_id");--> statement-breakpoint
+CREATE INDEX "idx_equality_documents_active_order" ON "equality_documents" USING btree ("active","order");--> statement-breakpoint
 CREATE INDEX "idx_featured_link_translations_link_id" ON "featured_link_translations" USING btree ("featured_link_id");--> statement-breakpoint
+CREATE INDEX "idx_featured_links_active_order" ON "featured_links" USING btree ("active","order");--> statement-breakpoint
 CREATE INDEX "idx_financial_report_translations_report_id" ON "financial_report_translations" USING btree ("financial_report_id");--> statement-breakpoint
+CREATE INDEX "idx_financial_reports_active_order" ON "financial_reports" USING btree ("active","order");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_deliveries_status" ON "newsletter_deliveries" USING btree ("newsletter_id","status");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_deliveries_subscriber" ON "newsletter_deliveries" USING btree ("subscriber_id");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_subscribers_active_subscribed" ON "newsletter_subscribers" USING btree ("active","subscribed_at");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_subscription_events_subscriber_created" ON "newsletter_subscription_events" USING btree ("subscriber_id","created_at");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_subscription_events_email" ON "newsletter_subscription_events" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "idx_newsletters_active_sent_worker" ON "newsletters" USING btree ("active","sent_at","last_delivery_worker_token");--> statement-breakpoint
+CREATE INDEX "idx_newsletters_public_visible_month" ON "newsletters" USING btree ("public_visible","month");--> statement-breakpoint
 CREATE INDEX "idx_organization_member_translations_member_id" ON "organization_member_translations" USING btree ("organization_member_id");--> statement-breakpoint
+CREATE INDEX "idx_press_article_tags_tag_id" ON "press_article_tags" USING btree ("tag_id");--> statement-breakpoint
 CREATE INDEX "idx_press_article_translations_article_id" ON "press_article_translations" USING btree ("press_article_id");--> statement-breakpoint
 CREATE INDEX "idx_press_articles_active_published" ON "press_articles" USING btree ("active","published_at");--> statement-breakpoint
 CREATE INDEX "idx_press_articles_type" ON "press_articles" USING btree ("type");--> statement-breakpoint
+CREATE INDEX "idx_sessions_user_id" ON "sessions" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "idx_tag_translations_tag_id" ON "tag_translations" USING btree ("tag_id");--> statement-breakpoint
 CREATE INDEX "idx_team_area_translations_area_id" ON "team_area_translations" USING btree ("team_area_id");--> statement-breakpoint
-CREATE INDEX "idx_team_member_translations_member_id" ON "team_member_translations" USING btree ("team_member_id");
+CREATE INDEX "idx_team_member_translations_member_id" ON "team_member_translations" USING btree ("team_member_id");--> statement-breakpoint
+CREATE INDEX "idx_team_members_team_area_id" ON "team_members" USING btree ("team_area_id");

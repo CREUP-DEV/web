@@ -68,6 +68,11 @@ export function usePageSeo(
     defineOgImage('NuxtSeo.satori', {
       title,
       description,
+      brandTagline: () => t('ogImage.brandTagline'),
+      sectionLabel: () => t('ogImage.sectionLabel'),
+      statsEyebrow: () => t('ogImage.statsEyebrow'),
+      statsHeadline: () => t('ogImage.statsHeadline'),
+      supportText: () => t('ogImage.supportText'),
     })
   }
 

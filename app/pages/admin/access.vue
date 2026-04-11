@@ -202,15 +202,15 @@ const handleDelete = async () => {
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
-      <div class="bg-surface rounded-2xl border p-4">
+      <div class="bg-surface rounded-2xl p-4">
         <p class="text-muted text-sm">Accesos totales</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.total }}</p>
       </div>
-      <div class="bg-surface rounded-2xl border p-4">
+      <div class="bg-surface rounded-2xl p-4">
         <p class="text-muted text-sm">Activos</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.active }}</p>
       </div>
-      <div class="bg-surface rounded-2xl border p-4">
+      <div class="bg-surface rounded-2xl p-4">
         <p class="text-muted text-sm">Protegidos por .env</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.env }}</p>
       </div>
@@ -219,7 +219,7 @@ const handleDelete = async () => {
     <div v-if="pending" class="text-muted py-12 text-center">Cargando accesos...</div>
 
     <div v-else class="space-y-4">
-      <div v-for="item in items" :key="item.id" class="bg-surface rounded-2xl border p-5 shadow-sm">
+      <div v-for="item in items" :key="item.id" class="bg-surface rounded-2xl p-5 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-start gap-4">
             <div
@@ -298,7 +298,12 @@ const handleDelete = async () => {
 
           <form id="admin-access-form" class="mt-6 space-y-4" @submit.prevent="handleCreate">
             <UFormField label="Correo autorizado">
-              <UInput v-model="form.email" class="w-full" placeholder="nombre@dominio.es" />
+              <UInput
+                v-model="form.email"
+                type="email"
+                class="w-full"
+                placeholder="nombre@dominio.es"
+              />
             </UFormField>
           </form>
 

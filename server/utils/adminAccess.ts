@@ -46,7 +46,7 @@ export function getEnvAdminEmails() {
   cachedEnvAdminEmails = Array.from(
     new Set(
       rawEmails
-        .split(/[\s,;]+/)
+        .split(/[,\s]+/)
         .map((email) => normalizeAdminEmail(email))
         .filter(Boolean)
     )

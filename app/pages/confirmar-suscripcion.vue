@@ -18,11 +18,10 @@ type ConfirmState =
 
 const state = ref<ConfirmState>('idle')
 
-useSeoMeta({
-  title: t('confirmSubscription.seo.title'),
-  description: t('confirmSubscription.seo.description'),
-  robots: 'noindex, nofollow',
-})
+usePageSeo('confirmSubscription.seo.title', 'confirmSubscription.seo.description')
+useSeoAlternateLinksOverride([])
+
+useSeoMeta({ robots: 'noindex, nofollow' })
 
 async function confirm() {
   if (!token.value || state.value === 'loading') return

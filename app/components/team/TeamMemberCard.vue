@@ -14,7 +14,6 @@ defineProps<{
   member: Member
   displayName: string
   viewProfileAriaLabel: string
-  copyEmailAriaLabel: string
   publicAgendaAriaLabel?: string
   entranceDelay?: string | Record<string, string>
   to?: RouteLocationRaw
@@ -22,7 +21,6 @@ defineProps<{
 
 const emit = defineEmits<{
   clickCard: []
-  copyEmail: [email: string]
   openAgenda: []
 }>()
 
@@ -34,7 +32,7 @@ function encodeEmail(email: string) {
 }
 
 const cardClass =
-  'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl p-5 ring-1 ring-gray-200/50 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50'
+  'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl ring-1 ring-default p-5 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]'
 const triggerClass =
   'focus-visible:ring-primary block w-full rounded-xl text-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
 </script>
@@ -73,15 +71,13 @@ const triggerClass =
     </component>
 
     <div class="mt-3 flex flex-col items-center gap-2">
-      <button
-        type="button"
-        class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
-        :aria-label="copyEmailAriaLabel"
-        @click="emit('copyEmail', member.email)"
-      >
+      <div class="text-muted inline-flex items-center gap-1 text-sm">
         <UIcon name="i-tabler-mail" class="size-4" />
-        <ObfuscatedEmail v-bind="encodeEmail(member.email)" class="text-center break-all" />
-      </button>
+        <ObfuscatedEmail
+          v-bind="encodeEmail(member.email)"
+          class="hover:text-primary text-center break-all transition-colors"
+        />
+      </div>
 
       <UButton
         v-if="member.publicAgenda"

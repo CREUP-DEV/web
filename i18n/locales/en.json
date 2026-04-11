@@ -64,6 +64,13 @@
     "name": "CREUP",
     "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain."
   },
+  "ogImage": {
+    "brandTagline": "Coordinator of Student Representatives of Public Universities",
+    "sectionLabel": "Student representation",
+    "statsEyebrow": "More than 1,000,000",
+    "statsHeadline": "students represented across Spain",
+    "supportText": "Voice, coordination, and student advocacy"
+  },
   "home": {
     "newsAndEventsLabel": "Press and events",
     "latestNews": "Latest News",
@@ -100,7 +107,9 @@
     "closeMenu": "Close menu",
     "siteLogo": "CREUP logo",
     "externalLink": "Opens in a new tab",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "breadcrumb": "Breadcrumb",
+    "contentImage": "Content image"
   },
   "common": {
     "all": "All",
@@ -139,12 +148,15 @@
     "email": "Email",
     "university": "University",
     "degree": "Degree",
+    "period": "Period",
+    "duration": "Duration",
     "publicAgenda": "Public agenda",
     "publicAgendaOf": "{name}'s public agenda",
     "memberModalTitle": "Team profile",
     "memberModalDescription": "Profile details for the person.",
     "agendaModalDescription": "Upcoming events in the person's public agenda.",
     "noEvents": "No upcoming events scheduled.",
+    "agendaLoadError": "Could not load the agenda. Please try again.",
     "about": "About {name}",
     "hierarchyView": "By hierarchy",
     "areaView": "By area",
@@ -341,6 +353,8 @@
     "memberModalTitle": "Organisation details",
     "memberModalDescription": "Details of the selected organization.",
     "descriptionLabel": "Description",
+    "initials": "Initials",
+    "community": "Community",
     "info": "Information and contact",
     "socialNetworks": "Social networks",
     "networks": {
@@ -490,6 +504,15 @@
     "copyEmail": "Copy email",
     "university": "University",
     "degree": "Degree"
+  },
+  "sectorialCommitteePage": {
+    "title": "Sectorial Affairs Commission",
+    "description": "Technical page dedicated to the Sectorial Affairs Committee.",
+    "intro": "Specific page for the Sectorial Affairs Committee with the list of sectorial associations and the committee team.",
+    "loadError": "The information for this commission could not be loaded right now.",
+    "committeeNotFound": "The Sectorial Affairs Committee was not found in the committees source.",
+    "teamDescription": "People who are part of {committee}.",
+    "fallbackCommitteeTitle": "Sectorial Affairs Committee"
   },
   "policy": {
     "download": "Download",

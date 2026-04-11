@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+
 definePageMeta({
   layout: 'admin',
   title: 'Qué es CREUP',
@@ -132,8 +134,10 @@ const saveContent = async () => {
     clearPendingHeroPreview()
     toast.add({ title: 'Cambios guardados', color: 'success' })
   } catch (error) {
-    console.error('Error saving about content:', error)
-    toast.add({ title: 'No se pudieron guardar los cambios', color: 'error' })
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudieron guardar los cambios'),
+      color: 'error',
+    })
   } finally {
     isSavingContent.value = false
   }

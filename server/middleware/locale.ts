@@ -17,20 +17,22 @@ export default defineEventHandler((event) => {
   const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
   const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
   const cookieKey = runtimeI18n.detectBrowserLanguage?.cookieKey
+  const pathname = getRequestURL(event).pathname
+  const isApiRequest = pathname === '/api' || pathname.startsWith('/api/')
   const headerLocale = resolveLocaleCode(
     getHeader(event, 'x-request-locale') ?? getHeader(event, 'x-locale'),
     locales,
     ''
   )
-  const pathnameLocale = extractLocaleCodeFromPathname(getRequestURL(event).pathname, locales)
+  const pathnameLocale = extractLocaleCodeFromPathname(pathname, locales)
 
   const cookie = cookieKey ? getCookie(event, cookieKey) : undefined
   let resolved = defaultLocale
 
-  if (headerLocale) {
-    resolved = headerLocale
-  } else if (pathnameLocale) {
+  if (pathnameLocale) {
     resolved = pathnameLocale
+  } else if (isApiRequest && headerLocale) {
+    resolved = headerLocale
   } else if (cookie) {
     resolved = resolveLocaleCode(cookie, locales, defaultLocale)
   } else {

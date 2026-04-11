@@ -1,11 +1,39 @@
 <script setup lang="ts">
+import type { SeoAlternateLink } from '@/composables/useSeoAlternateLinksOverride'
+
 const { t } = useI18n()
 const { data: pressDossierLink } = await usePressDossierLink()
+const alternateLinksOverride = useState<SeoAlternateLink[] | null>(
+  'seo-alternate-links-override',
+  () => null
+)
 
 // Inject locale-aware <link rel="alternate" hreflang="..."> and canonical
 // tags on every public page so search engines can find the correct locale.
 const head = useLocaleHead({ seo: true })
-useHead(head)
+
+const isLocaleAlternateLink = (link: { rel?: string; id?: string }) => {
+  if (link.rel !== 'alternate') {
+    return false
+  }
+
+  return link.id === 'i18n-xd' || link.id?.startsWith('i18n-alt-') === true
+}
+
+useHead(() => {
+  const resolvedHead = head.value
+
+  if (alternateLinksOverride.value === null) {
+    return resolvedHead
+  }
+
+  const nonAlternateLinks = (resolvedHead.link ?? []).filter((link) => !isLocaleAlternateLink(link))
+
+  return {
+    ...resolvedHead,
+    link: [...nonAlternateLinks, ...alternateLinksOverride.value] as typeof resolvedHead.link,
+  }
+})
 </script>
 
 <template>

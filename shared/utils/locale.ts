@@ -1,3 +1,10 @@
+import { DEFAULT_LOCALE_CODE } from '../constants/locales'
+export {
+  DEFAULT_LOCALE_CODE,
+  SUPPORTED_LOCALE_CODES,
+  type SupportedLocaleCode,
+} from '../constants/locales'
+
 export interface LocaleDefinition {
   code: string
   name: string
@@ -11,10 +18,6 @@ interface RawLocaleDefinition {
   language?: unknown
   flag?: unknown
 }
-
-export const DEFAULT_LOCALE_CODE = 'es'
-export const SUPPORTED_LOCALE_CODES = ['es', 'en'] as const
-export type SupportedLocaleCode = (typeof SUPPORTED_LOCALE_CODES)[number]
 
 const DEFAULT_LANGUAGE_TAG = 'es-ES'
 const DEFAULT_LOCALE_NAME = 'Español'
@@ -245,13 +248,50 @@ export function buildLocalizedAlternates(
   locales: LocaleDefinition[],
   defaultLocale: string
 ) {
+  return buildLocalizedAlternatesForLocaleCodes(
+    path,
+    locales,
+    defaultLocale,
+    locales.map((locale) => locale.code)
+  )
+}
+
+export function buildLocalizedAlternatesForLocaleCodes(
+  path: string,
+  locales: LocaleDefinition[],
+  defaultLocale: string,
+  translatedLocales: Iterable<string> | null | undefined,
+  options: {
+    getHreflang?: (locale: LocaleDefinition) => string
+  } = {}
+) {
   const normalizedPath = normalizeLocalizedPath(path)
-  const alternates = locales.map((locale) => ({
-    hreflang: locale.code,
-    href: buildLocalizedPathFromLocale(normalizedPath, locale.code, locales, defaultLocale),
-  }))
-  const defaultHref =
-    alternates.find((alternate) => alternate.hreflang === defaultLocale)?.href ?? normalizedPath
+  const localeCodes = new Set(
+    Array.from(translatedLocales ?? []).flatMap((value) => {
+      const resolvedCode = resolveLocaleCode(value, locales, '')
+      return resolvedCode ? [resolvedCode] : []
+    })
+  )
+
+  const alternates = locales.flatMap((locale) => {
+    if (!localeCodes.has(locale.code)) {
+      return []
+    }
+
+    return [
+      {
+        hreflang: options.getHreflang?.(locale) ?? locale.code,
+        href: buildLocalizedPathFromLocale(normalizedPath, locale.code, locales, defaultLocale),
+      },
+    ]
+  })
+
+  const defaultHref = buildLocalizedPathFromLocale(
+    normalizedPath,
+    defaultLocale,
+    locales,
+    defaultLocale
+  )
 
   return [...alternates, { hreflang: 'x-default', href: defaultHref }]
 }

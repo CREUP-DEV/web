@@ -1,13 +1,21 @@
+import pLimit from 'p-limit'
 import { createId } from '@paralleldrive/cuid2'
 import { createError } from 'h3'
-import { and, asc, eq, inArray, isNotNull, isNull, lt, lte, ne, or, sql } from 'drizzle-orm'
+import { and, asc, count, eq, inArray, isNotNull, isNull, lt, lte, ne, or, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterDeliveries, newsletters, newsletterSubscribers } from '../db/schema'
 import { sendNewsletterEmail } from './newsletterMailer'
 import { logError, logInfo } from './logger'
+import {
+  NEWSLETTER_CONSENT_SOURCES,
+  NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
+  recordNewsletterSubscriptionEvent,
+} from './newsletterSubscribers'
 
 const MONTH_INPUT_REGEX = /^(?<year>\d{4})-(?<month>0[1-9]|1[0-2])-01$/
+// 50 per batch: keeps each DB transaction and SMTP burst manageable; too large increases memory pressure per cycle
 const NEWSLETTER_DELIVERY_BATCH_SIZE = 50
+// 2 min stale threshold: worker must heartbeat every iteration; if silent for 2+ min, assume crashed and allow claim
 const NEWSLETTER_DELIVERY_WORKER_STALE_MS = 2 * 60 * 1000
 const NEWSLETTER_DELIVERY_STATUS = {
   failed: 'failed',
@@ -53,101 +61,105 @@ function normalizeDeliveryError(error: unknown) {
 }
 
 async function setNewsletterDeliverySnapshot(newsletterId: string) {
-  const [summary] = await db
-    .select({
-      errorCount:
-        sql<number>`coalesce(sum(case when ${newsletterDeliveries.status} = ${NEWSLETTER_DELIVERY_STATUS.failed} then 1 else 0 end), 0)`.mapWith(
-          Number
-        ),
-      sentCount:
-        sql<number>`coalesce(sum(case when ${newsletterDeliveries.status} = ${NEWSLETTER_DELIVERY_STATUS.sent} then 1 else 0 end), 0)`.mapWith(
-          Number
-        ),
-      total: sql<number>`count(*)`.mapWith(Number),
-    })
-    .from(newsletterDeliveries)
-    .where(eq(newsletterDeliveries.newsletterId, newsletterId))
+  return db.transaction(async (tx) => {
+    const [summary] = await tx
+      .select({
+        errorCount:
+          sql<number>`coalesce(sum(case when ${newsletterDeliveries.status} = ${NEWSLETTER_DELIVERY_STATUS.failed} then 1 else 0 end), 0)`.mapWith(
+            Number
+          ),
+        sentCount:
+          sql<number>`coalesce(sum(case when ${newsletterDeliveries.status} = ${NEWSLETTER_DELIVERY_STATUS.sent} then 1 else 0 end), 0)`.mapWith(
+            Number
+          ),
+        total: sql<number>`count(*)`.mapWith(Number),
+      })
+      .from(newsletterDeliveries)
+      .where(eq(newsletterDeliveries.newsletterId, newsletterId))
 
-  const failedRows = await db
-    .select({
-      email: newsletterSubscribers.email,
-    })
-    .from(newsletterDeliveries)
-    .innerJoin(
-      newsletterSubscribers,
-      eq(newsletterSubscribers.id, newsletterDeliveries.subscriberId)
-    )
-    .where(
-      and(
-        eq(newsletterDeliveries.newsletterId, newsletterId),
-        eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.failed)
+    const failedRows = await tx
+      .select({
+        email: newsletterSubscribers.email,
+      })
+      .from(newsletterDeliveries)
+      .innerJoin(
+        newsletterSubscribers,
+        eq(newsletterSubscribers.id, newsletterDeliveries.subscriberId)
       )
-    )
-    .orderBy(asc(newsletterSubscribers.email))
+      .where(
+        and(
+          eq(newsletterDeliveries.newsletterId, newsletterId),
+          eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.failed)
+        )
+      )
+      .orderBy(asc(newsletterSubscribers.email))
 
-  const failedRecipients = failedRows.map((row) => row.email)
+    const failedRecipients = failedRows.map((row) => row.email)
 
-  await db
-    .update(newsletters)
-    .set({
-      lastDeliveryErrorCount: summary?.errorCount ?? 0,
-      lastDeliveryFailedRecipients: failedRecipients.length > 0 ? failedRecipients : null,
-      lastDeliverySentCount: summary?.sentCount ?? 0,
-      lastDeliveryTotal: summary?.total ?? 0,
-    })
-    .where(eq(newsletters.id, newsletterId))
+    await tx
+      .update(newsletters)
+      .set({
+        lastDeliveryErrorCount: summary?.errorCount ?? 0,
+        lastDeliveryFailedRecipients: failedRecipients.length > 0 ? failedRecipients : null,
+        lastDeliverySentCount: summary?.sentCount ?? 0,
+        lastDeliveryTotal: summary?.total ?? 0,
+      })
+      .where(eq(newsletters.id, newsletterId))
 
-  return {
-    errorCount: summary?.errorCount ?? 0,
-    failedRecipients,
-    sentCount: summary?.sentCount ?? 0,
-    total: summary?.total ?? 0,
-  }
+    return {
+      errorCount: summary?.errorCount ?? 0,
+      failedRecipients,
+      sentCount: summary?.sentCount ?? 0,
+      total: summary?.total ?? 0,
+    }
+  })
 }
 
 async function seedNewsletterDeliveries(item: NewsletterRecord) {
   const startedAt = item.lastDeliveryStartedAt ?? new Date()
 
-  if (!item.lastDeliveryStartedAt) {
-    await db
-      .update(newsletters)
-      .set({ lastDeliveryStartedAt: startedAt })
-      .where(eq(newsletters.id, item.id))
-  }
+  await db.transaction(async (tx) => {
+    if (!item.lastDeliveryStartedAt) {
+      await tx
+        .update(newsletters)
+        .set({ lastDeliveryStartedAt: startedAt })
+        .where(eq(newsletters.id, item.id))
+    }
 
-  await db
-    .insert(newsletterDeliveries)
-    .select(
-      db
-        .select({
-          newsletterId: sql<string>`${item.id}`.as('newsletter_id'),
-          subscriberId: newsletterSubscribers.id,
-        })
-        .from(newsletterSubscribers)
-        .where(
-          and(
-            eq(newsletterSubscribers.active, true),
-            lte(newsletterSubscribers.subscribedAt, startedAt)
+    await tx
+      .insert(newsletterDeliveries)
+      .select(
+        tx
+          .select({
+            newsletterId: sql<string>`${item.id}`.as('newsletter_id'),
+            subscriberId: newsletterSubscribers.id,
+          })
+          .from(newsletterSubscribers)
+          .where(
+            and(
+              eq(newsletterSubscribers.active, true),
+              lte(newsletterSubscribers.subscribedAt, startedAt)
+            )
           )
-        )
-    )
-    .onConflictDoNothing({
-      target: [newsletterDeliveries.newsletterId, newsletterDeliveries.subscriberId],
-    })
-
-  await db
-    .update(newsletterDeliveries)
-    .set({
-      lastError: null,
-      status: NEWSLETTER_DELIVERY_STATUS.queued,
-    })
-    .where(
-      and(
-        eq(newsletterDeliveries.newsletterId, item.id),
-        eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.failed),
-        lt(newsletterDeliveries.attempts, NEWSLETTER_DELIVERY_MAX_ATTEMPTS)
       )
-    )
+      .onConflictDoNothing({
+        target: [newsletterDeliveries.newsletterId, newsletterDeliveries.subscriberId],
+      })
+
+    await tx
+      .update(newsletterDeliveries)
+      .set({
+        lastError: null,
+        status: NEWSLETTER_DELIVERY_STATUS.queued,
+      })
+      .where(
+        and(
+          eq(newsletterDeliveries.newsletterId, item.id),
+          eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.failed),
+          lt(newsletterDeliveries.attempts, NEWSLETTER_DELIVERY_MAX_ATTEMPTS)
+        )
+      )
+  })
 
   return setNewsletterDeliverySnapshot(item.id)
 }
@@ -320,6 +332,58 @@ async function claimNewsletterDeliveryBatch(
   }))
 }
 
+async function deactivateSubscriberOnBounce(subscriberId: string) {
+  await db.transaction(async (tx) => {
+    // Fetch the subscriber — only proceed if currently active
+    const subscriber = await tx.query.newsletterSubscribers.findFirst({
+      where: and(
+        eq(newsletterSubscribers.id, subscriberId),
+        eq(newsletterSubscribers.active, true)
+      ),
+      columns: { id: true, email: true },
+    })
+
+    if (!subscriber) {
+      return
+    }
+
+    // Count total failed deliveries for this subscriber across all newsletters
+    const [failedCountResult] = await tx
+      .select({ failedCount: count() })
+      .from(newsletterDeliveries)
+      .where(
+        and(
+          eq(newsletterDeliveries.subscriberId, subscriberId),
+          eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.failed)
+        )
+      )
+
+    const failedCount = failedCountResult?.failedCount ?? 0
+
+    if (failedCount < NEWSLETTER_DELIVERY_MAX_ATTEMPTS) {
+      return
+    }
+
+    await tx
+      .update(newsletterSubscribers)
+      .set({
+        active: false,
+        unsubscribedAt: new Date(),
+      })
+      .where(eq(newsletterSubscribers.id, subscriberId))
+
+    await recordNewsletterSubscriptionEvent(
+      {
+        email: subscriber.email,
+        eventSource: NEWSLETTER_CONSENT_SOURCES.system,
+        eventType: NEWSLETTER_SUBSCRIPTION_EVENT_TYPES.unsubscribed,
+        subscriberId: subscriber.id,
+      },
+      tx
+    )
+  })
+}
+
 async function markDeliverySent(deliveryId: string) {
   await db
     .update(newsletterDeliveries)
@@ -379,29 +443,50 @@ export async function processNewsletterDeliveryRun(
         break
       }
 
-      for (const { delivery, subscriber } of batch) {
-        if (!subscriber || !subscriber.active) {
-          await markDeliveryFailed(delivery.id, new Error('La suscripción ya no está activa'))
-          await touchNewsletterDeliveryWorker(item.id, workerToken)
-          continue
-        }
+      const limit = pLimit(5)
 
-        try {
-          await sendNewsletterEmail(
-            item,
-            subscriber,
-            'Falta la configuración SMTP para enviar correos'
-          )
-          await markDeliverySent(delivery.id)
-        } catch (error) {
-          await markDeliveryFailed(delivery.id, error)
-          logError('newsletter.send.recipient', error, {
-            deliveryId: delivery.id,
-            newsletterId: item.id,
-            subscriberId: subscriber.id,
-          })
-        } finally {
-          await touchNewsletterDeliveryWorker(item.id, workerToken)
+      const tasks = batch.map(({ delivery, subscriber }) =>
+        limit(async () => {
+          if (!subscriber || !subscriber.active) {
+            await markDeliveryFailed(delivery.id, new Error('La suscripción ya no está activa'))
+            await touchNewsletterDeliveryWorker(item.id, workerToken)
+            return
+          }
+
+          try {
+            await sendNewsletterEmail(
+              item,
+              subscriber,
+              'Falta la configuración SMTP para enviar correos'
+            )
+            await markDeliverySent(delivery.id)
+          } catch (error) {
+            await markDeliveryFailed(delivery.id, error)
+            logError('newsletter.send.recipient', error, {
+              deliveryId: delivery.id,
+              newsletterId: item.id,
+              subscriberId: subscriber.id,
+            })
+            try {
+              await deactivateSubscriberOnBounce(subscriber.id)
+            } catch (bounceError) {
+              logError('newsletter.send.bounce-deactivate', bounceError, {
+                deliveryId: delivery.id,
+                newsletterId: item.id,
+                subscriberId: subscriber.id,
+              })
+            }
+          } finally {
+            await touchNewsletterDeliveryWorker(item.id, workerToken)
+          }
+        })
+      )
+
+      const results = await Promise.allSettled(tasks)
+
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          logError('newsletter.send.batch-task', result.reason)
         }
       }
     }
@@ -542,7 +627,7 @@ export async function claimNewsletterForSending(id: string): Promise<NewsletterR
   if (!current.active) {
     throw createError({
       statusCode: 409,
-      message: 'Activa la newsletter antes de enviarla',
+      message: 'Habilita el envío antes de enviarla',
     })
   }
 

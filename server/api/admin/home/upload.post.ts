@@ -1,6 +1,7 @@
 import { defineEventHandler, readMultipartFormData } from 'h3'
 import { saveAdminImage } from '../../../utils/adminImageUpload'
 import { toExternalImageProxyUrl } from '../../../utils/externalAssetProxy'
+import { assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
 import {
   adminUploadKindSchema,
   getMultipartTextField,
@@ -23,8 +24,11 @@ const uploadTargets = {
     publicPath: HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
   },
 } as const
+const UPLOAD_MAX_REQUEST_BYTES = 6 * 1024 * 1024 // 6 MB hard ceiling (above image limit)
 
 export default defineEventHandler(async (event) => {
+  assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
+
   const formData = await readMultipartFormData(event)
   const file = validateMultipartFile(formData)
 

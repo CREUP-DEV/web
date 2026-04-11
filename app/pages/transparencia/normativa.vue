@@ -41,7 +41,7 @@ function translateCategory(name: string): string {
 
 usePageSeo('regulations.title', 'regulations.description')
 
-const { data, error } = await useFetch<NormativaResponse>('/api/normativa')
+const { data, pending, error } = useFetch<NormativaResponse>('/api/normativa')
 
 const categories = computed(() => data.value?.categories ?? [])
 const getEntranceDelay = (index: number) => useEntranceDelay(index, 90)
@@ -67,7 +67,14 @@ function formatDate(dateStr: string): string {
         </p>
       </header>
 
-      <UCard v-if="error" class="text-center">
+      <div v-if="pending" aria-hidden="true" class="space-y-8">
+        <div v-for="n in 3" :key="n" class="space-y-3">
+          <USkeleton class="h-6 w-40 rounded-lg" />
+          <USkeleton v-for="m in 3" :key="m" class="h-20 rounded-xl" />
+        </div>
+      </div>
+
+      <UCard v-else-if="error" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
           <p class="text-muted">
@@ -76,7 +83,7 @@ function formatDate(dateStr: string): string {
         </div>
       </UCard>
 
-      <UCard v-else-if="categories.length === 0" class="text-center">
+      <UCard v-else-if="!categories.length" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-file-off" class="text-muted size-10" />
           <p class="text-muted">

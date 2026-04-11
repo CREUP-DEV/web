@@ -14,6 +14,11 @@ if (error.value || !data.value?.article) {
 }
 
 const article = computed<PressArticle>(() => data.value!.article as PressArticle)
+
+useLocalizedPressDetailSeo({
+  path: `/prensa/notas-prensa/${slug}`,
+  translatedLocales: computed(() => article.value.translatedLocales ?? null),
+})
 </script>
 
 <template>

@@ -38,7 +38,6 @@ export const useMembersDirectory = ({
 }: UseMembersDirectoryOptions) => {
   const { t, locale } = useI18n()
   const { getLanguageTag } = useLocales()
-  const { getCopyEmailAriaLabel } = usePersonHelpers()
 
   const selectedCommunity = externalSelectedCommunity ?? ref<string | null>(null)
 
@@ -156,10 +155,7 @@ export const useMembersDirectory = ({
 
   const toModalData = (
     entity: OrganizationMember | SectorialMember,
-    base: Omit<
-      OrganizationDetailModalData,
-      'website' | 'email' | 'socialButtons' | 'copyEmailAriaLabel'
-    >
+    base: Omit<OrganizationDetailModalData, 'website' | 'email' | 'socialButtons'>
   ): OrganizationDetailModalData => {
     const website = getWebsiteData(entity)
     const email = getEmailData(entity)
@@ -169,7 +165,6 @@ export const useMembersDirectory = ({
       website,
       email,
       socialButtons: getSocialButtons(entity),
-      copyEmailAriaLabel: email ? getCopyEmailAriaLabel(email.email) : null,
     }
   }
 

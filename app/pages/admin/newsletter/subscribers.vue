@@ -159,7 +159,7 @@ function formatDate(iso: string) {
       <div
         v-for="item in filteredItems"
         :key="item.id"
-        class="bg-surface flex items-center gap-4 rounded-lg px-4 py-3 ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface ring-default flex items-center gap-4 rounded-lg px-4 py-3 ring-1"
       >
         <div class="flex-1 overflow-hidden">
           <p class="truncate font-medium">{{ item.email }}</p>

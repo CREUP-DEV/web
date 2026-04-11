@@ -1,5 +1,5 @@
 {
-  "id": "b7c929f4-7fc2-418d-9845-4c2b765813a7",
+  "id": "fe4de2a9-9c82-453c-bf30-e93e4ef3bf15",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -141,7 +141,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_accounts_user_id": {
+          "name": "idx_accounts_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "accounts_user_id_users_id_fk": {
           "name": "accounts_user_id_users_id_fk",
@@ -361,7 +377,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_carousel_items_active_order": {
+          "name": "idx_carousel_items_active_order",
+          "columns": [
+            {
+              "expression": "active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -507,7 +545,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_equality_documents_active_order": {
+          "name": "idx_equality_documents_active_order",
+          "columns": [
+            {
+              "expression": "active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -653,7 +713,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_featured_links_active_order": {
+          "name": "idx_featured_links_active_order",
+          "columns": [
+            {
+              "expression": "active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -793,7 +875,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_financial_reports_active_order": {
+          "name": "idx_financial_reports_active_order",
+          "columns": [
+            {
+              "expression": "active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -1072,7 +1176,7 @@
           "name": "unsubscribe_token",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "consent_ip": {
           "name": "consent_ip",
@@ -1181,6 +1285,10 @@
         "newsletter_subscribers_consent_source_check": {
           "name": "newsletter_subscribers_consent_source_check",
           "value": "\"newsletter_subscribers\".\"consent_source\" in ('web_form', 'email_link', 'admin_manual', 'legacy_import', 'system')"
+        },
+        "newsletter_subscribers_locale_check": {
+          "name": "newsletter_subscribers_locale_check",
+          "value": "\"newsletter_subscribers\".\"locale\" IS NULL OR \"newsletter_subscribers\".\"locale\" in ('es', 'en')"
         }
       },
       "isRLSEnabled": false
@@ -1336,6 +1444,13 @@
           "notNull": true,
           "default": true
         },
+        "public_visible": {
+          "name": "public_visible",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "sent_at": {
           "name": "sent_at",
           "type": "timestamp",
@@ -1423,6 +1538,27 @@
             },
             {
               "expression": "last_delivery_worker_token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_newsletters_public_visible_month": {
+          "name": "idx_newsletters_public_visible_month",
+          "columns": [
+            {
+              "expression": "public_visible",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "month",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1625,12 +1761,7 @@
         }
       },
       "policies": {},
-      "checkConstraints": {
-        "organization_members_socials_shape_check": {
-          "name": "organization_members_socials_shape_check",
-          "value": "is_valid_organization_member_socials(\"organization_members\".\"socials\")"
-        }
-      },
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.press_article_tags": {
@@ -1656,7 +1787,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_press_article_tags_tag_id": {
+          "name": "idx_press_article_tags_tag_id",
+          "columns": [
+            {
+              "expression": "tag_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "press_article_tags_press_article_id_press_articles_id_fk": {
           "name": "press_article_tags_press_article_id_press_articles_id_fk",
@@ -2058,7 +2205,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_sessions_user_id": {
+          "name": "idx_sessions_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "sessions_user_id_users_id_fk": {
           "name": "sessions_user_id_users_id_fk",
@@ -2532,7 +2695,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_team_members_team_area_id": {
+          "name": "idx_team_members_team_area_id",
+          "columns": [
+            {
+              "expression": "team_area_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "team_members_team_area_id_team_areas_id_fk": {
           "name": "team_members_team_area_id_team_areas_id_fk",

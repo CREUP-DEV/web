@@ -26,12 +26,29 @@ export default defineCachedEventHandler(
         db.query.carouselItems.findMany({
           where: eq(carouselItems.active, true),
           orderBy: [asc(carouselItems.order), asc(carouselItems.id)],
-          with: { translations: true },
+          with: {
+            translations: {
+              columns: {
+                locale: true,
+                title: true,
+                buttonText: true,
+                alt: true,
+              },
+            },
+          },
         }),
         db.query.featuredLinks.findMany({
           where: eq(featuredLinks.active, true),
           orderBy: [asc(featuredLinks.order), asc(featuredLinks.id)],
-          with: { translations: true },
+          with: {
+            translations: {
+              columns: {
+                locale: true,
+                title: true,
+                alt: true,
+              },
+            },
+          },
         }),
       ])
 

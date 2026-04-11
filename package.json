@@ -15,7 +15,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx drizzle/seed.ts"
+    "db:seed": "tsx drizzle/seed.ts",
+    "i18n:check": "tsx scripts/check-i18n-parity.ts"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",
@@ -39,6 +40,7 @@
     "nodemailer": "^8.0.5",
     "nuxt": "^4.4.2",
     "nuxt-umami": "^3.2.1",
+    "p-limit": "^7.3.0",
     "pg": "^8.20.0",
     "photoswipe": "^5.4.4",
     "satori": "^0.26.0",

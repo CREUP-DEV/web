@@ -17,6 +17,7 @@ const { formatShortDate } = useDatePresets()
 const today = ref(new Date())
 const currentYear = ref(today.value.getFullYear())
 const currentMonth = ref(today.value.getMonth())
+let midnightUpdateTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(() => {
   const msUntilMidnight = () => {
@@ -24,12 +25,18 @@ onMounted(() => {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime()
   }
   const scheduleMidnightUpdate = () => {
-    setTimeout(() => {
+    midnightUpdateTimer = setTimeout(() => {
       today.value = new Date()
       scheduleMidnightUpdate()
     }, msUntilMidnight())
   }
   scheduleMidnightUpdate()
+})
+
+onBeforeUnmount(() => {
+  if (midnightUpdateTimer) {
+    clearTimeout(midnightUpdateTimer)
+  }
 })
 
 const selectedDay = ref<number>(-1)
@@ -225,9 +232,7 @@ useSwipe(calendarEl, {
 
 <template>
   <section aria-labelledby="public-agenda-heading" class="h-full">
-    <div
-      class="bg-surface/50 flex h-full flex-col rounded-2xl p-4 ring-1 ring-gray-200/50 sm:p-5 dark:ring-gray-800/50"
-    >
+    <div class="bg-surface/50 ring-default flex h-full flex-col rounded-2xl p-4 ring-1 sm:p-5">
       <header class="mb-4 flex items-center justify-between">
         <h2 id="public-agenda-heading" class="text-xl font-semibold sm:text-2xl">
           {{ t('home.publicAgenda') }}

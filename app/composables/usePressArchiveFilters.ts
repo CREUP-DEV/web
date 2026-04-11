@@ -16,7 +16,7 @@ export function usePressArchiveFilters(type: MaybeRefOrGetter<PressArticleType>)
     serialize: (value) => (value > 1 ? String(Math.floor(value)) : null),
   })
 
-  const availableTagSlugs = computed(() => new Set(tags.data.value?.tags.map((tag) => tag.slug)))
+  const availableTagSlugs = computed(() => new Set(tags.data.value?.items.map((tag) => tag.slug)))
   const selectedTag = computed<string | null>(() => {
     const slug = tagQuery.value
     if (!slug) {

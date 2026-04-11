@@ -1,22 +1,22 @@
 <script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
+import { useMediaQuery } from '@vueuse/core'
 import { useAuth } from '@/composables/useAuth'
 import { getInitials } from '@/utils/initials'
 import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 const { session, signOut } = useAuth()
 
-// Admin is always in the default locale (Spanish). Force it on first mount.
-const { setLocale } = useI18n()
+// Admin is always in the default locale (Spanish). Force it while this layout is mounted.
+const { locale, setLocale } = useI18n()
 const { defaultLocale } = useLocales()
+const previousLocale = locale.value as Locale
 await setLocale(defaultLocale as Locale)
 
 const route = useRoute()
-
-const navigation = [
-  { name: 'Panel', to: '/admin', icon: 'i-tabler-layout-dashboard' },
-  ...ADMIN_SECTION_DEFINITIONS,
-]
+const isMobileSidebar = useMediaQuery('(max-width: 1023px)')
+const sidebarOpen = useState('admin-sidebar-open', () => true)
 
 const avatarLoadFailed = ref(false)
 const adminInitials = computed(() => {
@@ -25,6 +25,17 @@ const adminInitials = computed(() => {
     session.value.data?.user?.email?.trim() ||
     'Administración'
   return getInitials(source)
+})
+
+const navigationCollapsed = computed(() => !sidebarOpen.value && !isMobileSidebar.value)
+const toggleSidebarIcon = computed(() => {
+  if (isMobileSidebar.value) {
+    return 'i-tabler-menu-2'
+  }
+
+  return sidebarOpen.value
+    ? 'i-tabler-layout-sidebar-left-collapse'
+    : 'i-tabler-layout-sidebar-left-expand'
 })
 
 watch(
@@ -36,15 +47,56 @@ watch(
 
 const isNavItemActive = (to: string) => {
   if (to === '/admin') return route.path === '/admin'
-  return route.path === to || route.path.startsWith(to + '/')
+  return route.path === to || route.path.startsWith(`${to}/`)
 }
+
+const allNavItems = [
+  { label: 'Panel', to: '/admin' },
+  ...ADMIN_SECTION_DEFINITIONS.map((item) => ({ label: item.name, to: item.to })),
+]
+
+const currentPageLabel = computed(() => allNavItems.find((item) => isNavItemActive(item.to))?.label)
+
+const navigationItems = computed<NavigationMenuItem[][]>(() => [
+  [
+    {
+      label: 'Panel',
+      to: '/admin',
+      icon: 'i-tabler-home',
+      active: isNavItemActive('/admin'),
+      onSelect: () => {
+        if (isMobileSidebar.value) {
+          sidebarOpen.value = false
+        }
+      },
+    },
+    ...ADMIN_SECTION_DEFINITIONS.map((item) => ({
+      label: item.name,
+      to: item.to,
+      icon: item.icon,
+      active: isNavItemActive(item.to),
+      onSelect: () => {
+        if (isMobileSidebar.value) {
+          sidebarOpen.value = false
+        }
+      },
+    })),
+  ],
+])
+
+const toggleSidebarLabel = computed(() =>
+  sidebarOpen.value ? 'Contraer menú lateral' : 'Expandir menú lateral'
+)
+
+onBeforeUnmount(() => {
+  if (locale.value !== previousLocale) {
+    void setLocale(previousLocale)
+  }
+})
 
 useHead({
   titleTemplate: (titleChunk) => (titleChunk ? `${titleChunk} | Admin CREUP` : 'Admin CREUP'),
 })
-
-// Persist sidebar state across admin page navigations.
-const sidebarOpen = useState('admin-sidebar-open', () => false)
 </script>
 
 <template>
@@ -56,117 +108,199 @@ const sidebarOpen = useState('admin-sidebar-open', () => false)
       Saltar al contenido principal
     </a>
 
-    <div
-      v-if="sidebarOpen"
-      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
-      aria-hidden="true"
-      @click="sidebarOpen = false"
-    />
-
-    <aside
-      aria-label="Navegación de administración"
-      :class="[
-        'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-white shadow-lg transition-transform duration-200 lg:translate-x-0 dark:bg-gray-900',
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-      ]"
-    >
-      <div class="flex h-16 items-center justify-between border-b px-4">
-        <NuxtLink to="/admin" class="flex items-center gap-2">
-          <span class="text-lg font-bold">Administración</span>
-        </NuxtLink>
-        <UButton
-          icon="i-tabler-x"
-          variant="ghost"
-          class="lg:hidden"
-          aria-label="Cerrar menú lateral"
-          @click="sidebarOpen = false"
-        />
-      </div>
-
-      <nav class="flex-1 space-y-1 overflow-y-auto p-4" aria-label="Secciones de administración">
-        <NuxtLink
-          v-for="item in navigation"
-          :key="item.to"
-          :to="item.to"
-          class="text-foreground/70 hover:bg-muted flex items-center gap-3 rounded-lg px-3 py-2 transition-colors"
-          :class="{ '!bg-primary/10 !text-primary': isNavItemActive(item.to) }"
-          @click="sidebarOpen = false"
-        >
-          <UIcon :name="item.icon" class="size-5" />
-          <span>{{ item.name }}</span>
-        </NuxtLink>
-      </nav>
-
-      <div class="border-t p-4">
-        <ClientOnly>
-          <div class="flex items-center gap-3">
-            <img
-              v-if="session.data?.user?.image && !avatarLoadFailed"
-              :src="session.data.user.image"
-              :alt="
-                session.data.user.name ? `Avatar de ${session.data.user.name}` : 'Avatar de usuario'
-              "
-              class="size-8 rounded-full text-xs"
-              loading="eager"
-              decoding="async"
-              @error="avatarLoadFailed = true"
-            />
+    <div class="flex min-h-screen">
+      <USidebar
+        v-model:open="sidebarOpen"
+        collapsible="icon"
+        mode="slideover"
+        :ui="{
+          root: '[--sidebar-width-icon:4.75rem] transition-[width] duration-300 ease-in-out',
+          container: 'h-full',
+        }"
+      >
+        <template #header="{ state, close }">
+          <div
+            :class="[
+              'relative flex w-full overflow-visible',
+              state === 'expanded' ? 'items-start gap-3 pr-10' : 'items-center justify-center',
+            ]"
+          >
             <div
-              v-else
-              class="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold"
-              aria-hidden="true"
+              :class="[
+                'flex items-center',
+                state === 'expanded' ? 'min-w-0 gap-3 overflow-hidden' : 'w-full justify-center',
+              ]"
             >
-              {{ adminInitials }}
+              <div
+                class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg"
+              >
+                <UIcon name="i-tabler-layout-dashboard" class="size-5" />
+              </div>
+
+              <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-x-1"
+                enter-to-class="opacity-100 translate-x-0"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 translate-x-0"
+                leave-to-class="opacity-0 -translate-x-1"
+              >
+                <div v-if="state === 'expanded'" class="min-w-0">
+                  <p class="truncate text-sm font-semibold">Administración</p>
+                </div>
+              </Transition>
             </div>
-            <div class="flex-1 truncate">
-              <p class="truncate text-sm font-medium">{{ session.data?.user?.name }}</p>
-              <p class="text-muted truncate text-xs">{{ session.data?.user?.email }}</p>
-            </div>
+
             <UButton
-              icon="i-tabler-logout"
+              icon="i-tabler-x"
               variant="ghost"
-              size="sm"
-              title="Cerrar sesión"
-              @click="signOut"
+              class="absolute top-0 -right-1 shrink-0 lg:hidden"
+              aria-label="Cerrar menú lateral"
+              @click="close"
             />
           </div>
+        </template>
 
-          <template #fallback>
-            <div class="flex items-center gap-3">
-              <div class="bg-muted size-8 rounded-full" aria-hidden="true" />
-              <div class="flex-1 truncate">
-                <p class="truncate text-sm font-medium">Administración</p>
-                <p class="text-muted truncate text-xs">Cargando sesión...</p>
-              </div>
-            </div>
-          </template>
-        </ClientOnly>
-      </div>
-    </aside>
-
-    <div class="lg:pl-64">
-      <header
-        class="bg-surface/80 sticky top-0 z-30 flex h-16 items-center gap-4 border-b px-4 backdrop-blur"
-      >
-        <UButton
-          icon="i-tabler-menu"
-          variant="ghost"
-          class="lg:hidden"
-          aria-label="Abrir menú lateral"
-          @click="sidebarOpen = true"
+        <UNavigationMenu
+          :items="navigationItems"
+          orientation="vertical"
+          :collapsed="navigationCollapsed"
+          :tooltip="{ delayDuration: 0, content: { side: 'right' } }"
+          :ui="{
+            link: 'h-11 px-2.5 text-sm overflow-hidden',
+            linkLeadingIcon: 'size-5 shrink-0',
+            linkLabel: 'truncate',
+          }"
         />
-        <div class="flex-1" />
 
-        <UColorModeButton />
+        <template #footer="{ state }">
+          <ClientOnly>
+            <div
+              :class="[
+                'flex w-full items-center overflow-hidden',
+                state === 'expanded' ? 'gap-3' : 'justify-center',
+              ]"
+            >
+              <img
+                v-if="session.data?.user?.image && !avatarLoadFailed"
+                :src="session.data.user.image"
+                :alt="
+                  session.data.user.name
+                    ? `Avatar de ${session.data.user.name}`
+                    : 'Avatar de usuario'
+                "
+                class="size-8 shrink-0 rounded-full text-xs"
+                loading="eager"
+                decoding="async"
+                @error="avatarLoadFailed = true"
+              />
+              <div
+                v-else
+                class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                aria-hidden="true"
+              >
+                {{ adminInitials }}
+              </div>
 
-        <UButton to="/" icon="i-tabler-external-link" variant="ghost" color="neutral">
-          Ver sitio
-        </UButton>
-      </header>
+              <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-x-1"
+                enter-to-class="opacity-100 translate-x-0"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 translate-x-0"
+                leave-to-class="opacity-0 -translate-x-1"
+              >
+                <div v-if="state === 'expanded'" class="flex min-w-0 flex-1 items-center gap-1">
+                  <div class="min-w-0 flex-1">
+                    <p class="line-clamp-2 text-sm leading-tight font-medium">
+                      {{ session.data?.user?.name || 'Administración' }}
+                    </p>
+                    <p class="text-muted truncate text-xs">{{ session.data?.user?.email }}</p>
+                  </div>
 
-      <main id="admin-main-content" tabindex="-1" class="p-4 sm:p-6 lg:p-8">
-        <slot />
-      </main>
+                  <UButton
+                    icon="i-tabler-logout"
+                    variant="ghost"
+                    class="shrink-0"
+                    size="sm"
+                    title="Cerrar sesión"
+                    @click="signOut"
+                  />
+                </div>
+              </Transition>
+            </div>
+
+            <template #fallback>
+              <div
+                :class="[
+                  'flex w-full items-center overflow-hidden',
+                  state === 'expanded' ? 'gap-3' : 'justify-center',
+                ]"
+              >
+                <div class="bg-muted size-8 shrink-0 rounded-full" aria-hidden="true" />
+                <Transition
+                  enter-active-class="transition-all duration-200 ease-out"
+                  enter-from-class="opacity-0 -translate-x-1"
+                  enter-to-class="opacity-100 translate-x-0"
+                  leave-active-class="transition-all duration-150 ease-in"
+                  leave-from-class="opacity-100 translate-x-0"
+                  leave-to-class="opacity-0 -translate-x-1"
+                >
+                  <div v-if="state === 'expanded'" class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium">Administración</p>
+                    <p class="text-muted truncate text-xs">Cargando sesión...</p>
+                  </div>
+                </Transition>
+              </div>
+            </template>
+          </ClientOnly>
+        </template>
+      </USidebar>
+
+      <div
+        class="bg-default flex min-w-0 flex-1 flex-col overflow-hidden transition-[width] duration-300 ease-in-out"
+      >
+        <header
+          class="border-default flex h-(--ui-header-height) shrink-0 items-center gap-3 border-b px-4"
+        >
+          <UButton
+            :icon="toggleSidebarIcon"
+            color="neutral"
+            variant="ghost"
+            class="shrink-0"
+            :aria-label="toggleSidebarLabel"
+            :title="toggleSidebarLabel"
+            @click="sidebarOpen = !sidebarOpen"
+          />
+
+          <Transition
+            mode="out-in"
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-1"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 translate-y-1"
+          >
+            <div v-if="currentPageLabel" :key="currentPageLabel" class="flex items-center gap-3">
+              <USeparator orientation="vertical" class="h-5" />
+              <p class="text-sm font-semibold">{{ currentPageLabel }}</p>
+            </div>
+          </Transition>
+
+          <div class="flex-1" />
+
+          <UColorModeButton />
+
+          <UButton to="/" icon="i-tabler-external-link" variant="ghost" color="neutral" size="sm">
+            Ver sitio
+          </UButton>
+        </header>
+
+        <main id="admin-main-content" tabindex="-1" class="flex-1 p-4 sm:p-6 lg:p-8">
+          <slot />
+        </main>
+      </div>
     </div>
   </div>
 </template>

@@ -348,7 +348,7 @@ function formatMonth(dateStr: string): string {
               :items="privacyAccordionItems"
               type="multiple"
               :ui="{
-                root: 'rounded-xl border',
+                root: 'rounded-xl',
                 trigger: 'px-4 py-3 text-sm font-medium',
                 body: 'px-4 pb-4 pt-0',
               }"

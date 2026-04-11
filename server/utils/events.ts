@@ -1,13 +1,12 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
+import { getPublicApiErrorMessage } from './apiErrorMessages'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from './externalAssetProxy'
 import { logError } from './logger'
-import { getRequestLocaleContext } from './requestLocale'
 import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
 import { externalEventsResponseSchema } from './validation'
 import { EVENT_DOCUMENT_PUBLIC_BASE, EVENT_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 interface EventBannerOutput {
   url: string | null
@@ -52,15 +51,6 @@ export interface EventOutput {
 export interface EventsPayload {
   events: EventOutput[]
   generatedAt: string | null
-}
-
-const messagesByLocale = {
-  en: {
-    unavailable: 'Event data is temporarily unavailable.',
-  },
-  es: {
-    unavailable: 'La información de los eventos no está disponible temporalmente.',
-  },
 }
 
 const normalizeText = (value: string | null | undefined): string | null => {
@@ -140,9 +130,7 @@ const mapOrganization = (
 export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const configuredBaseOrigin = getUrlOrigin(configuredBaseUrl)
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
+  const unavailableMessage = getPublicApiErrorMessage(event, 'eventsUnavailable')
 
   return withExternalApiSWRCache(
     `external-api:eventos:${configuredBaseUrl}`,
@@ -156,7 +144,7 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
         logError('external.events.fetch', error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: unavailableMessage,
         })
       }
 
@@ -165,7 +153,7 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
         logError('external.events.invalid-payload', parsedPayload.error, { endpoint }, event)
         throw createError({
           statusCode: 502,
-          statusMessage: messages.unavailable,
+          message: unavailableMessage,
         })
       }
 
@@ -219,4 +207,13 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
     },
     getExternalApiCacheOptions(event)
   )
+}
+
+export async function getEventBySlug(event: H3Event, slug: string) {
+  const payload = await getEventsPayload(event)
+
+  return {
+    event: payload.events.find((entry) => entry.slug === slug) ?? null,
+    generatedAt: payload.generatedAt,
+  }
 }

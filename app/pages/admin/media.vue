@@ -96,8 +96,7 @@ const saveOrder = async () => {
     await persistOrder()
     toast.add({ title: 'Orden guardado', color: 'success' })
   } catch (e) {
-    console.error('Error saving order:', e)
-    toast.add({ title: 'No se pudo guardar el orden', color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, 'No se pudo guardar el orden'), color: 'error' })
   }
 }
 
@@ -132,7 +131,6 @@ const handleSubmit = async () => {
     clearErrors()
     await refresh()
   } catch (e) {
-    console.error('Error saving:', e)
     toast.add({ title: getApiErrorMessage(e, 'No se pudo guardar el medio'), color: 'error' })
   } finally {
     isSubmitting.value = false
@@ -148,8 +146,7 @@ const handleDelete = async () => {
     await refresh()
     toast.add({ title: 'Medio eliminado', color: 'success' })
   } catch (e) {
-    console.error('Error deleting:', e)
-    toast.add({ title: 'No se pudo eliminar el medio', color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, 'No se pudo eliminar el medio'), color: 'error' })
   } finally {
     isDeleting.value = false
   }
@@ -173,7 +170,7 @@ const handleDelete = async () => {
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface ring-default rounded-xl p-4 shadow-sm ring-1"
       >
         <div class="hidden items-center gap-4 md:flex">
           <div class="drag-handle cursor-grab active:cursor-grabbing">

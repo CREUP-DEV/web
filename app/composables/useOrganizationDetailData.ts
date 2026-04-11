@@ -11,7 +11,6 @@ import {
 
 export const useOrganizationDetailData = () => {
   const { t } = useI18n()
-  const { getCopyEmailAriaLabel } = usePersonHelpers()
 
   const getCommunityLabel = (community: string, fallback?: string) => {
     const key = `members.communities.${community}`
@@ -30,10 +29,7 @@ export const useOrganizationDetailData = () => {
       logoLight: string | null
       logoDark: string | null
     },
-    base: Omit<
-      OrganizationDetailModalData,
-      'website' | 'email' | 'socialButtons' | 'copyEmailAriaLabel'
-    >
+    base: Omit<OrganizationDetailModalData, 'website' | 'email' | 'socialButtons'>
   ): OrganizationDetailModalData => {
     const website = resolveWebsiteData(entity.socialNetworks)
     const email = resolveEmailData(entity.socialNetworks)
@@ -43,7 +39,6 @@ export const useOrganizationDetailData = () => {
       website,
       email,
       socialButtons: resolveSocialButtons(entity.socialNetworks),
-      copyEmailAriaLabel: email ? getCopyEmailAriaLabel(email.email) : null,
     }
   }
 
@@ -63,12 +58,12 @@ export const useOrganizationDetailData = () => {
 
   const buildSectorialDetailData = (sectorial: SectorialMember): OrganizationDetailModalData =>
     toModalData(sectorial, {
-      eyebrow: t('members.sectoriales.title'),
+      eyebrow: sectorial.initials || t('members.sectoriales.title'),
       heading: sectorial.denomination || t('members.unknownDenomination'),
       aboutTitle: t('members.descriptionLabel'),
       imageAlt: sectorial.denomination || t('members.unknownDenomination'),
       description: sectorial.description,
-      initials: sectorial.initials,
+      initials: null,
       communityLabel: null,
       ...getEntityLogos(sectorial),
     })

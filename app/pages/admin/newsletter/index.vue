@@ -14,6 +14,7 @@ interface Newsletter {
   coverImage: string
   pdfUrl: string
   active: boolean
+  publicVisible: boolean
   isSending: boolean
   sentAt: string | null
   createdAt: string
@@ -64,6 +65,7 @@ const form = reactive({
   coverImage: '',
   pdfUrl: '',
   active: true,
+  publicVisible: false,
   sendEmail: false,
 })
 
@@ -85,6 +87,7 @@ const {
     form.coverImage = ''
     form.pdfUrl = ''
     form.active = true
+    form.publicVisible = false
     form.sendEmail = false
     imageUpload.setPreview(null)
     pdfUpload.setFile(null)
@@ -95,6 +98,7 @@ const {
     form.coverImage = item.coverImage
     form.pdfUrl = item.pdfUrl
     form.active = item.active
+    form.publicVisible = item.publicVisible
     form.sendEmail = false
     imageUpload.setPreview(item.coverImage || null)
     pdfUpload.setFile(item.pdfUrl)
@@ -184,6 +188,7 @@ async function handleSubmit() {
     coverImage: form.coverImage,
     pdfUrl: form.pdfUrl,
     active: form.active,
+    publicVisible: form.publicVisible,
     sendEmail: editingItem.value ? false : form.sendEmail,
   }
 
@@ -201,6 +206,7 @@ async function handleSubmit() {
           coverImage: form.coverImage,
           pdfUrl: form.pdfUrl,
           active: form.active,
+          publicVisible: form.publicVisible,
         },
       })
       toast.add({ title: 'Newsletter actualizada', color: 'success' })
@@ -212,6 +218,7 @@ async function handleSubmit() {
           coverImage: form.coverImage,
           pdfUrl: form.pdfUrl,
           active: form.active,
+          publicVisible: form.publicVisible,
           sendEmail: form.sendEmail,
         },
       })
@@ -344,7 +351,7 @@ onBeforeUnmount(() => {
       <div
         v-for="item in items"
         :key="item.id"
-        class="bg-surface flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1 ring-gray-200/50 dark:ring-gray-800/50"
+        class="bg-surface ring-default flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1"
       >
         <img
           :src="item.coverImage"
@@ -365,7 +372,13 @@ onBeforeUnmount(() => {
               :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
               class="rounded-full px-2 py-0.5 text-xs"
             >
-              {{ item.active ? 'Activa' : 'Inactiva' }}
+              {{ item.active ? 'Envío habilitado' : 'Envío deshabilitado' }}
+            </span>
+            <span
+              :class="item.publicVisible ? 'bg-primary/10 text-primary' : 'bg-muted text-muted'"
+              class="rounded-full px-2 py-0.5 text-xs"
+            >
+              {{ item.publicVisible ? 'Visible en web' : 'Oculta en web' }}
             </span>
             <span
               :class="
@@ -439,7 +452,7 @@ onBeforeUnmount(() => {
             size="sm"
             :loading="sendingItemId === item.id"
             :disabled="!item.active || sendingItemId === item.id"
-            :title="!item.active ? 'Activa la newsletter para poder enviarla' : undefined"
+            :title="!item.active ? 'Habilita el envío para poder enviarla' : undefined"
             :aria-label="`Enviar newsletter de ${formatMonth(item.monthKey)}`"
             @click="handleManualSend(item)"
           />
@@ -543,8 +556,22 @@ onBeforeUnmount(() => {
             </div>
           </UFormField>
 
-          <UFormField label="Activa">
+          <UFormField label="Envío habilitado" :error="getFieldError('active')">
             <USwitch v-model="form.active" />
+            <template #hint>
+              <span class="text-dimmed text-xs">
+                Controla si la newsletter se puede enviar por correo.
+              </span>
+            </template>
+          </UFormField>
+
+          <UFormField label="Visible en la web">
+            <USwitch v-model="form.publicVisible" />
+            <template #hint>
+              <span class="text-dimmed text-xs">
+                Controla si aparece en el archivo público y en el sitemap.
+              </span>
+            </template>
           </UFormField>
 
           <UFormField v-if="!editingItem" label="Enviar correo a suscriptores">

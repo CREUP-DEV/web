@@ -1,11 +1,10 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { createHash } from 'node:crypto'
+import { getPublicApiErrorMessage } from './apiErrorMessages'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
-import { getRequestLocaleContext } from './requestLocale'
 import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
 import { externalPolicyDocumentsResponseSchema } from './validation'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const POLICY_DOCUMENT_ENDPOINT_BY_TYPE = {
   posicionamiento: '/api/posicionamientos',
@@ -20,14 +19,6 @@ const POLICY_DOCUMENT_TYPE_BY_API_PATH = {
 } as const
 
 const POLICY_DOCUMENT_FILE_CACHE_VERSION = 2
-const messagesByLocale = {
-  en: {
-    unavailable: 'The requested documents are temporarily unavailable.',
-  },
-  es: {
-    unavailable: 'La documentación solicitada no está disponible temporalmente.',
-  },
-}
 
 type PolicyDocumentRouteType = keyof typeof POLICY_DOCUMENT_ENDPOINT_BY_TYPE
 
@@ -83,9 +74,7 @@ async function buildPolicyDocumentFileRegistryFromExternal(
   type: PolicyDocumentRouteType
 ) {
   const configuredBaseUrl = getConfiguredBaseUrl(event)
-  const { locale, fallbackLocale } = getRequestLocaleContext(event)
-  const messages =
-    pickLocalizedValue(messagesByLocale, locale, fallbackLocale) ?? messagesByLocale.es
+  const unavailableMessage = getPublicApiErrorMessage(event, 'policyDocumentsUnavailable')
 
   const endpoint = new URL(POLICY_DOCUMENT_ENDPOINT_BY_TYPE[type], configuredBaseUrl).toString()
   const payload = await $fetch<unknown>(endpoint)
@@ -94,7 +83,7 @@ async function buildPolicyDocumentFileRegistryFromExternal(
   if (!parsed.success) {
     throw createError({
       statusCode: 502,
-      statusMessage: messages.unavailable,
+      message: unavailableMessage,
     })
   }
 

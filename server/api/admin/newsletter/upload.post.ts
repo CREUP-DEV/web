@@ -1,8 +1,9 @@
-import { defineEventHandler, createError, readMultipartFormData, getRequestHeader } from 'h3'
+import { defineEventHandler, createError, readMultipartFormData } from 'h3'
 import { extname } from 'node:path'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../../utils/externalAssetProxy'
 import { ALLOWED_ADMIN_IMAGE_EXTENSIONS, saveAdminImage } from '../../../utils/adminImageUpload'
 import { saveAdminDocument } from '../../../utils/adminDocumentUpload'
+import { assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
 import { validateMultipartFile } from '../../../utils/validation'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
@@ -18,10 +19,7 @@ const PDF_UPLOAD_DIR = 'public/prensa/newsletter/documentos'
 const UPLOAD_MAX_REQUEST_BYTES = 22 * 1024 * 1024 // 22 MB hard ceiling (above PDF limit)
 
 export default defineEventHandler(async (event) => {
-  const rawContentLength = Number(getRequestHeader(event, 'content-length') ?? NaN)
-  if (!Number.isNaN(rawContentLength) && rawContentLength > UPLOAD_MAX_REQUEST_BYTES) {
-    throw createError({ statusCode: 413, message: 'Solicitud demasiado grande' })
-  }
+  assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
 
   const formData = await readMultipartFormData(event)
   const file = validateMultipartFile(formData)

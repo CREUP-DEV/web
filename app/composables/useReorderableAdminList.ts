@@ -34,17 +34,19 @@ export function useReorderableAdminList<T extends ReorderableAdminEntity>(
     { immediate: true }
   )
 
-  onMounted(() => {
-    if (!options.listRef.value) {
-      return
-    }
+  // Watch the listRef so Sortable initialises even when the list renders conditionally
+  // after data loads (listRef is null at mount time in that case).
+  const stopSortableWatch = watch(
+    options.listRef,
+    async (el) => {
+      if (!el) return
 
-    void (async () => {
+      sortableInstance?.destroy()
+      sortableInstance = null
+
       const { default: SortableJs } = await import('sortablejs')
 
-      if (!options.listRef.value) {
-        return
-      }
+      if (!options.listRef.value) return
 
       sortableInstance = SortableJs.create(options.listRef.value, {
         animation: 150,
@@ -61,10 +63,12 @@ export function useReorderableAdminList<T extends ReorderableAdminEntity>(
           }
         },
       })
-    })
-  })
+    },
+    { immediate: true }
+  )
 
   onUnmounted(() => {
+    stopSortableWatch()
     sortableInstance?.destroy()
   })
 

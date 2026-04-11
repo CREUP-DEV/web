@@ -57,8 +57,10 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
         }"
         class="mt-5 w-full pb-6"
       >
-        <article class="flex h-full flex-col sm:h-auto">
-          <div class="bg-muted relative aspect-1925/550 w-full overflow-hidden rounded-t-xl">
+        <article
+          class="border-default flex h-full flex-col overflow-hidden rounded-xl border sm:h-auto"
+        >
+          <div class="bg-muted relative aspect-1925/550 w-full overflow-hidden">
             <NuxtImg
               :src="item.image || HOME_CAROUSEL_FALLBACK_IMAGE"
               :alt="item.alt || item.title"
@@ -74,7 +76,7 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
           </div>
 
           <div
-            class="bg-surface/70 flex min-h-28 grow flex-col justify-end rounded-b-xl border border-gray-200/70 p-4 ring-1 ring-gray-200/40 transition-[height] duration-300 ease-in-out sm:min-h-0 sm:grow-0 sm:p-5 dark:border-gray-800/70 dark:ring-gray-800/40"
+            class="bg-surface/70 flex min-h-28 grow flex-col justify-end p-4 transition-[height] duration-300 ease-in-out sm:min-h-0 sm:grow-0 sm:p-5"
           >
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p

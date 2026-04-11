@@ -2,13 +2,14 @@
 const props = defineProps<{
   type?: string
   selectedSlug: string | null
+  ariaLabel?: string
 }>()
 
 const { t } = useI18n()
 const { data: tagsData, pending } = useTags(() => props.type)
 
 const tagList = computed(() => {
-  const availableTags = tagsData.value?.tags ?? []
+  const availableTags = tagsData.value?.items ?? []
 
   return [
     {
@@ -19,6 +20,7 @@ const tagList = computed(() => {
   ]
 })
 const isLoading = computed(() => pending.value || tagsData.value == null)
+const groupAriaLabel = computed(() => props.ariaLabel ?? t('home.latestNews'))
 
 const emit = defineEmits<{
   (e: 'select', tagSlug: string | null): void
@@ -34,7 +36,7 @@ const onSelectTag = (slug: string | null) => {
     <div
       class="flex flex-nowrap items-center gap-2 pb-2 sm:flex-wrap sm:gap-2 sm:pb-0"
       role="group"
-      :aria-label="t('home.latestNews')"
+      :aria-label="groupAriaLabel"
     >
       <template v-if="isLoading">
         <USkeleton v-for="n in 5" :key="n" class="h-8 w-20 rounded-full" aria-hidden="true" />

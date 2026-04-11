@@ -20,7 +20,7 @@ export interface MicManifest {
   pdf: string
 }
 
-export const MIC_MANIFEST_PATH = '/documentos/imagen/MIC/manifest.json'
+export const MIC_MANIFEST_PATH = '/marca/manifest.json'
 
 const micLogoVariantSchema = z.object({
   key: z.string().trim().min(1),
@@ -43,7 +43,7 @@ const micManifestSchema = z.object({
 })
 
 export const DEFAULT_MIC_MANIFEST: MicManifest = {
-  basePath: '/documentos/imagen/MIC',
+  basePath: '/marca',
   logoVariants: [
     { key: 'granate', slug: 'granate', labelKey: 'mic.variants.granate' },
     { key: 'grisOscuro', slug: 'gris-oscuro', labelKey: 'mic.variants.grisOscuro' },

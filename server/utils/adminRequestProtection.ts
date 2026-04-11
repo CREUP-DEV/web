@@ -34,6 +34,5 @@ export function assertSameOriginAdminMutationRequest(event: H3Event) {
   throw createError({
     statusCode: 403,
     message: 'Solicitud no permitida.',
-    statusMessage: 'Solicitud no permitida.',
   })
 }

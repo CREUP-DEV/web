@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import { socialNetworkIcons, type SocialNetworkEntry } from '~~/shared/utils/social'
+import { detailModalUi } from '@/utils/detailModalUi'
+import type { SocialNetworkEntry } from '~~/shared/utils/social'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const { t, locale } = useI18n()
 const { fallbackLocale } = useLocales()
 const localeApiHeaders = useLocaleApiHeaders()
-const { copyToClipboard } = useCopyToClipboard()
-const {
-  getDisplayName: getMemberDisplayName,
-  getContactEmail,
-  getSocialButtons,
-  getCopyEmailAriaLabel,
-} = usePersonHelpers()
+const { getDisplayName: getMemberDisplayName, getContactEmail } = usePersonHelpers()
 
 usePageSeo('committees.title', 'committees.description')
 
@@ -50,7 +45,7 @@ interface EnrichedMember extends CommitteeMember {
   committeeId: number
 }
 
-const { data, error } = await useFetch<CommitteesResponse>('/api/comites', {
+const { data, pending, error } = useFetch<CommitteesResponse>('/api/comites', {
   headers: localeApiHeaders,
 })
 
@@ -66,16 +61,15 @@ const getCommitteeDescription = (committee: Committee) =>
   committee.description ??
   ''
 
-const networkIcons = socialNetworkIcons
-
 const getViewProfileAriaLabel = (fullName: string) => `${t('committees.viewProfile')}: ${fullName}`
 const memberCardClass =
-  'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl p-5 ring-1 ring-gray-200/50 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] dark:ring-gray-800/50'
+  'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl ring-1 ring-default p-5 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]'
 const memberCardTriggerClass =
   'focus-visible:ring-primary block w-full rounded-xl text-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
 
 const selectedMember = ref<EnrichedMember | null>(null)
 const modalOpen = ref(false)
+const memberModalUi = detailModalUi
 
 const openMemberModal = (member: CommitteeMember, committee: Committee) => {
   selectedMember.value = {
@@ -90,8 +84,6 @@ const closeMemberModal = () => {
   modalOpen.value = false
   selectedMember.value = null
 }
-
-const copyEmail = (email: string) => copyToClipboard(email, t('common.emailCopied'))
 
 function encodeEmail(email: string) {
   const [user = '', domain = ''] = email.split('@')
@@ -109,8 +101,38 @@ function encodeEmail(email: string) {
         </p>
       </header>
 
+      <div v-if="pending" aria-hidden="true" class="space-y-16">
+        <div v-for="n in 3" :key="n" class="space-y-6">
+          <div class="space-y-3">
+            <USkeleton class="h-8 w-48 rounded-lg" />
+            <USkeleton class="h-4 w-full max-w-2xl rounded" />
+          </div>
+
+          <div class="flex flex-wrap justify-center gap-6">
+            <div
+              v-for="m in 4"
+              :key="m"
+              class="bg-surface/50 ring-default w-full max-w-md rounded-xl p-5 ring-1 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
+            >
+              <div class="space-y-4">
+                <USkeleton class="mx-auto size-24 rounded-full sm:size-28" />
+
+                <div class="space-y-2 text-center">
+                  <USkeleton class="mx-auto h-4 w-28 rounded" />
+                  <USkeleton class="mx-auto h-5 w-40 rounded" />
+                </div>
+
+                <div class="flex justify-center">
+                  <USkeleton class="h-4 w-32 rounded" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <UAlert
-        v-if="error"
+        v-else-if="error"
         class="mb-6"
         color="error"
         variant="soft"
@@ -118,7 +140,7 @@ function encodeEmail(email: string) {
         :title="t('committees.loadError')"
       />
 
-      <div class="space-y-16">
+      <div v-else class="space-y-16">
         <section
           v-for="committee in committees"
           :key="committee.id"
@@ -185,16 +207,13 @@ function encodeEmail(email: string) {
               </button>
 
               <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-                <button
-                  v-if="member.email"
-                  type="button"
-                  class="text-muted hover:text-primary inline-flex items-center gap-1 text-sm transition-colors"
-                  :aria-label="getCopyEmailAriaLabel(member.email)"
-                  @click="copyEmail(member.email)"
-                >
+                <div v-if="member.email" class="text-muted inline-flex items-center gap-1 text-sm">
                   <UIcon name="i-tabler-mail" class="size-4" />
-                  <ObfuscatedEmail v-bind="encodeEmail(member.email)" />
-                </button>
+                  <ObfuscatedEmail
+                    v-bind="encodeEmail(member.email)"
+                    class="hover:text-primary transition-colors"
+                  />
+                </div>
               </div>
             </article>
           </TransitionGroup>
@@ -209,100 +228,18 @@ function encodeEmail(email: string) {
 
     <UModal
       v-model:open="modalOpen"
-      :title="selectedMember?.denomination || selectedMember?.committeeName"
-      :description="t('committees.memberModalDescription')"
+      :ui="memberModalUi"
+      :title="t('team.memberModalTitle')"
       @close="closeMemberModal"
     >
       <template #body>
-        <div v-if="selectedMember" class="space-y-6">
-          <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-            <div
-              class="ring-primary/30 size-28 shrink-0 overflow-hidden rounded-full ring-2 sm:size-32"
-            >
-              <NuxtImg
-                v-if="selectedMember.photo"
-                :src="selectedMember.photo"
-                :alt="getMemberDisplayName(selectedMember)"
-                class="size-full object-cover"
-              />
-              <div
-                v-else
-                class="bg-primary/10 text-primary flex size-full items-center justify-center"
-              >
-                <UIcon name="i-tabler-user" class="size-14" />
-              </div>
-            </div>
-
-            <div class="text-center sm:text-left">
-              <p v-if="selectedMember.denomination" class="text-primary text-lg font-medium">
-                {{ selectedMember.denomination }}
-              </p>
-              <p class="text-foreground text-xl font-bold">
-                {{ getMemberDisplayName(selectedMember) }}
-              </p>
-              <UBadge size="sm" color="neutral" variant="soft" class="mt-1">
-                {{ selectedMember.committeeName }}
-              </UBadge>
-
-              <button
-                v-if="getContactEmail(selectedMember)"
-                type="button"
-                class="text-muted hover:text-primary mt-2 flex items-center gap-1.5 text-sm transition-colors"
-                :aria-label="getCopyEmailAriaLabel(getContactEmail(selectedMember))"
-                @click="copyEmail(getContactEmail(selectedMember))"
-              >
-                <UIcon name="i-tabler-mail" class="size-4" />
-                <span>{{ getContactEmail(selectedMember) }}</span>
-                <UIcon name="i-tabler-copy" class="size-3.5 opacity-50" />
-              </button>
-
-              <div v-if="selectedMember.university || selectedMember.degree" class="mt-3 space-y-1">
-                <p
-                  v-if="selectedMember.university"
-                  class="text-muted flex items-center gap-1.5 text-sm"
-                >
-                  <UIcon name="i-tabler-building" class="size-4 shrink-0" />
-                  <span>{{ selectedMember.university }}</span>
-                </p>
-                <p
-                  v-if="selectedMember.degree"
-                  class="text-muted flex items-center gap-1.5 text-sm"
-                >
-                  <UIcon name="i-tabler-school" class="size-4 shrink-0" />
-                  <span>{{ selectedMember.degree }}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="selectedMember.description">
-            <h4 class="text-foreground mb-2 font-semibold">
-              {{ t('team.about', { name: selectedMember.name }) }}
-            </h4>
-            <div class="text-muted prose prose-sm dark:prose-invert max-w-none whitespace-pre-line">
-              {{ selectedMember.description }}
-            </div>
-          </div>
-
-          <div v-if="getSocialButtons(selectedMember).length > 0">
-            <h4 class="text-foreground mb-3 font-semibold">{{ t('members.socialNetworks') }}</h4>
-            <div class="flex flex-wrap gap-2">
-              <UButton
-                v-for="sn in getSocialButtons(selectedMember)"
-                :key="`${sn.network}-${sn.href}`"
-                :to="sn.href"
-                target="_blank"
-                rel="noopener noreferrer"
-                :icon="networkIcons[sn.network]"
-                color="neutral"
-                variant="soft"
-                size="sm"
-              >
-                {{ t(`members.networks.${sn.network}`) }}
-              </UButton>
-            </div>
-          </div>
-        </div>
+        <TeamPersonModal
+          v-if="selectedMember"
+          :member="selectedMember"
+          :display-name="getMemberDisplayName(selectedMember)"
+          :contact-email="getContactEmail(selectedMember)"
+          @close="closeMemberModal"
+        />
       </template>
     </UModal>
   </div>

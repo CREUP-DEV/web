@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
       uploadDir: COVER_IMAGE_UPLOAD_DIR,
       publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
       slug: buildNewsletterCoverSlug(monthKey),
-      publish: validated.active,
+      publish: validated.publicVisible,
       fallbackBaseName: 'newsletter-portada',
     })
     trackAdminAssetFinalization(cleanupTargets, {
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
       uploadDir: DOCUMENT_UPLOAD_DIR,
       publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
       slug: buildNewsletterDocumentSlug(monthKey),
-      publish: validated.active,
+      publish: validated.publicVisible,
       fallbackBaseName: 'newsletter',
     })
     trackAdminAssetFinalization(cleanupTargets, {
@@ -96,6 +96,7 @@ export default defineEventHandler(async (event) => {
         coverImage,
         pdfUrl,
         active: validated.active,
+        publicVisible: validated.publicVisible,
       })
       .returning()
 

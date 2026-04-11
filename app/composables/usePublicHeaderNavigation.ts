@@ -100,7 +100,6 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
     },
     {
       label: t('nav.about.label'),
-      to: localizedPath('/conocenos/que-es'),
       active: isSectionActive('/conocenos'),
       children: [
         {

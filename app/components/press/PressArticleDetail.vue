@@ -24,6 +24,14 @@ const formatDate = (iso: string) => {
   })
 }
 
+const siteUrl = computed(() => String(siteConfig.url ?? '').replace(/\/$/, ''))
+
+const backToAbsolute = computed(() => {
+  const base = siteUrl.value
+  const path = typeof props.backTo === 'string' ? props.backTo : ''
+  return path ? `${base}${path}` : base
+})
+
 useHead(
   computed(() => ({
     script: [
@@ -35,13 +43,50 @@ useHead(
           headline: props.article.title,
           description: props.article.description || undefined,
           datePublished: props.article.publishedAt,
+          dateModified: props.article.updatedAt ?? props.article.publishedAt,
           image: props.article.image || undefined,
           url: canonicalUrl.value,
+          author: {
+            '@type': 'Organization',
+            name: siteConfig.name,
+            url: siteUrl.value || undefined,
+          },
           publisher: {
             '@type': 'Organization',
             name: siteConfig.name,
-            url: String(siteConfig.url ?? '').trim() || undefined,
+            url: siteUrl.value || undefined,
           },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': canonicalUrl.value,
+          },
+        }),
+      },
+      {
+        type: 'application/ld+json',
+        innerHTML: serializeJsonForHtmlScript({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: siteConfig.name,
+              item: siteUrl.value || undefined,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: props.backLabel,
+              item: backToAbsolute.value,
+            },
+            {
+              '@type': 'ListItem',
+              position: 3,
+              name: props.article.title,
+              item: canonicalUrl.value,
+            },
+          ],
         }),
       },
     ],

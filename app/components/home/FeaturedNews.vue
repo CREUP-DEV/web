@@ -15,6 +15,7 @@ type NewsItem = {
 const props = defineProps<{
   items?: NewsItem[]
   inline?: boolean
+  pending?: boolean
 }>()
 
 const { t } = useI18n()
@@ -25,7 +26,7 @@ const loadedImageKeys = reactive<Record<string, boolean>>({})
 
 const selectedTag = ref<string | null>(null)
 const shouldFetchPress = computed(() => !hasProvidedItems.value)
-const { data: pressData, pending } = usePress(null, selectedTag, 4, undefined, {
+const { data: pressData, pending: pressPending } = usePress(null, selectedTag, 4, undefined, {
   enabled: shouldFetchPress,
 })
 
@@ -34,7 +35,7 @@ const displayItems = computed<NewsItem[]>(() => {
     return props.items
   }
   return (
-    pressData.value?.articles.map((a: PressArticle) => ({
+    pressData.value?.items.map((a: PressArticle) => ({
       title: a.title,
       image: a.image,
       to: `${getPressArticlePublicListPath(a.type)}/${a.slug}`,
@@ -47,8 +48,9 @@ const displayItems = computed<NewsItem[]>(() => {
 })
 
 const isLoading = computed(() => {
+  if (props.pending) return true
   if (hasProvidedItems.value) return false
-  return pending.value || pressData.value == null
+  return pressPending.value || pressData.value == null
 })
 
 const getLocalizedItemLink = (to: string) => (to.startsWith('/') ? localePath(to) : to)
@@ -88,9 +90,9 @@ const onTagSelect = (tagSlug: string | null) => {
   <section aria-labelledby="featured-news-heading" class="h-full">
     <div
       :class="{
-        'bg-surface/50 rounded-2xl p-4 ring-1 ring-gray-200/50 sm:p-5 dark:ring-gray-800/50':
-          inline,
+        'bg-surface/50 ring-default rounded-2xl p-4 ring-1 sm:p-5': inline,
       }"
+      :aria-busy="isLoading || undefined"
       class="flex h-full flex-col"
     >
       <header class="mb-4 flex items-center justify-between">
@@ -101,68 +103,77 @@ const onTagSelect = (tagSlug: string | null) => {
 
       <HomeTagSelector :selected-slug="selectedTag" class="mb-4" @select="onTagSelect" />
 
-      <div
-        v-if="isLoading"
-        aria-hidden="true"
-        class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4"
-      >
-        <USkeleton v-for="n in 4" :key="n" class="h-48 rounded-xl sm:h-72" />
-      </div>
+      <div class="flex-1" aria-live="polite">
+        <div
+          v-if="isLoading"
+          aria-hidden="true"
+          class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4"
+        >
+          <USkeleton v-for="n in 4" :key="n" class="h-48 rounded-xl sm:h-72" />
+        </div>
 
-      <div
-        v-else-if="!displayItems.length"
-        class="text-muted flex flex-1 items-center justify-center py-12 text-center"
-      >
-        <p>{{ t('home.noNews') }}</p>
-      </div>
+        <div
+          v-else-if="!displayItems.length"
+          class="text-muted flex flex-1 items-center justify-center py-12 text-center"
+        >
+          <p>{{ t('home.noNews') }}</p>
+        </div>
 
-      <ul v-else class="grid flex-1 gap-3 sm:gap-4" :class="newsGridClass" role="list">
-        <li v-for="(item, idx) in displayItems" :key="getItemKey(item)" :class="newsItemClass(idx)">
-          <NuxtLink
-            :to="getLocalizedItemLink(item.to)"
-            class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface block overflow-hidden rounded-xl ring-1 ring-gray-200/50 focus:outline-none focus-visible:ring-2 dark:ring-gray-800/50"
+        <ul v-else class="grid flex-1 gap-3 sm:gap-4" :class="newsGridClass" role="list">
+          <li
+            v-for="(item, idx) in displayItems"
+            :key="getItemKey(item)"
+            :class="newsItemClass(idx)"
           >
-            <div class="bg-muted relative aspect-video">
-              <NuxtImg
-                v-if="item.image"
-                :src="item.image"
-                :alt="item.alt ?? ''"
-                width="640"
-                height="360"
-                class="motion-link-media size-full object-cover"
-                loading="lazy"
-                @load="markItemImageAsLoaded(item)"
-              />
-              <div
-                v-else
-                class="text-muted flex size-full items-center justify-center"
-                aria-hidden="true"
-              >
-                <UIcon name="i-tabler-news" class="size-12" />
-              </div>
-              <div
-                v-if="item.image && item.mediaOutletLogo && isItemImageLoaded(item)"
-                class="absolute right-2 bottom-2 rounded bg-white/70 p-1 backdrop-blur-sm"
-              >
-                <img
-                  :src="item.mediaOutletLogo"
-                  :alt="item.mediaOutletName ?? ''"
-                  class="block h-4 w-auto"
+            <NuxtLink
+              :to="getLocalizedItemLink(item.to)"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
+            >
+              <div class="bg-muted relative aspect-video">
+                <NuxtImg
+                  v-if="item.image"
+                  :src="item.image"
+                  :alt="item.alt ?? ''"
+                  width="640"
+                  height="360"
+                  class="motion-link-media size-full object-cover"
+                  loading="lazy"
+                  @load="markItemImageAsLoaded(item)"
                 />
-              </div>
-            </div>
-            <div class="p-3">
-              <UTooltip :text="item.title">
-                <h3
-                  class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-2 sm:text-base"
+                <div
+                  v-else
+                  class="text-muted flex size-full items-center justify-center"
+                  aria-hidden="true"
                 >
-                  {{ item.title }}
-                </h3>
-              </UTooltip>
-            </div>
-          </NuxtLink>
-        </li>
-      </ul>
+                  <UIcon name="i-tabler-news" class="size-12" />
+                </div>
+                <div
+                  v-if="item.image && item.mediaOutletLogo && isItemImageLoaded(item)"
+                  class="bg-background/70 absolute right-2 bottom-2 rounded p-1 backdrop-blur-sm"
+                >
+                  <NuxtImg
+                    :src="item.mediaOutletLogo"
+                    :alt="item.mediaOutletName ?? ''"
+                    width="64"
+                    height="16"
+                    class="block h-4 w-auto"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              <div class="p-3">
+                <UTooltip :text="item.title">
+                  <h3
+                    class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-2 sm:text-base"
+                  >
+                    {{ item.title }}
+                  </h3>
+                </UTooltip>
+              </div>
+            </NuxtLink>
+          </li>
+        </ul>
+      </div>
     </div>
   </section>
 </template>

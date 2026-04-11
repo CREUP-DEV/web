@@ -10,11 +10,10 @@ const token = computed(() => {
 
 const state = ref<'idle' | 'loading' | 'done' | 'error'>('idle')
 
-useSeoMeta({
-  title: t('unsubscribePage.seo.title'),
-  description: t('unsubscribePage.seo.description'),
-  robots: 'noindex, nofollow',
-})
+usePageSeo('unsubscribePage.seo.title', 'unsubscribePage.seo.description')
+useSeoAlternateLinksOverride([])
+
+useSeoMeta({ robots: 'noindex, nofollow' })
 
 async function unsubscribe() {
   if (!token.value || state.value === 'loading') return
