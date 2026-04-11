@@ -40,6 +40,8 @@ const isSubmitting = ref(false)
 const isDeleting = ref(false)
 const isCancelling = ref(false)
 const sendingItemId = ref<string | null>(null)
+const itemToManualSend = ref<Newsletter | null>(null)
+const showManualSendModal = ref(false)
 const itemToCancel = ref<Newsletter | null>(null)
 const showCancelModal = ref(false)
 let sendingRefreshTimer: ReturnType<typeof setInterval> | null = null
@@ -238,7 +240,15 @@ async function handleSubmit() {
   }
 }
 
-async function handleManualSend(item: Newsletter) {
+function confirmManualSend(item: Newsletter) {
+  itemToManualSend.value = item
+  showManualSendModal.value = true
+}
+
+async function handleManualSend() {
+  if (!itemToManualSend.value) return
+
+  const item = itemToManualSend.value
   sendingItemId.value = item.id
 
   try {
@@ -246,6 +256,8 @@ async function handleManualSend(item: Newsletter) {
       method: 'POST',
     })
 
+    showManualSendModal.value = false
+    itemToManualSend.value = null
     toast.add({ title: 'Envío iniciado', color: 'success' })
 
     await refresh()
@@ -454,7 +466,7 @@ onBeforeUnmount(() => {
             :disabled="!item.active || sendingItemId === item.id"
             :title="!item.active ? 'Habilita el envío para poder enviarla' : undefined"
             :aria-label="`Enviar newsletter de ${formatMonth(item.monthKey)}`"
-            @click="handleManualSend(item)"
+            @click="confirmManualSend(item)"
           />
           <UButton
             icon="i-tabler-pencil"
@@ -590,6 +602,36 @@ onBeforeUnmount(() => {
             </UButton>
           </div>
         </form>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showManualSendModal">
+      <template #content>
+        <div class="p-6">
+          <div class="mb-4 flex items-center gap-3">
+            <div
+              class="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-full"
+            >
+              <UIcon name="i-tabler-send" class="text-primary size-6" />
+            </div>
+            <h2 class="text-lg font-bold">Confirmar envío</h2>
+          </div>
+          <p class="text-muted mb-6">
+            ¿Seguro que quieres enviar la newsletter de
+            <strong>{{ itemToManualSend ? formatMonth(itemToManualSend.monthKey) : '' }}</strong
+            >? Esta acción iniciará el envío a todos los suscriptores activos.
+          </p>
+          <div class="flex justify-end gap-2">
+            <UButton variant="ghost" @click="showManualSendModal = false">Cancelar</UButton>
+            <UButton
+              color="primary"
+              :loading="Boolean(itemToManualSend && sendingItemId === itemToManualSend.id)"
+              @click="handleManualSend"
+            >
+              Enviar ahora
+            </UButton>
+          </div>
+        </div>
       </template>
     </UModal>
 

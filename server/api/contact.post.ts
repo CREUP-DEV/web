@@ -31,6 +31,10 @@ function sanitize(input: string, maxLen = 5000): string {
   return input.trim().slice(0, maxLen)
 }
 
+function sanitizeEmailHeaderValue(value: string): string {
+  return value.replace(/[\r\n\0]/g, '')
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -65,10 +69,11 @@ export default defineEventHandler(async (event) => {
   const mediaName = body.mediaName ? sanitize(body.mediaName, 200) : ''
   const subject = sanitize(body.subject, 200)
   const message = sanitize(body.message, 5000)
+  const replyToEmail = sanitizeEmailHeaderValue(email)
   const isPress = contactType === 'press'
 
   // Check all user-provided fields for spam patterns
-  if (hasSpamPatterns(`${name} ${email} ${subject} ${message}`)) {
+  if (hasSpamPatterns(`${name} ${email} ${phone} ${mediaName} ${subject} ${message}`)) {
     throw createError({
       statusCode: 400,
       message: getPublicApiErrorMessage(event, 'contactSpamDetected'),
@@ -207,7 +212,7 @@ Fecha: ${sentAt}
     await transporter.sendMail({
       from: `"CREUP ${isPress ? 'Prensa' : 'Contacto'}" <${fromEmail}>`,
       to: toEmail,
-      replyTo: email,
+      replyTo: replyToEmail,
       subject: `[CREUP ${isPress ? 'Prensa' : 'Web'}] ${subject}`,
       text: textBody,
       html: htmlBody,

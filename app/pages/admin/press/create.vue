@@ -11,6 +11,8 @@ const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const isSubmitting = ref(false)
+const pressFormRef = ref<{ hasUnsavedChanges?: boolean } | null>(null)
+const allowNavigationWithoutPrompt = ref(false)
 
 type PressArticleType = (typeof PRESS_ARTICLE_TYPES)[number]
 
@@ -22,6 +24,32 @@ const initialType = computed<PressArticleType>(() => {
     : 'press_release'
 })
 
+const hasUnsavedPressChanges = () =>
+  !allowNavigationWithoutPrompt.value && Boolean(pressFormRef.value?.hasUnsavedChanges)
+
+const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+  if (!hasUnsavedPressChanges()) return
+
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
+})
+
+onBeforeRouteLeave(() => {
+  if (!hasUnsavedPressChanges()) {
+    return true
+  }
+
+  return window.confirm('Hay cambios sin guardar. Si sales ahora, se perderán.')
+})
+
 const handleSubmit = async (payload: Record<string, unknown>) => {
   isSubmitting.value = true
   try {
@@ -29,6 +57,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
       method: 'POST',
       body: payload,
     })
+    allowNavigationWithoutPrompt.value = true
     toast.add({ title: 'Artículo creado correctamente', color: 'success' })
     router.push('/admin/press')
   } catch (e) {
@@ -39,6 +68,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 }
 
 const handleCancel = () => {
+  allowNavigationWithoutPrompt.value = true
   router.push('/admin/press')
 }
 </script>
@@ -46,6 +76,7 @@ const handleCancel = () => {
 <template>
   <div>
     <AdminPressForm
+      ref="pressFormRef"
       :initial-type="initialType"
       :submitting="isSubmitting"
       @submit="handleSubmit"

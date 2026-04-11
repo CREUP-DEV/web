@@ -28,8 +28,14 @@ export default defineCachedEventHandler(
 
     const normalizedCalendarId = normalizeMemberCalendarId(calendarId)
     await assertMemberCalendarIsPublic(event, normalizedCalendarId)
+    let apiKey: string
 
-    const apiKey = getRequiredGoogleCalendarApiKey()
+    try {
+      apiKey = getRequiredGoogleCalendarApiKey()
+    } catch (error) {
+      logError('member-calendar.config', error, { calendarId: normalizedCalendarId }, event)
+      return { events: [] }
+    }
 
     const now = new Date()
     const threeMonthsLaterMonthEnd = new Date(

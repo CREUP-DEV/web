@@ -16,6 +16,16 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
   const inputRef = ref<HTMLInputElement | null>(null)
   const preview = ref<string | null>(null)
   const isUploading = ref(false)
+  const activeUploadId = ref<symbol | null>(null)
+  const activeUploadController = ref<AbortController | null>(null)
+  const isUnmounted = ref(false)
+
+  onUnmounted(() => {
+    isUnmounted.value = true
+    activeUploadController.value?.abort()
+    activeUploadController.value = null
+    activeUploadId.value = null
+  })
 
   const triggerFileDialog = () => {
     inputRef.value?.click()
@@ -34,8 +44,21 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
       return
     }
 
+    const uploadId = Symbol('admin-upload')
+    activeUploadId.value = uploadId
+
+    activeUploadController.value?.abort()
+    const uploadController = new AbortController()
+    activeUploadController.value = uploadController
+
+    let uploadSucceeded = false
+
     const reader = new FileReader()
     reader.onload = (loadEvent) => {
+      if (uploadSucceeded || isUnmounted.value || activeUploadId.value !== uploadId) {
+        return
+      }
+
       preview.value = loadEvent.target?.result as string
     }
     reader.readAsDataURL(file)
@@ -53,7 +76,14 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
       const result = await $fetch<UploadedAdminFileResponse>(options.endpoint, {
         method: 'POST',
         body: formData,
+        signal: uploadController.signal,
       })
+
+      uploadSucceeded = true
+
+      if (isUnmounted.value || activeUploadId.value !== uploadId) {
+        return
+      }
 
       options.onUploaded(result.storagePath)
       preview.value = result.storagePath
@@ -63,7 +93,26 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
         color: 'success',
       })
     } catch (error) {
+      const isAbortError =
+        error instanceof DOMException
+          ? error.name === 'AbortError'
+          : Boolean(
+              error &&
+              typeof error === 'object' &&
+              'name' in error &&
+              (error as { name?: string }).name === 'AbortError'
+            )
+
+      if (isAbortError && (isUnmounted.value || activeUploadId.value !== uploadId)) {
+        return
+      }
+
       console.error('Error uploading admin file:', error)
+
+      if (isUnmounted.value || activeUploadId.value !== uploadId) {
+        return
+      }
+
       preview.value = options.getFallbackPreview?.() ?? null
 
       toast.add({
@@ -71,8 +120,18 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
         color: 'error',
       })
     } finally {
-      isUploading.value = false
-      target.value = ''
+      if (activeUploadController.value === uploadController) {
+        activeUploadController.value = null
+      }
+
+      if (activeUploadId.value === uploadId) {
+        activeUploadId.value = null
+
+        if (!isUnmounted.value) {
+          isUploading.value = false
+          target.value = ''
+        }
+      }
     }
   }
 

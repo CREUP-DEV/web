@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 import { createTagSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
@@ -140,8 +140,8 @@ const handleSubmit = async () => {
     clearErrors()
     await refresh()
   } catch (e: unknown) {
-    const err = e as { status?: number; data?: { message?: string } }
-    if (err.status === 409 && err.data?.message === 'SLUG_EXISTS') {
+    const err = e as { data?: { message?: string } }
+    if (getApiErrorStatusCode(e) === 409 && err.data?.message === 'SLUG_EXISTS') {
       toast.add({
         title: t('admin.errors.slugExists'),
         color: 'error',

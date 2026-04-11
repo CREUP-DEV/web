@@ -288,6 +288,7 @@ async function handleSubmit() {
               id="contact-name"
               v-model="form.name"
               type="text"
+              autocomplete="name"
               :placeholder="t('contactPage.form.namePlaceholder')"
               required
               :disabled="isSubmitting"
@@ -302,6 +303,7 @@ async function handleSubmit() {
               id="contact-email"
               v-model="form.email"
               type="email"
+              autocomplete="email"
               :placeholder="t('contactPage.form.emailPlaceholder')"
               required
               :disabled="isSubmitting"
@@ -318,6 +320,7 @@ async function handleSubmit() {
                   id="contact-phone"
                   v-model="form.phone"
                   type="tel"
+                  autocomplete="tel"
                   :placeholder="t('contactPage.form.phonePlaceholder')"
                   :disabled="isSubmitting"
                   :color="shouldShowError('phone') ? 'error' : undefined"

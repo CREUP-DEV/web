@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import type { AdminPressArticleDetailResponse } from '@/types/adminPress'
+import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 
 definePageMeta({
   layout: 'admin',
@@ -10,21 +11,50 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const isSubmitting = ref(false)
+const pressFormRef = ref<{ hasUnsavedChanges?: boolean } | null>(null)
+const allowNavigationWithoutPrompt = ref(false)
 
 const articleId = computed(() =>
   Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 )
 if (!articleId.value) throw createError({ statusCode: 404 })
 
-const { data, error: fetchError } = await useFetch(`/api/admin/press/${articleId.value}`)
+const { data, error: fetchError } = await useFetch<AdminPressArticleDetailResponse>(
+  `/api/admin/press/${articleId.value}`
+)
 
 if (fetchError.value || !data.value) {
   toast.add({ title: 'No se encontró el artículo', color: 'error' })
   navigateTo('/admin/press')
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const article = computed(() => (data.value as any)?.item ?? null)
+const article = computed(() => data.value?.item ?? null)
+
+const hasUnsavedPressChanges = () =>
+  !allowNavigationWithoutPrompt.value && Boolean(pressFormRef.value?.hasUnsavedChanges)
+
+const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
+  if (!hasUnsavedPressChanges()) return
+
+  event.preventDefault()
+  event.returnValue = ''
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
+})
+
+onBeforeRouteLeave(() => {
+  if (!hasUnsavedPressChanges()) {
+    return true
+  }
+
+  return window.confirm('Hay cambios sin guardar. Si sales ahora, se perderán.')
+})
 
 const handleSubmit = async (payload: Record<string, unknown>) => {
   isSubmitting.value = true
@@ -33,10 +63,11 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
       method: 'PUT',
       body: { ...payload, updatedAt: article.value?.updatedAt },
     })
+    allowNavigationWithoutPrompt.value = true
     toast.add({ title: 'Artículo actualizado correctamente', color: 'success' })
     router.push('/admin/press')
   } catch (e: unknown) {
-    const status = (e as { statusCode?: number })?.statusCode
+    const status = getApiErrorStatusCode(e)
     if (status === 409) {
       toast.add({
         title: 'Conflicto al guardar',
@@ -56,6 +87,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 }
 
 const handleCancel = () => {
+  allowNavigationWithoutPrompt.value = true
   router.push('/admin/press')
 }
 </script>
@@ -63,7 +95,8 @@ const handleCancel = () => {
 <template>
   <div>
     <AdminPressForm
-      :article="article as any"
+      ref="pressFormRef"
+      :article="article"
       :submitting="isSubmitting"
       @submit="handleSubmit"
       @cancel="handleCancel"

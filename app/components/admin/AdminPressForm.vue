@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
+import type {
+  PressArticleAdmin,
+  PressMediaOutletAdmin,
+  PressTagAdmin,
+  PressTranslationAdmin,
+} from '@/types/adminPress'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import {
@@ -8,55 +14,9 @@ import {
   parseDateOnlyString,
 } from '~~/shared/utils/date'
 
-interface Translation {
-  locale: string
-  title: string
-  description: string
-  contentHtml: string
-  alt: string
-}
-
-interface TagTranslation {
-  locale: string
-  name: string
-}
-
-interface Tag {
-  id: string
-  slug: string
-  translations: TagTranslation[]
-}
-
-interface MediaOutlet {
-  id: string
-  name: string
-  website: string
-  logo: string
-}
-
-interface PressArticle {
-  id: string
-  type: PressArticleType
-  slug: string
-  image: string
-  pdfUrl: string | null
-  externalUrl: string | null
-  mediaOutletId: string | null
-  active: boolean
-  publishedAt: string
-  translations: Translation[]
-  tags: Array<{
-    id: string
-    pressArticleId: string
-    tagId: string
-    tag: Tag
-  }>
-  mediaOutlet: MediaOutlet | null
-}
-
 const props = defineProps<{
   /** The article being edited, or null when creating */
-  article?: PressArticle | null
+  article?: PressArticleAdmin | null
   /** Initial article type for create flows */
   initialType?: PressArticleType
   /** Whether the form is currently submitting */
@@ -86,8 +46,8 @@ const initialFormSnapshot = ref('')
 
 // Fetch supporting data
 const [{ data: tagsData }, { data: mediaData }] = await Promise.all([
-  useFetch<{ items: Tag[] }>('/api/admin/tags'),
-  useFetch<{ items: MediaOutlet[] }>('/api/admin/media'),
+  useFetch<{ items: PressTagAdmin[] }>('/api/admin/tags'),
+  useFetch<{ items: PressMediaOutletAdmin[] }>('/api/admin/media'),
 ])
 
 const tags = computed(() => tagsData.value?.items ?? [])
@@ -128,7 +88,7 @@ const form = reactive({
   mediaOutletId: '' as string | null,
   active: true,
   tagIds: [] as string[],
-  translations: createEmptyTranslations<Translation>({
+  translations: createEmptyTranslations<PressTranslationAdmin>({
     title: '',
     description: '',
     contentHtml: '',
@@ -192,8 +152,8 @@ const handleSubmit = () => {
 // Tag select items (exclude the 'all' meta-tag)
 const tagSelectItems = computed(() =>
   tags.value
-    .filter((t: Tag) => t.slug !== 'all')
-    .map((t: Tag) => ({
+    .filter((t: PressTagAdmin) => t.slug !== 'all')
+    .map((t: PressTagAdmin) => ({
       value: t.id,
       label: getTagName(t),
     }))
@@ -201,7 +161,7 @@ const tagSelectItems = computed(() =>
 
 // Media outlet select items
 const mediaOutletSelectItems = computed(() =>
-  mediaOutlets.value.map((m: MediaOutlet) => ({
+  mediaOutlets.value.map((m: PressMediaOutletAdmin) => ({
     value: m.id,
     label: m.name,
   }))
@@ -220,12 +180,12 @@ const valueToCalendarDate = (value: string): CalendarDate => {
   return new CalendarDate(normalizedDate.year, normalizedDate.month, normalizedDate.day)
 }
 
-const getTagName = (tag: Tag) => {
+const getTagName = (tag: PressTagAdmin) => {
   return getDefaultTranslationValue(tag.translations, 'name') ?? tag.slug
 }
 
 // Populate form from article when editing
-const populateForm = (article: PressArticle) => {
+const populateForm = (article: PressArticleAdmin) => {
   isHydratingForm.value = true
   form.type = article.type
   form.image = article.image
@@ -242,7 +202,7 @@ const populateForm = (article: PressArticle) => {
     description: '',
     contentHtml: '',
     alt: '',
-  }) as Translation[]
+  }) as PressTranslationAdmin[]
   nextTick(() => {
     resetUnsavedChangesBaseline()
     isHydratingForm.value = false

@@ -662,6 +662,9 @@ export const newsletterSubscribers = pgTable(
   },
   (table) => [
     index('idx_newsletter_subscribers_active_subscribed').on(table.active, table.subscribedAt),
+    index('idx_newsletter_subscribers_token_cleanup')
+      .on(table.confirmTokenExpiresAt)
+      .where(sql`${table.active} = false AND ${table.confirmTokenExpiresAt} IS NOT NULL`),
     check(
       'newsletter_subscribers_consent_source_check',
       sql`${table.consentSource} in ('web_form', 'email_link', 'admin_manual', 'legacy_import', 'system')`

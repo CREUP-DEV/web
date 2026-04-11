@@ -26,3 +26,23 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
 
   return fallback
 }
+
+/**
+ * Extracts HTTP status code from a $fetch / ofetch error.
+ * Nuxt fetch errors expose `status`; some server errors may only expose `statusCode`.
+ */
+export function getApiErrorStatusCode(error: unknown): number | undefined {
+  if (!error || typeof error !== 'object') {
+    return undefined
+  }
+
+  if ('status' in error && typeof error.status === 'number') {
+    return error.status
+  }
+
+  if ('statusCode' in error && typeof error.statusCode === 'number') {
+    return error.statusCode
+  }
+
+  return undefined
+}

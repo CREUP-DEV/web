@@ -362,7 +362,7 @@ If handler exceeds ~50 lines of logic, extract to `server/utils/` or `server/ser
 ### Response Envelopes
 
 - New JSON endpoints should prefer a consistent envelope shape: `{ data }` for single resources and `{ data, meta }` for lists or paginated results.
-- Use `shared/utils/apiEnvelope.ts` for the shared types and constructors when adding new handlers or gradual migrations.
+- Keep existing endpoint payload shapes stable; adopt envelope constructors in the handler when introducing or migrating endpoints gradually.
 - Do not mass-change existing endpoint payloads just to match the convention; keep payload churn isolated and safe.
 
 ### Admin Auth

@@ -1,0 +1,1 @@
+CREATE INDEX "idx_newsletter_subscribers_token_cleanup" ON "newsletter_subscribers" USING btree ("confirm_token_expires_at") WHERE "newsletter_subscribers"."active" = false AND "newsletter_subscribers"."confirm_token_expires_at" IS NOT NULL;
