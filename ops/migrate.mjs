@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const migrationsFolder = resolve(scriptDir, 'drizzle')
+const MIGRATIONS_ADVISORY_LOCK_ID = 8_821_143
 
 export async function runMigrations() {
   const databaseUrl = process.env.DATABASE_URL
@@ -17,8 +18,19 @@ export async function runMigrations() {
   const pool = new pg.Pool({ connectionString: databaseUrl })
 
   try {
-    const db = drizzle(pool)
-    await migrate(db, { migrationsFolder })
+    const client = await pool.connect()
+
+    try {
+      await client.query('SELECT pg_advisory_lock($1)', [MIGRATIONS_ADVISORY_LOCK_ID])
+      const db = drizzle(client)
+      await migrate(db, { migrationsFolder })
+    } finally {
+      try {
+        await client.query('SELECT pg_advisory_unlock($1)', [MIGRATIONS_ADVISORY_LOCK_ID])
+      } finally {
+        client.release()
+      }
+    }
   } finally {
     await pool.end()
   }

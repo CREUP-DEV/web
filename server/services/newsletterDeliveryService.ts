@@ -42,6 +42,9 @@ export interface NewsletterDeliveryResult {
   total: number
 }
 
+const activeNewsletterRuns = new Map<string, string>()
+let newsletterShutdownRequested = false
+
 function getNewsletterDeliveryStaleBefore() {
   return new Date(Date.now() - NEWSLETTER_DELIVERY_WORKER_STALE_MS)
 }
@@ -264,7 +267,10 @@ async function claimNewsletterDeliveryBatch(
       and(
         eq(newsletterDeliveries.newsletterId, item.id),
         eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.sending),
-        lte(newsletterDeliveries.lastAttemptAt, staleBefore)
+        or(
+          isNull(newsletterDeliveries.lastAttemptAt),
+          lte(newsletterDeliveries.lastAttemptAt, staleBefore)
+        )
       )
     )
 
@@ -418,12 +424,17 @@ export async function processNewsletterDeliveryRun(
 
   let releaseArgs: Partial<typeof newsletters.$inferInsert> | null = null
   let result: NewsletterDeliveryResult | false = false
+  activeNewsletterRuns.set(item.id, workerToken)
 
   try {
     await seedNewsletterDeliveries(item)
     await touchNewsletterDeliveryWorker(item.id, workerToken)
 
     while (true) {
+      if (newsletterShutdownRequested) {
+        break
+      }
+
       const batch = await claimNewsletterDeliveryBatch(item)
 
       if (batch.length === 0) {
@@ -519,6 +530,8 @@ export async function processNewsletterDeliveryRun(
       )
     } catch (releaseError) {
       logError('newsletter.delivery.worker-release-failed', releaseError, { newsletterId: item.id })
+    } finally {
+      activeNewsletterRuns.delete(item.id)
     }
   }
 
@@ -532,8 +545,59 @@ export async function processPendingNewsletterDeliveries() {
   })
 
   for (const item of pendingItems) {
+    if (newsletterShutdownRequested) {
+      break
+    }
+
     await processNewsletterDeliveryRun(item)
   }
+}
+
+export function requestNewsletterDeliveryShutdown() {
+  newsletterShutdownRequested = true
+}
+
+export async function waitForNewsletterDeliveryIdle(timeoutMs: number): Promise<boolean> {
+  const startedAt = Date.now()
+
+  while (activeNewsletterRuns.size > 0) {
+    if (Date.now() - startedAt >= timeoutMs) {
+      return false
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+
+  return true
+}
+
+export async function requeueActiveNewsletterDeliveriesForShutdown() {
+  const activeRuns = [...activeNewsletterRuns.entries()]
+
+  if (activeRuns.length === 0) {
+    return
+  }
+
+  await Promise.all(
+    activeRuns.map(async ([newsletterId]) => {
+      await db
+        .update(newsletterDeliveries)
+        .set({
+          lastError: 'Envío interrumpido por apagado del servidor',
+          status: NEWSLETTER_DELIVERY_STATUS.queued,
+        })
+        .where(
+          and(
+            eq(newsletterDeliveries.newsletterId, newsletterId),
+            eq(newsletterDeliveries.status, NEWSLETTER_DELIVERY_STATUS.sending)
+          )
+        )
+    })
+  )
+
+  logInfo('newsletter.delivery.shutdown.requeue', {
+    newsletterIds: activeRuns.map(([newsletterId]) => newsletterId),
+  })
 }
 
 export async function claimNewsletterForSending(id: string): Promise<NewsletterRecord> {

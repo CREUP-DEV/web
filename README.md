@@ -59,6 +59,20 @@ pnpm db:seed
 
 ## Variables de entorno
 
+### Build-time vs runtime
+
+Variables leídas en build:
+
+- Requerida: `SITE_URL`
+- Opcionales: `NUXT_UMAMI_HOST`, `NUXT_UMAMI_ID`
+
+Variables leídas en runtime:
+
+- Requeridas: `DATABASE_URL`, `BETTER_AUTH_URL`, `APP_SECRET`, `ADMIN_EMAILS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- Según funcionalidades activas: `SMTP_*`, `GOOGLE_CALENDAR_API_KEY`, `GOOGLE_CALENDAR_ID`, `EXTERNAL_*`
+
+Si cambias una variable de build, hay que reconstruir la imagen. Si cambias una variable solo de runtime, basta con recrear el contenedor.
+
 ### Aplicación
 
 - `SITE_URL`
@@ -139,9 +153,9 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - `pnpm preview`
 - `pnpm lint`
 - `pnpm lint:fix`
+- `pnpm i18n:audit-identical`
 - `pnpm db:generate`
 - `pnpm db:migrate`
-- `pnpm db:push`
 - `pnpm db:studio`
 - `pnpm db:seed`
 
@@ -160,9 +174,9 @@ Este repositorio incluye un flujo donde el build se hace en tu equipo local o CI
 Puntos clave del flujo actual:
 
 - Se usa un único archivo de entorno: `.env` (también en producción).
-- `deploy.sh` mantiene las migraciones en deploy (`APPLY_MIGRATIONS_ON_DEPLOY=true` por defecto).
-- Hay soporte opcional para ejecutar migraciones en cada arranque del contenedor
-  (`RUN_MIGRATIONS_ON_START=true`).
+- `deploy.sh` aplica migraciones antes de recrear los contenedores (`APPLY_MIGRATIONS_ON_DEPLOY=true` por defecto).
+- No se ejecutan migraciones en el arranque normal del contenedor.
+- El runner de migraciones usa un bloqueo advisory de PostgreSQL para evitar ejecuciones concurrentes.
 - En producción se recomienda usar bind mounts para gestionar ficheros desde el VPS.
 
 ### Compose mínimo de producción
@@ -203,7 +217,6 @@ y volumen nombrado para PostgreSQL:
 - `GHCR_USERNAME` + `GHCR_TOKEN`
 - `DOCKER_PLATFORM` (por defecto `linux/amd64`)
 - `APPLY_MIGRATIONS_ON_DEPLOY=false` si no quieres ejecutar migraciones en `deploy.sh`
-- `RUN_MIGRATIONS_ON_START=true` para ejecutar migraciones en cada arranque del contenedor
 
 Antes del primer uso, marca scripts como ejecutables:
 
@@ -223,9 +236,9 @@ Qué hace `deploy.sh`:
 2. Construye la imagen con Docker Buildx (o Docker clásico si no hay Buildx).
 3. Publica la imagen en GHCR.
 4. Se conecta por SSH al VPS.
-5. En el VPS ejecuta `cd`, `docker compose pull` y `docker compose up -d`.
-6. Si `APPLY_MIGRATIONS_ON_DEPLOY=true`, el `up -d` del deploy fuerza
-   `RUN_MIGRATIONS_ON_START=true` para aplicar migraciones en ese despliegue.
+5. En el VPS ejecuta `cd` y `docker compose pull`.
+6. Si `APPLY_MIGRATIONS_ON_DEPLOY=true`, ejecuta un contenedor efímero para correr `/app/ops/migrate.mjs`.
+7. Finalmente ejecuta `docker compose up -d`.
 
 ### 4) Persistencia de uploads en producción
 

@@ -6,13 +6,14 @@ import {
   localeSchema,
   toOptionalSingleStringSchema,
 } from './helpers'
+import { ADMIN_RICH_TEXT_MAX_HTML_LENGTH } from '~~/shared/utils/richText'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 
 export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
   description: z.string().max(2000).optional(),
-  contentHtml: z.string().max(200_000).optional().nullable(),
+  contentHtml: z.string().max(ADMIN_RICH_TEXT_MAX_HTML_LENGTH).optional().nullable(),
   alt: z.string().max(200).optional(),
 })
 

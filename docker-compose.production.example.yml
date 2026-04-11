@@ -9,7 +9,6 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       NITRO_PORT: 3000
-      RUN_MIGRATIONS_ON_START: ${RUN_MIGRATIONS_ON_START:-false}
     ports:
       - ${APP_PORT:-3000}:3000
     volumes:

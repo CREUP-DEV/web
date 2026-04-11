@@ -28,6 +28,10 @@ type AllowlistEntry = {
 
 const ALLOWLIST: AllowlistEntry[] = [
   { pattern: /^nav\.press\.newsletter$/, reason: 'Brand term kept in English in both locales.' },
+  {
+    pattern: /^newsletterPage\.(seo\.)?title$/,
+    reason: 'Newsletter stays as a branded section name.',
+  },
   { pattern: /^social\.[^.]+$/, reason: 'Social network names are proper labels.' },
   { pattern: /^nuxtSiteConfig\.name$/, reason: 'Site name is a brand name.' },
   { pattern: /^members\.networks\.[^.]+$/, reason: 'Third-party social network labels.' },

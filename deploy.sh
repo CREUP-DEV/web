@@ -69,12 +69,18 @@ export IMAGE="$IMAGE"
 echo "== Pull images =="
 docker compose pull
 
-echo "== Recreate containers =="
 if [ "$APPLY_MIGRATIONS_ON_DEPLOY" = "true" ]; then
-  RUN_MIGRATIONS_ON_START=true docker compose up -d
-else
-  docker compose up -d
+  if docker compose config --services | grep -qx 'postgres'; then
+    echo "== Ensure postgres is running =="
+    docker compose up -d postgres
+  fi
+
+  echo "== Apply database migrations =="
+  docker compose run --rm app /app/ops/migrate.mjs
 fi
+
+echo "== Recreate containers =="
+docker compose up -d
 EOF
 }
 
