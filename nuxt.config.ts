@@ -1,5 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
-import { requireConfigUrl } from './shared/utils/config'
+import { getOptionalConfigUrl, requireConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
 
 const isDev = process.env.NODE_ENV !== 'production'
@@ -13,6 +13,36 @@ const canonicalSiteUrl =
     : siteUrl
 const siteImageHostname = new URL(siteUrl).hostname
 const siteOrigin = new URL(siteUrl).origin
+const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
+const umamiOrigin = umamiHost ? new URL(umamiHost).origin : null
+const turnstileSiteKey = process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || ''
+const turnstileEnabled = turnstileSiteKey.length > 0
+const turnstileOrigin = 'https://challenges.cloudflare.com'
+const connectSrcDirectives = [
+  "'self'",
+  ...(umamiOrigin && umamiOrigin !== siteOrigin ? [umamiOrigin] : []),
+  ...(turnstileEnabled ? [turnstileOrigin] : []),
+]
+const scriptSrcDirectives = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(turnstileEnabled ? [turnstileOrigin] : []),
+]
+const frameSrcDirectives = turnstileEnabled ? [turnstileOrigin] : ["'none'"]
+const contentSecurityPolicyHeader = [
+  "default-src 'self'",
+  `script-src ${scriptSrcDirectives.join(' ')}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  `connect-src ${connectSrcDirectives.join(' ')}`,
+  `frame-src ${frameSrcDirectives.join(' ')}`,
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ')
+
 const internalImageAlias = Object.fromEntries(
   INTERNAL_IMAGE_PROXY_PATH_BASES.map((path) => [path, `${siteOrigin}${path}`])
 )
@@ -118,6 +148,10 @@ export default defineNuxtConfig({
     smtpFromEmail: process.env.SMTP_FROM_EMAIL,
     smtpToEmail: process.env.SMTP_TO_EMAIL,
     smtpPressEmail: process.env.SMTP_PRESS_EMAIL,
+    turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
+    public: {
+      turnstileSiteKey,
+    },
   },
 
   css: ['~/assets/css/main.css'],
@@ -177,8 +211,7 @@ export default defineNuxtConfig({
         // CSP: unsafe-inline still required by Nuxt SSR inline scripts + Tailwind CSS-in-JS.
         // unsafe-eval has been removed — if a dependency reintroduces it, audit before re-adding.
         // TODO: replace unsafe-inline with a nonce strategy once Nuxt supports it end-to-end.
-        'Content-Security-Policy':
-          "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+        'Content-Security-Policy': contentSecurityPolicyHeader,
       },
     },
     '/admin/**': {
@@ -277,6 +310,7 @@ export default defineNuxtConfig({
   // Umami Analytics — self-hosted, cookie-free measurement
   umami: {
     autoTrack: true,
+    host: umamiHost ?? undefined,
     ignoreLocalhost: true,
     proxy: 'cloak',
   },

@@ -21,6 +21,7 @@ const publicApiErrorMessagesByLocale = {
     contactEmailServiceUnavailable: 'El servicio de correo no está disponible en este momento.',
     contactRateLimited: 'Has enviado demasiados mensajes. Inténtalo de nuevo más tarde.',
     contactSpamDetected: 'El mensaje contiene contenido no permitido.',
+    antiSpamValidationFailed: 'No se ha podido validar la solicitud. Vuelve a intentarlo.',
     documentNotFound: 'Documento no encontrado.',
     eventNotFound: 'Evento no encontrado.',
     eventsUnavailable: 'La información de los eventos no está disponible temporalmente.',
@@ -46,6 +47,8 @@ const publicApiErrorMessagesByLocale = {
     orgChartUnavailable: 'La información del organigrama no está disponible temporalmente.',
     sectorialUnavailable: 'La información de las sectoriales no está disponible temporalmente.',
     serviceTemporarilyUnavailable: 'Servicio temporalmente no disponible',
+    turnstileUnavailable: 'El servicio de verificación temporalmente no está disponible.',
+    turnstileValidationFailed: 'Debes completar la verificación anti-spam.',
   },
   en: {
     assetInvalidCredentials: 'Invalid asset URL credentials.',
@@ -65,6 +68,7 @@ const publicApiErrorMessagesByLocale = {
     contactEmailServiceUnavailable: 'The email service is not available right now.',
     contactRateLimited: 'Too many requests. Please try again later.',
     contactSpamDetected: 'The message contains prohibited content.',
+    antiSpamValidationFailed: 'The request could not be validated. Please try again.',
     documentNotFound: 'Document not found.',
     eventNotFound: 'Event not found.',
     eventsUnavailable: 'Event data is temporarily unavailable.',
@@ -89,6 +93,8 @@ const publicApiErrorMessagesByLocale = {
     orgChartUnavailable: 'Org chart data is temporarily unavailable.',
     sectorialUnavailable: 'Sectorial data is temporarily unavailable.',
     serviceTemporarilyUnavailable: 'Service temporarily unavailable',
+    turnstileUnavailable: 'The verification service is temporarily unavailable.',
+    turnstileValidationFailed: 'You must complete the anti-spam verification.',
   },
 } as const
 

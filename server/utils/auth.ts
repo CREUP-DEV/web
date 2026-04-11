@@ -42,6 +42,10 @@ export const auth = betterAuth({
       verification: verifications,
     },
   }),
+  account: {
+    // Better Auth native token protection (AES-256-GCM) for OAuth provider tokens.
+    encryptOAuthTokens: true,
+  },
   emailAndPassword: {
     enabled: false,
   },

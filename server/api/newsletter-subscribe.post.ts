@@ -17,6 +17,7 @@ import {
   sendNewsletterAlreadySubscribedEmail,
   sendNewsletterConfirmationEmail,
 } from '../utils/newsletterSubscribers'
+import { hasMinimumPublicFormSubmitDelay, verifyTurnstileTokenOrThrow } from '../utils/turnstile'
 
 export default defineEventHandler(async (event) => {
   const { locale, locales, defaultLocale } = getRequestLocaleContext(event)
@@ -29,7 +30,12 @@ export default defineEventHandler(async (event) => {
     event,
     'newsletterEmailDeliveryFailed'
   )
-  const newsletterInvalidDataMessage = getPublicApiErrorMessage(event, 'invalidInput')
+  const invalidInputMessage = getPublicApiErrorMessage(event, 'invalidInput')
+  const newsletterInvalidDataMessage = getPublicApiErrorMessage(event, 'newsletterInvalidData')
+  const antiSpamValidationFailedMessage = getPublicApiErrorMessage(
+    event,
+    'antiSpamValidationFailed'
+  )
 
   enforceRateLimit(event, {
     namespace: 'newsletter-subscribe',
@@ -42,9 +48,21 @@ export default defineEventHandler(async (event) => {
     const raw = await readBody(event)
     const body = validatePublicBody(event, newsletterSubscribeSchema, raw)
 
-    if (body.website && body.website.trim() !== '') {
+    if (body.middleName && body.middleName.trim() !== '') {
       return { success: true }
     }
+
+    if (!hasMinimumPublicFormSubmitDelay(body.startedAt)) {
+      throw createError({
+        statusCode: 400,
+        message: antiSpamValidationFailedMessage,
+      })
+    }
+
+    await verifyTurnstileTokenOrThrow(event, body.turnstileToken, {
+      invalidMessage: getPublicApiErrorMessage(event, 'turnstileValidationFailed'),
+      unavailableMessage: getPublicApiErrorMessage(event, 'turnstileUnavailable'),
+    })
 
     const email = body.email.trim().toLowerCase()
     const confirmTokenExpiresAt = createConfirmTokenExpiresAt()
@@ -188,7 +206,9 @@ export default defineEventHandler(async (event) => {
       error &&
       typeof error === 'object' &&
       'statusCode' in error &&
-      (error as { statusCode: unknown }).statusCode === 400
+      'message' in error &&
+      (error as { statusCode: unknown }).statusCode === 400 &&
+      (error as { message: unknown }).message === invalidInputMessage
     ) {
       throw createError({ statusCode: 400, message: newsletterInvalidDataMessage })
     }

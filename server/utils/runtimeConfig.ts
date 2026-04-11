@@ -224,3 +224,20 @@ export const getRequiredSmtpPressEmail = (
     publicMessage
   )
 }
+
+export const getOptionalTurnstileSecretKey = (event?: H3Event) => {
+  const runtimeConfig = getRuntimeConfig(event)
+  return getOptionalRuntimeConfigString(runtimeConfig.turnstileSecretKey)
+}
+
+export const getRequiredTurnstileSecretKey = (
+  event?: H3Event,
+  publicMessage = 'Server configuration error.'
+) => {
+  const runtimeConfig = getRuntimeConfig(event)
+  return getRequiredRuntimeConfigString(
+    runtimeConfig.turnstileSecretKey,
+    'TURNSTILE_SECRET_KEY',
+    publicMessage
+  )
+}

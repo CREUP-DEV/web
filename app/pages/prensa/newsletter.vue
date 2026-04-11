@@ -2,6 +2,7 @@
 import type { AccordionItem } from '@nuxt/ui'
 import { newsletterSubscribeSchema } from '~~/shared/utils/newsletterValidation'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import * as turnstileComposable from '@/composables/useTurnstile'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -61,7 +62,24 @@ usePageSeo('newsletterPage.seo.title', 'newsletterPage.seo.description', {
 const form = reactive({
   consent: false,
   email: '',
-  website: '',
+  middleName: '',
+})
+const formStartedAt = ref(Date.now())
+const runtimeConfig = useRuntimeConfig()
+const turnstileSiteKey = computed(
+  () => (runtimeConfig.public?.turnstileSiteKey as string | undefined) ?? ''
+)
+const turnstileEnabled = computed(() => (turnstileSiteKey.value?.trim().length ?? 0) > 0)
+const turnstileTokenFieldId = 'newsletter-turnstile-token'
+const {
+  hasError: turnstileHasError,
+  isReady: isTurnstileReady,
+  reset: resetTurnstile,
+  token,
+} = turnstileComposable.useTurnstile({
+  containerId: 'newsletter-turnstile',
+  enabled: turnstileEnabled,
+  siteKey: turnstileSiteKey,
 })
 
 const touched = reactive({
@@ -74,18 +92,26 @@ const formSubmitted = ref(false)
 const newsletterPayload = computed(() => ({
   consent: form.consent,
   email: form.email.trim(),
-  website: form.website.trim() || undefined,
+  middleName: form.middleName.trim() || undefined,
+  startedAt: formStartedAt.value,
+  turnstileToken: token.value || undefined,
 }))
 
 watchEffect(() => {
   validate(newsletterSubscribeSchema, newsletterPayload.value)
 })
 
-type NewsletterField = 'email' | 'consent'
+type NewsletterField = 'email' | 'consent' | 'turnstileToken'
 
-const validationFieldOrder: NewsletterField[] = ['email', 'consent']
+const validationFieldOrder: NewsletterField[] = ['email', 'consent', 'turnstileToken']
 
 function shouldShowError(field: NewsletterField): boolean {
+  if (field === 'turnstileToken') {
+    return (
+      turnstileEnabled.value && (formSubmitted.value || turnstileHasError.value) && !token.value
+    )
+  }
+
   return (touched[field] || formSubmitted.value) && !!getValidationFieldError(field)
 }
 
@@ -101,6 +127,10 @@ function getFieldError(field: NewsletterField): string | undefined {
   if (field === 'consent') {
     return t('newsletterPage.form.errors.consentRequired')
   }
+
+  if (field === 'turnstileToken') {
+    return t('newsletterPage.form.errors.turnstileRequired')
+  }
 }
 
 const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
@@ -112,9 +142,22 @@ async function handleSubscribe() {
     return
   }
 
-  if (!isFormValid.value) {
-    const firstInvalid = validationFieldOrder.find((field) => getValidationFieldError(field))
+  const hasTurnstileToken = !turnstileEnabled.value || token.value.length > 0
+
+  if (!isFormValid.value || !hasTurnstileToken) {
+    const firstInvalid = validationFieldOrder.find((field) => {
+      if (field === 'turnstileToken') {
+        return turnstileEnabled.value && !token.value
+      }
+
+      return Boolean(getValidationFieldError(field))
+    })
     if (firstInvalid) {
+      if (firstInvalid === 'turnstileToken') {
+        document.getElementById(turnstileTokenFieldId)?.scrollIntoView({ behavior: 'smooth' })
+        return
+      }
+
       document.getElementById(`newsletter-${firstInvalid}`)?.focus()
     }
     return
@@ -133,6 +176,9 @@ async function handleSubscribe() {
     })
     form.consent = false
     form.email = ''
+    form.middleName = ''
+    formStartedAt.value = Date.now()
+    resetTurnstile()
     formSubmitted.value = false
     touched.consent = false
     touched.email = false
@@ -302,12 +348,12 @@ function formatMonth(dateStr: string): string {
             </p>
 
             <div class="sr-only" aria-hidden="true">
-              <label for="website">Website</label>
+              <label for="newsletter-middleName">Middle name</label>
               <input
-                id="website"
-                v-model="form.website"
+                id="newsletter-middleName"
+                v-model="form.middleName"
                 type="text"
-                name="website"
+                name="middleName"
                 tabindex="-1"
                 autocomplete="off"
               />
@@ -352,12 +398,33 @@ function formatMonth(dateStr: string): string {
               </UCheckbox>
             </UFormField>
 
+            <UFormField
+              v-if="turnstileEnabled"
+              :label="`${t('newsletterPage.form.turnstile')} *`"
+              :error="getFieldError('turnstileToken')"
+            >
+              <div
+                id="newsletter-turnstile"
+                :aria-describedby="turnstileTokenFieldId"
+                class="min-h-17"
+              />
+              <p :id="turnstileTokenFieldId" class="text-muted mt-2 text-xs">
+                {{
+                  isTurnstileReady
+                    ? t('newsletterPage.form.turnstileHelp')
+                    : t('newsletterPage.form.turnstileLoading')
+                }}
+              </p>
+            </UFormField>
+
             <UButton
               type="submit"
               color="primary"
               block
               :loading="isSubmitting"
-              :disabled="!isFormValid || isSubmitting"
+              :disabled="
+                !isFormValid || isSubmitting || (turnstileEnabled && (!isTurnstileReady || !token))
+              "
               icon="i-tabler-mail-plus"
             >
               {{

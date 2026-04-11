@@ -638,6 +638,9 @@
       "subjectPlaceholder": "Message subject",
       "message": "Message",
       "messagePlaceholder": "Write your message here...",
+      "turnstile": "Anti-spam verification",
+      "turnstileHelp": "Complete the verification to submit the form.",
+      "turnstileLoading": "Loading anti-spam verification...",
       "submit": "Send message",
       "sending": "Sending...",
       "success": "Message sent successfully. We'll get back to you as soon as possible.",
@@ -665,7 +668,8 @@
         "subjectMax": "Subject must be 200 characters or less",
         "messageRequired": "Message is required",
         "messageMin": "Message must be at least 10 characters",
-        "messageMax": "Message must be 5000 characters or less"
+        "messageMax": "Message must be 5000 characters or less",
+        "turnstileRequired": "Complete the anti-spam verification"
       }
     }
   },
@@ -706,6 +710,9 @@
       "heading": "Subscribe to the newsletter",
       "email": "Email",
       "emailPlaceholder": "you{'@'}email.com",
+      "turnstile": "Anti-spam verification",
+      "turnstileHelp": "Complete the verification to finish your subscription.",
+      "turnstileLoading": "Loading anti-spam verification...",
       "submit": "Subscribe",
       "sending": "Subscribing...",
       "pendingConfirmation": "We have sent you an email to confirm your subscription.",
@@ -725,7 +732,8 @@
       "errors": {
         "emailRequired": "Email is required",
         "emailInvalid": "Enter a valid email address",
-        "consentRequired": "You must accept the privacy policy to subscribe"
+        "consentRequired": "You must accept the privacy policy to subscribe",
+        "turnstileRequired": "Complete the anti-spam verification"
       }
     },
     "archive": {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { watchDebounced } from '@vueuse/core'
 import { CONTACT_FIELD_LIMITS, contactFormSchema } from '~~/shared/utils/contactValidation'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { useTurnstile } from '@/composables/useTurnstile'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -80,7 +82,22 @@ const form = reactive({
   mediaName: '',
   subject: '',
   message: '',
-  website: '',
+  middleName: '',
+})
+const formStartedAt = ref(Date.now())
+const runtimeConfig = useRuntimeConfig()
+const turnstileSiteKey = computed(() => runtimeConfig.public.turnstileSiteKey as string | undefined)
+const turnstileEnabled = computed(() => (turnstileSiteKey.value?.trim().length ?? 0) > 0)
+const turnstileTokenFieldId = 'contact-turnstile-token'
+const {
+  hasError: turnstileHasError,
+  isReady: isTurnstileReady,
+  reset: resetTurnstile,
+  token,
+} = useTurnstile({
+  containerId: 'contact-turnstile',
+  enabled: turnstileEnabled,
+  siteKey: turnstileSiteKey,
 })
 
 const contactPayload = computed(() => ({
@@ -91,7 +108,9 @@ const contactPayload = computed(() => ({
   name: form.name.trim(),
   phone: form.phone.trim() || undefined,
   subject: form.subject.trim(),
-  website: form.website.trim() || undefined,
+  middleName: form.middleName.trim() || undefined,
+  startedAt: formStartedAt.value,
+  turnstileToken: token.value || undefined,
 }))
 
 const touched = reactive({
@@ -118,15 +137,28 @@ watchDebounced(
   { debounce: 250, maxWait: 800 }
 )
 
-type ValidatedField = 'name' | 'email' | 'phone' | 'mediaName' | 'subject' | 'message'
+type ValidatedField =
+  | 'name'
+  | 'email'
+  | 'phone'
+  | 'mediaName'
+  | 'subject'
+  | 'message'
+  | 'turnstileToken'
 
 const validationFieldOrder = computed<ValidatedField[]>(() =>
   isPress.value
-    ? ['name', 'email', 'phone', 'mediaName', 'subject', 'message']
-    : ['name', 'email', 'phone', 'subject', 'message']
+    ? ['name', 'email', 'phone', 'mediaName', 'subject', 'message', 'turnstileToken']
+    : ['name', 'email', 'phone', 'subject', 'message', 'turnstileToken']
 )
 
 function shouldShowError(field: ValidatedField): boolean {
+  if (field === 'turnstileToken') {
+    return (
+      turnstileEnabled.value && (formSubmitted.value || turnstileHasError.value) && !token.value
+    )
+  }
+
   return (touched[field] || formSubmitted.value) && !!getValidationFieldError(field)
 }
 
@@ -165,6 +197,10 @@ function getFieldError(field: ValidatedField): string | undefined {
         : t('contactPage.form.errors.subjectMax')
   }
 
+  if (field === 'turnstileToken') {
+    return t('contactPage.form.errors.turnstileRequired')
+  }
+
   return form.message.trim().length === 0
     ? t('contactPage.form.errors.messageRequired')
     : form.message.trim().length < CONTACT_FIELD_LIMITS.message.min
@@ -187,11 +223,23 @@ async function handleSubmit() {
   }
 
   const isValid = validate(contactFormSchema, contactPayload.value)
+  const hasTurnstileToken = !turnstileEnabled.value || token.value.length > 0
 
-  if (!isValid) {
-    const firstInvalid = validationFieldOrder.value.find((field) => getValidationFieldError(field))
+  if (!isValid || !hasTurnstileToken) {
+    const firstInvalid = validationFieldOrder.value.find((field) => {
+      if (field === 'turnstileToken') {
+        return turnstileEnabled.value && !token.value
+      }
+
+      return Boolean(getValidationFieldError(field))
+    })
 
     if (firstInvalid) {
+      if (firstInvalid === 'turnstileToken') {
+        document.getElementById(turnstileTokenFieldId)?.scrollIntoView({ behavior: 'smooth' })
+        return
+      }
+
       document.getElementById(`contact-${firstInvalid}`)?.focus()
     }
     return
@@ -217,21 +265,15 @@ async function handleSubmit() {
     form.mediaName = ''
     form.subject = ''
     form.message = ''
-    form.website = ''
+    form.middleName = ''
+    formStartedAt.value = Date.now()
+    resetTurnstile()
     formSubmitted.value = false
     Object.keys(touched).forEach((k) => (touched[k as keyof typeof touched] = false))
     clearErrors()
   } catch (error: unknown) {
-    const fetchError = error as {
-      data?: { message?: string; statusMessage?: string }
-    }
-    const errorMsg =
-      fetchError.data?.message ||
-      fetchError.data?.statusMessage ||
-      t('contactPage.form.errorGeneric')
-
     toast.add({
-      title: errorMsg,
+      title: getApiErrorMessage(error, t('contactPage.form.errorGeneric')),
       icon: 'i-tabler-alert-circle',
       color: 'error',
     })
@@ -296,11 +338,12 @@ async function handleSubmit() {
           </p>
 
           <div class="sr-only" aria-hidden="true">
+            <label for="contact-middleName">Middle name</label>
             <input
-              id="website"
-              v-model="form.website"
+              id="contact-middleName"
+              v-model="form.middleName"
               type="text"
-              name="website"
+              name="middleName"
               tabindex="-1"
               autocomplete="off"
             />
@@ -410,12 +453,33 @@ async function handleSubmit() {
             </template>
           </UFormField>
 
+          <UFormField
+            v-if="turnstileEnabled"
+            :label="`${t('contactPage.form.turnstile')} *`"
+            :error="getFieldError('turnstileToken')"
+          >
+            <div
+              id="contact-turnstile"
+              :aria-describedby="turnstileTokenFieldId"
+              class="min-h-17"
+            />
+            <p :id="turnstileTokenFieldId" class="text-muted mt-2 text-xs">
+              {{
+                isTurnstileReady
+                  ? t('contactPage.form.turnstileHelp')
+                  : t('contactPage.form.turnstileLoading')
+              }}
+            </p>
+          </UFormField>
+
           <UButton
             type="submit"
             color="primary"
             block
             :loading="isSubmitting"
-            :disabled="!isFormValid || isSubmitting"
+            :disabled="
+              !isFormValid || isSubmitting || (turnstileEnabled && (!isTurnstileReady || !token))
+            "
             icon="i-tabler-send"
           >
             {{ isSubmitting ? t('contactPage.form.sending') : t('contactPage.form.submit') }}

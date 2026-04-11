@@ -18,6 +18,8 @@ export const CONTACT_FIELD_LIMITS = {
     min: 10,
     max: 5000,
   },
+  honeypotMax: 256,
+  turnstileTokenMax: 2048,
 } as const
 
 export const CONTACT_PHONE_PATTERN = /^[+\d][\d\s()-]{5,29}$/
@@ -44,7 +46,9 @@ export const contactFormSchema = z
       .trim()
       .min(CONTACT_FIELD_LIMITS.message.min)
       .max(CONTACT_FIELD_LIMITS.message.max),
-    website: z.string().trim().max(256).optional(),
+    middleName: z.string().trim().max(CONTACT_FIELD_LIMITS.honeypotMax).optional(),
+    startedAt: z.coerce.number().int().positive(),
+    turnstileToken: z.string().trim().max(CONTACT_FIELD_LIMITS.turnstileTokenMax).optional(),
   })
   .superRefine((data, ctx) => {
     if (!isValidOptionalContactPhone(data.phone)) {

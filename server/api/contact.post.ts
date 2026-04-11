@@ -13,6 +13,7 @@ import { logError } from '../utils/logger'
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
 import { contactFormSchema } from '~~/shared/utils/contactValidation'
 import { normalizeBaseUrl, buildAbsoluteUrl } from '../utils/urlBuilder'
+import { hasMinimumPublicFormSubmitDelay, verifyTurnstileTokenOrThrow } from '../utils/turnstile'
 
 const SPAM_PATTERNS = [
   /\[url=/i,
@@ -58,9 +59,26 @@ export default defineEventHandler(async (event) => {
   const raw = await readBody(event)
   const body = validatePublicBody(event, contactFormSchema, raw)
 
-  if (body.website && body.website.trim() !== '') {
+  const antiSpamValidationFailedMessage = getPublicApiErrorMessage(
+    event,
+    'antiSpamValidationFailed'
+  )
+
+  if (body.middleName && body.middleName.trim() !== '') {
     return { success: true }
   }
+
+  if (!hasMinimumPublicFormSubmitDelay(body.startedAt)) {
+    throw createError({
+      statusCode: 400,
+      message: antiSpamValidationFailedMessage,
+    })
+  }
+
+  await verifyTurnstileTokenOrThrow(event, body.turnstileToken, {
+    invalidMessage: getPublicApiErrorMessage(event, 'turnstileValidationFailed'),
+    unavailableMessage: getPublicApiErrorMessage(event, 'turnstileUnavailable'),
+  })
 
   const contactType = body.contactType || 'general'
   const name = sanitize(body.name, 100)

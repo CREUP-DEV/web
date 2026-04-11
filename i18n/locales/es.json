@@ -638,6 +638,9 @@
       "subjectPlaceholder": "Asunto del mensaje",
       "message": "Mensaje",
       "messagePlaceholder": "Escribe tu mensaje aquí...",
+      "turnstile": "Verificación anti-spam",
+      "turnstileHelp": "Completa la verificación para enviar el formulario.",
+      "turnstileLoading": "Cargando verificación anti-spam...",
       "submit": "Enviar mensaje",
       "sending": "Enviando...",
       "success": "Mensaje enviado correctamente. Te responderemos lo antes posible.",
@@ -665,7 +668,8 @@
         "subjectMax": "El asunto no puede tener más de 200 caracteres",
         "messageRequired": "El mensaje es obligatorio",
         "messageMin": "El mensaje debe tener al menos 10 caracteres",
-        "messageMax": "El mensaje no puede tener más de 5000 caracteres"
+        "messageMax": "El mensaje no puede tener más de 5000 caracteres",
+        "turnstileRequired": "Completa la verificación anti-spam"
       }
     }
   },
@@ -706,6 +710,9 @@
       "heading": "Suscríbete a la newsletter",
       "email": "Correo electrónico",
       "emailPlaceholder": "tu{'@'}correo.com",
+      "turnstile": "Verificación anti-spam",
+      "turnstileHelp": "Completa la verificación para finalizar la suscripción.",
+      "turnstileLoading": "Cargando verificación anti-spam...",
       "submit": "Suscribirme",
       "sending": "Suscribiendo...",
       "pendingConfirmation": "Te hemos enviado un correo para confirmar la suscripción.",
@@ -725,7 +732,8 @@
       "errors": {
         "emailRequired": "El correo electrónico es obligatorio",
         "emailInvalid": "Introduce un correo electrónico válido",
-        "consentRequired": "Debes aceptar la política de privacidad para suscribirte"
+        "consentRequired": "Debes aceptar la política de privacidad para suscribirte",
+        "turnstileRequired": "Completa la verificación anti-spam"
       }
     },
     "archive": {

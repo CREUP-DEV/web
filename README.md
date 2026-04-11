@@ -64,12 +64,13 @@ pnpm db:seed
 Variables leídas en build:
 
 - Requerida: `SITE_URL`
-- Opcionales: `NUXT_UMAMI_HOST`, `NUXT_UMAMI_ID`
+- Opcionales: `NUXT_UMAMI_HOST`, `NUXT_UMAMI_ID`, `NUXT_PUBLIC_TURNSTILE_SITE_KEY`
 
 Variables leídas en runtime:
 
 - Requeridas: `DATABASE_URL`, `BETTER_AUTH_URL`, `APP_SECRET`, `ADMIN_EMAILS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 - Según funcionalidades activas: `SMTP_*`, `GOOGLE_CALENDAR_API_KEY`, `GOOGLE_CALENDAR_ID`, `EXTERNAL_*`
+- Si habilitas formularios públicos con verificación anti-spam: `TURNSTILE_SECRET_KEY`
 
 Si cambias una variable de build, hay que reconstruir la imagen. Si cambias una variable solo de runtime, basta con recrear el contenedor.
 
@@ -79,6 +80,8 @@ Si cambias una variable de build, hay que reconstruir la imagen. Si cambias una 
 - `DATABASE_URL`
 - `BETTER_AUTH_URL`
 - `APP_SECRET` - secreto maestro para Better Auth, tokens de newsletter y firma de OG images
+- `TURNSTILE_SECRET_KEY` - clave secreta de Cloudflare Turnstile para validar formularios públicos
+- `NUXT_PUBLIC_TURNSTILE_SITE_KEY` - clave pública de Cloudflare Turnstile para renderizar el widget
 
 ### Acceso de administración
 
@@ -135,6 +138,12 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - `EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES`
 - `EXTERNAL_API_CACHE_MAX_AGE_SECONDS`
 - `EXTERNAL_API_CACHE_STALE_SECONDS`
+
+### Umami y CSP
+
+- La CSP se construye de forma dinámica y añade el origen de `NUXT_UMAMI_HOST` a `connect-src` cuando está configurado.
+- Si usas Umami en un origen distinto al de la web (por ejemplo `https://umami.creup.es`), define `NUXT_UMAMI_HOST` para evitar bloqueos por CSP.
+- El modo proxy de Umami (`proxy: cloak`) sigue activo; esta configuración añade resiliencia si hay fallback al host directo.
 
 ### Docker local
 

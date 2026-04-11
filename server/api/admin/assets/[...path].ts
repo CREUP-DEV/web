@@ -22,6 +22,33 @@ const contentTypeByExtension: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
+function decodeComponentSafely(value: string) {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+function hasParentDirectoryTraversal(value: string) {
+  let current = value
+
+  for (let index = 0; index < 3; index++) {
+    if (current.includes('..') || current.includes('\\')) {
+      return true
+    }
+
+    const decoded = decodeComponentSafely(current)
+    if (decoded === current) {
+      break
+    }
+
+    current = decoded
+  }
+
+  return false
+}
+
 export default defineEventHandler(async (event) => {
   const method = getMethod(event).toUpperCase()
 
@@ -30,6 +57,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const { path } = validateRouteParams(event, adminAssetPathRouteParamSchema)
+
+  if (hasParentDirectoryTraversal(path)) {
+    throw createError({ statusCode: 404, message: 'Archivo no encontrado' })
+  }
 
   const storagePath = normalizeAdminStoredPath(`${ADMIN_ASSET_ROUTE_BASE}/${path}`)
 
