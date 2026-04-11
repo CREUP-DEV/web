@@ -126,6 +126,16 @@ html {
   html {
     scroll-behavior: auto;
   }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
 }
 
 .dark {
@@ -168,7 +178,7 @@ html {
 
 @layer components {
   .equality-accent-button {
-    @apply text-white focus-visible:outline-none focus-visible:ring-2;
+    @apply text-white focus-visible:ring-2 focus-visible:outline-none;
     background-color: var(--color-equality-purple-800);
     --tw-ring-color: rgb(81 50 105 / 0.4);
   }

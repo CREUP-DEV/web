@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import 'photoswipe/style.css'
 import type PhotoSwipeLightbox from 'photoswipe/lightbox'
 import type { EventGalleryImage } from '@/composables/useEvents'
@@ -27,6 +28,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
 let lightbox: PhotoSwipeLightbox | null = null
 
@@ -96,7 +98,7 @@ onMounted(async () => {
     loop: slides.value.length > 1,
     pswpModule: () => import('photoswipe'),
     returnFocus: true,
-    showHideAnimationType: 'zoom',
+    showHideAnimationType: prefersReducedMotion.value ? 'none' : 'zoom',
   })
 
   lightbox.on('change', () => {

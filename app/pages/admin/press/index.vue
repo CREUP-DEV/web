@@ -169,7 +169,7 @@ const emptyStateTypeLabel = computed(() =>
     </div>
 
     <div class="space-y-3">
-      <template v-if="pending">
+      <div v-if="pending" aria-hidden="true" class="space-y-3">
         <div v-for="n in 5" :key="n" class="rounded-xl border p-4">
           <div class="flex gap-4">
             <USkeleton class="h-24 w-40 shrink-0 rounded-lg" />
@@ -180,7 +180,7 @@ const emptyStateTypeLabel = computed(() =>
             </div>
           </div>
         </div>
-      </template>
+      </div>
 
       <template v-else>
         <article

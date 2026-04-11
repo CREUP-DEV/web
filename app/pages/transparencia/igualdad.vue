@@ -96,13 +96,14 @@ const LIMIT = 12
 const docsPage = ref(1)
 const docsOffset = computed(() => (docsPage.value - 1) * LIMIT)
 
-const { data: documentsData, error: documentsError } = await useFetch<EqualityDocumentsResponse>(
-  '/api/equality-documents',
-  {
-    headers: localeApiHeaders,
-    query: computed(() => ({ limit: LIMIT, offset: docsOffset.value })),
-  }
-)
+const {
+  data: documentsData,
+  pending: documentsLoading,
+  error: documentsError,
+} = await useFetch<EqualityDocumentsResponse>('/api/equality-documents', {
+  headers: localeApiHeaders,
+  query: computed(() => ({ limit: LIMIT, offset: docsOffset.value })),
+})
 
 const resourceIcons = [
   'i-tabler-scale',
@@ -191,7 +192,28 @@ const {
           </h2>
         </div>
 
-        <UCard v-if="documentsError" class="mt-6 text-center">
+        <div v-if="documentsLoading" aria-hidden="true" class="mt-6 grid gap-4 lg:grid-cols-2">
+          <UCard v-for="n in 4" :key="n" class="motion-card h-full">
+            <div class="flex h-full flex-col gap-5">
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <USkeleton class="size-11 shrink-0 rounded-2xl" />
+                  <div class="min-w-0 flex-1 space-y-2">
+                    <USkeleton class="h-5 w-3/4 rounded" />
+                    <USkeleton class="h-4 w-1/2 rounded" />
+                  </div>
+                </div>
+
+                <USkeleton class="h-4 w-full rounded" />
+                <USkeleton class="h-4 w-5/6 rounded" />
+              </div>
+
+              <USkeleton class="h-10 w-44 rounded-xl" />
+            </div>
+          </UCard>
+        </div>
+
+        <UCard v-else-if="documentsError" class="mt-6 text-center">
           <div class="flex flex-col items-center gap-3 py-6">
             <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
             <p class="text-muted">{{ t('equalityPage.loadError') }}</p>

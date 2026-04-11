@@ -348,4 +348,16 @@ onBeforeUnmount(() => {
   stroke-dasharray: 7 6;
   opacity: var(--members-map-frame-opacity);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .map-region {
+    transition: none;
+  }
+
+  .map-region--hovered,
+  .map-region:focus-visible {
+    filter: none;
+    transform: none;
+  }
+}
 </style>

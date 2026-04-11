@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import type { PressArticleType } from '@/composables/usePress'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 
@@ -13,6 +14,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const localePath = useLocalePath()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
+const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
 const LIMIT = 12
 const { page, selectTag, selectedTag, tagQuery } = usePressArchiveFilters(() => props.type)
@@ -56,9 +58,36 @@ const getArticleAnimationStyle = (index: number) => {
   }
 }
 
+const resetResultsContainerMotion = () => {
+  const el = resultsContainerRef.value
+
+  if (!el) {
+    return
+  }
+
+  el.style.height = ''
+  el.style.overflow = ''
+  el.style.transition = ''
+}
+
+watch(
+  prefersReducedMotion,
+  (isReduced) => {
+    if (isReduced) {
+      resetResultsContainerMotion()
+    }
+  },
+  { immediate: true }
+)
+
 watch(resultsTransitionKey, async () => {
   const el = resultsContainerRef.value
   if (!el) return
+
+  if (prefersReducedMotion.value) {
+    resetResultsContainerMotion()
+    return
+  }
 
   const startHeight = el.offsetHeight
 
@@ -214,9 +243,9 @@ watch(resultsTransitionKey, async () => {
         </TransitionGroup>
       </div>
 
-      <div v-if="total > LIMIT" class="mt-8 flex justify-center">
+      <nav v-if="total > LIMIT" class="mt-8 flex justify-center" aria-label="Paginación">
         <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
-      </div>
+      </nav>
     </UContainer>
   </section>
 </template>

@@ -198,7 +198,7 @@ const modalAssignmentDuration = computed(() =>
         </div>
       </header>
 
-      <div v-if="status === 'pending'" class="space-y-10">
+      <div v-if="status === 'pending'" aria-hidden="true" class="space-y-10">
         <div v-for="n in 3" :key="n">
           <USkeleton class="mb-4 h-8 w-48" />
           <div class="flex flex-wrap gap-6">

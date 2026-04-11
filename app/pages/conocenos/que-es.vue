@@ -19,7 +19,7 @@ const fallbackMemberCount = 38
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
-const { data } = await useFetch<{
+const { data, pending } = await useFetch<{
   content: AboutPageContent | null
   memberCount: number | null
 }>('/api/about-page')
@@ -173,48 +173,67 @@ usePageSeo(
 <template>
   <UContainer class="py-8 sm:py-12">
     <article class="mx-auto max-w-5xl space-y-10">
-      <section
-        v-if="pageContent.heroVisible && pageContent.heroImage"
-        :aria-label="pageContent.title"
-        class="space-y-4"
-      >
+      <div v-if="pending" aria-hidden="true" class="space-y-4">
         <div class="bg-muted overflow-hidden rounded-3xl border">
-          <NuxtImg
-            :src="pageContent.heroImage"
-            :alt="pageContent.title"
-            width="1925"
-            height="550"
-            class="aspect-1925/550 size-full object-cover"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1152px"
-          />
+          <USkeleton class="aspect-1925/550 size-full" />
         </div>
-      </section>
 
-      <header class="mx-auto max-w-3xl text-center">
-        <h1 class="mt-4 text-3xl font-bold sm:text-4xl">{{ pageContent.title }}</h1>
-        <p class="text-muted mt-4 text-lg">{{ pageContent.lead }}</p>
-        <p v-if="pageContent.intro" class="text-muted mt-4 leading-relaxed">
-          {{ pageContent.intro }}
-        </p>
+        <header class="mx-auto max-w-3xl space-y-4 text-center">
+          <USkeleton class="mx-auto h-10 w-64 rounded" />
+          <USkeleton class="mx-auto h-6 w-4/5 rounded" />
+          <USkeleton class="mx-auto h-4 w-11/12 rounded" />
 
-        <div class="mt-6 flex flex-wrap justify-center gap-3">
-          <UButton
-            href="#about-overview"
-            icon="i-tabler-arrow-down"
-            :label="t('aboutPage.ctaIdentity')"
-          />
-          <UButton
-            :to="localePath('/conocenos/miembros')"
-            color="neutral"
-            variant="soft"
-            icon="i-tabler-users-group"
-            :label="t('aboutPage.ctaMembers')"
-          />
-        </div>
-      </header>
+          <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <USkeleton class="h-10 w-40 rounded-xl" />
+            <USkeleton class="h-10 w-44 rounded-xl" />
+          </div>
+        </header>
+      </div>
+
+      <template v-else>
+        <section
+          v-if="pageContent.heroVisible && pageContent.heroImage"
+          :aria-label="pageContent.title"
+          class="space-y-4"
+        >
+          <div class="bg-muted overflow-hidden rounded-3xl border">
+            <NuxtImg
+              :src="pageContent.heroImage"
+              :alt="pageContent.title"
+              width="1925"
+              height="550"
+              class="aspect-1925/550 size-full object-cover"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1152px"
+            />
+          </div>
+        </section>
+
+        <header class="mx-auto max-w-3xl text-center">
+          <h1 class="mt-4 text-3xl font-bold sm:text-4xl">{{ pageContent.title }}</h1>
+          <p class="text-muted mt-4 text-lg">{{ pageContent.lead }}</p>
+          <p v-if="pageContent.intro" class="text-muted mt-4 leading-relaxed">
+            {{ pageContent.intro }}
+          </p>
+
+          <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <UButton
+              href="#about-overview"
+              icon="i-tabler-arrow-down"
+              :label="t('aboutPage.ctaIdentity')"
+            />
+            <UButton
+              :to="localePath('/conocenos/miembros')"
+              color="neutral"
+              variant="soft"
+              icon="i-tabler-users-group"
+              :label="t('aboutPage.ctaMembers')"
+            />
+          </div>
+        </header>
+      </template>
 
       <section
         ref="statsRef"

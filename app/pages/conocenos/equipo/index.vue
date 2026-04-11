@@ -147,7 +147,7 @@ const tabItems = computed(() => [
         />
       </div>
 
-      <div v-if="pending" class="space-y-8">
+      <div v-if="pending" aria-hidden="true" class="space-y-8">
         <USkeleton class="mx-auto h-8 w-48 rounded" />
         <div class="flex flex-wrap justify-center gap-6">
           <USkeleton v-for="n in 6" :key="n" class="h-64 w-72 rounded-xl" />

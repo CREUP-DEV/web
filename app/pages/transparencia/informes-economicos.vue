@@ -21,10 +21,13 @@ const LIMIT = 12
 const page = ref(1)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
-const { data, error } = await useFetch<FinancialReportsResponse>('/api/financial-reports', {
-  headers: localeApiHeaders,
-  query: computed(() => ({ limit: LIMIT, offset: offset.value })),
-})
+const { data, pending, error } = await useFetch<FinancialReportsResponse>(
+  '/api/financial-reports',
+  {
+    headers: localeApiHeaders,
+    query: computed(() => ({ limit: LIMIT, offset: offset.value })),
+  }
+)
 
 const items = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
@@ -51,7 +54,22 @@ function formatDate(dateStr: string): string {
         </p>
       </header>
 
-      <UCard v-if="error" class="text-center">
+      <div v-if="pending" aria-hidden="true" class="space-y-4">
+        <USkeleton class="mx-auto h-8 w-72 rounded" />
+        <div class="space-y-3">
+          <UCard v-for="n in 4" :key="n" class="motion-card">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="min-w-0 flex-1 space-y-2">
+                <USkeleton class="h-5 w-3/4 rounded" />
+                <USkeleton class="h-4 w-40 rounded" />
+              </div>
+              <USkeleton class="h-9 w-28 rounded-lg" />
+            </div>
+          </UCard>
+        </div>
+      </div>
+
+      <UCard v-else-if="error" class="text-center">
         <div class="flex flex-col items-center gap-3 py-6">
           <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
           <p class="text-muted">
