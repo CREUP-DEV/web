@@ -1,6 +1,6 @@
-import { desc, eq, lte, sql, and } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { db } from '../../db'
-import { newsletters, pressArticles } from '../../db/schema'
+import { newsletters } from '../../db/schema'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
@@ -9,8 +9,6 @@ import { getEventsPayload } from '../../utils/events'
 import { fetchMandatesList, type MandateInfoOutput } from '../../utils/mandateDetail'
 import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
 import { logError } from '../../utils/logger'
-import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
-import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { buildLocalizedAlternatesForLocaleCodes } from '~~/shared/utils/locale'
 import { getRequestLocaleContext } from '../../utils/requestLocale'
 
@@ -56,23 +54,7 @@ export default defineSitemapEventHandler(async (event) => {
   setExternalApiCacheHeaders(event, cacheOptions)
   const { locales, defaultLocale } = getRequestLocaleContext(event)
 
-  const [articles, eventsPayload, mandates, latestNewsletter] = await Promise.all([
-    db.query.pressArticles.findMany({
-      where: and(eq(pressArticles.active, true), lte(pressArticles.publishedAt, sql`CURRENT_DATE`)),
-      columns: {
-        slug: true,
-        type: true,
-        updatedAt: true,
-        publishedAt: true,
-      },
-      with: {
-        translations: {
-          columns: {
-            locale: true,
-          },
-        },
-      },
-    }),
+  const [eventsPayload, mandates, latestNewsletter] = await Promise.all([
     getEventsPayload(event).catch((error) => {
       logError('sitemap.events', error, undefined, event)
       return { events: [], generatedAt: null }
@@ -94,25 +76,6 @@ export default defineSitemapEventHandler(async (event) => {
       .limit(1)
       .then((rows) => rows[0] ?? null),
   ])
-
-  const articleRoutes = articles.flatMap((article) => {
-    const basePath = getPressArticlePublicListPath(article.type as PressArticleType)
-    if (!basePath) {
-      return []
-    }
-
-    return [
-      buildI18nEntry(
-        `${basePath}/${article.slug}`,
-        locales,
-        defaultLocale,
-        article.translations.map((translation) => translation.locale),
-        {
-          lastmod: (article.updatedAt ?? article.publishedAt).toISOString(),
-        }
-      ),
-    ]
-  })
 
   const eventRoutes = eventsPayload.events.map((entry) =>
     buildI18nEntry(`/conocenos/eventos/${entry.slug}`, locales, defaultLocale, undefined, {
@@ -136,5 +99,5 @@ export default defineSitemapEventHandler(async (event) => {
       ]
     : []
 
-  return [...articleRoutes, ...eventRoutes, ...mandateRoutes, ...newsletterRoute]
+  return [...eventRoutes, ...mandateRoutes, ...newsletterRoute]
 })

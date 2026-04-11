@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 import { access, copyFile, mkdir, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises'
-import { basename, extname, join, resolve, sep } from 'node:path'
+import { basename, extname, join, posix, resolve, sep } from 'node:path'
 import { createId } from '@paralleldrive/cuid2'
 import { slugify } from './slug'
 import { logWarn } from './logger'
@@ -45,8 +45,20 @@ async function fileExists(path: string) {
   }
 }
 
+export function normalizeAdminStoredPath(storagePath: string) {
+  const trimmedStoragePath = storagePath.trim()
+
+  if (!trimmedStoragePath) {
+    return ''
+  }
+
+  const normalizedStoragePath = posix.normalize(trimmedStoragePath)
+
+  return normalizedStoragePath.startsWith('/') ? normalizedStoragePath : `/${normalizedStoragePath}`
+}
+
 function resolveInternalAbsolutePath(storagePath: string) {
-  const normalizedStoragePath = storagePath.trim()
+  const normalizedStoragePath = normalizeAdminStoredPath(storagePath)
   const relativeStoragePath = normalizedStoragePath.startsWith(`${ADMIN_ASSET_ROUTE_BASE}/`)
     ? normalizedStoragePath.slice(ADMIN_ASSET_ROUTE_BASE.length + 1)
     : ''
@@ -68,7 +80,7 @@ function resolveInternalAbsolutePath(storagePath: string) {
 }
 
 function resolvePublicAbsolutePath(storagePath: string) {
-  const normalizedStoragePath = storagePath.trim()
+  const normalizedStoragePath = normalizeAdminStoredPath(storagePath)
   const publicRoot = resolve(process.cwd(), 'public')
   const absolutePath = resolve(publicRoot, `.${normalizedStoragePath}`)
 
@@ -90,11 +102,11 @@ function resolveRelativeFilename(storagePath: string | null | undefined, publicP
 }
 
 export function isTemporaryAdminStoragePath(storagePath: string) {
-  return storagePath.trim().startsWith(`${TEMP_ADMIN_ASSET_BASE_PATH}/`)
+  return normalizeAdminStoredPath(storagePath).startsWith(`${TEMP_ADMIN_ASSET_BASE_PATH}/`)
 }
 
 export function isInactiveAdminStoragePath(storagePath: string) {
-  return storagePath.trim().startsWith(`${INACTIVE_ADMIN_ASSET_BASE_PATH}/`)
+  return normalizeAdminStoredPath(storagePath).startsWith(`${INACTIVE_ADMIN_ASSET_BASE_PATH}/`)
 }
 
 export function isInternalAdminStoragePath(storagePath: string) {
@@ -102,11 +114,13 @@ export function isInternalAdminStoragePath(storagePath: string) {
 }
 
 export function resolveAdminStoredAbsolutePath(storagePath: string) {
-  if (isInternalAdminStoragePath(storagePath)) {
+  const normalizedStoragePath = normalizeAdminStoredPath(storagePath)
+
+  if (isInternalAdminStoragePath(normalizedStoragePath)) {
     return resolveInternalAbsolutePath(storagePath)
   }
 
-  return resolvePublicAbsolutePath(storagePath)
+  return resolvePublicAbsolutePath(normalizedStoragePath)
 }
 
 function buildInactiveStoragePath(publicPath: string, filename: string) {

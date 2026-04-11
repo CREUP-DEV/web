@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { Pool } from 'pg'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { requireConfigString } from '../../shared/utils/config'
+import { logError } from '../utils/logger'
 import * as schema from './schema'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
@@ -14,6 +15,10 @@ const pool = new Pool({
   idleTimeoutMillis: 10_000,
   // Fail fast if a connection cannot be acquired within 30 s.
   connectionTimeoutMillis: 30_000,
+})
+
+pool.on('error', (error) => {
+  logError('db.pool', error)
 })
 
 export const db = drizzle(pool, { schema })

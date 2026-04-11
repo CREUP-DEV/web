@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { and, desc, eq, inArray, or, ilike, sql } from 'drizzle-orm'
+import { and, desc, eq, ilike, or, sql, type SQL } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles, pressArticleTranslations } from '../../../db/schema'
 import { sanitizePressTranslations } from '../../../utils/pressTranslation'
@@ -12,36 +12,36 @@ import { dateValueToDateOnly } from '~~/shared/utils/date'
 
 const adminPressQuerySchema = adminPressListQuerySchema.merge(paginationQuerySchema)
 
+function escapeLikePattern(value: string) {
+  return value.replace(/[%_\\]/g, '\\$&')
+}
+
 export default defineEventHandler(async (event) => {
   const query = validateQuery(event, adminPressQuerySchema)
   const { type, search, limit, offset } = query
 
   // Build WHERE conditions
-  const conditions = []
+  const conditions: SQL[] = []
 
   if (type) {
     conditions.push(eq(pressArticles.type, type))
   }
 
   if (search) {
-    const pattern = `%${search}%`
-    const matchingIds = await db
-      .selectDistinct({ id: pressArticleTranslations.pressArticleId })
-      .from(pressArticleTranslations)
-      .where(
-        or(
-          ilike(pressArticleTranslations.title, pattern),
-          ilike(pressArticleTranslations.description, pattern)
-        )
-      )
-
-    const idList = matchingIds.map((r) => r.id)
-
-    if (idList.length === 0) {
-      return { items: [], total: 0 }
-    }
-
-    conditions.push(inArray(pressArticles.id, idList))
+    const pattern = `%${escapeLikePattern(search)}%`
+    conditions.push(
+      sql`exists (
+        select 1
+        from ${pressArticleTranslations}
+        where ${and(
+          eq(pressArticleTranslations.pressArticleId, pressArticles.id),
+          or(
+            ilike(pressArticleTranslations.title, pattern),
+            ilike(pressArticleTranslations.description, pattern)
+          )
+        )}
+      )`
+    )
   }
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined

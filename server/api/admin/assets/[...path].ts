@@ -4,6 +4,7 @@ import { extname } from 'node:path'
 import {
   ADMIN_ASSET_ROUTE_BASE,
   isInternalAdminStoragePath,
+  normalizeAdminStoredPath,
   resolveAdminStoredAbsolutePath,
 } from '../../../utils/adminStoredFile'
 import { throwMethodNotAllowed } from '../../../utils/throwMethodNotAllowed'
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
   const { path } = validateRouteParams(event, adminAssetPathRouteParamSchema)
 
-  const storagePath = `${ADMIN_ASSET_ROUTE_BASE}/${path}`
+  const storagePath = normalizeAdminStoredPath(`${ADMIN_ASSET_ROUTE_BASE}/${path}`)
 
   if (!isInternalAdminStoragePath(storagePath)) {
     throw createError({ statusCode: 404, message: 'Archivo no encontrado' })

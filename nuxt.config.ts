@@ -148,7 +148,16 @@ export default defineNuxtConfig({
   // Sitemap configuration
   sitemap: {
     autoLastmod: true,
-    sources: ['/api/__sitemap__/urls'],
+    sitemaps: {
+      main: {
+        includeAppSources: true,
+        sources: ['/api/__sitemap__/urls'],
+      },
+      press: {
+        sources: ['/api/__sitemap__/press-articles'],
+        chunks: 1000,
+      },
+    },
     xsl: false,
   },
 
