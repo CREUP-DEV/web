@@ -15,6 +15,7 @@ const { t } = useI18n()
 const mapContainerRef = ref<HTMLElement | null>(null)
 const tooltipRef = ref<HTMLElement | null>(null)
 const tooltipId = 'members-map-tooltip'
+const regionRefs = ref<Array<SVGPathElement | null>>([])
 
 const tooltip = ref({
   visible: false,
@@ -22,6 +23,7 @@ const tooltip = ref({
   meta: '',
 })
 const hoveredCommunity = ref<string | null>(null)
+const activeCommunity = ref(props.selectedCommunity ?? SPAIN_REGION_PATHS[0]?.community ?? '')
 
 let tooltipAnimationFrameId = 0
 let pendingTooltipPointerPosition: { clientX: number; clientY: number } | null = null
@@ -73,8 +75,18 @@ const regionAriaLabels = computed(() => {
 })
 
 const handleSelect = (community: string) => {
+  activeCommunity.value = community
   emit('select', props.selectedCommunity === community ? null : community)
 }
+
+watch(
+  () => props.selectedCommunity,
+  (community) => {
+    if (community && SPAIN_REGION_PATHS.some((region) => region.community === community)) {
+      activeCommunity.value = community
+    }
+  }
+)
 
 const setHoverCommunity = (community: string) => {
   hoveredCommunity.value = community
@@ -165,11 +177,62 @@ const updateTooltipPosition = (event: MouseEvent) => {
 }
 
 const showTooltipFromFocus = (event: FocusEvent, community: string) => {
+  activeCommunity.value = community
   setHoverCommunity(community)
   setTooltipPositionFromTarget(event.currentTarget ?? event.target)
   tooltip.value.title = communityNames.value.get(community) ?? community
   tooltip.value.meta = getCommunityCountLabel(community)
   tooltip.value.visible = true
+}
+
+const setRegionRef = (el: SVGPathElement | null, index: number) => {
+  regionRefs.value[index] = el
+}
+
+const focusRegionAtIndex = async (index: number) => {
+  const totalRegions = SPAIN_REGION_PATHS.length
+
+  if (!totalRegions) {
+    return
+  }
+
+  const nextIndex = ((index % totalRegions) + totalRegions) % totalRegions
+  const nextRegion = SPAIN_REGION_PATHS[nextIndex]
+  if (!nextRegion) {
+    return
+  }
+
+  activeCommunity.value = nextRegion.community
+  await nextTick()
+  regionRefs.value[nextIndex]?.focus()
+}
+
+const handleRegionKeydown = (event: KeyboardEvent, index: number, community: string) => {
+  switch (event.key) {
+    case 'ArrowRight':
+    case 'ArrowDown':
+      event.preventDefault()
+      void focusRegionAtIndex(index + 1)
+      break
+    case 'ArrowLeft':
+    case 'ArrowUp':
+      event.preventDefault()
+      void focusRegionAtIndex(index - 1)
+      break
+    case 'Home':
+      event.preventDefault()
+      void focusRegionAtIndex(0)
+      break
+    case 'End':
+      event.preventDefault()
+      void focusRegionAtIndex(SPAIN_REGION_PATHS.length - 1)
+      break
+    case 'Enter':
+    case ' ':
+      event.preventDefault()
+      handleSelect(community)
+      break
+  }
 }
 
 const hideTooltip = () => {
@@ -214,8 +277,9 @@ onBeforeUnmount(() => {
       />
 
       <path
-        v-for="region in SPAIN_REGION_PATHS"
+        v-for="(region, index) in SPAIN_REGION_PATHS"
         :key="region.svgId"
+        :ref="(el) => setRegionRef(el as SVGPathElement | null, index)"
         :d="region.d"
         :class="[
           regionClassesStatic.get(region.community),
@@ -223,15 +287,14 @@ onBeforeUnmount(() => {
             ? 'map-region--hovered'
             : '',
         ]"
-        tabindex="0"
+        :tabindex="activeCommunity === region.community ? 0 : -1"
         role="button"
         focusable="true"
         :aria-label="regionAriaLabels.get(region.community)"
         :aria-describedby="tooltipId"
         :aria-pressed="selectedCommunity === region.community"
         @click="handleSelect(region.community)"
-        @keydown.enter.prevent="handleSelect(region.community)"
-        @keydown.space.prevent="handleSelect(region.community)"
+        @keydown="handleRegionKeydown($event, index, region.community)"
         @mouseenter="showTooltipFromPointer($event, region.community)"
         @mousemove="updateTooltipPosition($event)"
         @mouseleave="hideTooltip"
