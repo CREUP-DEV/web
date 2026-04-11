@@ -2,8 +2,21 @@
 import { detailModalUi } from '@/utils/detailModalUi'
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 
-usePageSeo('members.title', 'members.description')
+usePageSeo('members.title', 'members.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.about.members'),
+      path: localePath('/conocenos/miembros'),
+    },
+  ],
+})
 
 const { allMembers, allSectoriales, pending, error } = await useMembersPageData()
 const { buildMemberDetailData, buildSectorialDetailData } = useOrganizationDetailData()

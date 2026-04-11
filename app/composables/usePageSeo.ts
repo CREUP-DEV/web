@@ -1,4 +1,13 @@
+import type { MaybeRefOrGetter } from 'vue'
 import { toAbsoluteUrl } from '~~/shared/utils/url'
+import {
+  createBreadcrumbStructuredData,
+  createWebPageStructuredData,
+  useStructuredData,
+  type BreadcrumbStructuredDataItem,
+  type StructuredDataNode,
+  type WebPageSchemaType,
+} from './useStructuredData'
 
 type SeoOgType =
   | 'website'
@@ -20,6 +29,8 @@ interface UsePageSeoOptions {
   canonicalPath?: SeoValue
   ogImage?: SeoValue
   ogType?: SeoValue<SeoOgType>
+  webPageType?: WebPageSchemaType
+  breadcrumbs?: MaybeRefOrGetter<BreadcrumbStructuredDataItem[] | null | undefined>
 }
 
 const resolveLiteralValue = <T extends string>(value: SeoValue<T> | undefined): T | undefined => {
@@ -50,6 +61,7 @@ export function usePageSeo(
   const title = () => resolveTranslatedValue(titleValue, t)
   const description = () => resolveTranslatedValue(descriptionValue, t)
   const explicitOgImage = computed(() => resolveLiteralValue(options.ogImage))
+  const breadcrumbItems = computed(() => toValue(options.breadcrumbs) ?? null)
 
   const canonicalUrl = computed(() => {
     const canonicalPath = resolveLiteralValue(options.canonicalPath) ?? route.path
@@ -94,13 +106,28 @@ export function usePageSeo(
     link: canonicalUrl.value ? [{ rel: 'canonical', href: canonicalUrl.value }] : [],
   }))
 
-  useSchemaOrg([
-    defineWebPage({
-      '@id': () => (canonicalUrl.value ? `${canonicalUrl.value}#webpage` : undefined),
-      name: title,
-      description,
-      url: () => canonicalUrl.value,
-      inLanguage: () => languageTag.value,
-    }),
-  ])
+  useStructuredData(
+    computed(() => {
+      const nodes: StructuredDataNode[] = [
+        createWebPageStructuredData({
+          type: options.webPageType ?? 'WebPage',
+          name: title() ?? '',
+          description: description(),
+          url: canonicalUrl.value,
+          inLanguage: languageTag.value,
+        }),
+      ]
+
+      if (breadcrumbItems.value?.length) {
+        nodes.push(
+          createBreadcrumbStructuredData(
+            breadcrumbItems.value,
+            String(siteConfig.url ?? '').trim() || null
+          )
+        )
+      }
+
+      return nodes
+    })
+  )
 }

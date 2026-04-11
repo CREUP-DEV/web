@@ -25,6 +25,12 @@ useHead({
 
 const status = computed(() => error.status ?? 500)
 const statusMessage = computed(() => t('error.message'))
+const seoTitle = computed(() => `${status.value} - CREUP`)
+
+useSeoMeta({
+  title: seoTitle,
+  robots: 'noindex',
+})
 
 const route = useRoute()
 

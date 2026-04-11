@@ -12,10 +12,27 @@ interface FinancialReportsResponse {
 }
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { formatLongDate } = useDatePresets()
 const localeApiHeaders = useLocaleApiHeaders()
 
-usePageSeo('financialReports.title', 'financialReports.description')
+usePageSeo('financialReports.title', 'financialReports.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.transparency.label'),
+      path: localePath('/transparencia/informes-economicos'),
+    },
+    {
+      name: t('nav.transparency.financialReports'),
+      path: localePath('/transparencia/informes-economicos'),
+    },
+  ],
+})
 
 const LIMIT = 12
 const page = ref(1)

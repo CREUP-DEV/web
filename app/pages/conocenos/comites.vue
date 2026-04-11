@@ -4,11 +4,24 @@ import type { SocialNetworkEntry } from '~~/shared/utils/social'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 const { t, locale } = useI18n()
+const localePath = useLocalePath()
 const { fallbackLocale } = useLocales()
 const localeApiHeaders = useLocaleApiHeaders()
 const { getDisplayName: getMemberDisplayName, getContactEmail } = usePersonHelpers()
 
-usePageSeo('committees.title', 'committees.description')
+usePageSeo('committees.title', 'committees.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.about.committees'),
+      path: localePath('/conocenos/comites'),
+    },
+  ],
+})
 
 type SocialNetwork = SocialNetworkEntry
 

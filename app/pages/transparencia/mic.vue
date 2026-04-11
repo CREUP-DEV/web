@@ -2,10 +2,27 @@
 import { DEFAULT_MIC_MANIFEST } from '@/composables/useMicManifest'
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { copyToClipboard } = useCopyToClipboard()
 const { data: micManifest } = await useMicManifest()
 
-usePageSeo('mic.title', 'mic.description')
+usePageSeo('mic.title', 'mic.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.transparency.label'),
+      path: localePath('/transparencia/mic'),
+    },
+    {
+      name: t('nav.transparency.corporateIdentity'),
+      path: localePath('/transparencia/mic'),
+    },
+  ],
+})
 
 interface CorporateColor {
   nameKey: string

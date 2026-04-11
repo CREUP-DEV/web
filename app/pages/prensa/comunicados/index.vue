@@ -1,7 +1,24 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
 
-usePageSeo('press.statements.title', 'press.statements.description')
+usePageSeo('press.statements.title', 'press.statements.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.press.label'),
+      path: localePath('/prensa/comunicados'),
+    },
+    {
+      name: t('nav.press.statements'),
+      path: localePath('/prensa/comunicados'),
+    },
+  ],
+})
 </script>
 
 <template>

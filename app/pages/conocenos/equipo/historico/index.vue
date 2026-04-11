@@ -4,7 +4,23 @@ const route = useRoute()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 
-usePageSeo('mandates.title', 'mandates.description')
+usePageSeo('mandates.title', 'mandates.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.about.team'),
+      path: localePath('/conocenos/equipo'),
+    },
+    {
+      name: t('mandates.title'),
+      path: localePath('/conocenos/equipo/historico'),
+    },
+  ],
+})
 
 interface Mandate {
   id: number

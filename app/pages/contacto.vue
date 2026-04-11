@@ -31,7 +31,19 @@ const {
   shouldAnimate: formShouldAnimate,
 } = useEntranceObserver(0.1)
 
-usePageSeo('contactPage.seo.title', 'contactPage.seo.description')
+usePageSeo('contactPage.seo.title', 'contactPage.seo.description', {
+  webPageType: 'ContactPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.contact'),
+      path: localePath('/contacto'),
+    },
+  ],
+})
 
 const contactType = ref<'general' | 'press'>('general')
 const isPress = computed(() => contactType.value === 'press')

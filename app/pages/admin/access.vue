@@ -216,7 +216,41 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div v-if="pending" class="text-muted py-12 text-center">Cargando accesos...</div>
+    <div v-if="pending" aria-hidden="true" class="space-y-6">
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div v-for="n in 3" :key="n" class="bg-surface rounded-2xl p-4">
+          <USkeleton class="h-4 w-24" />
+          <USkeleton class="mt-3 h-8 w-16" />
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div v-for="n in 4" :key="n" class="bg-surface rounded-2xl p-5 shadow-sm">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex items-start gap-4">
+              <USkeleton class="size-14 shrink-0 rounded-full" />
+              <div class="min-w-0 space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <USkeleton class="h-5 w-48" />
+                  <USkeleton class="h-5 w-16 rounded-full" />
+                  <USkeleton class="h-5 w-28 rounded-full" />
+                </div>
+                <USkeleton class="h-4 w-56" />
+                <USkeleton class="h-4 w-44" />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <USkeleton class="h-4 w-40" />
+              <div class="flex gap-2">
+                <USkeleton class="h-9 w-24 rounded-md" />
+                <USkeleton class="h-9 w-20 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div v-else class="space-y-4">
       <div v-for="item in items" :key="item.id" class="bg-surface rounded-2xl p-5 shadow-sm">

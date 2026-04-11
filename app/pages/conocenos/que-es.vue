@@ -166,7 +166,20 @@ const pageContent = computed(() => ({
 
 usePageSeo(
   () => pageContent.value.title,
-  () => t('aboutPage.description')
+  () => t('aboutPage.description'),
+  {
+    webPageType: 'AboutPage',
+    breadcrumbs: () => [
+      {
+        name: t('nav.home'),
+        path: localePath('/'),
+      },
+      {
+        name: t('nav.about.whatIs'),
+        path: localePath('/conocenos/que-es'),
+      },
+    ],
+  }
 )
 </script>
 

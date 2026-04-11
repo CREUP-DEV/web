@@ -24,6 +24,7 @@ interface EqualityDocumentsResponse {
 }
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 const supportMailto = 'mailto:punto.seguro@creup.es'
 
@@ -90,7 +91,23 @@ const scopeItems = computed(() => [
   },
 ])
 
-usePageSeo('equalityPage.title', 'equalityPage.description')
+usePageSeo('equalityPage.title', 'equalityPage.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.transparency.label'),
+      path: localePath('/transparencia/igualdad'),
+    },
+    {
+      name: t('nav.transparency.equality'),
+      path: localePath('/transparencia/igualdad'),
+    },
+  ],
+})
 
 const LIMIT = 12
 const docsPage = ref(1)

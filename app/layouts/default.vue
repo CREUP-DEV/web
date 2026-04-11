@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { SeoAlternateLink } from '@/composables/useSeoAlternateLinksOverride'
+import {
+  createOrganizationStructuredData,
+  useStructuredData,
+} from '@/composables/useStructuredData'
 
 const { t } = useI18n()
+const siteConfig = useSiteConfig()
 const { data: pressDossierLink } = await usePressDossierLink()
 const alternateLinksOverride = useState<SeoAlternateLink[] | null>(
   'seo-alternate-links-override',
@@ -19,6 +24,15 @@ const isLocaleAlternateLink = (link: { rel?: string; id?: string }) => {
 
   return link.id === 'i18n-xd' || link.id?.startsWith('i18n-alt-') === true
 }
+
+useStructuredData(
+  computed(() => [
+    createOrganizationStructuredData({
+      name: String(siteConfig.name ?? '').trim(),
+      url: String(siteConfig.url ?? '').trim() || null,
+    }),
+  ])
+)
 
 useHead(() => {
   const resolvedHead = head.value

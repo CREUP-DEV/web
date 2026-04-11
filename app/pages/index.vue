@@ -25,7 +25,14 @@ const featuredNewsItems = computed(() => {
   }))
 })
 
-usePageSeo('meta.title', 'meta.description')
+usePageSeo('meta.title', 'meta.description', {
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+  ],
+})
 </script>
 
 <template>

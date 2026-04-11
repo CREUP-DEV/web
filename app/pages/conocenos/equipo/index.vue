@@ -8,7 +8,19 @@ const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 const { getContactEmail } = usePersonHelpers()
 
-usePageSeo('team.title', 'team.description')
+usePageSeo('team.title', 'team.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.about.team'),
+      path: localePath('/conocenos/equipo'),
+    },
+  ],
+})
 
 const { areas, error, pending } = await useTeamPageData()
 

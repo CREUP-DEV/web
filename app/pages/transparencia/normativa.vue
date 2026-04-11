@@ -23,6 +23,7 @@ interface NormativaResponse {
 }
 
 const { t, te } = useI18n()
+const localePath = useLocalePath()
 const { formatLongDate } = useDatePresets()
 
 function toCategorySlug(name: string): string {
@@ -39,7 +40,23 @@ function translateCategory(name: string): string {
   return te(key) ? t(key) : name
 }
 
-usePageSeo('regulations.title', 'regulations.description')
+usePageSeo('regulations.title', 'regulations.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.transparency.label'),
+      path: localePath('/transparencia/normativa'),
+    },
+    {
+      name: t('nav.transparency.regulations'),
+      path: localePath('/transparencia/normativa'),
+    },
+  ],
+})
 
 const { data, pending, error } = useFetch<NormativaResponse>('/api/normativa')
 

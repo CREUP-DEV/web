@@ -9,7 +9,19 @@ const {
   isDateRangeUpcoming,
 } = useDatePresets()
 
-usePageSeo('events.title', 'events.description')
+usePageSeo('events.title', 'events.description', {
+  webPageType: 'CollectionPage',
+  breadcrumbs: () => [
+    {
+      name: t('nav.home'),
+      path: localePath('/'),
+    },
+    {
+      name: t('nav.events.label'),
+      path: localePath('/conocenos/eventos'),
+    },
+  ],
+})
 
 const { events, eventTypes, error, status } = useEvents()
 
