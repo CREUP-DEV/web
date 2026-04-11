@@ -9,7 +9,7 @@ import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 const { session, signOut } = useAuth()
 
 // Admin is always in the default locale (Spanish). Force it while this layout is mounted.
-const { locale, setLocale } = useI18n()
+const { locale, setLocale, t } = useI18n()
 const { defaultLocale } = useLocales()
 const previousLocale = locale.value as Locale
 await setLocale(defaultLocale as Locale)
@@ -102,10 +102,16 @@ useHead({
 <template>
   <div class="bg-background min-h-screen">
     <a
+      href="#admin-main-navigation"
+      class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
+    >
+      {{ t('accessibility.skipToNavigation') }}
+    </a>
+    <a
       href="#admin-main-content"
       class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
     >
-      Saltar al contenido principal
+      {{ t('accessibility.skipToMain') }}
     </a>
 
     <div class="flex min-h-screen">
@@ -161,17 +167,23 @@ useHead({
           </div>
         </template>
 
-        <UNavigationMenu
-          :items="navigationItems"
-          orientation="vertical"
-          :collapsed="navigationCollapsed"
-          :tooltip="{ delayDuration: 0, content: { side: 'right' } }"
-          :ui="{
-            link: 'h-11 px-2.5 text-sm overflow-hidden',
-            linkLeadingIcon: 'size-5 shrink-0',
-            linkLabel: 'truncate',
-          }"
-        />
+        <nav
+          id="admin-main-navigation"
+          tabindex="-1"
+          :aria-label="t('accessibility.mainNavigation')"
+        >
+          <UNavigationMenu
+            :items="navigationItems"
+            orientation="vertical"
+            :collapsed="navigationCollapsed"
+            :tooltip="{ delayDuration: 0, content: { side: 'right' } }"
+            :ui="{
+              link: 'h-11 px-2.5 text-sm overflow-hidden',
+              linkLeadingIcon: 'size-5 shrink-0',
+              linkLabel: 'truncate',
+            }"
+          />
+        </nav>
 
         <template #footer="{ state }">
           <ClientOnly>

@@ -63,7 +63,7 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
           <div class="bg-muted relative aspect-1925/550 w-full overflow-hidden">
             <NuxtImg
               :src="item.image || HOME_CAROUSEL_FALLBACK_IMAGE"
-              :alt="item.alt || item.title"
+              :alt="item.alt || ''"
               width="1925"
               height="550"
               class="size-full object-cover"

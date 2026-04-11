@@ -177,7 +177,7 @@ watch(resultsTransitionKey, async () => {
                 <NuxtImg
                   v-if="article.image"
                   :src="article.image"
-                  :alt="article.alt || article.title"
+                  :alt="article.alt || ''"
                   width="640"
                   height="360"
                   class="motion-link-media size-full object-cover"
@@ -244,7 +244,11 @@ watch(resultsTransitionKey, async () => {
         </TransitionGroup>
       </div>
 
-      <nav v-if="total > LIMIT" class="mt-8 flex justify-center" aria-label="Paginación">
+      <nav
+        v-if="total > LIMIT"
+        class="mt-8 flex justify-center"
+        :aria-label="t('press.pagination')"
+      >
         <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
       </nav>
     </UContainer>

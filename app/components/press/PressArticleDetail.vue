@@ -173,7 +173,7 @@ usePageSeo(
         <div class="motion-card-subtle bg-muted overflow-hidden rounded-xl">
           <NuxtImg
             :src="article.image"
-            :alt="article.alt || article.title"
+            :alt="article.alt || ''"
             width="960"
             height="540"
             class="w-full object-cover"

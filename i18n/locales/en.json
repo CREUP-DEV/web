@@ -10,7 +10,7 @@
       "committees": "Committees"
     },
     "policy": {
-      "label": "University Politics",
+      "label": "University Policy",
       "positions": "Positions",
       "resolutions": "Resolutions",
       "reports": "Executive Reports"
@@ -556,6 +556,7 @@
   },
   "press": {
     "downloadPdf": "Download PDF",
+    "pagination": "Pagination",
     "readOriginal": "Read original article",
     "readFull": "Read full article",
     "share": "Share",

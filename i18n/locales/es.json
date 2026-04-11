@@ -495,7 +495,7 @@
   },
   "committees": {
     "title": "Comités",
-    "description": "Más allá de la Comisión Ejecutiva Ampliada, CREUP cuenta con comités especializados que centran su trabajo en areas específicas de la representación o del funcionamiento interno de la asociación.",
+    "description": "Más allá de la Comisión Ejecutiva Ampliada, CREUP cuenta con comités especializados que centran su trabajo en áreas específicas de la representación o del funcionamiento interno de la asociación.",
     "email": "Correo electrónico",
     "viewProfile": "Ver perfil",
     "memberModalDescription": "Detalles del perfil de la persona.",
@@ -556,6 +556,7 @@
   },
   "press": {
     "downloadPdf": "Descargar PDF",
+    "pagination": "Paginación",
     "readOriginal": "Leer artículo original",
     "readFull": "Leer el artículo completo",
     "share": "Compartir",

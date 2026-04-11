@@ -81,9 +81,9 @@ const hasAssignmentInfo = computed(() =>
               >
                 {{ member.denomination }}
               </p>
-              <h3 class="mt-2 max-w-3xl pr-12 text-3xl leading-tight font-semibold sm:text-4xl">
+              <h2 class="mt-2 max-w-3xl pr-12 text-3xl leading-tight font-semibold sm:text-4xl">
                 {{ displayName }}
-              </h3>
+              </h2>
             </div>
 
             <div class="lg:hidden">
@@ -257,9 +257,9 @@ const hasAssignmentInfo = computed(() =>
         </div>
 
         <div v-if="hasSocialButtons">
-          <h4 class="text-muted mb-4 text-xs font-semibold tracking-[0.2em] uppercase">
+          <h3 class="text-muted mb-4 text-xs font-semibold tracking-[0.2em] uppercase">
             {{ t('members.socialNetworks') }}
-          </h4>
+          </h3>
 
           <div class="grid gap-3 sm:grid-cols-2">
             <UButton
