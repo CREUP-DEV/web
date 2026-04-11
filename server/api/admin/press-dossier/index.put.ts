@@ -8,6 +8,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { validateBody } from '../../../utils/validation'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
@@ -80,14 +81,6 @@ export default defineEventHandler(async (event) => {
       'admin.press-dossier.update.rollback',
       event
     )
-
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: error instanceof Error ? error.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.press-dossier.update', error, event)
   }
 })

@@ -1,6 +1,5 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
 import { equalityDocuments, equalityDocumentTranslations } from '../../../db/schema'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import {
@@ -9,10 +8,12 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
 } from '../../../utils/localizedContent'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { validateBody } from '../../../utils/validation'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
@@ -50,7 +51,7 @@ export default defineEventHandler(async (event) => {
         Boolean(translation.meta?.trim())
     )
 
-    const completeItem = await db.transaction(async (tx) => {
+    const completeItem = await runAdminCrudTransaction(async (tx) => {
       const [item] = await tx
         .insert(equalityDocuments)
         .values({
@@ -61,10 +62,7 @@ export default defineEventHandler(async (event) => {
         .returning()
 
       if (!item) {
-        throw createError({
-          statusCode: 500,
-          message: 'No se pudo crear el documento de igualdad',
-        })
+        return null
       }
 
       if (translationsToCreate.length > 0) {
@@ -83,7 +81,7 @@ export default defineEventHandler(async (event) => {
         where: eq(equalityDocuments.id, item.id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo crear el documento de igualdad')
 
     if (validated.pdfUrl !== pdfUrl) {
       await cleanupUnusedAdminAssetSafely(
@@ -103,14 +101,6 @@ export default defineEventHandler(async (event) => {
       'admin.equality.create.rollback',
       event
     )
-
-    if (e && typeof e === 'object' && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.equality.create', e, event)
   }
 })

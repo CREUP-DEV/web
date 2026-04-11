@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
@@ -10,6 +11,7 @@ import {
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
@@ -52,7 +54,7 @@ export default defineEventHandler(async (event) => {
       allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
     })
 
-    const item = await db.transaction(async (tx) => {
+    const item = await runAdminCrudTransaction(async (tx) => {
       await tx
         .delete(featuredLinkTranslations)
         .where(eq(featuredLinkTranslations.featuredLinkId, id))
@@ -82,7 +84,7 @@ export default defineEventHandler(async (event) => {
         where: eq(featuredLinks.id, id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo actualizar el enlace')
 
     if (previousImage !== image) {
       await cleanupUnusedAdminAssetSafely(
@@ -99,14 +101,6 @@ export default defineEventHandler(async (event) => {
     return { item }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.links.update.rollback', event)
-
-    if (typeof e === 'object' && e !== null && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.links.update', e, event)
   }
 })

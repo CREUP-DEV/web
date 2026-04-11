@@ -9,6 +9,7 @@ import {
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
@@ -65,7 +66,7 @@ export default defineEventHandler(async (event) => {
       protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
     })
 
-    const item = await db.transaction(async (tx) => {
+    const item = await runAdminCrudTransaction(async (tx) => {
       await tx
         .delete(carouselItemTranslations)
         .where(eq(carouselItemTranslations.carouselItemId, id))
@@ -96,7 +97,7 @@ export default defineEventHandler(async (event) => {
         where: eq(carouselItems.id, id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo actualizar el elemento del carrusel')
     dbUpdated = true
 
     if (previousImage !== image) {

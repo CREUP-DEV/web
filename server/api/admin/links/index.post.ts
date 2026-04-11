@@ -1,6 +1,5 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
 import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import {
@@ -10,6 +9,8 @@ import {
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import { validateBody } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
       allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
     })
 
-    const completeItem = await db.transaction(async (tx) => {
+    const completeItem = await runAdminCrudTransaction(async (tx) => {
       const [item] = await tx
         .insert(featuredLinks)
         .values({
@@ -53,10 +54,7 @@ export default defineEventHandler(async (event) => {
         .returning()
 
       if (!item) {
-        throw createError({
-          statusCode: 500,
-          message: 'No se pudo crear el enlace',
-        })
+        return null
       }
 
       if (validated.translations.length > 0) {
@@ -74,7 +72,7 @@ export default defineEventHandler(async (event) => {
         where: eq(featuredLinks.id, item.id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo crear el enlace')
 
     if (validated.image !== image) {
       await cleanupUnusedAdminAssetSafely(
@@ -91,14 +89,6 @@ export default defineEventHandler(async (event) => {
     return { item: completeItem }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.links.create.rollback', event)
-
-    if (e && typeof e === 'object' && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.links.create', e, event)
   }
 })

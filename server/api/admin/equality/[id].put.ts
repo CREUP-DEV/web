@@ -9,10 +9,12 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
 } from '../../../utils/localizedContent'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updateEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
@@ -62,7 +64,7 @@ export default defineEventHandler(async (event) => {
         Boolean(translation.meta?.trim())
     )
 
-    const item = await db.transaction(async (tx) => {
+    const item = await runAdminCrudTransaction(async (tx) => {
       await tx
         .update(equalityDocuments)
         .set({
@@ -92,7 +94,7 @@ export default defineEventHandler(async (event) => {
         where: eq(equalityDocuments.id, id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo actualizar el documento de igualdad')
 
     if (previousPdfUrl !== pdfUrl) {
       await cleanupUnusedAdminAssetSafely(
@@ -112,14 +114,6 @@ export default defineEventHandler(async (event) => {
       'admin.equality.update.rollback',
       event
     )
-
-    if (typeof e === 'object' && e !== null && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.equality.update', e, event)
   }
 })

@@ -9,11 +9,13 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
 import { FINANCIAL_REPORTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
@@ -41,7 +43,10 @@ export default defineEventHandler(async (event) => {
 
     const validated = validateBody(updateFinancialReportSchema, body)
     if (!getRequiredTranslationValue(validated.translations, 'title')) {
-      throw new Error('El título en español es obligatorio')
+      throw createError({
+        statusCode: 400,
+        message: 'El título en español es obligatorio',
+      })
     }
     const previousPdfUrl = existingItem.pdfUrl
     const pdfUrl = await finalizeAdminDocument({
@@ -64,7 +69,7 @@ export default defineEventHandler(async (event) => {
       (translation) => translation.title.trim() !== ''
     )
 
-    const item = await db.transaction(async (tx) => {
+    const item = (await runAdminCrudTransaction(async (tx) => {
       await tx
         .update(financialReports)
         .set({
@@ -93,7 +98,7 @@ export default defineEventHandler(async (event) => {
         where: eq(financialReports.id, id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo actualizar el informe económico'))!
 
     if (previousPdfUrl !== pdfUrl) {
       await cleanupUnusedAdminAssetSafely(
@@ -107,12 +112,10 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      item: item
-        ? {
-            ...item,
-            approvedAt: dateValueToDateOnly(item.approvedAt),
-          }
-        : null,
+      item: {
+        ...item,
+        approvedAt: dateValueToDateOnly(item.approvedAt),
+      },
     }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(
@@ -120,14 +123,6 @@ export default defineEventHandler(async (event) => {
       'admin.financial-reports.update.rollback',
       event
     )
-
-    if (e && typeof e === 'object' && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.financial-reports.update', e, event)
   }
 })

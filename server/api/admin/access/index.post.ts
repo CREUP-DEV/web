@@ -1,6 +1,7 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { createAdminAccessSchema, validateBody } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -24,13 +25,6 @@ export default defineEventHandler(async (event) => {
 
     return { item }
   } catch (error) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-
-    throw createError({
-      statusCode: 500,
-      message: 'Error al guardar el acceso',
-    })
+    throwAdminMutationError('admin.access.create', error, event)
   }
 })

@@ -1,10 +1,10 @@
 import { defineEventHandler } from 'h3'
 import { runInBackground } from '../../../../utils/backgroundTask'
+import { monthKeyToDate } from '../../../../utils/newsletters'
 import {
   claimNewsletterForSending,
-  monthKeyToDate,
   processNewsletterDeliveryRun,
-} from '../../../../utils/newsletters'
+} from '../../../../services/newsletterDeliveryService'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 
 export default defineEventHandler(async (event) => {

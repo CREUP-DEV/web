@@ -1,12 +1,13 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
 import { tags, tagTranslations } from '../../../db/schema'
 import {
   filterTranslationsByContent,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { assertTagSlugAvailable } from '../../../utils/tagMutations'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { updateTagSchema } from '~~/shared/utils/adminSchemas'
@@ -31,7 +32,7 @@ export default defineEventHandler(async (event) => {
       (translation) => Boolean(translation.name?.trim())
     )
 
-    const item = await db.transaction(async (tx) => {
+    const item = await runAdminCrudTransaction(async (tx) => {
       await tx.delete(tagTranslations).where(eq(tagTranslations.tagId, id))
 
       await tx
@@ -56,18 +57,11 @@ export default defineEventHandler(async (event) => {
         where: eq(tags.id, id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo actualizar la etiqueta')
 
     await invalidatePressRelatedCaches()
     return { item }
   } catch (e) {
-    if (e && typeof e === 'object' && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.tags.update', e, event)
   }
 })

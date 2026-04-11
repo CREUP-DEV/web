@@ -1,12 +1,13 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
 import { tags, tagTranslations } from '../../../db/schema'
 import {
   filterTranslationsByContent,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { assertTagSlugAvailable } from '../../../utils/tagMutations'
 import { validateBody } from '../../../utils/validation'
 import { createTagSchema } from '~~/shared/utils/adminSchemas'
@@ -30,7 +31,7 @@ export default defineEventHandler(async (event) => {
       (translation) => Boolean(translation.name?.trim())
     )
 
-    const completeItem = await db.transaction(async (tx) => {
+    const completeItem = await runAdminCrudTransaction(async (tx) => {
       const [item] = await tx
         .insert(tags)
         .values({
@@ -40,10 +41,7 @@ export default defineEventHandler(async (event) => {
         .returning()
 
       if (!item) {
-        throw createError({
-          statusCode: 500,
-          message: 'No se pudo crear la etiqueta',
-        })
+        return null
       }
 
       if (translationsToCreate.length > 0) {
@@ -60,18 +58,11 @@ export default defineEventHandler(async (event) => {
         where: eq(tags.id, item.id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo crear la etiqueta')
 
     await invalidatePressRelatedCaches()
     return { item: completeItem }
   } catch (e) {
-    if (e && typeof e === 'object' && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.tags.create', e, event)
   }
 })

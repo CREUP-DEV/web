@@ -1,6 +1,5 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
 import { carouselItems, carouselItemTranslations } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import {
@@ -9,6 +8,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
       protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
     })
 
-    const completeItem = await db.transaction(async (tx) => {
+    const completeItem = await runAdminCrudTransaction(async (tx) => {
       const [item] = await tx
         .insert(carouselItems)
         .values({
@@ -63,10 +63,7 @@ export default defineEventHandler(async (event) => {
         .returning()
 
       if (!item) {
-        throw createError({
-          statusCode: 500,
-          message: 'No se pudo crear el elemento del carrusel',
-        })
+        return null
       }
 
       if (validated.translations.length > 0) {
@@ -85,7 +82,7 @@ export default defineEventHandler(async (event) => {
         where: eq(carouselItems.id, item.id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo crear el elemento del carrusel')
 
     if (validated.image !== image) {
       await cleanupUnusedAdminAssetSafely(

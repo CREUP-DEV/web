@@ -1,6 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
-import { db } from '../../../db'
 import { financialReports, financialReportTranslations } from '../../../db/schema'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import {
@@ -9,11 +8,13 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { validateBody } from '../../../utils/validation'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
 import { FINANCIAL_REPORTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
@@ -32,7 +33,10 @@ export default defineEventHandler(async (event) => {
   try {
     const validated = validateBody(createFinancialReportSchema, body)
     if (!getRequiredTranslationValue(validated.translations, 'title')) {
-      throw new Error('El título en español es obligatorio')
+      throw createError({
+        statusCode: 400,
+        message: 'El título en español es obligatorio',
+      })
     }
     const pdfUrl = await finalizeAdminDocument({
       storagePath: validated.pdfUrl,
@@ -53,7 +57,7 @@ export default defineEventHandler(async (event) => {
       (translation) => translation.title.trim() !== ''
     )
 
-    const completeItem = await db.transaction(async (tx) => {
+    const completeItem = (await runAdminCrudTransaction(async (tx) => {
       const [item] = await tx
         .insert(financialReports)
         .values({
@@ -65,10 +69,7 @@ export default defineEventHandler(async (event) => {
         .returning()
 
       if (!item) {
-        throw createError({
-          statusCode: 500,
-          message: 'No se pudo crear el informe económico',
-        })
+        return null
       }
 
       if (translationsToCreate.length > 0) {
@@ -85,7 +86,7 @@ export default defineEventHandler(async (event) => {
         where: eq(financialReports.id, item.id),
         with: { translations: true },
       })
-    })
+    }, 'No se pudo crear el informe económico'))!
 
     if (validated.pdfUrl !== pdfUrl) {
       await cleanupUnusedAdminAssetSafely(
@@ -99,12 +100,10 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      item: completeItem
-        ? {
-            ...completeItem,
-            approvedAt: dateValueToDateOnly(completeItem.approvedAt),
-          }
-        : null,
+      item: {
+        ...completeItem,
+        approvedAt: dateValueToDateOnly(completeItem.approvedAt),
+      },
     }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(
@@ -112,14 +111,6 @@ export default defineEventHandler(async (event) => {
       'admin.financial-reports.create.rollback',
       event
     )
-
-    if (e && typeof e === 'object' && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.financial-reports.create', e, event)
   }
 })

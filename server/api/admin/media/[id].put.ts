@@ -4,6 +4,7 @@ import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { invalidatePressCache } from '../../../utils/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
@@ -75,14 +76,6 @@ export default defineEventHandler(async (event) => {
     return { item }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.media.update.rollback', event)
-
-    if (typeof e === 'object' && e !== null && 'statusCode' in e) {
-      throw e
-    }
-
-    throw createError({
-      statusCode: 400,
-      message: e instanceof Error ? e.message : 'Error de validación',
-    })
+    throwAdminMutationError('admin.media.update', e, event)
   }
 })

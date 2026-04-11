@@ -1,5 +1,5 @@
 import { logError, logInfo } from '../utils/logger'
-import { processPendingNewsletterDeliveries } from '../utils/newsletters'
+import { processPendingNewsletterDeliveries } from '../services/newsletterDeliveryService'
 import { cleanupExpiredNewsletterConfirmTokens } from '../utils/newsletterSubscribers'
 
 const DELIVERY_RECOVERY_INTERVAL_MS = 5 * 60 * 1000

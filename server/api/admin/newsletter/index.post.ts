@@ -15,11 +15,13 @@ import { getSmtpTransporter } from '../../../utils/smtpTransporter'
 import { validateBody } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
-  claimNewsletterForSending,
   monthKeyToDate,
   normalizeNewsletterMonthInput,
-  processNewsletterDeliveryRun,
 } from '../../../utils/newsletters'
+import {
+  claimNewsletterForSending,
+  processNewsletterDeliveryRun,
+} from '../../../services/newsletterDeliveryService'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
