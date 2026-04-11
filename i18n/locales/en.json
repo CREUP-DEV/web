@@ -77,12 +77,15 @@
     "featuredLinks": "Featured Links",
     "publicAgenda": "Public Agenda",
     "noNews": "No news available for this tag",
+    "retry": "Retry",
+    "newsLoadError": "Could not load the news at this time.",
     "carousel": {
       "label": "Featured announcements carousel",
       "previous": "Previous slide",
       "next": "Next slide",
       "defaultButtonText": "Learn more",
-      "goToSlide": "Go to slide {n}"
+      "goToSlide": "Go to slide {n}",
+      "loadError": "Could not load featured items."
     },
     "calendar": {
       "label": "Event calendar",

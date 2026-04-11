@@ -77,12 +77,15 @@
     "featuredLinks": "Enlaces destacados",
     "publicAgenda": "Agenda pública",
     "noNews": "No hay noticias para esta etiqueta",
+    "retry": "Reintentar",
+    "newsLoadError": "No se pudieron cargar las noticias en este momento.",
     "carousel": {
       "label": "Carrusel de anuncios destacados",
       "previous": "Diapositiva anterior",
       "next": "Siguiente diapositiva",
       "defaultButtonText": "Más información",
-      "goToSlide": "Ir a la diapositiva {n}"
+      "goToSlide": "Ir a la diapositiva {n}",
+      "loadError": "No se pudieron cargar los elementos destacados."
     },
     "calendar": {
       "label": "Calendario de eventos",

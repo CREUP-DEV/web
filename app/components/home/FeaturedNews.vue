@@ -16,6 +16,10 @@ const props = defineProps<{
   items?: NewsItem[]
   inline?: boolean
   pending?: boolean
+  error?: unknown | null
+}>()
+const emit = defineEmits<{
+  retry: []
 }>()
 
 const { t } = useI18n()
@@ -26,7 +30,12 @@ const loadedImageKeys = reactive<Record<string, boolean>>({})
 
 const selectedTag = ref<string | null>(null)
 const shouldFetchPress = computed(() => !hasProvidedItems.value)
-const { data: pressData, pending: pressPending } = usePress(null, selectedTag, 4, undefined, {
+const {
+  data: pressData,
+  pending: pressPending,
+  error: pressError,
+  refresh: refreshPress,
+} = usePress(null, selectedTag, 4, undefined, {
   enabled: shouldFetchPress,
 })
 
@@ -52,6 +61,27 @@ const isLoading = computed(() => {
   if (hasProvidedItems.value) return false
   return pressPending.value || pressData.value == null
 })
+
+const hasLoadError = computed(() => {
+  if (props.error) {
+    return true
+  }
+
+  if (hasProvidedItems.value) {
+    return false
+  }
+
+  return Boolean(pressError.value)
+})
+
+const retryLoad = async () => {
+  if (props.error) {
+    emit('retry')
+    return
+  }
+
+  await refreshPress()
+}
 
 const getLocalizedItemLink = (to: string) => (to.startsWith('/') ? localePath(to) : to)
 
@@ -110,6 +140,18 @@ const onTagSelect = (tagSlug: string | null) => {
           class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4"
         >
           <USkeleton v-for="n in 4" :key="n" class="h-48 rounded-xl sm:h-72" />
+        </div>
+
+        <div v-else-if="hasLoadError" class="space-y-3">
+          <UAlert
+            color="error"
+            variant="soft"
+            :title="t('home.newsLoadError')"
+            :description="t('error.message')"
+          />
+          <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="retryLoad">
+            {{ t('home.retry') }}
+          </UButton>
         </div>
 
         <div

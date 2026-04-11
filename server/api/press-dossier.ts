@@ -4,6 +4,7 @@ import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
+import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 export default defineCachedEventHandler(
@@ -39,8 +40,7 @@ export default defineCachedEventHandler(
     }
   },
   {
-    maxAge: 300,
-    swr: true,
-    getKey: () => 'public-press-dossier',
+    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    getKey: (event) => buildPublicRouteCacheKey(event, 'press-dossier', { includeLocale: false }),
   }
 )

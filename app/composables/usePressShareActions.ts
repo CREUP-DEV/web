@@ -22,9 +22,13 @@ export function usePressShareActions(article: MaybeRef<PressArticle>) {
   })
 
   const articleValue = computed(() => unref(article))
+  const resolvedSiteUrl = computed(() => {
+    const configuredSiteUrl = String(siteConfig.url ?? '').trim()
+    return (configuredSiteUrl || 'https://www.creup.es').replace(/\/$/, '')
+  })
 
   const canonicalUrl = computed(
-    () => toAbsoluteUrl(route.path, String(siteConfig.url ?? '').trim()) ?? route.path
+    () => toAbsoluteUrl(route.path, resolvedSiteUrl.value) ?? route.path
   )
 
   const shareText = computed(() => articleValue.value.title)

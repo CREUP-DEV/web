@@ -159,8 +159,6 @@ export const createTagSchema = z
         'El nombre en español es obligatorio'
       )
     }
-
-    addNoDuplicateLocalesIssue(ctx, data.translations)
   })
 
 export const updateTagSchema = createTagSchema

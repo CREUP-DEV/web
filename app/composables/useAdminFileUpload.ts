@@ -158,6 +158,16 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
   const inputRef = ref<HTMLInputElement | null>(null)
   const fileName = ref<string | null>(null)
   const isUploading = ref(false)
+  const activeUploadId = ref<symbol | null>(null)
+  const activeUploadController = ref<AbortController | null>(null)
+  const isUnmounted = ref(false)
+
+  onUnmounted(() => {
+    isUnmounted.value = true
+    activeUploadController.value?.abort()
+    activeUploadController.value = null
+    activeUploadId.value = null
+  })
 
   const triggerFileDialog = () => {
     inputRef.value?.click()
@@ -178,27 +188,70 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
     const file = target.files?.[0]
     if (!file) return
 
+    const uploadId = Symbol('admin-document-upload')
+    activeUploadId.value = uploadId
+
+    activeUploadController.value?.abort()
+    const uploadController = new AbortController()
+    activeUploadController.value = uploadController
+
     fileName.value = file.name
     isUploading.value = true
+
     try {
       const formData = new FormData()
       formData.append('file', file)
       const result = await $fetch<UploadedAdminFileResponse>(options.endpoint, {
         method: 'POST',
         body: formData,
+        signal: uploadController.signal,
       })
+
+      if (isUnmounted.value || activeUploadId.value !== uploadId) {
+        return
+      }
+
       options.onUploaded(result.storagePath)
       toast.add({
         title: options.successMessage ?? 'Archivo subido correctamente',
         color: 'success',
       })
     } catch (error) {
+      const isAbortError =
+        error instanceof DOMException
+          ? error.name === 'AbortError'
+          : Boolean(
+              error &&
+              typeof error === 'object' &&
+              'name' in error &&
+              (error as { name?: string }).name === 'AbortError'
+            )
+
+      if (isAbortError && (isUnmounted.value || activeUploadId.value !== uploadId)) {
+        return
+      }
+
       console.error('Error uploading admin document:', error)
+
+      if (isUnmounted.value || activeUploadId.value !== uploadId) {
+        return
+      }
+
       fileName.value = null
       toast.add({ title: options.errorMessage ?? 'No se pudo subir el archivo', color: 'error' })
     } finally {
-      isUploading.value = false
-      target.value = ''
+      if (activeUploadController.value === uploadController) {
+        activeUploadController.value = null
+      }
+
+      if (activeUploadId.value === uploadId) {
+        activeUploadId.value = null
+
+        if (!isUnmounted.value) {
+          isUploading.value = false
+          target.value = ''
+        }
+      }
     }
   }
 

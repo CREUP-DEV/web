@@ -7,9 +7,19 @@ import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-const { data: homeData, pending: homeDataPending } = useHomeData()
+const {
+  data: homeData,
+  pending: homeDataPending,
+  error: homeDataError,
+  refresh: refreshHomeData,
+} = useHomeData()
 const { events, pending: eventsLoading, error: eventsError } = useGoogleCalendar()
-const { data: featuredPressData, pending: featuredPressPending } = usePress(null, undefined, 4)
+const {
+  data: featuredPressData,
+  pending: featuredPressPending,
+  error: featuredPressError,
+  refresh: refreshFeaturedPress,
+} = usePress(null, undefined, 4)
 
 const carouselItems = computed(() => homeData.value?.carousel ?? [])
 const links = computed(() => homeData.value?.featuredLinks ?? [])
@@ -39,13 +49,24 @@ usePageSeo('meta.title', 'meta.description', {
   <div>
     <h1 class="sr-only">{{ t('meta.title') }}</h1>
 
-    <HomeCarousel :items="carouselItems" :pending="homeDataPending" />
+    <HomeCarousel
+      :items="carouselItems"
+      :pending="homeDataPending"
+      :error="homeDataError"
+      @retry="refreshHomeData()"
+    />
 
     <section class="py-4 sm:py-0" :aria-label="t('home.newsAndEventsLabel')">
       <UContainer>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-6 lg:gap-8">
           <div class="md:col-span-2">
-            <HomeFeaturedNews :items="featuredNewsItems" :pending="featuredPressPending" inline />
+            <HomeFeaturedNews
+              :items="featuredNewsItems"
+              :pending="featuredPressPending"
+              :error="featuredPressError"
+              inline
+              @retry="refreshFeaturedPress()"
+            />
           </div>
           <div class="md:col-span-1">
             <HomePublicAgenda :events="events" :pending="eventsLoading" :error="eventsError" />

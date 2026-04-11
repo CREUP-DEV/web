@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { en, es } from '@nuxt/ui/locale'
 import { getBaseLanguage } from '~~/shared/utils/locale'
+import { normalizeUrl } from '~~/shared/utils/url'
 
 const { locale, t } = useI18n()
 const { getLanguageTag } = useLocales()
 const localeHead = useLocaleHead({ seo: true })
 const siteConfig = useSiteConfig()
-const siteUrl = computed(() => String(siteConfig.url ?? 'https://www.creup.es'))
+const siteUrl = computed(() => {
+  const configuredSiteUrl = normalizeUrl(String(siteConfig.url ?? '').trim())
+  return (configuredSiteUrl || 'https://www.creup.es').replace(/\/$/, '')
+})
 
 const nuxtUiLocales = { en, es } as const
 const currentUiLocale = computed(

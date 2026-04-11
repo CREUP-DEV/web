@@ -8,11 +8,16 @@ const props = withDefaults(
   defineProps<{
     items: CarouselItem[]
     pending?: boolean
+    error?: unknown | null
   }>(),
   {
     pending: false,
+    error: null,
   }
 )
+const emit = defineEmits<{
+  retry: []
+}>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -29,7 +34,7 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
 
 <template>
   <section
-    v-if="props.pending || props.items.length"
+    v-if="props.pending || props.error || props.items.length"
     aria-labelledby="carousel-heading"
     class="relative mb-6 sm:mb-10"
   >
@@ -37,6 +42,18 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
 
     <UContainer>
       <USkeleton v-if="props.pending" class="mt-5 mb-10 h-62 w-full rounded-xl sm:mb-20 sm:h-100" />
+
+      <div v-else-if="props.error" class="mt-5 mb-10 space-y-3 sm:mb-20">
+        <UAlert
+          color="error"
+          variant="soft"
+          :title="t('home.carousel.loadError')"
+          :description="t('error.message')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="emit('retry')">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
 
       <UCarousel
         v-else

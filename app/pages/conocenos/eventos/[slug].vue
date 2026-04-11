@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CREUPEvent, EventGalleryImage, EventOrganization } from '@/composables/useEvents'
-import { normalizeHostname, normalizeUrl } from '~~/shared/utils/url'
+import { normalizeHostname, normalizeUrl, toAbsoluteUrl } from '~~/shared/utils/url'
 import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
 
 type EventGalleryImageWithUrl = EventGalleryImage & {
@@ -65,18 +65,17 @@ usePageSeo(
   }
 )
 
-const siteBaseUrl = computed(() => String(siteConfig.url ?? '').replace(/\/$/, ''))
+const siteBaseUrl = computed(() => {
+  const configuredSiteUrl = String(siteConfig.url ?? '').trim()
+  return (configuredSiteUrl || 'https://www.creup.es').replace(/\/$/, '')
+})
 const eventUrl = computed(() => {
-  if (!siteBaseUrl.value) {
-    return undefined
-  }
-
-  return `${siteBaseUrl.value}${route.path}`
+  return toAbsoluteUrl(route.path, siteBaseUrl.value) || undefined
 })
 const eventStructuredDataImages = computed(() => {
-  return [event.value.banner.url, ...event.value.galleryImages.map((image) => image.url)].filter(
-    (image): image is string => Boolean(image)
-  )
+  return [event.value.banner.url, ...event.value.galleryImages.map((image) => image.url)]
+    .map((image) => toAbsoluteUrl(image, siteBaseUrl.value))
+    .filter((image): image is string => Boolean(image))
 })
 const eventStructuredDataOrganizers = computed(() => {
   const organizers = event.value.organizers
@@ -84,7 +83,7 @@ const eventStructuredDataOrganizers = computed(() => {
     .map((organizer) => ({
       '@type': 'Organization',
       name: organizer.name,
-      url: organizer.link || undefined,
+      url: toAbsoluteUrl(organizer.link, siteBaseUrl.value) || undefined,
     }))
 
   if (organizers.length > 0) {
@@ -145,7 +144,7 @@ useHead(
               '@type': 'ListItem',
               position: 2,
               name: t('events.title'),
-              item: `${siteBaseUrl.value}${localePath('/conocenos/eventos')}`,
+              item: toAbsoluteUrl(localePath('/conocenos/eventos'), siteBaseUrl.value) || undefined,
             },
             {
               '@type': 'ListItem',

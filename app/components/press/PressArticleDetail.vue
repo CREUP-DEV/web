@@ -2,6 +2,7 @@
 import type { PressArticle } from '@/composables/usePress'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
+import { toAbsoluteUrl } from '~~/shared/utils/url'
 
 const props = defineProps<{
   article: PressArticle
@@ -24,12 +25,18 @@ const formatDate = (iso: string) => {
   })
 }
 
-const siteUrl = computed(() => String(siteConfig.url ?? '').replace(/\/$/, ''))
+const siteUrl = computed(() => {
+  const configuredSiteUrl = String(siteConfig.url ?? '').trim()
+  return (configuredSiteUrl || 'https://www.creup.es').replace(/\/$/, '')
+})
+
+const structuredDataImage = computed(
+  () => toAbsoluteUrl(props.article.image, siteUrl.value) ?? undefined
+)
 
 const backToAbsolute = computed(() => {
-  const base = siteUrl.value
   const path = typeof props.backTo === 'string' ? props.backTo : ''
-  return path ? `${base}${path}` : base
+  return toAbsoluteUrl(path, siteUrl.value) ?? siteUrl.value
 })
 
 useHead(
@@ -44,7 +51,7 @@ useHead(
           description: props.article.description || undefined,
           datePublished: props.article.publishedAt,
           dateModified: props.article.updatedAt ?? props.article.publishedAt,
-          image: props.article.image || undefined,
+          image: structuredDataImage.value,
           url: canonicalUrl.value,
           author: {
             '@type': 'Organization',

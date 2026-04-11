@@ -26,11 +26,13 @@ export interface WebPageStructuredDataInput {
 export function createOrganizationStructuredData(
   input: OrganizationStructuredDataInput
 ): StructuredDataNode {
+  const absoluteUrl = toAbsoluteUrl(input.url, input.url)
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: input.name,
-    url: input.url || undefined,
+    url: absoluteUrl || undefined,
   }
 }
 
@@ -51,12 +53,14 @@ export function createBreadcrumbStructuredData(
 }
 
 export function createWebPageStructuredData(input: WebPageStructuredDataInput): StructuredDataNode {
+  const absoluteUrl = toAbsoluteUrl(input.url, input.url)
+
   return {
     '@context': 'https://schema.org',
     '@type': input.type ?? 'WebPage',
     name: input.name,
     description: input.description || undefined,
-    url: input.url || undefined,
+    url: absoluteUrl || undefined,
     inLanguage: input.inLanguage || undefined,
   }
 }
