@@ -14,40 +14,10 @@ const canonicalSiteUrl =
     ? 'https://www.creup.es'
     : siteUrl
 const siteImageHostname = new URL(siteUrl).hostname
-const siteOrigin = new URL(siteUrl).origin
-const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
-const umamiOrigin = umamiHost ? new URL(umamiHost).origin : null
 const turnstileSiteKey = process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || ''
-const turnstileEnabled = turnstileSiteKey.length > 0
-const turnstileOrigin = 'https://challenges.cloudflare.com'
-const connectSrcDirectives = [
-  "'self'",
-  ...(umamiOrigin && umamiOrigin !== siteOrigin ? [umamiOrigin] : []),
-  ...(turnstileEnabled ? [turnstileOrigin] : []),
-]
-const scriptSrcDirectives = [
-  "'self'",
-  "'unsafe-inline'",
-  ...(turnstileEnabled ? [turnstileOrigin] : []),
-]
-const frameSrcDirectives = turnstileEnabled ? [turnstileOrigin] : ["'none'"]
-const imgSrcDirectives = ["'self'", 'data:', 'blob:', 'https://lh3.googleusercontent.com']
-const contentSecurityPolicyHeader = [
-  "default-src 'self'",
-  `script-src ${scriptSrcDirectives.join(' ')}`,
-  "style-src 'self' 'unsafe-inline'",
-  `img-src ${imgSrcDirectives.join(' ')}`,
-  "font-src 'self' data:",
-  `connect-src ${connectSrcDirectives.join(' ')}`,
-  `frame-src ${frameSrcDirectives.join(' ')}`,
-  "frame-ancestors 'none'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join('; ')
-
+const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
 const internalImageAlias = Object.fromEntries(
-  INTERNAL_IMAGE_PROXY_PATH_BASES.map((path) => [path, `${siteOrigin}${path}`])
+  INTERNAL_IMAGE_PROXY_PATH_BASES.map((path) => [path, `${new URL(siteUrl).origin}${path}`])
 )
 
 const siteName = 'CREUP'
@@ -146,6 +116,7 @@ export default defineNuxtConfig({
     externalApiCacheStaleSeconds: process.env.EXTERNAL_API_CACHE_STALE_SECONDS,
     redisUrl: process.env.REDIS_URL,
     siteUrl,
+    umamiHost: umamiHost ?? undefined,
     smtpHost: process.env.SMTP_HOST,
     smtpPort: process.env.SMTP_PORT,
     smtpSecure: process.env.SMTP_SECURE,
@@ -224,10 +195,6 @@ export default defineNuxtConfig({
         'X-Frame-Options': 'DENY',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-        // CSP: unsafe-inline still required by Nuxt SSR inline scripts + Tailwind CSS-in-JS.
-        // unsafe-eval has been removed — if a dependency reintroduces it, audit before re-adding.
-        // TODO: replace unsafe-inline with a nonce strategy once Nuxt supports it end-to-end.
-        'Content-Security-Policy': contentSecurityPolicyHeader,
       },
     },
     '/admin/**': {
