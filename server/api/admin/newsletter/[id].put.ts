@@ -55,51 +55,54 @@ export default defineEventHandler(async (event) => {
     await assertNewsletterMonthAvailable(monthKey, id)
     previousCoverImage = existingItem.coverImage
     previousPdfUrl = existingItem.pdfUrl
-    coverImage = await finalizeAdminImage({
-      storagePath: validated.coverImage,
-      uploadDir: COVER_IMAGE_UPLOAD_DIR,
-      publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-      slug: buildNewsletterCoverSlug(monthKey),
-      publish: validated.publicVisible,
-      fallbackBaseName: 'newsletter-portada',
-      replaceStoragePath: existingItem.coverImage,
-    })
-    trackAdminAssetFinalization(cleanupTargets, {
-      sourceStoragePath: validated.coverImage,
-      storagePath: coverImage,
-      allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-    })
-    pdfUrl = await finalizeAdminDocument({
-      storagePath: validated.pdfUrl,
-      uploadDir: DOCUMENT_UPLOAD_DIR,
-      publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
-      slug: buildNewsletterDocumentSlug(monthKey),
-      publish: validated.publicVisible,
-      fallbackBaseName: 'newsletter',
-      replaceStoragePath: existingItem.pdfUrl,
-    })
-    trackAdminAssetFinalization(cleanupTargets, {
-      sourceStoragePath: validated.pdfUrl,
-      storagePath: pdfUrl,
-      allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
-    })
-
-    await db
-      .update(newsletters)
-      .set({
-        month: monthDate,
-        monthKey,
-        coverImage,
-        pdfUrl,
-        active: validated.active,
-        publicVisible: validated.publicVisible,
+    const item = await db.transaction(async (tx) => {
+      coverImage = await finalizeAdminImage({
+        storagePath: validated.coverImage,
+        uploadDir: COVER_IMAGE_UPLOAD_DIR,
+        publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+        slug: buildNewsletterCoverSlug(monthKey),
+        publish: validated.publicVisible,
+        fallbackBaseName: 'newsletter-portada',
+        replaceStoragePath: existingItem.coverImage,
       })
-      .where(eq(newsletters.id, id))
-    dbUpdated = true
+      trackAdminAssetFinalization(cleanupTargets, {
+        sourceStoragePath: validated.coverImage,
+        storagePath: coverImage,
+        allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+      })
 
-    const item = await db.query.newsletters.findFirst({
-      where: eq(newsletters.id, id),
+      pdfUrl = await finalizeAdminDocument({
+        storagePath: validated.pdfUrl,
+        uploadDir: DOCUMENT_UPLOAD_DIR,
+        publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
+        slug: buildNewsletterDocumentSlug(monthKey),
+        publish: validated.publicVisible,
+        fallbackBaseName: 'newsletter',
+        replaceStoragePath: existingItem.pdfUrl,
+      })
+      trackAdminAssetFinalization(cleanupTargets, {
+        sourceStoragePath: validated.pdfUrl,
+        storagePath: pdfUrl,
+        allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+      })
+
+      await tx
+        .update(newsletters)
+        .set({
+          month: monthDate,
+          monthKey,
+          coverImage,
+          pdfUrl,
+          active: validated.active,
+          publicVisible: validated.publicVisible,
+        })
+        .where(eq(newsletters.id, id))
+
+      return tx.query.newsletters.findFirst({
+        where: eq(newsletters.id, id),
+      })
     })
+    dbUpdated = true
 
     if (previousCoverImage !== coverImage) {
       await cleanupUnusedAdminAssetSafely(

@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 import type { H3Event } from 'h3'
-import { and, eq, notInArray, sql } from 'drizzle-orm'
+import { and, eq, isNull, notInArray, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTranslations, pressArticleTags } from '../db/schema'
 import { finalizeAdminDocument } from '../utils/adminDocumentUpload'
@@ -305,7 +305,11 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
         allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
       })
 
-      await tx
+      const optimisticLockCondition = existingItem.updatedAt
+        ? eq(pressArticles.updatedAt, existingItem.updatedAt)
+        : isNull(pressArticles.updatedAt)
+
+      const updatedRows = await tx
         .update(pressArticles)
         .set({
           type: data.type,
@@ -317,7 +321,16 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
           active: data.active,
           publishedAt,
         })
-        .where(eq(pressArticles.id, id))
+        .where(and(eq(pressArticles.id, id), optimisticLockCondition))
+        .returning({ id: pressArticles.id })
+
+      if (updatedRows.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
 
       // Translations: upsert changed locales, delete removed ones
       const newLocales = data.translations.map((t) => t.locale)

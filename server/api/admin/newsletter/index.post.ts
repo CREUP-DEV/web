@@ -60,44 +60,53 @@ export default defineEventHandler(async (event) => {
     const { monthDate, monthKey } = normalizeNewsletterMonthInput(validated.month)
 
     await assertNewsletterMonthAvailable(monthKey)
-    coverImage = await finalizeAdminImage({
-      storagePath: validated.coverImage,
-      uploadDir: COVER_IMAGE_UPLOAD_DIR,
-      publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-      slug: buildNewsletterCoverSlug(monthKey),
-      publish: validated.publicVisible,
-      fallbackBaseName: 'newsletter-portada',
-    })
-    trackAdminAssetFinalization(cleanupTargets, {
-      sourceStoragePath: validated.coverImage,
-      storagePath: coverImage,
-      allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-    })
-    pdfUrl = await finalizeAdminDocument({
-      storagePath: validated.pdfUrl,
-      uploadDir: DOCUMENT_UPLOAD_DIR,
-      publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
-      slug: buildNewsletterDocumentSlug(monthKey),
-      publish: validated.publicVisible,
-      fallbackBaseName: 'newsletter',
-    })
-    trackAdminAssetFinalization(cleanupTargets, {
-      sourceStoragePath: validated.pdfUrl,
-      storagePath: pdfUrl,
-      allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
-    })
-
-    const [item] = await db
-      .insert(newsletters)
-      .values({
-        month: monthDate,
-        monthKey,
-        coverImage,
-        pdfUrl,
-        active: validated.active,
-        publicVisible: validated.publicVisible,
+    const item = await db.transaction(async (tx) => {
+      coverImage = await finalizeAdminImage({
+        storagePath: validated.coverImage,
+        uploadDir: COVER_IMAGE_UPLOAD_DIR,
+        publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+        slug: buildNewsletterCoverSlug(monthKey),
+        publish: validated.publicVisible,
+        fallbackBaseName: 'newsletter-portada',
       })
-      .returning()
+      trackAdminAssetFinalization(cleanupTargets, {
+        sourceStoragePath: validated.coverImage,
+        storagePath: coverImage,
+        allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+      })
+
+      pdfUrl = await finalizeAdminDocument({
+        storagePath: validated.pdfUrl,
+        uploadDir: DOCUMENT_UPLOAD_DIR,
+        publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
+        slug: buildNewsletterDocumentSlug(monthKey),
+        publish: validated.publicVisible,
+        fallbackBaseName: 'newsletter',
+      })
+      trackAdminAssetFinalization(cleanupTargets, {
+        sourceStoragePath: validated.pdfUrl,
+        storagePath: pdfUrl,
+        allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+      })
+
+      const [inserted] = await tx
+        .insert(newsletters)
+        .values({
+          month: monthDate,
+          monthKey,
+          coverImage,
+          pdfUrl,
+          active: validated.active,
+          publicVisible: validated.publicVisible,
+        })
+        .returning()
+
+      if (!inserted) {
+        throw createError({ statusCode: 500, message: 'Error al crear la newsletter' })
+      }
+
+      return inserted
+    })
 
     if (!item) {
       throw createError({ statusCode: 500, message: 'Error al crear la newsletter' })

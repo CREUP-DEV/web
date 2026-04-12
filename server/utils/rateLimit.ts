@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { getClientIp } from './urlBuilder'
-import { logWarn } from './logger'
+import { logError, logWarn } from './logger'
 import { buildRedisKey, getRedisClient } from './redis'
 
 interface RateLimitOptions {
@@ -25,16 +25,24 @@ export async function enforceRateLimit(event: H3Event, options: RateLimitOptions
 
   if (!clientIp) {
     logWarn('rate-limit.missing-ip', { namespace: options.namespace }, event)
+    return
   }
 
   const redis = getRedisClient(event)
-  const key = buildRedisKey('rate-limit', options.namespace, clientIp ?? 'unknown')
-  const result = (await redis.eval(
-    RATE_LIMIT_INCREMENT_SCRIPT,
-    1,
-    key,
-    String(options.windowMs)
-  )) as [number | string, number | string]
+  const key = buildRedisKey('rate-limit', options.namespace, clientIp)
+  let result: [number | string, number | string]
+
+  try {
+    result = (await redis.eval(RATE_LIMIT_INCREMENT_SCRIPT, 1, key, String(options.windowMs))) as [
+      number | string,
+      number | string,
+    ]
+  } catch (error) {
+    // Rate limiting is defense-in-depth; allow request when Redis is unavailable.
+    logError('rate-limit.redis-eval-failed', error, { namespace: options.namespace }, event)
+    return
+  }
+
   const count = Number(result[0])
 
   if (count > options.maxRequests) {

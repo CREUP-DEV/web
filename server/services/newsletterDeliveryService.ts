@@ -162,35 +162,37 @@ async function seedNewsletterDeliveries(item: NewsletterRecord) {
 }
 
 async function resetNewsletterDeliveryRetryState(newsletterId: string) {
-  await db
-    .update(newsletterDeliveries)
-    .set({
-      attempts: 0,
-      lastAttemptAt: null,
-      lastError: null,
-      sentAt: null,
-      status: NEWSLETTER_DELIVERY_STATUS.queued,
-    })
-    .where(
-      and(
-        eq(newsletterDeliveries.newsletterId, newsletterId),
-        inArray(newsletterDeliveries.status, [
-          NEWSLETTER_DELIVERY_STATUS.failed,
-          NEWSLETTER_DELIVERY_STATUS.sending,
-        ])
+  await db.transaction(async (tx) => {
+    await tx
+      .update(newsletterDeliveries)
+      .set({
+        attempts: 0,
+        lastAttemptAt: null,
+        lastError: null,
+        sentAt: null,
+        status: NEWSLETTER_DELIVERY_STATUS.queued,
+      })
+      .where(
+        and(
+          eq(newsletterDeliveries.newsletterId, newsletterId),
+          inArray(newsletterDeliveries.status, [
+            NEWSLETTER_DELIVERY_STATUS.failed,
+            NEWSLETTER_DELIVERY_STATUS.sending,
+          ])
+        )
       )
-    )
 
-  await db
-    .update(newsletters)
-    .set({
-      lastDeliveryErrorCount: null,
-      lastDeliveryFailedRecipients: null,
-      lastDeliveryFinishedAt: null,
-      lastDeliverySentCount: null,
-      lastDeliveryTotal: null,
-    })
-    .where(eq(newsletters.id, newsletterId))
+    await tx
+      .update(newsletters)
+      .set({
+        lastDeliveryErrorCount: null,
+        lastDeliveryFailedRecipients: null,
+        lastDeliveryFinishedAt: null,
+        lastDeliverySentCount: null,
+        lastDeliveryTotal: null,
+      })
+      .where(eq(newsletters.id, newsletterId))
+  })
 }
 
 async function touchNewsletterDeliveryWorker(newsletterId: string, workerToken: string) {

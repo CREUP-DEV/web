@@ -158,7 +158,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
           :to="localePath(`/conocenos/equipo/historico/${buildMandateSlug(mandate)}`)"
           class="motion-card-strong group bg-surface/50 hover:bg-surface ring-default flex items-center gap-4 rounded-xl p-5 ring-1 sm:p-6"
           :class="entranceClasses(mandatesShouldAnimate, mandatesVisible, mandatesPending)"
-          :style="entranceStyle(mandatesVisible, mandatesShouldAnimate, index)"
+          :style="entranceStyle(mandatesShouldAnimate, mandatesVisible, index)"
         >
           <div
             class="flex size-12 shrink-0 items-center justify-center rounded-lg"
