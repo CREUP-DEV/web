@@ -41,12 +41,11 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data?: EqualityDocument[]
-  items?: EqualityDocument[]
+  data: EqualityDocument[]
 }>('/api/admin/equality', {
   lazy: true,
 })
-const items = computed(() => data.value?.data ?? data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -144,8 +143,8 @@ const saveOrder = async () => {
   try {
     await persistOrder()
     toast.add({ title: 'Orden guardado', color: 'success' })
-  } catch {
-    toast.add({ title: 'No se pudo guardar el orden', color: 'error' })
+  } catch (error) {
+    toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el orden'), color: 'error' })
   }
 }
 

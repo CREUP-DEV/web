@@ -5,6 +5,7 @@ import {
   getPressArticlePublicListPath,
 } from '~~/shared/constants/pressRoutes'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import type {
   AdminPressArticle,
   AdminPressArticleType,
@@ -78,8 +79,11 @@ const handleDelete = async () => {
     itemToDelete.value = null
     await refresh()
     toast.add({ title: 'Artículo eliminado', color: 'success' })
-  } catch {
-    toast.add({ title: 'No se pudo eliminar el artículo', color: 'error' })
+  } catch (error) {
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudo eliminar el artículo'),
+      color: 'error',
+    })
   } finally {
     isDeleting.value = false
   }

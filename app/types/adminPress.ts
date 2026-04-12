@@ -50,5 +50,5 @@ export interface PressArticleAdmin {
 }
 
 export interface AdminPressArticleDetailResponse {
-  item: PressArticleAdmin
+  data: PressArticleAdmin
 }

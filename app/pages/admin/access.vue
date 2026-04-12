@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { getInitials } from '@/utils/initials'
 
 definePageMeta({
@@ -22,8 +23,8 @@ interface AdminAccessItem {
 }
 
 interface AdminAccessResponse {
-  items: AdminAccessItem[]
-  summary: {
+  data: AdminAccessItem[]
+  meta: {
     total: number
     active: number
     env: number
@@ -37,14 +38,12 @@ const {
   pending,
 } = await useFetch<AdminAccessResponse>('/api/admin/access')
 
-const items = computed(() => data.value?.items ?? [])
-const summary = computed(() => data.value?.summary ?? { total: 0, active: 0, env: 0 })
+const items = computed(() => data.value?.data ?? [])
+const summary = computed(() => data.value?.meta ?? { total: 0, active: 0, env: 0 })
 
-const showCreateModal = ref(false)
 const isSubmitting = ref(false)
 const isTogglingId = ref<string | null>(null)
 const isDeleting = ref(false)
-const itemToDelete = ref<AdminAccessItem | null>(null)
 const accessImageFailures = reactive<Record<string, boolean>>({})
 const accessImageLoaded = reactive<Record<string, boolean>>({})
 
@@ -52,25 +51,26 @@ const form = reactive({
   email: '',
 })
 
+const {
+  closeDeleteModal,
+  closeModal,
+  confirmDelete,
+  itemToDelete,
+  openCreate,
+  showDeleteModal,
+  showModal,
+} = useAdminCollectionState<AdminAccessItem>({
+  items,
+  prepareCreate: () => {
+    form.email = ''
+  },
+  prepareEdit: () => {},
+})
+
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   dateStyle: 'medium',
   timeStyle: 'short',
 })
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  if (error && typeof error === 'object' && 'data' in error) {
-    const errorData = (error as { data?: { message?: string } }).data
-    if (errorData?.message) {
-      return errorData.message
-    }
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message
-  }
-
-  return fallback
-}
 
 const formatLastAccess = (value: string | null) => {
   if (!value) {
@@ -103,11 +103,6 @@ const markAccessImageLoaded = (id: string) => {
   accessImageLoaded[id] = true
 }
 
-const openCreateModal = () => {
-  form.email = ''
-  showCreateModal.value = true
-}
-
 const handleCreate = async () => {
   isSubmitting.value = true
 
@@ -119,12 +114,12 @@ const handleCreate = async () => {
       },
     })
 
-    showCreateModal.value = false
+    closeModal()
     await refresh()
     toast.add({ title: 'Acceso añadido', color: 'success' })
   } catch (error) {
     toast.add({
-      title: getErrorMessage(error, 'No se pudo añadir el acceso'),
+      title: getApiErrorMessage(error, 'No se pudo añadir el acceso'),
       color: 'error',
     })
   } finally {
@@ -141,7 +136,7 @@ const toggleAccess = async (item: AdminAccessItem) => {
 
   try {
     await $fetch(`/api/admin/access/${item.databaseId}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: {
         active: !item.active,
       },
@@ -154,16 +149,12 @@ const toggleAccess = async (item: AdminAccessItem) => {
     })
   } catch (error) {
     toast.add({
-      title: getErrorMessage(error, 'No se pudo actualizar el acceso'),
+      title: getApiErrorMessage(error, 'No se pudo actualizar el acceso'),
       color: 'error',
     })
   } finally {
     isTogglingId.value = null
   }
-}
-
-const confirmDelete = (item: AdminAccessItem) => {
-  itemToDelete.value = item
 }
 
 const handleDelete = async () => {
@@ -178,12 +169,12 @@ const handleDelete = async () => {
       method: 'DELETE',
     })
 
-    itemToDelete.value = null
+    closeDeleteModal()
     await refresh()
     toast.add({ title: 'Acceso eliminado', color: 'success' })
   } catch (error) {
     toast.add({
-      title: getErrorMessage(error, 'No se pudo eliminar el acceso'),
+      title: getApiErrorMessage(error, 'No se pudo eliminar el acceso'),
       color: 'error',
     })
   } finally {
@@ -203,7 +194,7 @@ const handleDelete = async () => {
         </p>
       </div>
 
-      <UButton icon="i-tabler-plus" @click="openCreateModal">Añadir correo</UButton>
+      <UButton icon="i-tabler-plus" @click="openCreate">Añadir correo</UButton>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
@@ -336,13 +327,13 @@ const handleDelete = async () => {
 
       <div v-if="!items.length" class="py-12 text-center">
         <p class="text-muted">No hay accesos configurados todavía.</p>
-        <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreateModal">
+        <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
           Añadir acceso
         </UButton>
       </div>
     </div>
 
-    <UModal v-model:open="showCreateModal" :ui="{ content: 'sm:max-w-md' }">
+    <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-md' }">
       <template #content>
         <div class="p-6">
           <h2 class="text-lg font-bold">Añadir acceso</h2>
@@ -362,7 +353,7 @@ const handleDelete = async () => {
           </form>
 
           <div class="mt-6 flex justify-end gap-2">
-            <UButton variant="ghost" @click="showCreateModal = false">Cancelar</UButton>
+            <UButton variant="ghost" @click="closeModal">Cancelar</UButton>
             <UButton type="submit" form="admin-access-form" :loading="isSubmitting">
               Guardar
             </UButton>
@@ -371,7 +362,14 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <UModal :open="Boolean(itemToDelete)" @update:open="itemToDelete = null">
+    <UModal
+      :open="showDeleteModal"
+      @update:open="
+        (open) => {
+          if (!open) closeDeleteModal()
+        }
+      "
+    >
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">
@@ -387,7 +385,7 @@ const handleDelete = async () => {
           </p>
 
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="itemToDelete = null">Cancelar</UButton>
+            <UButton variant="ghost" @click="closeDeleteModal">Cancelar</UButton>
             <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
           </div>
         </div>

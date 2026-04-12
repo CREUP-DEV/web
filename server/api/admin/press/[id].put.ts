@@ -14,5 +14,5 @@ export default defineEventHandler(async (event) => {
   const validated = validateBody(updatePressArticleSchema, body)
   const item = await updatePressArticle(id, validated, event)
   await invalidatePressRelatedCaches()
-  return { item }
+  return { data: item }
 })

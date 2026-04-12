@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return { item }
+    return { data: item }
   } catch (error) {
     throwAdminMutationError('admin.access.create', error, event)
   }

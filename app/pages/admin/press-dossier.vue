@@ -22,11 +22,10 @@ const {
   pending: dossierPending,
   refresh: refreshDossier,
 } = await useFetch<{
-  data?: PressDossierItem | null
-  item?: PressDossierItem | null
+  data: PressDossierItem | null
 }>('/api/admin/press-dossier')
 
-const dossierItem = computed(() => dossierData.value?.data ?? dossierData.value?.item ?? null)
+const dossierItem = computed(() => dossierData.value?.data ?? null)
 
 const form = reactive({
   pdfUrl: null as string | null,

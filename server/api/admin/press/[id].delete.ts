@@ -41,5 +41,5 @@ export default defineEventHandler(async (event) => {
   }
 
   await invalidatePressRelatedCaches()
-  return { success: true }
+  return { data: { success: true } }
 })

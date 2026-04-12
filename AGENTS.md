@@ -316,12 +316,12 @@ const { inputRef, preview, isUploading, triggerFileDialog, handleFileSelect } = 
 })
 ```
 
-### Zod Form Validation (`app/composables/useZodFormValidation.ts`)
+### Zod Form Validation (`app/composables/useFormValidation.ts`)
 
 Client-side Zod validation with per-field error display:
 
 ```typescript
-const { validate, getFieldError, clearErrors } = useZodFormValidation()
+const { validate, getFieldError, clearErrors } = useFormValidation()
 
 // In submit handler:
 if (!validate(mySchema, payload)) return

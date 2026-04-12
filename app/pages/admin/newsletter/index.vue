@@ -34,21 +34,16 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data?: Newsletter[]
-  meta?: {
-    total?: number
-    maxDeliveryAttempts?: number
+  data: Newsletter[]
+  meta: {
+    total: number
+    maxDeliveryAttempts: number
   }
-  items?: Newsletter[]
-  total?: number
-  maxDeliveryAttempts?: number
 }>('/api/admin/newsletter', {
   lazy: true,
 })
-const items = computed(() => data.value?.data ?? data.value?.items ?? [])
-const maxDeliveryAttempts = computed(
-  () => data.value?.meta?.maxDeliveryAttempts ?? data.value?.maxDeliveryAttempts ?? 3
-)
+const items = computed(() => data.value?.data ?? [])
+const maxDeliveryAttempts = computed(() => data.value?.meta.maxDeliveryAttempts ?? 3)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 const isCancelling = ref(false)
@@ -317,8 +312,11 @@ async function handleDelete() {
     closeDeleteModal()
     await refresh()
     toast.add({ title: 'Newsletter eliminada', color: 'success' })
-  } catch {
-    toast.add({ title: 'No se pudo eliminar la newsletter', color: 'error' })
+  } catch (error) {
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudo eliminar la newsletter'),
+      color: 'error',
+    })
   } finally {
     isDeleting.value = false
   }

@@ -19,5 +19,5 @@ export default defineEventHandler(async (event) => {
     await tx.delete(adminAccess).where(eq(adminAccess.id, id))
   })
 
-  return { success: true }
+  return { data: { success: true } }
 })

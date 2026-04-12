@@ -44,7 +44,7 @@ export default defineEventHandler(async (event) => {
       return updated
     })
 
-    return { item }
+    return { data: item }
   } catch (error) {
     throwAdminMutationError('admin.access.update', error, event)
   }

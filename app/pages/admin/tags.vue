@@ -37,13 +37,12 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data?: Tag[]
-  items?: Tag[]
+  data: Tag[]
 }>('/api/admin/tags', {
   lazy: true,
 })
 
-const items = computed(() => data.value?.data ?? data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 

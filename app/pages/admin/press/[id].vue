@@ -28,7 +28,7 @@ if (fetchError.value || !data.value) {
   navigateTo('/admin/press')
 }
 
-const article = computed(() => data.value?.item ?? null)
+const article = computed(() => data.value?.data ?? null)
 
 const hasUnsavedPressChanges = () =>
   !allowNavigationWithoutPrompt.value && Boolean(pressFormRef.value?.hasUnsavedChanges)

@@ -25,13 +25,12 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data?: MediaOutlet[]
-  items?: MediaOutlet[]
+  data: MediaOutlet[]
 }>('/api/admin/media', {
   lazy: true,
 })
 
-const items = computed(() => data.value?.data ?? data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 

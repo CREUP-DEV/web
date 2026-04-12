@@ -39,5 +39,5 @@ export default defineEventHandler(async (event) => {
   })
 
   await invalidateHomeDataCache()
-  return { data: { success: true }, success: true }
+  return { data: { success: true } }
 })

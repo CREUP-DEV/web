@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     }
 
     return {
-      item: {
+      data: {
         ...item,
         publishedAt: dateValueToDateOnly(item.publishedAt),
         translations: sanitizePressTranslations(item.translations),
@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
-    return { success: true }
+    return { data: { success: true } }
   }
 
   throwMethodNotAllowed()

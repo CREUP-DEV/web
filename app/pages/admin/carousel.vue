@@ -36,13 +36,12 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data?: CarouselItem[]
-  items?: CarouselItem[]
+  data: CarouselItem[]
 }>('/api/admin/carousel', {
   lazy: true,
 })
 
-const items = computed(() => data.value?.data ?? data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? [])
 
 const {
   getLocaleFlag,

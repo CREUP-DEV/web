@@ -124,10 +124,12 @@ export default defineEventHandler(async (event) => {
   ])
 
   return {
-    items: items.map((item) => ({
+    data: items.map((item) => ({
       ...item,
       publishedAt: dateValueToDateOnly(item.publishedAt),
     })),
-    total: countResult[0]?.count ?? 0,
+    meta: {
+      total: countResult[0]?.count ?? 0,
+    },
   }
 })

@@ -47,18 +47,22 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data?: FinancialReport[]
-  items?: FinancialReport[]
+  data: FinancialReport[]
 }>('/api/admin/financial-reports', {
   lazy: true,
 })
-const items = computed(() => data.value?.data ?? data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
-const pdfInputRef = ref<HTMLInputElement | null>(null)
-const pdfName = ref<string | null>(null)
-const isUploadingPdf = ref(false)
+const pdfUpload = useAdminDocumentUpload({
+  endpoint: '/api/admin/financial-reports/upload',
+  successMessage: 'PDF subido correctamente',
+  errorMessage: 'No se pudo subir el PDF',
+  onUploaded: (storagePath) => {
+    form.pdfUrl = storagePath
+  },
+})
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 
 const today = new Date()
@@ -96,7 +100,7 @@ const {
     form.order = items.value.length
     form.active = true
     form.translations = createEmptyTranslationSet()
-    pdfName.value = null
+    pdfUpload.setFile(null)
     approvedAt.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
   },
   prepareEdit: (item) => {
@@ -107,7 +111,7 @@ const {
     form.translations = mapTranslationsToForm(item.translations, {
       title: '',
     }) as FinancialReportTranslation[]
-    pdfName.value = item.pdfUrl.split('/').pop() ?? null
+    pdfUpload.setFile(item.pdfUrl)
     approvedAt.value = valueToCalendarDate(item.approvedAt)
   },
 })
@@ -203,44 +207,13 @@ const handleDelete = async () => {
     toast.add({ title: 'Informe eliminado', color: 'success' })
     closeDeleteModal()
     await refresh()
-  } catch {
-    toast.add({ title: 'No se pudo eliminar el informe', color: 'error' })
+  } catch (error) {
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudo eliminar el informe'),
+      color: 'error',
+    })
   } finally {
     isDeleting.value = false
-  }
-}
-
-const triggerPdfInput = () => {
-  pdfInputRef.value?.click()
-}
-
-const handlePdfSelect = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  pdfName.value = file.name
-  isUploadingPdf.value = true
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const result = await $fetch<{ path: string; storagePath: string }>(
-      '/api/admin/financial-reports/upload',
-      {
-        method: 'POST',
-        body: formData,
-      }
-    )
-
-    form.pdfUrl = result.storagePath
-    toast.add({ title: 'PDF subido correctamente', color: 'success' })
-  } catch {
-    pdfName.value = null
-    toast.add({ title: 'No se pudo subir el PDF', color: 'error' })
-  } finally {
-    isUploadingPdf.value = false
-    target.value = ''
   }
 }
 </script>
@@ -398,18 +371,18 @@ const handlePdfSelect = async (event: Event) => {
 
             <UFormField label="Documento PDF *" :error="getFieldError('pdfUrl')">
               <div
-                v-if="pdfName"
+                v-if="pdfUpload.fileName"
                 class="bg-muted/30 mb-2 flex items-center gap-2 rounded-lg border p-3"
               >
                 <UIcon name="i-tabler-file-type-pdf" class="text-error size-5 shrink-0" />
-                <span class="flex-1 truncate text-sm">{{ pdfName }}</span>
+                <span class="flex-1 truncate text-sm">{{ pdfUpload.fileName }}</span>
               </div>
               <input
-                ref="pdfInputRef"
+                :ref="pdfUpload.inputRef"
                 type="file"
                 accept=".pdf"
                 class="hidden"
-                @change="handlePdfSelect"
+                @change="pdfUpload.handleFileSelect"
               />
               <UButton
                 type="button"
@@ -417,10 +390,10 @@ const handlePdfSelect = async (event: Event) => {
                 icon="i-tabler-upload"
                 size="sm"
                 block
-                :loading="isUploadingPdf"
-                @click="triggerPdfInput"
+                :loading="pdfUpload.isUploading.value"
+                @click="pdfUpload.triggerFileDialog"
               >
-                {{ pdfName ? 'Cambiar PDF' : 'Subir PDF' }}
+                {{ pdfUpload.fileName ? 'Cambiar PDF' : 'Subir PDF' }}
               </UButton>
             </UFormField>
 

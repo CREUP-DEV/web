@@ -35,5 +35,5 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  return { data: { success: true }, success: true }
+  return { data: { success: true } }
 })

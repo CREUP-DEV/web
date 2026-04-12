@@ -20,11 +20,10 @@ const {
   pending: contentPending,
   refresh: refreshContent,
 } = await useFetch<{
-  data?: AboutContent | null
-  item?: AboutContent | null
+  data: AboutContent | null
 }>('/api/admin/about')
 
-const contentItem = computed(() => contentData.value?.data ?? contentData.value?.item ?? null)
+const contentItem = computed(() => contentData.value?.data ?? null)
 
 const contentForm = reactive({
   heroImage: null as string | null,
@@ -32,10 +31,19 @@ const contentForm = reactive({
 })
 
 const isSavingContent = ref(false)
-const heroInputRef = ref<HTMLInputElement | null>(null)
-const selectedHeroFile = ref<File | null>(null)
-const pendingHeroPreviewUrl = ref<string | null>(null)
 const heroImageVersion = ref<number | null>(null)
+const heroUpload = useAdminFileUpload({
+  endpoint: '/api/admin/about/upload',
+  successMessage: 'Imagen subida correctamente',
+  errorMessage: 'No se pudo subir la imagen',
+  onUploaded: (storagePath) => {
+    contentForm.heroImage = storagePath
+    contentForm.heroVisible = true
+    heroImageVersion.value = Date.now()
+  },
+  getFallbackPreview: () => contentForm.heroImage,
+})
+
 const withCacheBuster = (url: string | null, version: number | null) => {
   if (!url || !version || !url.startsWith('/')) {
     return url
@@ -45,88 +53,47 @@ const withCacheBuster = (url: string | null, version: number | null) => {
   return `${url}${separator}v=${version}`
 }
 const heroPreview = computed(
-  () =>
-    pendingHeroPreviewUrl.value || withCacheBuster(contentForm.heroImage, heroImageVersion.value)
+  () => heroUpload.preview.value || withCacheBuster(contentForm.heroImage, heroImageVersion.value)
 )
 const currentHeroName = computed(() => contentForm.heroImage?.split('/').pop() ?? null)
-const hasPendingHeroChanges = computed(() => selectedHeroFile.value !== null)
+const hasPendingHeroChanges = computed(() => {
+  const originalImage = contentItem.value?.heroImage ?? null
+  const originalVisibility = contentItem.value?.heroVisible ?? false
 
-const clearPendingHeroPreview = () => {
-  if (pendingHeroPreviewUrl.value) {
-    URL.revokeObjectURL(pendingHeroPreviewUrl.value)
-    pendingHeroPreviewUrl.value = null
-  }
-}
+  return contentForm.heroImage !== originalImage || contentForm.heroVisible !== originalVisibility
+})
 
 watch(
   contentItem,
   (item) => {
     contentForm.heroImage = item?.heroImage ?? null
     contentForm.heroVisible = item?.heroVisible ?? false
+    heroUpload.setPreview(null)
   },
   { immediate: true }
 )
 
-onUnmounted(() => {
-  clearPendingHeroPreview()
-})
-
 const triggerHeroUpload = () => {
-  heroInputRef.value?.click()
+  heroUpload.triggerFileDialog()
 }
 
 const discardPendingHero = () => {
-  selectedHeroFile.value = null
-  clearPendingHeroPreview()
+  contentForm.heroImage = contentItem.value?.heroImage ?? null
+  contentForm.heroVisible = contentItem.value?.heroVisible ?? false
+  heroUpload.setPreview(null)
 }
 
 const clearHero = () => {
-  selectedHeroFile.value = null
-  clearPendingHeroPreview()
   contentForm.heroImage = null
   contentForm.heroVisible = false
   heroImageVersion.value = null
-}
-
-const uploadImage = async (file: File) => {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  return $fetch<{ path: string; storagePath: string }>('/api/admin/about/upload', {
-    method: 'POST',
-    body: formData,
-  })
-}
-
-const handleHeroFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) {
-    return
-  }
-
-  clearPendingHeroPreview()
-  selectedHeroFile.value = file
-  pendingHeroPreviewUrl.value = URL.createObjectURL(file)
-  contentForm.heroVisible = true
-  toast.add({
-    title: 'Imagen preparada',
-    description: 'Guarda los cambios para sustituir el banner actual.',
-    color: 'success',
-  })
-  target.value = ''
+  heroUpload.setPreview(null)
 }
 
 const saveContent = async () => {
   isSavingContent.value = true
 
   try {
-    if (selectedHeroFile.value) {
-      const result = await uploadImage(selectedHeroFile.value)
-      contentForm.heroImage = result.storagePath
-      heroImageVersion.value = Date.now()
-    }
-
     await $fetch('/api/admin/about', {
       method: 'PUT',
       body: {
@@ -136,8 +103,7 @@ const saveContent = async () => {
     })
 
     await refreshContent()
-    selectedHeroFile.value = null
-    clearPendingHeroPreview()
+    heroUpload.setPreview(null)
     toast.add({ title: 'Cambios guardados', color: 'success' })
   } catch (error) {
     toast.add({
@@ -235,6 +201,7 @@ const saveContent = async () => {
                   type="button"
                   variant="outline"
                   icon="i-tabler-upload"
+                  :loading="heroUpload.isUploading.value"
                   @click="triggerHeroUpload"
                 >
                   {{ contentForm.heroImage ? 'Cambiar imagen' : 'Subir imagen' }}
@@ -252,7 +219,7 @@ const saveContent = async () => {
                 </UButton>
 
                 <UButton
-                  v-if="contentForm.heroImage || pendingHeroPreviewUrl"
+                  v-if="contentForm.heroImage || heroUpload.preview"
                   type="button"
                   variant="ghost"
                   color="error"
@@ -282,11 +249,11 @@ const saveContent = async () => {
         </div>
 
         <input
-          ref="heroInputRef"
+          :ref="heroUpload.inputRef"
           type="file"
           accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
           class="hidden"
-          @change="handleHeroFileSelect"
+          @change="heroUpload.handleFileSelect"
         />
 
         <div class="flex justify-end">

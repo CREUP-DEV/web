@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+
 definePageMeta({
   layout: 'admin',
   title: 'Suscriptores de newsletter',
@@ -20,12 +22,11 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data?: Subscriber[]
-  items?: Subscriber[]
+  data: Subscriber[]
 }>('/api/admin/newsletter/subscribers', {
   lazy: true,
 })
-const allItems = computed(() => data.value?.data ?? data.value?.items ?? [])
+const allItems = computed(() => data.value?.data ?? [])
 
 // Filter
 const showActiveOnly = ref(false)
@@ -61,10 +62,9 @@ async function handleAdd() {
     showAddModal.value = false
     newEmail.value = ''
     await refresh()
-  } catch (e: unknown) {
-    const err = e as { data?: { message?: string } }
+  } catch (error) {
     toast.add({
-      title: err.data?.message || 'No se pudo añadir el suscriptor',
+      title: getApiErrorMessage(error, 'No se pudo añadir el suscriptor'),
       color: 'error',
     })
   } finally {
@@ -84,8 +84,11 @@ async function toggleActive(item: Subscriber) {
       title: item.active ? 'Suscriptor desactivado' : 'Suscriptor reactivado',
       color: 'success',
     })
-  } catch {
-    toast.add({ title: 'No se pudo actualizar el suscriptor', color: 'error' })
+  } catch (error) {
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudo actualizar el suscriptor'),
+      color: 'error',
+    })
   }
 }
 
@@ -110,8 +113,11 @@ async function handleDelete() {
     itemToDelete.value = null
     await refresh()
     toast.add({ title: 'Suscriptor eliminado', color: 'success' })
-  } catch {
-    toast.add({ title: 'No se pudo eliminar el suscriptor', color: 'error' })
+  } catch (error) {
+    toast.add({
+      title: getApiErrorMessage(error, 'No se pudo eliminar el suscriptor'),
+      color: 'error',
+    })
   } finally {
     isDeleting.value = false
   }

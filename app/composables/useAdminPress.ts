@@ -50,8 +50,10 @@ export interface AdminPressArticle {
 }
 
 export interface AdminPressResponse {
-  items: AdminPressArticle[]
-  total: number
+  data: AdminPressArticle[]
+  meta: {
+    total: number
+  }
 }
 
 const ADMIN_PRESS_PAGE_SIZE = 20
@@ -87,13 +89,13 @@ export function useAdminPress(
       return $fetch<AdminPressResponse>(`/api/admin/press?${params.toString()}`)
     },
     {
-      default: () => ({ items: [], total: 0 }),
+      default: () => ({ data: [], meta: { total: 0 } }),
       watch: [key],
     }
   )
 
-  const items = computed(() => data.value?.items ?? [])
-  const total = computed(() => data.value?.total ?? 0)
+  const items = computed(() => data.value?.data ?? [])
+  const total = computed(() => data.value?.meta.total ?? 0)
   const pageCount = computed(() => Math.ceil(total.value / ADMIN_PRESS_PAGE_SIZE))
 
   return { items, total, pageCount, page, pending, error, refresh }

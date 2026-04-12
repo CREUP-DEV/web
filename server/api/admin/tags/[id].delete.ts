@@ -11,5 +11,5 @@ export default defineEventHandler(async (event) => {
   await db.delete(tags).where(eq(tags.id, id))
 
   await invalidatePressRelatedCaches()
-  return { data: { success: true }, success: true }
+  return { data: { success: true } }
 })
