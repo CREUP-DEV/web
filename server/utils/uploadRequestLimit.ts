@@ -23,3 +23,14 @@ export function assertUploadRequestSize(event: H3Event, maxBytes: number, messag
     throw createError({ statusCode: 413, message })
   }
 }
+
+export function assertUploadedFileSize(sizeBytes: number, maxBytes: number, message: string) {
+  if (sizeBytes <= maxBytes) {
+    return
+  }
+
+  throw createError({
+    statusCode: 413,
+    message,
+  })
+}

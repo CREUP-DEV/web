@@ -1,4 +1,5 @@
 import { createError, defineEventHandler, readBody } from 'h3'
+import { eq } from 'drizzle-orm'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { db } from '../../../db'
 import { aboutPageContent } from '../../../db/schema'
@@ -25,6 +26,20 @@ export default defineEventHandler(async (event) => {
 
     const item = await db.transaction(async (tx) => {
       const existing = await tx.query.aboutPageContent.findFirst()
+
+      if (validated.updatedAt && existing) {
+        const clientUpdatedAt = new Date(validated.updatedAt).getTime()
+        const serverUpdatedAt = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0
+
+        if (clientUpdatedAt !== serverUpdatedAt) {
+          throw createError({
+            statusCode: 409,
+            message:
+              'El contenido de Qué es CREUP fue modificado por otro usuario. Recarga la página y reintenta.',
+          })
+        }
+      }
+
       previousHeroImage = existing?.heroImage ?? null
       const heroImage = !validated.heroImage
         ? null
@@ -47,21 +62,27 @@ export default defineEventHandler(async (event) => {
         protectedPublicPaths: [ABOUT_HERO_DEFAULT_IMAGE],
       })
 
-      const [upserted] = await tx
-        .insert(aboutPageContent)
-        .values({
-          id: 'singleton',
-          heroImage,
-          heroVisible: validated.heroVisible && Boolean(heroImage),
-        })
-        .onConflictDoUpdate({
-          target: aboutPageContent.id,
-          set: {
+      let upserted = null
+
+      if (existing) {
+        ;[upserted] = await tx
+          .update(aboutPageContent)
+          .set({
             heroImage,
             heroVisible: validated.heroVisible && Boolean(heroImage),
-          },
-        })
-        .returning()
+          })
+          .where(eq(aboutPageContent.id, existing.id))
+          .returning()
+      } else {
+        ;[upserted] = await tx
+          .insert(aboutPageContent)
+          .values({
+            id: 'singleton',
+            heroImage,
+            heroVisible: validated.heroVisible && Boolean(heroImage),
+          })
+          .returning()
+      }
 
       if (!upserted) {
         throw createError({ statusCode: 500, message: 'No se pudo guardar el contenido' })

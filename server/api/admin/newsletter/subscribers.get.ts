@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const normalizedLimit = limit ?? 20
   const normalizedOffset = offset ?? 0
 
-  const [items, countResult] = await Promise.all([
+  const [items, countResult, activeCountResult] = await Promise.all([
     db
       .select({
         id: newsletterSubscribers.id,
@@ -23,12 +23,26 @@ export default defineEventHandler(async (event) => {
       .limit(normalizedLimit)
       .offset(normalizedOffset),
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(newsletterSubscribers),
+    db
+      .select({
+        count:
+          sql<number>`coalesce(sum(case when ${newsletterSubscribers.active} then 1 else 0 end), 0)`.mapWith(
+            Number
+          ),
+      })
+      .from(newsletterSubscribers),
   ])
 
   const total = countResult[0]?.count ?? 0
+  const activeTotal = activeCountResult[0]?.count ?? 0
 
   return {
     data: items,
-    meta: { total },
+    meta: {
+      activeTotal,
+      limit: normalizedLimit,
+      offset: normalizedOffset,
+      total,
+    },
   }
 })

@@ -28,6 +28,7 @@ interface Tag {
   id: string
   slug: string
   order: number
+  updatedAt: string
   translations: Translation[]
 }
 
@@ -129,7 +130,10 @@ const handleSubmit = async () => {
     if (editingItem.value) {
       await $fetch(`/api/admin/tags/${editingItem.value.id}`, {
         method: 'PUT',
-        body: payload,
+        body: {
+          ...payload,
+          updatedAt: editingItem.value.updatedAt,
+        },
       })
       toast.add({
         title: t('admin.messages.tagUpdated'),

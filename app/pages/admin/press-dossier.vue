@@ -11,6 +11,7 @@ interface PressDossierItem {
   id: string
   pdfUrl: string | null
   active: boolean
+  updatedAt: string
 }
 
 const toast = useToast()
@@ -115,7 +116,10 @@ const saveDossier = async () => {
 
     await $fetch('/api/admin/press-dossier', {
       method: 'PUT',
-      body: payload,
+      body: {
+        ...payload,
+        updatedAt: dossierItem.value?.updatedAt,
+      },
     })
 
     await refreshDossier()

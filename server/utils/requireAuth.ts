@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { auth } from './auth'
-import { isAdminEmailAuthorized, normalizeAdminEmail } from './adminAccess'
+import { isAdminEmailAuthorized, isEnvAdminEmail, normalizeAdminEmail } from './adminAccess'
 
 export type AdminSession = Awaited<ReturnType<typeof auth.api.getSession>>
 
@@ -36,6 +36,20 @@ export async function requireAuth(event: H3Event) {
   }
 
   context.adminSession = session
+
+  return session
+}
+
+export async function requireEnvAdmin(event: H3Event) {
+  const session = await requireAuth(event)
+  const normalizedEmail = session.user.email ? normalizeAdminEmail(session.user.email) : ''
+
+  if (!normalizedEmail || !isEnvAdminEmail(normalizedEmail)) {
+    throw createError({
+      statusCode: 403,
+      message: 'Acceso reservado a administradores definidos en el entorno',
+    })
+  }
 
   return session
 }

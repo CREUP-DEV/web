@@ -1,9 +1,11 @@
 import tailwindcss from '@tailwindcss/vite'
-import { getOptionalConfigUrl, requireConfigUrl } from './shared/utils/config'
+import { getOptionalConfigUrl, requireConfigString, requireConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
 
 const isDev = process.env.NODE_ENV !== 'production'
-const appSecret = process.env.APP_SECRET?.trim() || undefined
+const appSecret = isDev
+  ? process.env.APP_SECRET?.trim() || 'dev-og-image-secret'
+  : requireConfigString(process.env.APP_SECRET, 'APP_SECRET')
 const siteUrl = isDev
   ? requireConfigUrl(process.env.SITE_URL || 'http://localhost:3000', 'SITE_URL')
   : requireConfigUrl(process.env.SITE_URL, 'SITE_URL')
@@ -161,13 +163,6 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    storage: {
-      cache: {
-        driver: 'redis',
-        url: process.env.REDIS_URL,
-        base: 'creup:web:cache',
-      },
-    },
     compressPublicAssets: true,
     prerender: {
       crawlLinks: false,

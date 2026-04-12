@@ -165,7 +165,7 @@ export const createTagSchema = z
     }
   })
 
-export const updateTagSchema = createTagSchema
+export const updateTagSchema = createTagSchema.merge(optimisticLockSchema)
 
 export const equalityDocumentTranslationSchema = z.object({
   locale: localeSchema,
@@ -254,6 +254,7 @@ export const updatePressDossierSchema = z
     pdfUrl: z.string().min(1, 'El PDF es requerido').nullable(),
     active: z.boolean().default(false),
   })
+  .merge(optimisticLockSchema)
   .superRefine((data, ctx) => {
     if (data.active && !data.pdfUrl) {
       ctx.addIssue({

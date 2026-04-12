@@ -1,12 +1,12 @@
 import { defineEventHandler, setHeader } from 'h3'
-import { requireAuth } from '../../utils/requireAuth'
-import { getDatabasePoolStats } from '../../db'
+import { getAdminOperationalStats } from '../../utils/adminOperationalStats'
+import { requireEnvAdmin } from '../../utils/requireAuth'
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event)
+  await requireEnvAdmin(event)
   setHeader(event, 'cache-control', 'no-store')
 
   return {
-    database: getDatabasePoolStats(),
+    data: await getAdminOperationalStats(),
   }
 })

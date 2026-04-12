@@ -17,6 +17,7 @@ await setLocale(defaultLocale as Locale)
 const route = useRoute()
 const isMobileSidebar = useMediaQuery('(max-width: 1023px)')
 const sidebarOpen = useState('admin-sidebar-open', () => true)
+const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
 
 const avatarLoadFailed = ref(false)
 const adminInitials = computed(() => {
@@ -50,12 +51,18 @@ const isNavItemActive = (to: string) => {
   return route.path === to || route.path.startsWith(`${to}/`)
 }
 
-const allNavItems = [
-  { label: 'Panel', to: '/admin' },
-  ...ADMIN_SECTION_DEFINITIONS.map((item) => ({ label: item.name, to: item.to })),
-]
+const visibleAdminSections = computed(() =>
+  ADMIN_SECTION_DEFINITIONS.filter((item) => !item.envOnly || adminIsEnvAdmin.value)
+)
 
-const currentPageLabel = computed(() => allNavItems.find((item) => isNavItemActive(item.to))?.label)
+const allNavItems = computed(() => [
+  { label: 'Panel', to: '/admin' },
+  ...visibleAdminSections.value.map((item) => ({ label: item.name, to: item.to })),
+])
+
+const currentPageLabel = computed(
+  () => allNavItems.value.find((item) => isNavItemActive(item.to))?.label
+)
 
 const navigationItems = computed<NavigationMenuItem[][]>(() => [
   [
@@ -70,7 +77,7 @@ const navigationItems = computed<NavigationMenuItem[][]>(() => [
         }
       },
     },
-    ...ADMIN_SECTION_DEFINITIONS.map((item) => ({
+    ...visibleAdminSections.value.map((item) => ({
       label: item.name,
       to: item.to,
       icon: item.icon,

@@ -1,5 +1,5 @@
 import { createError, defineEventHandler, readBody } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { tags, tagTranslations } from '../../../db/schema'
 import {
   filterTranslationsByContent,
@@ -33,15 +33,52 @@ export default defineEventHandler(async (event) => {
     )
 
     const item = await runAdminCrudTransaction(async (tx) => {
-      await tx.delete(tagTranslations).where(eq(tagTranslations.tagId, id))
+      const existingItem = await tx.query.tags.findFirst({
+        where: eq(tags.id, id),
+      })
 
-      await tx
+      if (!existingItem) {
+        throw createError({
+          statusCode: 404,
+          message: 'Etiqueta no encontrada',
+        })
+      }
+
+      if (validated.updatedAt) {
+        const clientUpdatedAt = new Date(validated.updatedAt).getTime()
+        const serverUpdatedAt = existingItem.updatedAt
+          ? new Date(existingItem.updatedAt).getTime()
+          : 0
+
+        if (clientUpdatedAt !== serverUpdatedAt) {
+          throw createError({
+            statusCode: 409,
+            message: 'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.',
+          })
+        }
+      }
+
+      const updatedRows = await tx
         .update(tags)
         .set({
           slug: validated.slug,
           order: validated.order,
         })
-        .where(eq(tags.id, id))
+        .where(
+          validated.updatedAt
+            ? and(eq(tags.id, id), eq(tags.updatedAt, existingItem.updatedAt))
+            : eq(tags.id, id)
+        )
+        .returning({ id: tags.id })
+
+      if (updatedRows.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message: 'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.',
+        })
+      }
+
+      await tx.delete(tagTranslations).where(eq(tagTranslations.tagId, id))
 
       if (translationsToUpdate.length > 0) {
         await tx.insert(tagTranslations).values(

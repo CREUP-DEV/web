@@ -3,7 +3,7 @@ import { extname } from 'node:path'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../../utils/externalAssetProxy'
 import { ALLOWED_ADMIN_IMAGE_EXTENSIONS, saveAdminImage } from '../../../utils/adminImageUpload'
 import { saveAdminDocument } from '../../../utils/adminDocumentUpload'
-import { assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
+import { assertUploadedFileSize, assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
 import { validateMultipartFile } from '../../../utils/validation'
 import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 
@@ -36,12 +36,11 @@ export default defineEventHandler(async (event) => {
   }
 
   const maxSize = isPdf ? MAX_PDF_SIZE : MAX_IMAGE_SIZE
-  if (fileData.length > maxSize) {
-    throw createError({
-      statusCode: 413,
-      message: `El archivo supera el tamaño máximo (${isPdf ? '20MB' : '5MB'})`,
-    })
-  }
+  assertUploadedFileSize(
+    fileData.length,
+    maxSize,
+    `El archivo supera el tamaño máximo (${isPdf ? '20MB' : '5MB'})`
+  )
 
   let storagePath: string
 

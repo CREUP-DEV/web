@@ -7,6 +7,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const sessionVerified = useState('admin-session-verified', () => false)
+  const adminIsEnvAdmin = useState('admin-is-env-admin', () => false)
   const lastCheckedAt = useState<number>('admin-session-last-checked', () => 0)
 
   if (import.meta.client && sessionVerified.value) {
@@ -17,13 +18,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   try {
-    await $fetch('/api/admin/session', {
+    const session = await $fetch<{
+      authenticated: boolean
+      envAdmin: boolean
+    }>('/api/admin/session', {
       headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
     })
     sessionVerified.value = true
+    adminIsEnvAdmin.value = session.envAdmin
     lastCheckedAt.value = Date.now()
   } catch {
     sessionVerified.value = false
+    adminIsEnvAdmin.value = false
     lastCheckedAt.value = 0
     return navigateTo(ADMIN_LOGIN_PATH)
   }

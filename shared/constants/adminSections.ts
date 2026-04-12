@@ -1,5 +1,6 @@
 export type AdminSectionKey =
   | 'access'
+  | 'stats'
   | 'carousel'
   | 'about'
   | 'equality'
@@ -17,6 +18,7 @@ export interface AdminSectionDefinition {
   description: string
   to: string
   icon: string
+  envOnly?: boolean
 }
 
 export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
@@ -26,6 +28,14 @@ export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
     description: 'Personas autorizadas para entrar al panel.',
     to: '/admin/access',
     icon: 'i-tabler-shield-lock',
+  },
+  {
+    key: 'stats',
+    name: 'Estado',
+    description: 'Métricas operativas y salud básica del servicio.',
+    to: '/admin/stats',
+    icon: 'i-tabler-activity-heartbeat',
+    envOnly: true,
   },
   {
     key: 'carousel',

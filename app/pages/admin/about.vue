@@ -10,6 +10,7 @@ interface AboutContent {
   id: string
   heroImage: string | null
   heroVisible: boolean
+  updatedAt: string
 }
 
 const toast = useToast()
@@ -99,6 +100,7 @@ const saveContent = async () => {
       body: {
         heroImage: contentForm.heroImage,
         heroVisible: contentForm.heroVisible,
+        updatedAt: contentItem.value?.updatedAt,
       },
     })
 

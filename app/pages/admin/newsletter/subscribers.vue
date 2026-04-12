@@ -15,6 +15,9 @@ interface Subscriber {
 }
 
 const toast = useToast()
+const LIMIT = 20
+const page = ref(1)
+const offset = computed(() => (page.value - 1) * LIMIT)
 
 const {
   data,
@@ -23,19 +26,31 @@ const {
   refresh,
 } = await useFetch<{
   data: Subscriber[]
+  meta: {
+    activeTotal: number
+    total: number
+  }
 }>('/api/admin/newsletter/subscribers', {
   lazy: true,
+  query: computed(() => ({
+    limit: LIMIT,
+    offset: offset.value,
+  })),
 })
 const allItems = computed(() => data.value?.data ?? [])
+const totalCount = computed(() => data.value?.meta.total ?? 0)
+const activeCount = computed(() => data.value?.meta.activeTotal ?? 0)
+const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(
+  pending,
+  allItems,
+  fetchError
+)
 
 // Filter
 const showActiveOnly = ref(false)
 const items = computed(() =>
   showActiveOnly.value ? allItems.value.filter((s) => s.active) : allItems.value
 )
-
-const activeCount = computed(() => allItems.value.filter((s) => s.active).length)
-const totalCount = computed(() => allItems.value.length)
 
 // Search
 const search = ref('')
@@ -130,6 +145,14 @@ function formatDate(iso: string) {
     day: 'numeric',
   })
 }
+
+watch(page, () => {
+  nextTick(() => {
+    if (resultsRef.value instanceof HTMLElement) {
+      resultsRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
+})
 </script>
 
 <template>
@@ -165,80 +188,94 @@ function formatDate(iso: string) {
       </UButton>
     </div>
 
-    <div v-if="pending" class="space-y-3" aria-hidden="true">
-      <USkeleton class="h-16 w-full rounded-xl" />
-      <USkeleton class="h-16 w-full rounded-xl" />
-      <USkeleton class="h-16 w-full rounded-xl" />
-    </div>
+    <div ref="resultsRef" aria-live="polite" :aria-busy="pending || undefined">
+      <div v-if="isLoading" class="space-y-3" aria-hidden="true">
+        <USkeleton class="h-16 w-full rounded-xl" />
+        <USkeleton class="h-16 w-full rounded-xl" />
+        <USkeleton class="h-16 w-full rounded-xl" />
+      </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        title="No se pudieron cargar los suscriptores"
-        description="Revisa la conexión y vuelve a intentarlo."
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
-      </UButton>
-    </div>
+      <div v-else-if="fetchError" class="space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          title="No se pudieron cargar los suscriptores"
+          description="Revisa la conexión y vuelve a intentarlo."
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+          Reintentar
+        </UButton>
+      </div>
 
-    <div v-else-if="filteredItems.length === 0" class="py-12 text-center">
-      <p class="text-muted">
-        No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
-      </p>
-      <UButton
-        v-if="!search"
-        class="mt-4"
-        size="sm"
-        icon="i-tabler-plus"
-        @click="showAddModal = true"
-      >
-        Añadir suscriptor
-      </UButton>
-    </div>
-
-    <div v-else class="space-y-2">
-      <div
-        v-for="item in filteredItems"
-        :key="item.id"
-        class="bg-surface ring-default flex items-center gap-4 rounded-lg px-4 py-3 ring-1"
-      >
-        <div class="flex-1 overflow-hidden">
-          <p class="truncate font-medium">{{ item.email }}</p>
-          <p class="text-muted text-xs">
-            Suscrito {{ formatDate(item.subscribedAt) }}
-            <template v-if="item.unsubscribedAt">
-              · Baja {{ formatDate(item.unsubscribedAt) }}
-            </template>
-          </p>
-        </div>
-        <span
-          :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
-          class="shrink-0 rounded-full px-2 py-0.5 text-xs"
+      <div v-else-if="filteredItems.length === 0" class="py-12 text-center">
+        <p class="text-muted">
+          No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
+        </p>
+        <UButton
+          v-if="!search"
+          class="mt-4"
+          size="sm"
+          icon="i-tabler-plus"
+          @click="showAddModal = true"
         >
-          {{ item.active ? 'Activo' : 'Inactivo' }}
-        </span>
-        <div class="flex gap-1">
-          <UTooltip :text="item.active ? 'Desactivar' : 'Reactivar'">
-            <UButton
-              :icon="item.active ? 'i-tabler-user-minus' : 'i-tabler-user-plus'"
-              variant="ghost"
-              size="sm"
-              @click="toggleActive(item)"
-            />
-          </UTooltip>
-          <UTooltip text="Eliminar">
-            <UButton
-              icon="i-tabler-trash"
-              variant="ghost"
-              color="error"
-              size="sm"
-              @click="confirmDelete(item)"
-            />
-          </UTooltip>
+          Añadir suscriptor
+        </UButton>
+      </div>
+
+      <div
+        v-else
+        class="space-y-2"
+        :class="isRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
+      >
+        <div
+          v-for="item in filteredItems"
+          :key="item.id"
+          class="bg-surface ring-default flex items-center gap-4 rounded-lg px-4 py-3 ring-1"
+        >
+          <div class="flex-1 overflow-hidden">
+            <p class="truncate font-medium">{{ item.email }}</p>
+            <p class="text-muted text-xs">
+              Suscrito {{ formatDate(item.subscribedAt) }}
+              <template v-if="item.unsubscribedAt">
+                · Baja {{ formatDate(item.unsubscribedAt) }}
+              </template>
+            </p>
+          </div>
+          <span
+            :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
+            class="shrink-0 rounded-full px-2 py-0.5 text-xs"
+          >
+            {{ item.active ? 'Activo' : 'Inactivo' }}
+          </span>
+          <div class="flex gap-1">
+            <UTooltip :text="item.active ? 'Desactivar' : 'Reactivar'">
+              <UButton
+                :icon="item.active ? 'i-tabler-user-minus' : 'i-tabler-user-plus'"
+                variant="ghost"
+                size="sm"
+                @click="toggleActive(item)"
+              />
+            </UTooltip>
+            <UTooltip text="Eliminar">
+              <UButton
+                icon="i-tabler-trash"
+                variant="ghost"
+                color="error"
+                size="sm"
+                @click="confirmDelete(item)"
+              />
+            </UTooltip>
+          </div>
         </div>
       </div>
+
+      <nav
+        v-if="totalCount > LIMIT"
+        class="flex justify-center pt-4"
+        aria-label="Paginación de suscriptores"
+      >
+        <UPagination v-model:page="page" :total="totalCount" :items-per-page="LIMIT" />
+      </nav>
     </div>
 
     <UModal v-model:open="showAddModal">

@@ -627,6 +627,14 @@ export function requestNewsletterDeliveryShutdown() {
   newsletterShutdownRequested = true
 }
 
+export function getNewsletterDeliveryRuntimeState() {
+  return {
+    activeNewsletterIds: [...activeNewsletterRuns.keys()],
+    activeRunCount: activeNewsletterRuns.size,
+    shutdownRequested: newsletterShutdownRequested,
+  }
+}
+
 export async function waitForNewsletterDeliveryIdle(timeoutMs: number): Promise<boolean> {
   const startedAt = Date.now()
 

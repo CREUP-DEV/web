@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const updateAboutPageContentSchema = z.object({
   heroImage: z.string().min(1, 'La imagen es requerida').nullable(),
   heroVisible: z.boolean().default(false),
+  updatedAt: z.string().datetime().optional(),
 })
 
 export const updateSubscriberSchema = z.object({
