@@ -7,7 +7,6 @@ definePageMeta({
   title: 'Etiquetas',
 })
 
-const { t } = useI18n()
 const toast = useToast()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
@@ -103,12 +102,12 @@ const saveOrder = async () => {
   try {
     await persistOrder()
     toast.add({
-      title: t('admin.messages.tagOrderSaved'),
+      title: 'Orden guardado correctamente',
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, t('admin.errors.tagOrderSaveFailed')),
+      title: getApiErrorMessage(e, 'No se pudo guardar el orden'),
       color: 'error',
     })
   }
@@ -136,7 +135,7 @@ const handleSubmit = async () => {
         },
       })
       toast.add({
-        title: t('admin.messages.tagUpdated'),
+        title: 'Etiqueta actualizada',
         color: 'success',
       })
     } else {
@@ -145,7 +144,7 @@ const handleSubmit = async () => {
         body: payload,
       })
       toast.add({
-        title: t('admin.messages.tagCreated'),
+        title: 'Etiqueta creada',
         color: 'success',
       })
     }
@@ -156,12 +155,12 @@ const handleSubmit = async () => {
     const err = e as { data?: { message?: string } }
     if (getApiErrorStatusCode(e) === 409 && err.data?.message === 'SLUG_EXISTS') {
       toast.add({
-        title: t('admin.errors.slugExists'),
+        title: 'Ya existe una etiqueta con ese slug',
         color: 'error',
       })
     } else {
       toast.add({
-        title: getApiErrorMessage(e, t('admin.errors.tagSaveFailed')),
+        title: getApiErrorMessage(e, 'No se pudo guardar la etiqueta'),
         color: 'error',
       })
     }
@@ -178,12 +177,12 @@ const handleDelete = async () => {
     closeDeleteModal()
     await refresh()
     toast.add({
-      title: t('admin.messages.tagDeleted'),
+      title: 'Etiqueta eliminada',
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, t('admin.errors.tagDeleteFailed')),
+      title: getApiErrorMessage(e, 'No se pudo eliminar la etiqueta'),
       color: 'error',
     })
   } finally {

@@ -207,6 +207,21 @@ export default defineNuxtConfig({
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     },
+    '/conocenos/**': {
+      swr: 60,
+    },
+    '/transparencia/**': {
+      swr: 60,
+    },
+    '/politica/**': {
+      swr: 60,
+    },
+    '/comision-de-asuntos-sectoriales': {
+      swr: 60,
+    },
+    '/legal': {
+      swr: 60,
+    },
     '/_nuxt/**': {
       headers: {
         'Cache-Control': 'public, max-age=31536000, immutable',

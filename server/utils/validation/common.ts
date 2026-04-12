@@ -178,6 +178,12 @@ export const paginationQuerySchema = z.object({
   offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
 })
 
+/** Admin collection pagination with high cap for list-style screens */
+export const adminCollectionQuerySchema = z.object({
+  limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(500).default(500)),
+  offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
+})
+
 /** Public pagination with smaller max and default */
 export const publicPaginationQuerySchema = z.object({
   limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(50).default(12)),

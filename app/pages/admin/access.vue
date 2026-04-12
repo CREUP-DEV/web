@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { createAdminAccessClientSchema } from '~~/shared/utils/adminClientSchemas'
 import { getInitials } from '@/utils/initials'
 
 definePageMeta({
@@ -8,6 +9,7 @@ definePageMeta({
 })
 
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 interface AdminAccessItem {
   id: string
@@ -62,10 +64,19 @@ const {
 } = useAdminCollectionState<AdminAccessItem>({
   items,
   prepareCreate: () => {
+    clearErrors()
     form.email = ''
   },
   prepareEdit: () => {},
 })
+
+const isCreateFormValid = computed(
+  () =>
+    createAdminAccessClientSchema.safeParse({
+      active: true,
+      email: form.email,
+    }).success
+)
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   dateStyle: 'medium',
@@ -104,14 +115,21 @@ const markAccessImageLoaded = (id: string) => {
 }
 
 const handleCreate = async () => {
+  const payload = {
+    active: true,
+    email: form.email,
+  }
+
+  if (!validate(createAdminAccessClientSchema, payload)) {
+    return
+  }
+
   isSubmitting.value = true
 
   try {
     await $fetch('/api/admin/access', {
       method: 'POST',
-      body: {
-        email: form.email,
-      },
+      body: payload,
     })
 
     closeModal()
@@ -342,19 +360,25 @@ const handleDelete = async () => {
           </p>
 
           <form id="admin-access-form" class="mt-6 space-y-4" @submit.prevent="handleCreate">
-            <UFormField label="Correo autorizado">
+            <UFormField label="Correo autorizado" :error="getFieldError('email')">
               <UInput
                 v-model="form.email"
                 type="email"
                 class="w-full"
                 placeholder="nombre@dominio.es"
+                @update:model-value="clearErrors()"
               />
             </UFormField>
           </form>
 
           <div class="mt-6 flex justify-end gap-2">
             <UButton variant="ghost" @click="closeModal">Cancelar</UButton>
-            <UButton type="submit" form="admin-access-form" :loading="isSubmitting">
+            <UButton
+              type="submit"
+              form="admin-access-form"
+              :loading="isSubmitting"
+              :disabled="!isCreateFormValid || isSubmitting"
+            >
               Guardar
             </UButton>
           </div>
@@ -362,14 +386,7 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <UModal
-      :open="showDeleteModal"
-      @update:open="
-        (open) => {
-          if (!open) closeDeleteModal()
-        }
-      "
-    >
+    <UModal v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

@@ -2,11 +2,12 @@ import { defineEventHandler } from 'h3'
 import { desc, sql } from 'drizzle-orm'
 import { db } from '../../../db'
 import { financialReports } from '../../../db/schema'
-import { paginationQuerySchema, validateQuery } from '../../../utils/validation'
+import { adminCollectionQuerySchema, validateQuery } from '../../../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
+import { logAdminCollectionCapHit } from '../../../utils/adminCollectionLimit'
 
 export default defineEventHandler(async (event) => {
-  const { limit, offset } = validateQuery(event, paginationQuerySchema)
+  const { limit, offset } = validateQuery(event, adminCollectionQuerySchema)
 
   const [items, countResult] = await Promise.all([
     db.query.financialReports.findMany({
@@ -23,6 +24,7 @@ export default defineEventHandler(async (event) => {
     approvedAt: dateValueToDateOnly(item.approvedAt),
   }))
   const total = countResult[0]?.count ?? 0
+  logAdminCollectionCapHit(event, 'financial-reports', { limit, offset, total })
 
   return {
     data: normalizedItems,

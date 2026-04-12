@@ -38,6 +38,7 @@ const selectedPdfFile = ref<File | null>(null)
 const pendingPdfName = ref<string | null>(null)
 const isUploadingPdf = ref(false)
 const isSaving = ref(false)
+const showClearPdfModal = ref(false)
 
 const currentPdfName = computed(() => {
   if (pendingPdfName.value) {
@@ -54,6 +55,7 @@ watch(
     form.active = item?.active ?? false
     selectedPdfFile.value = null
     pendingPdfName.value = null
+    clearErrors()
   },
   { immediate: true }
 )
@@ -80,6 +82,16 @@ const clearPdf = () => {
   selectedPdfFile.value = null
   pendingPdfName.value = null
   form.active = false
+  clearErrors()
+}
+
+const requestClearPdf = () => {
+  showClearPdfModal.value = true
+}
+
+const confirmClearPdf = () => {
+  clearPdf()
+  showClearPdfModal.value = false
 }
 
 const uploadPdf = async (file: File) => {
@@ -224,7 +236,7 @@ const saveDossier = async () => {
                     variant="ghost"
                     color="error"
                     icon="i-tabler-trash"
-                    @click="clearPdf"
+                    @click="requestClearPdf"
                   >
                     Quitar PDF
                   </UButton>
@@ -254,5 +266,26 @@ const saveDossier = async () => {
         </div>
       </div>
     </UCard>
+
+    <UModal v-model:open="showClearPdfModal" :ui="{ content: 'sm:max-w-sm' }">
+      <template #content>
+        <div class="p-6">
+          <div class="mb-4 flex items-center gap-3">
+            <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
+              <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
+            </div>
+            <h2 class="text-base font-bold">Quitar PDF</h2>
+          </div>
+          <p class="text-muted mb-6 text-sm">
+            Se eliminará el PDF seleccionado del dossier de prensa. Tendrás que volver a subirlo si
+            quieres recuperarlo.
+          </p>
+          <div class="flex justify-end gap-2">
+            <UButton variant="ghost" @click="showClearPdfModal = false">Cancelar</UButton>
+            <UButton color="error" @click="confirmClearPdf">Quitar PDF</UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

@@ -2,10 +2,11 @@ import { defineEventHandler } from 'h3'
 import { asc, sql } from 'drizzle-orm'
 import { db } from '../../../db'
 import { equalityDocuments } from '../../../db/schema'
-import { paginationQuerySchema, validateQuery } from '../../../utils/validation'
+import { adminCollectionQuerySchema, validateQuery } from '../../../utils/validation'
+import { logAdminCollectionCapHit } from '../../../utils/adminCollectionLimit'
 
 export default defineEventHandler(async (event) => {
-  const { limit, offset } = validateQuery(event, paginationQuerySchema)
+  const { limit, offset } = validateQuery(event, adminCollectionQuerySchema)
 
   const [items, countResult] = await Promise.all([
     db.query.equalityDocuments.findMany({
@@ -18,6 +19,7 @@ export default defineEventHandler(async (event) => {
   ])
 
   const total = countResult[0]?.count ?? 0
+  logAdminCollectionCapHit(event, 'equality', { limit, offset, total })
 
   return {
     data: items,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { updateAboutPageContentClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -14,6 +15,7 @@ interface AboutContent {
 }
 
 const toast = useToast()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const {
   data: contentData,
@@ -32,12 +34,14 @@ const contentForm = reactive({
 })
 
 const isSavingContent = ref(false)
+const showClearHeroModal = ref(false)
 const heroImageVersion = ref<number | null>(null)
 const heroUpload = useAdminFileUpload({
   endpoint: '/api/admin/about/upload',
   successMessage: 'Imagen subida correctamente',
   errorMessage: 'No se pudo subir la imagen',
   onUploaded: (storagePath) => {
+    clearErrors()
     contentForm.heroImage = storagePath
     contentForm.heroVisible = true
     heroImageVersion.value = Date.now()
@@ -70,6 +74,7 @@ watch(
     contentForm.heroImage = item?.heroImage ?? null
     contentForm.heroVisible = item?.heroVisible ?? false
     heroUpload.setPreview(null)
+    clearErrors()
   },
   { immediate: true }
 )
@@ -82,6 +87,7 @@ const discardPendingHero = () => {
   contentForm.heroImage = contentItem.value?.heroImage ?? null
   contentForm.heroVisible = contentItem.value?.heroVisible ?? false
   heroUpload.setPreview(null)
+  clearErrors()
 }
 
 const clearHero = () => {
@@ -89,17 +95,35 @@ const clearHero = () => {
   contentForm.heroVisible = false
   heroImageVersion.value = null
   heroUpload.setPreview(null)
+  clearErrors()
+}
+
+const requestClearHero = () => {
+  showClearHeroModal.value = true
+}
+
+const confirmClearHero = () => {
+  clearHero()
+  showClearHeroModal.value = false
 }
 
 const saveContent = async () => {
+  const payload = {
+    heroImage: contentForm.heroImage,
+    heroVisible: contentForm.heroVisible,
+  }
+
+  if (!validate(updateAboutPageContentClientSchema, payload)) {
+    return
+  }
+
   isSavingContent.value = true
 
   try {
     await $fetch('/api/admin/about', {
       method: 'PUT',
       body: {
-        heroImage: contentForm.heroImage,
-        heroVisible: contentForm.heroVisible,
+        ...payload,
         updatedAt: contentItem.value?.updatedAt,
       },
     })
@@ -226,11 +250,14 @@ const saveContent = async () => {
                   variant="ghost"
                   color="error"
                   icon="i-tabler-trash"
-                  @click="clearHero"
+                  @click="requestClearHero"
                 >
                   Quitar banner
                 </UButton>
               </div>
+              <p v-if="getFieldError('heroImage')" class="text-error text-sm">
+                {{ getFieldError('heroImage') }}
+              </p>
             </div>
 
             <div class="rounded-xl border px-4 py-3 lg:min-w-56">
@@ -272,5 +299,26 @@ const saveContent = async () => {
         <p class="text-muted text-sm leading-relaxed">Proporción recomendada: 1925 x 550 px.</p>
       </div>
     </UCard>
+
+    <UModal v-model:open="showClearHeroModal" :ui="{ content: 'sm:max-w-sm' }">
+      <template #content>
+        <div class="p-6">
+          <div class="mb-4 flex items-center gap-3">
+            <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
+              <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
+            </div>
+            <h2 class="text-base font-bold">Quitar banner</h2>
+          </div>
+          <p class="text-muted mb-6 text-sm">
+            Se eliminará la imagen seleccionada del banner principal. Tendrás que guardarla de nuevo
+            si cambias de idea.
+          </p>
+          <div class="flex justify-end gap-2">
+            <UButton variant="ghost" @click="showClearHeroModal = false">Cancelar</UButton>
+            <UButton color="error" @click="confirmClearHero">Quitar banner</UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

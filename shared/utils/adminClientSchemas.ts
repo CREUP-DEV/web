@@ -1,4 +1,6 @@
+import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
+import { ADMIN_RICH_TEXT_MAX_HTML_LENGTH, hasMeaningfulHtml } from '~~/shared/utils/richText'
 
 type ValidationIssue = {
   message: string
@@ -24,6 +26,7 @@ export interface ClientValidatableSchema<TPayload> {
 const LOWERCASE_SLUG_PATTERN = /^[a-z0-9-]+$/
 const DATE_ONLY_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
 const NEWSLETTER_MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-01$/
+const PRESS_ARTICLE_TYPE_SET = new Set<string>(PRESS_ARTICLE_TYPES)
 
 const ok = <TPayload>(data: TPayload): ValidationResult<TPayload> => ({
   data,
@@ -52,6 +55,15 @@ const isSafeHref = (value: string) =>
   value.startsWith('#') ||
   value.startsWith('http://') ||
   value.startsWith('https://')
+
+const isValidUrl = (value: string) => {
+  try {
+    const url = new URL(value)
+    return ['http:', 'https:'].includes(url.protocol)
+  } catch {
+    return false
+  }
+}
 
 function validateTranslationArray<
   TTranslation extends Record<string, unknown>,
@@ -215,6 +227,224 @@ export const updatePressDossierClientSchema = buildValidator((payload, issues) =
   }
 
   return payload as { active: boolean; pdfUrl: string | null }
+})
+
+export const updateAboutPageContentClientSchema = buildValidator((payload, issues) => {
+  if (!isPlainObject(payload)) {
+    issues.push({ message: 'Entrada no válida', path: [] })
+    return null
+  }
+
+  const heroImage = payload.heroImage
+  const heroVisible = payload.heroVisible
+
+  if (heroImage !== null && (typeof heroImage !== 'string' || heroImage.length === 0)) {
+    issues.push({ message: 'La imagen no es válida', path: ['heroImage'] })
+  }
+
+  if (typeof heroVisible !== 'boolean') {
+    issues.push({ message: 'Estado no válido', path: ['heroVisible'] })
+  }
+
+  if (heroVisible === true && !heroImage) {
+    issues.push({
+      message: 'Necesitas una imagen para mostrar el banner',
+      path: ['heroImage'],
+    })
+  }
+
+  return payload as { heroImage: string | null; heroVisible: boolean }
+})
+
+export const createAdminAccessClientSchema = buildValidator((payload, issues) => {
+  if (!isPlainObject(payload)) {
+    issues.push({ message: 'Entrada no válida', path: [] })
+    return null
+  }
+
+  const email = asTrimmedString(payload.email)
+  if (!email) {
+    issues.push({ message: 'El correo es obligatorio', path: ['email'] })
+  } else if (email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    issues.push({ message: 'El correo no es válido', path: ['email'] })
+  }
+
+  if (payload.active !== undefined && typeof payload.active !== 'boolean') {
+    issues.push({ message: 'Estado no válido', path: ['active'] })
+  }
+
+  return {
+    active: payload.active === undefined ? true : payload.active,
+    email: email.toLowerCase(),
+  }
+})
+
+export const pressArticleClientSchema = buildValidator((payload, issues) => {
+  if (!isPlainObject(payload)) {
+    issues.push({ message: 'Entrada no válida', path: [] })
+    return null
+  }
+
+  const type = asTrimmedString(payload.type)
+  const image = payload.image
+  const pdfUrl = payload.pdfUrl
+  const externalUrl = payload.externalUrl
+  const mediaOutletId = payload.mediaOutletId
+  const active = payload.active
+  const publishedAt = payload.publishedAt
+  const tagIds = payload.tagIds
+
+  if (!PRESS_ARTICLE_TYPE_SET.has(type)) {
+    issues.push({ message: 'Tipo de artículo no válido', path: ['type'] })
+  }
+
+  if (typeof image !== 'string' || !image.trim()) {
+    issues.push({ message: 'La imagen de portada es obligatoria', path: ['image'] })
+  } else if (image.length > 2048) {
+    issues.push({ message: 'La imagen no es válida', path: ['image'] })
+  } else if (image.startsWith('http://') || image.startsWith('https://')) {
+    issues.push({
+      message: 'La imagen debe ser una ruta interna, no una URL externa',
+      path: ['image'],
+    })
+  }
+
+  if (pdfUrl !== null && pdfUrl !== undefined && (typeof pdfUrl !== 'string' || !pdfUrl.trim())) {
+    issues.push({ message: 'El PDF no es válido', path: ['pdfUrl'] })
+  }
+
+  if (externalUrl !== null && externalUrl !== undefined) {
+    if (typeof externalUrl !== 'string' || !externalUrl.trim() || !isValidUrl(externalUrl)) {
+      issues.push({ message: 'La URL externa no es válida', path: ['externalUrl'] })
+    }
+  }
+
+  if (mediaOutletId !== null && mediaOutletId !== undefined) {
+    if (typeof mediaOutletId !== 'string' || !mediaOutletId.trim()) {
+      issues.push({ message: 'El medio no es válido', path: ['mediaOutletId'] })
+    }
+  }
+
+  if (typeof active !== 'boolean') {
+    issues.push({ message: 'Estado no válido', path: ['active'] })
+  }
+
+  if (publishedAt !== undefined && publishedAt !== null) {
+    if (typeof publishedAt !== 'string' || !DATE_ONLY_PATTERN.test(publishedAt)) {
+      issues.push({ message: 'La fecha de publicación no es válida', path: ['publishedAt'] })
+    }
+  }
+
+  if (!Array.isArray(tagIds)) {
+    issues.push({ message: 'Las etiquetas no son válidas', path: ['tagIds'] })
+  } else if (tagIds.some((tagId) => typeof tagId !== 'string' || !tagId.trim())) {
+    issues.push({ message: 'Las etiquetas no son válidas', path: ['tagIds'] })
+  }
+
+  validateTranslationArray<
+    {
+      locale: string
+      title?: string
+      description?: string
+      contentHtml?: string | null
+      alt?: string
+    },
+    'title'
+  >(
+    issues,
+    payload.translations,
+    'title',
+    'El título en español es obligatorio',
+    (translation, index, nextIssues) => {
+      if (asTrimmedString(translation.title).length > 200) {
+        nextIssues.push({
+          message: 'El título no puede superar los 200 caracteres',
+          path: ['translations', index, 'title'],
+        })
+      }
+
+      if (asTrimmedString(translation.description).length > 2000) {
+        nextIssues.push({
+          message: 'La descripción no puede superar los 2000 caracteres',
+          path: ['translations', index, 'description'],
+        })
+      }
+
+      if (translation.contentHtml != null) {
+        if (typeof translation.contentHtml !== 'string') {
+          nextIssues.push({
+            message: 'El contenido no es válido',
+            path: ['translations', index, 'contentHtml'],
+          })
+        } else if (translation.contentHtml.length > ADMIN_RICH_TEXT_MAX_HTML_LENGTH) {
+          nextIssues.push({
+            message: 'El contenido es demasiado largo',
+            path: ['translations', index, 'contentHtml'],
+          })
+        }
+      }
+
+      if (asTrimmedString(translation.alt).length > 200) {
+        nextIssues.push({
+          message: 'El texto alternativo no puede superar los 200 caracteres',
+          path: ['translations', index, 'alt'],
+        })
+      }
+    }
+  )
+
+  const translations = Array.isArray(payload.translations)
+    ? payload.translations.filter(
+        (entry): entry is Record<string, unknown> =>
+          typeof entry === 'object' && entry !== null && !Array.isArray(entry)
+      )
+    : []
+  const requiredTranslation = translations.find((entry) => entry.locale === DEFAULT_LOCALE_CODE)
+  const requiredContentHtml =
+    typeof requiredTranslation?.contentHtml === 'string' ? requiredTranslation.contentHtml : null
+
+  if (
+    (type === 'press_release' || type === 'statement') &&
+    !pdfUrl &&
+    !hasMeaningfulHtml(requiredContentHtml)
+  ) {
+    issues.push({
+      message: 'Debes añadir contenido o subir un PDF para notas de prensa y comunicados',
+      path: ['translations', 0, 'contentHtml'],
+    })
+  }
+
+  if (type === 'media_appearance' && !asTrimmedString(externalUrl)) {
+    issues.push({
+      message: 'La URL externa es obligatoria para apariciones en medios',
+      path: ['externalUrl'],
+    })
+  }
+
+  if (type === 'media_appearance' && !asTrimmedString(mediaOutletId)) {
+    issues.push({
+      message: 'El medio de comunicación es obligatorio para apariciones en medios',
+      path: ['mediaOutletId'],
+    })
+  }
+
+  return payload as {
+    active: boolean
+    externalUrl?: string | null
+    image: string
+    mediaOutletId?: string | null
+    pdfUrl?: string | null
+    publishedAt?: string
+    tagIds: string[]
+    translations: Array<{
+      alt?: string
+      contentHtml?: string | null
+      description?: string
+      locale: string
+      title: string
+    }>
+    type: string
+  }
 })
 
 export const createMediaOutletClientSchema = buildValidator((payload, issues) => {

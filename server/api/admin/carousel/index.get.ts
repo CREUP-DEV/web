@@ -2,14 +2,11 @@ import { defineEventHandler } from 'h3'
 import { asc, sql } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems } from '../../../db/schema'
-import { paginationQuerySchema, validateQuery } from '../../../utils/validation'
-
-const DEFAULT_LIMIT = 50
+import { adminCollectionQuerySchema, validateQuery } from '../../../utils/validation'
+import { logAdminCollectionCapHit } from '../../../utils/adminCollectionLimit'
 
 export default defineEventHandler(async (event) => {
-  const query = validateQuery(event, paginationQuerySchema)
-  const limit = query.limit ?? DEFAULT_LIMIT
-  const offset = query.offset ?? 0
+  const { limit, offset } = validateQuery(event, adminCollectionQuerySchema)
 
   const [items, countResult] = await Promise.all([
     db.query.carouselItems.findMany({
@@ -22,6 +19,7 @@ export default defineEventHandler(async (event) => {
   ])
 
   const total = countResult[0]?.count ?? 0
+  logAdminCollectionCapHit(event, 'carousel', { limit, offset, total })
 
   return {
     data: items,

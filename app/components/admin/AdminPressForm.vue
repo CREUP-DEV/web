@@ -7,6 +7,8 @@ import type {
   PressTranslationAdmin,
 } from '@/types/adminPress'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { pressArticleClientSchema } from '~~/shared/utils/adminClientSchemas'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import {
   calendarDateLikeToDateOnly,
@@ -36,6 +38,7 @@ const {
   createEmptyTranslations,
   mapTranslationsToForm,
 } = useLocales()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const isEditing = computed(() => !!props.article)
 
@@ -45,13 +48,37 @@ const isHydratingForm = ref(false)
 const initialFormSnapshot = ref('')
 
 // Fetch supporting data
-const [{ data: tagsData }, { data: mediaData }] = await Promise.all([
-  useFetch<{ data: PressTagAdmin[] }>('/api/admin/tags'),
-  useFetch<{ data: PressMediaOutletAdmin[] }>('/api/admin/media'),
-])
+const [{ data: tagsData, error: tagsError }, { data: mediaData, error: mediaError }] =
+  await Promise.all([
+    useFetch<{ data: PressTagAdmin[] }>('/api/admin/tags'),
+    useFetch<{ data: PressMediaOutletAdmin[] }>('/api/admin/media'),
+  ])
 
 const tags = computed(() => tagsData.value?.data ?? [])
 const mediaOutlets = computed(() => mediaData.value?.data ?? [])
+const supportDataError = computed(() => tagsError.value ?? mediaError.value ?? null)
+const supportDataErrorTitle = computed(() => {
+  if (tagsError.value && mediaError.value) {
+    return 'No se pudieron cargar etiquetas ni medios'
+  }
+
+  if (tagsError.value) {
+    return 'No se pudieron cargar las etiquetas'
+  }
+
+  if (mediaError.value) {
+    return 'No se pudieron cargar los medios'
+  }
+
+  return ''
+})
+const submitDisabledReason = computed(() => {
+  if (supportDataError.value) {
+    return supportDataErrorTitle.value
+  }
+
+  return getFieldError('image')
+})
 
 // File uploads
 const imageUpload = useAdminFileUpload({
@@ -59,6 +86,7 @@ const imageUpload = useAdminFileUpload({
   successMessage: 'Imagen subida correctamente',
   errorMessage: 'No se pudo subir la imagen',
   onUploaded: (storagePath) => {
+    clearErrors()
     form.image = storagePath
   },
   getFallbackPreview: () => form.image || null,
@@ -66,6 +94,7 @@ const imageUpload = useAdminFileUpload({
 const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/press/upload',
   onUploaded: (storagePath) => {
+    clearErrors()
     form.pdfUrl = storagePath
   },
 })
@@ -137,16 +166,21 @@ const publicArticleUrl = computed(() => {
   return `${getPressArticlePublicListPath(props.article.type)}/${props.article.slug}`
 })
 
-const submitAttempted = ref(false)
-const canSubmit = computed(() => Boolean(form.image))
+const canSubmit = computed(() => !supportDataError.value)
 
 const handleSubmit = () => {
-  submitAttempted.value = true
   if (!canSubmit.value) return
-  emit('submit', {
+
+  const payload = {
     ...form,
     publishedAt: calendarDateToDateOnly(publishedAt.value),
-  })
+  }
+
+  if (!validate(pressArticleClientSchema, payload)) {
+    return
+  }
+
+  emit('submit', payload)
 }
 
 // Tag select items (exclude the 'all' meta-tag)
@@ -187,6 +221,7 @@ const getTagName = (tag: PressTagAdmin) => {
 // Populate form from article when editing
 const populateForm = (article: PressArticleAdmin) => {
   isHydratingForm.value = true
+  clearErrors()
   form.type = article.type
   form.image = article.image
   form.pdfUrl = article.pdfUrl
@@ -230,6 +265,7 @@ watch(
 )
 
 const handleRemovePdf = () => {
+  clearErrors()
   pdfUpload.remove()
   form.pdfUrl = null
 }
@@ -260,6 +296,20 @@ const confirmCancel = () => {
 
 <template>
   <form @submit.prevent="handleSubmit">
+    <UAlert
+      v-if="supportDataError"
+      color="error"
+      variant="soft"
+      :title="supportDataErrorTitle"
+      :description="
+        getApiErrorMessage(
+          supportDataError,
+          'Recarga la página para volver a cargar los datos de apoyo.'
+        )
+      "
+      class="mb-6"
+    />
+
     <div
       class="bg-background/80 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
     >
@@ -295,7 +345,7 @@ const confirmCancel = () => {
           icon="i-tabler-check"
           :loading="submitting"
           :disabled="!canSubmit || submitting"
-          :title="!canSubmit ? 'Sube una imagen antes de guardar' : undefined"
+          :title="submitDisabledReason || undefined"
         >
           {{ isEditing ? 'Guardar cambios' : 'Crear artículo' }}
         </UButton>
@@ -316,7 +366,7 @@ const confirmCancel = () => {
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
-            <UFormField label="Enlace a la noticia *">
+            <UFormField label="Enlace a la noticia *" :error="getFieldError('externalUrl')">
               <UInput
                 :model-value="form.externalUrl ?? undefined"
                 placeholder="https://..."
@@ -325,13 +375,14 @@ const confirmCancel = () => {
               />
             </UFormField>
 
-            <UFormField label="Medio *">
+            <UFormField label="Medio *" :error="getFieldError('mediaOutletId')">
               <USelectMenu
                 :model-value="form.mediaOutletId ?? undefined"
                 :items="mediaOutletSelectItems"
                 value-key="value"
                 class="w-full"
                 placeholder="Selecciona un medio..."
+                :disabled="Boolean(supportDataError)"
                 @update:model-value="form.mediaOutletId = $event ?? null"
               />
             </UFormField>
@@ -353,7 +404,10 @@ const confirmCancel = () => {
           </h3>
 
           <div class="space-y-4">
-            <UFormField :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'">
+            <UFormField
+              :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'"
+              :error="getFieldError(`translations.${index}.title`)"
+            >
               <UInput
                 v-model="trans.title"
                 class="w-full"
@@ -363,6 +417,7 @@ const confirmCancel = () => {
 
             <UFormField
               :label="isDefaultLocale(trans.locale) ? 'Descripción breve *' : 'Descripción breve'"
+              :error="getFieldError(`translations.${index}.description`)"
             >
               <UTextarea
                 v-model="trans.description"
@@ -375,6 +430,7 @@ const confirmCancel = () => {
             <UFormField
               v-if="form.type === 'press_release' || form.type === 'statement'"
               label="Contenido completo"
+              :error="getFieldError(`translations.${index}.contentHtml`)"
             >
               <ClientOnly>
                 <LazyAdminRichTextEditor v-model="trans.contentHtml" />
@@ -462,13 +518,14 @@ const confirmCancel = () => {
               multiple
               class="w-full"
               placeholder="Selecciona etiquetas..."
+              :disabled="Boolean(supportDataError)"
             />
           </UFormField>
         </div>
 
         <div
           class="space-y-4 rounded-xl border p-5"
-          :class="submitAttempted && !form.image ? 'border-error/50' : ''"
+          :class="getFieldError('image') ? 'border-error/50' : ''"
         >
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-photo" class="text-muted size-4" />
@@ -510,8 +567,8 @@ const confirmCancel = () => {
           >
             {{ imageUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
           </UButton>
-          <p v-if="submitAttempted && !form.image" class="text-error text-xs" role="alert">
-            La imagen de portada es obligatoria.
+          <p v-if="getFieldError('image')" class="text-error text-xs" role="alert">
+            {{ getFieldError('image') }}
           </p>
           <p v-else class="text-muted text-xs">JPG, PNG, WebP, SVG o AVIF</p>
         </div>
