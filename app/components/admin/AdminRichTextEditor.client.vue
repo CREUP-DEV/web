@@ -30,25 +30,25 @@ const countFormatter = new Intl.NumberFormat('es-ES')
 
 const editorToolbarItems: EditorToolbarItem[][] = [
   [
-    { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold' },
-    { kind: 'mark', mark: 'italic', icon: 'i-lucide-italic' },
-    { kind: 'link', slot: 'link', icon: 'i-lucide-link' },
+    { kind: 'mark', mark: 'bold', icon: 'i-tabler-bold' },
+    { kind: 'mark', mark: 'italic', icon: 'i-tabler-italic' },
+    { kind: 'link', slot: 'link', icon: 'i-tabler-link' },
   ],
   [
-    { kind: 'heading', level: 2, icon: 'i-lucide-heading-2' },
-    { kind: 'heading', level: 3, icon: 'i-lucide-heading-3' },
-    { kind: 'paragraph', icon: 'i-lucide-pilcrow' },
+    { kind: 'heading', level: 2, icon: 'i-tabler-h-2' },
+    { kind: 'heading', level: 3, icon: 'i-tabler-h-3' },
+    { kind: 'paragraph', icon: 'i-tabler-pilcrow' },
   ],
   [
-    { kind: 'bulletList', icon: 'i-lucide-list' },
-    { kind: 'orderedList', icon: 'i-lucide-list-ordered' },
-    { kind: 'blockquote', icon: 'i-lucide-quote' },
-    { kind: 'horizontalRule', icon: 'i-lucide-minus' },
+    { kind: 'bulletList', icon: 'i-tabler-list' },
+    { kind: 'orderedList', icon: 'i-tabler-list-numbers' },
+    { kind: 'blockquote', icon: 'i-tabler-blockquote' },
+    { kind: 'horizontalRule', icon: 'i-tabler-minus' },
   ],
   [
-    { kind: 'undo', icon: 'i-lucide-undo-2' },
-    { kind: 'redo', icon: 'i-lucide-redo-2' },
-    { kind: 'clearFormatting', icon: 'i-lucide-remove-formatting' },
+    { kind: 'undo', icon: 'i-tabler-arrow-back-up' },
+    { kind: 'redo', icon: 'i-tabler-arrow-forward-up' },
+    { kind: 'clearFormatting', icon: 'i-tabler-clear-formatting' },
   ],
 ]
 </script>

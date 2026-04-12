@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import { getOptionalConfigUrl, requireConfigString, requireConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
+import { getStaticContentSecurityPolicy } from './server/utils/csp'
 
 const isDev = process.env.NODE_ENV !== 'production'
 const appSecret = isDev
@@ -16,6 +17,10 @@ const canonicalSiteUrl =
 const siteImageHostname = new URL(siteUrl).hostname
 const turnstileSiteKey = process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || ''
 const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
+const staticContentSecurityPolicy = getStaticContentSecurityPolicy({
+  turnstileSiteKey,
+  umamiHost,
+})
 const internalImageAlias = Object.fromEntries(
   INTERNAL_IMAGE_PROXY_PATH_BASES.map((path) => [path, `${new URL(siteUrl).origin}${path}`])
 )
@@ -191,6 +196,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': {
       headers: {
+        'Content-Security-Policy': staticContentSecurityPolicy,
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'Referrer-Policy': 'strict-origin-when-cross-origin',

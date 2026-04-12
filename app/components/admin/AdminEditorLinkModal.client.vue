@@ -172,7 +172,7 @@ const handleEnter = () => {
     >
       <UButton
         ref="linkButtonRef"
-        icon="i-lucide-link"
+        icon="i-tabler-link"
         color="neutral"
         active-color="primary"
         variant="ghost"
@@ -207,7 +207,7 @@ const handleEnter = () => {
     <template #footer>
       <div class="flex w-full flex-wrap items-center justify-between gap-2">
         <UButton
-          icon="i-lucide-trash"
+          icon="i-tabler-trash"
           color="error"
           variant="soft"
           :disabled="!active"
@@ -218,7 +218,7 @@ const handleEnter = () => {
 
         <div class="flex items-center gap-2">
           <UButton
-            icon="i-lucide-external-link"
+            icon="i-tabler-external-link"
             color="neutral"
             variant="outline"
             :disabled="!canOpenCurrentLink"
@@ -227,7 +227,7 @@ const handleEnter = () => {
             Abrir
           </UButton>
 
-          <UButton icon="i-lucide-check" color="primary" :disabled="!canApply" @click="handleApply">
+          <UButton icon="i-tabler-check" color="primary" :disabled="!canApply" @click="handleApply">
             Guardar enlace
           </UButton>
         </div>
