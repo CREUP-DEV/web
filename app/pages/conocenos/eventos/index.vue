@@ -92,8 +92,16 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
       </div>
 
       <template v-else>
+        <div v-if="isLoading" class="flex flex-wrap items-center gap-2" aria-hidden="true">
+          <USkeleton
+            v-for="n in 4"
+            :key="`event-filter-skeleton-${n}`"
+            class="h-8 w-24 rounded-full"
+          />
+        </div>
+
         <div
-          v-if="eventTypes.length > 0"
+          v-else-if="eventTypes.length > 0"
           class="flex flex-wrap items-center gap-2"
           role="group"
           :aria-label="t('events.filterByType')"

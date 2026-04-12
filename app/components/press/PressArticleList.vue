@@ -20,7 +20,7 @@ const LIMIT = 12
 const { page, selectTag, selectedTag, tagQuery } = usePressArchiveFilters(() => props.type)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
-const { data, pending, error } = usePress(props.type, tagQuery, LIMIT, offset)
+const { data, pending, error, refresh } = usePress(props.type, tagQuery, LIMIT, offset)
 
 const articles = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
@@ -156,6 +156,15 @@ watch(page, () => {
         <div v-else-if="showErrorState" class="text-muted py-12 text-center">
           <UIcon name="i-tabler-alert-circle" class="mx-auto mb-2 size-8 opacity-50" />
           <p>{{ errorMessage }}</p>
+          <UButton
+            variant="outline"
+            color="neutral"
+            icon="i-tabler-refresh"
+            class="mt-3"
+            @click="refresh()"
+          >
+            {{ t('home.retry') }}
+          </UButton>
         </div>
 
         <div v-else-if="!articles.length" class="text-muted py-12 text-center">
