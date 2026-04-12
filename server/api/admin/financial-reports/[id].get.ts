@@ -17,10 +17,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'No encontrado' })
   }
 
+  const normalizedItem = {
+    ...item,
+    approvedAt: dateValueToDateOnly(item.approvedAt),
+  }
+
   return {
-    item: {
-      ...item,
-      approvedAt: dateValueToDateOnly(item.approvedAt),
-    },
+    data: normalizedItem,
+    item: normalizedItem,
   }
 })

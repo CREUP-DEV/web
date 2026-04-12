@@ -4,5 +4,5 @@ import { db } from '../../../db'
 export default defineEventHandler(async () => {
   const item = await db.query.pressDossier.findFirst()
 
-  return { item }
+  return { data: item, item }
 })

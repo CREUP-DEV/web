@@ -216,7 +216,9 @@ export const financialReportTranslationSchema = z.object({
   title: z.string().max(200),
 })
 
-const dateOnlySchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-\d{2}$/, 'La fecha no es válida')
+const dateOnlySchema = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'La fecha no es válida')
 
 export const createFinancialReportSchema = z
   .object({

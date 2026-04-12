@@ -455,7 +455,11 @@
     "colorsDescription": "In addition to white, these are the corporate colors and their codes.",
     "colorsTable": {
       "color": "Color",
-      "preview": "Preview"
+      "preview": "Preview",
+      "hex": "HEX",
+      "rgb": "RGB",
+      "cmyk": "CMYK",
+      "pantone": "PANTONE"
     },
     "colors": {
       "burgundy": "Corporate Burgundy",

@@ -9,5 +9,8 @@ export default defineEventHandler(async () => {
     with: { translations: true },
   })
 
-  return { items }
+  return {
+    data: items,
+    items,
+  }
 })

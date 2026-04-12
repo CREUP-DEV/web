@@ -31,14 +31,22 @@ const { clearErrors, getFieldError, validate } = useZodFormValidation()
 const {
   data,
   error: fetchError,
+  pending,
   refresh,
 } = await useFetch<{
-  items: Newsletter[]
-  total: number
-  maxDeliveryAttempts: number
+  data?: Newsletter[]
+  meta?: {
+    total?: number
+    maxDeliveryAttempts?: number
+  }
+  items?: Newsletter[]
+  total?: number
+  maxDeliveryAttempts?: number
 }>('/api/admin/newsletter')
-const items = computed(() => data.value?.items ?? [])
-const maxDeliveryAttempts = computed(() => data.value?.maxDeliveryAttempts ?? 3)
+const items = computed(() => data.value?.data ?? data.value?.items ?? [])
+const maxDeliveryAttempts = computed(
+  () => data.value?.meta?.maxDeliveryAttempts ?? data.value?.maxDeliveryAttempts ?? 3
+)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 const isCancelling = ref(false)
@@ -206,7 +214,12 @@ async function handleSubmit() {
       })
       toast.add({ title: 'Newsletter actualizada', color: 'success' })
     } else {
-      const response = await $fetch<{ emailQueued: boolean }>('/api/admin/newsletter', {
+      const response = await $fetch<{
+        data?: {
+          emailQueued?: boolean
+        }
+        emailQueued?: boolean
+      }>('/api/admin/newsletter', {
         method: 'POST',
         body: {
           month: form.month,
@@ -217,7 +230,8 @@ async function handleSubmit() {
           sendEmail: form.sendEmail,
         },
       })
-      const msg = response.emailQueued ? 'Newsletter creada y envío iniciado' : 'Newsletter creada'
+      const emailQueued = response.data?.emailQueued ?? response.emailQueued ?? false
+      const msg = emailQueued ? 'Newsletter creada y envío iniciado' : 'Newsletter creada'
       toast.add({ title: msg, color: 'success' })
     }
     closeModal()
@@ -245,7 +259,12 @@ async function handleManualSend() {
   sendingItemId.value = item.id
 
   try {
-    await $fetch<{ queued: boolean }>(`/api/admin/newsletter/${item.id}/send`, {
+    await $fetch<{
+      data?: {
+        queued?: boolean
+      }
+      queued?: boolean
+    }>(`/api/admin/newsletter/${item.id}/send`, {
       method: 'POST',
     })
 
@@ -348,7 +367,13 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div v-if="fetchError" class="space-y-3">
+    <div v-if="pending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+    </div>
+
+    <div v-else-if="fetchError" class="space-y-3">
       <UAlert
         color="error"
         variant="soft"

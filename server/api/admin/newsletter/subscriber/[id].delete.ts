@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
       await tx.delete(newsletterSubscribers).where(eq(newsletterSubscribers.id, id))
     })
 
-    return { success: true }
+    return { data: { success: true }, success: true }
   } catch (e) {
     throwAdminMutationError('admin.newsletter-subscriber.delete', e, event)
   }

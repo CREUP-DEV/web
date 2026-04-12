@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
   const maxSize = isPdf ? MAX_PDF_SIZE : MAX_IMAGE_SIZE
   if (fileData.length > maxSize) {
     throw createError({
-      statusCode: 400,
+      statusCode: 413,
       message: `El archivo supera el tamaño máximo (${isPdf ? '20MB' : '5MB'})`,
     })
   }

@@ -13,11 +13,17 @@ export default defineEventHandler(async (event) => {
     workerToken: item.lastDeliveryWorkerToken ?? '',
   })
 
+  const normalizedItem = {
+    ...item,
+    month: monthKeyToDate(item.monthKey),
+  }
+
   return {
-    item: {
-      ...item,
-      month: monthKeyToDate(item.monthKey),
+    data: {
+      item: normalizedItem,
+      queued: true,
     },
+    item: normalizedItem,
     queued: true,
   }
 })

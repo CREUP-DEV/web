@@ -31,7 +31,18 @@ export function usePaginatedTransition<T>(
     el.style.transition = 'height 300ms ease-out'
     el.style.height = `${endHeight}px`
 
-    const onEnd = () => {
+    let cleanupTimer: ReturnType<typeof setTimeout> | null = null
+
+    const onEnd = (event?: TransitionEvent) => {
+      if (event && (event.target !== el || event.propertyName !== 'height')) {
+        return
+      }
+
+      if (cleanupTimer) {
+        clearTimeout(cleanupTimer)
+        cleanupTimer = null
+      }
+
       el.style.height = ''
       el.style.overflow = ''
       el.style.transition = ''
@@ -39,6 +50,7 @@ export function usePaginatedTransition<T>(
     }
 
     el.addEventListener('transitionend', onEnd)
+    cleanupTimer = setTimeout(() => onEnd(), 350)
   })
 
   return { resultsRef, isLoading, isRefreshing }

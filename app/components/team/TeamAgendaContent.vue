@@ -68,8 +68,8 @@ const upcomingAgendaEvents = computed(() => {
 
       <ul v-else-if="upcomingAgendaEvents.length" class="space-y-2">
         <li
-          v-for="(event, idx) in upcomingAgendaEvents"
-          :key="idx"
+          v-for="event in upcomingAgendaEvents"
+          :key="event.id"
           class="bg-surface flex items-start gap-3 rounded-lg p-3"
         >
           <div

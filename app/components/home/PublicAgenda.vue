@@ -325,8 +325,8 @@ useSwipe(calendarEl, {
                 </h3>
                 <ul v-if="getEventsForDay(day).length > 0" class="space-y-2">
                   <li
-                    v-for="(event, eventIdx) in getEventsForDay(day)"
-                    :key="eventIdx"
+                    v-for="event in getEventsForDay(day)"
+                    :key="event.id"
                     class="bg-surface rounded-lg p-2.5"
                   >
                     <p class="text-foreground text-sm font-medium">
@@ -362,8 +362,8 @@ useSwipe(calendarEl, {
         </ul>
         <ul v-else-if="upcomingEvents.length > 0" class="space-y-2" role="list">
           <li
-            v-for="(event, idx) in upcomingEvents"
-            :key="idx"
+            v-for="event in upcomingEvents"
+            :key="event.id"
             class="bg-surface flex items-start gap-3 rounded-lg p-2.5"
           >
             <div

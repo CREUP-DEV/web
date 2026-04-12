@@ -18,11 +18,16 @@ export default defineEventHandler(async (event) => {
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(financialReports),
   ])
 
+  const normalizedItems = items.map((item) => ({
+    ...item,
+    approvedAt: dateValueToDateOnly(item.approvedAt),
+  }))
+  const total = countResult[0]?.count ?? 0
+
   return {
-    items: items.map((item) => ({
-      ...item,
-      approvedAt: dateValueToDateOnly(item.approvedAt),
-    })),
-    total: countResult[0]?.count ?? 0,
+    data: normalizedItems,
+    meta: { total },
+    items: normalizedItems,
+    total,
   }
 })

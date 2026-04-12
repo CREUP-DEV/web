@@ -1,12 +1,36 @@
 import 'dotenv/config'
 import { Pool } from 'pg'
 import { drizzle } from 'drizzle-orm/node-postgres'
-import { requireConfigString } from '../../shared/utils/config'
+import {
+  ConfigError,
+  requireConfigPositiveInt,
+  requireConfigString,
+} from '../../shared/utils/config'
 import { logError } from '../utils/logger'
 import * as schema from './schema'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
-const configuredMaxConnections = Number(process.env.DATABASE_MAX_CONNECTIONS) || 10
+
+function resolveDatabaseMaxConnections() {
+  const rawValue = process.env.DATABASE_MAX_CONNECTIONS
+
+  if (rawValue === undefined || rawValue === null || String(rawValue).trim() === '') {
+    return 10
+  }
+
+  try {
+    return requireConfigPositiveInt(rawValue, 'DATABASE_MAX_CONNECTIONS')
+  } catch (error) {
+    if (error instanceof ConfigError) {
+      logError('db.config', error)
+      return 10
+    }
+
+    throw error
+  }
+}
+
+const configuredMaxConnections = resolveDatabaseMaxConnections()
 
 interface DatabasePoolErrorSummary {
   name: string
@@ -32,6 +56,8 @@ interface DatabasePoolStats {
 
 const pool = new Pool({
   connectionString,
+  // Enforce per-statement timeout so runaway queries do not occupy a pool slot indefinitely.
+  options: '-c statement_timeout=30000',
   // Cap concurrent DB connections. Tune to match your Postgres plan's limit.
   max: configuredMaxConnections,
   // Release idle connections after 10 s to free server-side resources.

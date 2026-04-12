@@ -38,9 +38,13 @@ const {
 const {
   data,
   error: fetchError,
+  pending,
   refresh,
-} = await useFetch<{ items: EqualityDocument[] }>('/api/admin/equality')
-const items = computed(() => data.value?.items ?? [])
+} = await useFetch<{
+  data?: EqualityDocument[]
+  items?: EqualityDocument[]
+}>('/api/admin/equality')
+const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -258,7 +262,13 @@ const handlePdfSelect = async (event: Event) => {
       </div>
     </div>
 
-    <div v-if="fetchError" class="space-y-3">
+    <div v-if="pending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+    </div>
+
+    <div v-else-if="fetchError" class="space-y-3">
       <UAlert
         color="error"
         variant="soft"

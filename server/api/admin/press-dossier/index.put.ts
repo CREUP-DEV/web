@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
-    return { item }
+    return { data: item, item }
   } catch (error) {
     await cleanupAdminAssetFinalizationsSafely(
       cleanupTargets,

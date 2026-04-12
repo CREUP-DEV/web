@@ -116,7 +116,7 @@ export default defineEventHandler(async (event) => {
       return [updated]
     })
 
-    return { item }
+    return { data: item, item }
   } catch (e) {
     throwAdminMutationError('admin.newsletter-subscriber.update', e, event)
   }

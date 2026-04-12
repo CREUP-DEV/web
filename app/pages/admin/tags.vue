@@ -31,9 +31,17 @@ interface Tag {
   translations: Translation[]
 }
 
-const { data, error: fetchError, refresh } = await useFetch<{ items: Tag[] }>('/api/admin/tags')
+const {
+  data,
+  error: fetchError,
+  pending,
+  refresh,
+} = await useFetch<{
+  data?: Tag[]
+  items?: Tag[]
+}>('/api/admin/tags')
 
-const items = computed(() => data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -192,7 +200,13 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div v-if="fetchError" class="space-y-3">
+    <div v-if="pending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-20 w-full rounded-xl" />
+      <USkeleton class="h-20 w-full rounded-xl" />
+      <USkeleton class="h-20 w-full rounded-xl" />
+    </div>
+
+    <div v-else-if="fetchError" class="space-y-3">
       <UAlert
         color="error"
         variant="soft"

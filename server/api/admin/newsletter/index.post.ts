@@ -144,12 +144,19 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    const normalizedItem = {
+      ...(queuedItem ?? item),
+      month: monthKeyToDate((queuedItem ?? item).monthKey),
+    }
+    const emailQueued = sendEmail && queuedItem.active
+
     return {
-      item: {
-        ...(queuedItem ?? item),
-        month: monthKeyToDate((queuedItem ?? item).monthKey),
+      data: {
+        item: normalizedItem,
+        emailQueued,
       },
-      emailQueued: sendEmail && queuedItem.active,
+      item: normalizedItem,
+      emailQueued,
     }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(

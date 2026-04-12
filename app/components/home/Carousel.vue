@@ -58,7 +58,6 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
       <UCarousel
         v-else
         v-slot="{ item, index }"
-        :key="props.items.length"
         :loop="props.items.length > 1"
         :dots="props.items.length > 1"
         :arrows="false"

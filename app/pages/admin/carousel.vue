@@ -33,10 +33,14 @@ const defaultCarouselImage = HOME_CAROUSEL_FALLBACK_IMAGE
 const {
   data,
   error: fetchError,
+  pending,
   refresh,
-} = await useFetch<{ items: CarouselItem[] }>('/api/admin/carousel')
+} = await useFetch<{
+  data?: CarouselItem[]
+  items?: CarouselItem[]
+}>('/api/admin/carousel')
 
-const items = computed(() => data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 
 const {
   getLocaleFlag,
@@ -223,7 +227,13 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div v-if="fetchError" class="space-y-3">
+    <div v-if="pending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+    </div>
+
+    <div v-else-if="fetchError" class="space-y-3">
       <UAlert
         color="error"
         variant="soft"

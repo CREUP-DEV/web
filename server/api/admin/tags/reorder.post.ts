@@ -29,5 +29,5 @@ export default defineEventHandler(async (event) => {
   })
 
   await invalidateTagsCache()
-  return { success: true }
+  return { data: { success: true }, success: true }
 })

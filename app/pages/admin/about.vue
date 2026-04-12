@@ -14,11 +14,17 @@ interface AboutContent {
 
 const toast = useToast()
 
-const { data: contentData, refresh: refreshContent } = await useFetch<{
-  item: AboutContent | null
+const {
+  data: contentData,
+  error: contentError,
+  pending: contentPending,
+  refresh: refreshContent,
+} = await useFetch<{
+  data?: AboutContent | null
+  item?: AboutContent | null
 }>('/api/admin/about')
 
-const contentItem = computed(() => contentData.value?.item ?? null)
+const contentItem = computed(() => contentData.value?.data ?? contentData.value?.item ?? null)
 
 const contentForm = reactive({
   heroImage: null as string | null,
@@ -153,7 +159,25 @@ const saveContent = async () => {
       </div>
     </section>
 
-    <UCard>
+    <div v-if="contentPending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-72 w-full rounded-2xl" />
+      <USkeleton class="h-10 w-40 rounded-lg" />
+      <USkeleton class="h-10 w-32 rounded-lg" />
+    </div>
+
+    <div v-else-if="contentError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudo cargar el contenido de Qué es CREUP"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshContent()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <UCard v-else>
       <div class="space-y-6">
         <div class="bg-muted aspect-1925/550 overflow-hidden rounded-2xl border">
           <img

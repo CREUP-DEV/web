@@ -29,11 +29,12 @@ const scriptSrcDirectives = [
   ...(turnstileEnabled ? [turnstileOrigin] : []),
 ]
 const frameSrcDirectives = turnstileEnabled ? [turnstileOrigin] : ["'none'"]
+const imgSrcDirectives = ["'self'", 'data:', 'blob:', 'https://lh3.googleusercontent.com']
 const contentSecurityPolicyHeader = [
   "default-src 'self'",
   `script-src ${scriptSrcDirectives.join(' ')}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
+  `img-src ${imgSrcDirectives.join(' ')}`,
   "font-src 'self' data:",
   `connect-src ${connectSrcDirectives.join(' ')}`,
   `frame-src ${frameSrcDirectives.join(' ')}`,
@@ -149,6 +150,8 @@ export default defineNuxtConfig({
     smtpFromEmail: process.env.SMTP_FROM_EMAIL,
     smtpToEmail: process.env.SMTP_TO_EMAIL,
     smtpPressEmail: process.env.SMTP_PRESS_EMAIL,
+    googleCalendarApiKey: process.env.GOOGLE_CALENDAR_API_KEY,
+    googleCalendarId: process.env.GOOGLE_CALENDAR_ID,
     turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
     public: {
       turnstileSiteKey,
@@ -223,6 +226,11 @@ export default defineNuxtConfig({
     '/api/**': {
       headers: {
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
+      },
+    },
+    '/_nuxt/**': {
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     },
   },

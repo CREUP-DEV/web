@@ -17,5 +17,12 @@ export default defineEventHandler(async (event) => {
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(equalityDocuments),
   ])
 
-  return { items, total: countResult[0]?.count ?? 0 }
+  const total = countResult[0]?.count ?? 0
+
+  return {
+    data: items,
+    meta: { total },
+    items,
+    total,
+  }
 })

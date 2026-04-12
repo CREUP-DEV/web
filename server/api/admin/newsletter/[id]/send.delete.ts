@@ -53,11 +53,14 @@ export default defineEventHandler(async (event) => {
 
   await removeNewsletterSendJob(id, workerToken)
 
+  const normalizedItem = {
+    ...updated,
+    isSending: false,
+    month: monthKeyToDate(updated.monthKey),
+  }
+
   return {
-    item: {
-      ...updated,
-      isSending: false,
-      month: monthKeyToDate(updated.monthKey),
-    },
+    data: normalizedItem,
+    item: normalizedItem,
   }
 })

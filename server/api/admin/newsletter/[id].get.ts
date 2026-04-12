@@ -16,11 +16,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'No encontrado' })
   }
 
+  const normalizedItem = {
+    ...item,
+    isSending: Boolean(item.lastDeliveryWorkerToken),
+    month: monthKeyToDate(item.monthKey),
+  }
+
   return {
-    item: {
-      ...item,
-      isSending: Boolean(item.lastDeliveryWorkerToken),
-      month: monthKeyToDate(item.monthKey),
-    },
+    data: normalizedItem,
+    item: normalizedItem,
   }
 })

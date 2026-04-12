@@ -174,7 +174,15 @@ export async function listAdminAccess() {
   )
 
   const userRows = allEmails.length
-    ? await db.select().from(users).where(inArray(users.email, allEmails))
+    ? await db
+        .select({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          image: users.image,
+        })
+        .from(users)
+        .where(inArray(users.email, allEmails))
     : []
 
   const sessionRows = userRows.length

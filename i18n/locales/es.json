@@ -455,7 +455,11 @@
     "colorsDescription": "Además del blanco, estos son los colores corporativos y sus códigos.",
     "colorsTable": {
       "color": "Color",
-      "preview": "Vista previa"
+      "preview": "Vista previa",
+      "hex": "HEX",
+      "rgb": "RGB",
+      "cmyk": "CMYK",
+      "pantone": "PANTONE"
     },
     "colors": {
       "burgundy": "Burdeos corporativo",

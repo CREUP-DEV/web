@@ -15,5 +15,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'No encontrado' })
   }
 
-  return { item }
+  return { data: item, item }
 })

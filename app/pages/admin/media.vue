@@ -22,10 +22,14 @@ interface MediaOutlet {
 const {
   data,
   error: fetchError,
+  pending,
   refresh,
-} = await useFetch<{ items: MediaOutlet[] }>('/api/admin/media')
+} = await useFetch<{
+  data?: MediaOutlet[]
+  items?: MediaOutlet[]
+}>('/api/admin/media')
 
-const items = computed(() => data.value?.items ?? [])
+const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -174,7 +178,13 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div v-if="fetchError" class="space-y-3">
+    <div v-if="pending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+      <USkeleton class="h-24 w-full rounded-xl" />
+    </div>
+
+    <div v-else-if="fetchError" class="space-y-3">
       <UAlert
         color="error"
         variant="soft"

@@ -1,0 +1,2 @@
+CREATE INDEX "idx_organization_members_active_order" ON "organization_members" USING btree ("active","order");--> statement-breakpoint
+CREATE INDEX "idx_press_articles_media_outlet_id" ON "press_articles" USING btree ("media_outlet_id");

@@ -54,7 +54,7 @@ const localePath = useLocalePath()
           class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
           role="list"
         >
-          <li v-for="(item, idx) in props.items" :key="idx">
+          <li v-for="item in props.items" :key="`${item.to}-${item.image}-${item.title}`">
             <a
               v-if="isExternalNavigationTarget(item.to)"
               :href="item.to"

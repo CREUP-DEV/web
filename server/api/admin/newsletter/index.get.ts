@@ -34,23 +34,32 @@ export default defineEventHandler(async (event) => {
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(newsletters),
   ])
 
+  const normalizedItems = items.map((item) => ({
+    id: item.id,
+    monthKey: item.monthKey,
+    isSending: Boolean(item.lastDeliveryWorkerToken),
+    coverImage: item.coverImage,
+    pdfUrl: item.pdfUrl,
+    active: item.active,
+    publicVisible: item.publicVisible,
+    sentAt: item.sentAt,
+    lastDeliverySentCount: item.lastDeliverySentCount,
+    lastDeliveryErrorCount: item.lastDeliveryErrorCount,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    month: monthKeyToDate(item.monthKey),
+  }))
+  const total = countResult[0]?.count ?? 0
+  const maxDeliveryAttempts = NEWSLETTER_DELIVERY_MAX_ATTEMPTS
+
   return {
-    items: items.map((item) => ({
-      id: item.id,
-      monthKey: item.monthKey,
-      isSending: Boolean(item.lastDeliveryWorkerToken),
-      coverImage: item.coverImage,
-      pdfUrl: item.pdfUrl,
-      active: item.active,
-      publicVisible: item.publicVisible,
-      sentAt: item.sentAt,
-      lastDeliverySentCount: item.lastDeliverySentCount,
-      lastDeliveryErrorCount: item.lastDeliveryErrorCount,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      month: monthKeyToDate(item.monthKey),
-    })),
-    total: countResult[0]?.count ?? 0,
-    maxDeliveryAttempts: NEWSLETTER_DELIVERY_MAX_ATTEMPTS,
+    data: normalizedItems,
+    meta: {
+      total,
+      maxDeliveryAttempts,
+    },
+    items: normalizedItems,
+    total,
+    maxDeliveryAttempts,
   }
 })

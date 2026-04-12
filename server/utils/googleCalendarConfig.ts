@@ -18,7 +18,8 @@ export const getRequiredGoogleCalendarApiKey = (
   publicMessage = 'Google Calendar is not configured.'
 ) => {
   try {
-    return requireConfigString(process.env.GOOGLE_CALENDAR_API_KEY, 'GOOGLE_CALENDAR_API_KEY')
+    const runtimeConfig = useRuntimeConfig()
+    return requireConfigString(runtimeConfig.googleCalendarApiKey, 'GOOGLE_CALENDAR_API_KEY')
   } catch (error) {
     return rethrowGoogleCalendarConfigError(error, publicMessage)
   }
@@ -28,7 +29,8 @@ export const getRequiredGoogleCalendarId = (
   publicMessage = 'Google Calendar is not configured.'
 ) => {
   try {
-    return requireConfigString(process.env.GOOGLE_CALENDAR_ID, 'GOOGLE_CALENDAR_ID')
+    const runtimeConfig = useRuntimeConfig()
+    return requireConfigString(runtimeConfig.googleCalendarId, 'GOOGLE_CALENDAR_ID')
   } catch (error) {
     return rethrowGoogleCalendarConfigError(error, publicMessage)
   }

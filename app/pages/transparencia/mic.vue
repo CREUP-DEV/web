@@ -318,10 +318,18 @@ const copyColorToClipboard = (text: string) =>
                 <th class="text-muted px-3 py-2 text-left font-medium">
                   {{ t('mic.colorsTable.preview') }}
                 </th>
-                <th class="text-muted px-3 py-2 text-left font-medium">HEX</th>
-                <th class="text-muted px-3 py-2 text-left font-medium">RGB</th>
-                <th class="text-muted px-3 py-2 text-left font-medium">CMYK</th>
-                <th class="text-muted px-3 py-2 text-left font-medium">PANTONE</th>
+                <th class="text-muted px-3 py-2 text-left font-medium">
+                  {{ t('mic.colorsTable.hex') }}
+                </th>
+                <th class="text-muted px-3 py-2 text-left font-medium">
+                  {{ t('mic.colorsTable.rgb') }}
+                </th>
+                <th class="text-muted px-3 py-2 text-left font-medium">
+                  {{ t('mic.colorsTable.cmyk') }}
+                </th>
+                <th class="text-muted px-3 py-2 text-left font-medium">
+                  {{ t('mic.colorsTable.pantone') }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -390,7 +398,7 @@ const copyColorToClipboard = (text: string) =>
               <span class="text-base font-medium">{{ t(color.nameKey) }}</span>
             </div>
             <dl class="text-muted mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              <dt class="font-medium">HEX</dt>
+              <dt class="font-medium">{{ t('mic.colorsTable.hex') }}</dt>
               <dd>
                 <UButton
                   variant="ghost"
@@ -399,7 +407,7 @@ const copyColorToClipboard = (text: string) =>
                   @click="copyColorToClipboard(color.hex)"
                 />
               </dd>
-              <dt class="font-medium">RGB</dt>
+              <dt class="font-medium">{{ t('mic.colorsTable.rgb') }}</dt>
               <dd>
                 <UButton
                   variant="ghost"
@@ -408,7 +416,7 @@ const copyColorToClipboard = (text: string) =>
                   @click="copyColorToClipboard(color.rgb)"
                 />
               </dd>
-              <dt class="font-medium">CMYK</dt>
+              <dt class="font-medium">{{ t('mic.colorsTable.cmyk') }}</dt>
               <dd>
                 <UButton
                   variant="ghost"
@@ -417,7 +425,7 @@ const copyColorToClipboard = (text: string) =>
                   @click="copyColorToClipboard(color.cmyk)"
                 />
               </dd>
-              <dt class="font-medium">PANTONE</dt>
+              <dt class="font-medium">{{ t('mic.colorsTable.pantone') }}</dt>
               <dd>
                 <UButton
                   variant="ghost"

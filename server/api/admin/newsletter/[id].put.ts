@@ -154,13 +154,16 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    const normalizedItem = item
+      ? {
+          ...item,
+          month: monthKeyToDate(item.monthKey),
+        }
+      : null
+
     return {
-      item: item
-        ? {
-            ...item,
-            month: monthKeyToDate(item.monthKey),
-          }
-        : null,
+      data: normalizedItem,
+      item: normalizedItem,
     }
   } catch (error) {
     await cleanupAdminAssetFinalizationsSafely(

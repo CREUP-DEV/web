@@ -16,11 +16,17 @@ interface PressDossierItem {
 const toast = useToast()
 const { clearErrors, getFieldError, validate } = useZodFormValidation()
 
-const { data: dossierData, refresh: refreshDossier } = await useFetch<{
-  item: PressDossierItem | null
+const {
+  data: dossierData,
+  error: dossierError,
+  pending: dossierPending,
+  refresh: refreshDossier,
+} = await useFetch<{
+  data?: PressDossierItem | null
+  item?: PressDossierItem | null
 }>('/api/admin/press-dossier')
 
-const dossierItem = computed(() => dossierData.value?.item ?? null)
+const dossierItem = computed(() => dossierData.value?.data ?? dossierData.value?.item ?? null)
 
 const form = reactive({
   pdfUrl: null as string | null,
@@ -136,7 +142,24 @@ const saveDossier = async () => {
       </div>
     </section>
 
-    <UCard>
+    <div v-if="dossierPending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-52 w-full rounded-2xl" />
+      <USkeleton class="h-10 w-40 rounded-lg" />
+    </div>
+
+    <div v-else-if="dossierError" class="space-y-3">
+      <UAlert
+        color="error"
+        variant="soft"
+        title="No se pudo cargar el dossier de prensa"
+        description="Revisa la conexión y vuelve a intentarlo."
+      />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshDossier()">
+        Reintentar
+      </UButton>
+    </div>
+
+    <UCard v-else>
       <div class="space-y-6">
         <div class="rounded-2xl border p-4">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

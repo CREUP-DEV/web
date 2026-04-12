@@ -166,6 +166,7 @@ export const pressArticles = pgTable(
     index('idx_press_articles_active_published').on(table.active, table.publishedAt),
     index('idx_press_articles_slug_active').on(table.slug, table.active),
     index('idx_press_articles_type').on(table.type),
+    index('idx_press_articles_media_outlet_id').on(table.mediaOutletId),
     // Subtype invariants: media_appearance requires externalUrl and mediaOutletId
     check(
       'press_articles_media_appearance_external_url_check',
@@ -562,23 +563,27 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 
 export type OrganizationMemberSocial = { network: string; value: string }
 
-export const organizationMembers = pgTable('organization_members', {
-  id: text('id').primaryKey().$defaultFn(cuid),
-  slug: text('slug').notNull().unique(),
-  logo: text('logo'),
-  website: text('website'),
-  email: text('email'),
-  /** App-level Zod validation enforces { network: string, value: string } per entry. */
-  socials: jsonb('socials').$type<OrganizationMemberSocial[]>().default([]).notNull(),
-  autonomousCommunity: text('autonomous_community').notNull(),
-  order: integer('order').default(0).notNull(),
-  active: boolean('active').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const organizationMembers = pgTable(
+  'organization_members',
+  {
+    id: text('id').primaryKey().$defaultFn(cuid),
+    slug: text('slug').notNull().unique(),
+    logo: text('logo'),
+    website: text('website'),
+    email: text('email'),
+    /** App-level Zod validation enforces { network: string, value: string } per entry. */
+    socials: jsonb('socials').$type<OrganizationMemberSocial[]>().default([]).notNull(),
+    autonomousCommunity: text('autonomous_community').notNull(),
+    order: integer('order').default(0).notNull(),
+    active: boolean('active').default(true).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_organization_members_active_order').on(table.active, table.order)]
+)
 
 export const organizationMemberTranslations = pgTable(
   'organization_member_translations',

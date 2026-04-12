@@ -99,11 +99,14 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    const normalizedItem = {
+      ...completeItem,
+      approvedAt: dateValueToDateOnly(completeItem.approvedAt),
+    }
+
     return {
-      item: {
-        ...completeItem,
-        approvedAt: dateValueToDateOnly(completeItem.approvedAt),
-      },
+      data: normalizedItem,
+      item: normalizedItem,
     }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(

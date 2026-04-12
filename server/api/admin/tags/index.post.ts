@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
     }, 'No se pudo crear la etiqueta')
 
     await invalidatePressRelatedCaches()
-    return { item: completeItem }
+    return { data: completeItem, item: completeItem }
   } catch (e) {
     throwAdminMutationError('admin.tags.create', e, event)
   }

@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
-    return { item }
+    return { data: item, item }
   } catch (error) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.about.update.rollback', event)
     throwAdminMutationError('admin.about.update', error, event)

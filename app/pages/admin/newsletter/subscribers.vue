@@ -17,9 +17,13 @@ const toast = useToast()
 const {
   data,
   error: fetchError,
+  pending,
   refresh,
-} = await useFetch<{ items: Subscriber[] }>('/api/admin/newsletter/subscribers')
-const allItems = computed(() => data.value?.items ?? [])
+} = await useFetch<{
+  data?: Subscriber[]
+  items?: Subscriber[]
+}>('/api/admin/newsletter/subscribers')
+const allItems = computed(() => data.value?.data ?? data.value?.items ?? [])
 
 // Filter
 const showActiveOnly = ref(false)
@@ -153,7 +157,13 @@ function formatDate(iso: string) {
       </UButton>
     </div>
 
-    <div v-if="fetchError" class="space-y-3">
+    <div v-if="pending" class="space-y-3" aria-hidden="true">
+      <USkeleton class="h-16 w-full rounded-xl" />
+      <USkeleton class="h-16 w-full rounded-xl" />
+      <USkeleton class="h-16 w-full rounded-xl" />
+    </div>
+
+    <div v-else-if="fetchError" class="space-y-3">
       <UAlert
         color="error"
         variant="soft"
