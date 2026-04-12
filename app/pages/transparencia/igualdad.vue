@@ -112,6 +112,7 @@ usePageSeo('equalityPage.title', 'equalityPage.description', {
 const LIMIT = 12
 const docsPage = ref(1)
 const docsOffset = computed(() => (docsPage.value - 1) * LIMIT)
+const documentsSectionRef = ref<HTMLElement | null>(null)
 
 const {
   data: documentsData,
@@ -169,6 +170,14 @@ const {
   isPending: supportPending,
   shouldAnimate: supportShouldAnimate,
 } = useEntranceObserver(0.1)
+
+watch(docsPage, () => {
+  nextTick(() => {
+    if (documentsSectionRef.value instanceof HTMLElement) {
+      documentsSectionRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
+})
 </script>
 
 <template>
@@ -203,7 +212,11 @@ const {
         </div>
       </header>
 
-      <section id="equality-documents" aria-labelledby="equality-documents-title">
+      <section
+        id="equality-documents"
+        ref="documentsSectionRef"
+        aria-labelledby="equality-documents-title"
+      >
         <div class="max-w-3xl">
           <h2 id="equality-documents-title" class="text-2xl font-semibold">
             {{ t('equalityPage.resourcesTitle') }}
@@ -302,9 +315,13 @@ const {
           </li>
         </ul>
 
-        <div v-if="docsTotal > LIMIT" class="mt-6 flex justify-center">
+        <nav
+          v-if="docsTotal > LIMIT"
+          class="mt-6 flex justify-center"
+          :aria-label="`${t('equalityPage.resourcesTitle')} - ${t('accessibility.paginationNavigation')}`"
+        >
           <UPagination v-model:page="docsPage" :total="docsTotal" :items-per-page="LIMIT" />
-        </div>
+        </nav>
       </section>
 
       <section aria-labelledby="equality-action">

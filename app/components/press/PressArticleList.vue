@@ -114,6 +114,14 @@ watch(resultsTransitionKey, async () => {
 
   el.addEventListener('transitionend', onEnd)
 })
+
+watch(page, () => {
+  nextTick(() => {
+    if (resultsContainerRef.value instanceof HTMLElement) {
+      resultsContainerRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
+})
 </script>
 
 <template>

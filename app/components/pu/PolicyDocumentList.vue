@@ -45,6 +45,14 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, documents, error)
 
+watch(page, () => {
+  nextTick(() => {
+    if (resultsRef.value instanceof HTMLElement) {
+      resultsRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
+})
+
 function formatDate(dateStr: string): string {
   try {
     return formatLocaleDate(dateStr, {
@@ -140,9 +148,13 @@ function formatDate(dateStr: string): string {
           </li>
         </TransitionGroup>
 
-        <div v-if="total > PAGE_SIZE" class="flex justify-center pt-4">
+        <nav
+          v-if="total > PAGE_SIZE"
+          class="flex justify-center pt-4"
+          :aria-label="`${t(titleKey)} - ${t('accessibility.paginationNavigation')}`"
+        >
           <UPagination v-model:page="page" :total="total" :items-per-page="PAGE_SIZE" />
-        </div>
+        </nav>
       </div>
     </article>
   </UContainer>

@@ -12,9 +12,11 @@ export function usePaginatedTransition<T>(
   const isLoading = computed(() => pending.value && items.value.length === 0 && !error.value)
   const isRefreshing = computed(() => pending.value && items.value.length > 0)
 
-  watch(items, async () => {
+  watch(items, async (_, __, onCleanup) => {
     const el = resultsRef.value
     if (!el || prefersReducedMotion.value) return
+
+    let cleanupTimer: ReturnType<typeof setTimeout> | null = null
 
     const startHeight = el.offsetHeight
     await nextTick()
@@ -31,8 +33,6 @@ export function usePaginatedTransition<T>(
     el.style.transition = 'height 300ms ease-out'
     el.style.height = `${endHeight}px`
 
-    let cleanupTimer: ReturnType<typeof setTimeout> | null = null
-
     const onEnd = (event?: TransitionEvent) => {
       if (event && (event.target !== el || event.propertyName !== 'height')) {
         return
@@ -48,6 +48,18 @@ export function usePaginatedTransition<T>(
       el.style.transition = ''
       el.removeEventListener('transitionend', onEnd)
     }
+
+    onCleanup(() => {
+      if (cleanupTimer) {
+        clearTimeout(cleanupTimer)
+        cleanupTimer = null
+      }
+
+      el.removeEventListener('transitionend', onEnd)
+      el.style.height = ''
+      el.style.overflow = ''
+      el.style.transition = ''
+    })
 
     el.addEventListener('transitionend', onEnd)
     cleanupTimer = setTimeout(() => onEnd(), 350)

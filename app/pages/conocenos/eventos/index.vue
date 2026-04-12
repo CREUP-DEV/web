@@ -35,8 +35,19 @@ const { events, eventTypes, total, pageCount, error, status, refresh } = useEven
   offset,
 })
 
+const eventsPending = computed(() => status.value === 'pending')
+const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(eventsPending, events, error)
+
 watch(selectedType, () => {
   page.value = 1
+})
+
+watch(page, () => {
+  nextTick(() => {
+    if (resultsRef.value instanceof HTMLElement) {
+      resultsRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
 })
 
 const typeOptions = computed(() => [
@@ -80,23 +91,6 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
         </UButton>
       </div>
 
-      <div
-        v-else-if="status === 'pending'"
-        class="grid gap-6 sm:grid-cols-2"
-        role="status"
-        aria-live="polite"
-        :aria-label="t('accessibility.loading')"
-      >
-        <div v-for="n in 6" :key="n" class="space-y-3">
-          <USkeleton class="aspect-7/2 w-full rounded-lg" />
-          <div class="space-y-2 px-1">
-            <USkeleton class="h-3 w-20 rounded" />
-            <USkeleton class="h-5 w-3/4 rounded" />
-            <USkeleton class="h-3 w-40 rounded" />
-          </div>
-        </div>
-      </div>
-
       <template v-else>
         <div
           v-if="eventTypes.length > 0"
@@ -119,84 +113,107 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
           </UButton>
         </div>
 
-        <div v-if="events.length === 0" class="text-muted py-12 text-center">
-          {{ t('events.noEvents') }}
-        </div>
-
-        <TransitionGroup
-          v-else
-          appear
-          tag="div"
-          name="stagger-list"
-          class="grid gap-6 sm:grid-cols-2"
-        >
-          <NuxtLink
-            v-for="(event, index) in events"
-            :key="event.id"
-            :to="localePath(`/conocenos/eventos/${event.slug}`)"
-            class="group focus-visible:ring-primary block rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            :style="getEntranceDelay(index)"
+        <div ref="resultsRef" aria-live="polite" :aria-busy="eventsPending || undefined">
+          <div
+            v-if="isLoading"
+            class="grid gap-6 sm:grid-cols-2"
+            role="status"
+            :aria-label="t('accessibility.loading')"
           >
-            <UCard class="motion-card-subtle h-full">
-              <template v-if="event.banner.url" #header>
-                <NuxtImg
-                  :src="event.banner.url"
-                  :alt="t('events.bannerAlt', { event: event.name })"
-                  class="aspect-7/2 w-full object-cover"
-                  loading="lazy"
-                  width="700"
-                  height="200"
-                  format="webp"
-                  quality="72"
-                />
-              </template>
-
-              <template v-else #header>
-                <div class="bg-muted flex aspect-7/2 items-center justify-center">
-                  <UIcon name="i-tabler-calendar-event" class="text-muted size-12" />
-                </div>
-              </template>
-
-              <div class="space-y-2">
-                <div class="flex flex-wrap items-center gap-2">
-                  <UBadge v-if="isOngoing(event)" color="success" variant="soft" size="sm">
-                    {{ t('events.ongoing') }}
-                  </UBadge>
-                  <UBadge v-else-if="isUpcoming(event)" color="info" variant="soft" size="sm">
-                    {{ t('events.upcoming') }}
-                  </UBadge>
-                  <UBadge v-if="event.type" color="neutral" variant="soft" size="sm">
-                    {{ event.type }}
-                  </UBadge>
-                </div>
-
-                <h2 class="text-base leading-snug font-semibold group-hover:underline">
-                  {{ event.name }}
-                </h2>
-
-                <p class="text-muted text-sm">
-                  <UIcon
-                    name="i-tabler-calendar"
-                    class="mr-1 inline-block size-4 align-text-bottom"
-                  />
-                  {{ formatDateRange(event) }}
-                </p>
-
-                <p v-if="event.location" class="text-muted text-sm">
-                  <UIcon
-                    name="i-tabler-map-pin"
-                    class="mr-1 inline-block size-4 align-text-bottom"
-                  />
-                  {{ event.location }}
-                </p>
+            <div v-for="n in 6" :key="n" class="space-y-3">
+              <USkeleton class="aspect-7/2 w-full rounded-lg" />
+              <div class="space-y-2 px-1">
+                <USkeleton class="h-3 w-20 rounded" />
+                <USkeleton class="h-5 w-3/4 rounded" />
+                <USkeleton class="h-3 w-40 rounded" />
               </div>
-            </UCard>
-          </NuxtLink>
-        </TransitionGroup>
+            </div>
+          </div>
 
-        <div v-if="pageCount > 1" class="flex justify-center pt-4">
-          <UPagination v-model:page="page" :total="total" :items-per-page="EVENTS_PAGE_SIZE" />
+          <div v-else-if="events.length === 0" class="text-muted py-12 text-center">
+            {{ t('events.noEvents') }}
+          </div>
+
+          <TransitionGroup
+            v-else
+            appear
+            tag="div"
+            name="stagger-list"
+            class="grid gap-6 sm:grid-cols-2"
+            :class="isRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
+          >
+            <NuxtLink
+              v-for="(event, index) in events"
+              :key="event.id"
+              :to="localePath(`/conocenos/eventos/${event.slug}`)"
+              class="group focus-visible:ring-primary block rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+              :style="getEntranceDelay(index)"
+            >
+              <UCard class="motion-card-subtle h-full">
+                <template v-if="event.banner.url" #header>
+                  <NuxtImg
+                    :src="event.banner.url"
+                    :alt="t('events.bannerAlt', { event: event.name })"
+                    class="aspect-7/2 w-full object-cover"
+                    loading="lazy"
+                    width="700"
+                    height="200"
+                    format="webp"
+                    quality="72"
+                  />
+                </template>
+
+                <template v-else #header>
+                  <div class="bg-muted flex aspect-7/2 items-center justify-center">
+                    <UIcon name="i-tabler-calendar-event" class="text-muted size-12" />
+                  </div>
+                </template>
+
+                <div class="space-y-2">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <UBadge v-if="isOngoing(event)" color="success" variant="soft" size="sm">
+                      {{ t('events.ongoing') }}
+                    </UBadge>
+                    <UBadge v-else-if="isUpcoming(event)" color="info" variant="soft" size="sm">
+                      {{ t('events.upcoming') }}
+                    </UBadge>
+                    <UBadge v-if="event.type" color="neutral" variant="soft" size="sm">
+                      {{ event.type }}
+                    </UBadge>
+                  </div>
+
+                  <h2 class="text-base leading-snug font-semibold group-hover:underline">
+                    {{ event.name }}
+                  </h2>
+
+                  <p class="text-muted text-sm">
+                    <UIcon
+                      name="i-tabler-calendar"
+                      class="mr-1 inline-block size-4 align-text-bottom"
+                    />
+                    {{ formatDateRange(event) }}
+                  </p>
+
+                  <p v-if="event.location" class="text-muted text-sm">
+                    <UIcon
+                      name="i-tabler-map-pin"
+                      class="mr-1 inline-block size-4 align-text-bottom"
+                    />
+                    {{ event.location }}
+                  </p>
+                </div>
+              </UCard>
+            </NuxtLink>
+          </TransitionGroup>
         </div>
+
+        <nav
+          v-if="pageCount > 1"
+          class="flex justify-center pt-4"
+          :aria-label="`${t('events.title')} - ${t('accessibility.paginationNavigation')}`"
+        >
+          <UPagination v-model:page="page" :total="total" :items-per-page="EVENTS_PAGE_SIZE" />
+        </nav>
       </template>
     </article>
   </UContainer>

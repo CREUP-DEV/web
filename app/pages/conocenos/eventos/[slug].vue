@@ -400,7 +400,11 @@ function getPhotoAlt(index: number): string {
               </li>
             </ul>
 
-            <div v-if="totalGalleryPages > 1" class="mt-6 flex justify-center">
+            <nav
+              v-if="totalGalleryPages > 1"
+              class="mt-6 flex justify-center"
+              :aria-label="`${t('events.gallery')} - ${t('accessibility.paginationNavigation')}`"
+            >
               <UPagination
                 v-model:page="currentGalleryPage"
                 :total="totalGalleryImages"
@@ -408,7 +412,7 @@ function getPhotoAlt(index: number): string {
                 show-edges
                 show-controls
               />
-            </div>
+            </nav>
           </UCard>
         </section>
       </article>

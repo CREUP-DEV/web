@@ -12,7 +12,7 @@ const {
   pending: homeDataPending,
   error: homeDataError,
   refresh: refreshHomeData,
-} = useHomeData()
+} = await useHomeData()
 const {
   events,
   pending: eventsLoading,
@@ -24,11 +24,10 @@ const {
   pending: featuredPressPending,
   error: featuredPressError,
   refresh: refreshFeaturedPress,
-} = usePress(null, undefined, 4)
+} = await usePress(null, undefined, 4)
 
 const carouselItems = computed(() => homeData.value?.carousel ?? [])
 const links = computed(() => homeData.value?.featuredLinks ?? [])
-const hasHomeDataContent = computed(() => carouselItems.value.length > 0 || links.value.length > 0)
 const hasCarouselSection = computed(
   () => homeDataPending.value || !!homeDataError.value || carouselItems.value.length > 0
 )
@@ -49,38 +48,6 @@ const featuredNewsItems = computed(() => {
     mediaOutletLogo: article.mediaOutlet?.logo,
   }))
 })
-const featuredPressItemCount = computed(() => featuredPressData.value?.items?.length ?? 0)
-const hasRetriedEmptyHomeData = ref(false)
-const hasRetriedEmptyFeaturedPress = ref(false)
-
-if (import.meta.client) {
-  watch(
-    [homeDataPending, homeDataError, hasHomeDataContent],
-    async ([pending, error, hasContent]) => {
-      if (hasRetriedEmptyHomeData.value || pending || error || hasContent) {
-        return
-      }
-
-      hasRetriedEmptyHomeData.value = true
-      await refreshHomeData()
-    },
-    { immediate: true }
-  )
-
-  watch(
-    [featuredPressPending, featuredPressError, featuredPressItemCount],
-    async ([pending, error, itemCount]) => {
-      if (hasRetriedEmptyFeaturedPress.value || pending || error || itemCount > 0) {
-        return
-      }
-
-      hasRetriedEmptyFeaturedPress.value = true
-      await refreshFeaturedPress()
-    },
-    { immediate: true }
-  )
-}
-
 usePageSeo('meta.title', 'meta.description', {
   breadcrumbs: () => [
     {

@@ -230,6 +230,11 @@ const {
 const newsletters = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
 const archiveError = computed(() => !!archiveFetchError.value)
+const {
+  resultsRef: archiveResultsRef,
+  isLoading: archiveIsLoading,
+  isRefreshing: archiveIsRefreshing,
+} = usePaginatedTransition(archivePendingPage, newsletters, archiveFetchError)
 const privacyAccordionItems = computed<AccordionItem[]>(() => [
   {
     label: t('newsletterPage.form.privacyInfoTitle'),
@@ -500,64 +505,74 @@ function formatMonth(dateStr: string): string {
         />
 
         <div
-          v-else-if="archivePendingPage"
-          class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          aria-hidden="true"
+          ref="archiveResultsRef"
+          aria-live="polite"
+          :aria-busy="archivePendingPage || undefined"
         >
-          <UCard
-            v-for="index in 6"
-            :key="index"
-            class="motion-card flex flex-col items-center text-center"
+          <div
+            v-if="archiveIsLoading"
+            class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            aria-hidden="true"
           >
-            <USkeleton class="mb-4 aspect-square w-full max-w-60 rounded-lg" />
-            <USkeleton class="mb-3 h-7 w-40" />
-            <USkeleton class="h-10 w-full" />
-          </UCard>
-        </div>
+            <UCard
+              v-for="index in 6"
+              :key="index"
+              class="motion-card flex flex-col items-center text-center"
+            >
+              <USkeleton class="mb-4 aspect-square w-full max-w-60 rounded-lg" />
+              <USkeleton class="mb-3 h-7 w-40" />
+              <USkeleton class="h-10 w-full" />
+            </UCard>
+          </div>
 
-        <template v-else>
-          <div v-if="newsletters.length === 0" class="text-muted py-12 text-center">
+          <div v-else-if="newsletters.length === 0" class="text-muted py-12 text-center">
             {{ t('newsletterPage.archive.empty') }}
           </div>
 
-          <template v-else>
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <UCard
-                v-for="(nl, index) in newsletters"
-                :key="nl.id"
-                class="motion-card flex flex-col items-center text-center"
-                :class="entranceClasses(archiveShouldAnimate, archiveVisible, archivePending)"
-                :style="entranceStyle(archiveVisible, archiveShouldAnimate, index, 70)"
+          <div
+            v-else
+            class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            :class="archiveIsRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
+          >
+            <UCard
+              v-for="(nl, index) in newsletters"
+              :key="nl.id"
+              class="motion-card flex flex-col items-center text-center"
+              :class="entranceClasses(archiveShouldAnimate, archiveVisible, archivePending)"
+              :style="entranceStyle(archiveVisible, archiveShouldAnimate, index, 70)"
+            >
+              <NuxtImg
+                :src="nl.coverImage"
+                :alt="formatMonth(nl.month)"
+                width="240"
+                height="240"
+                class="mb-4 aspect-square w-full max-w-60 rounded-lg object-cover"
+                loading="lazy"
+              />
+              <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
+              <UButton
+                :href="nl.pdfUrl"
+                external
+                target="_blank"
+                rel="noopener noreferrer"
+                icon="i-tabler-download"
+                variant="outline"
+                block
+                :aria-label="`${t('newsletterPage.archive.download')} — ${formatMonth(nl.month)}`"
               >
-                <NuxtImg
-                  :src="nl.coverImage"
-                  :alt="formatMonth(nl.month)"
-                  width="240"
-                  height="240"
-                  class="mb-4 aspect-square w-full max-w-60 rounded-lg object-cover"
-                  loading="lazy"
-                />
-                <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
-                <UButton
-                  :href="nl.pdfUrl"
-                  external
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  icon="i-tabler-download"
-                  variant="outline"
-                  block
-                  :aria-label="`${t('newsletterPage.archive.download')} — ${formatMonth(nl.month)}`"
-                >
-                  {{ t('newsletterPage.archive.download') }}
-                </UButton>
-              </UCard>
-            </div>
+                {{ t('newsletterPage.archive.download') }}
+              </UButton>
+            </UCard>
+          </div>
+        </div>
 
-            <div v-if="total > LIMIT" class="mt-8 flex justify-center">
-              <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
-            </div>
-          </template>
-        </template>
+        <nav
+          v-if="total > LIMIT"
+          class="mt-8 flex justify-center"
+          :aria-label="`${t('newsletterPage.archive.title')} - ${t('accessibility.paginationNavigation')}`"
+        >
+          <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
+        </nav>
       </section>
     </div>
   </UContainer>

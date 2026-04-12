@@ -318,9 +318,13 @@ const emptyStateTypeLabel = computed(() =>
           </UButton>
         </div>
 
-        <div v-if="pageCount > 1" class="flex justify-center pt-4">
+        <nav
+          v-if="pageCount > 1"
+          class="flex justify-center pt-4"
+          aria-label="Paginacion de articulos"
+        >
           <UPagination v-model:page="page" :total="total" :items-per-page="20" />
-        </div>
+        </nav>
       </template>
     </div>
 
