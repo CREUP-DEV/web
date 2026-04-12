@@ -1,8 +1,9 @@
 import type { H3Event } from 'h3'
-import { createError } from 'h3'
+import { createError, getRequestURL } from 'h3'
 import { getClientIp } from './urlBuilder'
 import { getOptionalTurnstileSecretKey } from './runtimeConfig'
 import { logError } from './logger'
+import { isLocalDevelopmentHostname } from '~~/shared/utils/url'
 
 const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 export const MIN_PUBLIC_FORM_SUBMIT_DELAY_MS = 2_000
@@ -14,6 +15,13 @@ interface TurnstileVerifyResponse {
 
 function isTurnstileEnabled(event: H3Event) {
   return Boolean(getOptionalTurnstileSecretKey(event))
+}
+
+function shouldBypassTurnstileForLocalDevelopment(event: H3Event) {
+  return (
+    process.env.NODE_ENV !== 'production' &&
+    isLocalDevelopmentHostname(getRequestURL(event).hostname)
+  )
 }
 
 export function hasMinimumPublicFormSubmitDelay(
@@ -32,6 +40,10 @@ export async function verifyTurnstileTokenOrThrow(
     unavailableMessage: string
   }
 ) {
+  if (shouldBypassTurnstileForLocalDevelopment(event)) {
+    return
+  }
+
   if (!isTurnstileEnabled(event)) {
     if (process.env.NODE_ENV === 'production') {
       throw createError({ statusCode: 503, message: messages.unavailableMessage })

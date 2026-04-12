@@ -595,7 +595,7 @@ export async function processNewsletterDeliveryRun(
 
 export async function processPendingNewsletterDeliveries() {
   const pendingItems = await db.query.newsletters.findMany({
-    orderBy: asc(newsletters.lastDeliveryStartedAt),
+    orderBy: [asc(newsletters.lastDeliveryStartedAt), asc(newsletters.id)],
     where: and(isNotNull(newsletters.lastDeliveryWorkerToken), isNull(newsletters.sentAt)),
   })
 

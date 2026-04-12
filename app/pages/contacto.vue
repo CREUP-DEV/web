@@ -1,18 +1,32 @@
 <script setup lang="ts">
 import { watchDebounced } from '@vueuse/core'
-import { CONTACT_FIELD_LIMITS, contactFormSchema } from '~~/shared/utils/contactValidation'
+import { CONTACT_FIELD_LIMITS, isValidOptionalContactPhone } from '~~/shared/utils/contactShared'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { useTurnstile } from '@/composables/useTurnstile'
+import { useTurnstileAvailability } from '@/composables/useTurnstileAvailability'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const toast = useToast()
-const {
-  fieldErrors,
-  clearErrors,
-  getFieldError: getValidationFieldError,
-  validate,
-} = useZodFormValidation()
+
+type ValidatedField =
+  | 'name'
+  | 'email'
+  | 'phone'
+  | 'mediaName'
+  | 'subject'
+  | 'message'
+  | 'turnstileToken'
+
+type ValidationErrors = Partial<Record<ValidatedField, string>>
+
+const fieldErrors = ref<ValidationErrors>({})
+
+const clearErrors = () => {
+  fieldErrors.value = {}
+}
+
+const getValidationFieldError = (field: ValidatedField) => fieldErrors.value[field]
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const {
   elRef: headerRef,
@@ -85,9 +99,7 @@ const form = reactive({
   middleName: '',
 })
 const formStartedAt = ref(Date.now())
-const runtimeConfig = useRuntimeConfig()
-const turnstileSiteKey = computed(() => runtimeConfig.public.turnstileSiteKey as string | undefined)
-const turnstileEnabled = computed(() => (turnstileSiteKey.value?.trim().length ?? 0) > 0)
+const { turnstileEnabled, turnstileSiteKey } = useTurnstileAvailability()
 const turnstileTokenFieldId = 'contact-turnstile-token'
 const {
   hasError: turnstileHasError,
@@ -127,24 +139,71 @@ const formSubmitted = ref(false)
 
 const hasAnyTouchedField = computed(() => Object.values(touched).some(Boolean))
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function validateContactPayload(payload: typeof contactPayload.value): boolean {
+  const nextErrors: ValidationErrors = {}
+
+  if (
+    payload.name.length < CONTACT_FIELD_LIMITS.name.min ||
+    payload.name.length > CONTACT_FIELD_LIMITS.name.max
+  ) {
+    nextErrors.name = 'invalid-name'
+  }
+
+  if (!EMAIL_PATTERN.test(payload.email) || payload.email.length > CONTACT_FIELD_LIMITS.emailMax) {
+    nextErrors.email = 'invalid-email'
+  }
+
+  if (
+    (payload.phone && payload.phone.length > CONTACT_FIELD_LIMITS.phoneMax) ||
+    !isValidOptionalContactPhone(payload.phone)
+  ) {
+    nextErrors.phone = 'invalid-phone'
+  }
+
+  if (payload.mediaName && payload.mediaName.length > CONTACT_FIELD_LIMITS.mediaNameMax) {
+    nextErrors.mediaName = 'invalid-media-name'
+  }
+
+  if (payload.contactType === 'press' && !payload.mediaName) {
+    nextErrors.mediaName = 'missing-media-name'
+  }
+
+  if (
+    payload.subject.length < CONTACT_FIELD_LIMITS.subject.min ||
+    payload.subject.length > CONTACT_FIELD_LIMITS.subject.max
+  ) {
+    nextErrors.subject = 'invalid-subject'
+  }
+
+  if (
+    payload.message.length < CONTACT_FIELD_LIMITS.message.min ||
+    payload.message.length > CONTACT_FIELD_LIMITS.message.max
+  ) {
+    nextErrors.message = 'invalid-message'
+  }
+
+  if (
+    payload.turnstileToken &&
+    payload.turnstileToken.length > CONTACT_FIELD_LIMITS.turnstileTokenMax
+  ) {
+    nextErrors.turnstileToken = 'invalid-turnstile-token'
+  }
+
+  fieldErrors.value = nextErrors
+  return Object.keys(nextErrors).length === 0
+}
+
 watchDebounced(
   contactPayload,
   () => {
     if (formSubmitted.value || hasAnyTouchedField.value) {
-      validate(contactFormSchema, contactPayload.value)
+      validateContactPayload(contactPayload.value)
     }
   },
   { debounce: 250, maxWait: 800 }
 )
-
-type ValidatedField =
-  | 'name'
-  | 'email'
-  | 'phone'
-  | 'mediaName'
-  | 'subject'
-  | 'message'
-  | 'turnstileToken'
 
 const validationFieldOrder = computed<ValidatedField[]>(() =>
   isPress.value
@@ -212,7 +271,7 @@ const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
 
 function markFieldTouched(field: keyof typeof touched) {
   touched[field] = true
-  validate(contactFormSchema, contactPayload.value)
+  validateContactPayload(contactPayload.value)
 }
 
 async function handleSubmit() {
@@ -222,7 +281,7 @@ async function handleSubmit() {
     return
   }
 
-  const isValid = validate(contactFormSchema, contactPayload.value)
+  const isValid = validateContactPayload(contactPayload.value)
   const hasTurnstileToken = !turnstileEnabled.value || token.value.length > 0
 
   if (!isValid || !hasTurnstileToken) {

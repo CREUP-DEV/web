@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
         lastDeliveryWorkerToken: newsletters.lastDeliveryWorkerToken,
       })
       .from(newsletters)
-      .orderBy(desc(newsletters.month))
+      .orderBy(desc(newsletters.month), desc(newsletters.id))
       .limit(normalizedLimit)
       .offset(normalizedOffset),
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(newsletters),
@@ -58,8 +58,5 @@ export default defineEventHandler(async (event) => {
       total,
       maxDeliveryAttempts,
     },
-    items: normalizedItems,
-    total,
-    maxDeliveryAttempts,
   }
 })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'
+import { createFeaturedLinkClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -16,7 +16,7 @@ const {
   mapTranslationsToForm,
 } = useLocales()
 const toast = useToast()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 interface Translation {
   locale: string
@@ -42,7 +42,9 @@ const {
 } = await useFetch<{
   data?: FeaturedLink[]
   items?: FeaturedLink[]
-}>('/api/admin/links')
+}>('/api/admin/links', {
+  lazy: true,
+})
 
 const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
@@ -156,7 +158,7 @@ const handleSubmit = async () => {
     translations: filterNonEmptyTranslations(form.translations, 'title'),
   }
 
-  if (!validate(createFeaturedLinkSchema, payload)) {
+  if (!validate(createFeaturedLinkClientSchema, payload)) {
     return
   }
 

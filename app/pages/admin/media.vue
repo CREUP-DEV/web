@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createMediaOutletSchema } from '~~/shared/utils/adminSchemas'
+import { createMediaOutletClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -8,7 +8,7 @@ definePageMeta({
 })
 
 const toast = useToast()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 interface MediaOutlet {
   id: string
@@ -27,7 +27,9 @@ const {
 } = await useFetch<{
   data?: MediaOutlet[]
   items?: MediaOutlet[]
-}>('/api/admin/media')
+}>('/api/admin/media', {
+  lazy: true,
+})
 
 const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
@@ -117,7 +119,7 @@ const handleSubmit = async () => {
     order: form.order,
   }
 
-  if (!validate(createMediaOutletSchema, payload)) {
+  if (!validate(createMediaOutletClientSchema, payload)) {
     return
   }
 

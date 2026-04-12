@@ -22,7 +22,9 @@ const {
 } = await useFetch<{
   data?: Subscriber[]
   items?: Subscriber[]
-}>('/api/admin/newsletter/subscribers')
+}>('/api/admin/newsletter/subscribers', {
+  lazy: true,
+})
 const allItems = computed(() => data.value?.data ?? data.value?.items ?? [])
 
 // Filter

@@ -124,7 +124,7 @@ export default defineEventHandler(async (event) => {
       return [created]
     })
 
-    return { data: item, item }
+    return { data: item }
   } catch (e) {
     throwAdminMutationError('admin.newsletter-subscribers.create', e, event)
   }

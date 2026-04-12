@@ -33,7 +33,7 @@ const getDefaultJobOptions = (): JobsOptions => ({
 })
 
 export const buildNewsletterSendJobId = (newsletterId: string, workerToken: string) =>
-  `newsletter-send:${newsletterId}:${workerToken}`
+  `newsletter-send-${newsletterId}-${workerToken}`
 
 const getQueueOptions = () => ({
   connection: createBullMqConnection(),
@@ -126,7 +126,7 @@ export async function enqueueStartupMaintenanceJobs() {
       {},
       {
         ...getDefaultJobOptions(),
-        jobId: 'startup:newsletter-recovery',
+        jobId: 'startup-newsletter-recovery',
       }
     ),
     queue.add(
@@ -134,7 +134,7 @@ export async function enqueueStartupMaintenanceJobs() {
       {},
       {
         ...getDefaultJobOptions(),
-        jobId: 'startup:newsletter-confirm-token-cleanup',
+        jobId: 'startup-newsletter-confirm-token-cleanup',
       }
     ),
     queue.add(
@@ -142,7 +142,7 @@ export async function enqueueStartupMaintenanceJobs() {
       {},
       {
         ...getDefaultJobOptions(),
-        jobId: 'startup:auth-housekeeping',
+        jobId: 'startup-auth-housekeeping',
       }
     ),
   ])

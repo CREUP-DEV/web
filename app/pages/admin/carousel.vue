@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createCarouselItemSchema } from '~~/shared/utils/adminSchemas'
+import { createCarouselItemClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -26,7 +26,7 @@ interface CarouselItem {
 }
 
 const toast = useToast()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const defaultCarouselImage = HOME_CAROUSEL_FALLBACK_IMAGE
 
@@ -38,7 +38,9 @@ const {
 } = await useFetch<{
   data?: CarouselItem[]
   items?: CarouselItem[]
-}>('/api/admin/carousel')
+}>('/api/admin/carousel', {
+  lazy: true,
+})
 
 const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 
@@ -151,7 +153,7 @@ const handleSubmit = async () => {
     href: form.href.trim(),
   }
 
-  if (!validate(createCarouselItemSchema, payload)) {
+  if (!validate(createCarouselItemClientSchema, payload)) {
     return
   }
 

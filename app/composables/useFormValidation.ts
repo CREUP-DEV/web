@@ -1,8 +1,26 @@
-import type { ZodTypeAny, infer as ZodInfer } from 'zod'
-
 type ValidationErrors = Record<string, string>
+type ValidationIssue = {
+  message: string
+  path: Array<string | number>
+}
 
-export function useZodFormValidation() {
+type ValidationSuccess<TPayload> = {
+  data: TPayload
+  success: true
+}
+
+type ValidationFailure = {
+  error: {
+    issues: ValidationIssue[]
+  }
+  success: false
+}
+
+interface ClientValidatableSchema<TPayload> {
+  safeParse(payload: unknown): ValidationSuccess<TPayload> | ValidationFailure
+}
+
+export function useFormValidation() {
   const fieldErrors = ref<ValidationErrors>({})
 
   const clearErrors = () => {
@@ -13,10 +31,10 @@ export function useZodFormValidation() {
     fieldErrors.value = errors
   }
 
-  const validate = <TSchema extends ZodTypeAny>(
-    schema: TSchema,
+  const validate = <TPayload>(
+    schema: ClientValidatableSchema<TPayload>,
     payload: unknown
-  ): payload is ZodInfer<TSchema> => {
+  ): payload is TPayload => {
     const result = schema.safeParse(payload)
 
     if (result.success) {

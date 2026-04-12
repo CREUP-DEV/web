@@ -47,6 +47,8 @@ pnpm install
 docker compose up -d postgres redis adminer mailpit
 ```
 
+PostgreSQL local monta [docker/postgres/init/001-extensions.sql](/mnt/d/Nextcloud/Projects/CREUP/web/docker/postgres/init/001-extensions.sql), así que un volumen nuevo crea `pg_trgm` automáticamente en el primer arranque.
+
 4. Ejecuta la aplicación:
 
 ```sh
@@ -58,8 +60,12 @@ pnpm dev
 ```sh
 pnpm db:generate
 pnpm db:migrate
-pnpm db:seed -- --confirm
+pnpm db:seed
 ```
+
+`pnpm db:migrate` usa el runner del proyecto, carga `.env`, muestra progreso, adquiere el advisory lock y garantiza extensiones PostgreSQL requeridas como `pg_trgm` antes de aplicar migraciones.
+
+`pnpm db:seed` carga `.env` desde el propio script. En desarrollo no pide confirmación; en producción exige `--confirm` y `ALLOW_PRODUCTION_SEED=true`.
 
 ## Variables de entorno
 
@@ -171,7 +177,7 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - `pnpm db:generate`
 - `pnpm db:migrate`
 - `pnpm db:studio`
-- `pnpm db:seed -- --confirm`
+- `pnpm db:seed`
 
 ## Servicios locales
 

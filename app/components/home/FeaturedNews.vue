@@ -25,7 +25,9 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-const hasProvidedItems = computed(() => Array.isArray(props.items) && selectedTag.value === null)
+const hasProvidedItems = computed(
+  () => Array.isArray(props.items) && props.items.length > 0 && selectedTag.value === null
+)
 const loadedImageKeys = reactive<Record<string, boolean>>({})
 
 const selectedTag = ref<string | null>(null)

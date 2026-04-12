@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createNewsletterRequestSchema } from '~~/shared/utils/adminSchemas'
+import { createNewsletterRequestClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -26,7 +26,7 @@ interface Newsletter {
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const {
   data,
@@ -42,7 +42,9 @@ const {
   items?: Newsletter[]
   total?: number
   maxDeliveryAttempts?: number
-}>('/api/admin/newsletter')
+}>('/api/admin/newsletter', {
+  lazy: true,
+})
 const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const maxDeliveryAttempts = computed(
   () => data.value?.meta?.maxDeliveryAttempts ?? data.value?.maxDeliveryAttempts ?? 3
@@ -194,7 +196,7 @@ async function handleSubmit() {
     sendEmail: editingItem.value ? false : form.sendEmail,
   }
 
-  if (!validate(createNewsletterRequestSchema, basePayload)) {
+  if (!validate(createNewsletterRequestClientSchema, basePayload)) {
     return
   }
 

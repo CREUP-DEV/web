@@ -1,10 +1,19 @@
-import type { H3Event } from 'h3'
-import { getRequestURL } from 'h3'
-
 type LogLevel = 'info' | 'warn' | 'error'
 
 interface LogMeta {
   [key: string]: unknown
+}
+
+interface LogEvent {
+  headers?: Headers | { get(name: string): string | null | undefined }
+  method?: string
+  node?: {
+    req?: {
+      headers?: Record<string, string | string[] | undefined>
+      url?: string
+    }
+  }
+  path?: string
 }
 
 const SENSITIVE_KEY_PATTERN =
@@ -82,7 +91,39 @@ function serializeError(error: unknown) {
   }
 }
 
-function buildLogPayload(level: LogLevel, scope: string, meta: LogMeta = {}, event?: H3Event) {
+function getEventPath(event: LogEvent): string | null {
+  if (typeof event.path === 'string' && event.path.length > 0) {
+    return event.path
+  }
+
+  const rawUrl = event.node?.req?.url
+  if (typeof rawUrl !== 'string' || rawUrl.length === 0) {
+    return null
+  }
+
+  try {
+    return new URL(rawUrl, 'http://localhost').pathname
+  } catch {
+    return rawUrl.split('?')[0] || null
+  }
+}
+
+function getEventHeader(event: LogEvent, name: string): string | null {
+  const normalizedName = name.toLowerCase()
+
+  if (event.headers && typeof event.headers.get === 'function') {
+    return event.headers.get(name) ?? null
+  }
+
+  const headerValue = event.node?.req?.headers?.[normalizedName]
+  if (Array.isArray(headerValue)) {
+    return headerValue[0] ?? null
+  }
+
+  return typeof headerValue === 'string' ? headerValue : null
+}
+
+function buildLogPayload(level: LogLevel, scope: string, meta: LogMeta = {}, event?: LogEvent) {
   const sanitizedMeta = sanitizeLogValue(meta) as Record<string, unknown>
   const payload: Record<string, unknown> = {
     level,
@@ -92,9 +133,9 @@ function buildLogPayload(level: LogLevel, scope: string, meta: LogMeta = {}, eve
   }
 
   if (event) {
-    payload.method = event.method
-    payload.path = getRequestURL(event).pathname
-    payload.requestId = event.headers.get('x-request-id') || null
+    payload.method = event.method ?? null
+    payload.path = getEventPath(event)
+    payload.requestId = getEventHeader(event, 'x-request-id')
   }
 
   if ('error' in payload) {
@@ -104,7 +145,7 @@ function buildLogPayload(level: LogLevel, scope: string, meta: LogMeta = {}, eve
   return payload
 }
 
-function writeLog(level: LogLevel, scope: string, meta?: LogMeta, event?: H3Event) {
+function writeLog(level: LogLevel, scope: string, meta?: LogMeta, event?: LogEvent) {
   const payload = buildLogPayload(level, scope, meta, event)
   const message = JSON.stringify(payload)
 
@@ -121,14 +162,14 @@ function writeLog(level: LogLevel, scope: string, meta?: LogMeta, event?: H3Even
   console.info(message)
 }
 
-export function logInfo(scope: string, meta?: LogMeta, event?: H3Event) {
+export function logInfo(scope: string, meta?: LogMeta, event?: LogEvent) {
   writeLog('info', scope, meta, event)
 }
 
-export function logWarn(scope: string, meta?: LogMeta, event?: H3Event) {
+export function logWarn(scope: string, meta?: LogMeta, event?: LogEvent) {
   writeLog('warn', scope, meta, event)
 }
 
-export function logError(scope: string, error: unknown, meta?: LogMeta, event?: H3Event) {
+export function logError(scope: string, error: unknown, meta?: LogMeta, event?: LogEvent) {
   writeLog('error', scope, { ...meta, error }, event)
 }

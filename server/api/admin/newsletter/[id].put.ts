@@ -163,7 +163,6 @@ export default defineEventHandler(async (event) => {
 
     return {
       data: normalizedItem,
-      item: normalizedItem,
     }
   } catch (error) {
     await cleanupAdminAssetFinalizationsSafely(

@@ -1,6 +1,6 @@
 /**
  * Database seed script for Drizzle ORM
- * Run with: pnpm db:seed -- --confirm
+ * Run with: pnpm db:seed
  */
 
 import 'dotenv/config'
@@ -37,8 +37,9 @@ async function main() {
   const hasConfirmFlag = cliArgs.has('--confirm')
   const isProduction = process.env.NODE_ENV === 'production'
   const allowProductionSeed = process.env.ALLOW_PRODUCTION_SEED === 'true'
+  const requiresConfirm = isProduction
 
-  if (!hasConfirmFlag) {
+  if (requiresConfirm && !hasConfirmFlag) {
     throw new Error('Refusing to run destructive seed without --confirm.')
   }
 
@@ -47,6 +48,10 @@ async function main() {
   }
 
   console.log('🌱 Starting database seeding...')
+
+  if (!requiresConfirm) {
+    console.log('ℹ️ Development mode detected. Skipping --confirm requirement.')
+  }
 
   // Clear existing data (in correct order for foreign keys)
   console.log('🗑️ Clearing existing data...')

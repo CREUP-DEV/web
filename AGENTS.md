@@ -41,7 +41,7 @@ server/
   api/              Nitro route handlers (admin/** protected, public routes)
   handlers/         admin-auth.ts (global admin middleware)
   middleware/       locale.ts
-  plugins/          background-jobs.ts, admin-asset-publication.ts, redis-storage.ts
+  plugins/          background-jobs.ts, admin-asset-publication.ts
   routes/           Non-API server routes (health.ts, asset proxy routes)
   services/         pressArticleService.ts (complex mutations)
   utils/            All server helpers — see Key Helpers section below
@@ -327,6 +327,8 @@ const { validate, getFieldError, clearErrors } = useZodFormValidation()
 if (!validate(mySchema, payload)) return
 ```
 
+Use this pattern for admin forms and internal tooling flows. For public pages under strict CSP, avoid importing Zod schemas into client bundles. Keep Zod at the server boundary and use CSP-safe manual client checks for UX feedback.
+
 ### Locale Composables (`app/composables/useLocales.ts`)
 
 ```typescript
@@ -470,8 +472,8 @@ export const widgetTranslations = pgTable('widget_translations', {
 
 1. Edit `server/db/schema.ts`.
 2. `pnpm db:generate` — creates migration file under `drizzle/`.
-3. `pnpm db:migrate` — applies migrations.
-4. `pnpm db:seed` — if seed data needs updating.
+3. `pnpm db:migrate` — applies migrations via the project runner, which loads `.env`, logs progress, acquires the advisory lock, and creates required PostgreSQL extensions (currently `pg_trgm`) before running Drizzle migrations.
+4. `pnpm db:seed` — if seed data needs updating. In development it runs without confirmation; in production it requires `--confirm` and `ALLOW_PRODUCTION_SEED=true`.
 
 Never edit existing migration files.
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
+import { createEqualityDocumentClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -25,7 +25,7 @@ interface EqualityDocument {
 }
 
 const toast = useToast()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -43,7 +43,9 @@ const {
 } = await useFetch<{
   data?: EqualityDocument[]
   items?: EqualityDocument[]
-}>('/api/admin/equality')
+}>('/api/admin/equality', {
+  lazy: true,
+})
 const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
@@ -155,7 +157,7 @@ const handleSubmit = async () => {
     translations: form.translations,
   }
 
-  if (!validate(createEqualityDocumentSchema, payload)) {
+  if (!validate(createEqualityDocumentClientSchema, payload)) {
     return
   }
 

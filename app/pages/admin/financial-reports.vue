@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createFinancialReportSchema } from '~~/shared/utils/adminSchemas'
+import { createFinancialReportClientSchema } from '~~/shared/utils/adminClientSchemas'
 import {
   calendarDateLikeToDateOnly,
   dateValueToDateOnly,
@@ -30,7 +30,7 @@ interface FinancialReport {
 }
 
 const toast = useToast()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -49,7 +49,9 @@ const {
 } = await useFetch<{
   data?: FinancialReport[]
   items?: FinancialReport[]
-}>('/api/admin/financial-reports')
+}>('/api/admin/financial-reports', {
+  lazy: true,
+})
 const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
@@ -157,7 +159,7 @@ const handleSubmit = async () => {
     translations: filterNonEmptyTranslations(form.translations, 'title'),
   }
 
-  if (!validate(createFinancialReportSchema, payload)) {
+  if (!validate(createFinancialReportClientSchema, payload)) {
     return
   }
 

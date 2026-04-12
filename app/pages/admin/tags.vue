@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
-import { createTagSchema } from '~~/shared/utils/adminSchemas'
+import { createTagClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -9,7 +9,7 @@ definePageMeta({
 
 const { t } = useI18n()
 const toast = useToast()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
   getLocaleFlag,
   getLocaleName,
@@ -39,7 +39,9 @@ const {
 } = await useFetch<{
   data?: Tag[]
   items?: Tag[]
-}>('/api/admin/tags')
+}>('/api/admin/tags', {
+  lazy: true,
+})
 
 const items = computed(() => data.value?.data ?? data.value?.items ?? [])
 const isSubmitting = ref(false)
@@ -119,7 +121,7 @@ const handleSubmit = async () => {
     translations: filterNonEmptyTranslations(form.translations, 'name'),
   }
 
-  if (!validate(createTagSchema, payload)) {
+  if (!validate(createTagClientSchema, payload)) {
     return
   }
 

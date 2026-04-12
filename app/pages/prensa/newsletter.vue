@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { AccordionItem } from '@nuxt/ui'
-import { newsletterSubscribeSchema } from '~~/shared/utils/newsletterValidation'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { EMAIL_MAX_LENGTH } from '~~/shared/utils/emailValidation'
 import * as turnstileComposable from '@/composables/useTurnstile'
+import { useTurnstileAvailability } from '@/composables/useTurnstileAvailability'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const toast = useToast()
-const { fieldErrors, getFieldError: getValidationFieldError, validate } = useZodFormValidation()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
 const showConfirmedMessage = computed(() => route.query.confirmed === '1')
 const showAlreadyConfirmedMessage = computed(() => route.query.confirmed === 'already')
@@ -65,11 +65,7 @@ const form = reactive({
   middleName: '',
 })
 const formStartedAt = ref(Date.now())
-const runtimeConfig = useRuntimeConfig()
-const turnstileSiteKey = computed(
-  () => (runtimeConfig.public?.turnstileSiteKey as string | undefined) ?? ''
-)
-const turnstileEnabled = computed(() => (turnstileSiteKey.value?.trim().length ?? 0) > 0)
+const { turnstileEnabled, turnstileSiteKey } = useTurnstileAvailability()
 const turnstileTokenFieldId = 'newsletter-turnstile-token'
 const {
   hasError: turnstileHasError,
@@ -97,13 +93,34 @@ const newsletterPayload = computed(() => ({
   turnstileToken: token.value || undefined,
 }))
 
-watchEffect(() => {
-  validate(newsletterSubscribeSchema, newsletterPayload.value)
-})
-
 type NewsletterField = 'email' | 'consent' | 'turnstileToken'
 
 const validationFieldOrder: NewsletterField[] = ['email', 'consent', 'turnstileToken']
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const hasEmailError = computed(() => {
+  const email = form.email.trim()
+  return email.length === 0 || email.length > EMAIL_MAX_LENGTH || !EMAIL_PATTERN.test(email)
+})
+const hasConsentError = computed(() => !form.consent)
+const hasTurnstileError = computed(
+  () => turnstileEnabled.value && (token.value.length === 0 || token.value.length > 2048)
+)
+const isFormValid = computed(
+  () => !hasEmailError.value && !hasConsentError.value && !hasTurnstileError.value
+)
+
+function hasValidationError(field: NewsletterField): boolean {
+  if (field === 'email') {
+    return hasEmailError.value
+  }
+
+  if (field === 'consent') {
+    return hasConsentError.value
+  }
+
+  return hasTurnstileError.value
+}
 
 function shouldShowError(field: NewsletterField): boolean {
   if (field === 'turnstileToken') {
@@ -112,7 +129,7 @@ function shouldShowError(field: NewsletterField): boolean {
     )
   }
 
-  return (touched[field] || formSubmitted.value) && !!getValidationFieldError(field)
+  return (touched[field] || formSubmitted.value) && hasValidationError(field)
 }
 
 function getFieldError(field: NewsletterField): string | undefined {
@@ -133,8 +150,6 @@ function getFieldError(field: NewsletterField): string | undefined {
   }
 }
 
-const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
-
 async function handleSubscribe() {
   formSubmitted.value = true
 
@@ -150,7 +165,7 @@ async function handleSubscribe() {
         return turnstileEnabled.value && !token.value
       }
 
-      return Boolean(getValidationFieldError(field))
+      return hasValidationError(field)
     })
     if (firstInvalid) {
       if (firstInvalid === 'turnstileToken') {

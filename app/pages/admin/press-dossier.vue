@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
+import { updatePressDossierClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -14,7 +14,7 @@ interface PressDossierItem {
 }
 
 const toast = useToast()
-const { clearErrors, getFieldError, validate } = useZodFormValidation()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const {
   data: dossierData,
@@ -110,7 +110,7 @@ const saveDossier = async () => {
       active: form.active,
     }
 
-    if (!validate(updatePressDossierSchema, payload)) {
+    if (!validate(updatePressDossierClientSchema, payload)) {
       return
     }
 

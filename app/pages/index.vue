@@ -28,6 +28,16 @@ const {
 
 const carouselItems = computed(() => homeData.value?.carousel ?? [])
 const links = computed(() => homeData.value?.featuredLinks ?? [])
+const hasHomeDataContent = computed(() => carouselItems.value.length > 0 || links.value.length > 0)
+const hasCarouselSection = computed(
+  () => homeDataPending.value || !!homeDataError.value || carouselItems.value.length > 0
+)
+const hasFeaturedLinksSection = computed(() => homeDataPending.value || links.value.length > 0)
+const newsAndEventsSectionClass = computed(() => ({
+  'pt-8 sm:pt-10': !hasCarouselSection.value,
+  'pb-8 sm:pb-10': !hasFeaturedLinksSection.value,
+  'py-4 sm:py-0': hasCarouselSection.value && hasFeaturedLinksSection.value,
+}))
 const featuredNewsItems = computed(() => {
   return (featuredPressData.value?.items ?? []).map((article: PressArticle) => ({
     title: article.title,
@@ -39,6 +49,37 @@ const featuredNewsItems = computed(() => {
     mediaOutletLogo: article.mediaOutlet?.logo,
   }))
 })
+const featuredPressItemCount = computed(() => featuredPressData.value?.items?.length ?? 0)
+const hasRetriedEmptyHomeData = ref(false)
+const hasRetriedEmptyFeaturedPress = ref(false)
+
+if (import.meta.client) {
+  watch(
+    [homeDataPending, homeDataError, hasHomeDataContent],
+    async ([pending, error, hasContent]) => {
+      if (hasRetriedEmptyHomeData.value || pending || error || hasContent) {
+        return
+      }
+
+      hasRetriedEmptyHomeData.value = true
+      await refreshHomeData()
+    },
+    { immediate: true }
+  )
+
+  watch(
+    [featuredPressPending, featuredPressError, featuredPressItemCount],
+    async ([pending, error, itemCount]) => {
+      if (hasRetriedEmptyFeaturedPress.value || pending || error || itemCount > 0) {
+        return
+      }
+
+      hasRetriedEmptyFeaturedPress.value = true
+      await refreshFeaturedPress()
+    },
+    { immediate: true }
+  )
+}
 
 usePageSeo('meta.title', 'meta.description', {
   breadcrumbs: () => [
@@ -61,7 +102,7 @@ usePageSeo('meta.title', 'meta.description', {
       @retry="refreshHomeData()"
     />
 
-    <section class="py-4 sm:py-0" :aria-label="t('home.newsAndEventsLabel')">
+    <section :class="newsAndEventsSectionClass" :aria-label="t('home.newsAndEventsLabel')">
       <UContainer>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-6 lg:gap-8">
           <div class="md:col-span-2">

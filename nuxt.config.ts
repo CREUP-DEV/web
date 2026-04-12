@@ -75,6 +75,8 @@ export default defineNuxtConfig({
         'sortablejs',
         '@internationalized/date',
         'zod',
+        'photoswipe/lightbox',
+        'photoswipe',
       ],
     },
     build: {
@@ -155,6 +157,16 @@ export default defineNuxtConfig({
     turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
     public: {
       turnstileSiteKey,
+    },
+  },
+
+  nitro: {
+    storage: {
+      cache: {
+        driver: 'redis',
+        url: process.env.REDIS_URL,
+        base: 'creup:web:cache',
+      },
     },
   },
 

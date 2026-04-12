@@ -1,1 +1,0 @@
-ALTER TABLE "newsletters" ALTER COLUMN "month" SET DATA TYPE date;

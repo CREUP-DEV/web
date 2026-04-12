@@ -12,6 +12,16 @@ export const isExternalNavigationTarget = (value: string | null | undefined): bo
 export const normalizeHostname = (hostname: string): string =>
   hostname.replace(/^www\./, '').toLowerCase()
 
+export const isLocalDevelopmentHostname = (hostname: string): boolean => {
+  const normalizedHostname = normalizeHostname(hostname).replace(/^\[(.*)\]$/, '$1')
+
+  return (
+    normalizedHostname === 'localhost' ||
+    normalizedHostname === '127.0.0.1' ||
+    normalizedHostname === '::1'
+  )
+}
+
 export const normalizeUrl = (value: string | null | undefined): string | null => {
   if (typeof value !== 'string') {
     return null

@@ -5,71 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1775844332027,
-      "tag": "0000_outgoing_freak",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1775850555326,
-      "tag": "0001_loose_donald_blake",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1775914728610,
-      "tag": "0002_icy_silver_surfer",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1775930685849,
-      "tag": "0003_dry_bill_hollister",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1775931959230,
-      "tag": "0004_grey_blackheart",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1775932916417,
-      "tag": "0005_regular_sway",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1775934139808,
-      "tag": "0006_sloppy_toro",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1775950621323,
-      "tag": "0007_tricky_bastion",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1775953108205,
-      "tag": "0008_ancient_winter_soldier",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1775953784247,
-      "tag": "0009_cheerful_prima",
+      "when": 1775956605664,
+      "tag": "0000_thin_devos",
       "breakpoints": true
     }
   ]

@@ -23,7 +23,5 @@ export default defineEventHandler(async (event) => {
       item: normalizedItem,
       queued: true,
     },
-    item: normalizedItem,
-    queued: true,
   }
 })

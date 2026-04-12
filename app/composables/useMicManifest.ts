@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 export interface MicLogoVariant {
   key: string
   slug: string
@@ -21,26 +19,6 @@ export interface MicManifest {
 }
 
 export const MIC_MANIFEST_PATH = '/marca/manifest.json'
-
-const micLogoVariantSchema = z.object({
-  key: z.string().trim().min(1),
-  slug: z.string().trim().min(1),
-  labelKey: z.string().trim().min(1),
-})
-
-const micLogoSectionSchema = z.object({
-  titleKey: z.string().trim().min(1),
-  slug: z.string().trim().min(1),
-  zip: z.string().trim().min(1),
-  zipLabelKey: z.string().trim().min(1),
-})
-
-const micManifestSchema = z.object({
-  basePath: z.string().trim().min(1),
-  logoVariants: z.array(micLogoVariantSchema).min(1),
-  logoSections: z.array(micLogoSectionSchema).min(1),
-  pdf: z.string().trim().min(1),
-})
 
 export const DEFAULT_MIC_MANIFEST: MicManifest = {
   basePath: '/marca',
@@ -75,13 +53,64 @@ export const DEFAULT_MIC_MANIFEST: MicManifest = {
   pdf: 'MIC.pdf',
 }
 
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0
+
+function isMicLogoVariant(value: unknown): value is MicLogoVariant {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return (
+    isNonEmptyString(candidate.key) &&
+    isNonEmptyString(candidate.slug) &&
+    isNonEmptyString(candidate.labelKey)
+  )
+}
+
+function isMicLogoSection(value: unknown): value is MicLogoSection {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return (
+    isNonEmptyString(candidate.titleKey) &&
+    isNonEmptyString(candidate.slug) &&
+    isNonEmptyString(candidate.zip) &&
+    isNonEmptyString(candidate.zipLabelKey)
+  )
+}
+
+function isMicManifest(value: unknown): value is MicManifest {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return (
+    isNonEmptyString(candidate.basePath) &&
+    isNonEmptyString(candidate.pdf) &&
+    Array.isArray(candidate.logoVariants) &&
+    candidate.logoVariants.length > 0 &&
+    candidate.logoVariants.every(isMicLogoVariant) &&
+    Array.isArray(candidate.logoSections) &&
+    candidate.logoSections.length > 0 &&
+    candidate.logoSections.every(isMicLogoSection)
+  )
+}
+
 export function useMicManifest() {
   return useAsyncData<MicManifest>(
     'mic-manifest',
     async () => {
       try {
         const manifest = await $fetch<unknown>(MIC_MANIFEST_PATH)
-        return micManifestSchema.parse(manifest)
+        return isMicManifest(manifest) ? manifest : DEFAULT_MIC_MANIFEST
       } catch {
         return DEFAULT_MIC_MANIFEST
       }

@@ -21,7 +21,8 @@ CREATE TABLE "accounts" (
 	"scope" text,
 	"password" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "accounts_provider_id_account_id_unique" UNIQUE("provider_id","account_id")
 );
 --> statement-breakpoint
 CREATE TABLE "admin_access" (
@@ -39,6 +40,8 @@ CREATE TABLE "carousel_item_translations" (
 	"title" text NOT NULL,
 	"button_text" text NOT NULL,
 	"alt" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"carousel_item_id" text NOT NULL,
 	CONSTRAINT "carousel_item_translations_locale_carousel_item_id_unique" UNIQUE("locale","carousel_item_id"),
 	CONSTRAINT "carousel_item_translations_locale_check" CHECK ("carousel_item_translations"."locale" in ('es', 'en'))
@@ -60,6 +63,8 @@ CREATE TABLE "equality_document_translations" (
 	"title" text NOT NULL,
 	"description" text NOT NULL,
 	"meta" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"equality_document_id" text NOT NULL,
 	CONSTRAINT "equality_document_translations_locale_equality_document_id_unique" UNIQUE("locale","equality_document_id"),
 	CONSTRAINT "equality_document_translations_locale_check" CHECK ("equality_document_translations"."locale" in ('es', 'en'))
@@ -79,6 +84,8 @@ CREATE TABLE "featured_link_translations" (
 	"locale" text NOT NULL,
 	"title" text NOT NULL,
 	"alt" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"featured_link_id" text NOT NULL,
 	CONSTRAINT "featured_link_translations_locale_featured_link_id_unique" UNIQUE("locale","featured_link_id"),
 	CONSTRAINT "featured_link_translations_locale_check" CHECK ("featured_link_translations"."locale" in ('es', 'en'))
@@ -98,6 +105,8 @@ CREATE TABLE "financial_report_translations" (
 	"id" text PRIMARY KEY NOT NULL,
 	"locale" text NOT NULL,
 	"title" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"financial_report_id" text NOT NULL,
 	CONSTRAINT "financial_report_translations_locale_financial_report_id_unique" UNIQUE("locale","financial_report_id"),
 	CONSTRAINT "financial_report_translations_locale_check" CHECK ("financial_report_translations"."locale" in ('es', 'en'))
@@ -151,7 +160,7 @@ CREATE TABLE "newsletter_subscribers" (
 	"consent_ip" text,
 	"consent_user_agent" text,
 	"consent_source" text DEFAULT 'web_form' NOT NULL,
-	"consent_text_version" text DEFAULT '2026-03-06' NOT NULL,
+	"consent_text_version" text NOT NULL,
 	"age_confirmed" boolean DEFAULT false NOT NULL,
 	"locale" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -185,7 +194,7 @@ CREATE TABLE "newsletter_subscription_events" (
 CREATE TABLE "newsletters" (
 	"id" text PRIMARY KEY NOT NULL,
 	"month_key" text NOT NULL,
-	"month" timestamp NOT NULL,
+	"month" date NOT NULL,
 	"cover_image" text NOT NULL,
 	"pdf_url" text NOT NULL,
 	"active" boolean DEFAULT true NOT NULL,
@@ -209,6 +218,8 @@ CREATE TABLE "organization_member_translations" (
 	"locale" text NOT NULL,
 	"name" text NOT NULL,
 	"university" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"organization_member_id" text NOT NULL,
 	CONSTRAINT "organization_member_translations_locale_member_unique" UNIQUE("locale","organization_member_id"),
 	CONSTRAINT "organization_member_translations_locale_check" CHECK ("organization_member_translations"."locale" in ('es', 'en'))
@@ -230,10 +241,9 @@ CREATE TABLE "organization_members" (
 );
 --> statement-breakpoint
 CREATE TABLE "press_article_tags" (
-	"id" text PRIMARY KEY NOT NULL,
 	"press_article_id" text NOT NULL,
 	"tag_id" text NOT NULL,
-	CONSTRAINT "press_article_tags_press_article_id_tag_id_unique" UNIQUE("press_article_id","tag_id")
+	CONSTRAINT "press_article_tags_press_article_id_tag_id_pk" PRIMARY KEY("press_article_id","tag_id")
 );
 --> statement-breakpoint
 CREATE TABLE "press_article_translations" (
@@ -243,6 +253,8 @@ CREATE TABLE "press_article_translations" (
 	"description" text,
 	"content_html" text,
 	"alt" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"press_article_id" text NOT NULL,
 	CONSTRAINT "press_article_translations_locale_press_article_id_unique" UNIQUE("locale","press_article_id"),
 	CONSTRAINT "press_article_translations_locale_check" CHECK ("press_article_translations"."locale" in ('es', 'en'))
@@ -290,6 +302,8 @@ CREATE TABLE "tag_translations" (
 	"id" text PRIMARY KEY NOT NULL,
 	"locale" text NOT NULL,
 	"name" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"tag_id" text NOT NULL,
 	CONSTRAINT "tag_translations_locale_tag_id_unique" UNIQUE("locale","tag_id"),
 	CONSTRAINT "tag_translations_locale_check" CHECK ("tag_translations"."locale" in ('es', 'en'))
@@ -308,6 +322,8 @@ CREATE TABLE "team_area_translations" (
 	"id" text PRIMARY KEY NOT NULL,
 	"locale" text NOT NULL,
 	"name" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"team_area_id" text NOT NULL,
 	CONSTRAINT "team_area_translations_locale_team_area_id_unique" UNIQUE("locale","team_area_id"),
 	CONSTRAINT "team_area_translations_locale_check" CHECK ("team_area_translations"."locale" in ('es', 'en'))
@@ -330,6 +346,8 @@ CREATE TABLE "team_member_translations" (
 	"university" text,
 	"degree" text,
 	"description" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"team_member_id" text NOT NULL,
 	CONSTRAINT "team_member_translations_locale_team_member_id_unique" UNIQUE("locale","team_member_id"),
 	CONSTRAINT "team_member_translations_locale_check" CHECK ("team_member_translations"."locale" in ('es', 'en'))
@@ -365,8 +383,8 @@ CREATE TABLE "verifications" (
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
 	"expires_at" timestamp NOT NULL,
-	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp DEFAULT now()
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -396,20 +414,29 @@ CREATE INDEX "idx_featured_link_translations_link_id" ON "featured_link_translat
 CREATE INDEX "idx_featured_links_active_order" ON "featured_links" USING btree ("active","order");--> statement-breakpoint
 CREATE INDEX "idx_financial_report_translations_report_id" ON "financial_report_translations" USING btree ("financial_report_id");--> statement-breakpoint
 CREATE INDEX "idx_financial_reports_active_order" ON "financial_reports" USING btree ("active","order");--> statement-breakpoint
+CREATE INDEX "idx_financial_reports_active_approved" ON "financial_reports" USING btree ("active","approved_at");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_deliveries_status" ON "newsletter_deliveries" USING btree ("newsletter_id","status");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_deliveries_subscriber" ON "newsletter_deliveries" USING btree ("subscriber_id");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_subscribers_active_subscribed" ON "newsletter_subscribers" USING btree ("active","subscribed_at");--> statement-breakpoint
+CREATE INDEX "idx_newsletter_subscribers_token_cleanup" ON "newsletter_subscribers" USING btree ("confirm_token_expires_at") WHERE "newsletter_subscribers"."active" = false AND "newsletter_subscribers"."confirm_token_expires_at" IS NOT NULL;--> statement-breakpoint
 CREATE INDEX "idx_newsletter_subscription_events_subscriber_created" ON "newsletter_subscription_events" USING btree ("subscriber_id","created_at");--> statement-breakpoint
 CREATE INDEX "idx_newsletter_subscription_events_email" ON "newsletter_subscription_events" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "idx_newsletters_active_sent_worker" ON "newsletters" USING btree ("active","sent_at","last_delivery_worker_token");--> statement-breakpoint
 CREATE INDEX "idx_newsletters_public_visible_month" ON "newsletters" USING btree ("public_visible","month");--> statement-breakpoint
 CREATE INDEX "idx_organization_member_translations_member_id" ON "organization_member_translations" USING btree ("organization_member_id");--> statement-breakpoint
+CREATE INDEX "idx_organization_members_active_order" ON "organization_members" USING btree ("active","order");--> statement-breakpoint
 CREATE INDEX "idx_press_article_tags_tag_id" ON "press_article_tags" USING btree ("tag_id");--> statement-breakpoint
 CREATE INDEX "idx_press_article_translations_article_id" ON "press_article_translations" USING btree ("press_article_id");--> statement-breakpoint
+CREATE INDEX "idx_press_article_translations_title_trgm" ON "press_article_translations" USING gin ("title" gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "idx_press_article_translations_description_trgm" ON "press_article_translations" USING gin ("description" gin_trgm_ops);--> statement-breakpoint
 CREATE INDEX "idx_press_articles_active_published" ON "press_articles" USING btree ("active","published_at");--> statement-breakpoint
+CREATE INDEX "idx_press_articles_slug_active" ON "press_articles" USING btree ("slug","active");--> statement-breakpoint
 CREATE INDEX "idx_press_articles_type" ON "press_articles" USING btree ("type");--> statement-breakpoint
+CREATE INDEX "idx_press_articles_media_outlet_id" ON "press_articles" USING btree ("media_outlet_id");--> statement-breakpoint
 CREATE INDEX "idx_sessions_user_id" ON "sessions" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "idx_sessions_expires_at" ON "sessions" USING btree ("expires_at");--> statement-breakpoint
 CREATE INDEX "idx_tag_translations_tag_id" ON "tag_translations" USING btree ("tag_id");--> statement-breakpoint
 CREATE INDEX "idx_team_area_translations_area_id" ON "team_area_translations" USING btree ("team_area_id");--> statement-breakpoint
 CREATE INDEX "idx_team_member_translations_member_id" ON "team_member_translations" USING btree ("team_member_id");--> statement-breakpoint
-CREATE INDEX "idx_team_members_team_area_id" ON "team_members" USING btree ("team_area_id");
+CREATE INDEX "idx_team_members_team_area_id" ON "team_members" USING btree ("team_area_id");--> statement-breakpoint
+CREATE INDEX "idx_verifications_expires_at" ON "verifications" USING btree ("expires_at");

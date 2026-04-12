@@ -155,8 +155,6 @@ export default defineEventHandler(async (event) => {
         item: normalizedItem,
         emailQueued,
       },
-      item: normalizedItem,
-      emailQueued,
     }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(

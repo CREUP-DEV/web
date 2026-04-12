@@ -356,6 +356,7 @@ onBeforeUnmount(() => {
 
     <UModal
       v-model:open="organizationModalOpen"
+      :modal="false"
       :ui="organizationModalUi"
       :title="t('members.memberModalTitle')"
       @close="closeOrganizationModal"
