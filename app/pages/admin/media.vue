@@ -16,6 +16,7 @@ interface MediaOutlet {
   website: string
   logo: string
   order: number
+  updatedAt: string
 }
 
 const {
@@ -121,7 +122,10 @@ const handleSubmit = async () => {
     if (editingItem.value) {
       await $fetch(`/api/admin/media/${editingItem.value.id}`, {
         method: 'PUT',
-        body: payload,
+        body: {
+          ...payload,
+          updatedAt: editingItem.value.updatedAt,
+        },
       })
       toast.add({ title: 'Medio actualizado', color: 'success' })
     } else {

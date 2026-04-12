@@ -30,6 +30,7 @@ interface FeaturedLink {
   to: string
   order: number
   active: boolean
+  updatedAt: string
   translations: Translation[]
 }
 
@@ -160,7 +161,10 @@ const handleSubmit = async () => {
     if (editingItem.value) {
       await $fetch(`/api/admin/links/${editingItem.value.id}`, {
         method: 'PUT',
-        body: payload,
+        body: {
+          ...payload,
+          updatedAt: editingItem.value.updatedAt,
+        },
       })
       toast.add({
         title: 'Enlace actualizado',

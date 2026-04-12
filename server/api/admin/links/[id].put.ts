@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
@@ -38,6 +38,21 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateFeaturedLinkSchema, body)
+    if (validated.updatedAt) {
+      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
+      const serverUpdatedAt = existingItem.updatedAt
+        ? new Date(existingItem.updatedAt).getTime()
+        : 0
+
+      if (clientUpdatedAt !== serverUpdatedAt) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El enlace fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
+    }
+
     const previousImage = existingItem.image
     const image = await finalizeAdminImage({
       storagePath: validated.image,
@@ -59,7 +74,11 @@ export default defineEventHandler(async (event) => {
         .delete(featuredLinkTranslations)
         .where(eq(featuredLinkTranslations.featuredLinkId, id))
 
-      await tx
+      const whereCondition = validated.updatedAt
+        ? and(eq(featuredLinks.id, id), eq(featuredLinks.updatedAt, existingItem.updatedAt))
+        : eq(featuredLinks.id, id)
+
+      const updatedRows = await tx
         .update(featuredLinks)
         .set({
           image,
@@ -67,7 +86,16 @@ export default defineEventHandler(async (event) => {
           order: validated.order,
           active: validated.active,
         })
-        .where(eq(featuredLinks.id, id))
+        .where(whereCondition)
+        .returning({ id: featuredLinks.id })
+
+      if (updatedRows.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El enlace fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
 
       if (validated.translations.length > 0) {
         await tx.insert(featuredLinkTranslations).values(

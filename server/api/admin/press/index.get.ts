@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
   const [items, countResult] = await Promise.all([
     db.query.pressArticles.findMany({
       where: whereClause,
-      orderBy: desc(pressArticles.publishedAt),
+      orderBy: [desc(pressArticles.publishedAt), desc(pressArticles.id)],
       limit,
       offset,
       columns: {

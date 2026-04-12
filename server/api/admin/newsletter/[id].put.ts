@@ -1,5 +1,5 @@
 import { createError, defineEventHandler, readBody } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
 import {
@@ -50,6 +50,21 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateNewsletterSchema, body)
+    if (validated.updatedAt) {
+      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
+      const serverUpdatedAt = existingItem.updatedAt
+        ? new Date(existingItem.updatedAt).getTime()
+        : 0
+
+      if (clientUpdatedAt !== serverUpdatedAt) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'La newsletter fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
+    }
+
     const { monthDate, monthKey } = normalizeNewsletterMonthInput(validated.month)
 
     await assertNewsletterMonthAvailable(monthKey, id)
@@ -86,7 +101,11 @@ export default defineEventHandler(async (event) => {
         allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
       })
 
-      await tx
+      const whereCondition = validated.updatedAt
+        ? and(eq(newsletters.id, id), eq(newsletters.updatedAt, existingItem.updatedAt))
+        : eq(newsletters.id, id)
+
+      const updatedRows = await tx
         .update(newsletters)
         .set({
           month: monthDate,
@@ -96,7 +115,16 @@ export default defineEventHandler(async (event) => {
           active: validated.active,
           publicVisible: validated.publicVisible,
         })
-        .where(eq(newsletters.id, id))
+        .where(whereCondition)
+        .returning({ id: newsletters.id })
+
+      if (updatedRows.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'La newsletter fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
 
       return tx.query.newsletters.findFirst({
         where: eq(newsletters.id, id),

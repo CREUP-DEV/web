@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
         unsubscribedAt: newsletterSubscribers.unsubscribedAt,
       })
       .from(newsletterSubscribers)
-      .orderBy(desc(newsletterSubscribers.subscribedAt))
+      .orderBy(desc(newsletterSubscribers.subscribedAt), desc(newsletterSubscribers.id))
       .limit(normalizedLimit)
       .offset(normalizedOffset),
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(newsletterSubscribers),

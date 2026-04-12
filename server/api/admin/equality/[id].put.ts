@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { equalityDocuments, equalityDocumentTranslations } from '../../../db/schema'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
@@ -40,6 +40,21 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateEqualityDocumentSchema, body)
+    if (validated.updatedAt) {
+      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
+      const serverUpdatedAt = existingItem.updatedAt
+        ? new Date(existingItem.updatedAt).getTime()
+        : 0
+
+      if (clientUpdatedAt !== serverUpdatedAt) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El documento fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
+    }
+
     const previousPdfUrl = existingItem.pdfUrl
     const pdfUrl = await finalizeAdminDocument({
       storagePath: validated.pdfUrl,
@@ -65,14 +80,27 @@ export default defineEventHandler(async (event) => {
     )
 
     const item = await runAdminCrudTransaction(async (tx) => {
-      await tx
+      const whereCondition = validated.updatedAt
+        ? and(eq(equalityDocuments.id, id), eq(equalityDocuments.updatedAt, existingItem.updatedAt))
+        : eq(equalityDocuments.id, id)
+
+      const updatedRows = await tx
         .update(equalityDocuments)
         .set({
           pdfUrl,
           order: validated.order,
           active: validated.active,
         })
-        .where(eq(equalityDocuments.id, id))
+        .where(whereCondition)
+        .returning({ id: equalityDocuments.id })
+
+      if (updatedRows.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El documento fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
 
       await tx
         .delete(equalityDocumentTranslations)

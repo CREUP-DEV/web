@@ -117,7 +117,7 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - El envío de newsletters usa una cola persistida en PostgreSQL y un worker ligero dentro de Nitro
   para el estado de entregas, pero la orquestación de envíos y tareas periódicas corre por BullMQ
   sobre Redis. Al menos una instancia de Nitro debe permanecer activa para procesar esa cola.
-- En despliegue Docker en mismo VPS, usa `REDIS_URL=redis://redis:6379` dentro de `app`.
+- En despliegue Docker en mismo VPS, usa `REDIS_PASSWORD` y `REDIS_URL=redis://:TU_PASSWORD@redis:6379` dentro de `app`.
 - Los archivos subidos por administración viven en `.data/admin-assets/` y en subdirectorios de
   `public/`. Ese contenido no está versionado y debe entrar en la estrategia de copias de
   seguridad del despliegue.
@@ -215,7 +215,7 @@ y volúmenes nombrados para PostgreSQL y Redis:
 3. Ajusta `DATABASE_URL`, secretos OAuth, SMTP y resto de variables reales.
 4. Si usas GHCR privado, ejecuta una vez en el VPS: `docker login ghcr.io`.
 5. Si usas PostgreSQL en el mismo compose de producción, usa `DATABASE_URL` con host `postgres`.
-6. Si usas Redis en el mismo compose de producción, usa `REDIS_URL=redis://redis:6379`.
+6. Si usas Redis en el mismo compose de producción, define `REDIS_PASSWORD` y usa `REDIS_URL=redis://:TU_PASSWORD@redis:6379`.
 7. Asegura que Docker y Docker Compose estén instalados en el VPS.
 
 ### 2) Configurar variables en tu equipo local

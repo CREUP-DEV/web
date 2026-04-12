@@ -25,6 +25,7 @@ interface FinancialReport {
   order: number
   active: boolean
   createdAt: string
+  updatedAt: string
   translations: FinancialReportTranslation[]
 }
 
@@ -161,7 +162,10 @@ const handleSubmit = async () => {
     if (editingItem.value) {
       await $fetch(`/api/admin/financial-reports/${editingItem.value.id}`, {
         method: 'PUT',
-        body: payload,
+        body: {
+          ...payload,
+          updatedAt: editingItem.value.updatedAt,
+        },
       })
       toast.add({ title: 'Informe actualizado', color: 'success' })
     } else {

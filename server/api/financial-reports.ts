@@ -28,7 +28,7 @@ export default defineCachedEventHandler(
       const [items, countResult] = await Promise.all([
         db.query.financialReports.findMany({
           where: activeWhere,
-          orderBy: desc(financialReports.approvedAt),
+          orderBy: [desc(financialReports.approvedAt), desc(financialReports.id)],
           limit,
           offset,
           with: {

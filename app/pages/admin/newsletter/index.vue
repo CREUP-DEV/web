@@ -18,6 +18,7 @@ interface Newsletter {
   isSending: boolean
   sentAt: string | null
   createdAt: string
+  updatedAt: string
   lastDeliverySentCount: number | null
   lastDeliveryErrorCount: number | null
 }
@@ -200,6 +201,7 @@ async function handleSubmit() {
           pdfUrl: form.pdfUrl,
           active: form.active,
           publicVisible: form.publicVisible,
+          updatedAt: editingItem.value.updatedAt,
         },
       })
       toast.add({ title: 'Newsletter actualizada', color: 'success' })

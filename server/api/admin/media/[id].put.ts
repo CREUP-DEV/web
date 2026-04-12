@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
@@ -32,6 +32,21 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateMediaOutletSchema, body)
+    if (validated.updatedAt) {
+      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
+      const serverUpdatedAt = existingItem.updatedAt
+        ? new Date(existingItem.updatedAt).getTime()
+        : 0
+
+      if (clientUpdatedAt !== serverUpdatedAt) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El medio fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
+    }
+
     const previousLogo = existingItem.logo
     const logo = await finalizeAdminImage({
       storagePath: validated.logo,
@@ -47,7 +62,11 @@ export default defineEventHandler(async (event) => {
       allowedPublicPathPrefixes: [PRESS_MEDIA_LOGO_PUBLIC_PATH],
     })
 
-    await db
+    const whereCondition = validated.updatedAt
+      ? and(eq(mediaOutlets.id, id), eq(mediaOutlets.updatedAt, existingItem.updatedAt))
+      : eq(mediaOutlets.id, id)
+
+    const updatedRows = await db
       .update(mediaOutlets)
       .set({
         name: validated.name,
@@ -55,7 +74,16 @@ export default defineEventHandler(async (event) => {
         logo,
         order: validated.order,
       })
-      .where(eq(mediaOutlets.id, id))
+      .where(whereCondition)
+      .returning({ id: mediaOutlets.id })
+
+    if (updatedRows.length === 0) {
+      throw createError({
+        statusCode: 409,
+        message:
+          'El medio fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+      })
+    }
 
     const item = await db.query.mediaOutlets.findFirst({
       where: eq(mediaOutlets.id, id),

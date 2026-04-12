@@ -2,11 +2,9 @@ import { createAuthClient } from 'better-auth/vue'
 
 export const authClient = createAuthClient()
 
-// Call useSession once at module level so all useAuth() callers share the same
-// reactive subscription instead of creating a new one per call.
-const _session = authClient.useSession()
-
 export const useAuth = () => {
+  const session = authClient.useSession()
+
   const signInWithGoogle = async () => {
     return authClient.signIn.social({
       provider: 'google',
@@ -25,7 +23,7 @@ export const useAuth = () => {
   }
 
   return {
-    session: _session,
+    session,
     signInWithGoogle,
     signOut,
   }

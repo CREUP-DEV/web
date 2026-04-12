@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
 
   const [items, countResult] = await Promise.all([
     db.query.mediaOutlets.findMany({
-      orderBy: asc(mediaOutlets.order),
+      orderBy: [asc(mediaOutlets.order), asc(mediaOutlets.id)],
       limit,
       offset,
     }),

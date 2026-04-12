@@ -374,7 +374,10 @@ export const sessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
   },
-  (table) => [index('idx_sessions_user_id').on(table.userId)]
+  (table) => [
+    index('idx_sessions_user_id').on(table.userId),
+    index('idx_sessions_expires_at').on(table.expiresAt),
+  ]
 )
 
 export const accounts = pgTable(
@@ -405,17 +408,21 @@ export const accounts = pgTable(
   ]
 )
 
-export const verifications = pgTable('verifications', {
-  id: text('id').primaryKey(),
-  identifier: text('identifier').notNull(),
-  value: text('value').notNull(),
-  expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-})
+export const verifications = pgTable(
+  'verifications',
+  {
+    id: text('id').primaryKey(),
+    identifier: text('identifier').notNull(),
+    value: text('value').notNull(),
+    expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index('idx_verifications_expires_at').on(table.expiresAt)]
+)
 
 // User relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -897,7 +904,10 @@ export const financialReports = pgTable(
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (table) => [index('idx_financial_reports_active_order').on(table.active, table.order)]
+  (table) => [
+    index('idx_financial_reports_active_order').on(table.active, table.order),
+    index('idx_financial_reports_active_approved').on(table.active, table.approvedAt),
+  ]
 )
 
 export const financialReportTranslations = pgTable(

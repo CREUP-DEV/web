@@ -5,6 +5,10 @@ const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
   message: 'Invalid locale / El locale no es válido',
 })
 
+const optimisticLockSchema = z.object({
+  updatedAt: z.string().datetime().optional(),
+})
+
 const safeHrefSchema = z
   .string()
   .min(1)
@@ -82,7 +86,7 @@ export const createCarouselItemSchema = z
     }
   })
 
-export const updateCarouselItemSchema = createCarouselItemSchema
+export const updateCarouselItemSchema = createCarouselItemSchema.merge(optimisticLockSchema)
 
 export const featuredLinkTranslationSchema = z.object({
   locale: localeSchema,
@@ -117,7 +121,7 @@ export const createFeaturedLinkSchema = z
     }
   })
 
-export const updateFeaturedLinkSchema = createFeaturedLinkSchema
+export const updateFeaturedLinkSchema = createFeaturedLinkSchema.merge(optimisticLockSchema)
 
 export const createMediaOutletSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(200),
@@ -126,7 +130,7 @@ export const createMediaOutletSchema = z.object({
   order: z.number().int().min(0).default(0),
 })
 
-export const updateMediaOutletSchema = createMediaOutletSchema
+export const updateMediaOutletSchema = createMediaOutletSchema.merge(optimisticLockSchema)
 
 export const tagTranslationSchema = z.object({
   locale: localeSchema,
@@ -205,7 +209,7 @@ export const createEqualityDocumentSchema = z
     }
   })
 
-export const updateEqualityDocumentSchema = createEqualityDocumentSchema
+export const updateEqualityDocumentSchema = createEqualityDocumentSchema.merge(optimisticLockSchema)
 
 export const financialReportTranslationSchema = z.object({
   locale: localeSchema,
@@ -241,7 +245,7 @@ export const createFinancialReportSchema = z
     }
   })
 
-export const updateFinancialReportSchema = createFinancialReportSchema
+export const updateFinancialReportSchema = createFinancialReportSchema.merge(optimisticLockSchema)
 
 export const updatePressDossierSchema = z
   .object({
@@ -268,7 +272,7 @@ export const createNewsletterSchema = z.object({
   publicVisible: z.boolean().default(false),
 })
 
-export const updateNewsletterSchema = createNewsletterSchema
+export const updateNewsletterSchema = createNewsletterSchema.merge(optimisticLockSchema)
 
 export const createNewsletterRequestSchema = createNewsletterSchema
   .extend({

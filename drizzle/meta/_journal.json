@@ -57,6 +57,13 @@
       "when": 1775950621323,
       "tag": "0007_tricky_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775953108205,
+      "tag": "0008_ancient_winter_soldier",
+      "breakpoints": true
     }
   ]
 }

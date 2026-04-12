@@ -46,12 +46,7 @@ const upcomingAgendaEvents = computed(() => {
     </div>
 
     <div aria-live="polite" :aria-busy="loading || undefined">
-      <div v-if="error" class="flex flex-col items-center py-6 text-center">
-        <UIcon name="i-tabler-alert-triangle" class="text-error mb-2 size-10" />
-        <p class="text-muted text-sm">{{ t('team.agendaLoadError') }}</p>
-      </div>
-
-      <div v-else-if="loading" class="space-y-2">
+      <div v-if="loading" class="space-y-2">
         <div
           v-for="n in 3"
           :key="n"
@@ -64,6 +59,11 @@ const upcomingAgendaEvents = computed(() => {
             <USkeleton class="h-3 w-1/2" />
           </div>
         </div>
+      </div>
+
+      <div v-else-if="error" class="flex flex-col items-center py-6 text-center">
+        <UIcon name="i-tabler-alert-triangle" class="text-error mb-2 size-10" />
+        <p class="text-muted text-sm">{{ t('team.agendaLoadError') }}</p>
       </div>
 
       <ul v-else-if="upcomingAgendaEvents.length" class="space-y-2">

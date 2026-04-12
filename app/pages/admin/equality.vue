@@ -20,6 +20,7 @@ interface EqualityDocument {
   order: number
   active: boolean
   createdAt: string
+  updatedAt: string
   translations: EqualityDocumentTranslation[]
 }
 
@@ -159,7 +160,10 @@ const handleSubmit = async () => {
     if (editingItem.value) {
       await $fetch(`/api/admin/equality/${editingItem.value.id}`, {
         method: 'PUT',
-        body: payload,
+        body: {
+          ...payload,
+          updatedAt: editingItem.value.updatedAt,
+        },
       })
       toast.add({ title: 'Documento actualizado', color: 'success' })
     } else {

@@ -1,5 +1,5 @@
 import { createError, defineEventHandler, readBody } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems, carouselItemTranslations } from '../../../db/schema'
 import {
@@ -45,6 +45,21 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateCarouselItemSchema, body)
+    if (validated.updatedAt) {
+      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
+      const serverUpdatedAt = existingItem.updatedAt
+        ? new Date(existingItem.updatedAt).getTime()
+        : 0
+
+      if (clientUpdatedAt !== serverUpdatedAt) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El elemento del carrusel fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
+    }
+
     previousImage = existingItem.image
     const nextImage =
       validated.image === HOME_CAROUSEL_FALLBACK_IMAGE
@@ -71,7 +86,11 @@ export default defineEventHandler(async (event) => {
         .delete(carouselItemTranslations)
         .where(eq(carouselItemTranslations.carouselItemId, id))
 
-      await tx
+      const whereCondition = validated.updatedAt
+        ? and(eq(carouselItems.id, id), eq(carouselItems.updatedAt, existingItem.updatedAt))
+        : eq(carouselItems.id, id)
+
+      const updatedRows = await tx
         .update(carouselItems)
         .set({
           image: nextImage,
@@ -79,7 +98,16 @@ export default defineEventHandler(async (event) => {
           order: validated.order,
           active: validated.active,
         })
-        .where(eq(carouselItems.id, id))
+        .where(whereCondition)
+        .returning({ id: carouselItems.id })
+
+      if (updatedRows.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El elemento del carrusel fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
 
       if (validated.translations.length > 0) {
         await tx.insert(carouselItemTranslations).values(
