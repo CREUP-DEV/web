@@ -224,12 +224,19 @@ const handleDelete = async () => {
             </a>
           </div>
           <div class="flex gap-2">
-            <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+            <UButton
+              icon="i-tabler-pencil"
+              variant="ghost"
+              size="sm"
+              aria-label="Editar medio"
+              @click="openEdit(item)"
+            />
             <UButton
               icon="i-tabler-trash"
               variant="ghost"
               color="error"
               size="sm"
+              aria-label="Eliminar medio"
               @click="confirmDelete(item)"
             />
           </div>
@@ -256,12 +263,19 @@ const handleDelete = async () => {
             {{ item.website }}
           </a>
           <div class="flex justify-end gap-2">
-            <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+            <UButton
+              icon="i-tabler-pencil"
+              variant="ghost"
+              size="sm"
+              aria-label="Editar medio"
+              @click="openEdit(item)"
+            />
             <UButton
               icon="i-tabler-trash"
               variant="ghost"
               color="error"
               size="sm"
+              aria-label="Eliminar medio"
               @click="confirmDelete(item)"
             />
           </div>

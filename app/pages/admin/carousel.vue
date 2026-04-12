@@ -278,12 +278,19 @@ const handleDelete = async () => {
             </div>
           </div>
           <div class="flex gap-2">
-            <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+            <UButton
+              icon="i-tabler-pencil"
+              variant="ghost"
+              size="sm"
+              aria-label="Editar elemento del carrusel"
+              @click="openEdit(item)"
+            />
             <UButton
               icon="i-tabler-trash"
               variant="ghost"
               color="error"
               size="sm"
+              aria-label="Eliminar elemento del carrusel"
               @click="confirmDelete(item)"
             />
           </div>
@@ -314,12 +321,19 @@ const handleDelete = async () => {
               {{ item.active ? 'Activo' : 'Inactivo' }}
             </span>
             <div class="flex gap-2">
-              <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+              <UButton
+                icon="i-tabler-pencil"
+                variant="ghost"
+                size="sm"
+                aria-label="Editar elemento del carrusel"
+                @click="openEdit(item)"
+              />
               <UButton
                 icon="i-tabler-trash"
                 variant="ghost"
                 color="error"
                 size="sm"
+                aria-label="Eliminar elemento del carrusel"
                 @click="confirmDelete(item)"
               />
             </div>

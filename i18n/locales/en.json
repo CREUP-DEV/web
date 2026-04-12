@@ -483,6 +483,12 @@
     "noEvents": "No events available.",
     "allTypes": "All",
     "filterByType": "Filter by event type",
+    "types": {
+      "asamblea": "Assembly",
+      "congresoYEncuentro": "Congress and Meeting",
+      "stageFormativo": "Training Stage",
+      "otro": "Other"
+    },
     "upcoming": "Upcoming",
     "ongoing": "Ongoing",
     "backToEvents": "Back to events",

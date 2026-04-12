@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CREUPEvent } from '@/composables/useEvents'
+import { getEventTypeI18nKey } from '~~/shared/constants/eventTypes'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -52,8 +53,13 @@ watch(page, () => {
 
 const typeOptions = computed(() => [
   { label: t('events.allTypes'), value: null },
-  ...eventTypes.value.map((type) => ({ label: type, value: type })),
+  ...eventTypes.value.map((type) => ({ label: getEventTypeLabel(type), value: type })),
 ])
+
+const getEventTypeLabel = (eventType: string | null) => {
+  const key = getEventTypeI18nKey(eventType)
+  return key ? t(key) : (eventType ?? '')
+}
 
 const formatDateRange = (event: CREUPEvent): string => {
   return formatDateRangeText(event.startDate, event.endDate, {
@@ -186,7 +192,7 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
                       {{ t('events.upcoming') }}
                     </UBadge>
                     <UBadge v-if="event.type" color="neutral" variant="soft" size="sm">
-                      {{ event.type }}
+                      {{ getEventTypeLabel(event.type) }}
                     </UBadge>
                   </div>
 

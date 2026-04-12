@@ -10,6 +10,7 @@ import {
   mandateSlugRouteParamSchema,
   validatePublicRouteParams,
 } from '../../../../utils/validation'
+import { getBaseLanguage, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
 
 export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
@@ -36,9 +37,26 @@ export default defineEventHandler(async (event) => {
   }
 
   const detail = await fetchMandateDetail(configuredBaseUrl, matches[0]!.id, cacheOptions, event)
+  const supportedLocaleSet = new Set<string>(SUPPORTED_LOCALE_CODES)
+  const translatedLocaleSet = new Set<string>(['es'])
+
+  for (const area of detail.areas) {
+    for (const localeCodeRaw of Object.keys(area.nameTranslations ?? {})) {
+      const localeCode = getBaseLanguage(localeCodeRaw)
+      if (!localeCode || !supportedLocaleSet.has(localeCode)) {
+        continue
+      }
+
+      const translationValue = area.nameTranslations[localeCodeRaw]
+      if (typeof translationValue === 'string' && translationValue.trim().length > 0) {
+        translatedLocaleSet.add(localeCode)
+      }
+    }
+  }
 
   return {
     ambiguous: false as const,
     ...detail,
+    translatedLocales: Array.from(translatedLocaleSet),
   }
 })

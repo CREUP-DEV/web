@@ -53,6 +53,7 @@ interface MandateInfo {
 interface MandateDetailResponse {
   mandate: MandateInfo
   areas: AreaTerm[]
+  translatedLocales?: string[]
   generatedAt?: string | null
 }
 
@@ -90,6 +91,13 @@ if (data.value?.ambiguous === true) {
 const mandate = computed(() => (data.value && !data.value.ambiguous ? data.value.mandate : null))
 const areas = computed(() => (data.value && !data.value.ambiguous ? data.value.areas : []))
 const areaVisibility = useVisibilityRegistry({ threshold: 0.12, animateVisibleOnMount: true })
+
+useLocalizedPressDetailSeo({
+  path: computed(() => `/conocenos/equipo/historico/${slug.value}`),
+  translatedLocales: computed(() =>
+    data.value && !data.value.ambiguous ? (data.value.translatedLocales ?? null) : null
+  ),
+})
 
 const {
   formatLongDate: formatDate,

@@ -104,6 +104,7 @@ const activeTab = computed({
     currentType.value = val === 'all' ? null : (val as AdminPressArticleType)
   },
 })
+const tabPanelId = 'admin-press-results'
 
 const emptyStateCreatePath = computed(() =>
   currentType.value
@@ -155,12 +156,21 @@ const emptyStateTypeLabel = computed(() =>
     </div>
 
     <div class="mb-6 space-y-4">
-      <div class="flex gap-2 overflow-x-auto">
+      <div
+        class="flex gap-2 overflow-x-auto"
+        role="tablist"
+        aria-label="Filtrar artículos por tipo"
+      >
         <UButton
           v-for="tab in tabItems"
+          :id="`press-tab-${tab.key}`"
           :key="tab.key"
           :icon="tab.icon"
           :variant="activeTab === tab.key ? 'solid' : 'outline'"
+          role="tab"
+          :aria-selected="activeTab === tab.key"
+          :aria-controls="tabPanelId"
+          :tabindex="activeTab === tab.key ? 0 : -1"
           size="sm"
           @click="activeTab = tab.key"
         >
@@ -188,7 +198,13 @@ const emptyStateTypeLabel = computed(() =>
       </UButton>
     </div>
 
-    <div v-else class="space-y-3">
+    <div
+      v-else
+      :id="tabPanelId"
+      role="tabpanel"
+      :aria-labelledby="`press-tab-${activeTab}`"
+      class="space-y-3"
+    >
       <div v-if="pending" aria-hidden="true" class="space-y-3">
         <div v-for="n in 5" :key="n" class="rounded-xl border p-4">
           <div class="flex gap-4">
@@ -321,7 +337,7 @@ const emptyStateTypeLabel = computed(() =>
         <nav
           v-if="pageCount > 1"
           class="flex justify-center pt-4"
-          aria-label="Paginacion de articulos"
+          aria-label="Paginación de artículos"
         >
           <UPagination v-model:page="page" :total="total" :items-per-page="20" />
         </nav>

@@ -281,12 +281,19 @@ const handleDelete = async () => {
             </div>
           </div>
           <div class="flex gap-2">
-            <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+            <UButton
+              icon="i-tabler-pencil"
+              variant="ghost"
+              size="sm"
+              aria-label="Editar enlace destacado"
+              @click="openEdit(item)"
+            />
             <UButton
               icon="i-tabler-trash"
               variant="ghost"
               color="error"
               size="sm"
+              aria-label="Eliminar enlace destacado"
               @click="confirmDelete(item)"
             />
           </div>
@@ -315,12 +322,19 @@ const handleDelete = async () => {
               {{ item.active ? 'Activo' : 'Inactivo' }}
             </span>
             <div class="flex gap-2">
-              <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+              <UButton
+                icon="i-tabler-pencil"
+                variant="ghost"
+                size="sm"
+                aria-label="Editar enlace destacado"
+                @click="openEdit(item)"
+              />
               <UButton
                 icon="i-tabler-trash"
                 variant="ghost"
                 color="error"
                 size="sm"
+                aria-label="Eliminar enlace destacado"
                 @click="confirmDelete(item)"
               />
             </div>

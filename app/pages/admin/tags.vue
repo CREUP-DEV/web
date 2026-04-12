@@ -237,12 +237,19 @@ const handleDelete = async () => {
           <p class="text-muted text-sm break-all">Slug: {{ item.slug }}</p>
         </div>
         <div class="flex shrink-0 gap-2">
-          <UButton icon="i-tabler-pencil" variant="ghost" size="sm" @click="openEdit(item)" />
+          <UButton
+            icon="i-tabler-pencil"
+            variant="ghost"
+            size="sm"
+            aria-label="Editar etiqueta"
+            @click="openEdit(item)"
+          />
           <UButton
             icon="i-tabler-trash"
             variant="ghost"
             color="error"
             size="sm"
+            aria-label="Eliminar etiqueta"
             @click="confirmDelete(item)"
           />
         </div>

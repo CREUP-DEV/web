@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CREUPEvent, EventGalleryImage, EventOrganization } from '@/composables/useEvents'
+import { getEventTypeI18nKey } from '~~/shared/constants/eventTypes'
 import { normalizeHostname, normalizeUrl } from '~~/shared/utils/url'
 
 type EventGalleryImageWithUrl = EventGalleryImage & {
@@ -114,6 +115,11 @@ const galleryImages = computed<EventGalleryImageWithUrl[]>(() =>
   event.value.galleryImages.filter((img): img is EventGalleryImageWithUrl => Boolean(img.url))
 )
 
+const getEventTypeLabel = (eventType: string | null) => {
+  const key = getEventTypeI18nKey(eventType)
+  return key ? t(key) : (eventType ?? '')
+}
+
 const photosPerPage = 12
 const currentGalleryPage = ref(1)
 const loadedGalleryImages = reactive(new Set<string>())
@@ -208,7 +214,7 @@ function getPhotoAlt(index: number): string {
               {{ t('events.upcoming') }}
             </UBadge>
             <UBadge v-if="event.type" color="neutral" variant="soft">
-              {{ event.type }}
+              {{ getEventTypeLabel(event.type) }}
             </UBadge>
           </div>
 

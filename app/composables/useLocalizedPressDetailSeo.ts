@@ -57,7 +57,6 @@ export function useLocalizedPressDetailSeo(options: UseLocalizedPressDetailSeoOp
 
     return {
       meta: [{ name: 'robots', content: 'noindex,follow' }],
-      link: alternateLinks.value,
     }
   })
 }

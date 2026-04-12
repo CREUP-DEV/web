@@ -483,6 +483,12 @@
     "noEvents": "No hay eventos disponibles.",
     "allTypes": "Todos",
     "filterByType": "Filtrar por tipo de evento",
+    "types": {
+      "asamblea": "Asamblea",
+      "congresoYEncuentro": "Congreso y Encuentro",
+      "stageFormativo": "Stage Formativo",
+      "otro": "Otro"
+    },
     "upcoming": "Próximo",
     "ongoing": "En curso",
     "backToEvents": "Volver a eventos",
