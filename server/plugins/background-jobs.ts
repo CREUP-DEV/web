@@ -10,7 +10,7 @@ import {
 } from '../utils/backgroundJobs'
 import { logError, logInfo } from '../utils/logger'
 import { cleanupExpiredNewsletterConfirmTokens } from '../utils/newsletterSubscribers'
-import { createBullMqConnection } from '../utils/redis'
+import { closeRedisClient, createBullMqConnection } from '../utils/redis'
 import {
   processClaimedNewsletterDelivery,
   processPendingNewsletterDeliveries,
@@ -106,5 +106,6 @@ export default defineNitroPlugin((nitro) => {
     await Promise.allSettled([newsletterWorker.close(), maintenanceWorker.close()])
 
     await closeBackgroundJobResources()
+    await closeRedisClient()
   })
 })

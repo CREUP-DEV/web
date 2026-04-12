@@ -40,6 +40,22 @@ export function getRedisClient(event?: H3Event) {
   return redisClient
 }
 
+export async function closeRedisClient() {
+  if (!redisClient) {
+    return
+  }
+
+  const client = redisClient
+  redisClient = null
+  redisClientUrl = null
+
+  try {
+    await client.quit()
+  } catch {
+    client.disconnect()
+  }
+}
+
 export function createBullMqConnection(event?: H3Event) {
   const redisUrl = getRequiredRedisUrl(event)
 

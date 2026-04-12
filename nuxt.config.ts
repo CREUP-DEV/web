@@ -168,6 +168,11 @@ export default defineNuxtConfig({
         base: 'creup:web:cache',
       },
     },
+    compressPublicAssets: true,
+    prerender: {
+      crawlLinks: false,
+      failOnError: true,
+    },
   },
 
   css: ['~/assets/css/main.css'],
@@ -289,15 +294,6 @@ export default defineNuxtConfig({
     payloadExtraction: true,
     renderJsonPayloads: true,
     componentIslands: true,
-  },
-
-  // Nitro optimizations
-  nitro: {
-    compressPublicAssets: true,
-    prerender: {
-      crawlLinks: false,
-      failOnError: true,
-    },
   },
 
   // Image optimization
