@@ -33,6 +33,7 @@ useSeoMeta({
 })
 
 const route = useRoute()
+const { data: pressDossierLink } = await usePressDossierLink()
 
 watch(
   () => route.fullPath,
@@ -51,7 +52,7 @@ const handleError = async () => {
 <template>
   <UApp :locale="currentLocale">
     <div class="bg-background flex min-h-screen flex-col">
-      <AppHeader />
+      <AppHeader :press-dossier-link="pressDossierLink" />
 
       <UMain class="flex-1">
         <UContainer class="flex items-center justify-center px-4 py-16">

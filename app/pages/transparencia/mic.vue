@@ -108,7 +108,7 @@ const copyColorToClipboard = (text: string) =>
 </script>
 
 <template>
-  <UContainer class="py-12">
+  <UContainer class="py-8 sm:py-12">
     <article class="mx-auto max-w-5xl space-y-12">
       <header class="text-center">
         <h1 class="text-3xl font-bold sm:text-4xl">

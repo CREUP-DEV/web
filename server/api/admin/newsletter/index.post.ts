@@ -11,7 +11,7 @@ import { enqueueNewsletterSendJob } from '../../../utils/backgroundJobs'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { getSmtpTransporter } from '../../../utils/smtpTransporter'
+import { ensureSmtpTransporterVerified } from '../../../utils/smtpTransporter'
 import { validateBody } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
@@ -42,11 +42,10 @@ export default defineEventHandler(async (event) => {
     const validated = validateBody(createNewsletterRequestSchema, body)
 
     if (validated.sendEmail) {
-      const transporter = getSmtpTransporter(
-        'La configuración SMTP es incompleta. Configura el servidor SMTP antes de enviar newsletters.'
-      )
       try {
-        await transporter.verify()
+        await ensureSmtpTransporterVerified(
+          'La configuración SMTP es incompleta. Configura el servidor SMTP antes de enviar newsletters.'
+        )
       } catch {
         throw createError({
           statusCode: 503,

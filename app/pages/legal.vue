@@ -24,7 +24,7 @@ usePageSeo(
 </script>
 
 <template>
-  <UContainer class="py-12">
+  <UContainer class="py-8 sm:py-12">
     <component :is="legalComponent" :title="t('footer.legal')" />
   </UContainer>
 </template>

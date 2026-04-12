@@ -6,7 +6,7 @@ import { newsletterSubscribers, newsletterSubscriptionEvents } from '../db/schem
 import { logError } from './logger'
 import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
 import { buildAbsoluteUrl, getClientIp, getUserAgent, normalizeBaseUrl } from './urlBuilder'
-import { getSmtpTransporter } from './smtpTransporter'
+import { ensureSmtpTransporterVerified } from './smtpTransporter'
 import { getOptionalConfigString, requireConfigString } from '~~/shared/utils/config'
 import { buildLocalizedPathFromLocale, type LocaleDefinition } from '~~/shared/utils/locale'
 
@@ -304,7 +304,7 @@ export async function sendNewsletterAlreadySubscribedEmail(
   subscribedAt: Date,
   configErrorMessage = 'Server configuration error.'
 ): Promise<void> {
-  const transporter = getSmtpTransporter(configErrorMessage)
+  const transporter = await ensureSmtpTransporterVerified(configErrorMessage)
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
   const unsubscribeToken = createNewsletterUnsubscribeToken(subscriberId, subscribedAt)
@@ -331,7 +331,7 @@ export async function sendNewsletterConfirmationEmail(
   defaultLocale: string,
   configErrorMessage = 'Server configuration error.'
 ): Promise<void> {
-  const transporter = getSmtpTransporter(configErrorMessage)
+  const transporter = await ensureSmtpTransporterVerified(configErrorMessage)
 
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
   const confirmToken = createNewsletterConfirmToken(subscriberId, confirmTokenExpiresAt)

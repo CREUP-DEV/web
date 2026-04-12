@@ -8,7 +8,7 @@ import {
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { validatePublicBody } from '../utils/validation'
 import { enforceRateLimit } from '../utils/rateLimit'
-import { getSmtpTransporter } from '../utils/smtpTransporter'
+import { ensureSmtpTransporterVerified } from '../utils/smtpTransporter'
 import { logError } from '../utils/logger'
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
 import { contactFormSchema } from '~~/shared/utils/contactValidation'
@@ -105,7 +105,7 @@ export default defineEventHandler(async (event) => {
   const fromEmail = getRequiredSmtpFromEmail(event, publicConfigMessage)
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(event, publicConfigMessage))
 
-  const transporter = getSmtpTransporter(publicConfigMessage)
+  const transporter = await ensureSmtpTransporterVerified(publicConfigMessage)
 
   const sentAt = new Date().toISOString()
   const contactPageUrl = buildAbsoluteUrl(siteUrl, '/contacto')

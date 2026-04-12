@@ -268,7 +268,7 @@ function formatMonth(dateStr: string): string {
 </script>
 
 <template>
-  <UContainer class="py-12">
+  <UContainer class="py-8 sm:py-12">
     <div class="mx-auto max-w-4xl">
       <div
         ref="headerRef"

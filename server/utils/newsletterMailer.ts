@@ -1,7 +1,7 @@
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
 import { createNewsletterUnsubscribeToken } from './newsletterSubscribers'
 import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
-import { getSmtpTransporter } from './smtpTransporter'
+import { ensureSmtpTransporterVerified } from './smtpTransporter'
 import { buildAbsoluteUrl, normalizeBaseUrl } from './urlBuilder'
 
 interface Newsletter {
@@ -145,7 +145,7 @@ export async function sendNewsletterEmail(
   subscriber: Subscriber,
   configErrorMessage = 'Server configuration error.'
 ) {
-  const transporter = getSmtpTransporter(configErrorMessage)
+  const transporter = await ensureSmtpTransporterVerified(configErrorMessage)
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
   const monthStr = formatMonth(new Date(newsletter.month))

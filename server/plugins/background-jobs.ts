@@ -20,6 +20,11 @@ import {
 } from '../services/newsletterDeliveryService'
 
 const DELIVERY_SHUTDOWN_TIMEOUT_MS = 10_000
+const SCHEDULER_INIT_MAX_RETRIES = 5
+const SCHEDULER_INIT_BASE_DELAY_MS = 1_000
+const SCHEDULER_INIT_MAX_DELAY_MS = 30_000
+
+const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 export default defineNitroPlugin((nitro) => {
   const newsletterWorker = new Worker(
@@ -85,11 +90,67 @@ export default defineNitroPlugin((nitro) => {
     })
   })
 
-  void ensureBackgroundJobSchedulers()
-    .then(() => enqueueStartupMaintenanceJobs())
-    .catch((error) => {
-      logError('background-jobs.scheduler-init', error)
+  let schedulerInitialized = false
+  let schedulerInitializationPromise: Promise<boolean> | null = null
+
+  const initializeSchedulersWithRetry = async (): Promise<boolean> => {
+    let delayMs = SCHEDULER_INIT_BASE_DELAY_MS
+
+    for (let attempt = 1; attempt <= SCHEDULER_INIT_MAX_RETRIES; attempt++) {
+      try {
+        await ensureBackgroundJobSchedulers()
+        await enqueueStartupMaintenanceJobs()
+        schedulerInitialized = true
+        return true
+      } catch (error) {
+        const canRetry = attempt < SCHEDULER_INIT_MAX_RETRIES
+        logError('background-jobs.scheduler-init', error, {
+          attempt,
+          maxRetries: SCHEDULER_INIT_MAX_RETRIES,
+          retryInMs: canRetry ? delayMs : null,
+        })
+
+        if (!canRetry) {
+          return false
+        }
+
+        await delay(delayMs)
+        delayMs = Math.min(delayMs * 2, SCHEDULER_INIT_MAX_DELAY_MS)
+      }
+    }
+
+    return false
+  }
+
+  const startSchedulerInitialization = () => {
+    if (schedulerInitialized) {
+      return
+    }
+
+    if (schedulerInitializationPromise) {
+      return
+    }
+
+    schedulerInitializationPromise = initializeSchedulersWithRetry().finally(() => {
+      schedulerInitializationPromise = null
     })
+  }
+
+  const retrySchedulerInitialization = () => {
+    if (schedulerInitialized) {
+      return
+    }
+
+    logInfo('background-jobs.scheduler-init.retry', {
+      trigger: 'worker-ready',
+    })
+    startSchedulerInitialization()
+  }
+
+  newsletterWorker.on('ready', retrySchedulerInitialization)
+  maintenanceWorker.on('ready', retrySchedulerInitialization)
+
+  startSchedulerInitialization()
 
   nitro.hooks.hookOnce('close', async () => {
     requestNewsletterDeliveryShutdown()

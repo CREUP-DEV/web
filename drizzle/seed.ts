@@ -14,20 +14,10 @@ import {
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
 } from '../shared/constants/assetPaths'
+import { slugify } from '../server/utils/slug'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
-
-const slugify = (text: string) =>
-  text
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 60)
 
 const buildHomeImagePath = (publicPath: string, title: string) =>
   `${publicPath}/${slugify(title) || 'imagen'}.webp`

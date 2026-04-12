@@ -343,7 +343,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <UContainer class="py-12">
+  <UContainer class="py-8 sm:py-12">
     <section role="region" :aria-label="t('contactPage.title')" class="mx-auto max-w-2xl">
       <div
         ref="headerRef"

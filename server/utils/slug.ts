@@ -1,5 +1,5 @@
 import { and, eq, ne, sql } from 'drizzle-orm'
-import { db } from '../db'
+import type { db } from '../db'
 import { pressArticles } from '../db/schema'
 
 export function slugify(text: string): string {
@@ -73,7 +73,13 @@ export async function generatePressSlug(
   const month = String(publishedAt.getUTCMonth() + 1).padStart(2, '0')
   const base = slugify(title) || 'articulo'
   const baseSlug = `${base}-${year}-${month}`
-  const executor = options.executor ?? db
+  const executor = options.executor
+
+  if (!executor) {
+    throw new Error(
+      'generatePressSlug requires a transaction executor. Call this function inside db.transaction(...) and pass the tx as options.executor.'
+    )
+  }
 
   // If a forced suffix is provided (collision retry), skip the lock and
   // uniqueness loop — just return the suffixed slug directly.
