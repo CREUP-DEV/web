@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
     }, 'No se pudo actualizar la etiqueta')
 
     await invalidatePressRelatedCaches()
-    return { data: item, item }
+    return { data: item }
   } catch (e) {
     throwAdminMutationError('admin.tags.update', e, event)
   }

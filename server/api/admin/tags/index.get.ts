@@ -11,6 +11,6 @@ export default defineEventHandler(async () => {
 
   return {
     data: items,
-    items,
+    meta: { total: items.length },
   }
 })

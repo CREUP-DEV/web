@@ -173,7 +173,8 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - `pnpm preview`
 - `pnpm lint`
 - `pnpm lint:fix`
-- `pnpm i18n:audit-identical`
+- `pnpm i18n:check` — verifica que `en.json` tiene exactamente las mismas claves que `es.json`
+- `pnpm i18n:audit-identical` — detecta claves con traducción idéntica en ambos idiomas
 - `pnpm db:generate`
 - `pnpm db:migrate`
 - `pnpm db:studio`
@@ -188,7 +189,7 @@ Nota: los correos transaccionales del proyecto se mantienen en español.
 - Mailpit web: `http://localhost:8025` por defecto
 - Mailpit SMTP: `localhost:1025` por defecto
 
-## Deploy con Docker + NGINX (sin build en VPS)
+## Deploy con Docker + NGINX (resumen rápido)
 
 Este repositorio incluye un flujo donde el build se hace en tu equipo local o CI, se publica la imagen en GHCR y el VPS solo hace pull + recreate con Docker Compose.
 
@@ -295,6 +296,6 @@ en proxy/CDN una vez confirmado que todo el tráfico público entra por HTTPS.
 - `i18n/locales/` — mensajes de traducción
 - `drizzle/` — migraciones y seeds
 
-## Pendientes técnicos
+## Despliegue en producción
 
-- #26 — Las formas de envelope de respuesta son inconsistentes. Definir un envelope compartido `{ data, meta? }` en `shared/` y migrar de forma incremental. Empezar a exigir este formato en endpoints nuevos.
+Consulta [`DEPLOYMENT.md`](./DEPLOYMENT.md) para una guía completa paso a paso con Docker, Docker Compose y NGINX sobre un VPS.

@@ -46,12 +46,12 @@ const initialFormSnapshot = ref('')
 
 // Fetch supporting data
 const [{ data: tagsData }, { data: mediaData }] = await Promise.all([
-  useFetch<{ items: PressTagAdmin[] }>('/api/admin/tags'),
-  useFetch<{ items: PressMediaOutletAdmin[] }>('/api/admin/media'),
+  useFetch<{ data: PressTagAdmin[] }>('/api/admin/tags'),
+  useFetch<{ data: PressMediaOutletAdmin[] }>('/api/admin/media'),
 ])
 
-const tags = computed(() => tagsData.value?.items ?? [])
-const mediaOutlets = computed(() => mediaData.value?.items ?? [])
+const tags = computed(() => tagsData.value?.data ?? [])
+const mediaOutlets = computed(() => mediaData.value?.data ?? [])
 
 // File uploads
 const imageUpload = useAdminFileUpload({

@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await invalidateHomeDataCache()
-    return { data: completeItem, item: completeItem }
+    return { data: completeItem }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.links.create.rollback', event)
     throwAdminMutationError('admin.links.create', e, event)

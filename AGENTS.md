@@ -41,9 +41,9 @@ server/
   api/              Nitro route handlers (admin/** protected, public routes)
   handlers/         admin-auth.ts (global admin middleware)
   middleware/       locale.ts
-  plugins/          background-jobs.ts, admin-asset-publication.ts
+  plugins/          background-jobs.ts, admin-asset-publication.ts, startup-config-validation.ts
   routes/           Non-API server routes (health.ts, asset proxy routes)
-  services/         pressArticleService.ts (complex mutations)
+  services/         pressArticleService.ts, newsletterDeliveryService.ts (complex mutations)
   utils/            All server helpers — see Key Helpers section below
   db/               schema.ts, index.ts (Drizzle client)
 shared/
@@ -147,7 +147,7 @@ await enforceRateLimit(event, {
 
 **Note:** Redis is required. App assumes `REDIS_URL` points to shared Redis instance so limits survive restarts and apply across all Nitro instances.
 
-### Validation (`server/utils/validation.ts`)
+### Validation (`server/utils/validation/`)
 
 **All untrusted input MUST be validated with Zod.** Use existing helpers:
 
@@ -158,7 +158,7 @@ validateRouteParams(event, schema)
 validateMultipartFile(formData)
 ```
 
-Reuse existing schemas. Add new schemas to `server/utils/validation.ts`. Shared admin schemas (used by both server and client) go in `shared/utils/adminSchemas.ts`.
+Reuse existing schemas. Add new schemas to the appropriate file under `server/utils/validation/`. Shared admin schemas (used by both server and client) go in `shared/utils/adminSchemas.ts`.
 
 ### Admin Image Upload (`server/utils/adminImageUpload.ts`)
 
@@ -239,7 +239,7 @@ await withExternalApiSWRCache(
 
 Cache is shared through Redis and coordinates refreshes with Redis locks so stale values can be served while one request refreshes upstream data.
 
-### Newsletter Delivery (`server/utils/newsletters.ts`)
+### Newsletter Delivery (`server/services/newsletterDeliveryService.ts`)
 
 - Delivery state machine: `queued → sending → sent | failed`
 - Worker token claimed atomically via DB UPDATE with stale-heartbeat check — safe for concurrent instances
@@ -248,6 +248,10 @@ Cache is shared through Redis and coordinates refreshes with Redis locks so stal
 - Subscribers with ≥ 3 total failed deliveries are auto-deactivated (`deactivateSubscriberOnBounce`)
 - Stale `sending` rows (older than 2 min) are reset to `queued` on next batch claim
 - Newsletter sending and maintenance scheduling run through BullMQ via `server/plugins/background-jobs.ts`
+
+`server/utils/newsletters.ts` contains shared constants and month-key helper utilities used by delivery and API layers.
+
+`server/plugins/background-jobs.ts` initializes schedulers with retry (`max 5` attempts, exponential backoff from `1s` up to `30s`) and re-triggers initialization on worker `ready` events when startup timing races occur.
 
 Do not bypass the worker token system when triggering newsletter sends. Use `sendNewsletterById` or `claimNewsletterForSending`.
 
@@ -333,11 +337,19 @@ Use this pattern for admin forms and internal tooling flows. For public pages un
 
 ```typescript
 const {
-  locales,
+  availableLocales,
+  localeConfigs,
   defaultLocale,
+  fallbackLocale,
   isDefaultLocale,
+  getLocaleConfig,
   getLocaleFlag,
+  getLanguageTag,
   getLocaleName,
+  getTranslation,
+  getTranslationValue,
+  getDefaultTranslation,
+  getDefaultTranslationValue,
   createEmptyTranslations,
   mapTranslationsToForm,
   filterNonEmptyTranslations,
@@ -392,9 +404,10 @@ If handler exceeds ~50 lines of logic, extract to `server/utils/` or `server/ser
 
 ### Response Envelopes
 
-- New JSON endpoints should prefer a consistent envelope shape: `{ data }` for single resources and `{ data, meta }` for lists or paginated results.
-- Keep existing endpoint payload shapes stable; adopt envelope constructors in the handler when introducing or migrating endpoints gradually.
-- Do not mass-change existing endpoint payloads just to match the convention; keep payload churn isolated and safe.
+- New JSON endpoints must use `{ data }` for single resources and `{ data, meta }` for lists or paginated results.
+- Do not mass-change existing endpoint payloads in isolation — keep churn isolated to tasks that already touch those files.
+- **Touch-and-clean rule:** when you modify an admin endpoint that still returns legacy duplicate keys (e.g. `{ data: item, item }` or `{ data: items, items, total, meta }`), remove the redundant top-level keys in the same change and update any frontend consumer in the same commit. This is the only safe migration path.
+- Admin pages should read `data.value?.data` and `data.value?.meta`. Do not add new top-level aliases like `item`, `items`, or `total`.
 
 ### Admin Auth
 
@@ -420,6 +433,7 @@ See `server/api/admin/press/upload.post.ts` for reference.
 
 - Use `createError({ statusCode, message })` — never throw plain errors in handlers.
 - Public endpoint errors: use `getPublicApiErrorMessage(event, key)`.
+- Public unexpected errors: use `throwSafePublicError(event, scope, error)` from `server/utils/publicErrors.ts` to log internals and return a safe localized `500`.
 - Admin endpoint errors: Spanish strings are acceptable. Complex admin resources may use `throwAdminMutationError`.
 - 409 Conflict for optimistic locking violations.
 - 413 for oversized uploads.
@@ -427,7 +441,7 @@ See `server/api/admin/press/upload.post.ts` for reference.
 
 ### Health Check
 
-`GET /health` — checks DB connectivity and external API reachability, returns `{ status: 'ok' | 'degraded' | 'error', timestamp, checks }` with 200/503. Rejects requests that carry an `X-Forwarded-For` header (404) so only direct health checks reach it.
+`GET /health` — checks DB connectivity, Redis (`PING`), external API reachability, and SMTP (`verify`), returns `{ status: 'ok' | 'degraded' | 'error', timestamp, checks }` with 200/503. DB failure sets overall `error`; Redis/External API/SMTP failures set `degraded` when DB is healthy. Rejects requests that carry an `X-Forwarded-For` header (404) so only direct health checks reach it.
 
 ---
 

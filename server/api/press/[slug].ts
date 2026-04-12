@@ -8,6 +8,7 @@ import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../utils/exte
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { isDatabaseUnavailableError } from '../../utils/databaseErrors'
 import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
+import { throwSafePublicError } from '../../utils/publicErrors'
 import { logError } from '../../utils/logger'
 import { resolvePressTranslation } from '../../utils/pressTranslation'
 import { getRequestLocaleContext } from '../../utils/requestLocale'
@@ -132,7 +133,7 @@ export default defineCachedEventHandler(
         })
       }
 
-      throw error
+      throwSafePublicError(event, 'public.press-detail', error)
     }
   },
   {

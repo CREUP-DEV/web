@@ -21,7 +21,5 @@ export default defineEventHandler(async (event) => {
   return {
     data: items,
     meta: { total },
-    items,
-    total,
   }
 })

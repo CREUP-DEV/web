@@ -141,7 +141,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await invalidateHomeDataCache()
-    return { data: item, item }
+    return { data: item }
   } catch (error) {
     await cleanupAdminAssetFinalizationsSafely(
       cleanupTargets,

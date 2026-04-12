@@ -215,7 +215,6 @@ async function handleSubmit() {
         data?: {
           emailQueued?: boolean
         }
-        emailQueued?: boolean
       }>('/api/admin/newsletter', {
         method: 'POST',
         body: {
@@ -227,7 +226,7 @@ async function handleSubmit() {
           sendEmail: form.sendEmail,
         },
       })
-      const emailQueued = response.data?.emailQueued ?? response.emailQueued ?? false
+      const emailQueued = response.data?.emailQueued ?? false
       const msg = emailQueued ? 'Newsletter creada y envío iniciado' : 'Newsletter creada'
       toast.add({ title: msg, color: 'success' })
     }

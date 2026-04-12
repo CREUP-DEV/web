@@ -101,7 +101,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await invalidatePressCache()
-    return { data: item, item }
+    return { data: item }
   } catch (e) {
     await cleanupAdminAssetFinalizationsSafely(cleanupTargets, 'admin.media.update.rollback', event)
     throwAdminMutationError('admin.media.update', e, event)
