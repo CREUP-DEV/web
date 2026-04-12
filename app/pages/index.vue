@@ -28,10 +28,13 @@ const {
 
 const carouselItems = computed(() => homeData.value?.carousel ?? [])
 const links = computed(() => homeData.value?.featuredLinks ?? [])
+const hasHomeDataError = computed(() => Boolean(homeDataError.value))
 const hasCarouselSection = computed(
   () => homeDataPending.value || !!homeDataError.value || carouselItems.value.length > 0
 )
-const hasFeaturedLinksSection = computed(() => homeDataPending.value || links.value.length > 0)
+const hasFeaturedLinksSection = computed(
+  () => homeDataPending.value || !!homeDataError.value || links.value.length > 0
+)
 const newsAndEventsSectionClass = computed(() => ({
   'pt-8 sm:pt-10': !hasCarouselSection.value,
   'pb-8 sm:pb-10': !hasFeaturedLinksSection.value,
@@ -93,6 +96,11 @@ usePageSeo('meta.title', 'meta.description', {
       </UContainer>
     </section>
 
-    <HomeFeaturedLinks :items="links" :pending="homeDataPending" />
+    <HomeFeaturedLinks
+      :items="links"
+      :pending="homeDataPending"
+      :error="hasHomeDataError"
+      @retry="refreshHomeData()"
+    />
   </div>
 </template>

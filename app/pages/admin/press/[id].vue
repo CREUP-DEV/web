@@ -24,8 +24,11 @@ const { data, error: fetchError } = await useFetch<AdminPressArticleDetailRespon
 )
 
 if (fetchError.value || !data.value) {
-  toast.add({ title: 'No se encontró el artículo', color: 'error' })
-  navigateTo('/admin/press')
+  if (import.meta.client) {
+    toast.add({ title: 'No se encontró el artículo', color: 'error' })
+  }
+
+  await navigateTo('/admin/press')
 }
 
 const article = computed(() => data.value?.data ?? null)

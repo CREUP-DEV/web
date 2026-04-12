@@ -186,18 +186,6 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
         </p>
       </header>
 
-      <div v-if="hasLoadError" class="mb-6 space-y-3">
-        <UAlert
-          color="error"
-          variant="soft"
-          icon="i-tabler-alert-triangle"
-          :title="t('sectorialCommitteePage.loadError')"
-        />
-        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshData()">
-          {{ t('home.retry') }}
-        </UButton>
-      </div>
-
       <div v-if="pending" class="space-y-12" aria-hidden="true">
         <section class="space-y-4">
           <USkeleton class="h-8 w-72 rounded" />
@@ -216,7 +204,19 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
         </section>
       </div>
 
-      <template v-else-if="!hasLoadError">
+      <div v-else-if="hasLoadError" class="mb-6 space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('sectorialCommitteePage.loadError')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshData()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
+
+      <template v-else>
         <section id="sectoriales-list" aria-labelledby="sectoriales-heading" class="mt-2">
           <h2
             id="sectoriales-heading"

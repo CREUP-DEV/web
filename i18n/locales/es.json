@@ -79,6 +79,7 @@
     "noNews": "No hay noticias para esta etiqueta",
     "retry": "Reintentar",
     "newsLoadError": "No se pudieron cargar las noticias en este momento.",
+    "featuredLinksLoadError": "No se pudieron cargar los enlaces destacados en este momento.",
     "carousel": {
       "label": "Carrusel de anuncios destacados",
       "previous": "Diapositiva anterior",

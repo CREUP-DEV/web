@@ -12,11 +12,16 @@ const props = withDefaults(
   defineProps<{
     items: LinkItem[]
     pending?: boolean
+    error?: boolean
   }>(),
   {
     pending: false,
+    error: false,
   }
 )
+const emit = defineEmits<{
+  retry: []
+}>()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -24,7 +29,7 @@ const localePath = useLocalePath()
 
 <template>
   <section
-    v-if="props.pending || props.items.length"
+    v-if="props.pending || props.error || props.items.length"
     aria-labelledby="featured-links-heading"
     class="py-4 sm:py-6"
   >
@@ -47,6 +52,18 @@ const localePath = useLocalePath()
               <USkeleton class="h-4 w-3/4" />
             </div>
           </div>
+        </div>
+
+        <div v-else-if="props.error" class="space-y-3">
+          <UAlert
+            color="error"
+            variant="soft"
+            icon="i-tabler-alert-triangle"
+            :title="t('home.featuredLinksLoadError')"
+          />
+          <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="emit('retry')">
+            {{ t('home.retry') }}
+          </UButton>
         </div>
 
         <ul

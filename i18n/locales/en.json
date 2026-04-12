@@ -79,6 +79,7 @@
     "noNews": "No news available for this tag",
     "retry": "Retry",
     "newsLoadError": "Could not load the news at this time.",
+    "featuredLinksLoadError": "Could not load featured links at this time.",
     "carousel": {
       "label": "Featured announcements carousel",
       "previous": "Previous slide",

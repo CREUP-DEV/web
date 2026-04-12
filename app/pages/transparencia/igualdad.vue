@@ -139,6 +139,11 @@ const resources = computed(() =>
     icon: resourceIcons[(docsOffset.value + index) % resourceIcons.length] ?? 'i-tabler-file-text',
   }))
 )
+const {
+  resultsRef: documentsResultsRef,
+  isLoading: documentsIsLoading,
+  isRefreshing: documentsIsRefreshing,
+} = usePaginatedTransition(documentsLoading, resources, documentsError)
 
 const {
   elRef: documentsRef,
@@ -223,97 +228,109 @@ watch(docsPage, () => {
           </h2>
         </div>
 
-        <div v-if="documentsLoading" aria-hidden="true" class="mt-6 grid gap-4 lg:grid-cols-2">
-          <UCard v-for="n in 4" :key="n" class="motion-card h-full">
-            <div class="flex h-full flex-col gap-5">
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <USkeleton class="size-11 shrink-0 rounded-2xl" />
-                  <div class="min-w-0 flex-1 space-y-2">
-                    <USkeleton class="h-5 w-3/4 rounded" />
-                    <USkeleton class="h-4 w-1/2 rounded" />
-                  </div>
-                </div>
-
-                <USkeleton class="h-4 w-full rounded" />
-                <USkeleton class="h-4 w-5/6 rounded" />
-              </div>
-
-              <USkeleton class="h-10 w-44 rounded-xl" />
-            </div>
-          </UCard>
-        </div>
-
-        <UCard v-else-if="documentsError" class="mt-6 text-center">
-          <div class="flex flex-col items-center gap-3 py-6">
-            <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
-            <p class="text-muted">{{ t('equalityPage.loadError') }}</p>
-            <UButton
-              variant="outline"
-              color="neutral"
-              icon="i-tabler-refresh"
-              @click="refreshDocuments()"
-            >
-              {{ t('home.retry') }}
-            </UButton>
-          </div>
-        </UCard>
-
-        <UCard v-else-if="resources.length === 0" class="mt-6 text-center">
-          <div class="flex flex-col items-center gap-3 py-6">
-            <UIcon name="i-tabler-files-off" class="text-muted size-10" />
-            <p class="text-muted">{{ t('equalityPage.empty') }}</p>
-          </div>
-        </UCard>
-
-        <ul v-else ref="documentsRef" class="mt-6 grid gap-4 lg:grid-cols-2">
-          <li v-for="(resource, index) in resources" :key="resource.id">
-            <UCard
-              class="motion-card h-full"
-              :class="entranceClasses(documentsShouldAnimate, documentsVisible, documentsPending)"
-              :style="entranceStyle(documentsVisible, documentsShouldAnimate, index)"
-            >
+        <div
+          ref="documentsResultsRef"
+          class="mt-6"
+          aria-live="polite"
+          :aria-busy="documentsLoading || undefined"
+        >
+          <div v-if="documentsIsLoading" aria-hidden="true" class="grid gap-4 lg:grid-cols-2">
+            <UCard v-for="n in 4" :key="n" class="motion-card h-full">
               <div class="flex h-full flex-col gap-5">
                 <div class="space-y-3">
                   <div class="flex items-start gap-3">
-                    <span
-                      aria-hidden="true"
-                      class="equality-icon-badge mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl"
-                    >
-                      <UIcon :name="resource.icon" class="size-5" />
-                    </span>
-
-                    <div class="min-w-0 space-y-2">
-                      <h3 class="text-lg font-semibold text-balance">
-                        {{ resource.title }}
-                      </h3>
-                      <p v-if="resource.meta" class="text-muted text-sm">
-                        {{ resource.meta }}
-                      </p>
+                    <USkeleton class="size-11 shrink-0 rounded-2xl" />
+                    <div class="min-w-0 flex-1 space-y-2">
+                      <USkeleton class="h-5 w-3/4 rounded" />
+                      <USkeleton class="h-4 w-1/2 rounded" />
                     </div>
                   </div>
 
-                  <p class="text-muted leading-relaxed">
-                    {{ resource.description }}
-                  </p>
+                  <USkeleton class="h-4 w-full rounded" />
+                  <USkeleton class="h-4 w-5/6 rounded" />
                 </div>
 
-                <div class="mt-auto">
-                  <UButton
-                    :href="resource.pdfUrl"
-                    external
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    icon="i-tabler-file-download"
-                    :label="t('equalityPage.openDocument')"
-                    :aria-label="`${t('equalityPage.openDocument')}: ${resource.title}`"
-                    :class="accentButtonClass"
-                  />
-                </div>
+                <USkeleton class="h-10 w-44 rounded-xl" />
               </div>
             </UCard>
-          </li>
-        </ul>
+          </div>
+
+          <UCard v-else-if="documentsError" class="text-center">
+            <div class="flex flex-col items-center gap-3 py-6">
+              <UIcon name="i-tabler-alert-triangle" class="text-error size-10" />
+              <p class="text-muted">{{ t('equalityPage.loadError') }}</p>
+              <UButton
+                variant="outline"
+                color="neutral"
+                icon="i-tabler-refresh"
+                @click="refreshDocuments()"
+              >
+                {{ t('home.retry') }}
+              </UButton>
+            </div>
+          </UCard>
+
+          <UCard v-else-if="resources.length === 0" class="text-center">
+            <div class="flex flex-col items-center gap-3 py-6">
+              <UIcon name="i-tabler-files-off" class="text-muted size-10" />
+              <p class="text-muted">{{ t('equalityPage.empty') }}</p>
+            </div>
+          </UCard>
+
+          <ul
+            v-else
+            ref="documentsRef"
+            class="grid gap-4 lg:grid-cols-2"
+            :class="documentsIsRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
+          >
+            <li v-for="(resource, index) in resources" :key="resource.id">
+              <UCard
+                class="motion-card h-full"
+                :class="entranceClasses(documentsShouldAnimate, documentsVisible, documentsPending)"
+                :style="entranceStyle(documentsVisible, documentsShouldAnimate, index)"
+              >
+                <div class="flex h-full flex-col gap-5">
+                  <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                      <span
+                        aria-hidden="true"
+                        class="equality-icon-badge mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-2xl"
+                      >
+                        <UIcon :name="resource.icon" class="size-5" />
+                      </span>
+
+                      <div class="min-w-0 space-y-2">
+                        <h3 class="text-lg font-semibold text-balance">
+                          {{ resource.title }}
+                        </h3>
+                        <p v-if="resource.meta" class="text-muted text-sm">
+                          {{ resource.meta }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p class="text-muted leading-relaxed">
+                      {{ resource.description }}
+                    </p>
+                  </div>
+
+                  <div class="mt-auto">
+                    <UButton
+                      :href="resource.pdfUrl"
+                      external
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      icon="i-tabler-file-download"
+                      :label="t('equalityPage.openDocument')"
+                      :aria-label="`${t('equalityPage.openDocument')}: ${resource.title}`"
+                      :class="accentButtonClass"
+                    />
+                  </div>
+                </div>
+              </UCard>
+            </li>
+          </ul>
+        </div>
 
         <nav
           v-if="docsTotal > LIMIT"

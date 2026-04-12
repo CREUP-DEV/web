@@ -197,18 +197,6 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <div v-if="error" class="mb-6 space-y-3">
-        <UAlert
-          color="error"
-          variant="soft"
-          icon="i-tabler-alert-triangle"
-          :title="t('members.loadError')"
-        />
-        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-          {{ t('home.retry') }}
-        </UButton>
-      </div>
-
       <div v-if="pending" class="space-y-10" aria-hidden="true">
         <section class="space-y-6">
           <div class="space-y-4">
@@ -235,7 +223,19 @@ onBeforeUnmount(() => {
         </section>
       </div>
 
-      <template v-else-if="!error">
+      <div v-else-if="error" class="mb-6 space-y-3">
+        <UAlert
+          color="error"
+          variant="soft"
+          icon="i-tabler-alert-triangle"
+          :title="t('members.loadError')"
+        />
+        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+          {{ t('home.retry') }}
+        </UButton>
+      </div>
+
+      <template v-else>
         <section aria-labelledby="associated-heading">
           <h2
             id="associated-heading"
