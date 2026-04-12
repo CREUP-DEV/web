@@ -18,6 +18,7 @@ import {
   sendNewsletterConfirmationEmail,
 } from '../utils/newsletterSubscribers'
 import { hasMinimumPublicFormSubmitDelay, verifyTurnstileTokenOrThrow } from '../utils/turnstile'
+import { throwSafePublicError } from '../utils/publicErrors'
 
 export default defineEventHandler(async (event) => {
   const { locale, locales, defaultLocale } = getRequestLocaleContext(event)
@@ -200,8 +201,7 @@ export default defineEventHandler(async (event) => {
 
     return { success: true }
   } catch (error) {
-    // Hide Zod validation details from public callers; re-throw all other errors as-is
-    // (errors thrown inside this handler already carry the correct status and message).
+    // Hide Zod validation details from public callers.
     if (
       error &&
       typeof error === 'object' &&
@@ -213,6 +213,6 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: newsletterInvalidDataMessage })
     }
 
-    throw error
+    throwSafePublicError(event, 'public.newsletter-subscribe.unexpected-error', error)
   }
 })

@@ -13,6 +13,7 @@ import { logError } from '../utils/logger'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import { throwSafePublicError } from '../utils/publicErrors'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -32,7 +33,7 @@ export default defineCachedEventHandler(
           })
         }
 
-        throw error
+        throwSafePublicError(event, 'public.about-page.unexpected-error', error)
       }),
       withExternalApiSWRCache(
         `external-api:members-count:${configuredBaseUrl}`,
@@ -44,7 +45,10 @@ export default defineCachedEventHandler(
             payload = await $fetch(endpoint)
           } catch (error) {
             logError('public.about-page.member-count.fetch', error, { endpoint }, event)
-            throw error
+            throw createError({
+              statusCode: 502,
+              message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
+            })
           }
 
           const parsedPayload = externalAssociatedMembersCountResponseSchema.safeParse(payload)

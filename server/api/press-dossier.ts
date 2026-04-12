@@ -6,6 +6,7 @@ import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { logError } from '../utils/logger'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { throwSafePublicError } from '../utils/publicErrors'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -36,7 +37,7 @@ export default defineCachedEventHandler(
         })
       }
 
-      throw error
+      throwSafePublicError(event, 'public.press-dossier.unexpected-error', error)
     }
   },
   {

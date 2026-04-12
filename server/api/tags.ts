@@ -13,6 +13,7 @@ import {
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
 import { tagsListQuerySchema, validatePublicQuery } from '../utils/validation'
+import { throwSafePublicError } from '../utils/publicErrors'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -73,7 +74,7 @@ export default defineCachedEventHandler(
         })
       }
 
-      throw error
+      throwSafePublicError(event, 'public.tags.unexpected-error', error)
     }
   },
   {
