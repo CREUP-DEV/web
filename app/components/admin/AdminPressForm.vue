@@ -9,6 +9,7 @@ import type {
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { pressArticleClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import {
   calendarDateLikeToDateOnly,
@@ -45,7 +46,6 @@ const isEditing = computed(() => !!props.article)
 const hasUnsavedChanges = ref(false)
 defineExpose({ hasUnsavedChanges })
 const isHydratingForm = ref(false)
-const initialFormSnapshot = ref('')
 
 // Fetch supporting data
 const [{ data: tagsData, error: tagsError }, { data: mediaData, error: mediaError }] =
@@ -77,7 +77,16 @@ const submitDisabledReason = computed(() => {
     return supportDataErrorTitle.value
   }
 
-  return getFieldError('image')
+  if (isEditing.value && !hasUnsavedChanges.value) {
+    return 'No hay cambios pendientes'
+  }
+
+  const imageFieldError = getFieldError('image')
+  if (imageFieldError) {
+    return imageFieldError
+  }
+
+  return ''
 })
 
 // File uploads
@@ -144,8 +153,10 @@ const buildFormSnapshot = () =>
     })),
   })
 
+const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildFormSnapshot)
+
 const resetUnsavedChangesBaseline = () => {
-  initialFormSnapshot.value = buildFormSnapshot()
+  resetFormSnapshot()
   hasUnsavedChanges.value = false
 }
 
@@ -168,11 +179,22 @@ const publicArticleUrl = computed(() => {
 
 const canSubmit = computed(() => !supportDataError.value)
 
+const clearCoverImage = () => {
+  form.image = ''
+  imageUpload.setPreview(null)
+  clearErrors()
+}
+
 const handleSubmit = () => {
   if (!canSubmit.value) return
 
+  if (isEditing.value && !hasUnsavedChanges.value) {
+    return
+  }
+
   const payload = {
     ...form,
+    image: form.image?.trim() || null,
     publishedAt: calendarDateToDateOnly(publishedAt.value),
   }
 
@@ -223,7 +245,7 @@ const populateForm = (article: PressArticleAdmin) => {
   isHydratingForm.value = true
   clearErrors()
   form.type = article.type
-  form.image = article.image
+  form.image = article.image ?? ''
   form.pdfUrl = article.pdfUrl
   form.externalUrl = article.externalUrl
   form.mediaOutletId = article.mediaOutletId
@@ -270,14 +292,10 @@ const handleRemovePdf = () => {
   form.pdfUrl = null
 }
 
-watch(
-  [() => buildFormSnapshot(), publishedAt],
-  ([snapshot]) => {
-    if (isHydratingForm.value || !initialFormSnapshot.value) return
-    hasUnsavedChanges.value = snapshot !== initialFormSnapshot.value
-  },
-  { deep: true }
-)
+watch(hasFormChanges, (value) => {
+  if (isHydratingForm.value) return
+  hasUnsavedChanges.value = value
+})
 
 const handleCancel = () => {
   if (hasUnsavedChanges.value) {
@@ -344,7 +362,7 @@ const confirmCancel = () => {
           type="submit"
           icon="i-tabler-check"
           :loading="submitting"
-          :disabled="!canSubmit || submitting"
+          :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
           :title="submitDisabledReason || undefined"
         >
           {{ isEditing ? 'Guardar cambios' : 'Crear artículo' }}
@@ -530,8 +548,17 @@ const confirmCancel = () => {
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-photo" class="text-muted size-4" />
             Imagen de portada
-            <span class="text-error font-normal">*</span>
           </h3>
+          <p class="text-muted text-xs">
+            Opcional. Si no subes imagen, se usará la
+            <NuxtLink
+              :to="ADMIN_ROUTES.siteDefaultImages"
+              class="text-primary underline underline-offset-2"
+            >
+              portada por defecto
+            </NuxtLink>
+            del tipo de artículo (si está configurada).
+          </p>
 
           <div v-if="imageUpload.preview.value" class="overflow-hidden rounded-lg border">
             <img
@@ -556,17 +583,30 @@ const confirmCancel = () => {
             class="hidden"
             @change="imageUpload.handleFileSelect"
           />
-          <UButton
-            type="button"
-            variant="outline"
-            icon="i-tabler-upload"
-            size="sm"
-            block
-            :loading="imageUpload.isUploading.value"
-            @click="imageUpload.triggerFileDialog"
-          >
-            {{ imageUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
-          </UButton>
+          <div class="flex flex-col gap-2 sm:flex-row">
+            <UButton
+              type="button"
+              variant="outline"
+              icon="i-tabler-upload"
+              size="sm"
+              class="flex-1"
+              :loading="imageUpload.isUploading.value"
+              @click="imageUpload.triggerFileDialog"
+            >
+              {{ imageUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+            </UButton>
+            <UButton
+              v-if="form.image"
+              type="button"
+              variant="ghost"
+              color="error"
+              icon="i-tabler-trash"
+              size="sm"
+              @click="clearCoverImage"
+            >
+              Quitar imagen
+            </UButton>
+          </div>
           <p v-if="getFieldError('image')" class="text-error text-xs" role="alert">
             {{ getFieldError('image') }}
           </p>

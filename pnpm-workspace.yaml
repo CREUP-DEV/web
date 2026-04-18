@@ -1,3 +1,5 @@
+ignoredBuiltDependencies:
+  - msgpackr-extract
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - '@tailwindcss/oxide'

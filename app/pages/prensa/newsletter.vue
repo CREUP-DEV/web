@@ -211,7 +211,7 @@ async function handleSubscribe() {
 interface Newsletter {
   id: string
   month: string
-  coverImage: string
+  coverImage: string | null
   pdfUrl: string
 }
 
@@ -517,10 +517,10 @@ function formatMonth(dateStr: string): string {
             <UCard
               v-for="index in 6"
               :key="index"
-              class="motion-card flex flex-col items-center text-center"
+              class="motion-card flex w-full min-w-0 flex-col text-center"
             >
-              <USkeleton class="mb-4 aspect-square w-full max-w-60 rounded-lg" />
-              <USkeleton class="mb-3 h-7 w-40" />
+              <USkeleton class="mb-4 aspect-square w-full rounded-lg" />
+              <USkeleton class="mx-auto mb-3 h-7 w-40" />
               <USkeleton class="h-10 w-full" />
             </UCard>
           </div>
@@ -537,31 +537,50 @@ function formatMonth(dateStr: string): string {
             <UCard
               v-for="(nl, index) in newsletters"
               :key="nl.id"
-              class="motion-card flex flex-col items-center text-center"
+              class="motion-card flex w-full min-w-0 flex-col text-center"
               :class="entranceClasses(archiveShouldAnimate, archiveVisible, archivePending)"
               :style="entranceStyle(archiveVisible, archiveShouldAnimate, index, 70)"
             >
-              <NuxtImg
-                :src="nl.coverImage"
-                :alt="formatMonth(nl.month)"
-                width="240"
-                height="240"
-                class="mb-4 aspect-square w-full max-w-60 rounded-lg object-cover"
-                loading="lazy"
-              />
-              <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
-              <UButton
-                :href="nl.pdfUrl"
-                external
-                target="_blank"
-                rel="noopener noreferrer"
-                icon="i-tabler-download"
-                variant="outline"
-                block
-                :aria-label="`${t('newsletterPage.archive.download')} — ${formatMonth(nl.month)}`"
-              >
-                {{ t('newsletterPage.archive.download') }}
-              </UButton>
+              <div class="flex w-full min-w-0 flex-col items-stretch">
+                <div
+                  class="bg-muted relative mb-4 aspect-square w-full min-w-0 overflow-hidden rounded-lg"
+                >
+                  <NuxtImg
+                    v-if="nl.coverImage"
+                    :src="nl.coverImage"
+                    :alt="formatMonth(nl.month)"
+                    width="240"
+                    height="240"
+                    sizes="240px"
+                    class="size-full object-cover"
+                    loading="lazy"
+                  />
+                  <div
+                    v-else
+                    class="bg-muted text-muted flex size-full items-center justify-center"
+                    aria-hidden="true"
+                  >
+                    <UIcon
+                      name="i-tabler-news"
+                      class="size-[clamp(3.5rem,28vmin,10rem)] opacity-70"
+                    />
+                  </div>
+                </div>
+                <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
+                <UButton
+                  :href="nl.pdfUrl"
+                  external
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  icon="i-tabler-download"
+                  variant="outline"
+                  block
+                  class="w-full min-w-0"
+                  :aria-label="`${t('newsletterPage.archive.download')} — ${formatMonth(nl.month)}`"
+                >
+                  {{ t('newsletterPage.archive.download') }}
+                </UButton>
+              </div>
             </UCard>
           </div>
         </div>

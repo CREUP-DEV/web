@@ -68,7 +68,7 @@ usePageSeo('meta.title', 'meta.description', {
     <HomeCarousel
       :items="carouselItems"
       :pending="homeDataPending"
-      :error="homeDataError"
+      :error="hasHomeDataError"
       @retry="refreshHomeData()"
     />
 

@@ -5,6 +5,7 @@ import {
   filterTranslationsByContent,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
 import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
@@ -44,19 +45,11 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      if (validated.updatedAt) {
-        const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-        const serverUpdatedAt = existingItem.updatedAt
-          ? new Date(existingItem.updatedAt).getTime()
-          : 0
-
-        if (clientUpdatedAt !== serverUpdatedAt) {
-          throw createError({
-            statusCode: 409,
-            message: 'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.',
-          })
-        }
-      }
+      assertOptimisticLock(
+        validated.updatedAt,
+        existingItem.updatedAt,
+        'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.'
+      )
 
       const updatedRows = await tx
         .update(tags)
@@ -66,7 +59,10 @@ export default defineEventHandler(async (event) => {
         })
         .where(
           validated.updatedAt
-            ? and(eq(tags.id, id), eq(tags.updatedAt, existingItem.updatedAt))
+            ? and(
+                eq(tags.id, id),
+                buildOptimisticLockCondition(tags.updatedAt, validated.updatedAt)
+              )
             : eq(tags.id, id)
         )
         .returning({ id: tags.id })

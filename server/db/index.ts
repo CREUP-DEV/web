@@ -10,6 +10,7 @@ import { logError } from '../utils/logger'
 import * as schema from './schema'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
+const databaseTimeZone = process.env.TZ?.trim() || 'Europe/Madrid'
 
 function resolveDatabaseMaxConnections() {
   const rawValue = process.env.DATABASE_MAX_CONNECTIONS
@@ -56,8 +57,8 @@ interface DatabasePoolStats {
 
 const pool = new Pool({
   connectionString,
-  // Enforce per-statement timeout so runaway queries do not occupy a pool slot indefinitely.
-  options: '-c statement_timeout=30000',
+  // Keep statements bounded and force every app session to use the canonical project timezone.
+  options: `-c statement_timeout=30000 -c timezone=${databaseTimeZone}`,
   // Cap concurrent DB connections. Tune to match your Postgres plan's limit.
   max: configuredMaxConnections,
   // Release idle connections after 10 s to free server-side resources.

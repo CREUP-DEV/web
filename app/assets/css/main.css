@@ -383,7 +383,7 @@ html {
   }
 
   .motion-link-card {
-    @apply transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transform-none motion-reduce:transition-none;
+    @apply transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transform-none motion-reduce:transition-none;
   }
 
   .motion-link-card:hover {
@@ -392,10 +392,13 @@ html {
 
   .motion-link-media {
     @apply transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transform-none motion-reduce:transition-none;
+    /* Stable compositing when scaling SVG rasters; avoids sibling overlay jitter */
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .motion-link-card:hover .motion-link-media {
-    transform: scale(1.035);
+    transform: translateZ(0) scale(1.035);
   }
 
   /* Staggered fade-slide-up entrance for cards */

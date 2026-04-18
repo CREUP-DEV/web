@@ -34,6 +34,8 @@ export interface AdminPressArticle {
   type: AdminPressArticleType
   slug: string
   image: string | null
+  /** Resolved list thumbnail including site default per type (admin list only). */
+  listThumbnailUrl: string | null
   pdfUrl: string | null
   externalUrl: string | null
   mediaOutletId: string | null
@@ -94,9 +96,15 @@ export function useAdminPress(
     }
   )
 
-  const items = computed(() => data.value?.data ?? [])
+  const { items, removeItem, updateMeta } = useAdminMutableCollection(data)
   const total = computed(() => data.value?.meta.total ?? 0)
   const pageCount = computed(() => Math.ceil(total.value / ADMIN_PRESS_PAGE_SIZE))
 
-  return { items, total, pageCount, page, pending, error, refresh }
+  const decrementTotal = () => {
+    updateMeta((meta) => ({
+      total: Math.max(0, (meta?.total ?? 0) - 1),
+    }))
+  }
+
+  return { decrementTotal, error, items, page, pageCount, pending, refresh, removeItem, total }
 }

@@ -8,6 +8,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateFinancialReportsCache } from '../../../utils/adminCacheInvalidation'
 import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
@@ -98,6 +99,8 @@ export default defineEventHandler(async (event) => {
         event
       )
     }
+
+    await invalidateFinancialReportsCache()
 
     const normalizedItem = {
       ...completeItem,

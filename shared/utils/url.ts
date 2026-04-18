@@ -98,3 +98,34 @@ export const toAbsoluteUrl = (
     return null
   }
 }
+
+export const toRelativeSitePath = (
+  value: string | null | undefined,
+  siteUrl: string | null | undefined
+): string | null => {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmedValue = value.trim()
+  if (!trimmedValue) {
+    return null
+  }
+
+  if (!isAbsoluteHttpUrl(trimmedValue) || !siteUrl) {
+    return trimmedValue
+  }
+
+  try {
+    const valueUrl = new URL(trimmedValue)
+    const siteBaseUrl = new URL(siteUrl)
+
+    if (valueUrl.origin !== siteBaseUrl.origin) {
+      return trimmedValue
+    }
+
+    return `${valueUrl.pathname}${valueUrl.search}${valueUrl.hash}` || '/'
+  } catch {
+    return trimmedValue
+  }
+}

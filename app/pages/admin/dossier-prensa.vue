@@ -40,6 +40,16 @@ const isUploadingPdf = ref(false)
 const isSaving = ref(false)
 const showClearPdfModal = ref(false)
 
+const buildPayloadSnapshot = () =>
+  JSON.stringify({
+    pdfUrl: form.pdfUrl,
+    active: form.active,
+    hasPendingPdfUpload: Boolean(selectedPdfFile.value),
+    pendingPdfName: pendingPdfName.value,
+  })
+
+const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
+
 const currentPdfName = computed(() => {
   if (pendingPdfName.value) {
     return pendingPdfName.value
@@ -56,6 +66,7 @@ watch(
     selectedPdfFile.value = null
     pendingPdfName.value = null
     clearErrors()
+    resetFormSnapshot()
   },
   { immediate: true }
 )
@@ -105,6 +116,10 @@ const uploadPdf = async (file: File) => {
 }
 
 const saveDossier = async () => {
+  if (!hasFormChanges.value) {
+    return
+  }
+
   isSaving.value = true
 
   try {
@@ -126,7 +141,7 @@ const saveDossier = async () => {
       return
     }
 
-    await $fetch('/api/admin/press-dossier', {
+    const response = await $fetch<{ data: PressDossierItem }>('/api/admin/press-dossier', {
       method: 'PUT',
       body: {
         ...payload,
@@ -134,7 +149,7 @@ const saveDossier = async () => {
       },
     })
 
-    await refreshDossier()
+    dossierData.value = { data: response.data }
     clearErrors()
     toast.add({ title: 'Dossier guardado', color: 'success' })
   } catch (error) {
@@ -259,6 +274,7 @@ const saveDossier = async () => {
             type="button"
             icon="i-tabler-device-floppy"
             :loading="isSaving"
+            :disabled="!hasFormChanges"
             @click="saveDossier"
           >
             Guardar cambios

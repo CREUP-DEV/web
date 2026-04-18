@@ -105,9 +105,10 @@ const hasAssignmentInfo = computed(() =>
               </div>
             </div>
 
-            <div v-if="contactEmail" class="flex items-start justify-center lg:justify-start">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-start">
               <div
-                class="bg-surface-elevated dark:bg-surface-elevated ring-primary/12 flex max-w-full min-w-0 items-center gap-2.5 rounded-full px-3.5 py-2 shadow-sm ring-1"
+                v-if="contactEmail"
+                class="bg-surface-elevated dark:bg-surface-elevated ring-primary/12 flex min-w-0 items-center justify-center gap-2.5 rounded-full px-3.5 py-2 shadow-sm ring-1 lg:justify-start"
               >
                 <span
                   class="bg-primary/12 text-primary flex size-8 shrink-0 items-center justify-center rounded-full"
@@ -126,6 +127,24 @@ const hasAssignmentInfo = computed(() =>
                   />
                 </div>
               </div>
+
+              <UButton
+                v-if="showAgendaButton"
+                color="neutral"
+                variant="ghost"
+                :aria-label="publicAgendaAriaLabel"
+                class="group bg-surface-elevated dark:bg-surface-elevated ring-primary/12 hover:ring-primary/25 hover:bg-primary/8 dark:hover:bg-primary/12 flex items-center justify-center gap-2.5 rounded-full px-3.5 py-2 shadow-sm ring-1 transition-colors"
+                @click="emit('openAgenda')"
+              >
+                <span
+                  class="bg-primary/12 text-primary group-hover:bg-primary/18 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors"
+                >
+                  <UIcon name="i-tabler-calendar" class="size-4.5" aria-hidden="true" />
+                </span>
+                <span class="text-sm leading-none font-medium">
+                  {{ publicAgendaLabel }}
+                </span>
+              </UButton>
             </div>
 
             <div
@@ -182,17 +201,6 @@ const hasAssignmentInfo = computed(() =>
               <p class="text-base leading-8 sm:text-[1.05rem]">
                 {{ member.description }}
               </p>
-            </div>
-
-            <div v-if="showAgendaButton" class="pt-1">
-              <UButton
-                variant="soft"
-                icon="i-tabler-calendar"
-                :aria-label="publicAgendaAriaLabel"
-                @click="emit('openAgenda')"
-              >
-                {{ publicAgendaLabel }}
-              </UButton>
             </div>
           </div>
         </div>

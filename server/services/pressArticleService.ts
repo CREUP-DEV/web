@@ -18,6 +18,7 @@ import {
   sanitizePressTranslations,
   sanitizeRichTextHtml,
 } from '../utils/pressTranslation'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../utils/optimisticLock'
 import { generatePressSlug } from '../utils/slug'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
 import { SUPPORTED_LOCALE_CODES, type SupportedLocaleCode } from '~~/shared/utils/locale'
@@ -305,9 +306,11 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
         allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
       })
 
-      const optimisticLockCondition = existingItem.updatedAt
-        ? eq(pressArticles.updatedAt, existingItem.updatedAt)
-        : isNull(pressArticles.updatedAt)
+      const optimisticLockCondition = data.updatedAt
+        ? buildOptimisticLockCondition(pressArticles.updatedAt, data.updatedAt)
+        : existingItem.updatedAt
+          ? eq(pressArticles.updatedAt, existingItem.updatedAt)
+          : isNull(pressArticles.updatedAt)
 
       const updatedRows = await tx
         .update(pressArticles)
@@ -395,19 +398,11 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
 
     if (!existingItem) throw createError({ statusCode: 404, message: 'No encontrado' })
 
-    if (data.updatedAt) {
-      const clientUpdatedAt = new Date(data.updatedAt).getTime()
-      const serverUpdatedAt = existingItem.updatedAt
-        ? new Date(existingItem.updatedAt).getTime()
-        : 0
-      if (clientUpdatedAt !== serverUpdatedAt) {
-        throw createError({
-          statusCode: 409,
-          message:
-            'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
-        })
-      }
-    }
+    assertOptimisticLock(
+      data.updatedAt,
+      existingItem.updatedAt,
+      'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
 
     const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
     if (!defaultTitle) throw new Error('El título en español es obligatorio')

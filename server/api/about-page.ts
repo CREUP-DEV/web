@@ -14,6 +14,7 @@ import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 import { throwSafePublicError } from '../utils/publicErrors'
+import { appendAssetVersion } from '../utils/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -79,9 +80,12 @@ export default defineCachedEventHandler(
         ? {
             heroVisible: content.heroVisible,
             heroImage: content.heroImage
-              ? toExternalImageProxyUrl(content.heroImage, {
-                  publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
-                })
+              ? appendAssetVersion(
+                  toExternalImageProxyUrl(content.heroImage, {
+                    publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
+                  }),
+                  content.updatedAt
+                )
               : null,
           }
         : null,

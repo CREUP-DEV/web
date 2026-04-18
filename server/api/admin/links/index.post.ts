@@ -15,6 +15,7 @@ import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import { validateBody } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'
+import { toRelativeSitePath } from '~~/shared/utils/url'
 
 const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/enlaces-destacados'
 
@@ -28,6 +29,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const validated = validateBody(createFeaturedLinkSchema, body)
+    const normalizedTo = toRelativeSitePath(validated.to, useRuntimeConfig(event).siteUrl)
     const image = await finalizeAdminImage({
       storagePath: validated.image,
       uploadDir: IMAGE_UPLOAD_DIR,
@@ -47,7 +49,7 @@ export default defineEventHandler(async (event) => {
         .insert(featuredLinks)
         .values({
           image,
-          to: validated.to,
+          to: normalizedTo ?? validated.to,
           order: validated.order,
           active: validated.active,
         })

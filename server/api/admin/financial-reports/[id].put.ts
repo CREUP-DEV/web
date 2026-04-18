@@ -9,12 +9,14 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateFinancialReportsCache } from '../../../utils/adminCacheInvalidation'
 import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
   getRequiredTranslationValue,
 } from '../../../utils/localizedContent'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
@@ -42,20 +44,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateFinancialReportSchema, body)
-    if (validated.updatedAt) {
-      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-      const serverUpdatedAt = existingItem.updatedAt
-        ? new Date(existingItem.updatedAt).getTime()
-        : 0
-
-      if (clientUpdatedAt !== serverUpdatedAt) {
-        throw createError({
-          statusCode: 409,
-          message:
-            'El informe fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
-        })
-      }
-    }
+    assertOptimisticLock(
+      validated.updatedAt,
+      existingItem.updatedAt,
+      'El informe fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
 
     if (!getRequiredTranslationValue(validated.translations, 'title')) {
       throw createError({
@@ -86,7 +79,10 @@ export default defineEventHandler(async (event) => {
 
     const item = (await runAdminCrudTransaction(async (tx) => {
       const whereCondition = validated.updatedAt
-        ? and(eq(financialReports.id, id), eq(financialReports.updatedAt, existingItem.updatedAt))
+        ? and(
+            eq(financialReports.id, id),
+            buildOptimisticLockCondition(financialReports.updatedAt, validated.updatedAt)
+          )
         : eq(financialReports.id, id)
 
       const updatedRows = await tx
@@ -138,6 +134,8 @@ export default defineEventHandler(async (event) => {
         event
       )
     }
+
+    await invalidateFinancialReportsCache()
 
     const normalizedItem = {
       ...item,

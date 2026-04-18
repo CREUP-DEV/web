@@ -13,15 +13,18 @@ interface SignInUser {
   image?: string | null
 }
 
-function getTrustedOrigins() {
-  return Array.from(
-    new Set(
-      [
-        getOptionalConfigUrl(process.env.BETTER_AUTH_URL, 'BETTER_AUTH_URL'),
-        getOptionalConfigUrl(process.env.SITE_URL, 'SITE_URL'),
-      ].filter((origin): origin is string => Boolean(origin))
-    )
+function getAuthBaseUrl() {
+  return (
+    getOptionalConfigUrl(process.env.BETTER_AUTH_URL, 'BETTER_AUTH_URL') ||
+    getOptionalConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL') ||
+    getOptionalConfigUrl(process.env.SITE_URL, 'SITE_URL') ||
+    undefined
   )
+}
+
+function getTrustedOrigins() {
+  const origin = getAuthBaseUrl()
+  return origin ? [origin] : []
 }
 
 const authSecondaryStorage = {
@@ -45,6 +48,7 @@ const authSecondaryStorage = {
 }
 
 export const auth = betterAuth({
+  baseURL: getAuthBaseUrl(),
   secret: requireConfigString(process.env.APP_SECRET, 'APP_SECRET'),
   database: drizzleAdapter(db, {
     provider: 'pg',

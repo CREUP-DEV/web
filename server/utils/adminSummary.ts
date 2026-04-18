@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { PRESS_TYPE_LABELS } from '~~/shared/constants/pressTypes'
 import type { AdminSectionKey } from '~~/shared/constants/adminSections'
 import { DEFAULT_LOCALE_CODE } from '~~/shared/utils/locale'
@@ -20,6 +21,8 @@ interface TranslationLike {
   locale: string
   [key: string]: string | null
 }
+
+type ParsedTranslation<K extends string> = { locale: string } & Record<K, string | null>
 
 const pressTypeLabelsByKey = PRESS_TYPE_LABELS as Record<string, string>
 
@@ -85,10 +88,7 @@ const parseJsonArray = (value: unknown): Array<Record<string, unknown>> => {
   return []
 }
 
-const parseTranslations = <K extends string>(
-  value: unknown,
-  key: K
-): Array<{ locale: string; [P in K]: string | null }> =>
+const parseTranslations = <K extends string>(value: unknown, key: K): ParsedTranslation<K>[] =>
   parseJsonArray(value)
     .map((entry) => {
       const locale = toStringOrNull(entry.locale)
@@ -100,9 +100,9 @@ const parseTranslations = <K extends string>(
       return {
         locale,
         [key]: typeof rawValue === 'string' ? rawValue : null,
-      } as { locale: string; [P in K]: string | null }
+      } as ParsedTranslation<K>
     })
-    .filter((entry): entry is { locale: string; [P in K]: string | null } => entry !== null)
+    .filter((entry): entry is ParsedTranslation<K> => entry !== null)
 
 const getTranslatedValue = <T extends TranslationLike>(
   translations: T[] | undefined,
@@ -277,7 +277,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
         n.updated_at,
         jsonb_build_object(
           'monthKey', n.month_key,
-          'active', n.active,
           'publicVisible', n.public_visible,
           'sentAt', n.sent_at,
           'lastDeliveryWorkerToken', n.last_delivery_worker_token
@@ -396,7 +395,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
       ) as equality_translations,
 
       (newsletter.payload ->> 'monthKey') as newsletter_month_key,
-      (newsletter.payload ->> 'active')::boolean as newsletter_active,
       (newsletter.payload ->> 'publicVisible')::boolean as newsletter_public_visible,
       (newsletter.payload ->> 'sentAt')::timestamptz as newsletter_sent_at,
       (newsletter.payload ->> 'lastDeliveryWorkerToken') as newsletter_last_delivery_worker_token,
@@ -533,7 +531,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
     latestNewsletter: newsletterUpdatedAt
       ? {
           monthKey: toStringOrNull(row.newsletter_month_key) ?? '',
-          active: toBooleanOrNull(row.newsletter_active) ?? false,
           publicVisible: toBooleanOrNull(row.newsletter_public_visible) ?? false,
           sentAt: toDateOrNull(row.newsletter_sent_at),
           lastDeliveryWorkerToken: toStringOrNull(row.newsletter_last_delivery_worker_token),
@@ -611,7 +608,7 @@ export async function getAdminDashboardSummary() {
             : aboutItem.heroVisible
               ? 'Visible en la web pública'
               : 'Guardado, pero oculto',
-          to: '/admin/about',
+          to: ADMIN_ROUTES.about,
           updatedAt: aboutItem.updatedAt,
         }
       : null,
@@ -620,7 +617,7 @@ export async function getAdminDashboardSummary() {
           sectionKey: 'carousel',
           title: getTranslatedValue(latestCarouselItem.translations, 'title', 'Slide sin título'),
           description: `${latestCarouselItem.active ? 'Activo' : 'Inactivo'} · ${latestCarouselItem.href}`,
-          to: '/admin/carousel',
+          to: ADMIN_ROUTES.carousel,
           updatedAt: latestCarouselItem.updatedAt,
         }
       : null,
@@ -633,7 +630,7 @@ export async function getAdminDashboardSummary() {
             'Documento de igualdad'
           ),
           description: latestEqualityDocument.active ? 'Documento activo' : 'Documento inactivo',
-          to: '/admin/equality',
+          to: ADMIN_ROUTES.equality,
           updatedAt: latestEqualityDocument.updatedAt,
         }
       : null,
@@ -645,10 +642,8 @@ export async function getAdminDashboardSummary() {
             ? `Enviándose ahora · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`
             : latestNewsletter.sentAt
               ? `Ya enviada · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`
-              : `${latestNewsletter.active ? 'Envío habilitado' : 'Envío deshabilitado'} · ${
-                  latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'
-                }`,
-          to: '/admin/newsletter',
+              : `Pendiente de envío · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`,
+          to: ADMIN_ROUTES.newsletter,
           updatedAt: latestNewsletter.updatedAt,
         }
       : null,
@@ -657,7 +652,7 @@ export async function getAdminDashboardSummary() {
           sectionKey: 'press',
           title: getTranslatedValue(latestPressArticle.translations, 'title', 'Artículo de prensa'),
           description: `${pressTypeLabelsByKey[latestPressArticle.type] ?? 'Prensa'} · ${latestPressArticle.active ? 'Activo' : 'Inactivo'}`,
-          to: '/admin/press',
+          to: ADMIN_ROUTES.press,
           updatedAt: latestPressArticle.updatedAt,
         }
       : null,
@@ -670,7 +665,7 @@ export async function getAdminDashboardSummary() {
             : pressDossierItem.active
               ? 'PDF activo'
               : 'PDF guardado pero inactivo',
-          to: '/admin/press-dossier',
+          to: ADMIN_ROUTES.pressDossier,
           updatedAt: pressDossierItem.updatedAt,
         }
       : null,
@@ -679,7 +674,7 @@ export async function getAdminDashboardSummary() {
           sectionKey: 'links',
           title: getTranslatedValue(latestFeaturedLink.translations, 'title', 'Enlace destacado'),
           description: latestFeaturedLink.active ? 'Bloque activo' : 'Bloque inactivo',
-          to: '/admin/links',
+          to: ADMIN_ROUTES.links,
           updatedAt: latestFeaturedLink.updatedAt,
         }
       : null,
@@ -688,7 +683,7 @@ export async function getAdminDashboardSummary() {
           sectionKey: 'tags',
           title: getTranslatedValue(latestTag.translations, 'name', latestTag.slug),
           description: `Etiqueta · ${latestTag.slug}`,
-          to: '/admin/tags',
+          to: ADMIN_ROUTES.tags,
           updatedAt: latestTag.updatedAt,
         }
       : null,
@@ -697,7 +692,7 @@ export async function getAdminDashboardSummary() {
           sectionKey: 'media',
           title: latestMediaOutlet.name,
           description: latestMediaOutlet.website,
-          to: '/admin/media',
+          to: ADMIN_ROUTES.media,
           updatedAt: latestMediaOutlet.updatedAt,
         }
       : null,
@@ -710,7 +705,7 @@ export async function getAdminDashboardSummary() {
             'Informe económico'
           ),
           description: latestFinancialReport.active ? 'Informe activo' : 'Informe inactivo',
-          to: '/admin/financial-reports',
+          to: ADMIN_ROUTES.financialReports,
           updatedAt: latestFinancialReport.updatedAt,
         }
       : null,

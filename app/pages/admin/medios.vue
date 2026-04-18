@@ -30,7 +30,17 @@ const {
   lazy: true,
 })
 
-const items = computed(() => data.value?.data ?? [])
+const sortMediaOutlets = (left: MediaOutlet, right: MediaOutlet) => {
+  if (left.order !== right.order) {
+    return left.order - right.order
+  }
+
+  return left.id.localeCompare(right.id, 'es')
+}
+
+const { items, removeItem, replaceItem, setItems } = useAdminMutableCollection(data, {
+  sortItems: sortMediaOutlets,
+})
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -40,6 +50,17 @@ const form = reactive({
   logo: '',
   order: 0,
 })
+
+const buildPayload = () => ({
+  name: form.name,
+  website: form.website,
+  logo: form.logo,
+  order: form.order,
+})
+
+const buildPayloadSnapshot = () => JSON.stringify(buildPayload())
+
+const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
 
 const {
   inputRef: fileInputRef,
@@ -80,8 +101,12 @@ const {
       method: 'POST',
       body: { items: updates },
     })
-
-    await refresh()
+    setItems(
+      items.value.map((item) => {
+        const nextOrder = updates.find((update) => update.id === item.id)?.order
+        return nextOrder === undefined ? item : { ...item, order: nextOrder }
+      })
+    )
   },
   prepareCreate: () => {
     clearErrors()
@@ -90,6 +115,7 @@ const {
     form.logo = ''
     form.order = items.value.length
     logoPreview.value = null
+    resetFormSnapshot()
   },
   prepareEdit: (item) => {
     clearErrors()
@@ -98,6 +124,7 @@ const {
     form.logo = item.logo
     form.order = item.order
     logoPreview.value = item.logo
+    resetFormSnapshot()
   },
 })
 
@@ -111,11 +138,12 @@ const saveOrder = async () => {
 }
 
 const handleSubmit = async () => {
-  const payload = {
-    name: form.name,
-    website: form.website,
-    logo: form.logo,
-    order: form.order,
+  const payload = buildPayload()
+
+  if (editingItem.value && !hasFormChanges.value) {
+    closeModal()
+    clearErrors()
+    return
   }
 
   if (!validate(createMediaOutletClientSchema, payload)) {
@@ -125,24 +153,28 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   try {
     if (editingItem.value) {
-      await $fetch(`/api/admin/media/${editingItem.value.id}`, {
-        method: 'PUT',
-        body: {
-          ...payload,
-          updatedAt: editingItem.value.updatedAt,
-        },
-      })
+      const response = await $fetch<{ data: MediaOutlet }>(
+        `/api/admin/media/${editingItem.value.id}`,
+        {
+          method: 'PUT',
+          body: {
+            ...payload,
+            updatedAt: editingItem.value.updatedAt,
+          },
+        }
+      )
+      replaceItem(response.data)
       toast.add({ title: 'Medio actualizado', color: 'success' })
     } else {
-      await $fetch('/api/admin/media', {
+      const response = await $fetch<{ data: MediaOutlet }>('/api/admin/media', {
         method: 'POST',
         body: payload,
       })
+      replaceItem(response.data)
       toast.add({ title: 'Medio creado', color: 'success' })
     }
     closeModal()
     clearErrors()
-    await refresh()
   } catch (e) {
     toast.add({ title: getApiErrorMessage(e, 'No se pudo guardar el medio'), color: 'error' })
   } finally {
@@ -155,8 +187,8 @@ const handleDelete = async () => {
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/media/${itemToDelete.value.id}`, { method: 'DELETE' })
+    removeItem(itemToDelete.value.id)
     closeDeleteModal()
-    await refresh()
     toast.add({ title: 'Medio eliminado', color: 'success' })
   } catch (e) {
     toast.add({ title: getApiErrorMessage(e, 'No se pudo eliminar el medio'), color: 'error' })
@@ -342,7 +374,12 @@ const handleDelete = async () => {
           </div>
           <div class="flex justify-end gap-2 border-t p-4">
             <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
-            <UButton type="submit" form="media-form" :loading="isSubmitting">
+            <UButton
+              type="submit"
+              form="media-form"
+              :loading="isSubmitting"
+              :disabled="Boolean(editingItem) && !hasFormChanges"
+            >
               {{ editingItem ? 'Guardar' : 'Crear' }}
             </UButton>
           </div>

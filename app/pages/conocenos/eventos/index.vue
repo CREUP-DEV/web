@@ -20,7 +20,7 @@ usePageSeo('events.title', 'events.description', {
       path: localePath('/'),
     },
     {
-      name: t('nav.events.label'),
+      name: t('nav.about.events'),
       path: localePath('/conocenos/eventos'),
     },
   ],

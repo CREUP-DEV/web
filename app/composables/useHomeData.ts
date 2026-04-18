@@ -1,5 +1,7 @@
+import { getPublicHomeDataAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
+
 export interface CarouselItem {
-  image: string
+  image: string | null
   href: string
   title: string
   buttonText: string
@@ -22,7 +24,7 @@ export function useHomeData() {
   const { locale } = useI18n()
   const localeApiHeaders = useLocaleApiHeaders()
 
-  const key = computed(() => `home-data-${locale.value}`)
+  const key = computed(() => getPublicHomeDataAsyncDataKey(locale.value))
 
   return useAsyncData<HomeDataResponse>(
     key,

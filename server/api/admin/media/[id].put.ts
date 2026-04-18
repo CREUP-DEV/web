@@ -11,6 +11,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updateMediaOutletSchema } from '~~/shared/utils/adminSchemas'
@@ -32,20 +33,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateMediaOutletSchema, body)
-    if (validated.updatedAt) {
-      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-      const serverUpdatedAt = existingItem.updatedAt
-        ? new Date(existingItem.updatedAt).getTime()
-        : 0
-
-      if (clientUpdatedAt !== serverUpdatedAt) {
-        throw createError({
-          statusCode: 409,
-          message:
-            'El medio fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
-        })
-      }
-    }
+    assertOptimisticLock(
+      validated.updatedAt,
+      existingItem.updatedAt,
+      'El medio fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
 
     const previousLogo = existingItem.logo
     const logo = await finalizeAdminImage({
@@ -63,7 +55,10 @@ export default defineEventHandler(async (event) => {
     })
 
     const whereCondition = validated.updatedAt
-      ? and(eq(mediaOutlets.id, id), eq(mediaOutlets.updatedAt, existingItem.updatedAt))
+      ? and(
+          eq(mediaOutlets.id, id),
+          buildOptimisticLockCondition(mediaOutlets.updatedAt, validated.updatedAt)
+        )
       : eq(mediaOutlets.id, id)
 
     const updatedRows = await db

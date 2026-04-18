@@ -1,28 +1,54 @@
 import tailwindcss from '@tailwindcss/vite'
-import { getOptionalConfigUrl, requireConfigString, requireConfigUrl } from './shared/utils/config'
+import { getOptionalConfigUrl, requireConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
 import { getStaticContentSecurityPolicy } from './server/utils/csp'
 
 const isDev = process.env.NODE_ENV !== 'production'
-const appSecret = isDev
-  ? process.env.APP_SECRET?.trim() || 'dev-og-image-secret'
-  : requireConfigString(process.env.APP_SECRET, 'APP_SECRET')
-const siteUrl = isDev
-  ? requireConfigUrl(process.env.SITE_URL || 'http://localhost:3000', 'SITE_URL')
-  : requireConfigUrl(process.env.SITE_URL, 'SITE_URL')
-const canonicalSiteUrl =
-  isDev && ['localhost', '127.0.0.1'].includes(new URL(siteUrl).hostname)
-    ? 'https://www.creup.es'
-    : siteUrl
-const siteImageHostname = new URL(siteUrl).hostname
+
+const siteUrl = requireConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL')
+const siteHostname = new URL(siteUrl).hostname
+const canonicalSiteUrl = siteUrl
 const turnstileSiteKey = process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || ''
+const siteImageHostname = siteHostname
 const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
-const staticContentSecurityPolicy = getStaticContentSecurityPolicy({
-  turnstileSiteKey,
-  umamiHost,
-})
+const staticContentSecurityPolicy = isDev
+  ? null
+  : getStaticContentSecurityPolicy({
+      turnstileSiteKey,
+      umamiHost,
+    })
+const productionPublicSWRPagePaths = [
+  '/conocenos/comites',
+  '/conocenos/equipo',
+  '/conocenos/equipo/**',
+  '/conocenos/eventos',
+  '/conocenos/eventos/**',
+  '/conocenos/miembros',
+  '/conocenos/que-es',
+  '/transparencia/igualdad',
+  '/transparencia/informes-economicos',
+  '/transparencia/mic',
+  '/transparencia/normativa',
+  '/politica/informes-ejecutivos',
+  '/politica/posicionamientos',
+  '/politica/resoluciones',
+  '/comision-de-asuntos-sectoriales',
+  '/legal',
+] as const
+
+const buildSWRRouteRules = (paths: readonly string[], ttlSeconds: number) =>
+  Object.fromEntries(paths.map((path) => [path, { swr: ttlSeconds }]))
+
+const productionPublicSWRRouteRules = isDev
+  ? {}
+  : buildSWRRouteRules(productionPublicSWRPagePaths, 60)
+
+// Always use the internal Nitro server address for IPX to fetch source images.
+// Handles both static public-dir files and dynamic server routes (external API proxies)
+// without depending on the external site URL, which is unreachable from within the container.
+const ipxInternalOrigin = `http://localhost:${process.env.PORT || 3000}`
 const internalImageAlias = Object.fromEntries(
-  INTERNAL_IMAGE_PROXY_PATH_BASES.map((path) => [path, `${new URL(siteUrl).origin}${path}`])
+  INTERNAL_IMAGE_PROXY_PATH_BASES.map((path) => [path, `${ipxInternalOrigin}${path}`])
 )
 
 const siteName = 'CREUP'
@@ -37,7 +63,6 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
     server: {
-      // Vite 7 requires localhost to be listed explicitly when allowedHosts is an array
       allowedHosts: isDev ? ['localhost', '127.0.0.1', '.trycloudflare.com'] : undefined,
     },
     optimizeDeps: {
@@ -108,33 +133,38 @@ export default defineNuxtConfig({
     provider: 'server',
     fallbackToApi: false,
     collections: ['tabler', 'circle-flags', 'lucide'],
+    serverBundle: {
+      collections: ['tabler', 'circle-flags', 'lucide'],
+    },
   },
 
   runtimeConfig: {
-    externalApiBaseUrl: process.env.EXTERNAL_API_BASE_URL,
+    externalApiBaseUrl: process.env.NUXT_EXTERNAL_API_BASE_URL,
     externalAssetProxyAllowedOrigins:
-      process.env.EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS || process.env.EXTERNAL_API_BASE_URL,
-    externalAssetProxyTimeoutMs: process.env.EXTERNAL_ASSET_PROXY_TIMEOUT_MS,
-    externalAssetProxyImageMaxBytes: process.env.EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES,
-    externalAssetProxyPdfMaxBytes: process.env.EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES,
-    externalApiCacheMaxAgeSeconds: process.env.EXTERNAL_API_CACHE_MAX_AGE_SECONDS,
-    externalApiCacheStaleSeconds: process.env.EXTERNAL_API_CACHE_STALE_SECONDS,
-    redisUrl: process.env.REDIS_URL,
-    siteUrl,
+      process.env.NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS ||
+      process.env.NUXT_EXTERNAL_API_BASE_URL,
+    externalAssetProxyTimeoutMs: process.env.NUXT_EXTERNAL_ASSET_PROXY_TIMEOUT_MS,
+    externalAssetProxyImageMaxBytes: process.env.NUXT_EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES,
+    externalAssetProxyPdfMaxBytes: process.env.NUXT_EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES,
+    externalApiCacheMaxAgeSeconds: process.env.NUXT_EXTERNAL_API_CACHE_MAX_AGE_SECONDS,
+    externalApiCacheStaleSeconds: process.env.NUXT_EXTERNAL_API_CACHE_STALE_SECONDS,
+    redisUrl: process.env.NUXT_REDIS_URL,
+    siteUrl: siteUrl,
     umamiHost: umamiHost ?? undefined,
-    smtpHost: process.env.SMTP_HOST,
-    smtpPort: process.env.SMTP_PORT,
-    smtpSecure: process.env.SMTP_SECURE,
-    smtpUser: process.env.SMTP_USER,
-    smtpPass: process.env.SMTP_PASS,
-    smtpFromEmail: process.env.SMTP_FROM_EMAIL,
-    smtpToEmail: process.env.SMTP_TO_EMAIL,
-    smtpPressEmail: process.env.SMTP_PRESS_EMAIL,
-    googleCalendarApiKey: process.env.GOOGLE_CALENDAR_API_KEY,
-    googleCalendarId: process.env.GOOGLE_CALENDAR_ID,
-    turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
+    smtpHost: process.env.NUXT_SMTP_HOST,
+    smtpPort: process.env.NUXT_SMTP_PORT,
+    smtpSecure: process.env.NUXT_SMTP_SECURE,
+    smtpUser: process.env.NUXT_SMTP_USER,
+    smtpPass: process.env.NUXT_SMTP_PASS,
+    smtpFromEmail: process.env.NUXT_SMTP_FROM_EMAIL,
+    smtpToEmail: process.env.NUXT_SMTP_TO_EMAIL,
+    smtpPressEmail: process.env.NUXT_SMTP_PRESS_EMAIL,
+    googleCalendarApiKey: process.env.NUXT_GOOGLE_CALENDAR_API_KEY,
+    googleCalendarId: process.env.NUXT_GOOGLE_CALENDAR_ID,
+    turnstileSecretKey: process.env.NUXT_TURNSTILE_SECRET_KEY,
     public: {
       turnstileSiteKey,
+      siteUrl: siteUrl,
     },
   },
 
@@ -163,7 +193,7 @@ export default defineNuxtConfig({
   // OG Image configuration
   ogImage: {
     security: {
-      secret: appSecret,
+      restrictRuntimeImagesToOrigin: !isDev,
     },
     defaults: {
       width: 1200,
@@ -196,7 +226,11 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': {
       headers: {
-        'Content-Security-Policy': staticContentSecurityPolicy,
+        ...(staticContentSecurityPolicy
+          ? {
+              'Content-Security-Policy': staticContentSecurityPolicy,
+            }
+          : {}),
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
         'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -213,21 +247,7 @@ export default defineNuxtConfig({
         'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     },
-    '/conocenos/**': {
-      swr: 60,
-    },
-    '/transparencia/**': {
-      swr: 60,
-    },
-    '/politica/**': {
-      swr: 60,
-    },
-    '/comision-de-asuntos-sectoriales': {
-      swr: 60,
-    },
-    '/legal': {
-      swr: 60,
-    },
+    ...productionPublicSWRRouteRules,
     '/_nuxt/**': {
       headers: {
         'Cache-Control': 'public, max-age=31536000, immutable',

@@ -24,22 +24,10 @@ load_env_file() {
 }
 
 build_and_push_image() {
-  local build_args=(
-    --build-arg "SITE_URL=$SITE_URL"
-  )
-
-  if [ -n "${NUXT_UMAMI_HOST:-}" ]; then
-    build_args+=(--build-arg "NUXT_UMAMI_HOST=$NUXT_UMAMI_HOST")
-  fi
-
-  if [ -n "${NUXT_UMAMI_ID:-}" ]; then
-    build_args+=(--build-arg "NUXT_UMAMI_ID=$NUXT_UMAMI_ID")
-  fi
-
   if docker buildx version >/dev/null 2>&1; then
     docker buildx build \
       --platform "$DOCKER_PLATFORM" \
-      "${build_args[@]}" \
+      --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
       -t "$IMAGE" \
       --push \
       .
@@ -48,7 +36,7 @@ build_and_push_image() {
 
   docker build \
     --platform "$DOCKER_PLATFORM" \
-    "${build_args[@]}" \
+    --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
     -t "$IMAGE" \
     .
   docker push "$IMAGE"
@@ -86,9 +74,9 @@ EOF
 
 load_env_file ".env"
 
-: "${SITE_URL:?ERROR: SITE_URL is required}"
 : "${VPS_HOST:?ERROR: VPS_HOST is required}"
 : "${REMOTE_DIR:?ERROR: REMOTE_DIR is required}"
+: "${NUXT_SITE_URL:?ERROR: NUXT_SITE_URL is required}"
 
 require_command docker
 require_command ssh

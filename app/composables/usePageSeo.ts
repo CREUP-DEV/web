@@ -56,7 +56,7 @@ export function usePageSeo(
   const { t, locale } = useI18n()
   const { getLanguageTag } = useLocales()
   const route = useRoute()
-  const siteConfig = useSiteConfig()
+  const siteUrl = useRuntimeSiteUrl()
 
   const title = () => resolveTranslatedValue(titleValue, t)
   const description = () => resolveTranslatedValue(descriptionValue, t)
@@ -65,12 +65,12 @@ export function usePageSeo(
 
   const canonicalUrl = computed(() => {
     const canonicalPath = resolveLiteralValue(options.canonicalPath) ?? route.path
-    return toAbsoluteUrl(canonicalPath, String(siteConfig.url ?? '').trim()) ?? undefined
+    return toAbsoluteUrl(canonicalPath, siteUrl.value) ?? undefined
   })
 
   const ogImage = computed(() => {
     const imagePath = explicitOgImage.value
-    return toAbsoluteUrl(imagePath, String(siteConfig.url ?? '').trim()) ?? undefined
+    return toAbsoluteUrl(imagePath, siteUrl.value) ?? undefined
   })
 
   const ogType = () => resolveLiteralValue(options.ogType) ?? 'website'
@@ -119,12 +119,7 @@ export function usePageSeo(
       ]
 
       if (breadcrumbItems.value?.length) {
-        nodes.push(
-          createBreadcrumbStructuredData(
-            breadcrumbItems.value,
-            String(siteConfig.url ?? '').trim() || null
-          )
-        )
+        nodes.push(createBreadcrumbStructuredData(breadcrumbItems.value, siteUrl.value || null))
       }
 
       return nodes

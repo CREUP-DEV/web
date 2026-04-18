@@ -1,7 +1,7 @@
 import { createError } from 'h3'
 import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { adminAccess, sessions, users } from '../db/schema'
+import { accounts, adminAccess, sessions, users } from '../db/schema'
 
 export interface AdminAccessListItem {
   id: string
@@ -177,12 +177,14 @@ export async function listAdminAccess() {
     ? await db
         .select({
           id: users.id,
+          normalizedEmail: sql<string>`lower(${users.email})`,
           email: users.email,
           name: users.name,
           image: users.image,
+          updatedAt: users.updatedAt,
         })
         .from(users)
-        .where(inArray(users.email, allEmails))
+        .where(inArray(sql<string>`lower(${users.email})`, allEmails))
     : []
 
   const sessionRows = userRows.length
@@ -201,10 +203,41 @@ export async function listAdminAccess() {
         .groupBy(sessions.userId)
     : []
 
-  const userByEmail = new Map(userRows.map((user) => [normalizeAdminEmail(user.email), user]))
-  const lastAccessByUserId = new Map(
-    sessionRows.map((session) => [session.userId, session.lastAccessAt])
+  const accountRows = userRows.length
+    ? await db
+        .select({
+          userId: accounts.userId,
+          lastAccessAt: sql<Date | null>`max(${accounts.updatedAt})`,
+        })
+        .from(accounts)
+        .where(
+          inArray(
+            accounts.userId,
+            userRows.map((user) => user.id)
+          )
+        )
+        .groupBy(accounts.userId)
+    : []
+
+  const userByEmail = new Map(userRows.map((user) => [user.normalizedEmail, user]))
+  const lastAccessByUserId = new Map<string, Date | null>(
+    sessionRows.map((session) => [session.userId, normalizeTimestamp(session.lastAccessAt)])
   )
+
+  for (const account of accountRows) {
+    const accountLastAccess = normalizeTimestamp(account.lastAccessAt)
+
+    if (!accountLastAccess) {
+      continue
+    }
+
+    const currentLastAccess = lastAccessByUserId.get(account.userId)
+
+    if (!currentLastAccess || accountLastAccess.getTime() > currentLastAccess.getTime()) {
+      lastAccessByUserId.set(account.userId, accountLastAccess)
+    }
+  }
+
   const dbEntryByEmail = new Map(
     dbEntries.map((entry) => [normalizeAdminEmail(entry.email), entry])
   )
@@ -226,7 +259,7 @@ export async function listAdminAccess() {
         active: protectedByEnv || dbEntry?.active === true,
         protectedByEnv,
         source,
-        lastAccessAt: normalizeTimestamp(user ? lastAccessByUserId.get(user.id) : null),
+        lastAccessAt: normalizeTimestamp(user ? (lastAccessByUserId.get(user.id) ?? null) : null),
         createdAt: normalizeTimestamp(dbEntry?.createdAt),
       }
     })

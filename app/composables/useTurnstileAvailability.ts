@@ -7,9 +7,9 @@ export function useTurnstileAvailability() {
   const turnstileSiteKey = computed(() =>
     ((runtimeConfig.public?.turnstileSiteKey as string | undefined) ?? '').trim()
   )
-  const isLocalDevelopment = computed(
-    () => import.meta.dev && isLocalDevelopmentHostname(requestUrl.hostname)
-  )
+  // Turnstile doesn't work on local hostnames regardless of build mode
+  // (Cloudflare rejects domains not registered in the site key's allowed list).
+  const isLocalDevelopment = computed(() => isLocalDevelopmentHostname(requestUrl.hostname))
   const turnstileEnabled = computed(
     () => turnstileSiteKey.value.length > 0 && !isLocalDevelopment.value
   )

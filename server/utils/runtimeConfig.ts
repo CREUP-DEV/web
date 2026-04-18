@@ -7,7 +7,7 @@ import {
   requireConfigPositiveInt,
   requireConfigString,
   requireConfigUrl,
-} from '~~/shared/utils/config'
+} from '../../shared/utils/config'
 import { logError } from './logger'
 
 export interface SmtpTransportConfig {
@@ -101,7 +101,7 @@ export const getRequiredSiteUrl = (
   publicMessage = 'Site URL is not configured.'
 ) => {
   const runtimeConfig = getRuntimeConfig(event)
-  return getRequiredRuntimeConfigUrl(runtimeConfig.siteUrl, 'SITE_URL', publicMessage)
+  return getRequiredRuntimeConfigUrl(runtimeConfig.siteUrl, 'NUXT_SITE_URL', publicMessage)
 }
 
 export const getRequiredExternalAssetProxyAllowedOrigins = (

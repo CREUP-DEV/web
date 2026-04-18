@@ -13,12 +13,11 @@ import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
-import {
-  HOME_CAROUSEL_FALLBACK_IMAGE,
-  HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
-} from '~~/shared/constants/assetPaths'
+import { HOME_CAROUSEL_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updateCarouselItemSchema } from '~~/shared/utils/adminSchemas'
+import { toRelativeSitePath } from '~~/shared/utils/url'
 
 const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/carrusel'
 
@@ -45,41 +44,38 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateCarouselItemSchema, body)
-    if (validated.updatedAt) {
-      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-      const serverUpdatedAt = existingItem.updatedAt
-        ? new Date(existingItem.updatedAt).getTime()
-        : 0
-
-      if (clientUpdatedAt !== serverUpdatedAt) {
-        throw createError({
-          statusCode: 409,
-          message:
-            'El elemento del carrusel fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
-        })
-      }
-    }
+    const normalizedHref = toRelativeSitePath(validated.href, useRuntimeConfig(event).siteUrl)
+    assertOptimisticLock(
+      validated.updatedAt,
+      existingItem.updatedAt,
+      'El elemento del carrusel fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
 
     previousImage = existingItem.image
-    const nextImage =
-      validated.image === HOME_CAROUSEL_FALLBACK_IMAGE
-        ? HOME_CAROUSEL_FALLBACK_IMAGE
-        : await finalizeAdminImage({
-            storagePath: validated.image,
-            uploadDir: IMAGE_UPLOAD_DIR,
-            publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
-            slug: getCarouselImageSlug(validated.translations),
-            publish: validated.active,
-            fallbackBaseName: 'banner',
-            replaceStoragePath: existingItem.image,
-          })
-    image = nextImage
-    trackAdminAssetFinalization(cleanupTargets, {
-      sourceStoragePath: validated.image,
-      storagePath: nextImage,
-      allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-      protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
-    })
+
+    if (validated.image) {
+      if (validated.image === existingItem.image) {
+        image = existingItem.image
+      } else {
+        const nextImage = await finalizeAdminImage({
+          storagePath: validated.image,
+          uploadDir: IMAGE_UPLOAD_DIR,
+          publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+          slug: getCarouselImageSlug(validated.translations),
+          publish: validated.active,
+          fallbackBaseName: 'banner',
+          replaceStoragePath: existingItem.image,
+        })
+        image = nextImage
+        trackAdminAssetFinalization(cleanupTargets, {
+          sourceStoragePath: validated.image,
+          storagePath: nextImage,
+          allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+        })
+      }
+    } else {
+      image = null
+    }
 
     const item = await runAdminCrudTransaction(async (tx) => {
       await tx
@@ -87,14 +83,17 @@ export default defineEventHandler(async (event) => {
         .where(eq(carouselItemTranslations.carouselItemId, id))
 
       const whereCondition = validated.updatedAt
-        ? and(eq(carouselItems.id, id), eq(carouselItems.updatedAt, existingItem.updatedAt))
+        ? and(
+            eq(carouselItems.id, id),
+            buildOptimisticLockCondition(carouselItems.updatedAt, validated.updatedAt)
+          )
         : eq(carouselItems.id, id)
 
       const updatedRows = await tx
         .update(carouselItems)
         .set({
-          image: nextImage,
-          href: validated.href,
+          image,
+          href: normalizedHref ?? validated.href,
           order: validated.order,
           active: validated.active,
         })
@@ -133,7 +132,6 @@ export default defineEventHandler(async (event) => {
         {
           storagePath: previousImage,
           allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-          protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
         },
         'admin.carousel.update.cleanup',
         event
@@ -154,7 +152,6 @@ export default defineEventHandler(async (event) => {
         {
           storagePath: image,
           allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-          protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
         },
         'admin.carousel.update.rollback.cleanup',
         event

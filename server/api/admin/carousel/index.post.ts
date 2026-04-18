@@ -13,11 +13,9 @@ import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
 import { validateBody } from '../../../utils/validation'
-import {
-  HOME_CAROUSEL_FALLBACK_IMAGE,
-  HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
-} from '~~/shared/constants/assetPaths'
+import { HOME_CAROUSEL_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createCarouselItemSchema } from '~~/shared/utils/adminSchemas'
+import { toRelativeSitePath } from '~~/shared/utils/url'
 
 const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/carrusel'
 
@@ -32,31 +30,33 @@ export default defineEventHandler(async (event) => {
 
   try {
     const validated = validateBody(createCarouselItemSchema, body)
-    const nextImage =
-      validated.image === HOME_CAROUSEL_FALLBACK_IMAGE
-        ? HOME_CAROUSEL_FALLBACK_IMAGE
-        : await finalizeAdminImage({
-            storagePath: validated.image,
-            uploadDir: IMAGE_UPLOAD_DIR,
-            publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
-            slug: getCarouselImageSlug(validated.translations),
-            publish: validated.active,
-            fallbackBaseName: 'banner',
-          })
-    image = nextImage
-    trackAdminAssetFinalization(cleanupTargets, {
-      sourceStoragePath: validated.image,
-      storagePath: nextImage,
-      allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-      protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
-    })
+    const normalizedHref = toRelativeSitePath(validated.href, useRuntimeConfig(event).siteUrl)
+
+    if (validated.image) {
+      const nextImage = await finalizeAdminImage({
+        storagePath: validated.image,
+        uploadDir: IMAGE_UPLOAD_DIR,
+        publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+        slug: getCarouselImageSlug(validated.translations),
+        publish: validated.active,
+        fallbackBaseName: 'banner',
+      })
+      image = nextImage
+      trackAdminAssetFinalization(cleanupTargets, {
+        sourceStoragePath: validated.image,
+        storagePath: nextImage,
+        allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+      })
+    } else {
+      image = null
+    }
 
     const completeItem = await runAdminCrudTransaction(async (tx) => {
       const [item] = await tx
         .insert(carouselItems)
         .values({
-          image: nextImage,
-          href: validated.href,
+          image,
+          href: normalizedHref ?? validated.href,
           order: validated.order,
           active: validated.active,
         })
@@ -84,12 +84,11 @@ export default defineEventHandler(async (event) => {
       })
     }, 'No se pudo crear el elemento del carrusel')
 
-    if (validated.image !== image) {
+    if (validated.image && image && validated.image !== image) {
       await cleanupUnusedAdminAssetSafely(
         {
           storagePath: validated.image,
           allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-          protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
         },
         'admin.carousel.create.cleanup',
         event

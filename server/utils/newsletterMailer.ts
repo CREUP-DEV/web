@@ -7,7 +7,7 @@ import { buildAbsoluteUrl, normalizeBaseUrl } from './urlBuilder'
 interface Newsletter {
   id: string
   month: Date
-  coverImage: string
+  coverImage: string | null
   pdfUrl: string
 }
 
@@ -30,12 +30,25 @@ function formatMonth(date: Date): string {
   return `${monthCapitalized} de ${year}`
 }
 
-function buildEmailHtml(newsletter: Newsletter, unsubscribeUrl: string, siteUrl: string): string {
+function buildEmailHtml(
+  newsletter: Newsletter,
+  unsubscribeUrl: string,
+  siteUrl: string,
+  resolvedCoverPath: string | null
+): string {
   const monthStr = formatMonth(new Date(newsletter.month))
   const pdfFullUrl = buildAbsoluteUrl(siteUrl, newsletter.pdfUrl)
-  const coverFullUrl = buildAbsoluteUrl(siteUrl, newsletter.coverImage)
+  const coverFullUrl = resolvedCoverPath ? buildAbsoluteUrl(siteUrl, resolvedCoverPath) : null
   const newsletterArchiveUrl = buildAbsoluteUrl(siteUrl, '/prensa/newsletter')
   const bannerImageUrl = buildAbsoluteUrl(siteUrl, NEWSLETTER_BRAND_BANNER_PATH)
+  const coverRow = coverFullUrl
+    ? `<tr>
+                  <td align="center" style="padding: 16px;">
+                    <img src="${coverFullUrl}" alt="Portada newsletter ${monthStr}" width="280"
+                      style="display:block; width:280px; max-width:100%; height:auto; border-radius:8px;" />
+                  </td>
+                </tr>`
+    : ''
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -54,7 +67,7 @@ function buildEmailHtml(newsletter: Newsletter, unsubscribeUrl: string, siteUrl:
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; background:transparent;">
           <tr>
             <td align="center" style="padding: 20px 8px 8px 8px;">
-              <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:700; font-family: Georgia, serif; color:#2c2c2c;">
+              <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:700; font-family: 'Red Rose', Georgia, serif; color:#2c2c2c;">
                 Newsletter CREUP
               </h1>
             </td>
@@ -64,25 +77,20 @@ function buildEmailHtml(newsletter: Newsletter, unsubscribeUrl: string, siteUrl:
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
                 style="background:#ffffff; border-top: 4px solid #792225; border-top-left-radius:5px; border-top-right-radius:5px;">
                 <tr>
-                  <td align="center" style="padding: 24px 16px 8px 16px; font-family: Arial, sans-serif; font-size:20px; font-weight:bold; color:#2c2c2c;">
+                  <td align="center" style="padding: 24px 16px 8px 16px; font-family: 'Raleway', Arial, sans-serif; font-size:20px; font-weight:bold; color:#2c2c2c;">
                     ${monthStr}
                   </td>
                 </tr>
+                ${coverRow}
                 <tr>
-                  <td align="center" style="padding: 16px;">
-                    <img src="${coverFullUrl}" alt="Portada newsletter ${monthStr}" width="280"
-                      style="display:block; width:280px; max-width:100%; height:auto; border-radius:8px;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 24px 16px 24px; font-family: Arial, sans-serif; font-size:16px; line-height:26px; color:#2c2c2c; text-align:center;">
+                  <td style="padding: 0 24px 16px 24px; font-family: 'Raleway', Arial, sans-serif; font-size:16px; line-height:26px; color:#2c2c2c; text-align:center;">
                     Ya está disponible la newsletter de CREUP del mes de ${monthStr}. Puedes descargarla haciendo clic en el botón de abajo.
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="padding: 8px 16px 24px 16px;">
                     <a href="${pdfFullUrl}" target="_blank"
-                      style="display:inline-block; padding:14px 32px; background-color:#792225; color:#ffffff; font-family:Arial, sans-serif; font-size:16px; font-weight:bold; text-decoration:none; border-radius:6px;">
+                      style="display:inline-block; padding:14px 32px; background-color:#792225; color:#ffffff; font-family: 'Raleway', Arial, sans-serif; font-size:16px; font-weight:bold; text-decoration:none; border-radius:6px;">
                       Descargar Newsletter
                     </a>
                   </td>
@@ -93,7 +101,7 @@ function buildEmailHtml(newsletter: Newsletter, unsubscribeUrl: string, siteUrl:
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 16px 16px 16px 16px; font-family: Arial, sans-serif; font-size:12px; color:#999999; line-height:18px; text-align:center;">
+                  <td style="padding: 16px 16px 16px 16px; font-family: 'Raleway', Arial, sans-serif; font-size:12px; color:#999999; line-height:18px; text-align:center;">
                     Recibes este correo porque estás suscrito/a a la newsletter de CREUP.
                     <br />
                     <a href="${unsubscribeUrl}" style="color:#792225; text-decoration:none;">Darme de baja</a>
@@ -143,7 +151,8 @@ function buildNewsletterMessageId(newsletterId: string, subscriberId: string, si
 export async function sendNewsletterEmail(
   newsletter: Newsletter,
   subscriber: Subscriber,
-  configErrorMessage = 'Server configuration error.'
+  configErrorMessage = 'Server configuration error.',
+  resolvedCoverPath: string | null = null
 ) {
   const transporter = await ensureSmtpTransporterVerified(configErrorMessage)
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
@@ -161,7 +170,7 @@ export async function sendNewsletterEmail(
     to: subscriber.email,
     subject,
     text: buildEmailText(newsletter, unsubscribeUrl, siteUrl),
-    html: buildEmailHtml(newsletter, unsubscribeUrl, siteUrl),
+    html: buildEmailHtml(newsletter, unsubscribeUrl, siteUrl, resolvedCoverPath),
     messageId: buildNewsletterMessageId(newsletter.id, subscriber.id, siteUrl),
     headers: {
       'List-Unsubscribe': `<${unsubscribeUrl}>`,

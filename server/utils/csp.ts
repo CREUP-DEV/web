@@ -6,12 +6,13 @@ import { getOptionalRuntimeConfigString } from './runtimeConfig'
 
 const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com'
 
-const JSON_SCRIPT_TYPE_PATTERN = /\btype\s*=\s*(['"])\s*application\/(?:json|ld\+json)\s*\1/i
 const NONCED_TAG_PATTERN = /\bnonce\s*=/i
 const SCRIPT_SRC_PATTERN = /script-src\s+[^;]+/i
+const SCRIPT_SRC_ATTR_PATTERN = /script-src-attr\s+[^;]+/i
 const STYLE_SRC_PATTERN = /style-src\s+[^;]+/i
 const STYLE_SRC_ELEM_PATTERN = /style-src-elem\s+[^;]+/i
 const STYLE_SRC_ATTR_PATTERN = /style-src-attr\s+[^;]+/i
+const FRAME_SRC_PATTERN = /frame-src\s+[^;]+/i
 const HTML_SECTION_KEYS = ['head', 'bodyPrepend', 'body', 'bodyAppend'] as const
 
 function toOrigin(value: string | null) {
@@ -26,7 +27,7 @@ function toOrigin(value: string | null) {
   }
 }
 
-function isInlineNonJsonScriptTag(input: string) {
+function isInlineScriptTag(input: string) {
   if (!/^<script\b/i.test(input)) {
     return false
   }
@@ -35,15 +36,15 @@ function isInlineNonJsonScriptTag(input: string) {
     return false
   }
 
-  return !JSON_SCRIPT_TYPE_PATTERN.test(input)
+  return true
 }
 
 function injectNonceIntoTag(input: string, nonce: string, tagName: 'script' | 'style') {
-  if (!new RegExp(`^<${tagName}\\b`, 'i').test(input) || NONCED_TAG_PATTERN.test(input)) {
+  if (!new RegExp(`<${tagName}\\b`, 'i').test(input) || NONCED_TAG_PATTERN.test(input)) {
     return input
   }
 
-  return input.replace(new RegExp(`^<${tagName}\\b`, 'i'), `<${tagName} nonce="${nonce}"`)
+  return input.replace(new RegExp(`<${tagName}\\b`, 'i'), `<${tagName} nonce="${nonce}"`)
 }
 
 function buildDocumentScriptSrcDirective(event: H3Event, nonce: string) {
@@ -54,12 +55,28 @@ function buildDocumentScriptSrcDirective(event: H3Event, nonce: string) {
 
   const scriptSrcDirectives = [
     `'nonce-${nonce}'`,
-    "'strict-dynamic'",
     "'self'",
     ...(turnstileEnabled ? [TURNSTILE_ORIGIN] : []),
   ]
 
   return `script-src ${scriptSrcDirectives.join(' ')}`
+}
+
+function buildDocumentFrameSrcDirective(event: H3Event) {
+  const runtimeConfig = useRuntimeConfig(event)
+  const turnstileEnabled = Boolean(
+    getOptionalRuntimeConfigString(runtimeConfig.public?.turnstileSiteKey)
+  )
+  return turnstileEnabled ? `frame-src ${TURNSTILE_ORIGIN}` : "frame-src 'none'"
+}
+
+function buildDocumentScriptSrcAttrDirective(event: H3Event) {
+  const runtimeConfig = useRuntimeConfig(event)
+  const turnstileEnabled = Boolean(
+    getOptionalRuntimeConfigString(runtimeConfig.public?.turnstileSiteKey)
+  )
+
+  return turnstileEnabled ? "script-src-attr 'unsafe-inline'" : "script-src-attr 'none'"
 }
 
 export function createCspNonce() {
@@ -78,11 +95,11 @@ export function applyNonceToRenderedHtml(htmlContext: NuxtRenderHTMLContext, non
         return entry
       }
 
-      if (isInlineNonJsonScriptTag(entry)) {
+      if (isInlineScriptTag(entry)) {
         return injectNonceIntoTag(entry, nonce, 'script')
       }
 
-      if (/^<style\b/i.test(entry)) {
+      if (/<style\b/i.test(entry)) {
         return injectNonceIntoTag(entry, nonce, 'style')
       }
 
@@ -95,23 +112,32 @@ export function overrideDocumentResponseCsp(event: H3Event, nonce: string) {
   const currentHeader = getResponseHeader(event, 'Content-Security-Policy')
   const currentCsp = typeof currentHeader === 'string' ? currentHeader : null
   const scriptSrcDirective = buildDocumentScriptSrcDirective(event, nonce)
+  const scriptSrcAttrDirective = buildDocumentScriptSrcAttrDirective(event)
+  const frameSrcDirective = buildDocumentFrameSrcDirective(event)
   const styleSrcDirective = "style-src 'self'"
-  const styleSrcElemDirective = `style-src-elem 'self' 'nonce-${nonce}'`
+  const styleSrcElemDirective = "style-src-elem 'self' 'unsafe-inline'"
   const styleSrcAttrDirective = "style-src-attr 'unsafe-inline'"
 
   const nextCsp = currentCsp
     ? [
         currentCsp
           .replace(SCRIPT_SRC_PATTERN, scriptSrcDirective)
-          .replace(STYLE_SRC_PATTERN, styleSrcDirective),
+          .replace(SCRIPT_SRC_ATTR_PATTERN, scriptSrcAttrDirective)
+          .replace(STYLE_SRC_PATTERN, styleSrcDirective)
+          .replace(FRAME_SRC_PATTERN, frameSrcDirective),
         STYLE_SRC_ELEM_PATTERN.test(currentCsp) ? null : styleSrcElemDirective,
         STYLE_SRC_ATTR_PATTERN.test(currentCsp) ? null : styleSrcAttrDirective,
       ]
         .filter((directive): directive is string => Boolean(directive))
         .join('; ')
-    : [scriptSrcDirective, styleSrcDirective, styleSrcElemDirective, styleSrcAttrDirective].join(
-        '; '
-      )
+    : [
+        scriptSrcDirective,
+        scriptSrcAttrDirective,
+        frameSrcDirective,
+        styleSrcDirective,
+        styleSrcElemDirective,
+        styleSrcAttrDirective,
+      ].join('; ')
 
   setResponseHeader(event, 'Content-Security-Policy', nextCsp)
 }

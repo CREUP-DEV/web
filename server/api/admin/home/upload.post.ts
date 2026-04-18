@@ -10,6 +10,7 @@ import {
 } from '../../../utils/validation'
 import {
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+  HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
   HOME_IMAGE_PUBLIC_BASE,
 } from '~~/shared/constants/assetPaths'
@@ -18,6 +19,10 @@ const uploadTargets = {
   carousel: {
     uploadDir: 'public/inicio/imagenes/carrusel',
     publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+  },
+  carousel_default: {
+    uploadDir: 'public/inicio/imagenes/carrusel-por-defecto',
+    publicPath: HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
   },
   featured_link: {
     uploadDir: 'public/inicio/imagenes/enlaces-destacados',

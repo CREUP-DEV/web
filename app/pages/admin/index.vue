@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import type { AdminSectionKey } from '~~/shared/constants/adminSections'
 import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
@@ -47,17 +48,17 @@ const subscribers = computed(() => summaryData.value?.subscribers ?? { total: 0,
 const primaryActions: DashboardAction[] = [
   {
     title: 'Nueva nota de prensa',
-    to: '/admin/press/create?type=press_release',
+    to: `${ADMIN_ROUTES.pressCreate}?type=press_release`,
     icon: 'i-tabler-writing-sign',
   },
   {
     title: 'Nuevo comunicado',
-    to: '/admin/press/create?type=statement',
+    to: `${ADMIN_ROUTES.pressCreate}?type=statement`,
     icon: 'i-tabler-speakerphone',
   },
   {
     title: 'Añadir aparición en medios',
-    to: '/admin/press/create?type=media_appearance',
+    to: `${ADMIN_ROUTES.pressCreate}?type=media_appearance`,
     icon: 'i-tabler-broadcast',
   },
 ]
@@ -126,9 +127,11 @@ const formatActivityDate = (value: string) =>
               </div>
 
               <div class="mt-4 flex flex-wrap gap-2">
-                <UButton to="/admin/newsletter?open=create" size="sm">Nueva newsletter</UButton>
+                <UButton :to="`${ADMIN_ROUTES.newsletter}?open=create`" size="sm">
+                  Nueva newsletter
+                </UButton>
                 <UButton
-                  to="/admin/newsletter/subscribers"
+                  :to="ADMIN_ROUTES.newsletterSubscribers"
                   variant="outline"
                   color="neutral"
                   size="sm"
@@ -205,14 +208,6 @@ const formatActivityDate = (value: string) =>
 
           <div v-else class="rounded-2xl border px-4 py-10 text-center text-sm">
             <p class="text-muted">Todavía no hay actividad reciente que mostrar.</p>
-            <UButton
-              to="/admin/press/create?type=press_release"
-              size="sm"
-              icon="i-tabler-plus"
-              class="mt-4"
-            >
-              Crear nota de prensa
-            </UButton>
           </div>
         </div>
       </UCard>

@@ -13,9 +13,11 @@ import {
 import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { getPreferredTranslationValue } from '../../../utils/localizedContent'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updateFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'
+import { toRelativeSitePath } from '~~/shared/utils/url'
 
 const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/enlaces-destacados'
 
@@ -38,20 +40,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateFeaturedLinkSchema, body)
-    if (validated.updatedAt) {
-      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-      const serverUpdatedAt = existingItem.updatedAt
-        ? new Date(existingItem.updatedAt).getTime()
-        : 0
-
-      if (clientUpdatedAt !== serverUpdatedAt) {
-        throw createError({
-          statusCode: 409,
-          message:
-            'El enlace fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
-        })
-      }
-    }
+    const normalizedTo = toRelativeSitePath(validated.to, useRuntimeConfig(event).siteUrl)
+    assertOptimisticLock(
+      validated.updatedAt,
+      existingItem.updatedAt,
+      'El enlace fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
 
     const previousImage = existingItem.image
     const image = await finalizeAdminImage({
@@ -75,14 +69,17 @@ export default defineEventHandler(async (event) => {
         .where(eq(featuredLinkTranslations.featuredLinkId, id))
 
       const whereCondition = validated.updatedAt
-        ? and(eq(featuredLinks.id, id), eq(featuredLinks.updatedAt, existingItem.updatedAt))
+        ? and(
+            eq(featuredLinks.id, id),
+            buildOptimisticLockCondition(featuredLinks.updatedAt, validated.updatedAt)
+          )
         : eq(featuredLinks.id, id)
 
       const updatedRows = await tx
         .update(featuredLinks)
         .set({
           image,
-          to: validated.to,
+          to: normalizedTo ?? validated.to,
           order: validated.order,
           active: validated.active,
         })

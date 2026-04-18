@@ -7,12 +7,26 @@ services:
       - .env
     environment:
       NODE_ENV: production
+      TZ: ${TZ:-Europe/Madrid}
       HOST: 0.0.0.0
       NITRO_PORT: 3000
+      NUXT_SITE_URL: ${NUXT_SITE_URL}
     ports:
       - ${APP_PORT:-3000}:3000
     volumes:
-      - ${APP_PUBLIC_DIR:-./data/public}:/app/.output/public
+      # Keep build assets from the image (/_nuxt) and persist only mutable upload targets.
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/inicio/imagenes:/app/.output/public/inicio/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/conocenos/imagenes:/app/.output/public/conocenos/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/eventos/imagenes:/app/.output/public/eventos/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/eventos/documentos:/app/.output/public/eventos/documentos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/imagenes:/app/.output/public/prensa/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/documentos:/app/.output/public/prensa/documentos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/portadas:/app/.output/public/prensa/newsletter/portadas
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/documentos:/app/.output/public/prensa/newsletter/documentos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/imagenes-por-defecto:/app/.output/public/prensa/newsletter/imagenes-por-defecto
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/externos:/app/.output/public/documentos/externos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/igualdad:/app/.output/public/documentos/igualdad
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/informes-economicos:/app/.output/public/documentos/informes-economicos
       - ${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}:/app/.output/.data/admin-assets
     depends_on:
       postgres:
@@ -23,7 +37,7 @@ services:
       test:
         [
           "CMD",
-          "node",
+          "/nodejs/bin/node",
           "-e",
           "const port=process.env.NITRO_PORT||'3000';fetch('http://127.0.0.1:'+port+'/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))",
         ]
@@ -31,24 +45,32 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 3
-    mem_limit: 512m
-    cpus: 1.0
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 512M
 
   postgres:
     image: postgres:18-alpine
     container_name: creup-web-postgres
     restart: unless-stopped
+    command:
+      [
+        "postgres",
+        "-c",
+        "timezone=${TZ:-Europe/Madrid}",
+        "-c",
+        "log_timezone=${TZ:-Europe/Madrid}",
+      ]
     env_file:
       - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      # Applied only when PGDATA is initialized for the first time.
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=es-ES"
     expose:
       - 5432
     volumes:
@@ -68,25 +90,21 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     command:
       [
-        "redis-server",
-        "--appendonly",
-        "yes",
-        "--requirepass",
-        "$$REDIS_PASSWORD",
+        "sh",
+        "-c",
+        'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"',
       ]
     volumes:
       - creup_web_redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "$$REDIS_PASSWORD", "ping"]
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping']
       interval: 10s
       timeout: 5s
       retries: 5
-    mem_limit: 256m
-    cpus: 0.5
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 256M
 
 volumes:

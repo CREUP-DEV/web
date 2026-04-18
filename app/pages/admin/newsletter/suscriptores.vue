@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 
 definePageMeta({
   layout: 'admin',
@@ -37,7 +38,26 @@ const {
     offset: offset.value,
   })),
 })
-const allItems = computed(() => data.value?.data ?? [])
+const sortSubscribers = (left: Subscriber, right: Subscriber) => {
+  const rightSubscribedAt = new Date(right.subscribedAt).getTime() || 0
+  const leftSubscribedAt = new Date(left.subscribedAt).getTime() || 0
+
+  if (leftSubscribedAt !== rightSubscribedAt) {
+    return rightSubscribedAt - leftSubscribedAt
+  }
+
+  return right.id.localeCompare(left.id, 'es')
+}
+
+const {
+  items: allItems,
+  removeItem,
+  replaceItem,
+  setItems,
+  updateMeta,
+} = useAdminMutableCollection(data, {
+  sortItems: sortSubscribers,
+})
 const totalCount = computed(() => data.value?.meta.total ?? 0)
 const activeCount = computed(() => data.value?.meta.activeTotal ?? 0)
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(
@@ -69,14 +89,20 @@ async function handleAdd() {
   if (!newEmail.value.trim() || isAdding.value) return
   isAdding.value = true
   try {
-    await $fetch('/api/admin/newsletter/subscribers', {
+    const response = await $fetch<{ data: Subscriber }>('/api/admin/newsletter/subscribers', {
       method: 'POST',
       body: { email: newEmail.value.trim(), active: true },
     })
+    if (page.value === 1) {
+      setItems([response.data, ...allItems.value].slice(0, LIMIT))
+    }
+    updateMeta((meta) => ({
+      activeTotal: (meta?.activeTotal ?? 0) + (response.data.active ? 1 : 0),
+      total: (meta?.total ?? 0) + 1,
+    }))
     toast.add({ title: 'Suscriptor añadido', color: 'success' })
     showAddModal.value = false
     newEmail.value = ''
-    await refresh()
   } catch (error) {
     toast.add({
       title: getApiErrorMessage(error, 'No se pudo añadir el suscriptor'),
@@ -90,11 +116,19 @@ async function handleAdd() {
 // Toggle active
 async function toggleActive(item: Subscriber) {
   try {
-    await $fetch(`/api/admin/newsletter/subscriber/${item.id}`, {
-      method: 'PUT',
-      body: { email: item.email, active: !item.active },
-    })
-    await refresh()
+    const response = await $fetch<{ data: Subscriber }>(
+      `/api/admin/newsletter/subscriber/${item.id}`,
+      {
+        method: 'PUT',
+        body: { email: item.email, active: !item.active },
+      }
+    )
+    const activeDelta = response.data.active === item.active ? 0 : response.data.active ? 1 : -1
+    replaceItem(response.data)
+    updateMeta((meta) => ({
+      activeTotal: Math.max(0, (meta?.activeTotal ?? 0) + activeDelta),
+      total: meta?.total ?? 0,
+    }))
     toast.add({
       title: item.active ? 'Suscriptor desactivado' : 'Suscriptor reactivado',
       color: 'success',
@@ -119,14 +153,19 @@ function confirmDelete(item: Subscriber) {
 
 async function handleDelete() {
   if (!itemToDelete.value) return
+  const deletingSubscriber = itemToDelete.value
   isDeleting.value = true
   try {
-    await $fetch(`/api/admin/newsletter/subscriber/${itemToDelete.value.id}`, {
+    await $fetch(`/api/admin/newsletter/subscriber/${deletingSubscriber.id}`, {
       method: 'DELETE',
     })
+    removeItem(deletingSubscriber.id)
+    updateMeta((meta) => ({
+      activeTotal: Math.max(0, (meta?.activeTotal ?? 0) - (deletingSubscriber.active ? 1 : 0)),
+      total: Math.max(0, (meta?.total ?? 0) - 1),
+    }))
     showDeleteModal.value = false
     itemToDelete.value = null
-    await refresh()
     toast.add({ title: 'Suscriptor eliminado', color: 'success' })
   } catch (error) {
     toast.add({
@@ -160,7 +199,12 @@ watch(page, () => {
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2">
-          <UButton to="/admin/newsletter" icon="i-tabler-arrow-left" variant="ghost" size="sm" />
+          <UButton
+            :to="ADMIN_ROUTES.newsletter"
+            icon="i-tabler-arrow-left"
+            variant="ghost"
+            size="sm"
+          />
           <h1 class="text-2xl font-bold">Suscriptores</h1>
         </div>
         <p class="text-muted mt-1 text-sm">

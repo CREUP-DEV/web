@@ -6,6 +6,11 @@ import { pickLocalizedEntry, getBaseLanguage } from '~~/shared/utils/locale'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../utils/externalAssetProxy'
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
+import {
+  getPressDefaultCoverEntriesRow,
+  resolvePressArticleListImageWithVersion,
+} from '../../utils/siteDefaultImages'
+import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { isDatabaseUnavailableError } from '../../utils/databaseErrors'
 import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
 import { throwSafePublicError } from '../../utils/publicErrors'
@@ -18,6 +23,7 @@ import {
   setPublicRouteVaryHeaders,
 } from '../../utils/publicRouteCache'
 import { slugRouteParamSchema, validatePublicRouteParams } from '../../utils/validation'
+import { appendAssetVersion } from '../../utils/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -26,45 +32,49 @@ export default defineCachedEventHandler(
     const { slug } = validatePublicRouteParams(event, slugRouteParamSchema)
 
     try {
-      const article = await db.query.pressArticles.findFirst({
-        where: and(
-          eq(pressArticles.slug, slug),
-          eq(pressArticles.active, true),
-          lte(pressArticles.publishedAt, sql`CURRENT_DATE`)
-        ),
-        with: {
-          translations: {
-            columns: {
-              locale: true,
-              title: true,
-              description: true,
-              alt: true,
-              contentHtml: true,
+      const [article, defaultCovers] = await Promise.all([
+        db.query.pressArticles.findFirst({
+          where: and(
+            eq(pressArticles.slug, slug),
+            eq(pressArticles.active, true),
+            lte(pressArticles.publishedAt, sql`CURRENT_DATE`)
+          ),
+          with: {
+            translations: {
+              columns: {
+                locale: true,
+                title: true,
+                description: true,
+                alt: true,
+                contentHtml: true,
+              },
             },
-          },
-          tags: {
-            with: {
-              tag: {
-                with: {
-                  translations: {
-                    columns: {
-                      locale: true,
-                      name: true,
+            tags: {
+              with: {
+                tag: {
+                  with: {
+                    translations: {
+                      columns: {
+                        locale: true,
+                        name: true,
+                      },
                     },
                   },
                 },
               },
             },
-          },
-          mediaOutlet: {
-            columns: {
-              name: true,
-              logo: true,
-              website: true,
+            mediaOutlet: {
+              columns: {
+                name: true,
+                logo: true,
+                website: true,
+                updatedAt: true,
+              },
             },
           },
-        },
-      })
+        }),
+        getPressDefaultCoverEntriesRow(),
+      ])
 
       if (!article) {
         throw createError({
@@ -93,15 +103,18 @@ export default defineCachedEventHandler(
           id: article.id,
           type: article.type,
           slug: article.slug,
-          image: article.image
-            ? (toExternalImageProxyUrl(article.image, {
-                publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
-              }) ?? article.image)
-            : null,
-          pdfUrl:
+          image: resolvePressArticleListImageWithVersion(
+            article.type as PressArticleType,
+            article.image,
+            article.updatedAt,
+            defaultCovers
+          ),
+          pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(article.pdfUrl, {
               publicPathBase: '/prensa/documentos',
             }) ?? article.pdfUrl,
+            article.updatedAt
+          ),
           externalUrl: article.externalUrl,
           title: trans?.title ?? '',
           description: trans?.description ?? '',
@@ -114,10 +127,12 @@ export default defineCachedEventHandler(
           mediaOutlet: article.mediaOutlet
             ? {
                 name: article.mediaOutlet.name,
-                logo:
+                logo: appendAssetVersion(
                   toExternalImageProxyUrl(article.mediaOutlet.logo, {
                     publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
                   }) ?? article.mediaOutlet.logo,
+                  article.mediaOutlet.updatedAt
+                ),
                 website: article.mediaOutlet.website,
               }
             : null,

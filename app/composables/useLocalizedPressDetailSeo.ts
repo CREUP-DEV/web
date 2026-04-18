@@ -9,7 +9,7 @@ interface UseLocalizedPressDetailSeoOptions {
 export function useLocalizedPressDetailSeo(options: UseLocalizedPressDetailSeoOptions) {
   const { locale } = useI18n()
   const { localeConfigs, defaultLocale, getLanguageTag } = useLocales()
-  const siteConfig = useSiteConfig()
+  const siteUrl = useRuntimeSiteUrl()
 
   const currentLocaleBase = computed(() => getBaseLanguage(locale.value))
   const translatedLocales = computed(() => unref(options.translatedLocales) ?? null)
@@ -25,7 +25,7 @@ export function useLocalizedPressDetailSeo(options: UseLocalizedPressDetailSeoOp
         (localeConfig) => !translatedLocales.value?.includes(localeConfig.code)
       )
   )
-  const baseUrl = computed(() => String(siteConfig.url ?? '').replace(/\/$/, ''))
+  const baseUrl = computed(() => siteUrl.value.replace(/\/$/, ''))
 
   const alternateLinks = computed(() => {
     if (!needsAlternateOverride.value) {

@@ -7,7 +7,12 @@ import {
 
 const { t } = useI18n()
 const siteConfig = useSiteConfig()
-const { data: pressDossierLink } = await usePressDossierLink()
+const siteUrl = useRuntimeSiteUrl()
+const { data: pressDossierLink, refresh: refreshPressDossierLink } = await usePressDossierLink()
+
+onMounted(() => {
+  refreshPressDossierLink()
+})
 const alternateLinksOverride = useState<SeoAlternateLink[] | null>(
   'seo-alternate-links-override',
   () => null
@@ -29,19 +34,44 @@ useStructuredData(
   computed(() => [
     createOrganizationStructuredData({
       name: String(siteConfig.name ?? '').trim(),
-      url: String(siteConfig.url ?? '').trim() || null,
+      url: siteUrl.value || null,
     }),
   ])
 )
 
+const mapRuntimeHeadUrls = (links: NonNullable<NonNullable<typeof head.value.link>>) =>
+  links.map((link) => {
+    if (!['alternate', 'canonical'].includes(link.rel || '') || typeof link.href !== 'string') {
+      return link
+    }
+
+    try {
+      const parsedUrl = new URL(link.href, siteUrl.value)
+      const runtimeHref = new URL(
+        `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`,
+        siteUrl.value
+      ).toString()
+      return {
+        ...link,
+        href: runtimeHref,
+      }
+    } catch {
+      return link
+    }
+  })
+
 useHead(() => {
   const resolvedHead = head.value
+  const runtimeLinks = mapRuntimeHeadUrls(resolvedHead.link ?? [])
 
   if (alternateLinksOverride.value === null) {
-    return resolvedHead
+    return {
+      ...resolvedHead,
+      link: runtimeLinks,
+    }
   }
 
-  const nonAlternateLinks = (resolvedHead.link ?? []).filter((link) => !isLocaleAlternateLink(link))
+  const nonAlternateLinks = runtimeLinks.filter((link) => !isLocaleAlternateLink(link))
 
   return {
     ...resolvedHead,

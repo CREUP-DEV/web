@@ -22,15 +22,19 @@ import {
   ABOUT_IMAGE_PUBLIC_PATH,
   EQUALITY_DOCUMENTS_PUBLIC_PATH,
   FINANCIAL_REPORTS_PUBLIC_PATH,
-  HOME_CAROUSEL_FALLBACK_IMAGE,
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
-  PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_DOSSIER_PUBLIC_PATH,
+  PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_IMAGE_PUBLIC_BASE,
 } from '~~/shared/constants/assetPaths'
+
+const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
+  0,
+  PRESS_DOSSIER_PUBLIC_PATH.lastIndexOf('/')
+)
 
 export interface CleanupUnusedAdminAssetOptions {
   storagePath: string | null | undefined
@@ -210,12 +214,15 @@ export async function reconcileAdminAssetPublication() {
     ])
 
     for (const item of carouselItemsList) {
+      if (!item.image?.trim()) {
+        continue
+      }
+
       const nextImage = await reconcileStoredImage({
         storagePath: item.image,
         publish: item.active,
         uploadDir: 'public/inicio/imagenes/carrusel',
         publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
-        protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
       })
 
       if (nextImage && nextImage !== item.image) {
@@ -226,7 +233,6 @@ export async function reconcileAdminAssetPublication() {
         await cleanupUnusedAdminAsset({
           storagePath: item.image,
           allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-          protectedPublicPaths: [HOME_CAROUSEL_FALLBACK_IMAGE],
         })
       }
     }
@@ -289,8 +295,8 @@ export async function reconcileAdminAssetPublication() {
       const nextPdfUrl = await reconcileStoredDocument({
         storagePath: pressDossierItem.pdfUrl,
         publish: pressDossierItem.active,
-        uploadDir: 'public/prensa/dossier',
-        publicPath: PRESS_DOSSIER_PUBLIC_PATH,
+        uploadDir: 'public/prensa',
+        publicPath: PRESS_DOSSIER_PUBLIC_BASE,
       })
 
       if (nextPdfUrl !== pressDossierItem.pdfUrl) {

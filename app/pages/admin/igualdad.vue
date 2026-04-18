@@ -25,6 +25,7 @@ interface EqualityDocument {
 }
 
 const toast = useToast()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
   getDefaultTranslationValue,
@@ -45,7 +46,17 @@ const {
 }>('/api/admin/equality', {
   lazy: true,
 })
-const items = computed(() => data.value?.data ?? [])
+const sortEqualityDocuments = (left: EqualityDocument, right: EqualityDocument) => {
+  if (left.order !== right.order) {
+    return left.order - right.order
+  }
+
+  return left.id.localeCompare(right.id, 'es')
+}
+
+const { items, removeItem, replaceItem, setItems } = useAdminMutableCollection(data, {
+  sortItems: sortEqualityDocuments,
+})
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -66,6 +77,22 @@ const form = reactive({
   active: true,
   translations: createEmptyTranslationSet(),
 })
+
+const buildPayload = () => ({
+  pdfUrl: form.pdfUrl,
+  order: form.order,
+  active: form.active,
+  translations: form.translations.map((translation) => ({
+    locale: translation.locale,
+    title: translation.title,
+    description: translation.description,
+    meta: translation.meta,
+  })),
+})
+
+const buildPayloadSnapshot = () => JSON.stringify(buildPayload())
+
+const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
 
 const {
   cancelOrderChanges,
@@ -90,8 +117,12 @@ const {
       method: 'POST',
       body: { items: updates },
     })
-
-    await refresh()
+    setItems(
+      items.value.map((item) => {
+        const nextOrder = updates.find((update) => update.id === item.id)?.order
+        return nextOrder === undefined ? item : { ...item, order: nextOrder }
+      })
+    )
   },
   prepareCreate: () => {
     clearErrors()
@@ -100,6 +131,7 @@ const {
     form.active = true
     form.translations = createEmptyTranslationSet()
     pdfName.value = null
+    resetFormSnapshot()
   },
   prepareEdit: (item) => {
     clearErrors()
@@ -112,6 +144,7 @@ const {
       meta: '',
     }) as EqualityDocumentTranslation[]
     pdfName.value = item.pdfUrl.split('/').pop() ?? null
+    resetFormSnapshot()
   },
 })
 
@@ -142,6 +175,7 @@ function getAdditionalTranslationLabel(item: EqualityDocument) {
 const saveOrder = async () => {
   try {
     await persistOrder()
+    await refreshAllClientAsyncData()
     toast.add({ title: 'Orden guardado', color: 'success' })
   } catch (error) {
     toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el orden'), color: 'error' })
@@ -149,11 +183,12 @@ const saveOrder = async () => {
 }
 
 const handleSubmit = async () => {
-  const payload = {
-    pdfUrl: form.pdfUrl,
-    order: form.order,
-    active: form.active,
-    translations: form.translations,
+  const payload = buildPayload()
+
+  if (editingItem.value && !hasFormChanges.value) {
+    closeModal()
+    clearErrors()
+    return
   }
 
   if (!validate(createEqualityDocumentClientSchema, payload)) {
@@ -163,25 +198,31 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   try {
     if (editingItem.value) {
-      await $fetch(`/api/admin/equality/${editingItem.value.id}`, {
-        method: 'PUT',
-        body: {
-          ...payload,
-          updatedAt: editingItem.value.updatedAt,
-        },
-      })
+      const response = await $fetch<{ data: EqualityDocument }>(
+        `/api/admin/equality/${editingItem.value.id}`,
+        {
+          method: 'PUT',
+          body: {
+            ...payload,
+            updatedAt: editingItem.value.updatedAt,
+          },
+        }
+      )
+      replaceItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({ title: 'Documento actualizado', color: 'success' })
     } else {
-      await $fetch('/api/admin/equality', {
+      const response = await $fetch<{ data: EqualityDocument }>('/api/admin/equality', {
         method: 'POST',
         body: payload,
       })
+      replaceItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({ title: 'Documento creado', color: 'success' })
     }
 
     closeModal()
     clearErrors()
-    await refresh()
   } catch (error) {
     toast.add({
       title: getApiErrorMessage(error, 'No se pudo guardar el documento'),
@@ -200,9 +241,10 @@ const handleDelete = async () => {
     await $fetch(`/api/admin/equality/${itemToDelete.value.id}`, {
       method: 'DELETE',
     })
+    removeItem(itemToDelete.value.id)
+    await refreshAllClientAsyncData()
     toast.add({ title: 'Documento eliminado', color: 'success' })
     closeDeleteModal()
-    await refresh()
   } catch {
     toast.add({ title: 'No se pudo eliminar el documento', color: 'error' })
   } finally {
@@ -492,7 +534,12 @@ const handlePdfSelect = async (event: Event) => {
 
           <div class="flex justify-end gap-2 border-t p-4">
             <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
-            <UButton type="submit" form="equality-form" :loading="isSubmitting">
+            <UButton
+              type="submit"
+              form="equality-form"
+              :loading="isSubmitting"
+              :disabled="Boolean(editingItem) && !hasFormChanges"
+            >
               {{ editingItem ? 'Guardar' : 'Crear' }}
             </UButton>
           </div>

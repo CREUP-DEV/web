@@ -1,7 +1,8 @@
 import { createError } from 'h3'
 import { access, copyFile, mkdir, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises'
-import { basename, extname, join, posix, resolve, sep } from 'node:path'
+import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path'
 import { createId } from '@paralleldrive/cuid2'
+import { hasAdminStoredFileReference } from './adminAssetReferences'
 import { slugify } from './slug'
 import { logWarn } from './logger'
 
@@ -42,6 +43,52 @@ async function fileExists(path: string) {
     return true
   } catch {
     return false
+  }
+}
+
+function isCrossDeviceRenameError(error: unknown): error is NodeJS.ErrnoException {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'EXDEV'
+}
+
+async function moveFileSafely(sourceAbsolutePath: string, targetAbsolutePath: string) {
+  try {
+    await rename(sourceAbsolutePath, targetAbsolutePath)
+    return
+  } catch (error) {
+    if (!isCrossDeviceRenameError(error)) {
+      throw error
+    }
+  }
+
+  const targetDirectory = dirname(targetAbsolutePath)
+  const targetBasename = basename(targetAbsolutePath)
+  const temporaryTargetAbsolutePath = join(
+    targetDirectory,
+    `.${targetBasename}.${createId().slice(0, 12)}.tmp`
+  )
+
+  await copyFile(sourceAbsolutePath, temporaryTargetAbsolutePath)
+
+  try {
+    await rename(temporaryTargetAbsolutePath, targetAbsolutePath)
+  } catch (error) {
+    try {
+      await unlink(temporaryTargetAbsolutePath)
+    } catch {
+      // Best-effort cleanup for failed cross-device moves.
+    }
+
+    throw error
+  }
+
+  try {
+    await unlink(sourceAbsolutePath)
+  } catch (error) {
+    logWarn('admin-assets.cross-device-source-cleanup-failed', {
+      sourceAbsolutePath,
+      targetAbsolutePath,
+      error,
+    })
   }
 }
 
@@ -225,14 +272,17 @@ function resolveAdminFileSource(storagePath: string, publicPath: string) {
 
 async function resolveAdminReplacementFilename(
   storagePath: string | null | undefined,
-  publicPath: string,
-  protectedPublicPaths?: string[]
+  publicPath: string
 ) {
   const normalizedStoragePath = storagePath?.trim()
 
-  if (!normalizedStoragePath || protectedPublicPaths?.includes(normalizedStoragePath)) {
+  if (!normalizedStoragePath) {
     return ''
   }
+
+  // Do not skip "protected" paths here: the canonical filename may match a shipped default
+  // asset (same public path). We still need the basename so finalize can replace-in-place
+  // instead of suffixing (e.g. banner-que-es-creup-2.webp).
 
   const isInternalStoragePath =
     isTemporaryAdminStoragePath(normalizedStoragePath) ||
@@ -242,11 +292,14 @@ async function resolveAdminReplacementFilename(
     ? basename(normalizedStoragePath)
     : resolveRelativeFilename(normalizedStoragePath, publicPath)
 
-  if (!relativeFilename || (!isInternalStoragePath && relativeFilename.includes('/'))) {
-    throw createError({
-      statusCode: 400,
-      message: 'La ruta del archivo no es válida',
-    })
+  // Ignore legacy or out-of-scope paths. Replacement filename is best-effort and
+  // should not block new uploads when an old DB value uses a different base path.
+  if (!relativeFilename) {
+    return ''
+  }
+
+  if (!isInternalStoragePath && relativeFilename.includes('/')) {
+    return ''
   }
 
   const absolutePath = isInternalStoragePath
@@ -254,13 +307,37 @@ async function resolveAdminReplacementFilename(
     : resolvePublicAbsolutePath(normalizedStoragePath)
 
   if (!(await fileExists(absolutePath))) {
-    throw createError({
-      statusCode: 400,
-      message: 'El archivo ya no está disponible',
-    })
+    return ''
   }
 
   return basename(relativeFilename)
+}
+
+async function removeUnreferencedConflictingFile(options: {
+  absoluteUploadDir: string
+  candidateFilename: string
+  publicPath: string
+  publish: boolean
+}) {
+  const candidateStoragePath = options.publish
+    ? `${options.publicPath}/${options.candidateFilename}`
+    : buildInactiveStoragePath(options.publicPath, options.candidateFilename)
+
+  if (await hasAdminStoredFileReference(candidateStoragePath)) {
+    return false
+  }
+
+  try {
+    await unlink(join(options.absoluteUploadDir, options.candidateFilename))
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
+      return true
+    }
+
+    throw error
+  }
+
+  return true
 }
 
 export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
@@ -290,9 +367,13 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
   const currentFilename = sourceFile.currentFilename
   const replaceFilename = await resolveAdminReplacementFilename(
     options.replaceStoragePath,
-    options.publicPath,
-    options.protectedPublicPaths
+    options.publicPath
   )
+  const shouldAvoidPublishedPathReuse =
+    sourceFile.kind === 'temp' &&
+    publish &&
+    !!options.replaceStoragePath &&
+    !isInternalAdminStoragePath(options.replaceStoragePath)
 
   await mkdir(absoluteUploadDir, { recursive: true })
 
@@ -311,11 +392,34 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
 
     const candidateFilename = `${candidateBaseSlug}${extension}`
 
-    if (candidateFilename === currentFilename || candidateFilename === replaceFilename) {
+    if (candidateFilename === currentFilename) {
       break
     }
 
-    if (!(await fileExists(join(absoluteUploadDir, candidateFilename)))) {
+    if (candidateFilename === replaceFilename) {
+      if (!shouldAvoidPublishedPathReuse) {
+        break
+      }
+
+      candidateBaseSlug = `${baseSlug}-${suffix}`
+      suffix++
+      continue
+    }
+
+    const candidateAbsolutePath = join(absoluteUploadDir, candidateFilename)
+
+    if (!(await fileExists(candidateAbsolutePath))) {
+      break
+    }
+
+    if (
+      await removeUnreferencedConflictingFile({
+        absoluteUploadDir,
+        candidateFilename,
+        publicPath: options.publicPath,
+        publish,
+      })
+    ) {
       break
     }
 
@@ -349,7 +453,7 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
   if (sourceFile.kind === 'public' && !publish) {
     await copyFile(sourceFile.absolutePath, targetAbsolutePath)
   } else {
-    await rename(sourceFile.absolutePath, targetAbsolutePath)
+    await moveFileSafely(sourceFile.absolutePath, targetAbsolutePath)
   }
 
   return targetStoragePath

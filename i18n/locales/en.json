@@ -7,7 +7,8 @@
       "whatIs": "What is CREUP?",
       "members": "Members",
       "team": "Team",
-      "committees": "Committees"
+      "committees": "Committees",
+      "events": "Events"
     },
     "policy": {
       "label": "University Policy",
@@ -16,7 +17,6 @@
       "reports": "Executive Reports"
     },
     "events": {
-      "label": "Events",
       "generalAssemblies": "General Assemblies",
       "trainingStages": "Training Stages",
       "meetingsCongresses": "Meetings and Congresses"
@@ -172,7 +172,7 @@
   },
   "mandates": {
     "title": "Position History",
-    "description": "Browse past and current mandate terms at CREUP.",
+    "description": "Browse past CREUP teams.",
     "detailDescription": "Details of positions held during a CREUP mandate.",
     "mandateOf": "Mandate of",
     "backToTeam": "Back to team",
@@ -513,7 +513,7 @@
   },
   "committees": {
     "title": "Committees",
-    "description": "Beyond the Extended Executive Committee, CREUP has specialized committees that focus their work on specific areas of representation or the internal functioning of the association.",
+    "description": "Beyond the Extended Executive Committee, CREUP has specialized committees that focus their work on specific areas of student representation or the internal functioning of the association.",
     "email": "Email",
     "viewProfile": "View profile",
     "memberModalDescription": "Profile details for the person.",
@@ -524,7 +524,7 @@
     "degree": "Degree"
   },
   "sectorialCommitteePage": {
-    "title": "Sectorial Affairs Commission",
+    "title": "Sectorial Affairs Committee",
     "description": "Technical page dedicated to the Sectorial Affairs Committee.",
     "intro": "Specific page for the Sectorial Affairs Committee with the list of sectorial associations and the committee team.",
     "loadError": "The information for this commission could not be loaded right now.",
@@ -603,7 +603,7 @@
     },
     "statements": {
       "title": "Press Statements",
-      "description": "Official CREUP statements on current university affairs.",
+      "description": "Official CREUP statements on current affairs.",
       "empty": "No statements available.",
       "loadError": "Statements could not be loaded right now.",
       "backToList": "Back to statements"

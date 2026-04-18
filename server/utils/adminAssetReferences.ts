@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { db } from '../db'
 import {
   aboutPageContent,
@@ -11,6 +11,7 @@ import {
   organizationMembers,
   pressArticles,
   pressDossier,
+  siteDefaultImages,
   teamMembers,
   users,
 } from '../db/schema'
@@ -32,6 +33,7 @@ const ASSET_COLUMN_REGISTRY: Array<{ table: any; column: any }> = [
   { table: pressArticles, column: pressArticles.image },
   { table: pressArticles, column: pressArticles.pdfUrl },
   { table: pressDossier, column: pressDossier.pdfUrl },
+  { table: siteDefaultImages, column: siteDefaultImages.image },
   { table: teamMembers, column: teamMembers.photo },
   { table: users, column: users.image },
 ]
@@ -43,14 +45,15 @@ export async function hasAdminStoredFileReference(storagePath: string): Promise<
     return false
   }
 
-  const checks = ASSET_COLUMN_REGISTRY.map(({ table, column }) =>
-    db
-      .select({ found: sql<number>`1` })
-      .from(table)
-      .where(eq(column, normalizedStoragePath))
-      .limit(1)
+  const unionParts = ASSET_COLUMN_REGISTRY.map(
+    ({ table, column }) => sql`SELECT 1 FROM ${table} WHERE ${column} = ${normalizedStoragePath}`
   )
-
-  const results = await Promise.all(checks)
-  return results.some((rows) => rows.length > 0)
+  const unionAll = unionParts
+    .slice(1)
+    .reduce(
+      (acc: ReturnType<typeof sql>, part: ReturnType<typeof sql>) => sql`${acc} UNION ALL ${part}`,
+      unionParts[0]!
+    )
+  const result = await db.execute<{ found: boolean }>(sql`SELECT EXISTS (${unionAll}) AS found`)
+  return Boolean(result[0]?.found)
 }

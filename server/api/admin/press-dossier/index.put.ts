@@ -9,13 +9,18 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidatePressDossierCache } from '../../../utils/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { validateBody } from '../../../utils/validation'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
 
-const PDF_UPLOAD_DIR = 'public/prensa/dossier'
+const PDF_UPLOAD_DIR = 'public/prensa'
 const PRESS_DOSSIER_FILE_SLUG = 'dossier-prensa'
+const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
+  0,
+  PRESS_DOSSIER_PUBLIC_PATH.lastIndexOf('/')
+)
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -46,7 +51,7 @@ export default defineEventHandler(async (event) => {
         ? await finalizeAdminDocument({
             storagePath: validated.pdfUrl,
             uploadDir: PDF_UPLOAD_DIR,
-            publicPath: PRESS_DOSSIER_PUBLIC_PATH,
+            publicPath: PRESS_DOSSIER_PUBLIC_BASE,
             slug: PRESS_DOSSIER_FILE_SLUG,
             publish: validated.active,
             fallbackBaseName: 'dossier-prensa',
@@ -98,6 +103,8 @@ export default defineEventHandler(async (event) => {
         event
       )
     }
+
+    await invalidatePressDossierCache()
 
     return { data: item.upserted }
   } catch (error) {

@@ -7,6 +7,7 @@ import {
   type CleanupUnusedAdminAssetOptions,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateNewsletterArchiveCache } from '../../../utils/adminCacheInvalidation'
 import { enqueueNewsletterSendJob } from '../../../utils/backgroundJobs'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
@@ -60,19 +61,23 @@ export default defineEventHandler(async (event) => {
 
     await assertNewsletterMonthAvailable(monthKey)
     const item = await db.transaction(async (tx) => {
-      coverImage = await finalizeAdminImage({
-        storagePath: validated.coverImage,
-        uploadDir: COVER_IMAGE_UPLOAD_DIR,
-        publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-        slug: buildNewsletterCoverSlug(monthKey),
-        publish: validated.publicVisible,
-        fallbackBaseName: 'newsletter-portada',
-      })
-      trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: validated.coverImage,
-        storagePath: coverImage,
-        allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-      })
+      if (validated.coverImage) {
+        coverImage = await finalizeAdminImage({
+          storagePath: validated.coverImage,
+          uploadDir: COVER_IMAGE_UPLOAD_DIR,
+          publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+          slug: buildNewsletterCoverSlug(monthKey),
+          publish: validated.publicVisible,
+          fallbackBaseName: 'newsletter-portada',
+        })
+        trackAdminAssetFinalization(cleanupTargets, {
+          sourceStoragePath: validated.coverImage,
+          storagePath: coverImage,
+          allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+        })
+      } else {
+        coverImage = null
+      }
 
       pdfUrl = await finalizeAdminDocument({
         storagePath: validated.pdfUrl,
@@ -95,7 +100,6 @@ export default defineEventHandler(async (event) => {
           monthKey,
           coverImage,
           pdfUrl,
-          active: validated.active,
           publicVisible: validated.publicVisible,
         })
         .returning()
@@ -112,7 +116,7 @@ export default defineEventHandler(async (event) => {
     }
     createdNewsletterId = item.id
 
-    if (validated.coverImage !== coverImage) {
+    if (validated.coverImage && coverImage && validated.coverImage !== coverImage) {
       await cleanupUnusedAdminAssetSafely(
         {
           storagePath: validated.coverImage,
@@ -134,20 +138,23 @@ export default defineEventHandler(async (event) => {
       )
     }
 
-    const queuedItem = sendEmail && item.active ? await claimNewsletterForSending(item.id) : item
+    const queuedItem = sendEmail ? await claimNewsletterForSending(item.id) : item
 
-    if (sendEmail && queuedItem.active) {
+    if (sendEmail) {
       await enqueueNewsletterSendJob({
         newsletterId: queuedItem.id,
         workerToken: queuedItem.lastDeliveryWorkerToken ?? '',
       })
     }
 
+    await invalidateNewsletterArchiveCache()
+
     const normalizedItem = {
       ...(queuedItem ?? item),
       month: monthKeyToDate((queuedItem ?? item).monthKey),
+      isSending: Boolean((queuedItem ?? item).lastDeliveryWorkerToken),
     }
-    const emailQueued = sendEmail && queuedItem.active
+    const emailQueued = sendEmail
 
     return {
       data: {

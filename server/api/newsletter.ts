@@ -8,12 +8,21 @@ import { logError } from '../utils/logger'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
 import { monthKeyToDate } from '../utils/newsletters'
 import {
+  SITE_DEFAULT_IMAGE_SCOPE,
+  SITE_DEFAULT_IMAGE_SLOT,
+} from '~~/shared/constants/siteDefaultImages'
+import {
+  loadSiteDefaultImageEntriesMap,
+  resolveSiteDefaultImageUrlWithVersion,
+} from '../utils/siteDefaultImages'
+import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
 import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
 import { throwSafePublicError } from '../utils/publicErrors'
+import { appendAssetVersion } from '../utils/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -23,7 +32,7 @@ export default defineCachedEventHandler(
     const normalizedOffset = offset ?? 0
 
     try {
-      const [items, countResult] = await Promise.all([
+      const [items, countResult, siteDefaultImageEntries] = await Promise.all([
         db
           .select({
             id: newsletters.id,
@@ -31,6 +40,7 @@ export default defineCachedEventHandler(
             coverImage: newsletters.coverImage,
             pdfUrl: newsletters.pdfUrl,
             publicVisible: newsletters.publicVisible,
+            updatedAt: newsletters.updatedAt,
           })
           .from(newsletters)
           .where(eq(newsletters.publicVisible, true))
@@ -41,20 +51,33 @@ export default defineCachedEventHandler(
           .select({ count: sql<number>`count(*)`.mapWith(Number) })
           .from(newsletters)
           .where(eq(newsletters.publicVisible, true)),
+        loadSiteDefaultImageEntriesMap(),
       ])
+
+      const defaultCover = resolveSiteDefaultImageUrlWithVersion(
+        siteDefaultImageEntries,
+        SITE_DEFAULT_IMAGE_SCOPE.newsletter,
+        SITE_DEFAULT_IMAGE_SLOT.newsletterCover
+      )
 
       return {
         items: items.map((item) => ({
-          coverImage:
-            toExternalImageProxyUrl(item.coverImage, {
-              publicPathBase: '/prensa/newsletter/portadas',
-            }) ?? item.coverImage,
+          coverImage: item.coverImage
+            ? appendAssetVersion(
+                toExternalImageProxyUrl(item.coverImage, {
+                  publicPathBase: '/prensa/newsletter/portadas',
+                }) ?? item.coverImage,
+                item.updatedAt
+              )
+            : defaultCover,
           id: item.id,
           month: monthKeyToDate(item.monthKey),
-          pdfUrl:
+          pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(item.pdfUrl, {
               publicPathBase: '/prensa/newsletter/documentos',
             }) ?? item.pdfUrl,
+            item.updatedAt
+          ),
           publicVisible: item.publicVisible,
         })),
         total: countResult[0]?.count ?? 0,

@@ -9,11 +9,13 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateEqualityDocumentsCache } from '../../../utils/adminCacheInvalidation'
 import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
 } from '../../../utils/localizedContent'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
@@ -40,20 +42,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateEqualityDocumentSchema, body)
-    if (validated.updatedAt) {
-      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-      const serverUpdatedAt = existingItem.updatedAt
-        ? new Date(existingItem.updatedAt).getTime()
-        : 0
-
-      if (clientUpdatedAt !== serverUpdatedAt) {
-        throw createError({
-          statusCode: 409,
-          message:
-            'El documento fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
-        })
-      }
-    }
+    assertOptimisticLock(
+      validated.updatedAt,
+      existingItem.updatedAt,
+      'El documento fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
 
     const previousPdfUrl = existingItem.pdfUrl
     const pdfUrl = await finalizeAdminDocument({
@@ -81,7 +74,10 @@ export default defineEventHandler(async (event) => {
 
     const item = await runAdminCrudTransaction(async (tx) => {
       const whereCondition = validated.updatedAt
-        ? and(eq(equalityDocuments.id, id), eq(equalityDocuments.updatedAt, existingItem.updatedAt))
+        ? and(
+            eq(equalityDocuments.id, id),
+            buildOptimisticLockCondition(equalityDocuments.updatedAt, validated.updatedAt)
+          )
         : eq(equalityDocuments.id, id)
 
       const updatedRows = await tx
@@ -134,6 +130,8 @@ export default defineEventHandler(async (event) => {
         event
       )
     }
+
+    await invalidateEqualityDocumentsCache()
 
     return { data: item }
   } catch (e) {

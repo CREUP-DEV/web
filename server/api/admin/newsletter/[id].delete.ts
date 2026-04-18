@@ -3,6 +3,8 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
+import { invalidateNewsletterArchiveCache } from '../../../utils/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/adminErrors'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
@@ -10,35 +12,40 @@ import {
 } from '~~/shared/constants/assetPaths'
 
 export default defineEventHandler(async (event) => {
-  const { id } = validateRouteParams(event, idRouteParamSchema)
+  try {
+    const { id } = validateRouteParams(event, idRouteParamSchema)
 
-  const existingItem = await db.query.newsletters.findFirst({
-    where: eq(newsletters.id, id),
-  })
+    const existingItem = await db.query.newsletters.findFirst({
+      where: eq(newsletters.id, id),
+    })
 
-  if (!existingItem) {
-    throw createError({ statusCode: 404, message: 'No encontrado' })
+    if (!existingItem) {
+      throw createError({ statusCode: 404, message: 'No encontrado' })
+    }
+
+    await db.delete(newsletters).where(eq(newsletters.id, id))
+
+    await cleanupUnusedAdminAssetSafely(
+      {
+        storagePath: existingItem.coverImage,
+        allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+      },
+      'admin.newsletter.delete.cleanup.cover',
+      event
+    )
+
+    await cleanupUnusedAdminAssetSafely(
+      {
+        storagePath: existingItem.pdfUrl,
+        allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
+      },
+      'admin.newsletter.delete.cleanup.pdf',
+      event
+    )
+
+    await invalidateNewsletterArchiveCache()
+    return { data: { success: true } }
+  } catch (error) {
+    throwAdminMutationError('admin.newsletter.delete', error, event)
   }
-
-  await db.delete(newsletters).where(eq(newsletters.id, id))
-
-  await cleanupUnusedAdminAssetSafely(
-    {
-      storagePath: existingItem.coverImage,
-      allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-    },
-    'admin.newsletter.delete.cleanup.cover',
-    event
-  )
-
-  await cleanupUnusedAdminAssetSafely(
-    {
-      storagePath: existingItem.pdfUrl,
-      allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
-    },
-    'admin.newsletter.delete.cleanup.pdf',
-    event
-  )
-
-  return { data: { success: true } }
 })

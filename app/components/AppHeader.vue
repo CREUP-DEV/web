@@ -14,6 +14,7 @@ const {
 } = usePublicHeaderNavigation(toRef(props, 'pressDossierLink'))
 
 const { t } = useI18n()
+const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ?? 'none'}`)
 </script>
 
 <template>
@@ -34,6 +35,7 @@ const { t } = useI18n()
     </template>
 
     <UNavigationMenu
+      :key="navigationMenuKey"
       content-orientation="vertical"
       :items="items"
       :aria-label="t('accessibility.mainNavigation')"
@@ -41,6 +43,7 @@ const { t } = useI18n()
 
     <template #body>
       <UNavigationMenu
+        :key="`${navigationMenuKey}-mobile`"
         orientation="vertical"
         :items="items"
         :aria-label="t('accessibility.mobileNavigation')"

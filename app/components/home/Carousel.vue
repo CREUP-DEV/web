@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core'
 import type { CarouselItem } from '@/composables/useHomeData'
-import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
 import { isExternalNavigationTarget } from '~~/shared/utils/url'
 
 const props = withDefaults(
   defineProps<{
     items: CarouselItem[]
     pending?: boolean
-    error?: unknown | null
+    error?: boolean
   }>(),
   {
     pending: false,
-    error: null,
+    error: false,
   }
 )
 const emit = defineEmits<{
@@ -65,20 +64,19 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
         :autoplay="autoplay"
         :items="props.items"
         :ui="{
-          container: 'transition-[height]',
-          item: 'basis-full h-full sm:h-auto',
+          container: 'transition-[height] overflow-visible',
+          item: 'basis-full overflow-visible px-1 pb-px',
           prev: 'hidden sm:flex sm:inset-s-4 top-1/2 -translate-y-1/2',
           next: 'hidden sm:flex sm:inset-e-4 top-1/2 -translate-y-1/2',
           dots: '-bottom-3',
         }"
-        class="mt-5 w-full pb-6"
+        class="mt-5 w-full overflow-visible pb-5"
       >
-        <article
-          class="border-default flex h-full flex-col overflow-hidden rounded-xl border sm:h-auto"
-        >
+        <article class="border-default flex flex-col overflow-hidden rounded-xl border">
           <div class="bg-muted relative aspect-1925/550 w-full overflow-hidden">
             <NuxtImg
-              :src="item.image || HOME_CAROUSEL_FALLBACK_IMAGE"
+              v-if="item.image"
+              :src="item.image"
               :alt="item.alt || ''"
               width="1925"
               height="550"
@@ -89,10 +87,15 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1152px"
               :format="getImageFormat(item.image)"
             />
+            <div
+              v-else
+              class="bg-muted flex size-full min-h-40 items-center justify-center sm:min-h-55"
+              aria-hidden="true"
+            />
           </div>
 
           <div
-            class="bg-surface/70 flex min-h-28 grow flex-col justify-end p-4 transition-[height] duration-300 ease-in-out sm:min-h-0 sm:grow-0 sm:p-5"
+            class="bg-surface/70 flex min-h-28 flex-col justify-end p-4 transition-[height] duration-300 ease-in-out sm:min-h-0 sm:p-5"
           >
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p

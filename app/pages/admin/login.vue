@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '@/composables/useAuth'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 
 definePageMeta({
   layout: false,
@@ -27,7 +28,7 @@ const verifyAdminAccess = async () => {
 
   try {
     await $fetch('/api/admin/session')
-    await navigateTo('/admin')
+    await navigateTo(ADMIN_ROUTES.dashboard)
   } catch {
     error.value = 'No tienes permiso para acceder a esta página'
   } finally {

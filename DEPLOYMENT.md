@@ -74,51 +74,7 @@ Internet
 
 ## 3. VPS initial setup
 
-### 3a. Install Docker Engine
-
-```bash
-# Remove any old Docker packages
-sudo apt remove docker docker-engine docker.io containerd runc
-
-# Install dependencies
-sudo apt update
-sudo apt install -y ca-certificates curl gnupg lsb-release
-
-# Add Docker's official GPG key and repo
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
-  | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
-  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Allow your non-root user to run Docker
-sudo usermod -aG docker $USER
-newgrp docker
-```
-
-Verify:
-
-```bash
-docker --version
-docker compose version
-```
-
-### 3b. Install NGINX and Certbot
-
-```bash
-sudo apt install -y nginx certbot python3-certbot-nginx
-sudo systemctl enable --now nginx
-```
-
-### 3c. Create the project directory on the VPS
+### 3a. Create the project directory on the VPS
 
 ```bash
 # As your deploy user (e.g. dockeruser)
@@ -127,10 +83,10 @@ sudo chown $USER:$USER /opt/creup-web
 cd /opt/creup-web
 
 # Create the data directories that will be bind-mounted
-mkdir -p data/public data/admin-assets
+mkdir -p data/public-uploads data/admin-assets
 ```
 
-### 3d. Copy project files to the VPS
+### 3b. Copy project files to the VPS
 
 You only need three files on the VPS — the app image is pulled from the registry:
 
@@ -142,7 +98,7 @@ scp -r docker/ dockeruser@your-vps:/opt/creup-web/docker/
 
 The `docker/` directory contains `postgres/init/001-extensions.sql` which runs on first PostgreSQL startup to install `pg_trgm`.
 
-### 3e. Authenticate with GHCR on the VPS (if using a private image)
+### 3c. Authenticate with GHCR on the VPS (if using a private image)
 
 ```bash
 # On the VPS
@@ -272,12 +228,13 @@ nano .env
 
 **Critical values to set for production:**
 
-```env
-# ── Build-time (must match what was used when building the image) ──
-SITE_URL=https://creup.es
+This block is mirrored in `README.md` and should remain identical.
 
+```env
 # ── Application ──
-BETTER_AUTH_URL=https://creup.es
+# Site origin — all server-side URL generation and auth use this.
+# docker-compose.production.example.yml injects NUXT_SITE_URL from this.
+NUXT_SITE_URL=https://creup.es
 APP_SECRET=<output of: openssl rand -base64 32>
 
 # ── Admin access ──
@@ -293,39 +250,39 @@ DATABASE_URL=postgresql://creup:<POSTGRES_PASSWORD>@postgres:5432/creup?schema=p
 
 # ── Redis ──
 REDIS_PASSWORD=<strong random password>
-REDIS_URL=redis://:REDIS_PASSWORD@redis:6379
+NUXT_REDIS_URL=redis://:REDIS_PASSWORD@redis:6379
 
 # ── Deploy ──
 APP_PORT=3000
-APP_PUBLIC_DIR=./data/public
+APP_PUBLIC_UPLOADS_DIR=./data/public-uploads
 APP_ADMIN_ASSETS_DIR=./data/admin-assets
 APPLY_MIGRATIONS_ON_DEPLOY=true
 
 # ── SMTP (required for contact form and newsletter) ──
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=noreply@creup.es
-SMTP_PASS=<smtp password>
-SMTP_FROM_EMAIL=noreply@creup.es
-SMTP_TO_EMAIL=info@creup.es
-SMTP_PRESS_EMAIL=prensa@creup.es
+NUXT_SMTP_HOST=smtp.example.com
+NUXT_SMTP_PORT=587
+NUXT_SMTP_SECURE=false
+NUXT_SMTP_USER=noreply@creup.es
+NUXT_SMTP_PASS=<smtp password>
+NUXT_SMTP_FROM_EMAIL=noreply@creup.es
+NUXT_SMTP_TO_EMAIL=info@creup.es
+NUXT_SMTP_PRESS_EMAIL=prensa@creup.es
 
 # ── Google Calendar ──
-GOOGLE_CALENDAR_API_KEY=<api key>
-GOOGLE_CALENDAR_ID=<calendar id>
+NUXT_GOOGLE_CALENDAR_API_KEY=<api key>
+NUXT_GOOGLE_CALENDAR_ID=<calendar id>
 
 # ── External API ──
-EXTERNAL_API_BASE_URL=https://api.example.com
-EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS=https://api.example.com
-EXTERNAL_ASSET_PROXY_TIMEOUT_MS=10000
-EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES=15728640
-EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES=41943040
-EXTERNAL_API_CACHE_MAX_AGE_SECONDS=60
-EXTERNAL_API_CACHE_STALE_SECONDS=300
+NUXT_EXTERNAL_API_BASE_URL=https://api.example.com
+NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS=https://api.example.com
+NUXT_EXTERNAL_ASSET_PROXY_TIMEOUT_MS=10000
+NUXT_EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES=15728640
+NUXT_EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES=41943040
+NUXT_EXTERNAL_API_CACHE_MAX_AGE_SECONDS=60
+NUXT_EXTERNAL_API_CACHE_STALE_SECONDS=300
 
 # ── Cloudflare Turnstile (anti-spam on public forms) ──
-TURNSTILE_SECRET_KEY=<secret key>
+NUXT_TURNSTILE_SECRET_KEY=<secret key>
 NUXT_PUBLIC_TURNSTILE_SITE_KEY=<site key>
 
 # ── Analytics ──
@@ -346,18 +303,18 @@ NUXT_UMAMI_ID=<your umami site id>
 The file `docker-compose.production.example.yml` is the production Compose template. Copy it to `docker-compose.yml` in your VPS project directory if you haven't already:
 
 ```bash
-# Already done in step 3d if you followed along
+# Already done in step 3b if you followed along
 # Rename on VPS if needed:
 mv docker-compose.production.example.yml docker-compose.yml
 ```
 
 The compose file defines:
 
-| Service | Image | Notes |
-|---------|-------|-------|
-| `app` | `ghcr.io/CREUP-DEV/web:<tag>` | Nitro SSR + BullMQ worker |
-| `postgres` | `postgres:18-alpine` | Data volume + init scripts |
-| `redis` | `redis:8-alpine` | AOF persistence + password |
+| Service    | Image                         | Notes                      |
+| ---------- | ----------------------------- | -------------------------- |
+| `app`      | `ghcr.io/CREUP-DEV/web:<tag>` | Nitro SSR + BullMQ worker  |
+| `postgres` | `postgres:18-alpine`          | Data volume + init scripts |
+| `redis`    | `redis:8-alpine`              | AOF persistence + password |
 
 **Services are not exposed to the host network** except `app` on `APP_PORT` (default `3000`). NGINX proxies to `127.0.0.1:3000`.
 
@@ -372,7 +329,6 @@ Your local `.env` must include:
 ```env
 VPS_HOST=dockeruser@your-vps-ip-or-hostname
 REMOTE_DIR=/opt/creup-web
-SITE_URL=https://creup.es
 
 # GHCR credentials (or use docker login ghcr.io manually)
 GHCR_USERNAME=your-github-username
@@ -398,7 +354,7 @@ bash ./deploy.sh
 What happens step by step:
 
 1. Loads `.env` from your local machine.
-2. Builds the Docker image with build-time args (`SITE_URL`, `NUXT_UMAMI_HOST`, `NUXT_UMAMI_ID`).
+2. Builds the Docker image (no secrets baked in — all config is runtime).
 3. Pushes the image to GHCR.
 4. SSH into the VPS.
 5. `docker compose pull` — pulls the new image on the VPS.
@@ -408,36 +364,18 @@ What happens step by step:
 
 ### 8d. Seed initial data (first time only)
 
-After the first deploy, seed the database:
+In practice, for production sites it's safer to log in to the admin panel directly and create content there, rather than running the seed (which is destructive).
+
+If you do need to seed, run an ephemeral container on the VPS:
 
 ```bash
 # On the VPS
 cd /opt/creup-web
-docker compose run --rm app node -e "
-  import('/app/server/index.mjs')
-" 2>/dev/null || true  # just ensure app image works
-
-# Run seed via an ephemeral container with the production env
 docker compose run --rm \
   -e NODE_ENV=production \
   -e ALLOW_PRODUCTION_SEED=true \
-  app node /app/ops/migrate.mjs --confirm
+  app /app/ops/seed.mjs --confirm
 ```
-
-Actually, seeding is done via the local toolchain:
-
-```bash
-# On your local machine, pointing DATABASE_URL at the production database
-# (requires VPS PostgreSQL port exposed temporarily, or via SSH tunnel)
-ssh -L 5432:localhost:5432 dockeruser@your-vps \
-  "docker compose -f /opt/creup-web/docker-compose.yml exec -T postgres \
-   pg_isready && sleep 3600" &
-
-DATABASE_URL="postgresql://creup:<pass>@localhost:5432/creup?schema=public" \
-  pnpm db:seed --confirm
-```
-
-In practice, for production sites it's safer to log in to the admin panel directly and create content there, rather than running the seed (which is destructive).
 
 ### 8e. Verify the deploy
 
@@ -525,7 +463,7 @@ gunzip -c backup.sql.gz \
 
 ### Upload assets
 
-Admin-uploaded files live in `./data/public` and `./data/admin-assets` on the VPS. Back them up with `rsync` or `tar`:
+Admin-uploaded files live in `./data/public-uploads` and `./data/admin-assets` on the VPS. Back them up with `rsync` or `tar`:
 
 ```bash
 # Example: rsync to a remote storage server
@@ -629,7 +567,7 @@ The app validates critical environment variables at startup and fails fast with 
 docker logs creup-web-app 2>&1 | grep -A 5 "startup"
 ```
 
-Common causes: `REDIS_URL`, `APP_SECRET`, `SMTP_HOST`, `EXTERNAL_API_BASE_URL` not set or malformed.
+Common causes: `NUXT_REDIS_URL`, `APP_SECRET`, `NUXT_SMTP_HOST`, `NUXT_EXTERNAL_API_BASE_URL` not set or malformed.
 
 ### "Too many connections" from PostgreSQL
 
@@ -642,7 +580,7 @@ The rate limiter requires Redis and a correct `X-Forwarded-For` header. If the h
 ### Admin login fails (OAuth redirect error)
 
 Check that:
-1. `BETTER_AUTH_URL` matches the exact origin in the browser (`https://creup.es`).
+1. `NUXT_SITE_URL` matches the exact origin in the browser (`https://creup.es`).
 2. The Google OAuth callback URL `https://creup.es/api/auth/callback/google` is listed in Authorized redirect URIs.
 3. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are correct.
 
@@ -650,16 +588,16 @@ Check that:
 
 1. Check the health endpoint: `curl http://127.0.0.1:3000/health` — SMTP should show `ok`.
 2. Check logs: `docker logs creup-web-app | grep smtp`.
-3. Verify `SMTP_*` variables are correct. Test with:
+3. Verify `NUXT_SMTP_*` variables are correct. Test with:
 
 ```bash
 docker compose exec app node -e "
   const nodemailer = require('nodemailer');
   const t = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    host: process.env.NUXT_SMTP_HOST,
+    port: Number(process.env.NUXT_SMTP_PORT),
+    secure: process.env.NUXT_SMTP_SECURE === 'true',
+    auth: { user: process.env.NUXT_SMTP_USER, pass: process.env.NUXT_SMTP_PASS },
   });
   t.verify().then(() => console.log('SMTP OK')).catch(e => console.error(e));
 "
@@ -670,7 +608,7 @@ docker compose exec app node -e "
 Verify the bind mounts are correctly set in `.env`:
 
 ```env
-APP_PUBLIC_DIR=./data/public
+APP_PUBLIC_UPLOADS_DIR=./data/public-uploads
 APP_ADMIN_ASSETS_DIR=./data/admin-assets
 ```
 

@@ -15,6 +15,7 @@ const localePath = useLocalePath()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const articleRef = toRef(props, 'article')
 const siteConfig = useSiteConfig()
+const siteUrl = useRuntimeSiteUrl()
 const { canonicalUrl, shareActions } = usePressShareActions(articleRef)
 
 const formatDate = (iso: string) => {
@@ -24,11 +25,6 @@ const formatDate = (iso: string) => {
     day: 'numeric',
   })
 }
-
-const siteUrl = computed(() => {
-  const configuredSiteUrl = String(siteConfig.url ?? '').trim()
-  return (configuredSiteUrl || 'https://www.creup.es').replace(/\/$/, '')
-})
 
 const structuredDataImage = computed(
   () => toAbsoluteUrl(props.article.image, siteUrl.value) ?? undefined
@@ -135,7 +131,11 @@ usePageSeo(
           <time :datetime="article.publishedAt">{{ formatDate(article.publishedAt) }}</time>
           <template v-if="article.mediaOutlet">
             <span aria-hidden="true">&middot;</span>
+            <template v-if="article.type === 'media_appearance'">
+              <span>{{ article.mediaOutlet.name }}</span>
+            </template>
             <a
+              v-else
               :href="article.mediaOutlet.website"
               target="_blank"
               rel="noopener noreferrer"
@@ -146,7 +146,8 @@ usePageSeo(
                   :src="article.mediaOutlet.logo"
                   :alt="article.mediaOutlet.name"
                   height="20"
-                  width="96"
+                  width="120"
+                  fit="inside"
                   class="h-5 w-auto max-w-24 object-contain"
                 />
               </span>
@@ -177,7 +178,7 @@ usePageSeo(
       </AnimateIn>
 
       <AnimateIn v-if="article.image" tag="figure" :index="2" :threshold="0.12" class="mb-8">
-        <div class="motion-card-subtle bg-muted overflow-hidden rounded-xl">
+        <div class="motion-card-subtle bg-muted relative overflow-hidden rounded-xl">
           <NuxtImg
             :src="article.image"
             :alt="article.alt || ''"
@@ -185,7 +186,30 @@ usePageSeo(
             height="540"
             class="w-full object-cover"
           />
+          <PressMediaOutletLogoOverlay
+            v-if="article.type === 'media_appearance' && article.mediaOutlet?.logo"
+            variant="detail"
+            :logo-url="article.mediaOutlet.logo"
+            :outlet-name="article.mediaOutlet.name"
+            :outlet-website="article.mediaOutlet.website"
+          />
         </div>
+      </AnimateIn>
+
+      <AnimateIn
+        v-else-if="article.type === 'media_appearance' && article.mediaOutlet?.logo"
+        tag="div"
+        :index="2"
+        :threshold="0.12"
+        class="mb-8 flex justify-center"
+      >
+        <PressMediaOutletLogoOverlay
+          standalone
+          variant="detail"
+          :logo-url="article.mediaOutlet.logo"
+          :outlet-name="article.mediaOutlet.name"
+          :outlet-website="article.mediaOutlet.website"
+        />
       </AnimateIn>
 
       <AnimateIn :index="3" :threshold="0.08">

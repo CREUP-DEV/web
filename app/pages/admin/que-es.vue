@@ -15,6 +15,7 @@ interface AboutContent {
 }
 
 const toast = useToast()
+const { refreshAboutPage } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const {
@@ -32,6 +33,12 @@ const contentForm = reactive({
   heroImage: null as string | null,
   heroVisible: false,
 })
+
+const buildContentSnapshot = () =>
+  JSON.stringify({
+    heroImage: contentForm.heroImage,
+    heroVisible: contentForm.heroVisible,
+  })
 
 const isSavingContent = ref(false)
 const showClearHeroModal = ref(false)
@@ -61,12 +68,8 @@ const heroPreview = computed(
   () => heroUpload.preview.value || withCacheBuster(contentForm.heroImage, heroImageVersion.value)
 )
 const currentHeroName = computed(() => contentForm.heroImage?.split('/').pop() ?? null)
-const hasPendingHeroChanges = computed(() => {
-  const originalImage = contentItem.value?.heroImage ?? null
-  const originalVisibility = contentItem.value?.heroVisible ?? false
-
-  return contentForm.heroImage !== originalImage || contentForm.heroVisible !== originalVisibility
-})
+const { hasFormChanges: hasPendingHeroChanges, resetFormSnapshot: resetContentSnapshot } =
+  useFormSnapshot(buildContentSnapshot)
 
 watch(
   contentItem,
@@ -75,6 +78,7 @@ watch(
     contentForm.heroVisible = item?.heroVisible ?? false
     heroUpload.setPreview(null)
     clearErrors()
+    resetContentSnapshot()
   },
   { immediate: true }
 )
@@ -113,6 +117,10 @@ const saveContent = async () => {
     heroVisible: contentForm.heroVisible,
   }
 
+  if (!hasPendingHeroChanges.value) {
+    return
+  }
+
   if (!validate(updateAboutPageContentClientSchema, payload)) {
     return
   }
@@ -129,6 +137,7 @@ const saveContent = async () => {
     })
 
     await refreshContent()
+    await refreshAboutPage()
     heroUpload.setPreview(null)
     toast.add({ title: 'Cambios guardados', color: 'success' })
   } catch (error) {
@@ -290,6 +299,7 @@ const saveContent = async () => {
             type="button"
             icon="i-tabler-device-floppy"
             :loading="isSavingContent"
+            :disabled="!hasPendingHeroChanges"
             @click="saveContent"
           >
             Guardar cambios

@@ -8,6 +8,7 @@ import { getRequiredSiteUrl, getRequiredSmtpFromEmail } from './runtimeConfig'
 import { buildAbsoluteUrl, getClientIp, getUserAgent, normalizeBaseUrl } from './urlBuilder'
 import { ensureSmtpTransporterVerified } from './smtpTransporter'
 import { getOptionalConfigString, requireConfigString } from '~~/shared/utils/config'
+import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
 import { buildLocalizedPathFromLocale, type LocaleDefinition } from '~~/shared/utils/locale'
 
 export const NEWSLETTER_CONSENT_TEXT_VERSION = '2026-03-06'
@@ -197,6 +198,7 @@ export async function recordNewsletterSubscriptionEvent(
 
 function buildConfirmationEmailHtml(confirmUrl: string, siteUrl: string): string {
   const privacyUrl = buildAbsoluteUrl(siteUrl, '/legal#privacidad')
+  const bannerImageUrl = buildAbsoluteUrl(siteUrl, NEWSLETTER_BRAND_BANNER_PATH)
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -205,29 +207,59 @@ function buildConfirmationEmailHtml(confirmUrl: string, siteUrl: string): string
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Confirma tu suscripción a la newsletter de CREUP</title>
 </head>
-<body style="margin:0; padding:24px; background:#f6f4f1; color:#1f2937; font-family:Arial, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
+<body style="margin:0; padding:0; background-color:#eaeaea;">
+  <div style="display:none; font-size:1px; color:#eaeaea; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+    Confirma tu suscripción a la newsletter de CREUP
+  </div>
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#eaeaea">
     <tr>
-      <td style="padding:32px 24px 16px 24px;">
-        <h1 style="margin:0 0 16px 0; font-size:28px; line-height:1.2; color:#792225;">Confirma tu suscripción</h1>
-        <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6;">
-          Hemos recibido una solicitud para suscribir esta dirección a la newsletter de CREUP.
-        </p>
-        <p style="margin:0 0 24px 0; font-size:16px; line-height:1.6;">
-          Para activar la suscripción, confirma tu consentimiento haciendo clic en el siguiente botón.
-        </p>
-        <p style="margin:0 0 24px 0; text-align:center;">
-          <a href="${confirmUrl}" style="display:inline-block; padding:14px 28px; background:#792225; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:700;">
-            Confirmar suscripción
-          </a>
-        </p>
-        <p style="margin:0 0 16px 0; font-size:14px; line-height:1.6; color:#4b5563;">
-          Si no has solicitado esta suscripción, puedes ignorar este correo y no se activará ninguna alta.
-        </p>
-        <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280;">
-          Información sobre protección de datos:
-          <a href="${privacyUrl}" style="color:#792225;">aviso legal y política de privacidad</a>.
-        </p>
+      <td align="center" style="padding: 16px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; background:transparent;">
+          <tr>
+            <td align="center" style="padding: 20px 8px 8px 8px;">
+              <h1 style="margin:0; font-size:32px; line-height:40px; font-weight:700; font-family: 'Red Rose', Georgia, serif; color:#2c2c2c;">
+                Confirma tu suscripción
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 8px 0 8px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background:#ffffff; border-top:4px solid #792225; border-top-left-radius:5px; border-top-right-radius:5px;">
+                <tr>
+                  <td style="padding: 16px; font-family: 'Raleway', Arial, sans-serif; color:#2c2c2c; font-size:16px; line-height:24px;">
+                    <p style="margin:0 0 12px 0;">Hemos recibido una solicitud para suscribir esta dirección a la newsletter de CREUP.</p>
+                    <p style="margin:0 0 24px 0;">Para activar la suscripción, haz clic en el siguiente botón.</p>
+                    <p style="margin:0 0 12px 0; text-align:center;">
+                      <a href="${confirmUrl}"
+                        style="display:inline-block; padding:14px 32px; background-color:#792225; color:#ffffff; font-family: 'Raleway', Arial, sans-serif; font-size:16px; font-weight:700; text-decoration:none; border-radius:6px;">
+                        Confirmar suscripción
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 16px;">
+                    <hr style="border:none; border-top:1px solid #eeeeee; margin:0;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px 16px 16px; font-family: 'Raleway', Arial, sans-serif; font-size:12px; color:#999999; line-height:18px; text-align:center;">
+                    Si no has solicitado esta suscripción, ignora este correo y no se activará ninguna alta.
+                    <br />
+                    <a href="${privacyUrl}" style="color:#792225; text-decoration:none;">Aviso legal y política de privacidad</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 0 8px 8px 8px;">
+              <img src="${bannerImageUrl}" alt="Imagotipo CREUP" width="600"
+                style="display:block; width:100%; height:auto; margin:0 auto;" />
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
@@ -252,7 +284,9 @@ ${privacyUrl}
 `
 }
 
-function buildAlreadySubscribedEmailHtml(unsubscribeUrl: string): string {
+function buildAlreadySubscribedEmailHtml(unsubscribeUrl: string, siteUrl: string): string {
+  const bannerImageUrl = buildAbsoluteUrl(siteUrl, NEWSLETTER_BRAND_BANNER_PATH)
+
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -260,24 +294,53 @@ function buildAlreadySubscribedEmailHtml(unsubscribeUrl: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ya estás suscrito/a a la newsletter de CREUP</title>
 </head>
-<body style="margin:0; padding:24px; background:#f6f4f1; color:#1f2937; font-family:Arial, sans-serif;">
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
+<body style="margin:0; padding:0; background-color:#eaeaea;">
+  <div style="display:none; font-size:1px; color:#eaeaea; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+    Ya estás suscrito/a a la newsletter de CREUP
+  </div>
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#eaeaea">
     <tr>
-      <td style="padding:32px 24px 16px 24px;">
-        <h1 style="margin:0 0 16px 0; font-size:28px; line-height:1.2; color:#792225;">Ya estás suscrito/a</h1>
-        <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6;">
-          Hemos recibido una nueva solicitud de suscripción para esta dirección, pero ya estás suscrito/a a la newsletter de CREUP.
-        </p>
-        <p style="margin:0 0 24px 0; font-size:16px; line-height:1.6;">
-          No es necesario que hagas nada. Seguirás recibiendo nuestras newsletters normalmente.
-        </p>
-        <p style="margin:0 0 16px 0; font-size:14px; line-height:1.6; color:#4b5563;">
-          Si no fuiste tú quien envió esta solicitud, puedes ignorar este correo con total tranquilidad.
-        </p>
-        <p style="margin:0; font-size:13px; line-height:1.6; color:#6b7280;">
-          ¿Quieres darte de baja?
-          <a href="${unsubscribeUrl}" style="color:#792225;">Darme de baja</a>
-        </p>
+      <td align="center" style="padding: 16px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; background:transparent;">
+          <tr>
+            <td align="center" style="padding: 20px 8px 8px 8px;">
+              <h1 style="margin:0; font-size:32px; line-height:40px; font-weight:700; font-family: 'Red Rose', Georgia, serif; color:#2c2c2c;">
+                Ya estás suscrito/a
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 8px 0 8px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                style="background:#ffffff; border-top:4px solid #792225; border-top-left-radius:5px; border-top-right-radius:5px;">
+                <tr>
+                  <td style="padding: 16px; font-family: 'Raleway', Arial, sans-serif; color:#2c2c2c; font-size:16px; line-height:24px;">
+                    <p style="margin:0 0 12px 0;">Hemos recibido una nueva solicitud de suscripción para esta dirección, pero ya estás suscrito/a a la newsletter de CREUP.</p>
+                    <p style="margin:0;">No es necesario que hagas nada. Seguirás recibiendo nuestras newsletters con normalidad.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 16px;">
+                    <hr style="border:none; border-top:1px solid #eeeeee; margin:0;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px 16px 16px; font-family: 'Raleway', Arial, sans-serif; font-size:12px; color:#999999; line-height:18px; text-align:center;">
+                    Si no fuiste tú quien envió esta solicitud, puedes ignorar este correo.
+                    <br />
+                    <a href="${unsubscribeUrl}" style="color:#792225; text-decoration:none;">Darme de baja</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 0 8px 8px 8px;">
+              <img src="${bannerImageUrl}" alt="Imagotipo CREUP" width="600"
+                style="display:block; width:100%; height:auto; margin:0 auto;" />
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
   </table>
@@ -318,7 +381,7 @@ export async function sendNewsletterAlreadySubscribedEmail(
     to: email,
     subject: 'Ya estás suscrito/a a la newsletter de CREUP',
     text: buildAlreadySubscribedEmailText(unsubscribeUrl),
-    html: buildAlreadySubscribedEmailHtml(unsubscribeUrl),
+    html: buildAlreadySubscribedEmailHtml(unsubscribeUrl, siteUrl),
   })
 }
 

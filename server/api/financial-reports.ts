@@ -16,6 +16,7 @@ import {
 import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { throwSafePublicError } from '../utils/publicErrors'
+import { appendAssetVersion } from '../utils/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -52,10 +53,12 @@ export default defineCachedEventHandler(
           id: item.id,
           title:
             pickLocalizedEntry(item.translations, locale, locales, fallbackLocale)?.title ?? '',
-          pdfUrl:
+          pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(item.pdfUrl, {
               publicPathBase: '/documentos/informes-economicos',
             }) ?? item.pdfUrl,
+            item.updatedAt
+          ),
           approvedAt: dateValueToDateOnly(item.approvedAt),
         })),
         total: countResult[0]?.count ?? 0,

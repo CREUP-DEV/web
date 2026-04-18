@@ -128,7 +128,18 @@ function buildLogPayload(level: LogLevel, scope: string, meta: LogMeta = {}, eve
   const payload: Record<string, unknown> = {
     level,
     scope,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date()
+      .toLocaleString('sv-SE', {
+        timeZone: process.env.TZ || 'Europe/Madrid',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        fractionalSecondDigits: 3,
+      })
+      .replace(' ', 'T'),
     ...sanitizedMeta,
   }
 

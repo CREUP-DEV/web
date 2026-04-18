@@ -298,15 +298,19 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
     issues.push({ message: 'Tipo de artículo no válido', path: ['type'] })
   }
 
-  if (typeof image !== 'string' || !image.trim()) {
-    issues.push({ message: 'La imagen de portada es obligatoria', path: ['image'] })
-  } else if (image.length > 2048) {
-    issues.push({ message: 'La imagen no es válida', path: ['image'] })
-  } else if (image.startsWith('http://') || image.startsWith('https://')) {
-    issues.push({
-      message: 'La imagen debe ser una ruta interna, no una URL externa',
-      path: ['image'],
-    })
+  if (image !== null && image !== undefined) {
+    if (typeof image !== 'string') {
+      issues.push({ message: 'La imagen de portada no es válida', path: ['image'] })
+    } else if (image.trim() === '') {
+      // omit — treated as no custom cover
+    } else if (image.length > 2048) {
+      issues.push({ message: 'La imagen no es válida', path: ['image'] })
+    } else if (image.startsWith('http://') || image.startsWith('https://')) {
+      issues.push({
+        message: 'La imagen debe ser una ruta interna, no una URL externa',
+        path: ['image'],
+      })
+    }
   }
 
   if (pdfUrl !== null && pdfUrl !== undefined && (typeof pdfUrl !== 'string' || !pdfUrl.trim())) {
@@ -428,10 +432,20 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
     })
   }
 
-  return payload as {
+  const normalizedImage =
+    image === undefined || image === null
+      ? null
+      : typeof image === 'string' && image.trim() === ''
+        ? null
+        : (image as string).trim()
+
+  return {
+    ...(payload as Record<string, unknown>),
+    image: normalizedImage,
+  } as {
     active: boolean
     externalUrl?: string | null
-    image: string
+    image: string | null
     mediaOutletId?: string | null
     pdfUrl?: string | null
     publishedAt?: string
@@ -444,6 +458,65 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
       title: string
     }>
     type: string
+  }
+})
+
+export const updateSiteDefaultImagesClientSchema = buildValidator((payload, issues) => {
+  if (!isPlainObject(payload)) {
+    issues.push({ message: 'Entrada no válida', path: [] })
+    return null
+  }
+
+  const validateSlot = (key: string, value: unknown) => {
+    if (value === undefined) {
+      issues.push({ message: 'Este campo es obligatorio', path: [key] })
+      return
+    }
+    if (value === null) {
+      return
+    }
+    if (typeof value !== 'string') {
+      issues.push({ message: 'La imagen no es válida', path: [key] })
+      return
+    }
+    const t = value.trim()
+    if (!t) {
+      return
+    }
+    if (t.length > 2048) {
+      issues.push({ message: 'La imagen no es válida', path: [key] })
+    } else if (t.startsWith('http://') || t.startsWith('https://')) {
+      issues.push({
+        message: 'La imagen debe ser una ruta interna, no una URL externa',
+        path: [key],
+      })
+    }
+  }
+
+  validateSlot('pressReleaseImage', payload.pressReleaseImage)
+  validateSlot('statementImage', payload.statementImage)
+  validateSlot('mediaAppearanceImage', payload.mediaAppearanceImage)
+  validateSlot('newsletterCoverImage', payload.newsletterCoverImage)
+  validateSlot('carouselSlideImage', payload.carouselSlideImage)
+
+  if (typeof payload.updatedAt !== 'string' && payload.updatedAt !== undefined) {
+    issues.push({ message: 'Fecha de versión no válida', path: ['updatedAt'] })
+  }
+
+  const normalize = (value: unknown) => {
+    if (value === null || value === undefined) return null
+    if (typeof value !== 'string') return null
+    const t = value.trim()
+    return t.length ? t : null
+  }
+
+  return {
+    pressReleaseImage: normalize(payload.pressReleaseImage),
+    statementImage: normalize(payload.statementImage),
+    mediaAppearanceImage: normalize(payload.mediaAppearanceImage),
+    newsletterCoverImage: normalize(payload.newsletterCoverImage),
+    carouselSlideImage: normalize(payload.carouselSlideImage),
+    updatedAt: payload.updatedAt as string | undefined,
   }
 })
 
@@ -495,13 +568,23 @@ export const createCarouselItemClientSchema = buildValidator((payload, issues) =
     return null
   }
 
-  const image = asTrimmedString(payload.image)
+  const imageRaw = payload.image
+  const image =
+    imageRaw === undefined || imageRaw === null
+      ? null
+      : typeof imageRaw === 'string'
+        ? imageRaw.trim()
+        : ''
   const href = asTrimmedString(payload.href)
 
-  if (!image) {
-    issues.push({ message: 'La imagen es requerida', path: ['image'] })
-  } else if (image.length > 2048) {
-    issues.push({ message: 'La imagen es requerida', path: ['image'] })
+  if (image !== null && image.length > 2048) {
+    issues.push({ message: 'La ruta de imagen no es válida', path: ['image'] })
+  }
+  if (image && (image.startsWith('http://') || image.startsWith('https://'))) {
+    issues.push({
+      message: 'La imagen debe ser una ruta interna, no una URL externa',
+      path: ['image'],
+    })
   }
 
   if (!href || !isSafeHref(href)) {
@@ -551,10 +634,13 @@ export const createCarouselItemClientSchema = buildValidator((payload, issues) =
     }
   )
 
-  return payload as {
+  return {
+    ...(payload as Record<string, unknown>),
+    image: image && image.length > 0 ? image : null,
+  } as {
     active: boolean
     href: string
-    image: string
+    image: string | null
     order: number
     translations: Array<{ alt?: string; buttonText?: string; locale: string; title: string }>
   }
@@ -760,9 +846,14 @@ export const createNewsletterRequestClientSchema = buildValidator((payload, issu
   }
 
   const month = asTrimmedString(payload.month)
-  const coverImage = asTrimmedString(payload.coverImage)
+  const coverRaw = payload.coverImage
+  const coverImage =
+    coverRaw === undefined || coverRaw === null
+      ? null
+      : typeof coverRaw === 'string'
+        ? coverRaw.trim()
+        : null
   const pdfUrl = asTrimmedString(payload.pdfUrl)
-  const active = payload.active
   const publicVisible = payload.publicVisible
   const sendEmail = payload.sendEmail
 
@@ -770,16 +861,18 @@ export const createNewsletterRequestClientSchema = buildValidator((payload, issu
     issues.push({ message: 'El mes no es válido', path: ['month'] })
   }
 
-  if (!coverImage || coverImage.length > 2048) {
-    issues.push({ message: 'La imagen de portada es requerida', path: ['coverImage'] })
+  if (coverImage && coverImage.length > 2048) {
+    issues.push({ message: 'La imagen de portada no es válida', path: ['coverImage'] })
+  }
+  if (coverImage && (coverImage.startsWith('http://') || coverImage.startsWith('https://'))) {
+    issues.push({
+      message: 'La imagen debe ser una ruta interna, no una URL externa',
+      path: ['coverImage'],
+    })
   }
 
   if (!pdfUrl || pdfUrl.length > 2048) {
     issues.push({ message: 'El PDF es requerido', path: ['pdfUrl'] })
-  }
-
-  if (typeof active !== 'boolean') {
-    issues.push({ message: 'Estado no válido', path: ['active'] })
   }
 
   if (typeof publicVisible !== 'boolean') {
@@ -790,16 +883,18 @@ export const createNewsletterRequestClientSchema = buildValidator((payload, issu
     issues.push({ message: 'Envío no válido', path: ['sendEmail'] })
   }
 
-  if (sendEmail === true && active !== true) {
+  if (sendEmail === true && publicVisible !== true) {
     issues.push({
-      message: 'Debes habilitar el envío para enviar la newsletter ahora',
-      path: ['active'],
+      message: 'La newsletter debe estar visible para poder enviarla',
+      path: ['sendEmail'],
     })
   }
 
-  return payload as {
-    active: boolean
-    coverImage: string
+  return {
+    ...(payload as Record<string, unknown>),
+    coverImage: coverImage && coverImage.length > 0 ? coverImage : null,
+  } as {
+    coverImage: string | null
     month: string
     pdfUrl: string
     publicVisible: boolean

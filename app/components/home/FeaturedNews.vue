@@ -191,19 +191,11 @@ const onTagSelect = (tagSlug: string | null) => {
                 >
                   <UIcon name="i-tabler-news" class="size-12" />
                 </div>
-                <div
+                <PressMediaOutletLogoOverlay
                   v-if="item.image && item.mediaOutletLogo && isItemImageLoaded(item)"
-                  class="bg-background/70 absolute right-2 bottom-2 rounded p-1 backdrop-blur-sm"
-                >
-                  <NuxtImg
-                    :src="item.mediaOutletLogo"
-                    :alt="item.mediaOutletName ?? ''"
-                    width="64"
-                    height="16"
-                    class="block h-4 w-auto"
-                    loading="lazy"
-                  />
-                </div>
+                  :logo-url="item.mediaOutletLogo"
+                  :outlet-name="item.mediaOutletName ?? ''"
+                />
               </div>
               <div class="p-3">
                 <UTooltip :text="item.title">

@@ -8,6 +8,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateEqualityDocumentsCache } from '../../../utils/adminCacheInvalidation'
 import { runAdminCrudTransaction } from '../../../utils/adminCrud'
 import {
   filterTranslationsByContent,
@@ -93,6 +94,8 @@ export default defineEventHandler(async (event) => {
         event
       )
     }
+
+    await invalidateEqualityDocumentsCache()
 
     return { data: completeItem }
   } catch (e) {

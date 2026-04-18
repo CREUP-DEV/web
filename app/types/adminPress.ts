@@ -37,7 +37,7 @@ export interface PressArticleAdmin {
   id: string
   type: PressArticleType
   slug: string
-  image: string
+  image: string | null
   pdfUrl: string | null
   externalUrl: string | null
   mediaOutletId: string | null

@@ -134,7 +134,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
         </UButton>
       </div>
 
-      <div v-else-if="status === 'pending'" aria-hidden="true" class="space-y-4">
+      <div v-else-if="status === 'pending'" aria-hidden="true" class="mx-auto max-w-2xl space-y-4">
         <div v-for="n in 3" :key="n" class="bg-surface/50 ring-default rounded-xl p-6 ring-1">
           <div class="flex items-center gap-4">
             <USkeleton class="size-12 rounded-lg" />

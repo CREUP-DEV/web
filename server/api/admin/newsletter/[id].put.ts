@@ -8,9 +8,11 @@ import {
   type CleanupUnusedAdminAssetOptions,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateNewsletterArchiveCache } from '../../../utils/adminCacheInvalidation'
 import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
@@ -50,20 +52,11 @@ export default defineEventHandler(async (event) => {
     }
 
     const validated = validateBody(updateNewsletterSchema, body)
-    if (validated.updatedAt) {
-      const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-      const serverUpdatedAt = existingItem.updatedAt
-        ? new Date(existingItem.updatedAt).getTime()
-        : 0
-
-      if (clientUpdatedAt !== serverUpdatedAt) {
-        throw createError({
-          statusCode: 409,
-          message:
-            'La newsletter fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
-        })
-      }
-    }
+    assertOptimisticLock(
+      validated.updatedAt,
+      existingItem.updatedAt,
+      'La newsletter fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
 
     const { monthDate, monthKey } = normalizeNewsletterMonthInput(validated.month)
 
@@ -71,20 +64,26 @@ export default defineEventHandler(async (event) => {
     previousCoverImage = existingItem.coverImage
     previousPdfUrl = existingItem.pdfUrl
     const item = await db.transaction(async (tx) => {
-      coverImage = await finalizeAdminImage({
-        storagePath: validated.coverImage,
-        uploadDir: COVER_IMAGE_UPLOAD_DIR,
-        publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-        slug: buildNewsletterCoverSlug(monthKey),
-        publish: validated.publicVisible,
-        fallbackBaseName: 'newsletter-portada',
-        replaceStoragePath: existingItem.coverImage,
-      })
-      trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: validated.coverImage,
-        storagePath: coverImage,
-        allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-      })
+      if (validated.coverImage === existingItem.coverImage) {
+        coverImage = existingItem.coverImage
+      } else if (!validated.coverImage) {
+        coverImage = null
+      } else {
+        coverImage = await finalizeAdminImage({
+          storagePath: validated.coverImage,
+          uploadDir: COVER_IMAGE_UPLOAD_DIR,
+          publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+          slug: buildNewsletterCoverSlug(monthKey),
+          publish: validated.publicVisible,
+          fallbackBaseName: 'newsletter-portada',
+          replaceStoragePath: existingItem.coverImage,
+        })
+        trackAdminAssetFinalization(cleanupTargets, {
+          sourceStoragePath: validated.coverImage,
+          storagePath: coverImage,
+          allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
+        })
+      }
 
       pdfUrl = await finalizeAdminDocument({
         storagePath: validated.pdfUrl,
@@ -102,7 +101,10 @@ export default defineEventHandler(async (event) => {
       })
 
       const whereCondition = validated.updatedAt
-        ? and(eq(newsletters.id, id), eq(newsletters.updatedAt, existingItem.updatedAt))
+        ? and(
+            eq(newsletters.id, id),
+            buildOptimisticLockCondition(newsletters.updatedAt, validated.updatedAt)
+          )
         : eq(newsletters.id, id)
 
       const updatedRows = await tx
@@ -112,7 +114,6 @@ export default defineEventHandler(async (event) => {
           monthKey,
           coverImage,
           pdfUrl,
-          active: validated.active,
           publicVisible: validated.publicVisible,
         })
         .where(whereCondition)
@@ -154,10 +155,13 @@ export default defineEventHandler(async (event) => {
       )
     }
 
+    await invalidateNewsletterArchiveCache()
+
     const normalizedItem = item
       ? {
           ...item,
           month: monthKeyToDate(item.monthKey),
+          isSending: Boolean(item?.lastDeliveryWorkerToken ?? false),
         }
       : null
 

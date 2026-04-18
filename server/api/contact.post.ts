@@ -142,6 +142,13 @@ Fecha: ${sentAt}
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nuevo mensaje de ${escapedContactLabel}</title>
+  <style>
+    @font-face { font-family: 'Red Rose'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/RedRose-Regular.woff2')}') format('woff2'); font-weight: 400; font-style: normal; }
+    @font-face { font-family: 'Red Rose'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/RedRose-Bold.woff2')}') format('woff2'); font-weight: 700; font-style: normal; }
+    @font-face { font-family: 'Raleway'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/Raleway-Regular.woff2')}') format('woff2'); font-weight: 400; font-style: normal; }
+    @font-face { font-family: 'Raleway'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/Raleway-Bold.woff2')}') format('woff2'); font-weight: 700; font-style: normal; }
+    @font-face { font-family: 'Raleway'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/Raleway-Italic.woff2')}') format('woff2'); font-weight: 400; font-style: italic; }
+  </style>
 </head>
 <body style="margin:0; padding:0; background-color:#eaeaea;">
   <div style="display:none; font-size:1px; color:#eaeaea; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
@@ -153,7 +160,7 @@ Fecha: ${sentAt}
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; background:transparent;">
           <tr>
             <td align="center" style="padding: 20px 8px 8px 8px;">
-              <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:700; font-family: Georgia, serif; color:#2c2c2c;">
+              <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:700; font-family: 'Red Rose', Georgia, serif; color:#2c2c2c;">
                 Nuevo mensaje de ${escapedContactLabel}
               </h1>
             </td>
@@ -163,26 +170,26 @@ Fecha: ${sentAt}
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
                 style="background:#ffffff; border-top: 4px solid #792225; border-top-left-radius:5px; border-top-right-radius:5px;">
                 <tr>
-                  <td style="padding: 16px 16px 0 16px; font-family: Arial, sans-serif; font-size:14px; color:#666666;">
+                  <td style="padding: 16px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
                     <strong style="color:#2c2c2c;">De:</strong>
                     ${escapedName}
                     &lt;<a href="mailto:${escapedEmail}" style="color:#792225; text-decoration:none;">${escapedEmailText}</a>&gt;
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 16px 0 16px; font-family: Arial, sans-serif; font-size:14px; color:#666666;">
+                  <td style="padding: 6px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
                     <strong style="color:#2c2c2c;">Asunto:</strong> ${escapedSubject}
                   </td>
                 </tr>${
                   isPress
                     ? `
                 <tr>
-                  <td style="padding: 6px 16px 0 16px; font-family: Arial, sans-serif; font-size:14px; color:#666666;">
+                  <td style="padding: 6px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
                     <strong style="color:#2c2c2c;">Teléfono:</strong> ${escapedPhone}
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px 16px 0 16px; font-family: Arial, sans-serif; font-size:14px; color:#666666;">
+                  <td style="padding: 6px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
                     <strong style="color:#2c2c2c;">Medio:</strong> ${escapedMediaName}
                   </td>
                 </tr>`
@@ -194,7 +201,7 @@ Fecha: ${sentAt}
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 16px; font-family: Arial, sans-serif; color:#2c2c2c; font-size:16px; line-height:26px;">${escapedMessage}</td>
+                  <td style="padding: 16px; font-family: 'Raleway', Arial, sans-serif; color:#2c2c2c; font-size:16px; line-height:26px;">${escapedMessage}</td>
                 </tr>
                 <tr>
                   <td style="padding: 0 16px 0 16px;">
@@ -202,7 +209,7 @@ Fecha: ${sentAt}
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 12px 16px 16px 16px; font-family: Arial, sans-serif; font-size:12px; color:#999999; line-height:18px;">
+                  <td style="padding: 12px 16px 16px 16px; font-family: 'Raleway', Arial, sans-serif; font-size:12px; color:#999999; line-height:18px;">
                     Enviado desde
                     <a href="${contactPageUrl}" style="color:#792225; text-decoration:none;">${contactPageUrl}</a>
                     · ${sentAt}

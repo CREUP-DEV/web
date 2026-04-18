@@ -1,0 +1,127 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${LOCAL_DEPLOY_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./deploy/nginx/creup.local-deploy.conf:/etc/nginx/conf.d/default.conf:ro
+
+  app:
+    image: ${IMAGE:-creup-web-local:latest}
+    restart: unless-stopped
+    env_file:
+      - ${DEPLOY_ENV_FILE:-.env}
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: ${LOCAL_DEPLOY_NODE_OPTIONS:---enable-source-maps --trace-uncaught}
+      TZ: ${TZ:-Europe/Madrid}
+      HOST: 0.0.0.0
+      NITRO_PORT: 3000
+      NUXT_SITE_URL: ${LOCAL_DEPLOY_SITE_URL:-http://localhost:8080}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-creup}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-creup}?schema=public
+      NUXT_REDIS_URL: redis://:${REDIS_PASSWORD:-change-me-redis}@redis:6379
+      NUXT_SMTP_HOST: mailpit
+      NUXT_SMTP_PORT: 1025
+      NUXT_SMTP_SECURE: "false"
+    volumes:
+      # Keep build assets from the image (/_nuxt) and persist only mutable upload targets.
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/inicio/imagenes:/app/.output/public/inicio/imagenes
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/conocenos/imagenes:/app/.output/public/conocenos/imagenes
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/eventos/imagenes:/app/.output/public/eventos/imagenes
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/eventos/documentos:/app/.output/public/eventos/documentos
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/imagenes:/app/.output/public/prensa/imagenes
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/documentos:/app/.output/public/prensa/documentos
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/newsletter/portadas:/app/.output/public/prensa/newsletter/portadas
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/newsletter/documentos:/app/.output/public/prensa/newsletter/documentos
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/newsletter/imagenes-por-defecto:/app/.output/public/prensa/newsletter/imagenes-por-defecto
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/externos:/app/.output/public/documentos/externos
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/igualdad:/app/.output/public/documentos/igualdad
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/informes-economicos:/app/.output/public/documentos/informes-economicos
+      - ${LOCAL_DEPLOY_ADMIN_ASSETS_DIR:-./data/local-deploy/admin-assets}:/app/.output/.data/admin-assets
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/nodejs/bin/node",
+          "-e",
+          "const port=process.env.NITRO_PORT||'3000';fetch('http://127.0.0.1:'+port+'/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    command:
+      [
+        "postgres",
+        "-c",
+        "timezone=${TZ:-Europe/Madrid}",
+        "-c",
+        "log_timezone=${TZ:-Europe/Madrid}",
+      ]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-creup}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-creup}
+      # Applied only when PGDATA is initialized for the first time.
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=es-ES"
+    expose:
+      - 5432
+    volumes:
+      - creup_web_local_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis}
+    command:
+      [
+        "sh",
+        "-c",
+        'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"',
+      ]
+    expose:
+      - 6379
+    volumes:
+      - creup_web_local_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    expose:
+      - 1025
+    ports:
+      - "${LOCAL_DEPLOY_MAILPIT_WEB_PORT:-8025}:8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+
+volumes:
+  creup_web_local_postgres_data:
+  creup_web_local_redis_data:

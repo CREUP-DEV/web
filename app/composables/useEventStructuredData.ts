@@ -8,12 +8,10 @@ export function useEventStructuredData(eventInput: MaybeRefOrGetter<CREUPEvent>)
   const route = useRoute()
   const localePath = useLocalePath()
   const siteConfig = useSiteConfig()
+  const siteUrl = useRuntimeSiteUrl()
   const event = computed(() => toValue(eventInput))
 
-  const siteBaseUrl = computed(() => {
-    const configuredSiteUrl = String(siteConfig.url ?? '').trim()
-    return (configuredSiteUrl || 'https://www.creup.es').replace(/\/$/, '')
-  })
+  const siteBaseUrl = computed(() => siteUrl.value)
 
   const eventUrl = computed(() => {
     return toAbsoluteUrl(route.path, siteBaseUrl.value) || undefined

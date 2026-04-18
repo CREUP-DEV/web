@@ -19,6 +19,12 @@ import {
 import { pressListQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { throwSafePublicError } from '../utils/publicErrors'
+import {
+  getPressDefaultCoverEntriesRow,
+  resolvePressArticleListImageWithVersion,
+} from '../utils/siteDefaultImages'
+import type { PressArticleType } from '~~/shared/constants/pressTypes'
+import { appendAssetVersion } from '../utils/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -53,7 +59,7 @@ export default defineCachedEventHandler(
 
       const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0]
 
-      const [articlesList, countResult] = await Promise.all([
+      const [articlesList, countResult, defaultCovers] = await Promise.all([
         db.query.pressArticles.findMany({
           where: whereClause,
           // Secondary sort on createdAt breaks ties between same-day articles
@@ -84,7 +90,7 @@ export default defineCachedEventHandler(
               },
             },
             mediaOutlet: {
-              columns: { name: true, logo: true, website: true },
+              columns: { name: true, logo: true, website: true, updatedAt: true },
             },
           },
         }),
@@ -92,6 +98,7 @@ export default defineCachedEventHandler(
           .select({ count: sql<number>`count(*)`.mapWith(Number) })
           .from(pressArticles)
           .where(whereClause),
+        getPressDefaultCoverEntriesRow(),
       ])
 
       const items = articlesList.map((item) => {
@@ -108,15 +115,18 @@ export default defineCachedEventHandler(
           id: item.id,
           type: item.type,
           slug: item.slug,
-          image: item.image
-            ? (toExternalImageProxyUrl(item.image, {
-                publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
-              }) ?? item.image)
-            : null,
-          pdfUrl:
+          image: resolvePressArticleListImageWithVersion(
+            item.type as PressArticleType,
+            item.image,
+            item.updatedAt,
+            defaultCovers
+          ),
+          pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(item.pdfUrl, {
               publicPathBase: '/prensa/documentos',
             }) ?? item.pdfUrl,
+            item.updatedAt
+          ),
           externalUrl: item.externalUrl,
           title: trans?.title ?? '',
           description: trans?.description ?? '',
@@ -126,10 +136,12 @@ export default defineCachedEventHandler(
           mediaOutlet: item.mediaOutlet
             ? {
                 name: item.mediaOutlet.name,
-                logo:
+                logo: appendAssetVersion(
                   toExternalImageProxyUrl(item.mediaOutlet.logo, {
                     publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
                   }) ?? item.mediaOutlet.logo,
+                  item.mediaOutlet.updatedAt
+                ),
                 website: item.mediaOutlet.website,
               }
             : null,

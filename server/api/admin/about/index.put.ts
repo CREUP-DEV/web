@@ -10,6 +10,7 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../../../utils/adminAssetPublication'
+import { invalidateAboutPageCache } from '../../../utils/adminCacheInvalidation'
 import { updateAboutPageContentSchema, validateBody } from '../../../utils/validation'
 import { ABOUT_HERO_DEFAULT_IMAGE, ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
@@ -106,6 +107,8 @@ export default defineEventHandler(async (event) => {
         event
       )
     }
+
+    await invalidateAboutPageCache()
 
     return { data: item }
   } catch (error) {

@@ -10,6 +10,14 @@ type LocaleItem = {
   icon: string
 }
 
+const createExternalNavigationItem = (label: string, href: string): NavigationMenuItem => ({
+  label,
+  to: href,
+  external: true,
+  target: '_blank',
+  rel: 'noopener noreferrer',
+})
+
 export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | null | undefined>) {
   const { locale, setLocale, t, setLocaleCookie } = useI18n()
   const { defaultLocale, getLocaleName, localeConfigs } = useLocales()
@@ -119,7 +127,7 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
           to: localizedPath('/conocenos/comites'),
         },
         {
-          label: t('nav.events.label'),
+          label: t('nav.about.events'),
           to: localizedPath('/conocenos/eventos'),
         },
       ],
@@ -163,13 +171,7 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
           to: localizedPath('/prensa/en-los-medios/'),
         },
         ...(resolvedPressDossierLink.value
-          ? [
-              {
-                label: t('nav.press.pressKit'),
-                href: resolvedPressDossierLink.value,
-                target: '_blank',
-              },
-            ]
+          ? [createExternalNavigationItem(t('nav.press.pressKit'), resolvedPressDossierLink.value)]
           : []),
       ],
     },

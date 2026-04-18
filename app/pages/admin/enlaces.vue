@@ -1,34 +1,39 @@
 <script setup lang="ts">
-import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createCarouselItemClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createFeaturedLinkClientSchema } from '~~/shared/utils/adminClientSchemas'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Carrusel',
+  title: 'Enlaces',
 })
+
+const {
+  getLocaleFlag,
+  getLocaleName,
+  isDefaultLocale,
+  filterNonEmptyTranslations,
+  createEmptyTranslations,
+  mapTranslationsToForm,
+} = useLocales()
+const toast = useToast()
+const { refreshHomeData } = usePublicCmsCacheRefresh()
+const { clearErrors, getFieldError, validate } = useFormValidation()
 
 interface Translation {
   locale: string
   title: string
-  buttonText: string
   alt: string
 }
 
-interface CarouselItem {
+interface FeaturedLink {
   id: string
   image: string
-  href: string
+  to: string
   order: number
   active: boolean
   updatedAt: string
   translations: Translation[]
 }
-
-const toast = useToast()
-const { clearErrors, getFieldError, validate } = useFormValidation()
-
-const defaultCarouselImage = HOME_CAROUSEL_FALLBACK_IMAGE
 
 const {
   data,
@@ -36,34 +41,57 @@ const {
   pending,
   refresh,
 } = await useFetch<{
-  data: CarouselItem[]
-}>('/api/admin/carousel', {
+  data: FeaturedLink[]
+}>('/api/admin/links', {
   lazy: true,
 })
 
-const items = computed(() => data.value?.data ?? [])
+const sortFeaturedLinks = (left: FeaturedLink, right: FeaturedLink) => {
+  if (left.order !== right.order) {
+    return left.order - right.order
+  }
 
-const {
-  getLocaleFlag,
-  getLocaleName,
-  isDefaultLocale,
-  createEmptyTranslations,
-  mapTranslationsToForm,
-} = useLocales()
+  return left.id.localeCompare(right.id, 'es')
+}
 
+const { items, removeItem, replaceItem, setItems } = useAdminMutableCollection(data, {
+  sortItems: sortFeaturedLinks,
+})
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
-const emptyTranslation = { title: '', buttonText: '', alt: '' }
 const form = reactive({
   image: '',
-  href: '',
+  to: '',
   order: 0,
   active: true,
-  translations: createEmptyTranslations<Translation>(emptyTranslation),
+  translations: createEmptyTranslations<Translation>({
+    title: '',
+    alt: '',
+  }),
 })
 
-const currentImagePreview = computed(() => imagePreview.value || form.image || defaultCarouselImage)
+const buildPayload = () => ({
+  image: form.image,
+  to: form.to,
+  order: form.order,
+  active: form.active,
+  translations: filterNonEmptyTranslations(form.translations, 'title'),
+})
+
+const buildPayloadSnapshot = () =>
+  JSON.stringify({
+    ...buildPayload(),
+    translations: buildPayload().translations.map((translation) => ({
+      locale: translation.locale,
+      title: translation.title,
+      alt: translation.alt,
+    })),
+  })
+
+const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
+
+const currentImagePreview = computed(() => imagePreview.value || form.image || '')
 
 const {
   inputRef: imageInputRef,
@@ -74,7 +102,7 @@ const {
 } = useAdminFileUpload({
   endpoint: '/api/admin/home/upload',
   extraFields: {
-    kind: 'carousel',
+    kind: 'featured_link',
   },
   successMessage: 'Imagen subida correctamente',
   errorMessage: 'No se pudo subir la imagen',
@@ -100,92 +128,113 @@ const {
   persistOrder,
   showDeleteModal,
   showModal,
-} = useAdminCollectionState<CarouselItem>({
+} = useAdminCollectionState<FeaturedLink>({
   items,
   persistOrder: async (updates) => {
-    await $fetch('/api/admin/carousel/reorder', {
+    await $fetch('/api/admin/links/reorder', {
       method: 'POST',
       body: { items: updates },
     })
-
-    await refresh()
+    setItems(
+      items.value.map((item) => {
+        const nextOrder = updates.find((update) => update.id === item.id)?.order
+        return nextOrder === undefined ? item : { ...item, order: nextOrder }
+      })
+    )
   },
   prepareCreate: () => {
     clearErrors()
     form.image = ''
-    form.href = ''
+    form.to = ''
     form.order = items.value.length
     form.active = true
-    form.translations = createEmptyTranslations<Translation>(emptyTranslation)
+    form.translations = createEmptyTranslations<Translation>({
+      title: '',
+      alt: '',
+    })
     imagePreview.value = null
+    resetFormSnapshot()
   },
   prepareEdit: (item) => {
     clearErrors()
     form.image = item.image
-    form.href = item.href
+    form.to = item.to
     form.order = item.order
     form.active = item.active
-    form.translations = mapTranslationsToForm(item.translations, emptyTranslation) as Translation[]
+    form.translations = mapTranslationsToForm(item.translations, {
+      title: '',
+      alt: '',
+    }) as Translation[]
     imagePreview.value = item.image
+    resetFormSnapshot()
   },
 })
 
 const saveOrder = async () => {
   try {
     await persistOrder()
+    await refreshHomeData()
     toast.add({
-      title: 'Orden del carrusel guardado',
+      title: 'Orden de enlaces guardado',
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo guardar el orden del carrusel'),
+      title: getApiErrorMessage(e, 'No se pudo guardar el orden de enlaces'),
       color: 'error',
     })
   }
 }
 
 const handleSubmit = async () => {
-  const payload = {
-    ...form,
-    image: form.image.trim() || defaultCarouselImage,
-    href: form.href.trim(),
+  const payload = buildPayload()
+
+  if (editingItem.value && !hasFormChanges.value) {
+    closeModal()
+    clearErrors()
+    return
   }
 
-  if (!validate(createCarouselItemClientSchema, payload)) {
+  if (!validate(createFeaturedLinkClientSchema, payload)) {
     return
   }
 
   isSubmitting.value = true
   try {
     if (editingItem.value) {
-      await $fetch(`/api/admin/carousel/${editingItem.value.id}`, {
-        method: 'PUT',
-        body: {
-          ...payload,
-          updatedAt: editingItem.value.updatedAt,
-        },
-      })
+      const response = await $fetch<{ data: FeaturedLink }>(
+        `/api/admin/links/${editingItem.value.id}`,
+        {
+          method: 'PUT',
+          body: {
+            ...payload,
+            updatedAt: editingItem.value.updatedAt,
+          },
+        }
+      )
+      replaceItem(response.data)
+      await refreshHomeData()
       toast.add({
-        title: 'Elemento del carrusel actualizado',
+        title: 'Enlace actualizado',
         color: 'success',
       })
     } else {
-      await $fetch('/api/admin/carousel', {
+      const response = await $fetch<{ data: FeaturedLink }>('/api/admin/links', {
         method: 'POST',
         body: payload,
       })
+      replaceItem(response.data)
+      await refreshHomeData()
       toast.add({
-        title: 'Elemento del carrusel creado',
+        title: 'Enlace creado',
         color: 'success',
       })
     }
     closeModal()
     clearErrors()
-    await refresh()
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo guardar el elemento del carrusel'),
+      title: getApiErrorMessage(e, 'No se pudo guardar el enlace'),
       color: 'error',
     })
   } finally {
@@ -197,16 +246,17 @@ const handleDelete = async () => {
   if (!itemToDelete.value) return
   isDeleting.value = true
   try {
-    await $fetch(`/api/admin/carousel/${itemToDelete.value.id}`, { method: 'DELETE' })
+    await $fetch(`/api/admin/links/${itemToDelete.value.id}`, { method: 'DELETE' })
+    removeItem(itemToDelete.value.id)
     closeDeleteModal()
-    await refresh()
+    await refreshHomeData()
     toast.add({
-      title: 'Elemento del carrusel eliminado',
+      title: 'Enlace eliminado',
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo eliminar el elemento del carrusel'),
+      title: getApiErrorMessage(e, 'No se pudo eliminar el enlace'),
       color: 'error',
     })
   } finally {
@@ -218,7 +268,7 @@ const handleDelete = async () => {
 <template>
   <div>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Carrusel</h1>
+      <h1 class="text-2xl font-bold">Enlaces destacados</h1>
       <div class="flex gap-2">
         <template v-if="hasOrderChanges">
           <UButton variant="outline" @click="cancelOrderChanges">Cancelar</UButton>
@@ -238,7 +288,7 @@ const handleDelete = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los elementos del carrusel"
+        title="No se pudieron cargar los enlaces"
         description="Revisa la conexión y vuelve a intentarlo."
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
@@ -256,18 +306,16 @@ const handleDelete = async () => {
           <div class="drag-handle cursor-grab active:cursor-grabbing">
             <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
           </div>
-          <div class="bg-muted aspect-1925/550 w-40 max-w-40 overflow-hidden rounded-lg">
-            <img
-              :src="item.image || defaultCarouselImage"
-              alt=""
-              aria-hidden="true"
-              class="size-full object-contain"
-              loading="lazy"
-            />
-          </div>
+          <img
+            :src="item.image"
+            alt=""
+            aria-hidden="true"
+            class="h-16 w-16 rounded-lg object-cover"
+            loading="lazy"
+          />
           <div class="flex-1 overflow-hidden">
             <h3 class="truncate font-medium">{{ item.translations[0]?.title }}</h3>
-            <p class="text-muted truncate text-sm">{{ item.href }}</p>
+            <p class="text-muted truncate text-sm">{{ item.to }}</p>
             <div class="mt-1 flex items-center gap-2">
               <span
                 :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
@@ -282,7 +330,7 @@ const handleDelete = async () => {
               icon="i-tabler-pencil"
               variant="ghost"
               size="sm"
-              aria-label="Editar elemento del carrusel"
+              aria-label="Editar enlace destacado"
               @click="openEdit(item)"
             />
             <UButton
@@ -290,7 +338,7 @@ const handleDelete = async () => {
               variant="ghost"
               color="error"
               size="sm"
-              aria-label="Eliminar elemento del carrusel"
+              aria-label="Eliminar enlace destacado"
               @click="confirmDelete(item)"
             />
           </div>
@@ -303,16 +351,14 @@ const handleDelete = async () => {
             </div>
           </div>
           <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.title }}</h3>
-          <div class="bg-muted aspect-1925/550 w-full overflow-hidden rounded-lg">
-            <img
-              :src="item.image || defaultCarouselImage"
-              alt=""
-              aria-hidden="true"
-              class="size-full object-contain"
-              loading="lazy"
-            />
-          </div>
-          <p class="text-muted text-sm break-all">{{ item.href }}</p>
+          <img
+            :src="item.image"
+            alt=""
+            aria-hidden="true"
+            class="mx-auto h-32 w-32 rounded-lg object-cover"
+            loading="lazy"
+          />
+          <p class="text-muted text-sm break-all">{{ item.to }}</p>
           <div class="flex items-center justify-between">
             <span
               :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
@@ -325,7 +371,7 @@ const handleDelete = async () => {
                 icon="i-tabler-pencil"
                 variant="ghost"
                 size="sm"
-                aria-label="Editar elemento del carrusel"
+                aria-label="Editar enlace destacado"
                 @click="openEdit(item)"
               />
               <UButton
@@ -333,7 +379,7 @@ const handleDelete = async () => {
                 variant="ghost"
                 color="error"
                 size="sm"
-                aria-label="Eliminar elemento del carrusel"
+                aria-label="Eliminar enlace destacado"
                 @click="confirmDelete(item)"
               />
             </div>
@@ -342,9 +388,9 @@ const handleDelete = async () => {
       </div>
 
       <div v-if="!localItems.length" class="py-12 text-center">
-        <p class="text-muted">No hay elementos en el carrusel todavía.</p>
+        <p class="text-muted">No hay enlaces destacados todavía.</p>
         <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
-          Añadir elemento
+          Añadir enlace
         </UButton>
       </div>
     </div>
@@ -354,18 +400,24 @@ const handleDelete = async () => {
         <div class="flex max-h-[80vh] flex-col">
           <div class="overflow-y-auto p-6">
             <h2 class="mb-4 text-lg font-bold">
-              {{ editingItem ? 'Editar elemento' : 'Nuevo elemento' }}
+              {{ editingItem ? 'Editar enlace' : 'Nuevo enlace' }}
             </h2>
 
-            <form id="carousel-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Imagen (opcional)" :error="getFieldError('image')">
+            <form id="links-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <UFormField label="Imagen" :error="getFieldError('image')">
                 <div class="space-y-3">
-                  <div class="bg-muted aspect-1925/550 overflow-hidden rounded-xl border">
+                  <div
+                    class="bg-muted/30 flex min-h-44 items-center justify-center overflow-hidden rounded-xl border p-4"
+                  >
                     <img
+                      v-if="currentImagePreview"
                       :src="currentImagePreview"
-                      alt="Vista previa del banner"
-                      class="size-full object-cover"
+                      alt="Vista previa de la imagen del enlace"
+                      class="max-h-24 max-w-full rounded-lg object-contain"
                     />
+                    <p v-else class="text-muted px-4 text-center text-sm">
+                      Sube una imagen cuadrada para el enlace destacado.
+                    </p>
                   </div>
 
                   <input
@@ -376,27 +428,25 @@ const handleDelete = async () => {
                     @change="handleImageSelect"
                   />
 
-                  <div class="flex flex-wrap gap-2">
-                    <UButton
-                      type="button"
-                      variant="outline"
-                      icon="i-tabler-upload"
-                      :loading="isUploadingImage"
-                      @click="triggerImageUpload"
-                    >
-                      {{ form.image ? 'Cambiar imagen' : 'Subir imagen' }}
-                    </UButton>
-                  </div>
+                  <UButton
+                    type="button"
+                    variant="outline"
+                    icon="i-tabler-upload"
+                    :loading="isUploadingImage"
+                    @click="triggerImageUpload"
+                  >
+                    {{ form.image ? 'Cambiar imagen' : 'Subir imagen' }}
+                  </UButton>
 
                   <p class="text-muted text-xs">
-                    Si no subes una imagen, se usará la predeterminada. Tamaño recomendado: 1925 ×
-                    550 px.
+                    Formato recomendado: cuadrado. La vista previa se muestra reducida para evitar
+                    ampliaciones engañosas.
                   </p>
                 </div>
               </UFormField>
 
-              <UFormField label="Enlace" :error="getFieldError('href')">
-                <UInput v-model="form.href" placeholder="/pagina" class="w-full" />
+              <UFormField label="Enlace (URL)" :error="getFieldError('to')">
+                <UInput v-model="form.to" placeholder="https://..." class="w-full" />
               </UFormField>
 
               <UFormField label="Estado">
@@ -414,32 +464,17 @@ const handleDelete = async () => {
                 <h4 class="mb-3 flex items-center gap-2 font-medium">
                   <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
                   {{ getLocaleName(trans.locale) }}
-                  <span v-if="!isDefaultLocale(trans.locale)" class="text-muted text-xs">
-                    (opcional)
-                  </span>
                 </h4>
                 <div class="space-y-3">
                   <UFormField
-                    :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'"
+                    :label="`Título ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
                     :error="getFieldError(`translations.${index}.title`)"
                   >
-                    <UTextarea
-                      v-model="trans.title"
-                      :rows="2"
-                      class="w-full"
-                      :required="isDefaultLocale(trans.locale)"
-                    />
+                    <UInput v-model="trans.title" class="w-full" />
                   </UFormField>
                   <UFormField
-                    :label="isDefaultLocale(trans.locale) ? 'Texto del botón *' : 'Texto del botón'"
+                    :label="`Texto alternativo ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
                   >
-                    <UInput
-                      v-model="trans.buttonText"
-                      class="w-full"
-                      :required="isDefaultLocale(trans.locale)"
-                    />
-                  </UFormField>
-                  <UFormField label="Texto alternativo (descripción de la imagen)">
                     <UInput v-model="trans.alt" class="w-full" />
                   </UFormField>
                 </div>
@@ -448,7 +483,12 @@ const handleDelete = async () => {
           </div>
           <div class="flex justify-end gap-2 border-t p-4">
             <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
-            <UButton type="submit" form="carousel-form" :loading="isSubmitting">
+            <UButton
+              type="submit"
+              form="links-form"
+              :loading="isSubmitting"
+              :disabled="Boolean(editingItem) && !hasFormChanges"
+            >
               {{ editingItem ? 'Guardar' : 'Crear' }}
             </UButton>
           </div>

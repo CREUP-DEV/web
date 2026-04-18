@@ -5,7 +5,12 @@ import { and, asc, count, eq, inArray, isNotNull, isNull, lt, lte, or, sql } fro
 import { db } from '../db'
 import { newsletterDeliveries, newsletters, newsletterSubscribers } from '../db/schema'
 import { sendNewsletterEmail } from '../utils/newsletterMailer'
+import { getSiteDefaultImageRaw } from '../utils/siteDefaultImages'
 import { logError, logInfo } from '../utils/logger'
+import {
+  SITE_DEFAULT_IMAGE_SCOPE,
+  SITE_DEFAULT_IMAGE_SLOT,
+} from '~~/shared/constants/siteDefaultImages'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
@@ -13,6 +18,8 @@ import {
 } from '../utils/newsletterSubscribers'
 import { NEWSLETTER_DELIVERY_MAX_ATTEMPTS } from '../utils/newsletters'
 
+// Chunk size for seeding delivery rows (insert values). Separate from per-send batch size below.
+const NEWSLETTER_DELIVERY_SEED_CHUNK_SIZE = 500
 // 50 per batch: keeps each DB transaction and SMTP burst manageable; too large increases memory pressure per cycle
 const NEWSLETTER_DELIVERY_BATCH_SIZE = 50
 // 2 min stale threshold: worker must heartbeat every iteration; if silent for 2+ min, assume crashed and allow claim
@@ -123,25 +130,31 @@ async function seedNewsletterDeliveries(item: NewsletterRecord) {
         .where(eq(newsletters.id, item.id))
     }
 
-    await tx
-      .insert(newsletterDeliveries)
-      .select(
-        tx
-          .select({
-            newsletterId: sql<string>`${item.id}`.as('newsletter_id'),
-            subscriberId: newsletterSubscribers.id,
-          })
-          .from(newsletterSubscribers)
-          .where(
-            and(
-              eq(newsletterSubscribers.active, true),
-              lte(newsletterSubscribers.subscribedAt, startedAt)
-            )
-          )
+    const subscriberRows = await tx
+      .select({ id: newsletterSubscribers.id })
+      .from(newsletterSubscribers)
+      .where(
+        and(
+          eq(newsletterSubscribers.active, true),
+          lte(newsletterSubscribers.subscribedAt, startedAt)
+        )
       )
-      .onConflictDoNothing({
-        target: [newsletterDeliveries.newsletterId, newsletterDeliveries.subscriberId],
-      })
+
+    for (let i = 0; i < subscriberRows.length; i += NEWSLETTER_DELIVERY_SEED_CHUNK_SIZE) {
+      const chunk = subscriberRows.slice(i, i + NEWSLETTER_DELIVERY_SEED_CHUNK_SIZE)
+      await tx
+        .insert(newsletterDeliveries)
+        .values(
+          chunk.map((row) => ({
+            id: createId(),
+            newsletterId: item.id,
+            subscriberId: row.id,
+          }))
+        )
+        .onConflictDoNothing({
+          target: [newsletterDeliveries.newsletterId, newsletterDeliveries.subscriberId],
+        })
+    }
 
     await tx
       .update(newsletterDeliveries)
@@ -237,7 +250,6 @@ async function claimNewsletterDeliveryWorker(id: string) {
     .where(
       and(
         eq(newsletters.id, id),
-        eq(newsletters.active, true),
         isNull(newsletters.sentAt),
         or(
           isNull(newsletters.lastDeliveryWorkerToken),
@@ -473,6 +485,12 @@ export async function processNewsletterDeliveryRun(
     await seedNewsletterDeliveries(item)
     await touchNewsletterDeliveryWorker(item.id, workerToken)
 
+    const defaultCoverPath = await getSiteDefaultImageRaw(
+      SITE_DEFAULT_IMAGE_SCOPE.newsletter,
+      SITE_DEFAULT_IMAGE_SLOT.newsletterCover
+    )
+    const resolvedCoverPath = item.coverImage ?? defaultCoverPath
+
     while (true) {
       if (newsletterShutdownRequested) {
         break
@@ -510,7 +528,8 @@ export async function processNewsletterDeliveryRun(
             await sendNewsletterEmail(
               item,
               subscriber,
-              'Falta la configuración SMTP para enviar correos'
+              'Falta la configuración SMTP para enviar correos',
+              resolvedCoverPath
             )
             await markDeliverySent(delivery.id)
           } catch (error) {
@@ -708,13 +727,6 @@ export async function claimNewsletterForSending(id: string): Promise<NewsletterR
 
   if (!current) {
     throw createError({ statusCode: 404, message: 'Newsletter no encontrada' })
-  }
-
-  if (!current.active) {
-    throw createError({
-      statusCode: 409,
-      message: 'Habilita el envío antes de enviarla',
-    })
   }
 
   if (current.sentAt) {

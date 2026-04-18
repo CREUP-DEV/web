@@ -6,6 +6,14 @@ import { isDatabaseUnavailableError } from '../utils/databaseErrors'
 import { logError } from '../utils/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { HOME_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
+import {
+  SITE_DEFAULT_IMAGE_SCOPE,
+  SITE_DEFAULT_IMAGE_SLOT,
+} from '~~/shared/constants/siteDefaultImages'
+import {
+  loadSiteDefaultImageEntriesMap,
+  resolveSiteDefaultImageUrlWithVersion,
+} from '../utils/siteDefaultImages'
 import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/requestLocale'
@@ -16,6 +24,7 @@ import {
   setPublicRouteVaryHeaders,
 } from '../utils/publicRouteCache'
 import { throwSafePublicError } from '../utils/publicErrors'
+import { appendAssetVersion } from '../utils/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -28,7 +37,7 @@ export default defineCachedEventHandler(
 
     try {
       // Run both queries in parallel — they are independent
-      const [carouselItemsList, linkItemsList] = await Promise.all([
+      const [carouselItemsList, linkItemsList, siteDefaultImageEntries] = await Promise.all([
         db.query.carouselItems.findMany({
           where: eq(carouselItems.active, true),
           orderBy: [asc(carouselItems.order), asc(carouselItems.id)],
@@ -56,7 +65,14 @@ export default defineCachedEventHandler(
             },
           },
         }),
+        loadSiteDefaultImageEntriesMap(),
       ])
+
+      const defaultCarouselImage = resolveSiteDefaultImageUrlWithVersion(
+        siteDefaultImageEntries,
+        SITE_DEFAULT_IMAGE_SCOPE.carousel,
+        SITE_DEFAULT_IMAGE_SLOT.carouselSlide
+      )
 
       const carousel = carouselItemsList.map((item) => {
         const translation = pickLocalizedEntry(
@@ -69,11 +85,16 @@ export default defineCachedEventHandler(
           buttonText: '',
           alt: null,
         }
+        const resolvedImage = item.image
+          ? appendAssetVersion(
+              toExternalImageProxyUrl(item.image, {
+                publicPathBase: HOME_IMAGE_PUBLIC_BASE,
+              }) ?? item.image,
+              item.updatedAt
+            )
+          : defaultCarouselImage
         return {
-          image:
-            toExternalImageProxyUrl(item.image, {
-              publicPathBase: HOME_IMAGE_PUBLIC_BASE,
-            }) ?? item.image,
+          image: resolvedImage,
           href: item.href,
           title: translation.title,
           buttonText: translation.buttonText,
@@ -92,10 +113,12 @@ export default defineCachedEventHandler(
           alt: null,
         }
         return {
-          image:
+          image: appendAssetVersion(
             toExternalImageProxyUrl(item.image, {
               publicPathBase: HOME_IMAGE_PUBLIC_BASE,
             }) ?? item.image,
+            item.updatedAt
+          ),
           to: item.to,
           title: translation.title,
           alt: (translation as { alt?: string | null }).alt ?? '',

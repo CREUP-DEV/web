@@ -192,7 +192,7 @@ const formatDuration = (value: number) => `${Math.round(value)} ms`
                   :color="stats.infrastructure.database.status === 'ok' ? 'success' : 'error'"
                   variant="subtle"
                 >
-                  {{ stats.infrastructure.database.status === 'ok' ? 'OK' : 'Error' }}
+                  {{ stats.infrastructure.database.status === 'ok' ? 'ok' : 'Error' }}
                 </UBadge>
               </div>
               <dl class="text-muted mt-3 space-y-2 text-sm">

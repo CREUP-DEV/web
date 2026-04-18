@@ -11,16 +11,57 @@ import { dateValueToDateOnly } from '../shared/utils/date'
 import {
   ABOUT_HERO_DEFAULT_IMAGE,
   EQUALITY_DOCUMENTS_PUBLIC_PATH,
-  HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+  FINANCIAL_REPORTS_PUBLIC_PATH,
+  HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+  NEWSLETTER_DOCUMENT_PUBLIC_PATH,
+  PRESS_DEFAULT_COVERS_PUBLIC_PATH,
+  PRESS_MEDIA_LOGO_PUBLIC_PATH,
+  PRESS_DOSSIER_PUBLIC_PATH,
 } from '../shared/constants/assetPaths'
 import { slugify } from '../server/utils/slug'
+import {
+  SITE_DEFAULT_IMAGE_SCOPE,
+  SITE_DEFAULT_IMAGE_SLOT,
+} from '../shared/constants/siteDefaultImages'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
 
 const buildHomeImagePath = (publicPath: string, title: string) =>
   `${publicPath}/${slugify(title) || 'imagen'}.webp`
+
+const padMonth = (month: number) => String(month).padStart(2, '0')
+
+const buildNewsletterMonthKey = (year: number, month: number) => `${year}-${padMonth(month)}`
+
+const buildNewsletterPdfPath = (monthKey: string) =>
+  `${NEWSLETTER_DOCUMENT_PUBLIC_PATH}/newsletter-${monthKey}.pdf`
+
+function assertUniqueValues(values: string[], label: string) {
+  const seen = new Set<string>()
+
+  for (const value of values) {
+    if (seen.has(value)) {
+      throw new Error(`Seed ${label} contains a duplicate value: ${value}`)
+    }
+
+    seen.add(value)
+  }
+}
+
+const createFinancialReportPdfPathBuilder = () => {
+  const slugUsage = new Map<string, number>()
+
+  return (title: string) => {
+    const baseSlug = slugify(title) || 'informe-economico'
+    const nextUsage = (slugUsage.get(baseSlug) ?? 0) + 1
+    slugUsage.set(baseSlug, nextUsage)
+
+    const reportSlug = nextUsage === 1 ? baseSlug : `${baseSlug}-${nextUsage}`
+    return `${FINANCIAL_REPORTS_PUBLIC_PATH}/${reportSlug}.pdf`
+  }
+}
 
 async function main() {
   const cliArgs = new Set(process.argv.slice(2))
@@ -47,8 +88,13 @@ async function main() {
   console.log('🗑️ Clearing existing data...')
   await db.delete(schema.aboutPageContent)
   await db.delete(schema.pressDossier)
+  await db.delete(schema.siteDefaultImages)
   await db.delete(schema.equalityDocumentTranslations)
   await db.delete(schema.equalityDocuments)
+  await db.delete(schema.newsletterDeliveries)
+  await db.delete(schema.newsletterSubscriptionEvents)
+  await db.delete(schema.newsletterSubscribers)
+  await db.delete(schema.newsletters)
   await db.delete(schema.carouselItemTranslations)
   await db.delete(schema.carouselItems)
   await db.delete(schema.pressArticleTags)
@@ -159,10 +205,7 @@ async function main() {
   console.log('🎠 Creating carousel items...')
   const carouselData = [
     {
-      image: buildHomeImagePath(
-        HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
-        'Conoce a la asociación que representa a más de 1.000.000 de estudiantes.'
-      ),
+      image: null,
       href: '/conocenos/que-es',
       translations: [
         {
@@ -208,23 +251,68 @@ async function main() {
 
   console.log('📋 Creating press dossier singleton...')
   await db.insert(schema.pressDossier).values({
-    pdfUrl: null,
-    active: false,
+    id: 'singleton',
+    pdfUrl: PRESS_DOSSIER_PUBLIC_PATH,
+    active: true,
   })
+
+  const redisUrl = process.env.NUXT_REDIS_URL?.trim() || process.env.REDIS_URL?.trim()
+  if (redisUrl) {
+    console.log('🧹 Clearing Nitro cache for press dossier API...')
+    const { purgeNitroHandlerCacheByPrefixes } =
+      await import('../server/utils/nitroRedisCachePurge')
+    await purgeNitroHandlerCacheByPrefixes(redisUrl, [
+      'nitro/handlers/press-dossier',
+      'nitro/handlers/public-press-dossier',
+    ])
+  } else {
+    console.log(
+      'ℹ️ NUXT_REDIS_URL not set: if the dossier link is missing in the header, restart the dev server (Nitro in-memory cache).'
+    )
+  }
+
+  console.log('🖼️ Creating site default image slots...')
+  await db.insert(schema.siteDefaultImages).values([
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.press,
+      slot: SITE_DEFAULT_IMAGE_SLOT.pressRelease,
+      image: `${PRESS_DEFAULT_COVERS_PUBLIC_PATH}/portada-nota-prensa.webp`,
+    },
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.press,
+      slot: SITE_DEFAULT_IMAGE_SLOT.statement,
+      image: `${PRESS_DEFAULT_COVERS_PUBLIC_PATH}/portada-comunicado.webp`,
+    },
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.press,
+      slot: SITE_DEFAULT_IMAGE_SLOT.mediaAppearance,
+      image: `${PRESS_DEFAULT_COVERS_PUBLIC_PATH}/portada-aparicion-medios.webp`,
+    },
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.newsletter,
+      slot: SITE_DEFAULT_IMAGE_SLOT.newsletterCover,
+      image: null,
+    },
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.carousel,
+      slot: SITE_DEFAULT_IMAGE_SLOT.carouselSlide,
+      image: `${HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH}/banner-carrusel-defecto.webp`,
+    },
+  ])
 
   console.log('🗞️ Creating media outlets...')
   const mediaOutletsData = [
     {
-      key: 'las-provincias',
-      name: 'Las Provincias',
-      website: 'https://www.lasprovincias.es/',
-      logo: '/prensa/imagenes/media-las-provincias.webp',
+      key: 'el-debate',
+      name: 'El Debate',
+      website: 'https://www.eldebate.com/',
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-debate.svg`,
     },
     {
-      key: 'ideal',
-      name: 'Ideal',
-      website: 'https://www.ideal.es/',
-      logo: '/prensa/imagenes/media-ideal.webp',
+      key: 'europa-press',
+      name: 'Europa Press',
+      website: 'https://www.europapress.es/',
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/europa-press.webp`,
     },
   ]
 
@@ -257,7 +345,7 @@ async function main() {
   const pressData = [
     {
       type: 'press_release' as const,
-      image: '/prensa/imagenes/news-vivienda-estudiantes.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -290,7 +378,7 @@ async function main() {
     },
     {
       type: 'press_release' as const,
-      image: '/prensa/imagenes/news-huelga-madrid-pancarta.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -323,7 +411,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/prensa/imagenes/news-soberania-digital.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -356,7 +444,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/prensa/imagenes/news-estatuto-becario-firma.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -389,10 +477,10 @@ async function main() {
     },
     {
       type: 'media_appearance' as const,
-      image: '/prensa/imagenes/news-medicina-practicas.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: 'https://example.com/practicas-sanitarias',
-      mediaOutletId: 'las-provincias',
+      mediaOutletId: 'el-debate',
       tagSlugs: ['teaching-quality', 'university-policy'],
       translations: [
         {
@@ -412,7 +500,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/prensa/imagenes/news-fundacion-once-acuerdo.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -445,7 +533,7 @@ async function main() {
     },
     {
       type: 'press_release' as const,
-      image: '/prensa/imagenes/news-calidad-universitaria.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -478,10 +566,10 @@ async function main() {
     },
     {
       type: 'media_appearance' as const,
-      image: '/prensa/imagenes/news-comedores-ugr.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: 'https://example.com/comedores-granada',
-      mediaOutletId: 'ideal',
+      mediaOutletId: 'europa-press',
       tagSlugs: ['university-life-health', 'funding-scholarships'],
       translations: [
         {
@@ -499,7 +587,7 @@ async function main() {
     },
     {
       type: 'press_release' as const,
-      image: '/prensa/imagenes/news-canarias-parlamento.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -532,7 +620,7 @@ async function main() {
     },
     {
       type: 'statement' as const,
-      image: '/prensa/imagenes/news-asamblea-sevilla.jpg',
+      image: null,
       pdfUrl: null,
       externalUrl: null,
       mediaOutletId: null,
@@ -573,47 +661,52 @@ async function main() {
     const esTranslation = item.translations.find((t) => t.locale === 'es')!
     const publishedAtDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
     const publishedAt = dateValueToDateOnly(publishedAtDate)
-    const slug = await generatePressSlug(esTranslation.title, publishedAtDate)
     const resolvedMediaOutletId = item.mediaOutletId ? mediaOutlets[item.mediaOutletId] : null
 
     if (item.type === 'media_appearance' && !resolvedMediaOutletId) {
       throw new Error(`Missing media outlet for media appearance: ${esTranslation.title}`)
     }
 
-    const [article] = await db
-      .insert(schema.pressArticles)
-      .values({
-        type: item.type,
-        slug,
-        image: item.image,
-        pdfUrl: item.pdfUrl,
-        externalUrl: item.externalUrl,
-        mediaOutletId: resolvedMediaOutletId,
-        active: true,
-        publishedAt,
+    await db.transaction(async (tx) => {
+      const slug = await generatePressSlug(esTranslation.title, publishedAtDate, {
+        executor: tx,
       })
-      .returning()
 
-    await db.insert(schema.pressArticleTranslations).values(
-      item.translations.map((t) => ({
-        locale: t.locale,
-        title: t.title,
-        description: t.description,
-        contentHtml: 'contentHtml' in t ? (t.contentHtml ?? null) : null,
-        pressArticleId: article.id,
-      }))
-    )
+      const [article] = await tx
+        .insert(schema.pressArticles)
+        .values({
+          type: item.type,
+          slug,
+          image: item.image,
+          pdfUrl: item.pdfUrl,
+          externalUrl: item.externalUrl,
+          mediaOutletId: resolvedMediaOutletId,
+          active: true,
+          publishedAt,
+        })
+        .returning()
 
-    if (item.tagSlugs && item.tagSlugs.length > 0) {
-      for (const tagSlug of item.tagSlugs) {
-        if (tags[tagSlug]) {
-          await db.insert(schema.pressArticleTags).values({
-            pressArticleId: article.id,
-            tagId: tags[tagSlug],
-          })
+      await tx.insert(schema.pressArticleTranslations).values(
+        item.translations.map((t) => ({
+          locale: t.locale,
+          title: t.title,
+          description: t.description,
+          contentHtml: 'contentHtml' in t ? (t.contentHtml ?? null) : null,
+          pressArticleId: article.id,
+        }))
+      )
+
+      if (item.tagSlugs && item.tagSlugs.length > 0) {
+        for (const tagSlug of item.tagSlugs) {
+          if (tags[tagSlug]) {
+            await tx.insert(schema.pressArticleTags).values({
+              pressArticleId: article.id,
+              tagId: tags[tagSlug],
+            })
+          }
         }
       }
-    }
+    })
   }
 
   console.log('🔗 Creating featured links...')
@@ -843,12 +936,14 @@ async function main() {
     },
   ]
 
+  const buildFinancialReportPdfPath = createFinancialReportPdfPathBuilder()
+
   for (let i = 0; i < financialReportsData.length; i++) {
     const item = financialReportsData[i]
     const [report] = await db
       .insert(schema.financialReports)
       .values({
-        pdfUrl: `/documentos/informes-economicos/placeholder-${i + 1}.pdf`,
+        pdfUrl: buildFinancialReportPdfPath(item.title),
         approvedAt: item.approvedAt,
         order: i,
         active: true,
@@ -859,6 +954,41 @@ async function main() {
       locale: 'es',
       title: item.title,
       financialReportId: report.id,
+    })
+  }
+
+  console.log('📰 Creating newsletters...')
+  const newslettersData = [
+    { year: 2026, month: 2 },
+    { year: 2026, month: 1 },
+    { year: 2025, month: 11 },
+    { year: 2025, month: 10 },
+    { year: 2025, month: 9 },
+    { year: 2025, month: 6 },
+    { year: 2025, month: 5 },
+    { year: 2025, month: 3 },
+    { year: 2025, month: 2 },
+    { year: 2024, month: 12 },
+    { year: 2024, month: 11 },
+    { year: 2024, month: 10 },
+    { year: 2024, month: 9 },
+  ]
+
+  assertUniqueValues(
+    newslettersData.map((item) => buildNewsletterMonthKey(item.year, item.month)),
+    'newsletters month keys'
+  )
+
+  for (let i = 0; i < newslettersData.length; i++) {
+    const item = newslettersData[i]
+    const monthKey = buildNewsletterMonthKey(item.year, item.month)
+
+    await db.insert(schema.newsletters).values({
+      month: new Date(Date.UTC(item.year, item.month - 1, 1)),
+      monthKey,
+      coverImage: null,
+      pdfUrl: buildNewsletterPdfPath(monthKey),
+      publicVisible: true,
     })
   }
 

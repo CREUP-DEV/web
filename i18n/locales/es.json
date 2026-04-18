@@ -7,7 +7,8 @@
       "whatIs": "¿Qué es CREUP?",
       "members": "Miembros",
       "team": "Equipo",
-      "committees": "Comités"
+      "committees": "Comités",
+      "events": "Eventos"
     },
     "policy": {
       "label": "Política Universitaria",
@@ -16,7 +17,6 @@
       "reports": "Informes Ejecutivos"
     },
     "events": {
-      "label": "Eventos",
       "generalAssemblies": "Asambleas Generales",
       "trainingStages": "Stages Formativos",
       "meetingsCongresses": "Encuentros y Congresos"
@@ -172,7 +172,7 @@
   },
   "mandates": {
     "title": "Histórico de cargos",
-    "description": "Consulta los cargos de mandatos anteriores y actuales de CREUP.",
+    "description": "Consulta los equipos anteriores de CREUP.",
     "detailDescription": "Detalle de los cargos de un mandato de CREUP.",
     "mandateOf": "Mandato de",
     "backToTeam": "Volver al equipo",
@@ -513,7 +513,7 @@
   },
   "committees": {
     "title": "Comités",
-    "description": "Más allá de la Comisión Ejecutiva Ampliada, CREUP cuenta con comités especializados que centran su trabajo en áreas específicas de la representación o del funcionamiento interno de la asociación.",
+    "description": "Más allá de la Comisión Ejecutiva Ampliada, CREUP cuenta con comités especializados que centran su trabajo en áreas específicas de la representación estudiantil o del funcionamiento interno de la asociación.",
     "email": "Correo electrónico",
     "viewProfile": "Ver perfil",
     "memberModalDescription": "Detalles del perfil de la persona.",
@@ -524,7 +524,7 @@
     "degree": "Titulación"
   },
   "sectorialCommitteePage": {
-    "title": "Comisión de Asuntos Sectoriales",
+    "title": "Comité de Asuntos Sectoriales",
     "description": "Espacio técnico dedicado al Comité de Asuntos Sectoriales.",
     "intro": "Página específica del Comité de Asuntos Sectoriales con el listado de asociaciones sectoriales y el equipo del comité.",
     "loadError": "No se pudo cargar la información de esta comisión en este momento.",
@@ -603,7 +603,7 @@
     },
     "statements": {
       "title": "Comunicados de prensa",
-      "description": "Comunicados oficiales de CREUP sobre temas de actualidad universitaria.",
+      "description": "Comunicados oficiales de CREUP sobre temas de actualidad.",
       "empty": "No hay comunicados disponibles.",
       "loadError": "No se han podido cargar los comunicados en este momento.",
       "backToList": "Volver a comunicados"

@@ -10,7 +10,7 @@ Goals:
 - Compact admin area to manage public content shown on the site.
 - Spanish-first localization strategy, scalable to additional languages without rewrites.
 
-Current admin scope: access control, home carousel, "Qué es CREUP" hero, equality documents, newsletter issues and subscribers, press articles, press dossier, tags, media outlets, featured links, financial reports.
+Current admin scope: access control, home carousel, "Qué es CREUP" hero, equality documents, newsletter issues and subscribers, press articles, optional per-type default press cover images (when an article has no hero image), press dossier, tags, media outlets, featured links, financial reports.
 
 ---
 
@@ -145,7 +145,7 @@ await enforceRateLimit(event, {
 })
 ```
 
-**Note:** Redis is required. App assumes `REDIS_URL` points to shared Redis instance so limits survive restarts and apply across all Nitro instances.
+**Note:** Redis is required. App assumes `NUXT_REDIS_URL` points to a shared Redis instance so limits survive restarts and apply across all Nitro instances.
 
 ### Validation (`server/utils/validation/`)
 
@@ -450,7 +450,9 @@ See `server/api/admin/press/upload.post.ts` for reference.
 ### Schema Conventions
 
 - All tables use CUID2 as primary key (`text('id').primaryKey().$defaultFn(cuid)`).
-- `createdAt` + `updatedAt` on every mutable table. `updatedAt` uses `.$onUpdate(() => new Date())`.
+- Instant timestamps (`createdAt`, `updatedAt`, expirations, delivery timestamps, etc.) use `timestamp(..., { withTimezone: true, mode: 'date' })`.
+- `updatedAt` uses `.$onUpdate(() => sql\`now()\`)` so writes stay in the DB timezone instead of mixing app-side clocks.
+- Use `date(...)` only for true date-only values.
 - Locale columns always have a CHECK constraint against `SUPPORTED_LOCALE_CODES`.
 - Localized content uses a separate translation table, never JSON columns.
 - Unique constraint on `(locale, parentId)` in all translation tables.

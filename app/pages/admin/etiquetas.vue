@@ -42,7 +42,17 @@ const {
   lazy: true,
 })
 
-const items = computed(() => data.value?.data ?? [])
+const sortTags = (left: Tag, right: Tag) => {
+  if (left.order !== right.order) {
+    return left.order - right.order
+  }
+
+  return left.id.localeCompare(right.id, 'es')
+}
+
+const { items, removeItem, replaceItem, setItems } = useAdminMutableCollection(data, {
+  sortItems: sortTags,
+})
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -53,6 +63,23 @@ const form = reactive({
     name: '',
   }),
 })
+
+const buildPayload = () => ({
+  slug: form.slug,
+  order: form.order,
+  translations: filterNonEmptyTranslations(form.translations, 'name'),
+})
+
+const buildPayloadSnapshot = () =>
+  JSON.stringify({
+    ...buildPayload(),
+    translations: buildPayload().translations.map((translation) => ({
+      locale: translation.locale,
+      name: translation.name,
+    })),
+  })
+
+const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
 
 const {
   cancelOrderChanges,
@@ -77,8 +104,12 @@ const {
       method: 'POST',
       body: { items: updates },
     })
-
-    await refresh()
+    setItems(
+      items.value.map((item) => {
+        const nextOrder = updates.find((update) => update.id === item.id)?.order
+        return nextOrder === undefined ? item : { ...item, order: nextOrder }
+      })
+    )
   },
   prepareCreate: () => {
     clearErrors()
@@ -87,6 +118,7 @@ const {
     form.translations = createEmptyTranslations<Translation>({
       name: '',
     })
+    resetFormSnapshot()
   },
   prepareEdit: (item) => {
     clearErrors()
@@ -95,6 +127,7 @@ const {
     form.translations = mapTranslationsToForm(item.translations, {
       name: '',
     }) as Translation[]
+    resetFormSnapshot()
   },
 })
 
@@ -114,10 +147,12 @@ const saveOrder = async () => {
 }
 
 const handleSubmit = async () => {
-  const payload = {
-    slug: form.slug,
-    order: form.order,
-    translations: filterNonEmptyTranslations(form.translations, 'name'),
+  const payload = buildPayload()
+
+  if (editingItem.value && !hasFormChanges.value) {
+    closeModal()
+    clearErrors()
+    return
   }
 
   if (!validate(createTagClientSchema, payload)) {
@@ -127,22 +162,24 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   try {
     if (editingItem.value) {
-      await $fetch(`/api/admin/tags/${editingItem.value.id}`, {
+      const response = await $fetch<{ data: Tag }>(`/api/admin/tags/${editingItem.value.id}`, {
         method: 'PUT',
         body: {
           ...payload,
           updatedAt: editingItem.value.updatedAt,
         },
       })
+      replaceItem(response.data)
       toast.add({
         title: 'Etiqueta actualizada',
         color: 'success',
       })
     } else {
-      await $fetch('/api/admin/tags', {
+      const response = await $fetch<{ data: Tag }>('/api/admin/tags', {
         method: 'POST',
         body: payload,
       })
+      replaceItem(response.data)
       toast.add({
         title: 'Etiqueta creada',
         color: 'success',
@@ -150,7 +187,6 @@ const handleSubmit = async () => {
     }
     closeModal()
     clearErrors()
-    await refresh()
   } catch (e: unknown) {
     const err = e as { data?: { message?: string } }
     if (getApiErrorStatusCode(e) === 409 && err.data?.message === 'SLUG_EXISTS') {
@@ -174,8 +210,8 @@ const handleDelete = async () => {
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/tags/${itemToDelete.value.id}`, { method: 'DELETE' })
+    removeItem(itemToDelete.value.id)
     closeDeleteModal()
-    await refresh()
     toast.add({
       title: 'Etiqueta eliminada',
       color: 'success',
@@ -295,7 +331,12 @@ const handleDelete = async () => {
           </div>
           <div class="flex justify-end gap-2 border-t p-4">
             <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
-            <UButton type="submit" form="tags-form" :loading="isSubmitting">
+            <UButton
+              type="submit"
+              form="tags-form"
+              :loading="isSubmitting"
+              :disabled="Boolean(editingItem) && !hasFormChanges"
+            >
               {{ editingItem ? 'Guardar' : 'Crear' }}
             </UButton>
           </div>

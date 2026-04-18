@@ -16,6 +16,7 @@ import {
 } from '../utils/publicRouteCache'
 import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
 import { throwSafePublicError } from '../utils/publicErrors'
+import { appendAssetVersion } from '../utils/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -58,10 +59,12 @@ export default defineCachedEventHandler(
             title: translation?.title ?? '',
             description: translation?.description ?? '',
             meta: translation?.meta ?? '',
-            pdfUrl:
+            pdfUrl: appendAssetVersion(
               toExternalPdfProxyUrl(item.pdfUrl, {
                 publicPathBase: EQUALITY_DOCUMENTS_PUBLIC_PATH,
               }) ?? item.pdfUrl,
+              item.updatedAt
+            ),
           }
         }),
         total: countResult[0]?.count ?? 0,

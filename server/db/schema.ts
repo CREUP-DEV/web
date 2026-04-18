@@ -39,15 +39,16 @@ export const carouselItems = pgTable(
   'carousel_items',
   {
     id: text('id').primaryKey().$defaultFn(cuid),
-    image: text('image').notNull(),
+    /** Nullable when the slide uses the configured site default carousel image. */
+    image: text('image'),
     href: text('href').notNull(),
     order: integer('order').default(0).notNull(),
     active: boolean('active').default(true).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [index('idx_carousel_items_active_order').on(table.active, table.order)]
 )
@@ -60,11 +61,11 @@ export const carouselItemTranslations = pgTable(
     title: text('title').notNull(),
     buttonText: text('button_text').notNull(),
     alt: text('alt'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     carouselItemId: text('carousel_item_id')
       .notNull()
       .references(() => carouselItems.id, { onDelete: 'cascade' }),
@@ -94,11 +95,11 @@ export const tags = pgTable('tags', {
   id: text('id').primaryKey().$defaultFn(cuid),
   slug: text('slug').notNull().unique(),
   order: integer('order').default(0).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
     .defaultNow()
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => sql`now()`),
 })
 
 export const tagTranslations = pgTable(
@@ -107,11 +108,11 @@ export const tagTranslations = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     locale: text('locale').notNull(),
     name: text('name').notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     tagId: text('tag_id')
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
@@ -156,11 +157,11 @@ export const pressArticles = pgTable(
     publishedAt: date('published_at')
       .default(sql`CURRENT_DATE`)
       .notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [
     index('idx_press_articles_active_published').on(table.active, table.publishedAt),
@@ -188,11 +189,11 @@ export const pressArticleTranslations = pgTable(
     description: text('description'),
     contentHtml: text('content_html'),
     alt: text('alt'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     pressArticleId: text('press_article_id')
       .notNull()
       .references(() => pressArticles.id, { onDelete: 'cascade' }),
@@ -267,13 +268,44 @@ export const pressDossier = pgTable(
     id: text('id').primaryKey().default('singleton'),
     pdfUrl: text('pdf_url'),
     active: boolean('active').default(false).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [check('press_dossier_singleton_check', sql`${table.id} = 'singleton'`)]
+)
+
+/**
+ * Configurable fallback images keyed by `(scope, slot)` — press types, newsletter cover, carousel slide.
+ * Rows are seeded for every known slot; `image` may be null until an admin uploads one.
+ */
+export const siteDefaultImages = pgTable(
+  'site_default_images',
+  {
+    scope: text('scope').notNull(),
+    slot: text('slot').notNull(),
+    image: text('image'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => sql`now()`),
+  },
+  (table) => [
+    primaryKey({ columns: [table.scope, table.slot] }),
+    check(
+      'site_default_images_scope_slot_check',
+      sql`(${table.scope}, ${table.slot}) IN (
+        ('press', 'press_release'),
+        ('press', 'statement'),
+        ('press', 'media_appearance'),
+        ('newsletter', 'cover'),
+        ('carousel', 'slide')
+      )`
+    ),
+  ]
 )
 
 // Featured links
@@ -286,11 +318,11 @@ export const featuredLinks = pgTable(
     to: text('to').notNull(),
     order: integer('order').default(0).notNull(),
     active: boolean('active').default(true).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [index('idx_featured_links_active_order').on(table.active, table.order)]
 )
@@ -302,11 +334,11 @@ export const featuredLinkTranslations = pgTable(
     locale: text('locale').notNull(),
     title: text('title').notNull(),
     alt: text('alt'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     featuredLinkId: text('featured_link_id')
       .notNull()
       .references(() => featuredLinks.id, { onDelete: 'cascade' }),
@@ -336,11 +368,11 @@ export const adminAccess = pgTable('admin_access', {
   id: text('id').primaryKey().$defaultFn(cuid),
   email: text('email').notNull().unique(),
   active: boolean('active').default(true).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
     .defaultNow()
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => sql`now()`),
 })
 
 // Better Auth tables
@@ -351,24 +383,24 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   image: text('image'),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
     .defaultNow()
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => sql`now()`),
 })
 
 export const sessions = pgTable(
   'sessions',
   {
     id: text('id').primaryKey(),
-    expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
     token: text('token').notNull().unique(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
     userId: text('user_id')
@@ -393,15 +425,21 @@ export const accounts = pgTable(
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     idToken: text('id_token'),
-    accessTokenExpiresAt: timestamp('access_token_expires_at', { mode: 'date' }),
-    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { mode: 'date' }),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
     scope: text('scope'),
     password: text('password'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [
     index('idx_accounts_user_id').on(table.userId),
@@ -415,12 +453,12 @@ export const verifications = pgTable(
     id: text('id').primaryKey(),
     identifier: text('identifier').notNull(),
     value: text('value').notNull(),
-    expiresAt: timestamp('expires_at', { mode: 'date' }).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [index('idx_verifications_expires_at').on(table.expiresAt)]
 )
@@ -437,11 +475,11 @@ export const teamAreas = pgTable('team_areas', {
   id: text('id').primaryKey().$defaultFn(cuid),
   slug: text('slug').notNull().unique(),
   order: integer('order').default(0).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
     .defaultNow()
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => sql`now()`),
 })
 
 export const teamAreaTranslations = pgTable(
@@ -450,11 +488,11 @@ export const teamAreaTranslations = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     locale: text('locale').notNull(),
     name: text('name').notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     teamAreaId: text('team_area_id')
       .notNull()
       .references(() => teamAreas.id, { onDelete: 'cascade' }),
@@ -494,11 +532,11 @@ export const teamMembers = pgTable(
     teamAreaId: text('team_area_id')
       .notNull()
       .references(() => teamAreas.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [index('idx_team_members_team_area_id').on(table.teamAreaId)]
 )
@@ -513,11 +551,11 @@ export const teamMemberTranslations = pgTable(
     university: text('university'),
     degree: text('degree'),
     description: text('description'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     teamMemberId: text('team_member_id')
       .notNull()
       .references(() => teamMembers.id, { onDelete: 'cascade' }),
@@ -576,11 +614,11 @@ export const organizationMembers = pgTable(
     autonomousCommunity: text('autonomous_community').notNull(),
     order: integer('order').default(0).notNull(),
     active: boolean('active').default(true).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [index('idx_organization_members_active_order').on(table.active, table.order)]
 )
@@ -592,11 +630,11 @@ export const organizationMemberTranslations = pgTable(
     locale: text('locale').notNull(),
     name: text('name').notNull(),
     university: text('university').notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     organizationMemberId: text('organization_member_id')
       .notNull()
       .references(() => organizationMembers.id, { onDelete: 'cascade' }),
@@ -636,10 +674,9 @@ export const newsletters = pgTable(
     monthKey: text('month_key').notNull().unique(),
     /** Month the newsletter covers (stored as first day of month) */
     month: date('month', { mode: 'date' }).notNull(),
-    coverImage: text('cover_image').notNull(),
+    /** Nullable when the edition uses the configured site default newsletter cover image. */
+    coverImage: text('cover_image'),
     pdfUrl: text('pdf_url').notNull(),
-    /** Controls whether the newsletter can be sent to subscribers */
-    active: boolean('active').default(true).notNull(),
     /** Controls whether the newsletter is visible in the public archive and sitemap */
     publicVisible: boolean('public_visible').default(false).notNull(),
     /**
@@ -647,28 +684,33 @@ export const newsletters = pgTable(
      * The `sending` boolean was redundant with this token; it has been removed.
      * Use `lastDeliveryWorkerToken IS NOT NULL` to check delivery state.
      */
-    sentAt: timestamp('sent_at', { mode: 'date' }),
-    lastDeliveryStartedAt: timestamp('last_delivery_started_at', { mode: 'date' }),
-    lastDeliveryHeartbeatAt: timestamp('last_delivery_heartbeat_at', { mode: 'date' }),
-    lastDeliveryFinishedAt: timestamp('last_delivery_finished_at', { mode: 'date' }),
+    sentAt: timestamp('sent_at', { withTimezone: true, mode: 'date' }),
+    lastDeliveryStartedAt: timestamp('last_delivery_started_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    lastDeliveryHeartbeatAt: timestamp('last_delivery_heartbeat_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
+    lastDeliveryFinishedAt: timestamp('last_delivery_finished_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
     lastDeliveryTotal: integer('last_delivery_total'),
     lastDeliverySentCount: integer('last_delivery_sent_count'),
     lastDeliveryErrorCount: integer('last_delivery_error_count'),
     /** Array of email addresses that failed delivery (stored as JSONB). */
     lastDeliveryFailedRecipients: jsonb('last_delivery_failed_recipients').$type<string[]>(),
     lastDeliveryWorkerToken: text('last_delivery_worker_token'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [
-    index('idx_newsletters_active_sent_worker').on(
-      table.active,
-      table.sentAt,
-      table.lastDeliveryWorkerToken
-    ),
+    index('idx_newsletters_sent_worker').on(table.sentAt, table.lastDeliveryWorkerToken),
     index('idx_newsletters_public_visible_month').on(table.publicVisible, table.month),
   ]
 )
@@ -681,9 +723,11 @@ export const newsletterSubscribers = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     email: text('email').notNull().unique(),
     active: boolean('active').default(false).notNull(),
-    subscribedAt: timestamp('subscribed_at', { mode: 'date' }).defaultNow().notNull(),
-    confirmedAt: timestamp('confirmed_at', { mode: 'date' }),
-    unsubscribedAt: timestamp('unsubscribed_at', { mode: 'date' }),
+    subscribedAt: timestamp('subscribed_at', { withTimezone: true, mode: 'date' })
+      .defaultNow()
+      .notNull(),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true, mode: 'date' }),
+    unsubscribedAt: timestamp('unsubscribed_at', { withTimezone: true, mode: 'date' }),
     /**
      * Pending double opt-in confirmation token.
      * New confirmation links are signed and not stored in clear; this column
@@ -692,7 +736,10 @@ export const newsletterSubscribers = pgTable(
      */
     confirmToken: text('confirm_token').unique(),
     /** Expiry timestamp for the confirmation token (48h TTL) */
-    confirmTokenExpiresAt: timestamp('confirm_token_expires_at', { mode: 'date' }),
+    confirmTokenExpiresAt: timestamp('confirm_token_expires_at', {
+      withTimezone: true,
+      mode: 'date',
+    }),
     /**
      * Legacy unsubscribe token column kept for backward compatibility with
      * old email links. New flows use signed tokens and leave this NULL.
@@ -705,11 +752,11 @@ export const newsletterSubscribers = pgTable(
     consentTextVersion: text('consent_text_version').notNull(),
     ageConfirmed: boolean('age_confirmed').default(false).notNull(),
     locale: text('locale'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [
     index('idx_newsletter_subscribers_active_subscribed').on(table.active, table.subscribedAt),
@@ -737,7 +784,7 @@ export const newsletterSubscriptionEvents = pgTable(
     email: text('email').notNull(),
     eventType: text('event_type').notNull(),
     eventSource: text('event_source').notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
   },
   (table) => [
     index('idx_newsletter_subscription_events_subscriber_created').on(
@@ -776,14 +823,14 @@ export const newsletterDeliveries = pgTable(
       .references(() => newsletterSubscribers.id, { onDelete: 'cascade' }),
     status: text('status').notNull().default('queued'),
     attempts: integer('attempts').notNull().default(0),
-    lastAttemptAt: timestamp('last_attempt_at', { mode: 'date' }),
-    sentAt: timestamp('sent_at', { mode: 'date' }),
+    lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true, mode: 'date' }),
+    sentAt: timestamp('sent_at', { withTimezone: true, mode: 'date' }),
     lastError: text('last_error'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [
     unique('newsletter_deliveries_newsletter_subscriber_unique').on(
@@ -807,11 +854,11 @@ export const mediaOutlets = pgTable('media_outlets', {
   website: text('website').notNull(),
   logo: text('logo').notNull(),
   order: integer('order').default(0).notNull(),
-  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
     .defaultNow()
     .notNull()
-    .$onUpdate(() => new Date()),
+    .$onUpdate(() => sql`now()`),
 })
 
 // Media Outlets relations
@@ -828,11 +875,11 @@ export const aboutPageContent = pgTable(
     id: text('id').primaryKey().default('singleton'),
     heroImage: text('hero_image'),
     heroVisible: boolean('hero_visible').default(true).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [check('about_page_content_singleton_check', sql`${table.id} = 'singleton'`)]
 )
@@ -846,11 +893,11 @@ export const equalityDocuments = pgTable(
     pdfUrl: text('pdf_url').notNull(),
     order: integer('order').default(0).notNull(),
     active: boolean('active').default(true).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [index('idx_equality_documents_active_order').on(table.active, table.order)]
 )
@@ -863,11 +910,11 @@ export const equalityDocumentTranslations = pgTable(
     title: text('title').notNull(),
     description: text('description').notNull(),
     meta: text('meta'),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     equalityDocumentId: text('equality_document_id')
       .notNull()
       .references(() => equalityDocuments.id, { onDelete: 'cascade' }),
@@ -900,14 +947,14 @@ export const financialReports = pgTable(
   {
     id: text('id').primaryKey().$defaultFn(cuid),
     pdfUrl: text('pdf_url').notNull(),
-    approvedAt: timestamp('approved_at', { mode: 'date' }).notNull(),
+    approvedAt: timestamp('approved_at', { withTimezone: true, mode: 'date' }).notNull(),
     order: integer('order').default(0).notNull(),
     active: boolean('active').default(true).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
   },
   (table) => [
     index('idx_financial_reports_active_order').on(table.active, table.order),
@@ -921,11 +968,11 @@ export const financialReportTranslations = pgTable(
     id: text('id').primaryKey().$defaultFn(cuid),
     locale: text('locale').notNull(),
     title: text('title').notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'date' })
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
       .defaultNow()
       .notNull()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => sql`now()`),
     financialReportId: text('financial_report_id')
       .notNull()
       .references(() => financialReports.id, { onDelete: 'cascade' }),

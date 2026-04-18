@@ -10,7 +10,7 @@ type EventGalleryImageWithUrl = EventGalleryImage & {
 const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
-const siteConfig = useSiteConfig()
+const siteUrl = useRuntimeSiteUrl()
 const slug = computed(() =>
   Array.isArray(route.params.slug) ? route.params.slug[0] : route.params.slug
 )
@@ -84,7 +84,7 @@ const isOngoing = computed(() => {
 const hasOrganizations = (orgs: EventOrganization[]) => orgs.length > 0 && orgs.some((o) => o.name)
 
 const configuredSiteHostname = computed<string | null>(() => {
-  const configuredSiteUrl = normalizeUrl(String(siteConfig.url ?? '').trim() || null)
+  const configuredSiteUrl = normalizeUrl(siteUrl.value)
   if (!configuredSiteUrl) return null
 
   try {
@@ -181,7 +181,7 @@ function getPhotoAlt(index: number): string {
               :to="localePath('/conocenos/eventos')"
               class="hover:text-foreground transition-colors"
             >
-              {{ t('events.title') }}
+              {{ t('nav.about.events') }}
             </NuxtLink>
           </li>
           <li class="shrink-0" aria-hidden="true">/</li>

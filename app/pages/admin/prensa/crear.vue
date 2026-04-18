@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 
 definePageMeta({
@@ -59,7 +60,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
     })
     allowNavigationWithoutPrompt.value = true
     toast.add({ title: 'Artículo creado correctamente', color: 'success' })
-    router.push('/admin/press')
+    router.push(ADMIN_ROUTES.press)
   } catch (e) {
     toast.add({ title: getApiErrorMessage(e, 'No se pudo crear el artículo'), color: 'error' })
   } finally {
@@ -69,7 +70,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 
 const handleCancel = () => {
   allowNavigationWithoutPrompt.value = true
-  router.push('/admin/press')
+  router.push(ADMIN_ROUTES.press)
 }
 </script>
 

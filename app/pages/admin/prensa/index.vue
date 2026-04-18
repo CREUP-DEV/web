@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HOME_CAROUSEL_FALLBACK_IMAGE } from '~~/shared/constants/assetPaths'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import {
   PRESS_ARTICLE_ADMIN_CREATE_PATHS,
   getPressArticlePublicListPath,
@@ -25,6 +25,7 @@ const currentType = ref<AdminPressArticleType | null>(null)
 const searchQuery = ref('')
 
 const {
+  decrementTotal,
   items,
   total,
   pageCount,
@@ -32,6 +33,7 @@ const {
   pending,
   error: fetchError,
   refresh,
+  removeItem,
 } = useAdminPress(currentType, searchQuery)
 
 const typeLabels: Record<AdminPressArticleType, string> = {
@@ -75,9 +77,10 @@ const handleDelete = async () => {
   isDeleting.value = true
   try {
     await $fetch(`/api/admin/press/${itemToDelete.value.id}`, { method: 'DELETE' })
+    removeItem(itemToDelete.value.id)
+    decrementTotal()
     showDeleteModal.value = false
     itemToDelete.value = null
-    await refresh()
     toast.add({ title: 'Artículo eliminado', color: 'success' })
   } catch (error) {
     toast.add({
@@ -129,7 +132,7 @@ const emptyStateTypeLabel = computed(() =>
 
       <div class="flex flex-wrap gap-2">
         <UButton
-          to="/admin/press/create?type=press_release"
+          :to="`${ADMIN_ROUTES.pressCreate}?type=press_release`"
           icon="i-tabler-writing-sign"
           variant="outline"
           color="neutral"
@@ -137,7 +140,7 @@ const emptyStateTypeLabel = computed(() =>
           Nueva nota de prensa
         </UButton>
         <UButton
-          to="/admin/press/create?type=statement"
+          :to="`${ADMIN_ROUTES.pressCreate}?type=statement`"
           icon="i-tabler-speakerphone"
           variant="outline"
           color="neutral"
@@ -145,7 +148,7 @@ const emptyStateTypeLabel = computed(() =>
           Nuevo comunicado
         </UButton>
         <UButton
-          to="/admin/press/create?type=media_appearance"
+          :to="`${ADMIN_ROUTES.pressCreate}?type=media_appearance`"
           icon="i-tabler-broadcast"
           variant="outline"
           color="neutral"
@@ -225,15 +228,21 @@ const emptyStateTypeLabel = computed(() =>
           class="group rounded-xl border transition-shadow hover:shadow-md"
         >
           <NuxtLink
-            :to="`/admin/press/${item.id}`"
+            :to="`${ADMIN_ROUTES.press}/${item.id}`"
             class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
           >
             <div class="shrink-0">
               <img
-                :src="item.image || HOME_CAROUSEL_FALLBACK_IMAGE"
+                v-if="item.listThumbnailUrl"
+                :src="item.listThumbnailUrl"
                 :alt="getItemTitle(item)"
                 class="h-24 w-full rounded-lg object-cover sm:w-40"
                 loading="lazy"
+              />
+              <div
+                v-else
+                class="bg-muted flex h-24 w-full items-center justify-center rounded-lg sm:w-40"
+                aria-hidden="true"
               />
             </div>
 
@@ -298,7 +307,7 @@ const emptyStateTypeLabel = computed(() =>
                 aria-label="Ver artículo en la web"
               />
               <UButton
-                :to="`/admin/press/${item.id}`"
+                :to="`${ADMIN_ROUTES.press}/${item.id}`"
                 icon="i-tabler-pencil"
                 variant="ghost"
                 size="sm"

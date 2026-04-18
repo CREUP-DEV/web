@@ -57,13 +57,17 @@ const addNoDuplicateLocalesIssue = (
 export const carouselTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
-  buttonText: z.string().max(100).optional(),
-  alt: z.string().max(200).optional(),
+  buttonText: z.string().max(100).nullish(),
+  alt: z.string().max(200).nullish(),
 })
 
 export const createCarouselItemSchema = z
   .object({
-    image: z.string().min(1, 'La imagen es requerida').max(2048),
+    /** Omit or null to use the site default carousel image. */
+    image: z.preprocess(
+      (value) => (value === undefined ? null : value),
+      z.union([z.null(), z.string().min(1).max(2048)])
+    ),
     href: safeHrefSchema,
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
@@ -91,7 +95,7 @@ export const updateCarouselItemSchema = createCarouselItemSchema.merge(optimisti
 export const featuredLinkTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
-  alt: z.string().max(200).optional(),
+  alt: z.string().max(200).nullish(),
 })
 
 export const createFeaturedLinkSchema = z
@@ -265,28 +269,41 @@ export const updatePressDossierSchema = z
     }
   })
 
+const pressDefaultCoverStoragePath = z
+  .string()
+  .trim()
+  .min(1)
+  .max(2048)
+  .refine(
+    (v) => !v.startsWith('http://') && !v.startsWith('https://'),
+    'La imagen debe ser una ruta de almacenamiento, no una URL'
+  )
+
+export const updateSiteDefaultImagesSchema = z
+  .object({
+    pressReleaseImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    statementImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    mediaAppearanceImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    newsletterCoverImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    carouselSlideImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+  })
+  .merge(optimisticLockSchema)
+
 const newsletterMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido')
 
 export const createNewsletterSchema = z.object({
   month: newsletterMonthSchema,
-  coverImage: z.string().min(1, 'La imagen de portada es requerida').max(2048),
+  /** Omit or null to use the site default newsletter cover image. */
+  coverImage: z.preprocess(
+    (value) => (value === undefined ? null : value),
+    z.union([z.null(), z.string().min(1).max(2048)])
+  ),
   pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
-  active: z.boolean().default(true),
-  publicVisible: z.boolean().default(false),
+  publicVisible: z.boolean().default(true),
 })
 
 export const updateNewsletterSchema = createNewsletterSchema.merge(optimisticLockSchema)
 
-export const createNewsletterRequestSchema = createNewsletterSchema
-  .extend({
-    sendEmail: z.boolean().default(false),
-  })
-  .superRefine((data, ctx) => {
-    if (data.sendEmail && !data.active) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Debes habilitar el envío para enviar la newsletter ahora',
-        path: ['active'],
-      })
-    }
-  })
+export const createNewsletterRequestSchema = createNewsletterSchema.extend({
+  sendEmail: z.boolean().default(false),
+})

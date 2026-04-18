@@ -4,6 +4,7 @@ import type { Locale } from 'vue-i18n'
 import { useMediaQuery } from '@vueuse/core'
 import { useAuth } from '@/composables/useAuth'
 import { getInitials } from '@/utils/initials'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 const { session, signOut } = useAuth()
@@ -47,7 +48,7 @@ watch(
 )
 
 const isNavItemActive = (to: string) => {
-  if (to === '/admin') return route.path === '/admin'
+  if (to === ADMIN_ROUTES.dashboard) return route.path === ADMIN_ROUTES.dashboard
   return route.path === to || route.path.startsWith(`${to}/`)
 }
 
@@ -56,7 +57,7 @@ const visibleAdminSections = computed(() =>
 )
 
 const allNavItems = computed(() => [
-  { label: 'Panel', to: '/admin' },
+  { label: 'Panel', to: ADMIN_ROUTES.dashboard },
   ...visibleAdminSections.value.map((item) => ({ label: item.name, to: item.to })),
 ])
 
@@ -68,9 +69,9 @@ const navigationItems = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: 'Panel',
-      to: '/admin',
+      to: ADMIN_ROUTES.dashboard,
       icon: 'i-tabler-home',
-      active: isNavItemActive('/admin'),
+      active: isNavItemActive(ADMIN_ROUTES.dashboard),
       onSelect: () => {
         if (isMobileSidebar.value) {
           sidebarOpen.value = false

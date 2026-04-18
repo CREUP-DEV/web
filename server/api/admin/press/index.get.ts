@@ -8,6 +8,10 @@ import {
   validateQuery,
 } from '../../../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
+import {
+  getPressDefaultCoversRow,
+  resolvePressArticleListImage,
+} from '../../../utils/siteDefaultImages'
 
 const adminPressQuerySchema = adminPressListQuerySchema.merge(paginationQuerySchema)
 const MIN_TRIGRAM_SEARCH_LENGTH = 3
@@ -53,7 +57,7 @@ export default defineEventHandler(async (event) => {
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
-  const [items, countResult] = await Promise.all([
+  const [items, countResult, pressDefaults] = await Promise.all([
     db.query.pressArticles.findMany({
       where: whereClause,
       orderBy: [desc(pressArticles.publishedAt), desc(pressArticles.id)],
@@ -121,12 +125,14 @@ export default defineEventHandler(async (event) => {
       .select({ count: sql<number>`count(*)`.mapWith(Number) })
       .from(pressArticles)
       .where(whereClause),
+    getPressDefaultCoversRow(),
   ])
 
   return {
     data: items.map((item) => ({
       ...item,
       publishedAt: dateValueToDateOnly(item.publishedAt),
+      listThumbnailUrl: resolvePressArticleListImage(item.type, item.image, pressDefaults),
     })),
     meta: {
       total: countResult[0]?.count ?? 0,

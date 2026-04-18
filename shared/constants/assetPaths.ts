@@ -3,8 +3,9 @@ export const EXTERNAL_DOCUMENT_PUBLIC_BASE = '/documentos/externos'
 
 export const HOME_IMAGE_PUBLIC_BASE = '/inicio/imagenes'
 export const HOME_CAROUSEL_IMAGE_PUBLIC_PATH = `${HOME_IMAGE_PUBLIC_BASE}/carrusel`
+/** Site default slide image (admin-managed under this path). */
+export const HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH = `${HOME_IMAGE_PUBLIC_BASE}/carrusel-por-defecto`
 export const HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH = `${HOME_IMAGE_PUBLIC_BASE}/enlaces-destacados`
-export const HOME_CAROUSEL_FALLBACK_IMAGE = `${HOME_CAROUSEL_IMAGE_PUBLIC_PATH}/banner-inicio-creup.webp`
 
 export const ABOUT_IMAGE_PUBLIC_PATH = '/conocenos/imagenes'
 export const ABOUT_HERO_DEFAULT_IMAGE = `${ABOUT_IMAGE_PUBLIC_PATH}/banner-que-es-creup.webp`
@@ -13,10 +14,15 @@ export const EVENT_IMAGE_PUBLIC_BASE = '/eventos/imagenes'
 export const EVENT_DOCUMENT_PUBLIC_BASE = '/eventos/documentos'
 
 export const PRESS_IMAGE_PUBLIC_BASE = '/prensa/imagenes'
+/** Admin-uploaded fallbacks when a press article has no `image`; stored under `public/prensa/imagenes/`. */
+export const PRESS_DEFAULT_COVERS_SEGMENT = 'portadas-por-defecto'
+export const PRESS_DEFAULT_COVERS_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/${PRESS_DEFAULT_COVERS_SEGMENT}`
 export const PRESS_MEDIA_LOGO_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/medios`
 export const PRESS_DOCUMENT_PUBLIC_PATH = '/prensa/documentos'
-export const PRESS_DOSSIER_PUBLIC_PATH = '/prensa/dossier'
+export const PRESS_DOSSIER_PUBLIC_PATH = '/prensa/dossier-prensa.pdf'
 export const NEWSLETTER_COVER_IMAGE_PUBLIC_PATH = '/prensa/newsletter/portadas'
+/** Site default newsletter cover (admin-managed; distinct from per-edition covers). */
+export const NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH = '/prensa/newsletter/imagenes-por-defecto'
 export const NEWSLETTER_DOCUMENT_PUBLIC_PATH = '/prensa/newsletter/documentos'
 export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.png'
 
@@ -27,13 +33,13 @@ export const INTERNAL_IMAGE_PROXY_PATH_BASES = [
   EVENT_IMAGE_PUBLIC_BASE,
   PRESS_IMAGE_PUBLIC_BASE,
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+  NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
 ] as const
 
 export const INTERNAL_DOCUMENT_PROXY_PATH_BASES = [
   EXTERNAL_DOCUMENT_PUBLIC_BASE,
   EVENT_DOCUMENT_PUBLIC_BASE,
   PRESS_DOCUMENT_PUBLIC_PATH,
-  PRESS_DOSSIER_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
 ] as const
 

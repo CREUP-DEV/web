@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { en, es } from '@nuxt/ui/locale'
 import { getBaseLanguage } from '~~/shared/utils/locale'
-import { normalizeUrl } from '~~/shared/utils/url'
 
 const { locale, t } = useI18n()
 const { getLanguageTag } = useLocales()
 const localeHead = useLocaleHead({ seo: true })
 const siteConfig = useSiteConfig()
-const siteUrl = computed(() => {
-  const configuredSiteUrl = normalizeUrl(String(siteConfig.url ?? '').trim())
-  return (configuredSiteUrl || 'https://www.creup.es').replace(/\/$/, '')
-})
+const siteUrl = useRuntimeSiteUrl()
 
 const nuxtUiLocales = { en, es } as const
 const currentUiLocale = computed(
@@ -22,12 +18,30 @@ const currentUiLocale = computed(
 
 const lang = computed(() => getLanguageTag(locale.value))
 const dir = computed(() => currentUiLocale.value.dir)
-const pageTransition = import.meta.dev
-  ? false
-  : {
-      name: 'page-shell',
-      mode: 'out-in' as const,
-    }
+
+// Strip the ___locale suffix added by @nuxtjs/i18n to get the base route name.
+const getBaseRouteName = (name: string | null | undefined) =>
+  name ? String(name).replace(/___[a-z]{2,3}(-[A-Z]{2})?$/, '') : null
+
+const isLocaleSwitch = ref(false)
+if (import.meta.client) {
+  const router = useRouter()
+  router.beforeEach((to, from) => {
+    isLocaleSwitch.value = !!(
+      from?.name &&
+      to.name &&
+      getBaseRouteName(String(to.name)) === getBaseRouteName(String(from.name))
+    )
+  })
+  router.afterEach(() => {
+    isLocaleSwitch.value = false
+  })
+}
+
+const pageTransition = computed(() => {
+  if (import.meta.dev || isLocaleSwitch.value) return false
+  return { name: 'page-shell', mode: 'out-in' as const }
+})
 
 useHead(() => ({
   htmlAttrs: {
@@ -40,7 +54,27 @@ useHead(() => ({
     { name: 'author', content: 'CREUP' },
   ],
   link: [
-    ...(localeHead.value.link ?? []).filter((link) => link.rel !== 'canonical'),
+    ...(localeHead.value.link ?? [])
+      .filter((link) => link.rel !== 'canonical')
+      .map((link) => {
+        if (!['alternate', 'canonical'].includes(link.rel || '') || typeof link.href !== 'string') {
+          return link
+        }
+
+        try {
+          const parsedUrl = new URL(link.href, siteUrl.value)
+          const runtimeHref = new URL(
+            `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`,
+            siteUrl.value
+          ).toString()
+          return {
+            ...link,
+            href: runtimeHref,
+          }
+        } catch {
+          return link
+        }
+      }),
     { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg', sizes: 'any' },
     { rel: 'shortcut icon', type: 'image/x-icon', href: '/favicon.ico' },
   ],

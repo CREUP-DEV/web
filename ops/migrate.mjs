@@ -10,6 +10,7 @@ const scriptFile = fileURLToPath(import.meta.url)
 const migrationsFolder = resolve(scriptDir, '..', 'drizzle')
 const MIGRATIONS_ADVISORY_LOCK_ID = 8_821_143
 const REQUIRED_EXTENSIONS = ['pg_trgm']
+const MIGRATION_TIME_ZONE = process.env.TZ?.trim() || 'Europe/Madrid'
 
 export async function runMigrations() {
   const databaseUrl = process.env.DATABASE_URL
@@ -19,7 +20,10 @@ export async function runMigrations() {
   }
 
   console.log(`🚀 Starting database migrations from "${migrationsFolder}".`)
-  const pool = new pg.Pool({ connectionString: databaseUrl })
+  const pool = new pg.Pool({
+    connectionString: databaseUrl,
+    options: `-c timezone=${MIGRATION_TIME_ZONE}`,
+  })
 
   try {
     const client = await pool.connect()

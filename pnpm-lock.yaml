@@ -11,6 +11,15 @@ importers:
       '@formkit/auto-animate':
         specifier: ^0.9.0
         version: 0.9.0
+      '@iconify-json/circle-flags':
+        specifier: ^1.2.10
+        version: 1.2.10
+      '@iconify-json/lucide':
+        specifier: ^1.2.101
+        version: 1.2.101
+      '@iconify-json/tabler':
+        specifier: ^1.2.33
+        version: 1.2.33
       '@internationalized/date':
         specifier: ^3.12.0
         version: 3.12.0
@@ -59,6 +68,9 @@ importers:
       dompurify:
         specifier: ^3.3.3
         version: 3.3.3
+      dotenv:
+        specifier: ^17.4.1
+        version: 17.4.1
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(kysely@0.28.15)(pg@8.20.0)
@@ -114,15 +126,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@iconify-json/circle-flags':
-        specifier: ^1.2.10
-        version: 1.2.10
-      '@iconify-json/lucide':
-        specifier: ^1.2.101
-        version: 1.2.101
-      '@iconify-json/tabler':
-        specifier: ^1.2.33
-        version: 1.2.33
       '@nuxt/a11y':
         specifier: 1.0.0-alpha.1
         version: 1.0.0-alpha.1(magicast@0.5.2)(vite@7.3.2(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -138,12 +141,12 @@ importers:
       '@types/sortablejs':
         specifier: ^1.15.9
         version: 1.15.9
-      dotenv:
-        specifier: ^17.4.1
-        version: 17.4.1
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+      esbuild:
+        specifier: ^0.27.0
+        version: 0.27.7
       eslint:
         specifier: ^10.2.0
         version: 10.2.0(jiti@2.6.1)

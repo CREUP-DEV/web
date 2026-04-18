@@ -7,6 +7,12 @@ import { logError } from '../utils/logger'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { throwSafePublicError } from '../utils/publicErrors'
+import { appendAssetVersion } from '../utils/assetVersion'
+
+const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
+  0,
+  PRESS_DOSSIER_PUBLIC_PATH.lastIndexOf('/')
+)
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -21,10 +27,12 @@ export default defineCachedEventHandler(
         item: {
           id: item.id,
           active: item.active,
-          pdfUrl:
+          pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(item.pdfUrl, {
-              publicPathBase: PRESS_DOSSIER_PUBLIC_PATH,
+              publicPathBase: PRESS_DOSSIER_PUBLIC_BASE,
             }) ?? item.pdfUrl,
+            item.updatedAt
+          ),
         },
       }
     } catch (error) {

@@ -6,7 +6,7 @@ type PressDossierResponse = {
 
 export function usePressDossierLink() {
   return useAsyncData<string | null>(
-    'layout-press-dossier-link',
+    'public-layout-press-dossier-link',
     async () => {
       const response = await $fetch<PressDossierResponse>('/api/press-dossier')
       return response.item?.pdfUrl ?? null

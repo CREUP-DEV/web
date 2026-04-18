@@ -6,7 +6,9 @@ import { adminCollectionQuerySchema, validateQuery } from '../../../utils/valida
 import { logAdminCollectionCapHit } from '../../../utils/adminCollectionLimit'
 
 export default defineEventHandler(async (event) => {
-  const { limit, offset } = validateQuery(event, adminCollectionQuerySchema)
+  const query = validateQuery(event, adminCollectionQuerySchema)
+  const limit = query.limit ?? 500
+  const offset = query.offset ?? 0
 
   const [items, countResult] = await Promise.all([
     db.query.carouselItems.findMany({

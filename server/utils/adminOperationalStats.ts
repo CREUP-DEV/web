@@ -8,9 +8,7 @@ import { getOptionalRuntimeConfigString } from './runtimeConfig'
 
 async function getInfrastructureStatus() {
   const runtimeConfig = useRuntimeConfig()
-  const redisConfigured = Boolean(
-    getOptionalRuntimeConfigString(runtimeConfig.redisUrl) || process.env.REDIS_URL?.trim()
-  )
+  const redisConfigured = Boolean(getOptionalRuntimeConfigString(runtimeConfig.redisUrl))
 
   const [databaseStatus, redisStatus] = await Promise.all([
     db

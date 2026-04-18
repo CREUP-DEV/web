@@ -30,6 +30,7 @@ interface FinancialReport {
 }
 
 const toast = useToast()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
   getDefaultTranslationValue,
@@ -51,7 +52,20 @@ const {
 }>('/api/admin/financial-reports', {
   lazy: true,
 })
-const items = computed(() => data.value?.data ?? [])
+const sortFinancialReports = (left: FinancialReport, right: FinancialReport) => {
+  const rightApprovedAt = new Date(right.approvedAt).getTime() || 0
+  const leftApprovedAt = new Date(left.approvedAt).getTime() || 0
+
+  if (leftApprovedAt !== rightApprovedAt) {
+    return rightApprovedAt - leftApprovedAt
+  }
+
+  return right.id.localeCompare(left.id, 'es')
+}
+
+const { items, prependItem, removeItem, replaceItem } = useAdminMutableCollection(data, {
+  sortItems: sortFinancialReports,
+})
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
@@ -82,6 +96,25 @@ const form = reactive({
   translations: createEmptyTranslationSet(),
 })
 
+const buildPayload = () => ({
+  pdfUrl: form.pdfUrl,
+  order: form.order,
+  active: form.active,
+  approvedAt: calendarDateToDateOnly(approvedAt.value),
+  translations: filterNonEmptyTranslations(form.translations, 'title'),
+})
+
+const buildPayloadSnapshot = () =>
+  JSON.stringify({
+    ...buildPayload(),
+    translations: buildPayload().translations.map((translation) => ({
+      locale: translation.locale,
+      title: translation.title,
+    })),
+  })
+
+const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
+
 const {
   closeDeleteModal,
   closeModal,
@@ -102,6 +135,7 @@ const {
     form.translations = createEmptyTranslationSet()
     pdfUpload.setFile(null)
     approvedAt.value = new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+    resetFormSnapshot()
   },
   prepareEdit: (item) => {
     clearErrors()
@@ -113,6 +147,7 @@ const {
     }) as FinancialReportTranslation[]
     pdfUpload.setFile(item.pdfUrl)
     approvedAt.value = valueToCalendarDate(item.approvedAt)
+    resetFormSnapshot()
   },
 })
 
@@ -155,12 +190,12 @@ function getAdditionalTranslationLabel(item: FinancialReport) {
 }
 
 const handleSubmit = async () => {
-  const payload = {
-    pdfUrl: form.pdfUrl,
-    order: form.order,
-    active: form.active,
-    approvedAt: calendarDateToDateOnly(approvedAt.value),
-    translations: filterNonEmptyTranslations(form.translations, 'title'),
+  const payload = buildPayload()
+
+  if (editingItem.value && !hasFormChanges.value) {
+    closeModal()
+    clearErrors()
+    return
   }
 
   if (!validate(createFinancialReportClientSchema, payload)) {
@@ -170,25 +205,31 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   try {
     if (editingItem.value) {
-      await $fetch(`/api/admin/financial-reports/${editingItem.value.id}`, {
-        method: 'PUT',
-        body: {
-          ...payload,
-          updatedAt: editingItem.value.updatedAt,
-        },
-      })
+      const response = await $fetch<{ data: FinancialReport }>(
+        `/api/admin/financial-reports/${editingItem.value.id}`,
+        {
+          method: 'PUT',
+          body: {
+            ...payload,
+            updatedAt: editingItem.value.updatedAt,
+          },
+        }
+      )
+      replaceItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({ title: 'Informe actualizado', color: 'success' })
     } else {
-      await $fetch('/api/admin/financial-reports', {
+      const response = await $fetch<{ data: FinancialReport }>('/api/admin/financial-reports', {
         method: 'POST',
         body: payload,
       })
+      prependItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({ title: 'Informe creado', color: 'success' })
     }
 
     closeModal()
     clearErrors()
-    await refresh()
   } catch (error) {
     toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el informe'), color: 'error' })
   } finally {
@@ -204,9 +245,10 @@ const handleDelete = async () => {
     await $fetch(`/api/admin/financial-reports/${itemToDelete.value.id}`, {
       method: 'DELETE',
     })
+    removeItem(itemToDelete.value.id)
+    await refreshAllClientAsyncData()
     toast.add({ title: 'Informe eliminado', color: 'success' })
     closeDeleteModal()
-    await refresh()
   } catch (error) {
     toast.add({
       title: getApiErrorMessage(error, 'No se pudo eliminar el informe'),
@@ -282,6 +324,7 @@ const handleDelete = async () => {
                   {{ getAdditionalTranslationLabel(item) }}
                 </UBadge>
               </div>
+              <p class="text-muted text-sm break-all">{{ item.pdfUrl }}</p>
             </div>
           </div>
 
@@ -406,7 +449,11 @@ const handleDelete = async () => {
 
             <div class="flex justify-end gap-2 pt-2">
               <UButton variant="ghost" @click="showModal = false">Cancelar</UButton>
-              <UButton type="submit" :loading="isSubmitting">
+              <UButton
+                type="submit"
+                :loading="isSubmitting"
+                :disabled="Boolean(editingItem) && !hasFormChanges"
+              >
                 {{ editingItem ? 'Guardar cambios' : 'Crear informe' }}
               </UButton>
             </div>

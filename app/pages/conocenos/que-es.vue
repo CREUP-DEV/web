@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY } from '~~/shared/constants/publicAsyncDataKeys'
+
 type RelatedSectionKey = 'members' | 'team' | 'committees' | 'events'
 type StatKey = 'universities' | 'students' | 'years'
 type ValueKey =
@@ -23,7 +25,9 @@ const localePath = useLocalePath()
 const { data, error, pending, refresh } = await useFetch<{
   content: AboutPageContent | null
   memberCount: number | null
-}>('/api/about-page')
+}>('/api/about-page', {
+  key: PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY,
+})
 
 const memberCount = computed(() => data.value?.memberCount ?? fallbackMemberCount)
 
@@ -226,13 +230,13 @@ usePageSeo(
           :aria-label="pageContent.title"
           class="space-y-4"
         >
-          <div class="bg-muted overflow-hidden rounded-3xl border">
+          <div class="bg-muted aspect-1925/550 overflow-hidden rounded-3xl border">
             <NuxtImg
               :src="pageContent.heroImage"
               :alt="pageContent.title"
               width="1925"
               height="550"
-              class="aspect-1925/550 size-full object-cover"
+              class="size-full object-cover"
               loading="eager"
               fetchpriority="high"
               decoding="async"

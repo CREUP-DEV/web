@@ -88,7 +88,7 @@ const descriptionText = computed(() => props.description)
               CREUP
             </span>
             <span
-              class="max-w-[520px] text-[18px] leading-tight font-medium"
+              class="max-w-130 text-[18px] leading-tight font-medium"
               :style="{ color: palette.textMuted }"
             >
               {{ props.brandTagline }}
@@ -109,7 +109,7 @@ const descriptionText = computed(() => props.description)
       </div>
 
       <div class="grid flex-1 items-end gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div class="max-w-[760px]">
+        <div class="max-w-190">
           <p
             class="mb-5 text-[18px] font-semibold tracking-[0.24em] uppercase"
             :style="{ color: palette.accentStrong }"
@@ -126,7 +126,7 @@ const descriptionText = computed(() => props.description)
 
           <p
             v-if="descriptionText"
-            class="mt-6 max-w-[720px] text-[24px] leading-snug font-medium lg:text-[32px]"
+            class="mt-6 max-w-180 text-[24px] leading-snug font-medium lg:text-[32px]"
             :style="{ color: palette.textMuted }"
           >
             {{ descriptionText }}
@@ -135,7 +135,7 @@ const descriptionText = computed(() => props.description)
 
         <div class="flex justify-end">
           <div
-            class="w-full max-w-[360px] rounded-[32px] p-6 lg:p-8"
+            class="w-full max-w-90 rounded-4xl p-6 lg:p-8"
             :style="{
               backgroundColor: isDark ? 'rgba(245, 238, 230, 0.06)' : 'rgba(255, 255, 255, 0.55)',
               boxShadow: `0 0 0 1px rgba(${palette.border})`,

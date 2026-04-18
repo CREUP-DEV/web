@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AdminPressArticleDetailResponse } from '@/types/adminPress'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 
 definePageMeta({
@@ -28,7 +29,7 @@ if (fetchError.value || !data.value) {
     toast.add({ title: 'No se encontró el artículo', color: 'error' })
   }
 
-  await navigateTo('/admin/press')
+  await navigateTo(ADMIN_ROUTES.press)
 }
 
 const article = computed(() => data.value?.data ?? null)
@@ -68,7 +69,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
     })
     allowNavigationWithoutPrompt.value = true
     toast.add({ title: 'Artículo actualizado correctamente', color: 'success' })
-    router.push('/admin/press')
+    router.push(ADMIN_ROUTES.press)
   } catch (e: unknown) {
     const status = getApiErrorStatusCode(e)
     if (status === 409) {
@@ -91,7 +92,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 
 const handleCancel = () => {
   allowNavigationWithoutPrompt.value = true
-  router.push('/admin/press')
+  router.push(ADMIN_ROUTES.press)
 }
 </script>
 

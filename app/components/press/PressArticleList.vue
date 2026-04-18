@@ -190,7 +190,7 @@ watch(page, () => {
               :to="localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`)"
               class="motion-link-card group focus-visible:ring-primary/60 bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
-              <div class="bg-muted aspect-video overflow-hidden">
+              <div class="bg-muted relative aspect-video overflow-hidden">
                 <NuxtImg
                   v-if="article.image"
                   :src="article.image"
@@ -207,22 +207,39 @@ watch(page, () => {
                 >
                   <UIcon name="i-tabler-news" class="size-12" />
                 </div>
+                <PressMediaOutletLogoOverlay
+                  v-if="type === 'media_appearance' && article.image && article.mediaOutlet?.logo"
+                  :logo-url="article.mediaOutlet.logo"
+                  :outlet-name="article.mediaOutlet.name"
+                />
               </div>
 
               <div class="p-4">
-                <div class="text-muted mb-1.5 flex items-center gap-2 text-xs">
+                <div class="text-muted mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                   <time :datetime="article.publishedAt">{{ formatDate(article.publishedAt) }}</time>
-                  <template v-if="article.mediaOutlet">
+                  <template v-if="article.mediaOutlet && type !== 'media_appearance'">
                     <span aria-hidden="true">&middot;</span>
                     <span class="flex items-center gap-1">
                       <NuxtImg
                         :src="article.mediaOutlet.logo"
                         :alt="article.mediaOutlet.name"
-                        class="inline-block h-3.5 w-auto"
+                        height="16"
+                        fit="inside"
+                        class="inline-block max-h-3.5 w-auto object-contain"
                         loading="lazy"
                       />
                       {{ article.mediaOutlet.name }}
                     </span>
+                  </template>
+                  <template
+                    v-else-if="
+                      article.mediaOutlet &&
+                      type === 'media_appearance' &&
+                      !article.mediaOutlet.logo
+                    "
+                  >
+                    <span aria-hidden="true">&middot;</span>
+                    <span>{{ article.mediaOutlet.name }}</span>
                   </template>
                 </div>
 
