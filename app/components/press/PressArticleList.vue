@@ -243,11 +243,13 @@ watch(page, () => {
                   </template>
                 </div>
 
-                <h2
-                  class="group-hover:text-primary line-clamp-2 leading-snug font-semibold transition-colors"
-                >
-                  {{ article.title }}
-                </h2>
+                <UTooltip :text="article.title">
+                  <h2
+                    class="group-hover:text-primary line-clamp-2 leading-snug font-semibold transition-colors"
+                  >
+                    {{ article.title }}
+                  </h2>
+                </UTooltip>
 
                 <p v-if="article.description" class="text-muted mt-1.5 line-clamp-2 text-sm">
                   {{ article.description }}

@@ -7,19 +7,25 @@ import { logAdminCollectionCapHit } from '../../../utils/adminCollectionLimit'
 
 export default defineEventHandler(async (event) => {
   const { limit, offset } = validateQuery(event, adminCollectionQuerySchema)
+  const resolvedLimit = limit ?? 500
+  const resolvedOffset = offset ?? 0
 
   const [items, countResult] = await Promise.all([
     db.query.equalityDocuments.findMany({
       orderBy: asc(equalityDocuments.order),
       with: { translations: true },
-      limit,
-      offset,
+      limit: resolvedLimit,
+      offset: resolvedOffset,
     }),
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(equalityDocuments),
   ])
 
   const total = countResult[0]?.count ?? 0
-  logAdminCollectionCapHit(event, 'equality', { limit, offset, total })
+  logAdminCollectionCapHit(event, 'equality', {
+    limit: resolvedLimit,
+    offset: resolvedOffset,
+    total,
+  })
 
   return {
     data: items,

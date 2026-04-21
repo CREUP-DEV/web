@@ -48,6 +48,7 @@ function toNewsletterListItem(raw: Record<string, unknown>): Newsletter {
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const {
@@ -260,6 +261,7 @@ async function handleSubmit() {
       if (response.data) {
         replaceItem(toNewsletterListItem(response.data))
       }
+      await refreshAllClientAsyncData()
       toast.add({ title: 'Newsletter actualizada', color: 'success' })
     } else {
       const response = await $fetch<{
@@ -288,6 +290,7 @@ async function handleSubmit() {
       if (emailQueued) {
         await refresh()
       }
+      await refreshAllClientAsyncData()
       const msg = emailQueued ? 'Newsletter creada y envío iniciado' : 'Newsletter creada'
       toast.add({ title: msg, color: 'success' })
     }
@@ -380,6 +383,7 @@ async function handleDelete() {
       total: Math.max(0, (meta?.total ?? 0) - 1),
       maxDeliveryAttempts: meta?.maxDeliveryAttempts ?? 3,
     }))
+    await refreshAllClientAsyncData()
     closeDeleteModal()
     toast.add({ title: 'Newsletter eliminada', color: 'success' })
   } catch (error) {

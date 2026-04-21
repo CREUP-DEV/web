@@ -42,7 +42,7 @@ const isDetailSize = computed(() => props.variant === 'detail' || props.standalo
 const showOutletLink = computed(() => Boolean(props.outletWebsite) && !isCard.value)
 
 const rootClass = computed(() => {
-  const shellBase = 'border-creup-dark-gray-200/80 bg-creup-beige-100 border shadow-sm'
+  const shellBase = 'border-creup-dark-gray-200/80 bg-white border shadow-sm'
 
   if (props.standalone) {
     return `${shellBase} inline-flex max-w-full items-center justify-center rounded-xl px-5 py-4 sm:px-6 sm:py-5`

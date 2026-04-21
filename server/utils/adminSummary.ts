@@ -531,6 +531,7 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
     latestNewsletter: newsletterUpdatedAt
       ? {
           monthKey: toStringOrNull(row.newsletter_month_key) ?? '',
+          active: toBooleanOrNull(row.newsletter_active) ?? false,
           publicVisible: toBooleanOrNull(row.newsletter_public_visible) ?? false,
           sentAt: toDateOrNull(row.newsletter_sent_at),
           lastDeliveryWorkerToken: toStringOrNull(row.newsletter_last_delivery_worker_token),

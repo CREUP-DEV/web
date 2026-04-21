@@ -7,7 +7,7 @@ import {
   type PublicApiErrorMessageKey,
 } from './apiErrorMessages'
 import {
-  getRequiredExternalApiBaseUrl,
+  getRequiredExternalAssetBaseUrl,
   getRequiredExternalAssetProxyAllowedOrigins,
   getRequiredExternalAssetProxyImageMaxBytes,
   getRequiredExternalAssetProxyPdfMaxBytes,
@@ -58,8 +58,8 @@ const getPublicMessage = (key: PublicApiErrorMessageKey, event?: H3Event) =>
 
 interface CachedExternalAssetProxyConfig {
   allowedOrigins: Set<string>
-  baseOrigin: string | null
-  baseUrl: string
+  assetBaseOrigin: string | null
+  assetBaseUrl: string
 }
 
 interface CachedExternalAssetProxyConfigState {
@@ -103,11 +103,11 @@ const getExternalAssetProxyConfig = (event?: H3Event) => {
     return cachedExternalAssetProxyConfig.value
   }
 
-  const baseUrl = getRequiredExternalApiBaseUrl(
+  const assetBaseUrl = getRequiredExternalAssetBaseUrl(
     event,
     getPublicMessage('assetProxyNotConfigured', event)
   )
-  const baseOrigin = normalizeOrigin(baseUrl)
+  const assetBaseOrigin = normalizeOrigin(assetBaseUrl)
   const allowedOrigins = parseAllowedOrigins(
     getRequiredExternalAssetProxyAllowedOrigins(
       event,
@@ -115,14 +115,14 @@ const getExternalAssetProxyConfig = (event?: H3Event) => {
     )
   )
 
-  if (baseOrigin) {
-    allowedOrigins.add(baseOrigin)
+  if (assetBaseOrigin) {
+    allowedOrigins.add(assetBaseOrigin)
   }
 
   const config = {
     allowedOrigins,
-    baseOrigin,
-    baseUrl,
+    assetBaseOrigin,
+    assetBaseUrl,
   }
 
   cachedExternalAssetProxyConfig = {
@@ -167,7 +167,7 @@ const getDefaultAssetPathBase = (type: ExternalAssetType) =>
   type === 'image' ? '/imagenes/externas' : '/documentos/externos'
 
 const getConfiguredBaseUrl = (event?: H3Event) => {
-  return getExternalAssetProxyConfig(event).baseUrl
+  return getExternalAssetProxyConfig(event).assetBaseUrl
 }
 
 const buildAssetPath = (pathBase: string, pathname: string, search = '') => {
@@ -191,13 +191,14 @@ const buildSemanticAssetPath = (
 ) => {
   const configuredBaseUrl = getConfiguredBaseUrl(options.event)
   const pathBase = options.publicPathBase || getDefaultAssetPathBase(type)
+  const { assetBaseOrigin } = getExternalAssetProxyConfig(options.event)
 
   if (isAbsoluteHttpUrl(source)) {
     const sourceUrl = new URL(source)
     sourceUrl.hash = ''
     const pathParts = { pathname: sourceUrl.pathname, search: sourceUrl.search }
 
-    if (getExternalAssetProxyConfig(options.event).baseOrigin === sourceUrl.origin) {
+    if (assetBaseOrigin === sourceUrl.origin) {
       return buildAssetPath(pathBase, pathParts.pathname, pathParts.search)
     }
 
@@ -383,7 +384,9 @@ const buildOutgoingHeaders = (
   headers.set('x-content-type-options', 'nosniff')
 
   const contentType = upstreamResponse.headers.get('content-type')
-  if (contentType) {
+  if (type === 'pdf') {
+    headers.set('content-type', 'application/pdf')
+  } else if (contentType) {
     headers.set('content-type', contentType)
   }
 
@@ -415,7 +418,7 @@ const buildOutgoingHeaders = (
   }
 
   if (type === 'pdf') {
-    headers.set('content-disposition', 'attachment')
+    headers.set('content-disposition', 'inline')
   } else {
     const contentDisposition = upstreamResponse.headers.get('content-disposition')
     if (contentDisposition) {
@@ -441,7 +444,7 @@ export const proxyExternalAssetBySource = async (
   }
 
   const normalizedSource = source.trim()
-  const { allowedOrigins, baseUrl: configuredBaseUrl } = getExternalAssetProxyConfig(event)
+  const { allowedOrigins, assetBaseUrl: configuredBaseUrl } = getExternalAssetProxyConfig(event)
 
   if (allowedOrigins.size === 0) {
     throw createError({
@@ -663,23 +666,27 @@ export const toExternalAssetProxyUrl = (
     return normalized
   }
 
-  const assetPath = buildSemanticAssetPath(normalized, type, options)
-  if (!assetPath) {
-    return null
-  }
-
-  if (options.forceProxyRelative) {
-    return assetPath
-  }
-
-  if (type === 'image') {
-    const siteOrigin = getPublicSiteOrigin()
-    if (siteOrigin) {
-      return new URL(assetPath, siteOrigin).toString()
+  try {
+    const assetPath = buildSemanticAssetPath(normalized, type, options)
+    if (!assetPath) {
+      return normalized
     }
-  }
 
-  return assetPath
+    if (options.forceProxyRelative) {
+      return assetPath
+    }
+
+    if (type === 'image') {
+      const siteOrigin = getPublicSiteOrigin()
+      if (siteOrigin) {
+        return new URL(assetPath, siteOrigin).toString()
+      }
+    }
+
+    return assetPath
+  } catch {
+    return normalized
+  }
 }
 
 export const toExternalImageProxyUrl = (

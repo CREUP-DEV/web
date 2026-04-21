@@ -47,6 +47,7 @@ const featuredNewsItems = computed(() => {
     to: localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`),
     alt: article.alt || undefined,
     description: article.description || undefined,
+    tags: article.tags,
     mediaOutletName: article.mediaOutlet?.name,
     mediaOutletLogo: article.mediaOutlet?.logo,
   }))

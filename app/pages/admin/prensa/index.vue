@@ -20,6 +20,7 @@ definePageMeta({
 const toast = useToast()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const { getDefaultTranslationValue } = useLocales()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 
 const currentType = ref<AdminPressArticleType | null>(null)
 const searchQuery = ref('')
@@ -79,6 +80,7 @@ const handleDelete = async () => {
     await $fetch(`/api/admin/press/${itemToDelete.value.id}`, { method: 'DELETE' })
     removeItem(itemToDelete.value.id)
     decrementTotal()
+    await refreshAllClientAsyncData()
     showDeleteModal.value = false
     itemToDelete.value = null
     toast.add({ title: 'Artículo eliminado', color: 'success' })

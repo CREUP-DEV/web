@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import type { PressArticle } from '@/composables/usePress'
-import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
-
 type NewsItem = {
   title: string
   image: string | null
   to: string
   alt?: string
   description?: string
+  tags: Array<{
+    slug: string
+    name: string
+  }>
   mediaOutletName?: string
   mediaOutletLogo?: string
 }
@@ -24,65 +25,17 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-
-const hasProvidedItems = computed(
-  () => Array.isArray(props.items) && props.items.length > 0 && selectedTag.value === null
-)
 const loadedImageKeys = reactive<Record<string, boolean>>({})
-
-const selectedTag = ref<string | null>(null)
-const shouldFetchPress = computed(() => !hasProvidedItems.value)
-const {
-  data: pressData,
-  pending: pressPending,
-  error: pressError,
-  refresh: refreshPress,
-} = usePress(null, selectedTag, 4, undefined, {
-  enabled: shouldFetchPress,
-})
-
-const displayItems = computed<NewsItem[]>(() => {
-  if (hasProvidedItems.value && props.items && props.items.length > 0) {
-    return props.items
-  }
-  return (
-    pressData.value?.items.map((a: PressArticle) => ({
-      title: a.title,
-      image: a.image,
-      to: `${getPressArticlePublicListPath(a.type)}/${a.slug}`,
-      alt: a.alt || undefined,
-      description: a.description || undefined,
-      mediaOutletName: a.mediaOutlet?.name,
-      mediaOutletLogo: a.mediaOutlet?.logo,
-    })) ?? []
-  )
-})
+const displayItems = computed<NewsItem[]>(() => props.items ?? [])
 
 const isLoading = computed(() => {
-  if (props.pending) return true
-  if (hasProvidedItems.value) return false
-  return pressPending.value || pressData.value == null
+  return props.pending === true
 })
 
-const hasLoadError = computed(() => {
-  if (props.error) {
-    return true
-  }
-
-  if (hasProvidedItems.value) {
-    return false
-  }
-
-  return Boolean(pressError.value)
-})
+const hasLoadError = computed(() => Boolean(props.error))
 
 const retryLoad = async () => {
-  if (props.error) {
-    emit('retry')
-    return
-  }
-
-  await refreshPress()
+  emit('retry')
 }
 
 const getLocalizedItemLink = (to: string) => (to.startsWith('/') ? localePath(to) : to)
@@ -113,9 +66,8 @@ const markItemImageAsLoaded = (item: NewsItem) => {
 
 const isItemImageLoaded = (item: NewsItem) => loadedImageKeys[getItemKey(item)] === true
 
-const onTagSelect = (tagSlug: string | null) => {
-  selectedTag.value = tagSlug
-}
+const getVisibleTags = (item: NewsItem) => item.tags.slice(0, 2)
+const getHiddenTagCount = (item: NewsItem) => Math.max(0, item.tags.length - 2)
 </script>
 
 <template>
@@ -132,8 +84,6 @@ const onTagSelect = (tagSlug: string | null) => {
           {{ t('home.latestNews') }}
         </h2>
       </header>
-
-      <HomeTagSelector :selected-slug="selectedTag" class="mb-4" @select="onTagSelect" />
 
       <div class="flex-1" aria-live="polite">
         <div
@@ -181,7 +131,10 @@ const onTagSelect = (tagSlug: string | null) => {
                   width="640"
                   height="360"
                   class="motion-link-media size-full object-cover"
-                  loading="lazy"
+                  sizes="(max-width: 768px) calc(100vw - 2.5rem), (max-width: 1280px) 42vw, 640px"
+                  :loading="idx === 0 ? 'eager' : 'lazy'"
+                  :fetchpriority="idx === 0 ? 'high' : undefined"
+                  quality="72"
                   @load="markItemImageAsLoaded(item)"
                 />
                 <div
@@ -205,6 +158,22 @@ const onTagSelect = (tagSlug: string | null) => {
                     {{ item.title }}
                   </h3>
                 </UTooltip>
+
+                <div v-if="item.tags.length" class="mt-2 flex flex-wrap gap-1.5">
+                  <span
+                    v-for="tag in getVisibleTags(item)"
+                    :key="tag.slug"
+                    class="bg-secondary/10 text-secondary rounded-full px-2 py-0.5 text-xs"
+                  >
+                    {{ tag.name }}
+                  </span>
+                  <span
+                    v-if="getHiddenTagCount(item) > 0"
+                    class="bg-secondary/10 text-secondary rounded-full px-2 py-0.5 text-xs"
+                  >
+                    +{{ getHiddenTagCount(item) }}
+                  </span>
+                </div>
               </div>
             </NuxtLink>
           </li>

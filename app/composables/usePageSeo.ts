@@ -48,6 +48,8 @@ const resolveLiteralValue = <T extends string>(value: SeoValue<T> | undefined): 
 const resolveTranslatedValue = (value: SeoValue, t: ReturnType<typeof useI18n>['t']) =>
   typeof value === 'function' ? (value() ?? undefined) : t(value)
 
+const DEFAULT_OG_IMAGE_PATH = '/og/default.webp'
+
 export function usePageSeo(
   titleValue: SeoValue,
   descriptionValue: SeoValue,
@@ -69,24 +71,12 @@ export function usePageSeo(
   })
 
   const ogImage = computed(() => {
-    const imagePath = explicitOgImage.value
+    const imagePath = explicitOgImage.value ?? DEFAULT_OG_IMAGE_PATH
     return toAbsoluteUrl(imagePath, siteUrl.value) ?? undefined
   })
 
   const ogType = () => resolveLiteralValue(options.ogType) ?? 'website'
   const languageTag = computed(() => getLanguageTag(locale.value))
-
-  if (!explicitOgImage.value) {
-    defineOgImage('NuxtSeo.satori', {
-      title,
-      description,
-      brandTagline: () => t('ogImage.brandTagline'),
-      sectionLabel: () => t('ogImage.sectionLabel'),
-      statsEyebrow: () => t('ogImage.statsEyebrow'),
-      statsHeadline: () => t('ogImage.statsHeadline'),
-      supportText: () => t('ogImage.supportText'),
-    })
-  }
 
   useSeoMeta({
     title,

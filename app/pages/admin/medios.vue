@@ -8,6 +8,7 @@ definePageMeta({
 })
 
 const toast = useToast()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
 interface MediaOutlet {
@@ -131,6 +132,7 @@ const {
 const saveOrder = async () => {
   try {
     await persistOrder()
+    await refreshAllClientAsyncData()
     toast.add({ title: 'Orden guardado', color: 'success' })
   } catch (e) {
     toast.add({ title: getApiErrorMessage(e, 'No se pudo guardar el orden'), color: 'error' })
@@ -164,6 +166,7 @@ const handleSubmit = async () => {
         }
       )
       replaceItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({ title: 'Medio actualizado', color: 'success' })
     } else {
       const response = await $fetch<{ data: MediaOutlet }>('/api/admin/media', {
@@ -171,6 +174,7 @@ const handleSubmit = async () => {
         body: payload,
       })
       replaceItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({ title: 'Medio creado', color: 'success' })
     }
     closeModal()
@@ -188,6 +192,7 @@ const handleDelete = async () => {
   try {
     await $fetch(`/api/admin/media/${itemToDelete.value.id}`, { method: 'DELETE' })
     removeItem(itemToDelete.value.id)
+    await refreshAllClientAsyncData()
     closeDeleteModal()
     toast.add({ title: 'Medio eliminado', color: 'success' })
   } catch (e) {

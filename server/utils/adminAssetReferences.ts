@@ -55,5 +55,5 @@ export async function hasAdminStoredFileReference(storagePath: string): Promise<
       unionParts[0]!
     )
   const result = await db.execute<{ found: boolean }>(sql`SELECT EXISTS (${unionAll}) AS found`)
-  return Boolean(result[0]?.found)
+  return Boolean(result.rows[0]?.found)
 }

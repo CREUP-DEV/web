@@ -8,6 +8,7 @@ definePageMeta({
 })
 
 const toast = useToast()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
   getLocaleFlag,
@@ -134,6 +135,7 @@ const {
 const saveOrder = async () => {
   try {
     await persistOrder()
+    await refreshAllClientAsyncData()
     toast.add({
       title: 'Orden guardado correctamente',
       color: 'success',
@@ -170,6 +172,7 @@ const handleSubmit = async () => {
         },
       })
       replaceItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({
         title: 'Etiqueta actualizada',
         color: 'success',
@@ -180,6 +183,7 @@ const handleSubmit = async () => {
         body: payload,
       })
       replaceItem(response.data)
+      await refreshAllClientAsyncData()
       toast.add({
         title: 'Etiqueta creada',
         color: 'success',
@@ -211,6 +215,7 @@ const handleDelete = async () => {
   try {
     await $fetch(`/api/admin/tags/${itemToDelete.value.id}`, { method: 'DELETE' })
     removeItem(itemToDelete.value.id)
+    await refreshAllClientAsyncData()
     closeDeleteModal()
     toast.add({
       title: 'Etiqueta eliminada',

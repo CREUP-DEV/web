@@ -51,3 +51,6 @@ public/inicio/**/*.svg
 public/**/_tmp/**
 public/marca/*
 !public/marca/manifest.json
+
+# Generated build artifacts
+ops/seed.mjs

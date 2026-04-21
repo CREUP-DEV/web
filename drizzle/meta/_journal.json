@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1776286994342,
-      "tag": "0000_bitter_mockingbird",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1776292131382,
-      "tag": "0001_greedy_mole_man",
+      "when": 1776786391971,
+      "tag": "0000_sad_naoko",
       "breakpoints": true
     }
   ]

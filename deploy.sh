@@ -24,13 +24,27 @@ load_env_file() {
 }
 
 build_and_push_image() {
+  local latest_image="${IMAGE_NAME}:latest"
+
   if docker buildx version >/dev/null 2>&1; then
     docker buildx build \
       --platform "$DOCKER_PLATFORM" \
       --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
       -t "$IMAGE" \
+      -t "$latest_image" \
       --push \
       .
+
+    if [ "${BUILD_DEBUG:-false}" = "true" ]; then
+      docker buildx build \
+        --target runner-debug \
+        --platform "$DOCKER_PLATFORM" \
+        --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+        -t "${IMAGE}-debug" \
+        -t "${IMAGE_NAME}:latest-debug" \
+        --push \
+        .
+    fi
     return
   fi
 
@@ -38,33 +52,61 @@ build_and_push_image() {
     --platform "$DOCKER_PLATFORM" \
     --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
     -t "$IMAGE" \
+    -t "$latest_image" \
     .
   docker push "$IMAGE"
+  docker push "$latest_image"
+
+  if [ "${BUILD_DEBUG:-false}" = "true" ]; then
+    docker build \
+      --target runner-debug \
+      --platform "$DOCKER_PLATFORM" \
+      --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+      -t "${IMAGE}-debug" \
+      -t "${IMAGE_NAME}:latest-debug" \
+      .
+    docker push "${IMAGE}-debug"
+    docker push "${IMAGE_NAME}:latest-debug"
+  fi
+}
+
+sync_public_uploads() {
+  rsync -avz --mkpath public/ "$VPS_HOST:${REMOTE_DIR}/data/public-uploads/"
+}
+
+build_seed() {
+  pnpm exec esbuild drizzle/seed.ts \
+    --bundle \
+    --platform=node \
+    --format=esm \
+    --outfile=ops/seed.mjs \
+    --packages=external
 }
 
 remote_compose_up() {
-  ssh "$VPS_HOST" \
-    IMAGE="$IMAGE" \
-    APPLY_MIGRATIONS_ON_DEPLOY="$APPLY_MIGRATIONS_ON_DEPLOY" \
-    REMOTE_DIR="$REMOTE_DIR" \
-    'bash -se' <<'EOF'
+  ssh "$VPS_HOST" 'bash -se' <<EOF
 set -euo pipefail
 
-cd "$REMOTE_DIR"
+cd "${COMPOSE_DIR}"
 
-export IMAGE="$IMAGE"
+export IMAGE="${IMAGE}"
 
 echo "== Pull images =="
 docker compose pull
 
-if [ "$APPLY_MIGRATIONS_ON_DEPLOY" = "true" ]; then
-  if docker compose config --services | grep -qx 'postgres'; then
+if [ "${APPLY_MIGRATIONS_ON_DEPLOY}" = "true" ]; then
+  if docker compose config --services | grep -qx "${COMPOSE_POSTGRES_SERVICE}"; then
     echo "== Ensure postgres is running =="
-    docker compose up -d postgres
+    docker compose up -d "${COMPOSE_POSTGRES_SERVICE}"
   fi
 
   echo "== Apply database migrations =="
-  docker compose run --rm app /app/ops/migrate.mjs
+  docker compose run -T --rm "${COMPOSE_APP_SERVICE}" /app/ops/migrate.mjs </dev/null
+fi
+
+if [ "${SEED_ON_DEPLOY}" = "true" ]; then
+  echo "== Seed database =="
+  docker compose run -T --rm -e ALLOW_PRODUCTION_SEED=true "${COMPOSE_APP_SERVICE}" /app/ops/seed.mjs --confirm </dev/null
 fi
 
 echo "== Recreate containers =="
@@ -74,6 +116,16 @@ EOF
 
 load_env_file ".env"
 
+SEED_ON_DEPLOY=false
+BUILD_DEBUG=false
+for arg in "$@"; do
+  case "$arg" in
+    --seed) SEED_ON_DEPLOY=true ;;
+    --debug) BUILD_DEBUG=true ;;
+    *) printf 'ERROR: unknown argument: %s\n' "$arg" >&2; exit 1 ;;
+  esac
+done
+
 : "${VPS_HOST:?ERROR: VPS_HOST is required}"
 : "${REMOTE_DIR:?ERROR: REMOTE_DIR is required}"
 : "${NUXT_SITE_URL:?ERROR: NUXT_SITE_URL is required}"
@@ -81,20 +133,40 @@ load_env_file ".env"
 require_command docker
 require_command ssh
 require_command git
+if [ "$SEED_ON_DEPLOY" = "true" ]; then
+  require_command rsync
+  require_command pnpm
+fi
 
-IMAGE_NAME="${IMAGE_NAME:-ghcr.io/CREUP-DEV/web}"
+IMAGE_NAME="${IMAGE_NAME:-ghcr.io/creup-dev/web}"
 IMAGE_TAG="${IMAGE_TAG:-$(git rev-parse --short HEAD)}"
 IMAGE="${IMAGE:-${IMAGE_NAME}:${IMAGE_TAG}}"
 DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64}"
 APPLY_MIGRATIONS_ON_DEPLOY="${APPLY_MIGRATIONS_ON_DEPLOY:-true}"
+COMPOSE_DIR="${COMPOSE_DIR:-$REMOTE_DIR}"
+COMPOSE_APP_SERVICE="${COMPOSE_APP_SERVICE:-app}"
+COMPOSE_POSTGRES_SERVICE="${COMPOSE_POSTGRES_SERVICE:-postgres}"
 
 if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
   log "GHCR login"
   echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 fi
 
+if [ "$SEED_ON_DEPLOY" = "true" ]; then
+  log "Build seed script"
+  build_seed
+fi
+
 log "Build and push: $IMAGE"
 build_and_push_image
+
+if [ "$SEED_ON_DEPLOY" = "true" ]; then
+  log "Sync public uploads to VPS"
+  sync_public_uploads
+
+  log "Copy seed script to VPS"
+  rsync -az --mkpath ops/seed.mjs "$VPS_HOST:${REMOTE_DIR}/ops/seed.mjs"
+fi
 
 log "Deploy to VPS with docker compose"
 remote_compose_up

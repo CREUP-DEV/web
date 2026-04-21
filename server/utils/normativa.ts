@@ -1,8 +1,7 @@
 import type { H3Event } from 'h3'
 import { fetchExternalDocumentCollection } from './externalDocumentCollection'
-import { toExternalPdfProxyUrl } from './externalAssetProxy'
+import { toPolicyDocumentPublicPdfPathAsync } from './policyDocumentDownloads'
 import { externalNormativaResponseSchema } from './validation'
-import { EXTERNAL_DOCUMENT_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 
 const NORMATIVA_CACHE_VERSION = 1
 
@@ -34,27 +33,32 @@ export async function fetchNormativa(
     fetchLogKey: 'external.normativa.fetch',
     invalidPayloadLogKey: 'external.normativa.invalid-payload',
     responseSchema: externalNormativaResponseSchema,
-    transform: (parsedPayload) => {
-      const categories: NormativaCategory[] = parsedPayload.data.map((cat) => ({
-        category: cat.category,
-        documents: [...cat.documents]
-          .sort((a, b) => a.order - b.order)
-          .map((doc) => ({
-            order: doc.order,
-            name: doc.name,
-            date: doc.date,
-            assembly: doc.assembly ?? null,
-            file: doc.file
-              ? {
-                  name: doc.file.name ?? null,
-                  url: toExternalPdfProxyUrl(doc.file.url, {
-                    forceProxyRelative: true,
-                    publicPathBase: EXTERNAL_DOCUMENT_PUBLIC_BASE,
-                  }),
-                }
-              : null,
-          })),
-      }))
+    transform: async (parsedPayload) => {
+      const categories: NormativaCategory[] = await Promise.all(
+        parsedPayload.data.map(async (cat) => ({
+          category: cat.category,
+          documents: await Promise.all(
+            [...cat.documents]
+              .sort((a, b) => a.order - b.order)
+              .map(async (doc) => ({
+                order: doc.order,
+                name: doc.name,
+                date: doc.date,
+                assembly: doc.assembly ?? null,
+                file: doc.file
+                  ? {
+                      name: doc.file.name ?? null,
+                      url: await toPolicyDocumentPublicPdfPathAsync(
+                        event,
+                        '/api/normativa',
+                        doc.file.url ?? null
+                      ),
+                    }
+                  : null,
+              }))
+          ),
+        }))
+      )
 
       return {
         categories,

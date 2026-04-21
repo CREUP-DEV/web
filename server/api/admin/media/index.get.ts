@@ -7,18 +7,24 @@ import { logAdminCollectionCapHit } from '../../../utils/adminCollectionLimit'
 
 export default defineEventHandler(async (event) => {
   const { limit, offset } = validateQuery(event, adminCollectionQuerySchema)
+  const resolvedLimit = limit ?? 500
+  const resolvedOffset = offset ?? 0
 
   const [items, countResult] = await Promise.all([
     db.query.mediaOutlets.findMany({
       orderBy: [asc(mediaOutlets.order), asc(mediaOutlets.id)],
-      limit,
-      offset,
+      limit: resolvedLimit,
+      offset: resolvedOffset,
     }),
     db.select({ count: sql<number>`count(*)`.mapWith(Number) }).from(mediaOutlets),
   ])
 
   const total = countResult[0]?.count ?? 0
-  logAdminCollectionCapHit(event, 'media', { limit, offset, total })
+  logAdminCollectionCapHit(event, 'media', {
+    limit: resolvedLimit,
+    offset: resolvedOffset,
+    total,
+  })
 
   return {
     data: items,

@@ -9,6 +9,7 @@ import { externalAssetPublicPathParamSchema } from './validation/external'
 
 const PUBLIC_ASSET_CACHE_CONTROL =
   'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
+const VERSIONED_PUBLIC_ASSET_CACHE_CONTROL = 'public, max-age=31536000, immutable'
 
 const contentTypeByExtension: Record<string, string> = {
   '.avif': 'image/avif',
@@ -48,7 +49,7 @@ function resolvePublicAssetAbsolutePath(publicPath: string) {
   return absolutePath
 }
 
-export function throwPublicAssetNotFound() {
+export function throwPublicAssetNotFound(): never {
   throw createError({
     statusCode: 404,
     message: 'Archivo no encontrado',
@@ -58,15 +59,20 @@ export function throwPublicAssetNotFound() {
 function setPublicAssetHeaders(event: H3Event, publicPath: string, fileSize: number, mtime: Date) {
   const extension = extname(publicPath).toLowerCase()
   const contentType = contentTypeByExtension[extension] ?? 'application/octet-stream'
+  const hasVersionParam = getRequestURL(event).searchParams.has('v')
 
-  setHeader(event, 'cache-control', PUBLIC_ASSET_CACHE_CONTROL)
+  setHeader(
+    event,
+    'cache-control',
+    hasVersionParam ? VERSIONED_PUBLIC_ASSET_CACHE_CONTROL : PUBLIC_ASSET_CACHE_CONTROL
+  )
   setHeader(event, 'content-length', fileSize)
   setHeader(event, 'content-type', contentType)
   setHeader(event, 'last-modified', mtime.toUTCString())
   setHeader(event, 'x-content-type-options', 'nosniff')
 
   if (extension === '.pdf') {
-    setHeader(event, 'content-disposition', 'attachment')
+    setHeader(event, 'content-disposition', 'inline')
   }
 }
 
@@ -145,5 +151,7 @@ export async function tryServePublicAssetByPathBase(event: H3Event, publicPathBa
     throwPublicAssetNotFound()
   }
 
-  return tryServePublicAssetByPath(event, `${normalizedBase}/${parsedPath.data.path}`)
+  const publicPath = parsedPath.data.path
+
+  return tryServePublicAssetByPath(event, `${normalizedBase}/${publicPath}`)
 }

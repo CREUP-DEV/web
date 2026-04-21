@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getPublicFinancialReportsAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
+
 interface FinancialReport {
   id: string
   title: string
@@ -11,7 +13,7 @@ interface FinancialReportsResponse {
   total: number
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { formatLongDate } = useDatePresets()
 const localeApiHeaders = useLocaleApiHeaders()
@@ -41,6 +43,7 @@ const offset = computed(() => (page.value - 1) * LIMIT)
 const { data, pending, error, refresh } = await useFetch<FinancialReportsResponse>(
   '/api/financial-reports',
   {
+    key: computed(() => getPublicFinancialReportsAsyncDataKey(locale.value, offset.value)),
     headers: localeApiHeaders,
     query: computed(() => ({ limit: LIMIT, offset: offset.value })),
   }

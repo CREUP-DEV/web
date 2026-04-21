@@ -14,8 +14,18 @@ const props = defineProps<{
   to?: RouteLocationRaw
 }>()
 
-const lightLogo = computed(() => props.logoLight ?? props.logoDark ?? '')
-const darkLogo = computed(() => props.logoDark ?? props.logoLight ?? '')
+const colorMode = useColorMode()
+const resolvedLogo = computed(() => {
+  if (colorMode.value === 'dark') {
+    return props.logoDark ?? props.logoLight ?? ''
+  }
+
+  return props.logoLight ?? props.logoDark ?? ''
+})
+const resolvedLogoFormat = computed(() => {
+  const normalizedLogo = resolvedLogo.value.split('?')[0]?.toLowerCase() ?? ''
+  return normalizedLogo.endsWith('.svg') ? undefined : 'webp'
+})
 
 const emit = defineEmits<{
   (e: 'click'): void
@@ -33,24 +43,30 @@ const emit = defineEmits<{
   >
     <div class="flex items-start gap-4">
       <div
-        class="ring-primary/20 group-hover:ring-primary/40 bg-background dark:bg-elevated flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl ring-2 transition-all group-hover:shadow-sm"
+        class="ring-primary/20 group-hover:ring-primary/40 bg-elevated flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl ring-2 transition-all group-hover:shadow-sm"
       >
-        <UColorModeImage
-          v-if="lightLogo || darkLogo"
-          :light="lightLogo"
-          :dark="darkLogo"
+        <NuxtImg
+          v-if="resolvedLogo"
+          :src="resolvedLogo"
           :alt="imageAlt"
-          class="size-full object-contain p-2"
+          width="80"
+          height="80"
+          fit="inside"
+          sizes="80px"
+          :format="resolvedLogoFormat"
+          class="block size-full object-contain object-center p-1.5"
+          loading="lazy"
+          decoding="async"
         />
         <UIcon v-else name="i-tabler-building" class="text-muted size-10" />
       </div>
 
       <div class="min-w-0 flex-1">
-        <h3 class="text-base leading-tight font-semibold sm:text-lg">{{ title }}</h3>
+        <p class="text-base leading-tight font-semibold sm:text-lg">{{ title }}</p>
         <p v-if="subtitle" class="text-muted mt-2 text-sm leading-snug">{{ subtitle }}</p>
         <div
           v-if="initials || communityLabel"
-          class="mt-3 flex flex-wrap items-center justify-center gap-2"
+          class="mt-3 flex flex-wrap items-center justify-start gap-2"
         >
           <UBadge
             v-if="initials"

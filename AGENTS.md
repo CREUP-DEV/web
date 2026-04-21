@@ -20,6 +20,7 @@ Current admin scope: access control, home carousel, "Qué es CREUP" hero, equali
 - **UI:** Nuxt UI v4 + Tailwind CSS
 - **i18n:** `@nuxtjs/i18n` (JSON message files) + `@nuxtjs/seo`
 - **Accessibility:** `@nuxt/a11y`
+- **Security headers:** `nuxt-security` (CSP with nonce, HSTS, XFO, referrer policy, permissions policy; rate limiter disabled for `/_ipx/**`)
 - **Database:** PostgreSQL + Drizzle ORM
 - **Cache / Rate limiting:** Redis
 - **Auth (admin):** `better-auth` (Google OAuth), backed by Drizzle
@@ -78,8 +79,7 @@ drizzle/            Migrations and seed scripts
 ### Database-localized Content
 
 - Localized DB content uses translation tables (`*Translations` with `locale` column).
-- Translation for default locale (`es`) is required.
-- Public reads must fall back to Spanish when requested locale is missing.
+- Translation for default locale (`es`) is required; public reads fall back to Spanish when the requested locale is missing.
 - Use shared locale helpers — never scatter raw `'es'` string checks.
 
 ---
@@ -114,14 +114,14 @@ const { locale, fallbackLocale } = getRequestLocaleContext(event)
 
 ### Public API Error Messages (`server/utils/apiErrorMessages.ts`)
 
-All locale-aware public error messages live here. **Do not inline Spanish/English error strings in public route handlers.** Add a key and use:
+All locale-aware public error messages live here. Never inline Spanish/English strings in public route handlers — add a key and use:
 
 ```typescript
 // Returns the right-locale message for the request:
 getPublicApiErrorMessage(event, 'articleNotFound')
 ```
 
-Admin-facing error messages may be hardcoded Spanish strings (they are not locale-switched).
+Admin-facing error messages may be hardcoded Spanish strings (not locale-switched).
 
 ### Client-side API Error Messages (`shared/utils/apiError.ts`)
 
@@ -145,7 +145,7 @@ await enforceRateLimit(event, {
 })
 ```
 
-**Note:** Redis is required. App assumes `NUXT_REDIS_URL` points to a shared Redis instance so limits survive restarts and apply across all Nitro instances.
+Redis is required. Limits survive restarts and apply across all Nitro instances via `NUXT_REDIS_URL`.
 
 ### Validation (`server/utils/validation/`)
 
@@ -223,7 +223,7 @@ SVGs uploaded by admins go through a two-stage sanitizer:
 1. DOMPurify with `USE_PROFILES: { svg: true }` + blocklist (`script`, `foreignobject`, `iframe`, etc.)
 2. Custom attribute scanner blocking external references in `href`, `src`, `style`, `fill`, `filter`.
 
-Max file size (5 MB) is enforced before sanitization runs. Do not bypass this for SVG inputs.
+Max file size (5 MB) is enforced before sanitization runs.
 
 ### External API Cache (`server/utils/externalApiCache.ts`)
 
@@ -253,11 +253,11 @@ Cache is shared through Redis and coordinates refreshes with Redis locks so stal
 
 `server/plugins/background-jobs.ts` initializes schedulers with retry (`max 5` attempts, exponential backoff from `1s` up to `30s`) and re-triggers initialization on worker `ready` events when startup timing races occur.
 
-Do not bypass the worker token system when triggering newsletter sends. Use `sendNewsletterById` or `claimNewsletterForSending`.
+Never bypass the worker token system — use `sendNewsletterById` or `claimNewsletterForSending`.
 
 ### Optimistic Locking (Admin Mutations)
 
-Press article updates include an `updatedAt` timestamp sent from the client. The server rejects with `409` if the DB row was modified by another admin since the client last fetched:
+Press article updates include an `updatedAt` timestamp sent from the client. The server rejects with `409` if the row was modified by another admin since the client last fetched:
 
 ```typescript
 if (data.updatedAt) {
@@ -272,7 +272,7 @@ if (data.updatedAt) {
 }
 ```
 
-Follow this pattern when adding optimistic locking to other resources. The `updatedAt` field in the DB schema is set automatically via `.$onUpdate(() => new Date())`.
+Follow this pattern for any resource that adds optimistic locking. `updatedAt` is set automatically in the DB schema via `.$onUpdate(() => new Date())`.
 
 ---
 
@@ -577,7 +577,7 @@ Use `toast.add(...)` from `useToast()` for all user feedback.
 
 ### Do Not Repeat Logic
 
-Before writing a new utility, check `server/utils/`, `shared/utils/`, and `app/composables/`. The codebase has helpers for: locale resolution, file upload, rich text sanitization, rate limiting, validation, error messages, admin collection state, form validation, file preview, and more.
+Before writing a new utility, check `server/utils/`, `shared/utils/`, and `app/composables/`. There are already helpers for locale resolution, file upload, rich text sanitization, rate limiting, validation, error messages, admin collection state, form validation, and more.
 
 ### Import Aliases
 
@@ -591,11 +591,11 @@ When you change code, review the related files that describe, constrain, or expo
 
 ### Abstract When It Has Real Reuse
 
-Extract to `server/utils/` when a handler exceeds ~50 lines of logic. Extract to a composable when the same stateful pattern appears in 2+ admin pages. Do not extract one-time code.
+Extract to `server/utils/` when a handler exceeds ~50 lines of logic. Extract to a composable when the same stateful pattern appears in 2+ pages. Don't extract one-time code.
 
 ### Validation at Boundaries
 
-Validate at HTTP boundary (request body, query, params, multipart files). Trust internal service calls and DB results after they've been through Drizzle + schema constraints. Do not add defensive re-validation inside utility functions that only receive already-validated data.
+Validate at the HTTP boundary (request body, query, params, multipart files). Trust internal service calls and DB results after Drizzle + schema constraints. Don't re-validate inside utilities that only receive already-validated data.
 
 ### Concurrency in Batches
 
@@ -607,6 +607,8 @@ For processing arrays of async tasks (email sends, file moves): use `Promise.all
 - All uploaded SVGs must go through the SVG sanitizer in `saveAdminImage`.
 - All public mutation endpoints need `enforceRateLimit`.
 - Never expose raw stack traces or DB errors in public API responses.
+- HTTP security headers (CSP with nonce, HSTS, XFO, referrer policy) are handled by `nuxt-security` in `nuxt.config.ts`. Do not add a separate CSP plugin or duplicate these headers in NGINX — the app already sends them.
+- `/_ipx/**` has `security.rateLimiter: false` in routeRules — do not remove this or IPX image routes will hit the global rate limit under normal page load.
 
 ---
 

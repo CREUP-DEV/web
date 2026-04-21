@@ -15,6 +15,7 @@ interface PressDossierItem {
 }
 
 const toast = useToast()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const {
@@ -151,6 +152,7 @@ const saveDossier = async () => {
 
     dossierData.value = { data: response.data }
     clearErrors()
+    await refreshAllClientAsyncData()
     toast.add({ title: 'Dossier guardado', color: 'success' })
   } catch (error) {
     toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el dossier'), color: 'error' })

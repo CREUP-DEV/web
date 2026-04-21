@@ -1,22 +1,19 @@
 import tailwindcss from '@tailwindcss/vite'
-import { getOptionalConfigUrl, requireConfigUrl } from './shared/utils/config'
+import type { NitroRouteConfig } from 'nitropack/types'
+import type { NuxtSecurityRouteRules } from 'nuxt-security'
+import { getOptionalConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
-import { getStaticContentSecurityPolicy } from './server/utils/csp'
 
 const isDev = process.env.NODE_ENV !== 'production'
 
-const siteUrl = requireConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL')
+const siteUrl =
+  getOptionalConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL') || 'http://localhost:3000'
 const siteHostname = new URL(siteUrl).hostname
 const canonicalSiteUrl = siteUrl
 const turnstileSiteKey = process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || ''
 const siteImageHostname = siteHostname
 const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
-const staticContentSecurityPolicy = isDev
-  ? null
-  : getStaticContentSecurityPolicy({
-      turnstileSiteKey,
-      umamiHost,
-    })
+const umamiOrigin = umamiHost ? new URL(umamiHost).origin : null
 const productionPublicSWRPagePaths = [
   '/conocenos/comites',
   '/conocenos/equipo',
@@ -41,7 +38,31 @@ const buildSWRRouteRules = (paths: readonly string[], ttlSeconds: number) =>
 
 const productionPublicSWRRouteRules = isDev
   ? {}
-  : buildSWRRouteRules(productionPublicSWRPagePaths, 60)
+  : buildSWRRouteRules(productionPublicSWRPagePaths, 3600)
+
+const routeRules = {
+  '/admin/**': {
+    headers: {
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
+    },
+  },
+  '/api/**': {
+    headers: {
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
+    },
+  },
+  '/_ipx/**': {
+    security: {
+      rateLimiter: false,
+    },
+  },
+  ...productionPublicSWRRouteRules,
+  '/_nuxt/**': {
+    headers: {
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    },
+  },
+} satisfies Record<string, NitroRouteConfig & { security?: NuxtSecurityRouteRules }>
 
 // Always use the internal Nitro server address for IPX to fetch source images.
 // Handles both static public-dir files and dynamic server routes (external API proxies)
@@ -117,6 +138,7 @@ export default defineNuxtConfig({
     '@/composables': './app/composables',
   },
   modules: [
+    'nuxt-security',
     '@nuxt/ui',
     '@nuxt/fonts',
     '@nuxt/eslint',
@@ -129,6 +151,50 @@ export default defineNuxtConfig({
     'nuxt-umami',
   ],
 
+  security: {
+    nonce: true,
+    headers: {
+      contentSecurityPolicy: {
+        'default-src': ["'self'"],
+        'script-src': [
+          "'self'",
+          "'nonce-{{nonce}}'",
+          "'strict-dynamic'",
+          'https://challenges.cloudflare.com',
+          "'sha256-wrGO/XlWuOftY7acUwy9OWAcCMeVCUtdtyCfbtKZTus='",
+        ],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'style-src-attr': ["'unsafe-inline'"],
+        'img-src': ["'self'", 'data:', 'blob:', 'https://lh3.googleusercontent.com'],
+        'font-src': ["'self'", 'data:'],
+        'connect-src': [
+          "'self'",
+          ...(umamiOrigin ? [umamiOrigin] : []),
+          'https://challenges.cloudflare.com',
+        ],
+        'frame-src': ['https://challenges.cloudflare.com'],
+        'frame-ancestors': ["'none'"],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: 'cross-origin',
+      strictTransportSecurity: {
+        maxAge: 31536000,
+        includeSubdomains: true,
+      },
+      xContentTypeOptions: 'nosniff',
+      xFrameOptions: 'DENY',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      permissionsPolicy: {
+        camera: [],
+        microphone: [],
+        geolocation: [],
+      },
+    },
+  },
+
   icon: {
     provider: 'server',
     fallbackToApi: false,
@@ -139,9 +205,19 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    ipx: {
+      maxAge: 60 * 60 * 24 * 30,
+      http: {
+        maxAge: 60 * 60 * 24 * 30,
+        ignoreCacheControl: true,
+      },
+    },
     externalApiBaseUrl: process.env.NUXT_EXTERNAL_API_BASE_URL,
+    externalAssetBaseUrl:
+      process.env.NUXT_EXTERNAL_ASSET_BASE_URL || process.env.NUXT_EXTERNAL_API_BASE_URL,
     externalAssetProxyAllowedOrigins:
       process.env.NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS ||
+      process.env.NUXT_EXTERNAL_ASSET_BASE_URL ||
       process.env.NUXT_EXTERNAL_API_BASE_URL,
     externalAssetProxyTimeoutMs: process.env.NUXT_EXTERNAL_ASSET_PROXY_TIMEOUT_MS,
     externalAssetProxyImageMaxBytes: process.env.NUXT_EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES,
@@ -169,7 +245,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    compressPublicAssets: true,
+    compressPublicAssets: false,
     prerender: {
       crawlLinks: false,
       failOnError: true,
@@ -190,15 +266,8 @@ export default defineNuxtConfig({
     twitter: '@CREUPCREUP',
   },
 
-  // OG Image configuration
   ogImage: {
-    security: {
-      restrictRuntimeImagesToOrigin: !isDev,
-    },
-    defaults: {
-      width: 1200,
-      height: 630,
-    },
+    zeroRuntime: true,
   },
 
   // Sitemap configuration
@@ -223,37 +292,7 @@ export default defineNuxtConfig({
     disallow: ['/admin/'],
   },
 
-  routeRules: {
-    '/**': {
-      headers: {
-        ...(staticContentSecurityPolicy
-          ? {
-              'Content-Security-Policy': staticContentSecurityPolicy,
-            }
-          : {}),
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-      },
-    },
-    '/admin/**': {
-      headers: {
-        'X-Robots-Tag': 'noindex, nofollow, noarchive',
-      },
-    },
-    '/api/**': {
-      headers: {
-        'X-Robots-Tag': 'noindex, nofollow, noarchive',
-      },
-    },
-    ...productionPublicSWRRouteRules,
-    '/_nuxt/**': {
-      headers: {
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
-    },
-  },
+  routeRules,
 
   serverHandlers: [
     {

@@ -1,13 +1,22 @@
 import { defineEventHandler } from 'h3'
 import { throwPublicAssetNotFound, tryServePublicAssetByPathBase } from '../../../utils/publicAsset'
+import { proxyExternalAssetByPublicPathBase } from '../../../utils/externalAssetProxy'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 export default defineEventHandler(async (event) => {
   const asset = await tryServePublicAssetByPathBase(event, EQUALITY_DOCUMENTS_PUBLIC_PATH)
 
-  if (asset === null) {
-    throwPublicAssetNotFound()
+  if (asset) {
+    return asset
   }
 
-  return asset
+  try {
+    return await proxyExternalAssetByPublicPathBase(event, 'pdf', EQUALITY_DOCUMENTS_PUBLIC_PATH)
+  } catch (error) {
+    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 404) {
+      throwPublicAssetNotFound()
+    }
+
+    throw error
+  }
 })

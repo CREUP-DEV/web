@@ -14,11 +14,9 @@ export const useMembersPageData = async () => {
   ] = await Promise.all([
     useFetch<MembersResponse>('/api/members', {
       headers: localeApiHeaders,
-      lazy: true,
     }),
     useFetch<SectorialesResponse>('/api/sectoriales', {
       headers: localeApiHeaders,
-      lazy: true,
     }),
   ])
 

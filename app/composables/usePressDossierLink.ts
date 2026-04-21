@@ -1,3 +1,5 @@
+import { PUBLIC_PRESS_DOSSIER_ASYNC_DATA_KEY } from '~~/shared/constants/publicAsyncDataKeys'
+
 type PressDossierResponse = {
   item: {
     pdfUrl: string
@@ -6,7 +8,7 @@ type PressDossierResponse = {
 
 export function usePressDossierLink() {
   return useAsyncData<string | null>(
-    'public-layout-press-dossier-link',
+    PUBLIC_PRESS_DOSSIER_ASYNC_DATA_KEY,
     async () => {
       const response = await $fetch<PressDossierResponse>('/api/press-dossier')
       return response.item?.pdfUrl ?? null

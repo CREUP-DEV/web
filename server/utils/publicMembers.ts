@@ -6,6 +6,7 @@ import {
   normalizeSocialText,
   type SocialNetworkEntry,
 } from '~~/shared/utils/social'
+import { appendAssetVersion } from './assetVersion'
 import { getPublicApiErrorMessage } from './apiErrorMessages'
 import { toExternalImageProxyUrl } from './externalAssetProxy'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
@@ -134,12 +135,13 @@ const normalizeCommunity = (communityName: string) => {
 }
 
 const normalizeText = normalizeSocialText
+const PUBLIC_MEMBERS_CACHE_VERSION = 1
 
 function buildPublicMembersCacheKey(event: H3Event, scope: string) {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   return {
     configuredBaseUrl,
-    cacheKey: `external-api:${scope}:${configuredBaseUrl}`,
+    cacheKey: `external-api:${scope}:v${PUBLIC_MEMBERS_CACHE_VERSION}:${configuredBaseUrl}`,
   }
 }
 
@@ -172,6 +174,8 @@ async function loadAssociatedMembers(event: H3Event) {
         })
       }
 
+      const generatedAt = parsedPayload.data.generated_at ?? null
+
       const members: PublicAssociatedMember[] = parsedPayload.data.data.map((member, index) => {
         const socialNetworks = collectSocialNetworks(member.social_networks)
 
@@ -195,16 +199,22 @@ async function loadAssociatedMembers(event: H3Event) {
           autonomousCommunity: normalizeCommunity(autonomousCommunityName),
           autonomousCommunityName,
           description: normalizeText(member.description) || null,
-          logoLight: toExternalImageProxyUrl(normalizeText(member.web_logo_light), {
-            event,
-            forceProxyRelative: true,
-            publicPathBase: '/conocenos/imagenes',
-          }),
-          logoDark: toExternalImageProxyUrl(normalizeText(member.web_logo_dark), {
-            event,
-            forceProxyRelative: true,
-            publicPathBase: '/conocenos/imagenes',
-          }),
+          logoLight: appendAssetVersion(
+            toExternalImageProxyUrl(normalizeText(member.web_logo_light), {
+              event,
+              forceProxyRelative: true,
+              publicPathBase: '/conocenos/imagenes',
+            }),
+            generatedAt
+          ),
+          logoDark: appendAssetVersion(
+            toExternalImageProxyUrl(normalizeText(member.web_logo_dark), {
+              event,
+              forceProxyRelative: true,
+              publicPathBase: '/conocenos/imagenes',
+            }),
+            generatedAt
+          ),
           socialNetworks,
         }
       })
@@ -213,7 +223,7 @@ async function loadAssociatedMembers(event: H3Event) {
 
       return {
         members,
-        generatedAt: parsedPayload.data.generated_at ?? null,
+        generatedAt,
       }
     },
     cacheOptions
@@ -249,6 +259,8 @@ async function loadSectoriales(event: H3Event) {
         })
       }
 
+      const generatedAt = parsedPayload.data.generated_at ?? null
+
       const sectoriales: PublicSectorialMember[] = parsedPayload.data.data.map((member, index) => {
         const socialNetworks = collectSocialNetworks(member.social_networks)
 
@@ -266,16 +278,22 @@ async function loadSectoriales(event: H3Event) {
           denomination,
           initials,
           description: normalizeText(member.description) || null,
-          logoLight: toExternalImageProxyUrl(normalizeText(member.web_logo_light), {
-            event,
-            forceProxyRelative: true,
-            publicPathBase: '/conocenos/imagenes',
-          }),
-          logoDark: toExternalImageProxyUrl(normalizeText(member.web_logo_dark), {
-            event,
-            forceProxyRelative: true,
-            publicPathBase: '/conocenos/imagenes',
-          }),
+          logoLight: appendAssetVersion(
+            toExternalImageProxyUrl(normalizeText(member.web_logo_light), {
+              event,
+              forceProxyRelative: true,
+              publicPathBase: '/conocenos/imagenes',
+            }),
+            generatedAt
+          ),
+          logoDark: appendAssetVersion(
+            toExternalImageProxyUrl(normalizeText(member.web_logo_dark), {
+              event,
+              forceProxyRelative: true,
+              publicPathBase: '/conocenos/imagenes',
+            }),
+            generatedAt
+          ),
           socialNetworks,
         }
       })
@@ -284,7 +302,7 @@ async function loadSectoriales(event: H3Event) {
 
       return {
         sectoriales,
-        generatedAt: parsedPayload.data.generated_at ?? null,
+        generatedAt,
       }
     },
     cacheOptions
@@ -320,6 +338,7 @@ async function loadTeamAreas(event: H3Event) {
         })
       }
 
+      const generatedAt = parsedPayload.data.generated_at ?? null
       const areas: PublicTeamArea[] = parsedPayload.data.data
         .sort((a, b) => a.area_order - b.area_order)
         .map((area) => {
@@ -331,11 +350,14 @@ async function loadTeamAreas(event: H3Event) {
               return {
                 order: member.order,
                 denomination: normalizeText(member.denomination) || null,
-                photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
-                  event,
-                  forceProxyRelative: true,
-                  publicPathBase: '/conocenos/imagenes',
-                }),
+                photo: appendAssetVersion(
+                  toExternalImageProxyUrl(normalizeText(member.web_photo), {
+                    event,
+                    forceProxyRelative: true,
+                    publicPathBase: '/conocenos/imagenes',
+                  }),
+                  generatedAt
+                ),
                 email: normalizeText(member.email) || '',
                 name: normalizeText(member.name) || '',
                 surname: normalizeText(member.surname) || '',
@@ -374,7 +396,7 @@ async function loadTeamAreas(event: H3Event) {
 
       return {
         areas,
-        generatedAt: parsedPayload.data.generated_at ?? null,
+        generatedAt,
       }
     },
     cacheOptions

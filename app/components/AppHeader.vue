@@ -9,20 +9,51 @@ const {
   isAdminUser,
   items,
   localeItems,
+  mobileContactLink,
   mobileLocaleItems,
+  mobilePrimaryLinks,
+  mobileSections,
   selectedLocale,
 } = usePublicHeaderNavigation(toRef(props, 'pressDossierLink'))
 
 const { t } = useI18n()
 const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ?? 'none'}`)
+const menuOpen = ref(false)
+const mobileOpenSections = ref<string[]>([])
+const getMobilePrimaryIconClass = (isActive?: boolean) =>
+  isActive ? 'bg-primary/12 text-primary' : 'bg-primary/10 text-primary'
+const getMobileChildIconClass = (isActive?: boolean) =>
+  isActive ? 'bg-primary/12 text-primary' : 'bg-muted text-muted-foreground'
+
+watch(menuOpen, (isOpen) => {
+  if (!isOpen || import.meta.server) {
+    return
+  }
+
+  mobileOpenSections.value = mobileSections.value
+    .filter((section) => section.active)
+    .map((section) => section.value)
+
+  const activeElement = document.activeElement
+  if (activeElement instanceof HTMLElement || activeElement instanceof SVGElement) {
+    activeElement.blur()
+  }
+})
 </script>
 
 <template>
   <UHeader
     id="main-navigation"
+    v-model:open="menuOpen"
+    mode="slideover"
+    :toggle="{
+      color: 'neutral',
+      variant: 'ghost',
+      size: 'lg',
+    }"
     :ui="{
-      center: 'lg:hidden! xl:flex!',
-      toggle: 'lg:inline-flex! xl:hidden!',
+      center: 'hidden xl:flex!',
+      toggle: 'xl:hidden',
     }"
   >
     <template #title>
@@ -41,15 +72,6 @@ const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ??
       :aria-label="t('accessibility.mainNavigation')"
     />
 
-    <template #body>
-      <UNavigationMenu
-        :key="`${navigationMenuKey}-mobile`"
-        orientation="vertical"
-        :items="items"
-        :aria-label="t('accessibility.mobileNavigation')"
-      />
-    </template>
-
     <template #right>
       <ClientOnly>
         <UTooltip v-if="isAdminUser" :text="t('nav.admin')">
@@ -58,6 +80,7 @@ const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ??
             icon="i-tabler-settings-2"
             color="neutral"
             variant="ghost"
+            class="shrink-0"
             :aria-label="t('nav.admin')"
           />
         </UTooltip>
@@ -71,7 +94,7 @@ const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ??
         v-model="selectedLocale"
         :items="localeItems"
         value-key="value"
-        class="hidden w-36 sm:block"
+        class="hidden w-36 xl:block"
         :aria-label="t('language.toggle')"
       >
         <template #leading="{ modelValue }">
@@ -79,7 +102,7 @@ const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ??
         </template>
       </USelect>
 
-      <UDropdownMenu :items="mobileLocaleItems" class="sm:hidden">
+      <UDropdownMenu :items="mobileLocaleItems" class="xl:hidden">
         <UButton
           :icon="currentLocale?.icon"
           color="neutral"
@@ -88,6 +111,129 @@ const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ??
           :aria-label="t('language.openMenu')"
         />
       </UDropdownMenu>
+    </template>
+
+    <template #body>
+      <div class="px-4 py-4">
+        <div class="space-y-3">
+          <div class="grid gap-3">
+            <UButton
+              v-for="link in mobilePrimaryLinks"
+              :key="link.to"
+              :to="link.to"
+              color="neutral"
+              variant="ghost"
+              block
+              class="ring-default/70 text-highlighted hover:bg-muted/50 justify-start gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold ring-1 ring-inset"
+            >
+              <template #leading>
+                <span
+                  :class="getMobilePrimaryIconClass(link.active)"
+                  class="flex size-9 items-center justify-center rounded-xl"
+                >
+                  <UIcon :name="link.icon" class="size-4.5" />
+                </span>
+              </template>
+              {{ link.label }}
+            </UButton>
+          </div>
+
+          <UAccordion
+            v-model="mobileOpenSections"
+            :items="mobileSections"
+            type="multiple"
+            :ui="{
+              root: 'space-y-3',
+              item: 'overflow-visible rounded-2xl bg-muted/20 ring-1 ring-inset ring-default/70',
+              trigger:
+                'rounded-2xl px-4 py-3.5 text-sm font-semibold text-highlighted hover:bg-muted/60',
+              body: 'px-2 pb-2 pt-2',
+              label: 'tracking-[0.01em]',
+            }"
+          >
+            <template #leading="{ item }">
+              <span
+                class="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-xl"
+              >
+                <UIcon :name="item.icon" class="size-4.5" />
+              </span>
+            </template>
+
+            <template #body="{ item }">
+              <div class="grid gap-1 pb-2">
+                <UButton
+                  v-for="link in item.links"
+                  :key="`${item.value}-${link.to}`"
+                  :to="link.external ? undefined : link.to"
+                  :href="link.external ? link.to : undefined"
+                  :external="link.external || undefined"
+                  :target="link.target"
+                  :rel="link.rel"
+                  color="neutral"
+                  :variant="link.active ? 'soft' : 'ghost'"
+                  block
+                  class="justify-start gap-3 rounded-xl px-3 py-2.5 pl-4 text-sm"
+                >
+                  <template #leading>
+                    <span
+                      :class="getMobileChildIconClass(link.active)"
+                      class="flex size-8 items-center justify-center rounded-lg"
+                    >
+                      <UIcon :name="link.icon" class="size-4" />
+                    </span>
+                  </template>
+                  {{ link.label }}
+                </UButton>
+              </div>
+            </template>
+          </UAccordion>
+
+          <UButton
+            :to="mobileContactLink.to"
+            color="neutral"
+            variant="ghost"
+            block
+            class="ring-default/70 text-highlighted hover:bg-muted/50 justify-start gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold ring-1 ring-inset"
+          >
+            <template #leading>
+              <span
+                :class="getMobilePrimaryIconClass(mobileContactLink.active)"
+                class="flex size-9 items-center justify-center rounded-xl"
+              >
+                <UIcon :name="mobileContactLink.icon" class="size-4.5" />
+              </span>
+            </template>
+            {{ mobileContactLink.label }}
+          </UButton>
+        </div>
+
+        <div class="border-default mt-5 flex items-center gap-3 border-t pt-5">
+          <ClientOnly>
+            <UButton
+              v-if="isAdminUser"
+              to="/admin"
+              icon="i-tabler-settings-2"
+              color="neutral"
+              variant="ghost"
+              :aria-label="t('nav.admin')"
+            />
+          </ClientOnly>
+
+          <USelect
+            v-model="selectedLocale"
+            :items="localeItems"
+            value-key="value"
+            class="min-w-32 flex-1"
+            :aria-label="t('language.toggle')"
+          >
+            <template #leading="{ modelValue }">
+              <UIcon v-if="modelValue" :name="getLocaleIcon(modelValue)" class="size-5" />
+            </template>
+          </USelect>
+
+          <UColorModeButton />
+        </div>
+      </div>
     </template>
   </UHeader>
 </template>

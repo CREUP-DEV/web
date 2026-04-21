@@ -517,11 +517,13 @@ async function handleSubmit() {
             :label="`${t('contactPage.form.turnstile')} *`"
             :error="getFieldError('turnstileToken')"
           >
-            <div
-              id="contact-turnstile"
-              :aria-describedby="turnstileTokenFieldId"
-              class="min-h-17"
-            />
+            <div class="flex justify-center">
+              <div
+                id="contact-turnstile"
+                :aria-describedby="turnstileTokenFieldId"
+                class="min-h-17"
+              />
+            </div>
             <p :id="turnstileTokenFieldId" class="text-muted mt-2 text-xs">
               {{
                 isTurnstileReady

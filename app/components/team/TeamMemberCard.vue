@@ -54,8 +54,14 @@ const triggerClass =
             v-if="member.photo"
             :src="member.photo"
             :alt="displayName"
+            width="112"
+            height="112"
+            sizes="(max-width: 639px) 96px, 112px"
+            format="webp"
+            quality="70"
             class="size-full object-cover"
             loading="lazy"
+            decoding="async"
           />
           <div v-else class="bg-primary/10 text-primary flex size-full items-center justify-center">
             <UIcon name="i-tabler-user" class="size-12" />

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
-import type { Locale } from 'vue-i18n'
 import { useMediaQuery } from '@vueuse/core'
 import { useAuth } from '@/composables/useAuth'
 import { getInitials } from '@/utils/initials'
@@ -8,12 +7,8 @@ import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 const { session, signOut } = useAuth()
-
-// Admin is always in the default locale (Spanish). Force it while this layout is mounted.
-const { locale, setLocale, t } = useI18n()
-const { defaultLocale } = useLocales()
-const previousLocale = locale.value as Locale
-await setLocale(defaultLocale as Locale)
+const localePath = useLocalePath()
+const publicSitePath = computed(() => localePath('/'))
 
 const route = useRoute()
 const isMobileSidebar = useMediaQuery('(max-width: 1023px)')
@@ -96,13 +91,10 @@ const toggleSidebarLabel = computed(() =>
   sidebarOpen.value ? 'Contraer menú lateral' : 'Expandir menú lateral'
 )
 
-onBeforeUnmount(() => {
-  if (locale.value !== previousLocale) {
-    void setLocale(previousLocale)
-  }
-})
-
 useHead({
+  htmlAttrs: {
+    lang: 'es',
+  },
   titleTemplate: (titleChunk) => (titleChunk ? `${titleChunk} | Admin CREUP` : 'Admin CREUP'),
 })
 </script>
@@ -113,13 +105,13 @@ useHead({
       href="#admin-main-navigation"
       class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
     >
-      {{ t('accessibility.skipToNavigation') }}
+      Ir al menú principal
     </a>
     <a
       href="#admin-main-content"
       class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-48"
     >
-      {{ t('accessibility.skipToMain') }}
+      Ir al contenido principal
     </a>
 
     <div class="flex min-h-screen">
@@ -175,11 +167,7 @@ useHead({
           </div>
         </template>
 
-        <nav
-          id="admin-main-navigation"
-          tabindex="-1"
-          :aria-label="t('accessibility.mainNavigation')"
-        >
+        <nav id="admin-main-navigation" tabindex="-1" aria-label="Navegación principal">
           <UNavigationMenu
             :items="navigationItems"
             orientation="vertical"
@@ -313,7 +301,13 @@ useHead({
 
           <UColorModeButton />
 
-          <UButton to="/" icon="i-tabler-external-link" variant="ghost" color="neutral" size="sm">
+          <UButton
+            :to="publicSitePath"
+            icon="i-tabler-external-link"
+            variant="ghost"
+            color="neutral"
+            size="sm"
+          >
             Ver sitio
           </UButton>
         </header>

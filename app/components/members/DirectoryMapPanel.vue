@@ -108,7 +108,7 @@ const handleSelect = (community: string | null) => {
             @update:model-value="handleSelect($event ?? null)"
           />
 
-          <div class="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+          <div class="hidden sm:flex sm:flex-wrap sm:gap-2">
             <UButton
               v-for="community in communityFilters"
               :key="community.slug"
@@ -139,7 +139,7 @@ const handleSelect = (community: string | null) => {
               color="neutral"
               icon="i-tabler-list-search"
               size="sm"
-              to="#members-list"
+              href="#members-list"
             >
               {{ t('members.skipMap') }}
             </UButton>

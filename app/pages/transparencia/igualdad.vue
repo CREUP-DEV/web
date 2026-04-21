@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getPublicEqualityDocumentsAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
+
 type ActionStepKey = 'safety' | 'notify' | 'details' | 'support'
 type PointSafeKey = 'prevention' | 'guidance' | 'followUp'
 type ScopeKey =
@@ -23,7 +25,7 @@ interface EqualityDocumentsResponse {
   total: number
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 const supportMailto = 'mailto:punto.seguro@creup.es'
@@ -120,6 +122,7 @@ const {
   error: documentsError,
   refresh: refreshDocuments,
 } = await useFetch<EqualityDocumentsResponse>('/api/equality-documents', {
+  key: computed(() => getPublicEqualityDocumentsAsyncDataKey(locale.value, docsOffset.value)),
   headers: localeApiHeaders,
   query: computed(() => ({ limit: LIMIT, offset: docsOffset.value })),
 })

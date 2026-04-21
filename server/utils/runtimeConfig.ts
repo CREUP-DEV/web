@@ -96,6 +96,18 @@ export const getRequiredExternalApiBaseUrl = (
   )
 }
 
+export const getRequiredExternalAssetBaseUrl = (
+  event?: H3Event,
+  publicMessage = 'External asset proxy is not configured.'
+) => {
+  const runtimeConfig = getRuntimeConfig(event)
+  const configuredValue =
+    getOptionalRuntimeConfigString(runtimeConfig.externalAssetBaseUrl) ??
+    runtimeConfig.externalApiBaseUrl
+
+  return getRequiredRuntimeConfigUrl(configuredValue, 'EXTERNAL_ASSET_BASE_URL', publicMessage)
+}
+
 export const getRequiredSiteUrl = (
   event?: H3Event,
   publicMessage = 'Site URL is not configured.'

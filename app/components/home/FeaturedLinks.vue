@@ -44,7 +44,7 @@ const localePath = useLocalePath()
         <div
           v-if="props.pending"
           aria-hidden="true"
-          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-6"
         >
           <div v-for="n in 6" :key="n" class="bg-surface/50 overflow-hidden rounded-xl">
             <USkeleton class="aspect-square" />
@@ -68,7 +68,7 @@ const localePath = useLocalePath()
 
         <ul
           v-else
-          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-6"
           role="list"
         >
           <li v-for="item in props.items" :key="`${item.to}-${item.image}-${item.title}`">
@@ -87,6 +87,8 @@ const localePath = useLocalePath()
                   height="288"
                   class="motion-link-media size-full object-cover"
                   loading="lazy"
+                  sizes="(max-width: 640px) calc(50vw - 1rem), (max-width: 1024px) calc(33vw - 1rem), 192px"
+                  quality="70"
                 />
               </div>
               <div class="p-2.5 sm:p-3">
@@ -112,6 +114,8 @@ const localePath = useLocalePath()
                   height="288"
                   class="motion-link-media size-full object-cover"
                   loading="lazy"
+                  sizes="(max-width: 640px) calc(50vw - 1rem), (max-width: 1024px) calc(33vw - 1rem), 192px"
+                  quality="70"
                 />
               </div>
               <div class="p-2.5 sm:p-3">

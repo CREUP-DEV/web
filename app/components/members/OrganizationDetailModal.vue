@@ -25,15 +25,24 @@ const props = defineProps<{
   }>
 }>()
 
+const { t } = useI18n()
+const colorMode = useColorMode()
+const resolvedLogo = computed(() => {
+  if (colorMode.value === 'dark') {
+    return props.logoDark ?? props.logoLight ?? ''
+  }
+
+  return props.logoLight ?? props.logoDark ?? ''
+})
+const resolvedLogoFormat = computed(() => {
+  const normalizedLogo = resolvedLogo.value.split('?')[0]?.toLowerCase() ?? ''
+  return normalizedLogo.endsWith('.svg') ? undefined : 'webp'
+})
+const networkIcons = socialNetworkIcons
+
 const emit = defineEmits<{
   close: []
 }>()
-
-const lightLogo = computed(() => props.logoLight ?? props.logoDark ?? '')
-const darkLogo = computed(() => props.logoDark ?? props.logoLight ?? '')
-
-const { t } = useI18n()
-const networkIcons = socialNetworkIcons
 
 const hasDescription = computed(() => Boolean(props.description?.trim().length))
 const hasInfoPanel = computed(() => Boolean(props.website || props.email))
@@ -75,14 +84,19 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
 
             <div class="lg:hidden">
               <div
-                class="detail-modal-media bg-surface-elevated dark:bg-surface-elevated mx-auto flex aspect-square w-full max-w-48 items-center justify-center rounded-[1.75rem] p-5 sm:max-w-56 sm:p-6"
+                class="detail-modal-media bg-elevated mx-auto flex aspect-square w-full max-w-48 items-center justify-center overflow-hidden rounded-[1.75rem] p-5 sm:max-w-56 sm:p-6"
               >
-                <UColorModeImage
-                  v-if="lightLogo || darkLogo"
-                  :light="lightLogo"
-                  :dark="darkLogo"
+                <NuxtImg
+                  v-if="resolvedLogo"
+                  :src="resolvedLogo"
                   :alt="imageAlt"
-                  class="size-full object-contain"
+                  width="224"
+                  height="224"
+                  fit="inside"
+                  sizes="(max-width: 1024px) 192px, 224px"
+                  :format="resolvedLogoFormat"
+                  class="block size-full object-contain object-center"
+                  decoding="async"
                 />
                 <UIcon
                   v-else
@@ -148,14 +162,19 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
 
         <div class="hidden self-start lg:block">
           <div
-            class="detail-modal-media bg-surface-elevated dark:bg-surface-elevated mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center rounded-[1.75rem] p-5 lg:mx-0 lg:max-w-55 lg:p-6"
+            class="detail-modal-media bg-elevated mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center overflow-hidden rounded-[1.75rem] p-5 lg:mx-0 lg:max-w-55 lg:p-6"
           >
-            <UColorModeImage
-              v-if="lightLogo || darkLogo"
-              :light="lightLogo"
-              :dark="darkLogo"
+            <NuxtImg
+              v-if="resolvedLogo"
+              :src="resolvedLogo"
               :alt="imageAlt"
-              class="size-full object-contain"
+              width="220"
+              height="220"
+              fit="inside"
+              sizes="220px"
+              :format="resolvedLogoFormat"
+              class="block size-full object-contain object-center"
+              decoding="async"
             />
             <UIcon v-else name="i-tabler-building" class="text-muted size-14" aria-hidden="true" />
           </div>

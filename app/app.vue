@@ -19,30 +19,6 @@ const currentUiLocale = computed(
 const lang = computed(() => getLanguageTag(locale.value))
 const dir = computed(() => currentUiLocale.value.dir)
 
-// Strip the ___locale suffix added by @nuxtjs/i18n to get the base route name.
-const getBaseRouteName = (name: string | null | undefined) =>
-  name ? String(name).replace(/___[a-z]{2,3}(-[A-Z]{2})?$/, '') : null
-
-const isLocaleSwitch = ref(false)
-if (import.meta.client) {
-  const router = useRouter()
-  router.beforeEach((to, from) => {
-    isLocaleSwitch.value = !!(
-      from?.name &&
-      to.name &&
-      getBaseRouteName(String(to.name)) === getBaseRouteName(String(from.name))
-    )
-  })
-  router.afterEach(() => {
-    isLocaleSwitch.value = false
-  })
-}
-
-const pageTransition = computed(() => {
-  if (import.meta.dev || isLocaleSwitch.value) return false
-  return { name: 'page-shell', mode: 'out-in' as const }
-})
-
 useHead(() => ({
   htmlAttrs: {
     lang: localeHead.value.htmlAttrs?.lang ?? lang.value,
@@ -114,7 +90,7 @@ useSchemaOrg([
   <UApp :locale="currentUiLocale">
     <NuxtRouteAnnouncer />
     <NuxtLayout>
-      <NuxtPage :transition="pageTransition" />
+      <NuxtPage />
     </NuxtLayout>
   </UApp>
 </template>

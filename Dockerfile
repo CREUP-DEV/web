@@ -48,3 +48,37 @@ COPY --from=builder --chown=1000:1000 /app/drizzle /app/drizzle
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD ["node", "-e", "const port=process.env.NITRO_PORT||'3000';fetch('http://127.0.0.1:'+port+'/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))"]
 CMD ["/app/ops/start.mjs"]
+
+# Debug variant — NOT for routine production use.
+# Build with: docker build --target runner-debug -t image:tag-debug .
+# Use to: docker exec -it container bash, curl endpoints, inspect processes/files.
+FROM node:24-slim AS runner-debug
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl \
+  procps \
+  netcat-openbsd \
+  iputils-ping \
+  less \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app/.output
+
+ENV NODE_ENV=production \
+  NITRO_PORT=3000 \
+  HOST=0.0.0.0
+
+USER node
+
+COPY --from=builder --chown=node:node /app/.output /app/.output
+COPY --from=builder --chown=node:node /app/node_modules /app/node_modules
+COPY --from=builder --chown=node:node /app/ops/migrate.mjs /app/ops/migrate.mjs
+COPY --from=builder --chown=node:node /app/ops/seed.mjs /app/ops/seed.mjs
+COPY --from=builder --chown=node:node /app/ops/start.mjs /app/ops/start.mjs
+COPY --from=builder --chown=node:node /app/drizzle /app/drizzle
+
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:${NITRO_PORT:-3000}/health || exit 1
+ENTRYPOINT ["node"]
+CMD ["/app/ops/start.mjs"]

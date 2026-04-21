@@ -7,6 +7,7 @@ const { error } = defineProps<{
 }>()
 
 const { locale, t } = useI18n({ useScope: 'global' })
+const localePath = useLocalePath()
 
 const nuxtUiLocales = { es, en } as const
 const currentLocale = computed(
@@ -45,13 +46,48 @@ watch(
 )
 
 const handleError = async () => {
-  await clearError({ redirect: '/' })
+  await clearError({ redirect: localePath('/') })
+}
+
+const handleNavigationClick = async (event: MouseEvent) => {
+  const target = event.target instanceof Element ? event.target.closest('a[href]') : null
+  if (!(target instanceof HTMLAnchorElement)) {
+    return
+  }
+
+  if (
+    target.target === '_blank' ||
+    target.hasAttribute('download') ||
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return
+  }
+
+  const href = target.getAttribute('href')
+  if (!href || href.startsWith('#')) {
+    return
+  }
+
+  const resolvedUrl = new URL(href, window.location.origin)
+  if (resolvedUrl.origin !== window.location.origin) {
+    return
+  }
+
+  event.preventDefault()
+  await clearError({
+    redirect: `${resolvedUrl.pathname}${resolvedUrl.search}${resolvedUrl.hash}`,
+  })
 }
 </script>
 
 <template>
   <UApp :locale="currentLocale">
-    <div class="bg-background flex min-h-screen flex-col">
+    <div class="bg-background flex min-h-screen flex-col" @click.capture="handleNavigationClick">
       <AppHeader :press-dossier-link="pressDossierLink" />
 
       <UMain class="flex-1">

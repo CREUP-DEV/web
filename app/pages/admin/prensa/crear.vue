@@ -11,6 +11,7 @@ definePageMeta({
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const isSubmitting = ref(false)
 const pressFormRef = ref<{ hasUnsavedChanges?: boolean } | null>(null)
 const allowNavigationWithoutPrompt = ref(false)
@@ -58,6 +59,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
       method: 'POST',
       body: payload,
     })
+    await refreshAllClientAsyncData()
     allowNavigationWithoutPrompt.value = true
     toast.add({ title: 'Artículo creado correctamente', color: 'success' })
     router.push(ADMIN_ROUTES.press)

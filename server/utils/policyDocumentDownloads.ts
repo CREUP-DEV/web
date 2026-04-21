@@ -1,26 +1,44 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
-import { createHash } from 'node:crypto'
 import { getPublicApiErrorMessage } from './apiErrorMessages'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
-import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
-import { externalPolicyDocumentsResponseSchema } from './validation'
+import { toExternalPdfProxyUrl } from './externalAssetProxy'
+import { getRequiredExternalApiBaseUrl, getRequiredExternalAssetBaseUrl } from './runtimeConfig'
+import {
+  externalNormativaResponseSchema,
+  externalPolicyDocumentsResponseSchema,
+} from './validation'
+import { EXTERNAL_DOCUMENT_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 
 const POLICY_DOCUMENT_ENDPOINT_BY_TYPE = {
   posicionamiento: '/api/posicionamientos',
   resolucion: '/api/resoluciones',
   'informe-ejecutivo': '/api/informes-ejecutivos',
+  normativa: '/api/normativa',
 } as const
 
 const POLICY_DOCUMENT_TYPE_BY_API_PATH = {
   '/api/posicionamientos': 'posicionamiento',
   '/api/resoluciones': 'resolucion',
   '/api/informes-ejecutivos': 'informe-ejecutivo',
+  '/api/normativa': 'normativa',
 } as const
 
-const POLICY_DOCUMENT_FILE_CACHE_VERSION = 2
+const POLICY_DOCUMENT_ERROR_MESSAGE_KEY_BY_TYPE = {
+  posicionamiento: 'policyDocumentsUnavailable',
+  resolucion: 'policyDocumentsUnavailable',
+  'informe-ejecutivo': 'policyDocumentsUnavailable',
+  normativa: 'normativaUnavailable',
+} as const
+
+const POLICY_DOCUMENT_FILE_CACHE_VERSION = 1
 
 type PolicyDocumentRouteType = keyof typeof POLICY_DOCUMENT_ENDPOINT_BY_TYPE
+
+interface PolicyDocumentFileRegistrySnapshot {
+  byFileName: Record<string, string>
+  bySourceUrl: Record<string, string>
+}
 
 const normalizeText = (value: string | null | undefined) => {
   if (typeof value !== 'string') {
@@ -29,9 +47,6 @@ const normalizeText = (value: string | null | undefined) => {
 
   return value.trim()
 }
-
-const createPolicyDocumentFingerprint = (value: string) =>
-  createHash('sha1').update(value).digest('hex').slice(0, 10)
 
 const resolveSourceUrl = (source: string, baseUrl: string) => {
   try {
@@ -45,11 +60,25 @@ const getConfiguredBaseUrl = (event: H3Event) => {
   return getRequiredExternalApiBaseUrl(event)
 }
 
+const getConfiguredAssetBaseUrl = (event: H3Event) => {
+  return getRequiredExternalAssetBaseUrl(event)
+}
+
 const isPolicyDocumentRouteType = (value: string): value is PolicyDocumentRouteType =>
   Object.hasOwn(POLICY_DOCUMENT_ENDPOINT_BY_TYPE, value)
 
+const toPolicyDocumentFallbackPdfPath = (source: string | null | undefined) =>
+  toExternalPdfProxyUrl(source, {
+    forceProxyRelative: true,
+    publicPathBase: EXTERNAL_DOCUMENT_PUBLIC_BASE,
+  })
+
 const normalizePolicyDocumentFileName = (value: string | null | undefined) => {
-  const normalized = normalizeText(value)
+  const sanitizedValue = normalizeText(value)
+    .replace(/\.pdf--[a-f0-9]{8,}(?=\.pdf$|$)/gi, '.pdf')
+    .replace(/--[a-f0-9]{8,}(?=\.pdf$|$)/gi, '')
+
+  const normalized = sanitizedValue
     .toLowerCase()
     .replace(/\.+$/g, '')
     .replace(/[^a-z0-9]+/g, '-')
@@ -59,14 +88,80 @@ const normalizePolicyDocumentFileName = (value: string | null | undefined) => {
     return ''
   }
 
-  return normalized.endsWith('.pdf') ? normalized : `${normalized}.pdf`
+  const baseName = normalized.replace(/-pdf$/i, '') || 'documento'
+  return baseName.endsWith('.pdf') ? baseName : `${baseName}.pdf`
 }
 
-const getPolicyDocumentPublicFileName = (url: URL) => {
-  const sourceFileName = normalizePolicyDocumentFileName(url.pathname.split('/').pop())
-  const sourceStem = sourceFileName.replace(/\.pdf$/i, '') || 'documento'
+const getPolicyDocumentPublicFileStem = (
+  sourceUrl: URL,
+  preferredName?: string | null,
+  fallbackName?: string | null
+) => {
+  const preferredFileName = normalizePolicyDocumentFileName(preferredName)
+  if (preferredFileName) {
+    return preferredFileName.replace(/\.pdf$/i, '')
+  }
 
-  return `${sourceStem}--${createPolicyDocumentFingerprint(url.toString())}.pdf`
+  const fallbackFileName = normalizePolicyDocumentFileName(fallbackName)
+  if (fallbackFileName) {
+    return fallbackFileName.replace(/\.pdf$/i, '')
+  }
+
+  const sourceFileName = normalizePolicyDocumentFileName(sourceUrl.pathname.split('/').pop())
+  return sourceFileName.replace(/\.pdf$/i, '') || 'documento'
+}
+
+const assignUniquePolicyDocumentFileName = (
+  sourceUrl: URL,
+  byFileName: Record<string, string>,
+  bySourceUrl: Record<string, string>,
+  preferredName?: string | null,
+  fallbackName?: string | null
+) => {
+  const sourceKey = sourceUrl.toString()
+  const existingFileName = bySourceUrl[sourceKey]
+  if (existingFileName) {
+    return existingFileName
+  }
+
+  const sourceStem = getPolicyDocumentPublicFileStem(sourceUrl, preferredName, fallbackName)
+  let suffix = 0
+
+  while (true) {
+    const candidate = suffix === 0 ? `${sourceStem}.pdf` : `${sourceStem}-${String(suffix + 1)}.pdf`
+    const existingSource = byFileName[candidate]
+
+    if (!existingSource || existingSource === sourceKey) {
+      byFileName[candidate] = sourceKey
+      bySourceUrl[sourceKey] = candidate
+      return candidate
+    }
+
+    suffix += 1
+  }
+}
+
+const registerPolicyDocumentFile = (
+  rawFileUrl: string | null | undefined,
+  configuredAssetBaseUrl: string,
+  byFileName: Record<string, string>,
+  bySourceUrl: Record<string, string>,
+  preferredName?: string | null,
+  fallbackName?: string | null
+) => {
+  const normalizedFileUrl = normalizeText(rawFileUrl)
+  if (!normalizedFileUrl) {
+    return
+  }
+
+  const sourceUrl = resolveSourceUrl(normalizedFileUrl, configuredAssetBaseUrl)
+  assignUniquePolicyDocumentFileName(
+    sourceUrl,
+    byFileName,
+    bySourceUrl,
+    preferredName,
+    fallbackName
+  )
 }
 
 async function buildPolicyDocumentFileRegistryFromExternal(
@@ -74,46 +169,74 @@ async function buildPolicyDocumentFileRegistryFromExternal(
   type: PolicyDocumentRouteType
 ) {
   const configuredBaseUrl = getConfiguredBaseUrl(event)
-  const unavailableMessage = getPublicApiErrorMessage(event, 'policyDocumentsUnavailable')
+  const configuredAssetBaseUrl = getConfiguredAssetBaseUrl(event)
+  const unavailableMessage = getPublicApiErrorMessage(
+    event,
+    POLICY_DOCUMENT_ERROR_MESSAGE_KEY_BY_TYPE[type]
+  )
 
   const endpoint = new URL(POLICY_DOCUMENT_ENDPOINT_BY_TYPE[type], configuredBaseUrl).toString()
   const payload = await $fetch<unknown>(endpoint)
-  const parsed = externalPolicyDocumentsResponseSchema.safeParse(payload)
+  const byFileName: Record<string, string> = {}
+  const bySourceUrl: Record<string, string> = {}
 
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 502,
-      message: unavailableMessage,
-    })
-  }
+  if (type === 'normativa') {
+    const parsed = externalNormativaResponseSchema.safeParse(payload)
 
-  const registry: Record<string, string> = {}
-
-  for (const document of parsed.data.data) {
-    const rawFileUrl = normalizeText(document.file?.url)
-    if (!rawFileUrl) {
-      continue
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 502,
+        message: unavailableMessage,
+      })
     }
 
-    const sourceUrl = resolveSourceUrl(rawFileUrl, configuredBaseUrl)
-    const fileName = getPolicyDocumentPublicFileName(sourceUrl)
+    for (const category of parsed.data.data) {
+      for (const document of category.documents) {
+        registerPolicyDocumentFile(
+          document.file?.url,
+          configuredAssetBaseUrl,
+          byFileName,
+          bySourceUrl,
+          normalizeText(document.name),
+          normalizeText(document.file?.name)
+        )
+      }
+    }
+  } else {
+    const parsed = externalPolicyDocumentsResponseSchema.safeParse(payload)
 
-    if (!fileName) {
-      continue
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 502,
+        message: unavailableMessage,
+      })
     }
 
-    registry[fileName] = sourceUrl.toString()
+    for (const document of parsed.data.data) {
+      registerPolicyDocumentFile(
+        document.file?.url,
+        configuredAssetBaseUrl,
+        byFileName,
+        bySourceUrl,
+        normalizeText(document.name),
+        normalizeText(document.file?.name)
+      )
+    }
   }
 
-  return registry
+  return {
+    byFileName,
+    bySourceUrl,
+  } satisfies PolicyDocumentFileRegistrySnapshot
 }
 
 async function getPolicyDocumentRegistrySnapshot(event: H3Event, type: PolicyDocumentRouteType) {
   const configuredBaseUrl = getConfiguredBaseUrl(event)
+  const configuredAssetBaseUrl = getConfiguredAssetBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
 
   return withExternalApiSWRCache(
-    `external-api:policy-document-file-registry:v${POLICY_DOCUMENT_FILE_CACHE_VERSION}:${configuredBaseUrl}:${type}`,
+    `external-api:policy-document-file-registry:v${POLICY_DOCUMENT_FILE_CACHE_VERSION}:${configuredBaseUrl}:${configuredAssetBaseUrl}:${type}`,
     async () => buildPolicyDocumentFileRegistryFromExternal(event, type),
     cacheOptions
   )
@@ -127,20 +250,26 @@ export async function toPolicyDocumentPublicPdfPathAsync(
   const type =
     POLICY_DOCUMENT_TYPE_BY_API_PATH[apiPath as keyof typeof POLICY_DOCUMENT_TYPE_BY_API_PATH]
   const rawSource = normalizeText(source)
+  const fallbackUrl = toPolicyDocumentFallbackPdfPath(rawSource)
 
-  if (!type || !rawSource) {
+  if (!rawSource) {
     return null
   }
 
-  const configuredBaseUrl = getConfiguredBaseUrl(event)
-  const sourceUrl = resolveSourceUrl(rawSource, configuredBaseUrl)
-  const fileName = getPolicyDocumentPublicFileName(sourceUrl)
-
-  if (!fileName) {
-    return null
+  if (!type) {
+    return fallbackUrl ?? rawSource
   }
 
-  return `/documentos/${type}/${fileName}`
+  try {
+    const configuredAssetBaseUrl = getConfiguredAssetBaseUrl(event)
+    const sourceUrl = resolveSourceUrl(rawSource, configuredAssetBaseUrl)
+    const registry = await getPolicyDocumentRegistrySnapshot(event, type)
+    const fileName = registry.bySourceUrl[sourceUrl.toString()]
+
+    return fileName ? `/documentos/${type}/${fileName}` : (fallbackUrl ?? rawSource)
+  } catch {
+    return fallbackUrl ?? rawSource
+  }
 }
 
 export async function resolvePolicyDocumentSourceByTypeAndFileName(
@@ -156,5 +285,5 @@ export async function resolvePolicyDocumentSourceByTypeAndFileName(
   }
 
   const registry = await getPolicyDocumentRegistrySnapshot(event, normalizedType)
-  return registry[normalizedFileName] ?? null
+  return registry.byFileName[normalizedFileName] ?? null
 }

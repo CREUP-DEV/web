@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SPAIN_REGION_PATHS } from '@/components/members/spainRegions'
 import { detailModalUi } from '@/utils/detailModalUi'
 
 const { t } = useI18n()
@@ -25,6 +26,7 @@ const communityQuery = useSyncedQueryParam<string | null>('community', {
   parse: (rawValue) => rawValue,
   serialize: (value) => value ?? null,
 })
+const validCommunities = new Set(SPAIN_REGION_PATHS.map((region) => region.community))
 const {
   communityFilters,
   filteredMembers,
@@ -53,7 +55,7 @@ const {
         return null
       }
 
-      return communityFilters.value.some((filter) => filter.slug === selected) ? selected : null
+      return validCommunities.has(selected) ? selected : null
     },
     set: (value) => {
       communityQuery.value = value
@@ -98,69 +100,14 @@ const closeOrganizationModal = () => {
 }
 
 watch(
-  [communityQuery, communityFilters],
-  ([community, filters]) => {
-    if (community && !filters.some((filter) => filter.slug === community)) {
+  communityQuery,
+  (community) => {
+    if (community && !validCommunities.has(community)) {
       communityQuery.value = null
     }
   },
   { immediate: true }
 )
-
-const membersContainerRef = ref<HTMLElement | null>(null)
-let cleanupMembersTransition: (() => void) | null = null
-
-watch(filteredMembers, async (_, __, onCleanup) => {
-  cleanupMembersTransition?.()
-  cleanupMembersTransition = null
-
-  const el = membersContainerRef.value
-  if (!el) return
-
-  const startHeight = el.offsetHeight
-
-  await nextTick()
-
-  if (membersContainerRef.value !== el) return
-
-  el.style.height = 'auto'
-  const endHeight = el.offsetHeight
-
-  if (startHeight === endHeight) return
-
-  el.style.overflow = 'hidden'
-  el.style.height = `${startHeight}px`
-  void el.offsetHeight
-
-  let onEnd: (() => void) | null = null
-  const cleanup = () => {
-    el.style.height = ''
-    el.style.overflow = ''
-    el.style.transition = ''
-
-    if (onEnd) {
-      el.removeEventListener('transitionend', onEnd)
-    }
-
-    if (cleanupMembersTransition === cleanup) {
-      cleanupMembersTransition = null
-    }
-  }
-
-  onEnd = () => {
-    cleanup()
-  }
-
-  cleanupMembersTransition = cleanup
-  el.style.transition = 'height 350ms ease-out'
-  el.style.height = `${endHeight}px`
-  el.addEventListener('transitionend', onEnd)
-  onCleanup(cleanup)
-})
-
-onBeforeUnmount(() => {
-  cleanupMembersTransition?.()
-})
 </script>
 
 <template>
@@ -180,7 +127,7 @@ onBeforeUnmount(() => {
                 <span class="font-medium">1.</span>
                 {{ t('members.introAssociated') }}
               </p>
-              <UButton to="#members-list" size="xs" variant="soft" icon="i-tabler-arrow-down">
+              <UButton href="#members-list" size="xs" variant="soft" icon="i-tabler-arrow-down">
                 {{ t('members.introAssociatedCta') }}
               </UButton>
             </li>
@@ -189,7 +136,7 @@ onBeforeUnmount(() => {
                 <span class="font-medium">2.</span>
                 {{ t('members.introSectoriales') }}
               </p>
-              <UButton to="#sectoriales-list" size="xs" variant="soft" icon="i-tabler-arrow-down">
+              <UButton href="#sectoriales-list" size="xs" variant="soft" icon="i-tabler-arrow-down">
                 {{ t('members.introSectorialesCta') }}
               </UButton>
             </li>
@@ -259,7 +206,7 @@ onBeforeUnmount(() => {
               <span class="text-muted text-lg font-normal">({{ filteredMembers.length }})</span>
             </h3>
 
-            <div ref="membersContainerRef">
+            <div>
               <div
                 v-if="filteredMembers.length === 0"
                 class="bg-surface/50 ring-default flex flex-col items-center justify-center rounded-xl p-8 text-center ring-1"
@@ -270,7 +217,6 @@ onBeforeUnmount(() => {
 
               <TransitionGroup
                 v-else
-                :key="selectedCommunity ?? 'all'"
                 appear
                 tag="div"
                 name="stagger-list"

@@ -9,10 +9,36 @@ type PressTranslationLike = {
   alt?: string | null
   contentHtml?: string | null
 }
-type RichTextElement = Element
-type RichTextAnchorElement = HTMLAnchorElement
+type RichTextElement = {
+  firstChild: ChildNode | null
+  ownerDocument: RichTextDocument
+  parentNode: ParentNode | null
+  replaceWith: (node: unknown) => void
+  removeAttribute: (name: string) => void
+}
+type RichTextAnchorElement = RichTextElement & {
+  getAttribute: (name: string) => string | null
+  setAttribute: (name: string, value: string) => void
+}
+type ParentNode = {
+  insertBefore: (node: unknown, child: unknown) => void
+  removeChild: (child: unknown) => void
+}
+type ChildNode = {
+  firstChild?: ChildNode | null
+}
+type RichTextDocument = {
+  body: {
+    innerHTML: string
+    textContent: string | null
+    querySelectorAll: (selector: string) => Iterable<unknown>
+  }
+  createElement: (tagName: string) => {
+    appendChild: (node: ChildNode) => void
+  }
+}
 
-const { window: richTextSanitizerWindow } = parseHTML('<!doctype html><html><body></body></html>')
+const richTextSanitizerWindow = parseHTML('<!doctype html><html><body></body></html>')
 const richTextPurifier = createDOMPurify(richTextSanitizerWindow as unknown as WindowLike)
 
 const allowedRichTextTags = [
@@ -38,7 +64,9 @@ const extractPlainText = (value?: string | null) => {
     return ''
   }
 
-  const { document } = parseHTML(`<body>${normalized}</body>`)
+  const { document } = parseHTML(`<body>${normalized}</body>`) as unknown as {
+    document: RichTextDocument
+  }
   const textContent = document.body.textContent ?? ''
 
   return textContent
@@ -135,7 +163,9 @@ export const sanitizeRichTextHtml = (value?: string | null) => {
     RETURN_TRUSTED_TYPE: false,
   }) as string
 
-  const { document } = parseHTML(`<body>${sanitizedSource}</body>`)
+  const { document } = parseHTML(`<body>${sanitizedSource}</body>`) as unknown as {
+    document: RichTextDocument
+  }
 
   for (const boldElement of Array.from(document.body.querySelectorAll('b')) as RichTextElement[]) {
     replaceElementTag(boldElement, 'strong')

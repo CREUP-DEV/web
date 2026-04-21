@@ -247,6 +247,7 @@ export const policyDocumentRouteTypeSchema = z.enum([
   'posicionamiento',
   'resolucion',
   'informe-ejecutivo',
+  'normativa',
 ])
 
 export const externalNormativaDocumentSchema = z.object({

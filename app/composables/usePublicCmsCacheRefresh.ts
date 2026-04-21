@@ -1,5 +1,6 @@
-import { refreshNuxtData } from '#app'
+import { clearNuxtData, refreshNuxtData } from '#app'
 import {
+  PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES,
   getPublicHomeDataAsyncDataKey,
   PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY,
 } from '~~/shared/constants/publicAsyncDataKeys'
@@ -10,12 +11,19 @@ import {
  */
 export function usePublicCmsCacheRefresh() {
   const { locales } = useI18n()
+  const nuxtApp = useNuxtApp()
+
+  const getCachedPublicCmsKeys = () =>
+    Array.from(
+      new Set([...Object.keys(nuxtApp.payload.data), ...Object.keys(nuxtApp._asyncData)])
+    ).filter((key) => PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES.some((prefix) => key.startsWith(prefix)))
 
   async function refreshAboutPage() {
     if (import.meta.server) {
       return
     }
 
+    clearNuxtData(PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY)
     await refreshNuxtData(PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY)
   }
 
@@ -25,6 +33,7 @@ export function usePublicCmsCacheRefresh() {
     }
 
     const keys = locales.value.map((l) => getPublicHomeDataAsyncDataKey(l.code))
+    clearNuxtData(keys)
     await refreshNuxtData(keys)
   }
 
@@ -37,7 +46,14 @@ export function usePublicCmsCacheRefresh() {
       return
     }
 
-    await refreshNuxtData()
+    const keys = getCachedPublicCmsKeys()
+
+    if (keys.length === 0) {
+      return
+    }
+
+    clearNuxtData(keys)
+    await refreshNuxtData(keys)
   }
 
   return {

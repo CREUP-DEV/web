@@ -6,21 +6,54 @@ const getFirstQueryValue = (value: string | string[] | null | undefined) => {
   return value ?? null
 }
 
-const setQueryParam = async (
-  router: ReturnType<typeof useRouter>,
+const buildQueryString = (
+  query: Record<string, string | (string | null | undefined)[] | null | undefined>
+) => {
+  const searchParams = new URLSearchParams()
+
+  for (const [key, rawValue] of Object.entries(query)) {
+    if (Array.isArray(rawValue)) {
+      for (const entry of rawValue) {
+        if (entry != null && entry !== '') {
+          searchParams.append(key, entry)
+        }
+      }
+      continue
+    }
+
+    if (rawValue != null && rawValue !== '') {
+      searchParams.set(key, rawValue)
+    }
+  }
+
+  const search = searchParams.toString()
+  return search ? `?${search}` : ''
+}
+
+const replaceUrlQueryParam = (
   route: ReturnType<typeof useRoute>,
   key: string,
   value: string | null
 ) => {
+  if (!import.meta.client) {
+    return
+  }
+
   const currentValue = getFirstQueryValue(route.query[key] as string | string[] | null | undefined)
   if (currentValue === value) {
     return
   }
 
-  const { [key]: _removed, ...restQuery } = route.query
-  const nextQuery = value === null ? restQuery : { ...restQuery, [key]: value }
+  const nextQuery =
+    value == null
+      ? Object.fromEntries(Object.entries(route.query).filter(([entryKey]) => entryKey !== key))
+      : {
+          ...route.query,
+          [key]: value,
+        }
 
-  await router.replace({ query: nextQuery })
+  const nextUrl = `${route.path}${buildQueryString(nextQuery)}${route.hash || ''}`
+  window.history.replaceState(window.history.state, '', nextUrl)
 }
 
 export function useSyncedQueryParam<T>(
@@ -31,26 +64,30 @@ export function useSyncedQueryParam<T>(
   }
 ) {
   const route = useRoute()
-  const router = useRouter()
-
   const rawValue = computed(() =>
     getFirstQueryValue(route.query[key] as string | string[] | null | undefined)
   )
+  const state = ref<T>(options.parse(rawValue.value)) as Ref<T>
 
-  const state = computed<T>({
-    get: () => options.parse(rawValue.value),
-    set: (value) => {
-      void setQueryParam(router, route, key, options.serialize(value))
+  watch(
+    rawValue,
+    (value) => {
+      state.value = options.parse(value)
     },
+    { immediate: true }
+  )
+
+  watch(state, (value) => {
+    replaceUrlQueryParam(route, key, options.serialize(value))
   })
 
   if (import.meta.client) {
     watch(
       rawValue,
       (value) => {
-        const serialized = options.serialize(options.parse(value))
-        if (value !== serialized) {
-          void setQueryParam(router, route, key, serialized)
+        const normalized = options.serialize(options.parse(value))
+        if (value !== normalized) {
+          replaceUrlQueryParam(route, key, normalized)
         }
       },
       { immediate: true }

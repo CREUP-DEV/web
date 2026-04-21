@@ -1,6 +1,6 @@
 services:
   app:
-    image: ${IMAGE:-ghcr.io/CREUP-DEV/web:latest}
+    image: ${IMAGE:-ghcr.io/creup-dev/web:latest}
     container_name: creup-web-app
     restart: unless-stopped
     env_file:
@@ -39,7 +39,10 @@ services:
           "CMD",
           "/nodejs/bin/node",
           "-e",
-          "const port=process.env.NITRO_PORT||'3000';fetch('http://127.0.0.1:'+port+'/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))",
+          "const
+            port=process.env.NITRO_PORT||'3000';fetch('http://127.0.0.1:'+port+\
+            '/health').then((response)=>process.exit(response.ok?0:1)).catch(()\
+            =>process.exit(1))",
         ]
       interval: 30s
       timeout: 5s
@@ -74,10 +77,10 @@ services:
     expose:
       - 5432
     volumes:
-      - creup_web_postgres_data:/var/lib/postgresql/data
+      - creup_web_postgres_data:/var/lib/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -92,12 +95,12 @@ services:
       [
         "sh",
         "-c",
-        'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"',
+        "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"",
       ]
     volumes:
       - creup_web_redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping']
+      test: [ "CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping" ]
       interval: 10s
       timeout: 5s
       retries: 5

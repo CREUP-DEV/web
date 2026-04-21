@@ -264,19 +264,6 @@ onBeforeUnmount(() => {
       <desc>{{ t('members.mapAccessibleHelp') }}</desc>
 
       <path
-        v-for="region in SPAIN_REGION_PATHS"
-        :key="`${region.svgId}-hit`"
-        :d="region.d"
-        class="map-region-hit"
-        aria-hidden="true"
-        tabindex="-1"
-        @click="handleSelect(region.community)"
-        @mouseenter="showTooltipFromPointer($event, region.community)"
-        @mousemove="updateTooltipPosition($event)"
-        @mouseleave="hideTooltip"
-      />
-
-      <path
         v-for="(region, index) in SPAIN_REGION_PATHS"
         :key="region.svgId"
         :ref="(el) => setRegionRef(el as SVGPathElement | null, index)"
@@ -346,14 +333,7 @@ onBeforeUnmount(() => {
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
-  pointer-events: none;
-}
-
-.map-region-hit {
   cursor: pointer;
-  fill: rgb(255 255 255 / 0.001);
-  stroke: transparent;
-  stroke-width: 22;
   pointer-events: all;
 }
 

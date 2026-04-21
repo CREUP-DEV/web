@@ -1,5 +1,5 @@
 {
-  "id": "6bbdb658-c766-4008-8696-d43fcada1f36",
+  "id": "8a8336ac-efb7-4949-bad8-8d505e691106",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2513,7 +2513,12 @@
       },
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "site_default_images_scope_slot_check": {
+          "name": "site_default_images_scope_slot_check",
+          "value": "(\"site_default_images\".\"scope\", \"site_default_images\".\"slot\") IN (\n        ('press', 'press_release'),\n        ('press', 'statement'),\n        ('press', 'media_appearance'),\n        ('newsletter', 'cover'),\n        ('carousel', 'slide')\n      )"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.tag_translations": {

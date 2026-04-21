@@ -94,7 +94,13 @@ const hasAssignmentInfo = computed(() =>
                   v-if="member.photo"
                   :src="member.photo"
                   :alt="displayName"
+                  width="224"
+                  height="224"
+                  sizes="(max-width: 1024px) 192px, 224px"
+                  format="webp"
+                  quality="76"
                   class="size-full object-cover"
+                  decoding="async"
                 />
                 <div
                   v-else
@@ -213,7 +219,13 @@ const hasAssignmentInfo = computed(() =>
               v-if="member.photo"
               :src="member.photo"
               :alt="displayName"
+              width="220"
+              height="220"
+              sizes="220px"
+              format="webp"
+              quality="76"
               class="size-full object-cover"
+              decoding="async"
             />
             <div
               v-else

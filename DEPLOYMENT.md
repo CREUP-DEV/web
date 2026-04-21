@@ -1,43 +1,43 @@
-# CREUP Web — Deployment Guide
+# CREUP Web — Guía de despliegue
 
-Complete guide for deploying CREUP Web on a VPS using Docker, Docker Compose, and NGINX with TLS.
+Guía completa para desplegar CREUP Web en un VPS con Docker, Docker Compose y NGINX con TLS.
 
-The build always happens **locally or in CI** — the VPS only pulls and runs pre-built images. This keeps the VPS minimal and the build environment reproducible.
-
----
-
-## Table of Contents
-
-1. [Architecture overview](#1-architecture-overview)
-2. [Prerequisites](#2-prerequisites)
-3. [VPS initial setup](#3-vps-initial-setup)
-4. [Google OAuth setup](#4-google-oauth-setup)
-5. [Configure NGINX with TLS](#5-configure-nginx-with-tls)
-6. [Prepare the production environment file](#6-prepare-the-production-environment-file)
-7. [Production Docker Compose](#7-production-docker-compose)
-8. [First deploy](#8-first-deploy)
-9. [Ongoing deploys with deploy.sh](#9-ongoing-deploys-with-deploysh)
-10. [Backups](#10-backups)
-11. [Health monitoring](#11-health-monitoring)
-12. [Updating NGINX or Docker after deploy](#12-updating-nginx-or-docker-after-deploy)
-13. [Troubleshooting](#13-troubleshooting)
+El build siempre ocurre **en local o en CI** — el VPS solo hace pull y ejecuta imágenes ya construidas. Esto mantiene el VPS mínimo y el entorno de build reproducible.
 
 ---
 
-## 1. Architecture overview
+## Índice
+
+1. [Visión general de la arquitectura](#1-visión-general-de-la-arquitectura)
+2. [Requisitos](#2-requisitos)
+3. [Configuración inicial del VPS](#3-configuración-inicial-del-vps)
+4. [Configurar Google OAuth](#4-configurar-google-oauth)
+5. [Configurar NGINX con TLS](#5-configurar-nginx-con-tls)
+6. [Preparar el archivo de entorno de producción](#6-preparar-el-archivo-de-entorno-de-producción)
+7. [Docker Compose de producción](#7-docker-compose-de-producción)
+8. [Primer despliegue](#8-primer-despliegue)
+9. [Despliegues posteriores con deploy.sh](#9-despliegues-posteriores-con-deploysh)
+10. [Copias de seguridad](#10-copias-de-seguridad)
+11. [Monitorización](#11-monitorización)
+12. [Actualizar NGINX o Docker tras el despliegue](#12-actualizar-nginx-o-docker-tras-el-despliegue)
+13. [Resolución de problemas](#13-resolución-de-problemas)
+
+---
+
+## 1. Visión general de la arquitectura
 
 ```
 Internet
     │
     ▼
- NGINX (host, port 80 + 443)
-  • TLS termination (Let's Encrypt)
-  • HTTP → HTTPS redirect
+ NGINX (host, puertos 80 + 443)
+  • Terminación TLS (Let's Encrypt)
+  • Redirección HTTP → HTTPS
   • client_max_body_size 50m
-  • Sets X-Forwarded-For to $remote_addr (single value, not appended)
+  • Fija X-Forwarded-For a $remote_addr (valor único, no acumulado)
     │
     ▼
- Docker bridge network
+ Red bridge de Docker
   ┌────────────────────────────────────┐
   │  app (Nitro / Node 24, port 3000) │
   │  postgres (port 5432, internal)   │
@@ -45,85 +45,85 @@ Internet
   └────────────────────────────────────┘
 ```
 
-- NGINX runs on the host (not in Docker) and proxies to `127.0.0.1:3000`.
-- PostgreSQL and Redis are **not** exposed to the host — they communicate with `app` on the internal Docker bridge.
-- Uploads live in bind-mounted host directories so they survive container recreations.
-- Migrations run as a **one-shot ephemeral container** during each deploy, before the app restarts.
+- NGINX corre en el host (no en Docker) y hace proxy a `127.0.0.1:3000`.
+- PostgreSQL y Redis **no** están expuestos al host — se comunican con `app` por la red bridge interna de Docker.
+- Los uploads viven en directorios del host montados como bind mounts, por lo que sobreviven a recreaciones de contenedores.
+- Las migraciones corren en un **contenedor efímero** durante cada despliegue, antes de reiniciar la app.
 
 ---
 
-## 2. Prerequisites
+## 2. Requisitos
 
-### On your local machine
+### En tu máquina local
 
-- Docker with Buildx (Docker Desktop or `docker buildx install`)
+- Docker con Buildx (Docker Desktop o `docker buildx install`)
 - `pnpm`
-- `ssh` and `git`
-- Access to a container registry (GitHub Container Registry — GHCR — is preconfigured)
+- `ssh` y `git`
+- Acceso a un registro de contenedores (GitHub Container Registry — GHCR — está preconfigurado)
 
-### On the VPS
+### En el VPS
 
-- Ubuntu 22.04 LTS or newer (Debian 12 also works)
-- 1 GB RAM minimum; 2 GB recommended (Node SSR + PostgreSQL + Redis)
-- SSH access with a non-root user in the `docker` group
-- Docker Engine (not Docker Desktop) and the Compose plugin
+- Ubuntu 22.04 LTS o superior (Debian 12 también funciona)
+- Mínimo 1 GB de RAM; recomendados 2 GB (Node SSR + PostgreSQL + Redis)
+- Acceso SSH con usuario no-root en el grupo `docker`
+- Docker Engine (no Docker Desktop) y el plugin Compose
 - NGINX
 - `certbot` + `python3-certbot-nginx`
 
 ---
 
-## 3. VPS initial setup
+## 3. Configuración inicial del VPS
 
-### 3a. Create the project directory on the VPS
+### 3a. Crear el directorio del proyecto en el VPS
 
 ```bash
-# As your deploy user (e.g. dockeruser)
+# Como tu usuario de despliegue (p.ej. dockeruser)
 sudo mkdir -p /opt/creup-web
 sudo chown $USER:$USER /opt/creup-web
 cd /opt/creup-web
 
-# Create the data directories that will be bind-mounted
+# Crear los directorios de datos que se montarán como bind mounts
 mkdir -p data/public-uploads data/admin-assets
 ```
 
-### 3b. Copy project files to the VPS
+### 3b. Copiar los archivos del proyecto al VPS
 
-You only need three files on the VPS — the app image is pulled from the registry:
+Solo necesitas tres archivos en el VPS — la imagen de la app se descarga del registro:
 
 ```bash
-# From your local machine
-scp docker-compose.production.example.yml dockeruser@your-vps:/opt/creup-web/docker-compose.yml
-scp -r docker/ dockeruser@your-vps:/opt/creup-web/docker/
+# Desde tu máquina local
+scp docker-compose.production.example.yml dockeruser@tu-vps:/opt/creup-web/docker-compose.yml
+scp -r docker/ dockeruser@tu-vps:/opt/creup-web/docker/
 ```
 
-The `docker/` directory contains `postgres/init/001-extensions.sql` which runs on first PostgreSQL startup to install `pg_trgm`.
+El directorio `docker/` contiene `postgres/init/001-extensions.sql`, que se ejecuta en el primer arranque de PostgreSQL para instalar `pg_trgm`.
 
-### 3c. Authenticate with GHCR on the VPS (if using a private image)
+### 3c. Autenticarse en GHCR desde el VPS (si usas imagen privada)
 
 ```bash
-# On the VPS
-echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+# En el VPS
+echo "TU_GITHUB_PAT" | docker login ghcr.io -u TU_GITHUB_USERNAME --password-stdin
 ```
 
 ---
 
-## 4. Google OAuth setup
+## 4. Configurar Google OAuth
 
-The admin panel authenticates via Google OAuth. You need a Google Cloud project with OAuth credentials.
+El panel de administración usa Google OAuth. Necesitas un proyecto de Google Cloud con credenciales OAuth.
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials.
-2. Create an **OAuth 2.0 Client ID** (Web application).
-3. Add your production domain to **Authorized JavaScript origins**: `https://creup.es`
-4. Add the callback URL to **Authorized redirect URIs**: `https://creup.es/api/auth/callback/google`
-5. Copy the Client ID and Client Secret into your `.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+1. Ve a [console.cloud.google.com](https://console.cloud.google.com) → APIs y servicios → Credenciales.
+2. Crea un **OAuth 2.0 Client ID** (aplicación web).
+3. Añade tu dominio de producción a **Authorized JavaScript origins**: `https://creup.es`
+4. Añade la URL de callback a **Authorized redirect URIs**: `https://creup.es/api/auth/callback/google`
+5. Copia el Client ID y el Client Secret en tu `.env` como `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
 
 ---
 
-## 5. Configure NGINX with TLS
+## 5. Configurar NGINX con TLS
 
-### 5a. Initial HTTP-only config (needed for Certbot to issue certificates)
+### 5a. Config HTTP inicial (necesaria para que Certbot emita el certificado)
 
-Create `/etc/nginx/sites-available/creup`:
+Crea `/etc/nginx/sites-available/creup`:
 
 ```nginx
 server {
@@ -131,7 +131,7 @@ server {
     listen [::]:80;
     server_name creup.es www.creup.es;
 
-    # Certbot ACME challenge
+    # ACME challenge de Certbot
     location /.well-known/acme-challenge/ {
         root /var/www/html;
     }
@@ -142,43 +142,43 @@ server {
 }
 ```
 
-Enable it:
+Actívalo:
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/creup /etc/nginx/sites-enabled/creup
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-### 5b. Obtain TLS certificate
+### 5b. Obtener el certificado TLS
 
 ```bash
 sudo certbot --nginx -d creup.es -d www.creup.es \
   --non-interactive --agree-tos -m admin@creup.es
 ```
 
-Certbot will edit the nginx config automatically and set up auto-renewal.
+Certbot modificará la config de NGINX automáticamente y configurará la renovación automática.
 
-### 5c. Replace with the full production config
+### 5c. Sustituir por la config completa de producción
 
-Use the provided template as your base. Copy and edit it:
+Usa la plantilla incluida como base:
 
 ```bash
 sudo cp /opt/creup-web/deploy/nginx/creup.production.example.conf \
         /etc/nginx/sites-available/creup
 ```
 
-The template already handles HTTP→HTTPS redirect, WebSocket upgrades, and the critical `X-Forwarded-For` header. The key security requirement is that `X-Forwarded-For` must be set to `$remote_addr` (the direct client IP), **not appended** — this ensures the rate limiter and IP detection see the real IP:
+La plantilla ya gestiona la redirección HTTP→HTTPS, los upgrades de WebSocket y la cabecera crítica `X-Forwarded-For`. El requisito clave de seguridad es que `X-Forwarded-For` se asigne a `$remote_addr` (IP del cliente directo), **sin acumular** — así el rate limiter y la detección de IP ven la IP real:
 
 ```nginx
-# CRITICAL: overwrite, do not append, so Nitro sees exactly one IP.
+# CRÍTICO: sobreescribir, no acumular, para que Nitro vea exactamente una IP.
 proxy_set_header X-Forwarded-For $remote_addr;
 proxy_set_header X-Real-IP       $remote_addr;
 ```
 
-Additional hardening to add to the HTTPS server block:
+Refuerzo adicional para el bloque HTTPS:
 
 ```nginx
-# TLS hardening
+# Refuerzo TLS
 ssl_protocols TLSv1.2 TLSv1.3;
 ssl_prefer_server_ciphers off;
 ssl_session_cache shared:SSL:10m;
@@ -189,24 +189,24 @@ ssl_stapling_verify on;
 resolver 1.1.1.1 8.8.8.8 valid=300s;
 resolver_timeout 5s;
 
-# HSTS (set here since the app itself does not send this header)
-add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+# HSTS: la app ya envía esta cabecera vía nuxt-security (Strict-Transport-Security: max-age=31536000; includeSubdomains).
+# No añadirla también en NGINX para evitar cabeceras duplicadas.
 
-# Proxy buffering tuning
+# Ajuste de buffering del proxy
 proxy_buffering on;
 proxy_buffer_size 8k;
 proxy_buffers 8 8k;
 proxy_busy_buffers_size 16k;
 
-# Health check endpoint: allow only direct (non-proxied) requests
-# The app rejects requests that carry X-Forwarded-For with a 404.
-# Do not expose /health via NGINX to the public internet:
+# Endpoint de health: solo permite peticiones directas (no proxiadas).
+# La app rechaza peticiones con X-Forwarded-For con un 404.
+# No exponer /health a internet a través de NGINX:
 location /health {
     deny all;
 }
 ```
 
-Reload NGINX:
+Recarga NGINX:
 
 ```bash
 sudo nginx -t && sudo systemctl reload nginx
@@ -214,21 +214,19 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
-## 6. Prepare the production environment file
+## 6. Preparar el archivo de entorno de producción
 
-On the VPS, create `/opt/creup-web/.env`. Start from the project's `.env.example` and fill in every value:
+En el VPS, crea `/opt/creup-web/.env`. Parte del `.env.example` del proyecto y rellena todos los valores:
 
 ```bash
 cd /opt/creup-web
-# Copy .env from your local machine
-scp .env dockeruser@your-vps:/opt/creup-web/.env
-# Or create it directly on the VPS
+# Copiar .env desde tu máquina local
+scp .env dockeruser@tu-vps:/opt/creup-web/.env
+# O crearlo directamente en el VPS
 nano .env
 ```
 
-**Critical values to set for production:**
-
-This block is mirrored in `README.md` and should remain identical.
+**Valores críticos para producción:**
 
 ```env
 # ── Application ──
@@ -274,7 +272,8 @@ NUXT_GOOGLE_CALENDAR_ID=<calendar id>
 
 # ── External API ──
 NUXT_EXTERNAL_API_BASE_URL=https://api.example.com
-NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS=https://api.example.com
+NUXT_EXTERNAL_ASSET_BASE_URL=https://assets.example.com
+NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS=https://assets.example.com,https://api.example.com
 NUXT_EXTERNAL_ASSET_PROXY_TIMEOUT_MS=10000
 NUXT_EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES=15728640
 NUXT_EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES=41943040
@@ -290,7 +289,7 @@ NUXT_UMAMI_HOST=https://umami.creup.es
 NUXT_UMAMI_ID=<your umami site id>
 ```
 
-> **Security:** The `.env` file contains secrets. Permissions should be `600`:
+> **Seguridad:** El archivo `.env` contiene secretos. Permisos recomendados `600`:
 >
 > ```bash
 > chmod 600 /opt/creup-web/.env
@@ -298,40 +297,38 @@ NUXT_UMAMI_ID=<your umami site id>
 
 ---
 
-## 7. Production Docker Compose
+## 7. Docker Compose de producción
 
-The file `docker-compose.production.example.yml` is the production Compose template. Copy it to `docker-compose.yml` in your VPS project directory if you haven't already:
+El archivo `docker-compose.production.example.yml` es la plantilla de Compose para producción. Cópialo a `docker-compose.yml` en el directorio del proyecto en el VPS si aún no lo has hecho:
 
 ```bash
-# Already done in step 3b if you followed along
-# Rename on VPS if needed:
 mv docker-compose.production.example.yml docker-compose.yml
 ```
 
-The compose file defines:
+El archivo Compose define:
 
-| Service    | Image                         | Notes                      |
-| ---------- | ----------------------------- | -------------------------- |
-| `app`      | `ghcr.io/CREUP-DEV/web:<tag>` | Nitro SSR + BullMQ worker  |
-| `postgres` | `postgres:18-alpine`          | Data volume + init scripts |
-| `redis`    | `redis:8-alpine`              | AOF persistence + password |
+| Servicio   | Imagen                        | Notas                             |
+| ---------- | ----------------------------- | --------------------------------- |
+| `app`      | `ghcr.io/CREUP-DEV/web:<tag>` | Nitro SSR + BullMQ worker         |
+| `postgres` | `postgres:18-alpine`          | Volumen de datos + scripts de init |
+| `redis`    | `redis:8-alpine`              | Persistencia AOF + contraseña     |
 
-**Services are not exposed to the host network** except `app` on `APP_PORT` (default `3000`). NGINX proxies to `127.0.0.1:3000`.
+**Los servicios no están expuestos a la red del host** salvo `app` en `APP_PORT` (por defecto `3000`). NGINX hace proxy a `127.0.0.1:3000`.
 
 ---
 
-## 8. First deploy
+## 8. Primer despliegue
 
-### 8a. On your local machine — configure deploy variables
+### 8a. En tu máquina local — configurar variables de despliegue
 
-Your local `.env` must include:
+Tu `.env` local debe incluir:
 
 ```env
-VPS_HOST=dockeruser@your-vps-ip-or-hostname
+VPS_HOST=dockeruser@ip-o-hostname-del-vps
 REMOTE_DIR=/opt/creup-web
 
-# GHCR credentials (or use docker login ghcr.io manually)
-GHCR_USERNAME=your-github-username
+# Credenciales GHCR (o usa docker login ghcr.io manualmente)
+GHCR_USERNAME=tu-usuario-github
 GHCR_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 IMAGE_NAME=ghcr.io/CREUP-DEV/web
@@ -339,37 +336,37 @@ DOCKER_PLATFORM=linux/amd64
 APPLY_MIGRATIONS_ON_DEPLOY=true
 ```
 
-### 8b. Make the deploy script executable
+### 8b. Dar permisos de ejecución al script
 
 ```bash
 chmod +x deploy.sh
 ```
 
-### 8c. Run the first deploy
+### 8c. Ejecutar el primer despliegue
 
 ```bash
 bash ./deploy.sh
 ```
 
-What happens step by step:
+Qué hace paso a paso:
 
-1. Loads `.env` from your local machine.
-2. Builds the Docker image (no secrets baked in — all config is runtime).
-3. Pushes the image to GHCR.
-4. SSH into the VPS.
-5. `docker compose pull` — pulls the new image on the VPS.
-6. Starts `postgres` if it isn't running (needed for migrations).
-7. Runs `docker compose run --rm app /app/ops/migrate.mjs` — applies pending Drizzle migrations atomically (advisory lock prevents concurrent runs).
-8. `docker compose up -d` — recreates all containers.
+1. Carga las variables desde `.env` local.
+2. Construye la imagen Docker (sin secretos baked — toda la config es runtime).
+3. Publica la imagen en GHCR.
+4. Conecta por SSH al VPS.
+5. `docker compose pull` — descarga la nueva imagen en el VPS.
+6. Arranca `postgres` si no está en marcha (necesario para las migraciones).
+7. Ejecuta `docker compose run --rm app /app/ops/migrate.mjs` — aplica las migraciones Drizzle pendientes de forma atómica (el advisory lock evita ejecuciones concurrentes).
+8. `docker compose up -d` — recrea todos los contenedores.
 
-### 8d. Seed initial data (first time only)
+### 8d. Seed inicial (solo la primera vez)
 
-In practice, for production sites it's safer to log in to the admin panel directly and create content there, rather than running the seed (which is destructive).
+Para producción, lo más seguro es entrar directamente al panel de administración y crear el contenido desde allí, en lugar de ejecutar el seed (que es destructivo).
 
-If you do need to seed, run an ephemeral container on the VPS:
+Si aun así necesitas el seed, ejecuta un contenedor efímero en el VPS:
 
 ```bash
-# On the VPS
+# En el VPS
 cd /opt/creup-web
 docker compose run --rm \
   -e NODE_ENV=production \
@@ -377,53 +374,53 @@ docker compose run --rm \
   app /app/ops/seed.mjs --confirm
 ```
 
-### 8e. Verify the deploy
+### 8e. Verificar el despliegue
 
 ```bash
-# Direct health check (bypasses NGINX — the app rejects proxied requests to /health)
+# Health check directo (la app rechaza peticiones proxiadas a /health)
 curl http://127.0.0.1:3000/health
-# Expected: {"status":"ok","timestamp":"...","checks":{"database":"ok","redis":"ok","externalApi":"ok","smtp":"ok"}}
+# Esperado: {"status":"ok","timestamp":"...","checks":{"database":"ok","redis":"ok","externalApi":"ok","smtp":"ok"}}
 
-# Via the public domain (should get 404 from the app — NGINX blocks /health)
+# Por dominio público (NGINX bloquea /health → 404)
 curl -I https://creup.es/health
 
-# Admin panel
+# Panel de administración
 open https://creup.es/admin
 ```
 
 ---
 
-## 9. Ongoing deploys with deploy.sh
+## 9. Despliegues posteriores con deploy.sh
 
-For every subsequent release:
+Para cada nueva versión:
 
 ```bash
 bash ./deploy.sh
 ```
 
-The script applies migrations before recreating the app container, so there is no downtime window where the new code runs against an old schema.
+El script aplica las migraciones antes de recrear el contenedor de la app, por lo que no hay ventana de tiempo en que el nuevo código corra contra un esquema antiguo.
 
-**Zero-downtime note:** Docker Compose `up -d` stops the old container and starts the new one sequentially. For true zero-downtime you would need a load balancer with multiple replicas. For a low-traffic site this ~2 second gap is acceptable.
+**Nota:** Docker Compose `up -d` para el contenedor antiguo antes de arrancar el nuevo. Para un sitio de bajo tráfico este hueco de ~2 segundos es aceptable; zero-downtime real requeriría un load balancer con réplicas.
 
 ### Rollback
 
-To roll back to a specific image tag:
+Para volver a una etiqueta de imagen anterior:
 
 ```bash
-# On the VPS
+# En el VPS
 cd /opt/creup-web
-IMAGE=ghcr.io/CREUP-DEV/web:<previous-tag> docker compose up -d app
+IMAGE=ghcr.io/CREUP-DEV/web:<etiqueta-anterior> docker compose up -d app
 ```
 
-Migrations are **forward-only** (never edit existing migration files). If a migration must be reversed, write a new migration that undoes the change.
+Las migraciones son **unidireccionales** (nunca edites archivos de migración existentes). Si una migración debe revertirse, escribe una nueva migración que deshaga el cambio.
 
 ---
 
-## 10. Backups
+## 10. Copias de seguridad
 
 ### PostgreSQL
 
-The most reliable approach is `pg_dump` run as a cron job on the VPS:
+El enfoque más fiable es `pg_dump` como tarea cron en el VPS:
 
 ```bash
 # /opt/creup-web/scripts/backup-db.sh
@@ -440,45 +437,45 @@ docker exec creup-web-postgres pg_dump \
   -U creup -d creup --no-owner --no-acl \
   | gzip > "$FILENAME"
 
-# Keep only the last 14 days
+# Conservar solo los últimos 14 días
 find "$BACKUP_DIR" -name "*.sql.gz" -mtime +14 -delete
 
-echo "Backup saved: $FILENAME"
+echo "Backup guardado: $FILENAME"
 ```
 
 ```bash
 chmod +x /opt/creup-web/scripts/backup-db.sh
 
-# Add to crontab (daily at 03:00)
+# Añadir al crontab (diario a las 03:00)
 crontab -e
 # 0 3 * * * /opt/creup-web/scripts/backup-db.sh >> /var/log/creup-backup.log 2>&1
 ```
 
-Restore from backup:
+Restaurar desde backup:
 
 ```bash
 gunzip -c backup.sql.gz \
   | docker exec -i creup-web-postgres psql -U creup -d creup
 ```
 
-### Upload assets
+### Archivos subidos
 
-Admin-uploaded files live in `./data/public-uploads` and `./data/admin-assets` on the VPS. Back them up with `rsync` or `tar`:
+Los archivos de administración viven en `./data/public-uploads` y `./data/admin-assets` en el VPS. Haz backup con `rsync` o `tar`:
 
 ```bash
-# Example: rsync to a remote storage server
+# Ejemplo: rsync a un servidor de almacenamiento externo
 rsync -az --delete \
   /opt/creup-web/data/ \
-  backup-user@storage-server:/backups/creup-web/data/
+  backup-user@servidor-storage:/backups/creup-web/data/
 ```
 
 ---
 
-## 11. Health monitoring
+## 11. Monitorización
 
-### The health endpoint
+### El endpoint de health
 
-`GET /health` checks database, Redis, external API, and SMTP, then returns:
+`GET /health` comprueba base de datos, Redis, API externa y SMTP, y devuelve:
 
 ```json
 {
@@ -493,63 +490,61 @@ rsync -az --delete \
 }
 ```
 
-Possible values per check: `ok`, `error`, `unconfigured`, `degraded`.
-Overall status: `ok` (200), `degraded` (200), or `error` (503).
+Valores posibles por check: `ok`, `error`, `unconfigured`, `degraded`.
+Estado global: `ok` (200), `degraded` (200) o `error` (503).
 
-**Important:** The endpoint rejects requests that carry an `X-Forwarded-For` header (returns 404). This means it can only be reached by direct requests on the VPS, not through NGINX. Block it in NGINX with `deny all` as shown in section 5c.
+**Importante:** El endpoint rechaza peticiones con cabecera `X-Forwarded-For` (devuelve 404). Solo puede alcanzarse mediante peticiones directas en el VPS, no a través de NGINX. Bloquéalo en NGINX con `deny all` como se muestra en la sección 5c.
 
-### Automated health check (via uptime monitoring)
+### Health check automatizado
 
-Use a service like [Uptime Kuma](https://github.com/louislam/uptime-kuma) (self-hosted) or any external uptime monitor. Point it at your public domain — the app will respond normally to all public routes.
-
-For direct internal health checks from the VPS itself:
+Usa un servicio como [Uptime Kuma](https://github.com/louislam/uptime-kuma) (self-hosted) o cualquier monitor externo apuntando al dominio público. Para alertas simples desde el propio VPS:
 
 ```bash
-# Add to crontab for simple alerting
+# Añadir al crontab
 */5 * * * * \
   curl -sf http://127.0.0.1:3000/health | grep -q '"status":"ok"' \
   || echo "CREUP health check FAILED at $(date)" | mail -s "CREUP Alert" admin@creup.es
 ```
 
-### Viewing logs
+### Ver logs
 
 ```bash
-# App logs (structured JSON from Nitro)
+# Logs de la app (JSON estructurado de Nitro)
 docker logs -f creup-web-app
 
-# PostgreSQL logs
+# Logs de PostgreSQL
 docker logs -f creup-web-postgres
 
-# Redis logs
+# Logs de Redis
 docker logs -f creup-web-redis
 ```
 
 ---
 
-## 12. Updating NGINX or Docker after deploy
+## 12. Actualizar NGINX o Docker tras el despliegue
 
-### Update the NGINX config
+### Actualizar la config de NGINX
 
 ```bash
 sudo nano /etc/nginx/sites-available/creup
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-NGINX reload is graceful — in-flight requests complete before workers are replaced.
+El reload de NGINX es graceful — las peticiones en vuelo se completan antes de reemplazar los workers.
 
-### TLS certificate renewal
+### Renovación del certificado TLS
 
-Certbot sets up a systemd timer that auto-renews. Verify it:
+Certbot configura un timer de systemd para la renovación automática. Verifica que está activo:
 
 ```bash
 sudo systemctl status certbot.timer
 sudo certbot renew --dry-run
 ```
 
-### Docker image updates (postgres/redis)
+### Actualizar imágenes Docker (postgres/redis)
 
 ```bash
-# On the VPS
+# En el VPS
 cd /opt/creup-web
 docker compose pull postgres redis
 docker compose up -d postgres redis
@@ -557,38 +552,39 @@ docker compose up -d postgres redis
 
 ---
 
-## 13. Troubleshooting
+## 13. Resolución de problemas
 
-### App won't start — startup config validation failed
+### La app no arranca — fallo en la validación de config al inicio
 
-The app validates critical environment variables at startup and fails fast with a clear error if any are missing. Check:
+La app valida las variables de entorno críticas al arrancar y falla rápido con un error claro si falta alguna:
 
 ```bash
 docker logs creup-web-app 2>&1 | grep -A 5 "startup"
 ```
 
-Common causes: `NUXT_REDIS_URL`, `APP_SECRET`, `NUXT_SMTP_HOST`, `NUXT_EXTERNAL_API_BASE_URL` not set or malformed.
+Causas habituales: `NUXT_REDIS_URL`, `APP_SECRET`, `NUXT_SMTP_HOST`, `NUXT_EXTERNAL_API_BASE_URL` no definidas o mal formadas. Si la API externa y los assets viven en orígenes distintos, verifica también `NUXT_EXTERNAL_ASSET_BASE_URL` y `NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS`.
 
-### "Too many connections" from PostgreSQL
+### "Too many connections" de PostgreSQL
 
-Increase `DATABASE_MAX_CONNECTIONS` in `.env` — but stay well below your PostgreSQL `max_connections` setting (default 100). With one app replica the default of 10 is conservative and fine.
+Aumenta `DATABASE_MAX_CONNECTIONS` en `.env`, pero mantente muy por debajo del `max_connections` de PostgreSQL (por defecto 100). Con una réplica de la app, el valor por defecto de 10 es conservador y suficiente.
 
-### Rate limiting not working
+### El rate limiting no funciona
 
-The rate limiter requires Redis and a correct `X-Forwarded-For` header. If the header is missing or contains multiple IPs, rate limiting is skipped (fail-open by design). Verify NGINX sets `X-Forwarded-For $remote_addr` — this must be an assignment, not an append.
+El rate limiter requiere Redis y una cabecera `X-Forwarded-For` correcta. Si la cabecera falta o contiene varias IPs, el rate limiting se omite (fail-open por diseño). Verifica que NGINX asigna `X-Forwarded-For $remote_addr` — debe ser una asignación, no una acumulación.
 
-### Admin login fails (OAuth redirect error)
+### El login de administración falla (error de redirect OAuth)
 
-Check that:
-1. `NUXT_SITE_URL` matches the exact origin in the browser (`https://creup.es`).
-2. The Google OAuth callback URL `https://creup.es/api/auth/callback/google` is listed in Authorized redirect URIs.
-3. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are correct.
+Comprueba que:
 
-### Newsletter emails not sending
+1. `NUXT_SITE_URL` coincide exactamente con el origen en el navegador (`https://creup.es`).
+2. La URL de callback `https://creup.es/api/auth/callback/google` está en la lista de Authorized redirect URIs de Google.
+3. `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` son correctos.
 
-1. Check the health endpoint: `curl http://127.0.0.1:3000/health` — SMTP should show `ok`.
-2. Check logs: `docker logs creup-web-app | grep smtp`.
-3. Verify `NUXT_SMTP_*` variables are correct. Test with:
+### Los emails de newsletter no se envían
+
+1. Comprueba el health endpoint: `curl http://127.0.0.1:3000/health` — SMTP debe mostrar `ok`.
+2. Revisa los logs: `docker logs creup-web-app | grep smtp`.
+3. Verifica las variables `NUXT_SMTP_*`. Puedes testear con:
 
 ```bash
 docker compose exec app node -e "
@@ -603,35 +599,35 @@ docker compose exec app node -e "
 "
 ```
 
-### Uploads not persisting across deploys
+### Los uploads no persisten entre despliegues
 
-Verify the bind mounts are correctly set in `.env`:
+Verifica que los bind mounts están correctamente definidos en `.env`:
 
 ```env
 APP_PUBLIC_UPLOADS_DIR=./data/public-uploads
 APP_ADMIN_ASSETS_DIR=./data/admin-assets
 ```
 
-And that these directories exist on the host with the right owner (UID 1000, the non-root user in the distroless image):
+Y que estos directorios existen en el host con el propietario correcto (UID 1000, el usuario no-root de la imagen distroless):
 
 ```bash
 ls -la /opt/creup-web/data/
-# Should show writable directories owned by UID 1000
+# Debe mostrar directorios con permisos de escritura, propietario UID 1000
 sudo chown -R 1000:1000 /opt/creup-web/data/
 ```
 
-### Database migration fails during deploy
+### La migración de base de datos falla durante el despliegue
 
-Migrations acquire a PostgreSQL advisory lock — only one migration run proceeds at a time. If a previous run crashed mid-migration:
+Las migraciones adquieren un advisory lock de PostgreSQL — solo una ejecución avanza a la vez. Si una ejecución anterior quedó a medias:
 
 ```bash
-# Check for stuck locks (on the VPS)
+# Comprobar locks atascados (en el VPS)
 docker compose exec postgres psql -U creup -d creup \
   -c "SELECT pid, granted, classid, objid FROM pg_locks WHERE locktype = 'advisory';"
 
-# If needed, kill the stuck session
+# Si es necesario, terminar la sesión atascada
 docker compose exec postgres psql -U creup -d creup \
   -c "SELECT pg_terminate_backend(<pid>);"
 ```
 
-Then re-run the deploy.
+Después vuelve a ejecutar el despliegue.

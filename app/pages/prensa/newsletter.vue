@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AccordionItem } from '@nuxt/ui'
+import { getPublicNewsletterArchiveAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { EMAIL_MAX_LENGTH } from '~~/shared/utils/emailValidation'
 import * as turnstileComposable from '@/composables/useTurnstile'
@@ -226,7 +227,10 @@ const {
 } = await useFetch<{
   items: Newsletter[]
   total: number
-}>('/api/newsletter', { query: computed(() => ({ limit: LIMIT, offset: offset.value })) })
+}>('/api/newsletter', {
+  key: computed(() => getPublicNewsletterArchiveAsyncDataKey(offset.value)),
+  query: computed(() => ({ limit: LIMIT, offset: offset.value })),
+})
 const newsletters = computed(() => data.value?.items ?? [])
 const total = computed(() => data.value?.total ?? 0)
 const archiveError = computed(() => !!archiveFetchError.value)
@@ -425,11 +429,13 @@ function formatMonth(dateStr: string): string {
               :label="`${t('newsletterPage.form.turnstile')} *`"
               :error="getFieldError('turnstileToken')"
             >
-              <div
-                id="newsletter-turnstile"
-                :aria-describedby="turnstileTokenFieldId"
-                class="min-h-17"
-              />
+              <div class="flex justify-center">
+                <div
+                  id="newsletter-turnstile"
+                  :aria-describedby="turnstileTokenFieldId"
+                  class="min-h-17"
+                />
+              </div>
               <p :id="turnstileTokenFieldId" class="text-muted mt-2 text-xs">
                 {{
                   isTurnstileReady

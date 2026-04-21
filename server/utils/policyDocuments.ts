@@ -8,7 +8,7 @@ import {
 } from './validation'
 import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from './publicRouteCache'
 
-const POLICY_DOCUMENTS_CACHE_VERSION = 2
+const POLICY_DOCUMENTS_CACHE_VERSION = 1
 
 interface PolicyDocumentFile {
   name: string | null

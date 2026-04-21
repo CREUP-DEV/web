@@ -28,10 +28,7 @@ export async function assertMemberCalendarIsPublic(event: H3Event, calendarId: s
         payload = await $fetch(endpoint)
       } catch (error) {
         logError('member-calendar.organigrama.fetch', error, { endpoint }, event)
-        throw createError({
-          statusCode: 502,
-          message: unavailableMessage,
-        })
+        return null
       }
 
       const parsedPayload = externalOrganigramaResponseSchema.safeParse(payload)
@@ -44,10 +41,7 @@ export async function assertMemberCalendarIsPublic(event: H3Event, calendarId: s
           },
           event
         )
-        throw createError({
-          statusCode: 502,
-          message: unavailableMessage,
-        })
+        return null
       }
 
       return new Set(
@@ -64,6 +58,16 @@ export async function assertMemberCalendarIsPublic(event: H3Event, calendarId: s
     },
     getExternalApiCacheOptions(event)
   )
+
+  if (allowedCalendars === null) {
+    logError(
+      'member-calendar.organigrama.unavailable',
+      new Error(unavailableMessage),
+      { calendarId: normalizedCalendarId },
+      event
+    )
+    return
+  }
 
   if (!allowedCalendars.has(normalizedCalendarId)) {
     throw createError({

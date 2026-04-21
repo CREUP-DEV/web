@@ -84,7 +84,8 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
               :loading="index === 0 ? 'eager' : 'lazy'"
               :fetchpriority="index === 0 ? 'high' : undefined"
               decoding="async"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1152px"
+              sizes="(max-width: 640px) calc(100vw - 1rem), (max-width: 1024px) calc(100vw - 2rem), 1200px"
+              quality="72"
               :format="getImageFormat(item.image)"
             />
             <div

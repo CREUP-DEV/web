@@ -11,6 +11,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const isSubmitting = ref(false)
 const pressFormRef = ref<{ hasUnsavedChanges?: boolean } | null>(null)
 const allowNavigationWithoutPrompt = ref(false)
@@ -67,6 +68,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
       method: 'PUT',
       body: { ...payload, updatedAt: article.value?.updatedAt },
     })
+    await refreshAllClientAsyncData()
     allowNavigationWithoutPrompt.value = true
     toast.add({ title: 'Artículo actualizado correctamente', color: 'success' })
     router.push(ADMIN_ROUTES.press)

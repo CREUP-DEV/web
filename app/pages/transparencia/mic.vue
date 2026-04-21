@@ -73,11 +73,40 @@ const corporateColors: CorporateColor[] = [
 const micAssets = computed(() => micManifest.value ?? DEFAULT_MIC_MANIFEST)
 
 const assetUrl = (path: string) => `${micAssets.value.basePath}/${path}`
+const logoAssetUrl = (sectionSlug: string, variantSlug: string, extension: 'png' | 'svg') =>
+  assetUrl(`${sectionSlug}-${variantSlug}.${extension}`)
 const previewAssetUrl = (sectionSlug: string, variantSlug: string) =>
-  assetUrl(`${sectionSlug}-${variantSlug}.png`)
+  logoAssetUrl(sectionSlug, variantSlug, 'png')
+const logoAlt = (labelKey: string) => t('mic.logoAlt', { version: t(labelKey) })
+const micPdfUrl = computed(() => assetUrl(micAssets.value.pdf))
 const previewSurfaceStyle = (variantSlug: string) => ({
   backgroundColor: variantSlug === 'blanco' || variantSlug === 'beige' ? '#163866' : '#F5EEE6',
 })
+const isVerticalPreview = (sectionSlug: string) => sectionSlug === 'vertical'
+const desktopPreviewFrameClass = (sectionSlug: string) =>
+  isVerticalPreview(sectionSlug)
+    ? 'border-default mx-auto flex min-h-40 w-[8.5rem] max-w-[8.5rem] items-center justify-center rounded-lg border p-3'
+    : 'border-default mx-auto flex min-h-24 max-w-48 items-center justify-center rounded-lg border p-4'
+const mobilePreviewFrameClass = (sectionSlug: string) =>
+  isVerticalPreview(sectionSlug)
+    ? 'border-default flex min-h-36 w-full items-center justify-center rounded-lg border p-3'
+    : 'border-default flex min-h-24 w-full items-center justify-center rounded-lg border p-4'
+const desktopPreviewImageClass = (sectionSlug: string) =>
+  isVerticalPreview(sectionSlug)
+    ? 'block h-auto max-h-32 w-auto max-w-full object-contain'
+    : 'block h-auto max-h-16 w-auto max-w-full object-contain'
+const mobilePreviewImageClass = (sectionSlug: string) =>
+  isVerticalPreview(sectionSlug)
+    ? 'block h-auto max-h-[7.5rem] w-auto max-w-full object-contain'
+    : 'block h-auto max-h-14 w-auto max-w-full object-contain'
+const desktopPreviewDimensions = (sectionSlug: string) =>
+  isVerticalPreview(sectionSlug)
+    ? { width: 192, height: 320, sizes: '(min-width: 1024px) 136px, 128px' }
+    : { width: 320, height: 120, sizes: '(min-width: 1024px) 192px, 160px' }
+const mobilePreviewDimensions = (sectionSlug: string) =>
+  isVerticalPreview(sectionSlug)
+    ? { width: 192, height: 320, sizes: '144px' }
+    : { width: 240, height: 96, sizes: '160px' }
 
 const {
   elRef: introRef,
@@ -179,16 +208,14 @@ const copyColorToClipboard = (text: string) =>
                     class="px-2 py-3 text-center"
                   >
                     <div
-                      class="border-default mx-auto flex min-h-24 max-w-48 items-center justify-center rounded-lg border p-4"
+                      :class="desktopPreviewFrameClass(section.slug)"
                       :style="previewSurfaceStyle(variant.slug)"
                     >
                       <NuxtImg
                         :src="previewAssetUrl(section.slug, variant.slug)"
-                        :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
-                        class="h-auto max-h-16 w-auto max-w-full"
-                        width="320"
-                        height="120"
-                        sizes="(min-width: 1024px) 192px, 160px"
+                        :alt="logoAlt(variant.labelKey)"
+                        :class="desktopPreviewImageClass(section.slug)"
+                        v-bind="desktopPreviewDimensions(section.slug)"
                         loading="lazy"
                       />
                     </div>
@@ -201,7 +228,7 @@ const copyColorToClipboard = (text: string) =>
                     class="px-2 py-2 text-center"
                   >
                     <UButton
-                      :href="assetUrl(`${section.slug}-${variant.slug}.svg`)"
+                      :href="logoAssetUrl(section.slug, variant.slug, 'svg')"
                       external
                       variant="link"
                       size="xs"
@@ -219,7 +246,7 @@ const copyColorToClipboard = (text: string) =>
                     class="px-2 py-2 text-center"
                   >
                     <UButton
-                      :href="assetUrl(`${section.slug}-${variant.slug}.png`)"
+                      :href="logoAssetUrl(section.slug, variant.slug, 'png')"
                       external
                       variant="link"
                       size="xs"
@@ -244,22 +271,20 @@ const copyColorToClipboard = (text: string) =>
                 {{ t(variant.labelKey) }}
               </span>
               <div
-                class="border-default flex min-h-24 w-full items-center justify-center rounded-lg border p-4"
+                :class="mobilePreviewFrameClass(section.slug)"
                 :style="previewSurfaceStyle(variant.slug)"
               >
                 <NuxtImg
                   :src="previewAssetUrl(section.slug, variant.slug)"
-                  :alt="t(`mic.logoAlt`, { version: t(variant.labelKey) })"
-                  class="h-auto max-h-14 w-auto max-w-full"
-                  width="240"
-                  height="96"
-                  sizes="160px"
+                  :alt="logoAlt(variant.labelKey)"
+                  :class="mobilePreviewImageClass(section.slug)"
+                  v-bind="mobilePreviewDimensions(section.slug)"
                   loading="lazy"
                 />
               </div>
               <div class="flex gap-1">
                 <UButton
-                  :href="assetUrl(`${section.slug}-${variant.slug}.svg`)"
+                  :href="logoAssetUrl(section.slug, variant.slug, 'svg')"
                   external
                   variant="soft"
                   size="xs"
@@ -269,7 +294,7 @@ const copyColorToClipboard = (text: string) =>
                   label="SVG"
                 />
                 <UButton
-                  :href="assetUrl(`${section.slug}-${variant.slug}.png`)"
+                  :href="logoAssetUrl(section.slug, variant.slug, 'png')"
                   external
                   variant="soft"
                   size="xs"
@@ -453,12 +478,12 @@ const copyColorToClipboard = (text: string) =>
         </p>
         <div class="mt-6">
           <UButton
-            :href="assetUrl(micAssets.pdf)"
+            :href="micPdfUrl"
             external
             size="lg"
             icon="i-tabler-file-type-pdf"
-            download
             target="_blank"
+            rel="noopener noreferrer"
             :label="t('mic.downloadButton')"
           />
         </div>
