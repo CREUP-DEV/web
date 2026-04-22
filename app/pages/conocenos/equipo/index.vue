@@ -6,7 +6,7 @@ import { detailModalUi } from '@/utils/detailModalUi'
 const { t } = useI18n()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
-const { getContactEmail } = usePersonHelpers()
+
 
 usePageSeo('team.title', 'team.description', {
   webPageType: 'CollectionPage',
@@ -276,7 +276,6 @@ const tabItems = computed(() => [
           v-if="selectedMember"
           :member="selectedMember"
           :display-name="getMemberDisplayName(selectedMember)"
-          :contact-email="getContactEmail(selectedMember)"
           :show-agenda-button="selectedMember.publicAgenda"
           :public-agenda-label="t('team.publicAgenda')"
           :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(selectedMember))"

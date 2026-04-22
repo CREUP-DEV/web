@@ -24,7 +24,7 @@ useLocalizedPressDetailSeo({
 <template>
   <PressArticleDetail
     :article="article"
-    :back-to="localePath('/prensa/notas-prensa/')"
-    :back-label="t('press.releases.backToList')"
+    :back-to="localePath('/prensa/noticias/')"
+    :back-label="t('press.news.backToList')"
   />
 </template>

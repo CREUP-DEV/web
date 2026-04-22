@@ -17,7 +17,7 @@ const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
 const LIMIT = 12
-const { page, selectTag, selectedTag, tagQuery } = usePressArchiveFilters(() => props.type)
+const { page, toggleTag, selectedTags, tagQuery } = usePressArchiveFilters(() => props.type)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
 const { data, pending, error, refresh } = usePress(props.type, tagQuery, LIMIT, offset)
@@ -32,7 +32,7 @@ const resultsContainerRef = ref<HTMLElement | null>(null)
 const resultsTransitionKey = computed(() => {
   const articleIds = articles.value.map((article) => article.id).join(',')
   return [
-    selectedTag.value ?? 'all',
+    selectedTags.value.join(',') || 'all',
     page.value,
     pending.value ? 'pending' : 'ready',
     showErrorState.value ? 'error' : 'ok',
@@ -134,10 +134,10 @@ watch(page, () => {
 
       <HomeTagSelector
         :type="type"
-        :selected-slug="selectedTag"
+        :selected-slugs="selectedTags"
         :aria-label="title"
         class="mb-6"
-        @select="selectTag"
+        @toggle="toggleTag"
       />
 
       <div ref="resultsContainerRef" aria-live="polite" :aria-busy="pending || undefined">

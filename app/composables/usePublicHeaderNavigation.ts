@@ -187,20 +187,12 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       active: isSectionActive('/prensa'),
       children: [
         {
+          label: t('nav.press.news'),
+          to: localizedPath('/prensa/noticias/'),
+        },
+        {
           label: t('nav.press.newsletter'),
           to: localizedPath('/prensa/newsletter/'),
-        },
-        {
-          label: t('nav.press.pressReleases'),
-          to: localizedPath('/prensa/notas-prensa/'),
-        },
-        {
-          label: t('nav.press.statements'),
-          to: localizedPath('/prensa/comunicados/'),
-        },
-        {
-          label: t('nav.press.inMedia'),
-          to: localizedPath('/prensa/en-los-medios/'),
         },
         ...(resolvedPressDossierLink.value
           ? [createExternalNavigationItem(t('nav.press.pressKit'), resolvedPressDossierLink.value)]
@@ -316,24 +308,14 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       active: isSectionActive('/prensa'),
       links: [
         {
+          label: t('nav.press.news'),
+          to: localizedPath('/prensa/noticias/'),
+          icon: 'i-tabler-news',
+        },
+        {
           label: t('nav.press.newsletter'),
           to: localizedPath('/prensa/newsletter/'),
           icon: 'i-tabler-mail',
-        },
-        {
-          label: t('nav.press.pressReleases'),
-          to: localizedPath('/prensa/notas-prensa/'),
-          icon: 'i-tabler-file-text',
-        },
-        {
-          label: t('nav.press.statements'),
-          to: localizedPath('/prensa/comunicados/'),
-          icon: 'i-tabler-speakerphone',
-        },
-        {
-          label: t('nav.press.inMedia'),
-          to: localizedPath('/prensa/en-los-medios/'),
-          icon: 'i-tabler-broadcast',
         },
         ...(resolvedPressDossierLink.value
           ? [

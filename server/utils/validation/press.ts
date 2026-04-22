@@ -121,12 +121,13 @@ export const pressListQuerySchema = z.object({
     (value) => (Array.isArray(value) ? value[0] : value),
     pressArticleTypeSchema.optional()
   ),
+  types: toOptionalSingleStringSchema(z.string().trim().max(500)),
   tag: toOptionalSingleStringSchema(
     z
       .string()
       .trim()
       .min(1)
-      .max(100)
+      .max(500)
       .refine((value) => value !== 'all', "El slug 'all' no es válido como filtro")
   ),
   limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(50).default(12)),

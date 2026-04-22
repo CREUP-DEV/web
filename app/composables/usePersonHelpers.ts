@@ -1,8 +1,4 @@
-import {
-  getEmailData as resolveEmailData,
-  getSocialButtons as resolveSocialButtons,
-  type SocialNetworkEntry,
-} from '~~/shared/utils/social'
+import { getSocialButtons as resolveSocialButtons, type SocialNetworkEntry } from '~~/shared/utils/social'
 
 export interface PersonBase {
   name: string
@@ -20,9 +16,6 @@ export function usePersonHelpers() {
   const getDisplayName = (person: Pick<PersonBase, 'name' | 'surname' | 'email'>) =>
     getFullName(person) || person.email
 
-  const getContactEmail = (person: PersonBase) =>
-    resolveEmailData(person.socialNetworks, person.email)?.email ?? ''
-
   const getSocialButtons = (person: Pick<PersonBase, 'socialNetworks'>) =>
     resolveSocialButtons(person.socialNetworks)
 
@@ -31,7 +24,6 @@ export function usePersonHelpers() {
   return {
     getFullName,
     getDisplayName,
-    getContactEmail,
     getSocialButtons,
     getCopyEmailAriaLabel,
   }

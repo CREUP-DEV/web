@@ -43,7 +43,7 @@ export interface PressDetailResponse {
 }
 
 export function usePress(
-  type?: MaybeRef<PressArticleType | null | undefined>,
+  type?: MaybeRef<PressArticleType | PressArticleType[] | null | undefined>,
   tagSlug?: MaybeRef<string | null | undefined>,
   limit?: MaybeRef<number | undefined>,
   offset?: MaybeRef<number | undefined>,
@@ -54,7 +54,10 @@ export function usePress(
   const { locale } = useI18n()
   const localeApiHeaders = useLocaleApiHeaders()
 
-  const typeValue = computed(() => unref(type) ?? null)
+  const typeValue = computed(() => {
+    const val = unref(type) ?? null
+    return Array.isArray(val) ? val : val
+  })
   const tagValue = computed(() => unref(tagSlug) ?? null)
   const limitValue = computed(() => {
     const value = unref(limit)
@@ -74,8 +77,14 @@ export function usePress(
   })
   const enabledValue = computed(() => unref(options?.enabled) !== false)
 
+  const typeKey = computed(() => {
+    const val = typeValue.value
+    if (!val) return 'all'
+    return Array.isArray(val) ? val.join(',') : val
+  })
+
   const pressKey = computed(() => {
-    return `press-${locale.value}-${typeValue.value || 'all'}-${tagValue.value || 'none'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
+    return `press-${locale.value}-${typeKey.value}-${tagValue.value || 'none'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
   })
 
   return useAsyncData<PressResponse>(
@@ -89,8 +98,11 @@ export function usePress(
       }
 
       const params = new URLSearchParams()
-      if (typeValue.value) {
-        params.set('type', typeValue.value)
+      const tv = typeValue.value
+      if (Array.isArray(tv) && tv.length > 0) {
+        params.set('types', tv.join(','))
+      } else if (typeof tv === 'string' && tv) {
+        params.set('type', tv)
       }
       if (tagValue.value) {
         params.set('tag', tagValue.value)

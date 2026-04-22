@@ -54,6 +54,7 @@ interface EventDetailResponse {
 
 export function useEvents(options?: {
   type?: MaybeRef<string | null | undefined>
+  types?: MaybeRef<string[] | null | undefined>
   limit?: MaybeRef<number | undefined>
   offset?: MaybeRef<number | undefined>
 }) {
@@ -62,6 +63,7 @@ export function useEvents(options?: {
   const localeApiHeaders = useLocaleApiHeaders()
 
   const typeValue = computed(() => unref(options?.type) ?? null)
+  const typesValue = computed(() => unref(options?.types) ?? null)
   const limitValue = computed(() => {
     const value = unref(options?.limit)
     if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
@@ -82,11 +84,13 @@ export function useEvents(options?: {
   const { data, error, status, refresh } = useFetch<EventsResponse>('/api/eventos', {
     headers: localeApiHeaders,
     query: computed(() => ({
-      type: typeValue.value || undefined,
+      ...(typesValue.value && typesValue.value.length > 0
+        ? { types: typesValue.value.join(',') }
+        : { type: typeValue.value || undefined }),
       limit: limitValue.value,
       offset: offsetValue.value,
     })),
-    watch: [locale, typeValue, limitValue, offsetValue],
+    watch: [locale, typeValue, typesValue, limitValue, offsetValue],
   })
 
   const events = computed(() => data.value?.events ?? [])

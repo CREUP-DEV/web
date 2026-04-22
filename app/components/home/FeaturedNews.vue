@@ -79,10 +79,20 @@ const getHiddenTagCount = (item: NewsItem) => Math.max(0, item.tags.length - 2)
       :aria-busy="isLoading || undefined"
       class="flex h-full flex-col"
     >
-      <header class="mb-4 flex items-center justify-between">
+      <header class="mb-4 flex items-center justify-between gap-3">
         <h2 id="featured-news-heading" class="text-xl font-semibold sm:text-2xl">
           {{ t('home.latestNews') }}
         </h2>
+        <UButton
+          :to="localePath('/prensa/noticias')"
+          color="secondary"
+          variant="outline"
+          size="sm"
+          class="shrink-0 rounded-full"
+          trailing-icon="i-tabler-arrow-right"
+        >
+          {{ t('home.viewAllNews') }}
+        </UButton>
       </header>
 
       <div class="flex-1" aria-live="polite">

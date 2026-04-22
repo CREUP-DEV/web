@@ -36,6 +36,9 @@ const productionPublicSWRPagePaths = [
 const buildSWRRouteRules = (paths: readonly string[], ttlSeconds: number) =>
   Object.fromEntries(paths.map((path) => [path, { swr: ttlSeconds }]))
 
+const buildNoRateLimitRouteRules = (paths: readonly string[]) =>
+  Object.fromEntries(paths.map((path) => [`${path}/**`, { security: { rateLimiter: false } }]))
+
 const productionPublicSWRRouteRules = isDev
   ? {}
   : buildSWRRouteRules(productionPublicSWRPagePaths, 3600)
@@ -56,6 +59,7 @@ const routeRules = {
       rateLimiter: false,
     },
   },
+  ...buildNoRateLimitRouteRules(INTERNAL_IMAGE_PROXY_PATH_BASES),
   ...productionPublicSWRRouteRules,
   '/_nuxt/**': {
     headers: {
@@ -153,6 +157,10 @@ export default defineNuxtConfig({
 
   security: {
     nonce: true,
+    rateLimiter: {
+      tokensPerInterval: 500,
+      interval: 300000,
+    },
     headers: {
       contentSecurityPolicy: {
         'default-src': ["'self'"],

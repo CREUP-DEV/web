@@ -44,16 +44,14 @@ export async function assertMemberCalendarIsPublic(event: H3Event, calendarId: s
         return null
       }
 
-      return new Set(
-        parsedPayload.data.data.flatMap((area) =>
-          area.members.flatMap((member) => {
-            if (member.public_agenda !== true || typeof member.email !== 'string') {
-              return []
-            }
+      return parsedPayload.data.data.flatMap((area) =>
+        area.members.flatMap((member) => {
+          if (member.public_agenda !== true || typeof member.email !== 'string') {
+            return []
+          }
 
-            return [normalizeCalendarId(member.email)]
-          })
-        )
+          return [normalizeCalendarId(member.email)]
+        })
       )
     },
     getExternalApiCacheOptions(event)
@@ -69,7 +67,8 @@ export async function assertMemberCalendarIsPublic(event: H3Event, calendarId: s
     return
   }
 
-  if (!allowedCalendars.has(normalizedCalendarId)) {
+  const allowedCalendarsSet = new Set(allowedCalendars)
+  if (!allowedCalendarsSet.has(normalizedCalendarId)) {
     throw createError({
       statusCode: 404,
       message: unavailableForMemberMessage,

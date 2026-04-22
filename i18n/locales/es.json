@@ -23,6 +23,7 @@
     },
     "press": {
       "label": "Prensa",
+      "news": "Noticias",
       "newsletter": "Newsletter",
       "pressReleases": "Notas de prensa",
       "statements": "Comunicados",
@@ -67,6 +68,7 @@
   "home": {
     "newsAndEventsLabel": "Prensa y eventos",
     "latestNews": "Últimas noticias",
+    "viewAllNews": "Ver todas",
     "featuredLinks": "Enlaces destacados",
     "publicAgenda": "Agenda pública",
     "noNews": "No hay noticias para esta etiqueta",
@@ -566,6 +568,7 @@
     "download": "Descargar"
   },
   "press": {
+    "allTags": "Todas",
     "downloadPdf": "Descargar PDF",
     "pagination": "Paginación",
     "readOriginal": "Leer artículo original",
@@ -607,6 +610,15 @@
       "empty": "No hay apariciones en medios disponibles.",
       "loadError": "No se han podido cargar las apariciones en medios en este momento.",
       "backToList": "Volver a en los medios"
+    },
+    "news": {
+      "title": "Noticias",
+      "description": "Notas de prensa, comunicados y apariciones en medios de CREUP.",
+      "empty": "No hay noticias disponibles con los filtros seleccionados.",
+      "loadError": "No se han podido cargar las noticias en este momento.",
+      "filterByType": "Filtrar por tipo",
+      "filterByTag": "Filtrar por etiqueta",
+      "backToList": "Volver a noticias"
     }
   },
   "cookies": {

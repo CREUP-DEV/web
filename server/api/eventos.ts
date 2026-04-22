@@ -10,16 +10,24 @@ import {
 
 const eventsListQuerySchema = publicPaginationQuerySchema.extend({
   type: toOptionalSingleStringSchema(z.string().trim().min(1).max(100)),
+  types: toOptionalSingleStringSchema(z.string().trim().max(500)),
 })
 
 export default defineCachedEventHandler(
   async (event) => {
-    const { limit, offset, type } = validatePublicQuery(event, eventsListQuerySchema)
+    const { limit, offset, type, types } = validatePublicQuery(event, eventsListQuerySchema)
     const normalizedLimit = limit ?? 12
     const normalizedOffset = offset ?? 0
     setExternalApiCacheHeaders(event, getExternalApiCacheOptions(event))
 
     const payload = await getEventsPayload(event)
+
+    const typesList = types
+      ? types
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : []
     const normalizedType = type?.trim() || null
 
     const allEventTypes = Array.from(
@@ -30,9 +38,12 @@ export default defineCachedEventHandler(
       )
     ).sort((a, b) => a.localeCompare(b))
 
-    const filteredEvents = normalizedType
-      ? payload.events.filter((entry) => entry.type === normalizedType)
-      : payload.events
+    const filteredEvents =
+      typesList.length > 0
+        ? payload.events.filter((entry) => entry.type && typesList.includes(entry.type))
+        : normalizedType
+          ? payload.events.filter((entry) => entry.type === normalizedType)
+          : payload.events
 
     return {
       events: filteredEvents.slice(normalizedOffset, normalizedOffset + normalizedLimit),
@@ -46,7 +57,7 @@ export default defineCachedEventHandler(
     getKey: (event) =>
       buildPublicRouteCacheKey(event, 'eventos', {
         includeLocale: false,
-        queryKeys: ['type', 'limit', 'offset'],
+        queryKeys: ['type', 'types', 'limit', 'offset'],
       }),
   }
 )

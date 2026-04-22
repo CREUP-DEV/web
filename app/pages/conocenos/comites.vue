@@ -7,7 +7,7 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { fallbackLocale } = useLocales()
 const localeApiHeaders = useLocaleApiHeaders()
-const { getDisplayName: getMemberDisplayName, getContactEmail } = usePersonHelpers()
+const { getDisplayName: getMemberDisplayName } = usePersonHelpers()
 
 usePageSeo('committees.title', 'committees.description', {
   webPageType: 'CollectionPage',
@@ -253,7 +253,6 @@ function encodeEmail(email: string) {
           v-if="selectedMember"
           :member="selectedMember"
           :display-name="getMemberDisplayName(selectedMember)"
-          :contact-email="getContactEmail(selectedMember)"
           @close="closeMemberModal"
         />
       </template>

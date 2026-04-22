@@ -36,7 +36,7 @@ interface CommitteesResponse {
 const { t, locale } = useI18n()
 const { fallbackLocale } = useLocales()
 const localeApiHeaders = useLocaleApiHeaders()
-const { getContactEmail, getDisplayName: getMemberDisplayName } = usePersonHelpers()
+const { getDisplayName: getMemberDisplayName } = usePersonHelpers()
 
 // This is a hidden compatibility route used to keep firu.es running by mirroring content from this URL.
 definePageMeta({
@@ -332,7 +332,6 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
           v-if="selectedCommitteeMember"
           :member="selectedCommitteeMember"
           :display-name="getMemberDisplayName(selectedCommitteeMember)"
-          :contact-email="getContactEmail(selectedCommitteeMember)"
           @close="closeCommitteeMemberModal"
         />
       </template>

@@ -33,9 +33,26 @@ export default defineCachedEventHandler(
     const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
     const query = validatePublicQuery(event, pressListQuerySchema)
     const type = query.type
-    const tagSlug = query.tag
+    const typesParam = query.types
+    const tagParam = query.tag
     const limit = query.limit
     const offset = query.offset
+
+    const typesList = typesParam
+      ? typesParam
+          .split(',')
+          .map((s) => s.trim())
+          .filter((s): s is PressArticleType =>
+            (['press_release', 'statement', 'media_appearance'] as string[]).includes(s)
+          )
+      : []
+
+    const tagSlugs = tagParam
+      ? tagParam
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : []
 
     try {
       const conditions: SQL[] = [
@@ -43,16 +60,18 @@ export default defineCachedEventHandler(
         lte(pressArticles.publishedAt, sql`CURRENT_DATE`),
       ]
 
-      if (type) {
+      if (typesList.length > 0) {
+        conditions.push(inArray(pressArticles.type, typesList))
+      } else if (type) {
         conditions.push(eq(pressArticles.type, type))
       }
 
-      if (tagSlug) {
+      if (tagSlugs.length > 0) {
         const articleIdsByTag = db
           .select({ pressArticleId: pressArticleTags.pressArticleId })
           .from(pressArticleTags)
           .innerJoin(tags, eq(pressArticleTags.tagId, tags.id))
-          .where(eq(tags.slug, tagSlug))
+          .where(inArray(tags.slug, tagSlugs))
 
         conditions.push(inArray(pressArticles.id, articleIdsByTag))
       }
@@ -166,7 +185,7 @@ export default defineCachedEventHandler(
     ...PUBLIC_ROUTE_CACHE_OPTIONS,
     getKey: (event) =>
       buildPublicRouteCacheKey(event, 'public-press', {
-        queryKeys: ['type', 'tag', 'limit', 'offset'],
+        queryKeys: ['type', 'types', 'tag', 'limit', 'offset'],
       }),
   }
 )

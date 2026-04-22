@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   type?: string
-  selectedSlug: string | null
+  selectedSlugs: string[]
   ariaLabel?: string
 }>()
 
@@ -10,24 +10,24 @@ const { data: tagsData, pending } = useTags(() => props.type)
 
 const tagList = computed(() => {
   const availableTags = tagsData.value?.items ?? []
-
-  return [
-    {
-      slug: null,
-      name: t('common.all'),
-    },
-    ...availableTags,
-  ]
+  return availableTags
 })
+
 const isLoading = computed(() => pending.value || tagsData.value == null)
 const groupAriaLabel = computed(() => props.ariaLabel ?? t('home.latestNews'))
 
 const emit = defineEmits<{
-  (e: 'select', tagSlug: string | null): void
+  (e: 'toggle', tagSlug: string | null): void
 }>()
 
-const onSelectTag = (slug: string | null) => {
-  emit('select', slug)
+const isSelected = (slug: string) => props.selectedSlugs.includes(slug)
+
+const onToggleAll = () => {
+  emit('toggle', null)
+}
+
+const onToggleTag = (slug: string) => {
+  emit('toggle', slug)
 }
 </script>
 
@@ -43,15 +43,26 @@ const onSelectTag = (slug: string | null) => {
       </template>
       <template v-else>
         <UButton
-          v-for="tag in tagList"
-          :key="tag.slug ?? '__all__'"
           class="shrink-0 rounded-full whitespace-nowrap"
           size="sm"
           color="secondary"
-          :variant="tag.slug === selectedSlug ? 'solid' : 'outline'"
-          :aria-pressed="tag.slug === selectedSlug"
+          :variant="selectedSlugs.length === 0 ? 'solid' : 'outline'"
+          :aria-pressed="selectedSlugs.length === 0"
           type="button"
-          @click="onSelectTag(tag.slug)"
+          @click="onToggleAll"
+        >
+          {{ t('press.allTags') }}
+        </UButton>
+        <UButton
+          v-for="tag in tagList"
+          :key="tag.slug"
+          class="shrink-0 rounded-full whitespace-nowrap"
+          size="sm"
+          color="secondary"
+          :variant="isSelected(tag.slug) ? 'solid' : 'outline'"
+          :aria-pressed="isSelected(tag.slug)"
+          type="button"
+          @click="onToggleTag(tag.slug)"
         >
           {{ tag.name }}
         </UButton>

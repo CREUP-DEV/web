@@ -70,7 +70,7 @@ export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
   },
   {
     key: 'press',
-    name: 'Prensa',
+    name: 'Noticias',
     description: 'Artículos, comunicados y apariciones en medios.',
     to: ADMIN_ROUTES.press,
     icon: 'i-tabler-news',

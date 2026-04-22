@@ -50,8 +50,6 @@ const socialNetworkAliasMap: Record<string, SupportedSocialNetwork> = {
   mail: 'email',
   correo: 'email',
   correoelectronico: 'email',
-  contactemail: 'email',
-  contact_email: 'email',
 
   instagram: 'instagram',
 

@@ -26,12 +26,12 @@ usePageSeo('events.title', 'events.description', {
   ],
 })
 
-const selectedType = ref<string | null>(null)
+const selectedTypes = ref<string[]>([])
 const page = ref(1)
 const offset = computed(() => (page.value - 1) * EVENTS_PAGE_SIZE)
 
 const { events, eventTypes, total, pageCount, error, status, refresh } = useEvents({
-  type: selectedType,
+  types: selectedTypes,
   limit: EVENTS_PAGE_SIZE,
   offset,
 })
@@ -39,7 +39,7 @@ const { events, eventTypes, total, pageCount, error, status, refresh } = useEven
 const eventsPending = computed(() => status.value === 'pending')
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(eventsPending, events, error)
 
-watch(selectedType, () => {
+watch(selectedTypes, () => {
   page.value = 1
 })
 
@@ -51,10 +51,18 @@ watch(page, () => {
   })
 })
 
-const typeOptions = computed(() => [
-  { label: t('events.allTypes'), value: null },
-  ...eventTypes.value.map((type) => ({ label: getEventTypeLabel(type), value: type })),
-])
+const toggleEventType = (eventType: string) => {
+  const idx = selectedTypes.value.indexOf(eventType)
+  if (idx >= 0) {
+    selectedTypes.value = selectedTypes.value.filter((t) => t !== eventType)
+  } else {
+    selectedTypes.value = [...selectedTypes.value, eventType]
+  }
+}
+
+const clearEventTypes = () => {
+  selectedTypes.value = []
+}
 
 const getEventTypeLabel = (eventType: string | null) => {
   const key = getEventTypeI18nKey(eventType)
@@ -113,17 +121,28 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
           :aria-label="t('events.filterByType')"
         >
           <UButton
-            v-for="option in typeOptions"
-            :key="option.value ?? 'all'"
             type="button"
             size="sm"
             color="secondary"
-            :variant="selectedType === option.value ? 'solid' : 'outline'"
+            :variant="selectedTypes.length === 0 ? 'solid' : 'outline'"
             class="rounded-full"
-            :aria-pressed="selectedType === option.value"
-            @click="selectedType = option.value"
+            :aria-pressed="selectedTypes.length === 0"
+            @click="clearEventTypes"
           >
-            {{ option.label }}
+            {{ t('events.allTypes') }}
+          </UButton>
+          <UButton
+            v-for="eventType in eventTypes"
+            :key="eventType"
+            type="button"
+            size="sm"
+            color="secondary"
+            :variant="selectedTypes.includes(eventType) ? 'solid' : 'outline'"
+            class="rounded-full"
+            :aria-pressed="selectedTypes.includes(eventType)"
+            @click="toggleEventType(eventType)"
+          >
+            {{ getEventTypeLabel(eventType) }}
           </UButton>
         </div>
 

@@ -20,7 +20,6 @@ interface TeamMemberModalPerson {
 const props = defineProps<{
   member: TeamMemberModalPerson
   displayName: string
-  contactEmail?: string | null
   assignmentStart?: string | null
   assignmentEnd?: string | null
   assignmentDuration?: string | null
@@ -113,7 +112,7 @@ const hasAssignmentInfo = computed(() =>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-start">
               <div
-                v-if="contactEmail"
+                v-if="member.email"
                 class="bg-surface-elevated dark:bg-surface-elevated ring-primary/12 flex min-w-0 items-center justify-center gap-2.5 rounded-full px-3.5 py-2 shadow-sm ring-1 lg:justify-start"
               >
                 <span
@@ -128,7 +127,7 @@ const hasAssignmentInfo = computed(() =>
                     {{ t('team.email') }}
                   </p>
                   <ObfuscatedEmail
-                    v-bind="encodeEmail(contactEmail)"
+                    v-bind="encodeEmail(member.email)"
                     class="mt-1 block text-sm font-medium break-all hover:underline"
                   />
                 </div>

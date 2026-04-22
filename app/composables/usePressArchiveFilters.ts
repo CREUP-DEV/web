@@ -1,7 +1,7 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { PressArticleType } from '@/composables/usePress'
 
-export function usePressArchiveFilters(type: MaybeRefOrGetter<PressArticleType>) {
+export function usePressArchiveFilters(type: MaybeRefOrGetter<PressArticleType | null>) {
   const tags = useTags(type)
 
   const tagQuery = useSyncedQueryParam<string | null>('tag', {
@@ -17,13 +17,14 @@ export function usePressArchiveFilters(type: MaybeRefOrGetter<PressArticleType>)
   })
 
   const availableTagSlugs = computed(() => new Set(tags.data.value?.items.map((tag) => tag.slug)))
-  const selectedTag = computed<string | null>(() => {
-    const slug = tagQuery.value
-    if (!slug) {
-      return null
-    }
 
-    return availableTagSlugs.value.has(slug) ? slug : null
+  const selectedTags = computed<string[]>(() => {
+    const raw = tagQuery.value
+    if (!raw) return []
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s && availableTagSlugs.value.has(s))
   })
 
   watch(tagQuery, () => {
@@ -37,25 +38,38 @@ export function usePressArchiveFilters(type: MaybeRefOrGetter<PressArticleType>)
         return
       }
 
-      if (!availableTagSlugs.value.has(tag)) {
-        tagQuery.value = null
+      const validSlugs = tag
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s && availableTagSlugs.value.has(s))
+
+      if (validSlugs.length !== tag.split(',').filter(Boolean).length) {
+        tagQuery.value = validSlugs.length > 0 ? validSlugs.join(',') : null
         page.value = 1
       }
     },
     { immediate: true }
   )
 
-  const selectTag = (tagSlug: string | null) => {
-    tagQuery.value = tagSlug
+  const toggleTag = (tagSlug: string | null) => {
+    if (!tagSlug) {
+      tagQuery.value = null
+      page.value = 1
+      return
+    }
+
+    const current = selectedTags.value
+    const idx = current.indexOf(tagSlug)
+    const next = idx >= 0 ? current.filter((s) => s !== tagSlug) : [...current, tagSlug]
+    tagQuery.value = next.length > 0 ? next.join(',') : null
     page.value = 1
   }
 
   return {
     page,
-    selectTag,
-    selectedTag,
+    toggleTag,
+    selectedTags,
     tagQuery,
     tagsData: tags.data,
-    tagsPending: tags.pending,
   }
 }

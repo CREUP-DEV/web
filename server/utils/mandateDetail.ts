@@ -96,8 +96,6 @@ const networkAliasMap: Record<string, SupportedNetwork> = {
   mail: 'email',
   correo: 'email',
   correoelectronico: 'email',
-  contact_email: 'email',
-  contactemail: 'email',
   instagram: 'instagram',
   twitter: 'twitter',
   x: 'twitter',

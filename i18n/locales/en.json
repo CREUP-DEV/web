@@ -23,6 +23,7 @@
     },
     "press": {
       "label": "Press",
+      "news": "News",
       "newsletter": "Newsletter",
       "pressReleases": "Press releases",
       "statements": "Statements",
@@ -66,6 +67,7 @@
   },
   "home": {
     "newsAndEventsLabel": "Press and events",
+    "viewAllNews": "View all",
     "latestNews": "Latest News",
     "featuredLinks": "Featured Links",
     "publicAgenda": "Public Agenda",
@@ -566,6 +568,7 @@
     "download": "Download"
   },
   "press": {
+    "allTags": "All",
     "downloadPdf": "Download PDF",
     "pagination": "Pagination",
     "readOriginal": "Read original article",
@@ -607,6 +610,15 @@
       "empty": "No media appearances available.",
       "loadError": "Media appearances could not be loaded right now.",
       "backToList": "Back to media appearances"
+    },
+    "news": {
+      "title": "News",
+      "description": "Press releases, statements and media appearances from CREUP.",
+      "empty": "No news available for the selected filters.",
+      "loadError": "News could not be loaded right now.",
+      "filterByType": "Filter by type",
+      "filterByTag": "Filter by tag",
+      "backToList": "Back to news"
     }
   },
   "cookies": {
