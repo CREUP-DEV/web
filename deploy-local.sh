@@ -50,6 +50,8 @@ build_local_image() {
     docker buildx build \
       --platform "$DOCKER_PLATFORM" \
       --build-arg "NUXT_SITE_URL=$build_site_url" \
+      --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
+      --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
       -t "$IMAGE" \
       --load \
       .
@@ -59,6 +61,8 @@ build_local_image() {
   docker build \
     --platform "$DOCKER_PLATFORM" \
     --build-arg "NUXT_SITE_URL=$build_site_url" \
+    --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
+    --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
     -t "$IMAGE" \
     .
 }

@@ -8,11 +8,7 @@ import {
 const { t } = useI18n()
 const siteConfig = useSiteConfig()
 const siteUrl = useRuntimeSiteUrl()
-const { data: pressDossierLink, refresh: refreshPressDossierLink } = await usePressDossierLink()
-
-onMounted(() => {
-  refreshPressDossierLink()
-})
+const { data: pressDossierLink } = await usePressDossierLink()
 const alternateLinksOverride = useState<SeoAlternateLink[] | null>(
   'seo-alternate-links-override',
   () => null

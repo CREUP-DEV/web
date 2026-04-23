@@ -6,7 +6,6 @@ const props = defineProps<{
 const {
   currentLocale,
   getLocaleIcon,
-  isAdminUser,
   items,
   localeItems,
   mobileContactLink,
@@ -61,6 +60,8 @@ watch(menuOpen, (isOpen) => {
         light="/nav/creup-site-header-logo-light.svg"
         dark="/nav/creup-site-header-logo-dark.svg"
         :alt="t('accessibility.siteLogo')"
+        width="144"
+        height="32"
         class="h-8 w-auto"
       />
     </template>
@@ -73,18 +74,7 @@ watch(menuOpen, (isOpen) => {
     />
 
     <template #right>
-      <ClientOnly>
-        <UTooltip v-if="isAdminUser" :text="t('nav.admin')">
-          <UButton
-            to="/admin"
-            icon="i-tabler-settings-2"
-            color="neutral"
-            variant="ghost"
-            class="shrink-0"
-            :aria-label="t('nav.admin')"
-          />
-        </UTooltip>
-      </ClientOnly>
+      <LazyAdminNavShortcut :label="t('nav.admin')" :tooltip="t('nav.admin')" class="shrink-0" />
 
       <UTooltip :text="t('theme.toggle')">
         <UColorModeButton />
@@ -208,16 +198,7 @@ watch(menuOpen, (isOpen) => {
         </div>
 
         <div class="border-default mt-5 flex items-center gap-3 border-t pt-5">
-          <ClientOnly>
-            <UButton
-              v-if="isAdminUser"
-              to="/admin"
-              icon="i-tabler-settings-2"
-              color="neutral"
-              variant="ghost"
-              :aria-label="t('nav.admin')"
-            />
-          </ClientOnly>
+          <LazyAdminNavShortcut :label="t('nav.admin')" />
 
           <USelect
             v-model="selectedLocale"

@@ -34,7 +34,7 @@ export async function runMigrations() {
 
       for (const extension of REQUIRED_EXTENSIONS) {
         console.log(`🧩 Ensuring PostgreSQL extension "${extension}".`)
-        await client.query(`CREATE EXTENSION IF NOT EXISTS "${extension}"`)
+        await client.query(`CREATE EXTENSION IF NOT EXISTS "${extension}" WITH SCHEMA public`)
       }
 
       console.log('🛠️ Applying Drizzle migrations.')

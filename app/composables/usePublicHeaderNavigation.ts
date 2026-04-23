@@ -2,8 +2,6 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 import type { MaybeRef } from 'vue'
 import type { Locale } from 'vue-i18n'
 
-import { useAuth } from '@/composables/useAuth'
-
 type LocaleItem = {
   value: Locale
   label: string
@@ -39,7 +37,6 @@ const createExternalNavigationItem = (label: string, href: string): NavigationMe
 export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | null | undefined>) {
   const { locale, t, setLocaleCookie } = useI18n()
   const { getLocaleName, localeConfigs } = useLocales()
-  const { session } = useAuth()
   const localePath = useLocalePath()
   const switchLocalePath = useSwitchLocalePath()
   const route = useRoute()
@@ -95,8 +92,6 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       },
     }))
   )
-
-  const isAdminUser = computed(() => Boolean(session.value?.data?.user?.id))
 
   const localizedPath = (path: string) => localePath(path)
   const normalizePath = (path: string) => {
@@ -363,7 +358,6 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
   return {
     currentLocale,
     getLocaleIcon,
-    isAdminUser,
     items,
     localeItems,
     mobileContactLink,

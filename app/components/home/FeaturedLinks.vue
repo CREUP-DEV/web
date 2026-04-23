@@ -25,6 +25,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const featuredLinkImageSizes = 'xs:50vw sm:33vw md:16vw xl:192px'
 </script>
 
 <template>
@@ -87,7 +88,7 @@ const localePath = useLocalePath()
                   height="288"
                   class="motion-link-media size-full object-cover"
                   loading="lazy"
-                  sizes="(max-width: 640px) calc(50vw - 1rem), (max-width: 1024px) calc(33vw - 1rem), 192px"
+                  :sizes="featuredLinkImageSizes"
                   quality="70"
                 />
               </div>
@@ -114,7 +115,7 @@ const localePath = useLocalePath()
                   height="288"
                   class="motion-link-media size-full object-cover"
                   loading="lazy"
-                  sizes="(max-width: 640px) calc(50vw - 1rem), (max-width: 1024px) calc(33vw - 1rem), 192px"
+                  :sizes="featuredLinkImageSizes"
                   quality="70"
                 />
               </div>

@@ -1,4 +1,7 @@
-import { getSocialButtons as resolveSocialButtons, type SocialNetworkEntry } from '~~/shared/utils/social'
+import {
+  getSocialButtons as resolveSocialButtons,
+  type SocialNetworkEntry,
+} from '~~/shared/utils/social'
 
 export interface PersonBase {
   name: string

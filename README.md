@@ -67,13 +67,16 @@ pnpm db:seed
 
 ## Variables de entorno
 
-Toda la configuración es runtime; la imagen no lleva secretos ni URLs baked. Las variables se leen al arrancar el contenedor.
+Casi toda la configuración es runtime; la imagen no lleva secretos ni URLs baked por defecto y las variables se leen al arrancar el contenedor.
+
+Excepción importante: `NUXT_SITE_URL`, `NUXT_UMAMI_HOST` y `NUXT_UMAMI_ID` también deben estar disponibles durante `pnpm build` o `docker build`, porque Nuxt las usa al compilar la configuración del sitio y del módulo de analítica.
 
 El bloque completo de variables con descripciones y valores de ejemplo está en [`DEPLOYMENT.md §6`](./DEPLOYMENT.md#6-prepare-the-production-environment-file).
 
 En resumen:
 
 - **Obligatorias al arrancar:** `NUXT_SITE_URL`, `DATABASE_URL`, `APP_SECRET`, `ADMIN_EMAILS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NUXT_REDIS_URL`, `NUXT_EXTERNAL_API_BASE_URL`, `NUXT_GOOGLE_CALENDAR_API_KEY`, `NUXT_GOOGLE_CALENDAR_ID`, `NUXT_SMTP_HOST/PORT/SECURE/USER/PASS`
+- **Necesarias también en build:** `NUXT_SITE_URL` y, si activas Umami, `NUXT_UMAMI_HOST` + `NUXT_UMAMI_ID`
 - **Opcionales según funcionalidad:** `NUXT_EXTERNAL_ASSET_BASE_URL`, `NUXT_SMTP_FROM_EMAIL`, `NUXT_SMTP_TO_EMAIL`, `NUXT_SMTP_PRESS_EMAIL`, `NUXT_EXTERNAL_ASSET_PROXY_*`, `NUXT_EXTERNAL_API_CACHE_*`, `NUXT_TURNSTILE_*`, `NUXT_UMAMI_*`
 - **Solo en local (compose):** `POSTGRES_USER/PASSWORD/DB/PORT`, `REDIS_PORT`, `ADMINER_PORT`, `MAILPIT_SMTP_PORT`, `MAILPIT_WEB_PORT`
 

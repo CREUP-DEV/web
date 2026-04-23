@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
+
 type NewsItem = {
   title: string
   image: string | null
@@ -26,7 +28,13 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const localePath = useLocalePath()
 const loadedImageKeys = reactive<Record<string, boolean>>({})
+const visibleTagCounts = reactive(new Map<string, number>())
+const tagContainerElements = new Map<string, HTMLElement>()
+const tagResizeObservers = new Map<string, ResizeObserver>()
 const displayItems = computed<NewsItem[]>(() => props.items ?? [])
+const maxVisibleTagCount = 2
+const regularNewsImageSizes = 'xs:100vw sm:50vw md:50vw lg:50vw xl:608px'
+const featuredNewsImageSizes = 'xs:100vw sm:100vw md:100vw lg:100vw xl:1248px'
 
 const isLoading = computed(() => {
   return props.pending === true
@@ -58,6 +66,14 @@ const newsItemClass = (index: number) => {
   return ''
 }
 
+const getImageSizes = (index: number) => {
+  if (visibleNewsCount.value === 3 && index === 2) {
+    return featuredNewsImageSizes
+  }
+
+  return regularNewsImageSizes
+}
+
 const getItemKey = (item: NewsItem) => `${item.to}::${item.image}`
 
 const markItemImageAsLoaded = (item: NewsItem) => {
@@ -66,8 +82,101 @@ const markItemImageAsLoaded = (item: NewsItem) => {
 
 const isItemImageLoaded = (item: NewsItem) => loadedImageKeys[getItemKey(item)] === true
 
-const getVisibleTags = (item: NewsItem) => item.tags.slice(0, 2)
-const getHiddenTagCount = (item: NewsItem) => Math.max(0, item.tags.length - 2)
+const getDefaultVisibleTagCount = (item: NewsItem) => Math.min(item.tags.length, maxVisibleTagCount)
+
+const getVisibleTagCount = (item: NewsItem) => {
+  return visibleTagCounts.get(getItemKey(item)) ?? getDefaultVisibleTagCount(item)
+}
+
+const getVisibleTags = (item: NewsItem) => item.tags.slice(0, getVisibleTagCount(item))
+const getHiddenTagCount = (item: NewsItem) => {
+  return Math.max(0, item.tags.length - getVisibleTagCount(item))
+}
+
+const clearTagOverflowState = (itemKey: string) => {
+  tagResizeObservers.get(itemKey)?.disconnect()
+  tagResizeObservers.delete(itemKey)
+  tagContainerElements.delete(itemKey)
+  visibleTagCounts.delete(itemKey)
+}
+
+const syncVisibleTagCount = async (item: NewsItem) => {
+  const itemKey = getItemKey(item)
+  const container = tagContainerElements.get(itemKey)
+
+  if (!container) {
+    return
+  }
+
+  let nextVisibleTagCount = getDefaultVisibleTagCount(item)
+  visibleTagCounts.set(itemKey, nextVisibleTagCount)
+
+  await nextTick()
+
+  while (nextVisibleTagCount > 0 && container.scrollWidth > container.clientWidth) {
+    nextVisibleTagCount -= 1
+    visibleTagCounts.set(itemKey, nextVisibleTagCount)
+    await nextTick()
+  }
+}
+
+const syncAllVisibleTagCounts = async () => {
+  const activeItemKeys = new Set(displayItems.value.map((item) => getItemKey(item)))
+
+  for (const itemKey of Array.from(tagContainerElements.keys())) {
+    if (!activeItemKeys.has(itemKey)) {
+      clearTagOverflowState(itemKey)
+    }
+  }
+
+  await Promise.all(displayItems.value.map((item) => syncVisibleTagCount(item)))
+}
+
+const setTagContainerRef = (item: NewsItem) => {
+  return (element: Element | ComponentPublicInstance | null) => {
+    const itemKey = getItemKey(item)
+
+    if (!(element instanceof HTMLElement)) {
+      clearTagOverflowState(itemKey)
+      return
+    }
+
+    const currentElement = tagContainerElements.get(itemKey)
+
+    if (currentElement === element) {
+      return
+    }
+
+    tagResizeObservers.get(itemKey)?.disconnect()
+    tagContainerElements.set(itemKey, element)
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => {
+        void syncVisibleTagCount(item)
+      })
+
+      observer.observe(element)
+      tagResizeObservers.set(itemKey, observer)
+    }
+
+    void syncVisibleTagCount(item)
+  }
+}
+
+watch(
+  displayItems,
+  async () => {
+    await nextTick()
+    await syncAllVisibleTagCounts()
+  },
+  { deep: true, immediate: true }
+)
+
+onBeforeUnmount(() => {
+  for (const itemKey of Array.from(tagResizeObservers.keys())) {
+    clearTagOverflowState(itemKey)
+  }
+})
 </script>
 
 <template>
@@ -141,7 +250,7 @@ const getHiddenTagCount = (item: NewsItem) => Math.max(0, item.tags.length - 2)
                   width="640"
                   height="360"
                   class="motion-link-media size-full object-cover"
-                  sizes="(max-width: 768px) calc(100vw - 2.5rem), (max-width: 1280px) 42vw, 640px"
+                  :sizes="getImageSizes(idx)"
                   :loading="idx === 0 ? 'eager' : 'lazy'"
                   :fetchpriority="idx === 0 ? 'high' : undefined"
                   quality="72"
@@ -169,17 +278,21 @@ const getHiddenTagCount = (item: NewsItem) => Math.max(0, item.tags.length - 2)
                   </h3>
                 </UTooltip>
 
-                <div v-if="item.tags.length" class="mt-2 flex flex-wrap gap-1.5">
+                <div
+                  v-if="item.tags.length"
+                  :ref="setTagContainerRef(item)"
+                  class="mt-2 flex min-w-0 flex-nowrap gap-1.5 overflow-hidden"
+                >
                   <span
                     v-for="tag in getVisibleTags(item)"
                     :key="tag.slug"
-                    class="bg-secondary/10 text-secondary rounded-full px-2 py-0.5 text-xs"
+                    class="bg-secondary/10 text-secondary shrink-0 rounded-full px-2 py-0.5 text-xs whitespace-nowrap"
                   >
                     {{ tag.name }}
                   </span>
                   <span
                     v-if="getHiddenTagCount(item) > 0"
-                    class="bg-secondary/10 text-secondary rounded-full px-2 py-0.5 text-xs"
+                    class="bg-secondary/10 text-secondary shrink-0 rounded-full px-2 py-0.5 text-xs whitespace-nowrap"
                   >
                     +{{ getHiddenTagCount(item) }}
                   </span>

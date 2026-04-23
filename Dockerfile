@@ -9,9 +9,13 @@ RUN corepack enable \
 FROM base AS builder
 
 ARG NUXT_SITE_URL
+ARG NUXT_UMAMI_HOST
+ARG NUXT_UMAMI_ID
 
 ENV npm_config_nodedir=/usr/local
 ENV NUXT_SITE_URL=${NUXT_SITE_URL}
+ENV NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST}
+ENV NUXT_UMAMI_ID=${NUXT_UMAMI_ID}
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 

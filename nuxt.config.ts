@@ -213,13 +213,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    ipx: {
-      maxAge: 60 * 60 * 24 * 30,
-      http: {
-        maxAge: 60 * 60 * 24 * 30,
-        ignoreCacheControl: true,
-      },
-    },
     externalApiBaseUrl: process.env.NUXT_EXTERNAL_API_BASE_URL,
     externalAssetBaseUrl:
       process.env.NUXT_EXTERNAL_ASSET_BASE_URL || process.env.NUXT_EXTERNAL_API_BASE_URL,
@@ -346,12 +339,44 @@ export default defineNuxtConfig({
     componentIslands: true,
   },
 
+  // Font optimization
+  fonts: {
+    defaults: {
+      subsets: ['latin'],
+    },
+    families: [
+      {
+        name: 'Raleway',
+        provider: 'google',
+        global: true,
+        weights: [400, 700],
+        styles: ['normal', 'italic'],
+        subsets: ['latin'],
+      },
+      {
+        name: 'Red Rose',
+        provider: 'none',
+      },
+      {
+        name: 'Fira Code',
+        provider: 'none',
+      },
+    ],
+  },
+
   // Image optimization
   image: {
     quality: 80,
     format: ['webp', 'avif', 'png', 'jpg'],
     domains: Array.from(new Set([siteImageHostname, 'localhost', '127.0.0.1'])),
     alias: internalImageAlias,
+    ipx: {
+      maxAge: 60 * 60 * 24 * 30,
+      http: {
+        maxAge: 60 * 60 * 24 * 30,
+        ignoreCacheControl: true,
+      },
+    },
     screens: {
       xs: 320,
       sm: 640,

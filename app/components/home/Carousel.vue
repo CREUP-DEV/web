@@ -22,6 +22,7 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 
 const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+const carouselImageSizes = 'xs:100vw sm:100vw md:100vw lg:100vw xl:1280px'
 
 const autoplay = computed(() => {
   if (props.items.length <= 1 || prefersReducedMotion.value) return false
@@ -82,9 +83,8 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
               height="550"
               class="size-full object-cover"
               :loading="index === 0 ? 'eager' : 'lazy'"
-              :fetchpriority="index === 0 ? 'high' : undefined"
               decoding="async"
-              sizes="(max-width: 640px) calc(100vw - 1rem), (max-width: 1024px) calc(100vw - 2rem), 1200px"
+              :sizes="carouselImageSizes"
               quality="72"
               :format="getImageFormat(item.image)"
             />

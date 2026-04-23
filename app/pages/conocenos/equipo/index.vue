@@ -7,7 +7,6 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 
-
 usePageSeo('team.title', 'team.description', {
   webPageType: 'CollectionPage',
   breadcrumbs: () => [

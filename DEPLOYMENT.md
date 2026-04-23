@@ -289,6 +289,8 @@ NUXT_UMAMI_HOST=https://umami.creup.es
 NUXT_UMAMI_ID=<your umami site id>
 ```
 
+`NUXT_SITE_URL` siempre debe existir durante el build de la imagen. Si usas Umami, `NUXT_UMAMI_HOST` y `NUXT_UMAMI_ID` también deben estar presentes durante `docker build` o `bash ./deploy.sh`, no solo al arrancar el contenedor. El módulo `nuxt-umami` y la CSP de Nuxt se resuelven en compilación.
+
 > **Seguridad:** El archivo `.env` contiene secretos. Permisos recomendados `600`:
 >
 > ```bash
@@ -334,6 +336,10 @@ GHCR_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 IMAGE_NAME=ghcr.io/CREUP-DEV/web
 DOCKER_PLATFORM=linux/amd64
 APPLY_MIGRATIONS_ON_DEPLOY=true
+
+# Si activas Umami, estas variables se inyectan también en el build
+NUXT_UMAMI_HOST=https://umami.creup.es
+NUXT_UMAMI_ID=<your umami site id>
 ```
 
 ### 8b. Dar permisos de ejecución al script

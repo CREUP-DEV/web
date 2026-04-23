@@ -30,6 +30,8 @@ build_and_push_image() {
     docker buildx build \
       --platform "$DOCKER_PLATFORM" \
       --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+      --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
+      --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
       -t "$IMAGE" \
       -t "$latest_image" \
       --push \
@@ -40,6 +42,8 @@ build_and_push_image() {
         --target runner-debug \
         --platform "$DOCKER_PLATFORM" \
         --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+        --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
+        --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
         -t "${IMAGE}-debug" \
         -t "${IMAGE_NAME}:latest-debug" \
         --push \
@@ -51,6 +55,8 @@ build_and_push_image() {
   docker build \
     --platform "$DOCKER_PLATFORM" \
     --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+    --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
+    --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
     -t "$IMAGE" \
     -t "$latest_image" \
     .
@@ -62,6 +68,8 @@ build_and_push_image() {
       --target runner-debug \
       --platform "$DOCKER_PLATFORM" \
       --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+      --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
+      --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
       -t "${IMAGE}-debug" \
       -t "${IMAGE_NAME}:latest-debug" \
       .
