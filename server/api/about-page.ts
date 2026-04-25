@@ -12,7 +12,10 @@ import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
 import { logError } from '../utils/logger'
 import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
 import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+} from '../utils/publicRouteCache'
 import { throwSafePublicError } from '../utils/publicErrors'
 import { appendAssetVersion } from '../utils/assetVersion'
 
@@ -21,7 +24,7 @@ export default defineCachedEventHandler(
     const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
     const cacheOptions = getExternalApiCacheOptions(event)
 
-    setExternalApiCacheHeaders(event, cacheOptions)
+    setExternalApiCacheHeaders(event, cacheOptions, 0)
 
     const [content, memberCount] = await Promise.all([
       db.query.aboutPageContent.findFirst().catch((error) => {
@@ -93,7 +96,7 @@ export default defineCachedEventHandler(
     }
   },
   {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
     getKey: (event) => buildPublicRouteCacheKey(event, 'about-page', { includeLocale: false }),
   }
 )

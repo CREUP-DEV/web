@@ -29,7 +29,7 @@ export async function fetchExternalDocumentCollection<TParsed, TResult>(
   const cacheOptions = getExternalApiCacheOptions(event)
   const unavailableMessage = getPublicApiErrorMessage(event, options.errorMessageKey)
 
-  setExternalApiCacheHeaders(event, cacheOptions)
+  setExternalApiCacheHeaders(event, cacheOptions, 0)
 
   return withExternalApiSWRCache(
     `${options.cacheKey}:${configuredBaseUrl}`,

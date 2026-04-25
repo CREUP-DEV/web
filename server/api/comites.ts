@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
 
-  setExternalApiCacheHeaders(event, cacheOptions)
+  setExternalApiCacheHeaders(event, cacheOptions, 0)
 
   return withExternalApiSWRCache(
     `external-api:comites:${configuredBaseUrl}`,

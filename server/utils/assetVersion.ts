@@ -1,3 +1,5 @@
+import { setUrlSearchParam } from '~~/shared/utils/url'
+
 function normalizeAssetVersion(value: Date | string | null | undefined): string | null {
   if (!value) {
     return null
@@ -31,14 +33,7 @@ export function appendAssetVersion(
   }
 
   try {
-    const parsed = new URL(url, 'http://internal.local')
-    parsed.searchParams.set('v', version)
-
-    if (/^https?:\/\//i.test(url)) {
-      return parsed.toString()
-    }
-
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`
+    return setUrlSearchParam(url, 'v', version)
   } catch {
     const separator = url.includes('?') ? '&' : '?'
     return `${url}${separator}v=${encodeURIComponent(version)}`

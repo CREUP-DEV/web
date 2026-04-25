@@ -8,7 +8,10 @@ import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
 import { logError } from '../../utils/logger'
 import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
 import { externalMandatesResponseSchema } from '../../utils/validation'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+} from '../../utils/publicRouteCache'
 
 interface MandateOutput {
   id: number
@@ -22,7 +25,7 @@ export default defineCachedEventHandler(
     const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
     const cacheOptions = getExternalApiCacheOptions(event)
 
-    setExternalApiCacheHeaders(event, cacheOptions)
+    setExternalApiCacheHeaders(event, cacheOptions, 0)
 
     return withExternalApiSWRCache(
       `external-api:organigrama-mandatos-route:${configuredBaseUrl}`,
@@ -67,7 +70,7 @@ export default defineCachedEventHandler(
     )
   },
   {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
     getKey: (event) =>
       buildPublicRouteCacheKey(event, 'organigrama-mandatos', { includeLocale: false }),
   }

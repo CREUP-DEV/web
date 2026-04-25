@@ -1,7 +1,7 @@
 import { fetchNormativa } from '../utils/normativa'
 import {
   buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
   setPublicApiCacheHeaders,
 } from '../utils/publicRouteCache'
 
@@ -11,7 +11,7 @@ export default defineCachedEventHandler(
     return fetchNormativa(event)
   },
   {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
     getKey: (event) => buildPublicRouteCacheKey(event, 'normativa', { includeLocale: false }),
   }
 )

@@ -6,9 +6,8 @@ import {
   normalizeSocialText,
   type SocialNetworkEntry,
 } from '~~/shared/utils/social'
-import { appendAssetVersion } from './assetVersion'
 import { getPublicApiErrorMessage } from './apiErrorMessages'
-import { toExternalImageProxyUrl } from './externalAssetProxy'
+import { toExternalImageProxyUrl, toExternalImageProxyUrlWithKindHint } from './externalAssetProxy'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
 import { logError } from './logger'
 import { getRequestLocaleContext } from './requestLocale'
@@ -174,56 +173,56 @@ async function loadAssociatedMembers(event: H3Event) {
         })
       }
 
-      const generatedAt = parsedPayload.data.generated_at ?? null
+      const members: PublicAssociatedMember[] = await Promise.all(
+        parsedPayload.data.data.map(async (member, index) => {
+          const socialNetworks = collectSocialNetworks(member.social_networks)
 
-      const members: PublicAssociatedMember[] = parsedPayload.data.data.map((member, index) => {
-        const socialNetworks = collectSocialNetworks(member.social_networks)
+          const denomination = normalizeText(member.denomination)
+          const initials = normalizeText(member.initials)
+          const university = normalizeText(member.university)
+          const autonomousCommunityName = normalizeText(member.autonomous_community)
 
-        const denomination = normalizeText(member.denomination)
-        const initials = normalizeText(member.initials)
-        const university = normalizeText(member.university)
-        const autonomousCommunityName = normalizeText(member.autonomous_community)
+          const identifierSeed = initials || denomination || university || `member-${index + 1}`
+          const rawIdentifier = `${member.order}-${identifierSeed}`
+          const fallbackSlug = `member-${index + 1}`
+          const slug = slugify(rawIdentifier) || fallbackSlug
 
-        const identifierSeed = initials || denomination || university || `member-${index + 1}`
-        const rawIdentifier = `${member.order}-${identifierSeed}`
-        const fallbackSlug = `member-${index + 1}`
-        const slug = slugify(rawIdentifier) || fallbackSlug
-
-        return {
-          id: slug,
-          slug,
-          order: member.order,
-          denomination,
-          initials,
-          university,
-          autonomousCommunity: normalizeCommunity(autonomousCommunityName),
-          autonomousCommunityName,
-          description: normalizeText(member.description) || null,
-          logoLight: appendAssetVersion(
-            toExternalImageProxyUrl(normalizeText(member.web_logo_light), {
-              event,
-              forceProxyRelative: true,
-              publicPathBase: '/conocenos/imagenes',
-            }),
-            generatedAt
-          ),
-          logoDark: appendAssetVersion(
-            toExternalImageProxyUrl(normalizeText(member.web_logo_dark), {
-              event,
-              forceProxyRelative: true,
-              publicPathBase: '/conocenos/imagenes',
-            }),
-            generatedAt
-          ),
-          socialNetworks,
-        }
-      })
+          return {
+            id: slug,
+            slug,
+            order: member.order,
+            denomination,
+            initials,
+            university,
+            autonomousCommunity: normalizeCommunity(autonomousCommunityName),
+            autonomousCommunityName,
+            description: normalizeText(member.description) || null,
+            logoLight: await toExternalImageProxyUrlWithKindHint(
+              normalizeText(member.web_logo_light),
+              {
+                event,
+                forceProxyRelative: true,
+                publicPathBase: '/conocenos/imagenes',
+              }
+            ),
+            logoDark: await toExternalImageProxyUrlWithKindHint(
+              normalizeText(member.web_logo_dark),
+              {
+                event,
+                forceProxyRelative: true,
+                publicPathBase: '/conocenos/imagenes',
+              }
+            ),
+            socialNetworks,
+          }
+        })
+      )
 
       members.sort((a, b) => a.order - b.order)
 
       return {
         members,
-        generatedAt,
+        generatedAt: parsedPayload.data.generated_at ?? null,
       }
     },
     cacheOptions
@@ -259,50 +258,50 @@ async function loadSectoriales(event: H3Event) {
         })
       }
 
-      const generatedAt = parsedPayload.data.generated_at ?? null
+      const sectoriales: PublicSectorialMember[] = await Promise.all(
+        parsedPayload.data.data.map(async (member, index) => {
+          const socialNetworks = collectSocialNetworks(member.social_networks)
 
-      const sectoriales: PublicSectorialMember[] = parsedPayload.data.data.map((member, index) => {
-        const socialNetworks = collectSocialNetworks(member.social_networks)
+          const denomination = normalizeText(member.denomination)
+          const initials = normalizeText(member.initials)
 
-        const denomination = normalizeText(member.denomination)
-        const initials = normalizeText(member.initials)
+          const identifierSeed = initials || denomination || `sectorial-${index + 1}`
+          const rawIdentifier = `${member.order}-${identifierSeed}`
+          const fallbackSlug = `sectorial-${index + 1}`
+          const id = slugify(rawIdentifier) || fallbackSlug
 
-        const identifierSeed = initials || denomination || `sectorial-${index + 1}`
-        const rawIdentifier = `${member.order}-${identifierSeed}`
-        const fallbackSlug = `sectorial-${index + 1}`
-        const id = slugify(rawIdentifier) || fallbackSlug
-
-        return {
-          id,
-          order: member.order,
-          denomination,
-          initials,
-          description: normalizeText(member.description) || null,
-          logoLight: appendAssetVersion(
-            toExternalImageProxyUrl(normalizeText(member.web_logo_light), {
-              event,
-              forceProxyRelative: true,
-              publicPathBase: '/conocenos/imagenes',
-            }),
-            generatedAt
-          ),
-          logoDark: appendAssetVersion(
-            toExternalImageProxyUrl(normalizeText(member.web_logo_dark), {
-              event,
-              forceProxyRelative: true,
-              publicPathBase: '/conocenos/imagenes',
-            }),
-            generatedAt
-          ),
-          socialNetworks,
-        }
-      })
+          return {
+            id,
+            order: member.order,
+            denomination,
+            initials,
+            description: normalizeText(member.description) || null,
+            logoLight: await toExternalImageProxyUrlWithKindHint(
+              normalizeText(member.web_logo_light),
+              {
+                event,
+                forceProxyRelative: true,
+                publicPathBase: '/conocenos/imagenes',
+              }
+            ),
+            logoDark: await toExternalImageProxyUrlWithKindHint(
+              normalizeText(member.web_logo_dark),
+              {
+                event,
+                forceProxyRelative: true,
+                publicPathBase: '/conocenos/imagenes',
+              }
+            ),
+            socialNetworks,
+          }
+        })
+      )
 
       sectoriales.sort((a, b) => a.order - b.order)
 
       return {
         sectoriales,
-        generatedAt,
+        generatedAt: parsedPayload.data.generated_at ?? null,
       }
     },
     cacheOptions
@@ -338,7 +337,6 @@ async function loadTeamAreas(event: H3Event) {
         })
       }
 
-      const generatedAt = parsedPayload.data.generated_at ?? null
       const areas: PublicTeamArea[] = parsedPayload.data.data
         .sort((a, b) => a.area_order - b.area_order)
         .map((area) => {
@@ -350,14 +348,11 @@ async function loadTeamAreas(event: H3Event) {
               return {
                 order: member.order,
                 denomination: normalizeText(member.denomination) || null,
-                photo: appendAssetVersion(
-                  toExternalImageProxyUrl(normalizeText(member.web_photo), {
-                    event,
-                    forceProxyRelative: true,
-                    publicPathBase: '/conocenos/imagenes',
-                  }),
-                  generatedAt
-                ),
+                photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
+                  event,
+                  forceProxyRelative: true,
+                  publicPathBase: '/conocenos/imagenes',
+                }),
                 email: normalizeText(member.email) || '',
                 name: normalizeText(member.name) || '',
                 surname: normalizeText(member.surname) || '',
@@ -396,7 +391,7 @@ async function loadTeamAreas(event: H3Event) {
 
       return {
         areas,
-        generatedAt,
+        generatedAt: parsedPayload.data.generated_at ?? null,
       }
     },
     cacheOptions

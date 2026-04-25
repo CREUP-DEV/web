@@ -193,7 +193,7 @@ function getPhotoAlt(index: number): string {
 
       <article class="space-y-8">
         <div v-if="event.banner.url" class="overflow-hidden rounded-lg">
-          <NuxtImg
+          <AdaptiveImage
             :src="event.banner.url"
             :alt="t('events.bannerAlt', { event: event.name })"
             class="aspect-7/2 w-full object-cover"
@@ -266,10 +266,13 @@ function getPhotoAlt(index: number): string {
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <UCard v-for="org in event.organizers" :key="org.order" class="text-center">
               <div class="flex flex-col items-center gap-3">
-                <NuxtImg
+                <AdaptiveImage
                   v-if="org.logoLight"
                   :src="org.logoLight"
                   :alt="org.name ?? ''"
+                  width="160"
+                  height="48"
+                  format="webp"
                   class="h-12 w-auto object-contain"
                   loading="lazy"
                 />
@@ -296,10 +299,13 @@ function getPhotoAlt(index: number): string {
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <UCard v-for="venue in event.venues" :key="venue.order" class="text-center">
               <div class="flex flex-col items-center gap-3">
-                <NuxtImg
+                <AdaptiveImage
                   v-if="venue.logoLight"
                   :src="venue.logoLight"
                   :alt="venue.name ?? ''"
+                  width="160"
+                  height="48"
+                  format="webp"
                   class="h-12 w-auto object-contain"
                   loading="lazy"
                 />
@@ -326,10 +332,13 @@ function getPhotoAlt(index: number): string {
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <UCard v-for="collab in event.collaborators" :key="collab.order" class="text-center">
               <div class="flex flex-col items-center gap-3">
-                <NuxtImg
+                <AdaptiveImage
                   v-if="collab.logoLight"
                   :src="collab.logoLight"
                   :alt="collab.name ?? ''"
+                  width="160"
+                  height="48"
+                  format="webp"
                   class="h-12 w-auto object-contain"
                   loading="lazy"
                 />
@@ -374,7 +383,7 @@ function getPhotoAlt(index: number): string {
                   class="motion-link-card focus-visible:ring-primary group relative aspect-square w-full overflow-hidden rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                   @click="openLightbox((currentGalleryPage - 1) * photosPerPage + pageIndex)"
                 >
-                  <NuxtImg
+                  <AdaptiveImage
                     :src="img.url!"
                     :alt="getPhotoAlt((currentGalleryPage - 1) * photosPerPage + pageIndex)"
                     class="motion-link-media size-full object-cover"
@@ -383,7 +392,6 @@ function getPhotoAlt(index: number): string {
                     height="300"
                     sizes="(min-width: 1024px) 22vw, (min-width: 768px) 30vw, 45vw"
                     densities="x1 x2"
-                    placeholder
                     format="webp"
                     quality="72"
                     @load="onGalleryImageLoad(pageIndex)"

@@ -6,13 +6,16 @@ import {
 } from '../../utils/externalApiCache'
 import { getEventBySlug } from '../../utils/events'
 import { slugRouteParamSchema, validatePublicRouteParams } from '../../utils/validation'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+} from '../../utils/publicRouteCache'
 
 export default defineCachedEventHandler(
   async (event) => {
     const { slug } = validatePublicRouteParams(event, slugRouteParamSchema)
 
-    setExternalApiCacheHeaders(event, getExternalApiCacheOptions(event))
+    setExternalApiCacheHeaders(event, getExternalApiCacheOptions(event), 0)
 
     const { event: matchedEvent, generatedAt } = await getEventBySlug(event, slug)
 
@@ -29,7 +32,7 @@ export default defineCachedEventHandler(
     }
   },
   {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
     getKey: (event) => {
       const params = event.context.params ?? {}
       const slug = typeof params.slug === 'string' ? params.slug : ''

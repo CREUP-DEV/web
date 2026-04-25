@@ -6,7 +6,7 @@ import {
   publicPaginationQuerySchema,
   validatePublicQuery,
 } from './validation'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from './publicRouteCache'
+import { buildPublicRouteCacheKey, FAST_EXTERNAL_ROUTE_CACHE_OPTIONS } from './publicRouteCache'
 
 const POLICY_DOCUMENTS_CACHE_VERSION = 1
 
@@ -104,7 +104,7 @@ export function createPolicyDocumentCollectionRouteHandler(
       }
     },
     {
-      ...PUBLIC_ROUTE_CACHE_OPTIONS,
+      ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
       getKey: (event: H3Event) =>
         buildPublicRouteCacheKey(event, collection, {
           includeLocale: false,

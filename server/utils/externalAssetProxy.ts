@@ -14,9 +14,11 @@ import {
   getRequiredExternalAssetProxyTimeoutMs,
   getRequiredSiteUrl,
 } from './runtimeConfig'
+import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
 import { logError } from './logger'
 import { externalAssetPublicPathParamSchema, externalAssetQuerySchema } from './validation'
 import { INTERNAL_ASSET_PROXY_PATH_BASES } from '~~/shared/constants/assetPaths'
+import { setUrlSearchParam } from '~~/shared/utils/url'
 
 export type ExternalAssetType = 'image' | 'pdf'
 
@@ -35,6 +37,7 @@ const EXTERNAL_ASSET_PROXY_BODY_TIMEOUT_MS = 30_000
 const EXTERNAL_ASSET_PROXY_KEEP_ALIVE_TIMEOUT_MS = 5_000
 const EXTERNAL_ASSET_PROXY_KEEP_ALIVE_MAX_TIMEOUT_MS = 60_000
 const EXTERNAL_ASSET_PROXY_MAX_ORIGINS = 16
+const INTERNAL_ASSET_KIND_QUERY_PARAM = '__imgkind'
 
 const externalAssetProxyDispatcher = new Agent({
   bodyTimeout: EXTERNAL_ASSET_PROXY_BODY_TIMEOUT_MS,
@@ -184,6 +187,17 @@ const stripHash = (value: string) => {
   return hashIndex === -1 ? value : value.slice(0, hashIndex)
 }
 
+const stripInternalAssetHintParams = (search: string) => {
+  if (!search) {
+    return ''
+  }
+
+  const params = new URLSearchParams(search)
+  params.delete(INTERNAL_ASSET_KIND_QUERY_PARAM)
+  const normalized = params.toString()
+  return normalized ? `?${normalized}` : ''
+}
+
 const buildSemanticAssetPath = (
   source: string,
   type: ExternalAssetType,
@@ -235,7 +249,7 @@ const resolveSourceFromPublicPath = (
 
   const normalizedPath = parsedPath.data.path.replace(/^\/+/, '')
   const segments = normalizedPath.split('/').filter(Boolean)
-  const requestSearch = getRequestURL(event).search
+  const requestSearch = stripInternalAssetHintParams(getRequestURL(event).search)
   const pathParts = { pathname: `/${normalizedPath}`, search: '' }
   const search = requestSearch
 
@@ -687,6 +701,159 @@ export const toExternalAssetProxyUrl = (
   } catch {
     return normalized
   }
+}
+
+const getImageKindFromPathname = (pathname: string): 'svg' | 'raster' | null => {
+  const normalizedPathname = pathname.toLowerCase()
+
+  if (normalizedPathname.endsWith('.svg')) {
+    return 'svg'
+  }
+
+  if (
+    normalizedPathname.endsWith('.png') ||
+    normalizedPathname.endsWith('.jpg') ||
+    normalizedPathname.endsWith('.jpeg') ||
+    normalizedPathname.endsWith('.webp') ||
+    normalizedPathname.endsWith('.gif') ||
+    normalizedPathname.endsWith('.avif')
+  ) {
+    return 'raster'
+  }
+
+  return null
+}
+
+const appendAssetKindHint = (url: string, kind: 'svg') => {
+  try {
+    return setUrlSearchParam(url, INTERNAL_ASSET_KIND_QUERY_PARAM, kind)
+  } catch {
+    const separator = url.includes('?') ? '&' : '?'
+    return `${url}${separator}${INTERNAL_ASSET_KIND_QUERY_PARAM}=${kind}`
+  }
+}
+
+export async function isExternalImageSvg(source: string | null | undefined, event: H3Event) {
+  const normalizedSource = source?.trim()
+  if (!normalizedSource || isSpecialUrl(normalizedSource)) {
+    return false
+  }
+
+  try {
+    const { allowedOrigins, assetBaseUrl: configuredBaseUrl } = getExternalAssetProxyConfig(event)
+    const sourceUrl = resolveSourceUrl(normalizedSource, configuredBaseUrl)
+    const imageKindFromPathname = getImageKindFromPathname(sourceUrl.pathname)
+
+    if (imageKindFromPathname) {
+      return imageKindFromPathname === 'svg'
+    }
+
+    return await withExternalApiSWRCache(
+      `external-asset-kind:image:${sourceUrl.toString()}`,
+      async () => {
+        if (!['http:', 'https:'].includes(sourceUrl.protocol)) {
+          return false
+        }
+
+        if (sourceUrl.username || sourceUrl.password || !allowedOrigins.has(sourceUrl.origin)) {
+          return false
+        }
+
+        const timeoutMs = getRequiredExternalAssetProxyTimeoutMs(event)
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+        const requestHeaders = new Headers({ accept: getAssetAcceptHeader('image') })
+        const methodCandidates: Array<'HEAD' | 'GET'> = ['HEAD', 'GET']
+
+        const fetchWithSafeRedirects = async (
+          url: string,
+          method: 'HEAD' | 'GET',
+          hops = 0
+        ): Promise<Response> => {
+          if (hops > 5) {
+            throw new Error('Too many redirects')
+          }
+
+          const requestInit: ExternalAssetProxyRequestInit = {
+            dispatcher: externalAssetProxyDispatcher,
+            method,
+            headers: requestHeaders,
+            redirect: 'manual',
+            signal: controller.signal,
+          }
+          const response = await fetch(url, requestInit)
+
+          if (response.status >= 300 && response.status < 400) {
+            const location = response.headers.get('location')
+            if (!location) {
+              throw new Error('Missing redirect location')
+            }
+
+            const nextUrl = new URL(location, url)
+            if (
+              !['http:', 'https:'].includes(nextUrl.protocol) ||
+              !allowedOrigins.has(nextUrl.origin)
+            ) {
+              throw new Error('Redirect target not allowed')
+            }
+
+            return fetchWithSafeRedirects(nextUrl.toString(), method, hops + 1)
+          }
+
+          return response
+        }
+
+        try {
+          for (const method of methodCandidates) {
+            const response = await fetchWithSafeRedirects(sourceUrl.toString(), method)
+
+            if ((response.status === 405 || response.status === 501) && method === 'HEAD') {
+              continue
+            }
+
+            if (![200, 204, 206, 304].includes(response.status)) {
+              return false
+            }
+
+            const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+            if (method === 'GET') {
+              await response.body?.cancel()
+            }
+
+            if (contentType.includes('image/svg+xml')) {
+              return true
+            }
+
+            if (contentType.startsWith('image/')) {
+              return false
+            }
+          }
+
+          return false
+        } finally {
+          clearTimeout(timeoutId)
+        }
+      },
+      getExternalApiCacheOptions(event)
+    )
+  } catch (error) {
+    logError('external-asset.kind-detection', error, { source: normalizedSource }, event)
+    return false
+  }
+}
+
+export async function toExternalImageProxyUrlWithKindHint(
+  src: string | null | undefined,
+  options: ExternalAssetProxyUrlOptions = {}
+) {
+  const resolvedUrl = toExternalImageProxyUrl(src, options)
+  if (!resolvedUrl || !src || !options.event) {
+    return resolvedUrl
+  }
+
+  return (await isExternalImageSvg(src, options.event))
+    ? appendAssetKindHint(resolvedUrl, 'svg')
+    : resolvedUrl
 }
 
 export const toExternalImageProxyUrl = (

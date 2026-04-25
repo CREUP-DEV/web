@@ -184,7 +184,7 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
             >
               <UCard class="motion-card-subtle h-full">
                 <template v-if="event.banner.url" #header>
-                  <NuxtImg
+                  <AdaptiveImage
                     :src="event.banner.url"
                     :alt="t('events.bannerAlt', { event: event.name })"
                     class="aspect-7/2 w-full object-cover"

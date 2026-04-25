@@ -15,6 +15,12 @@ const siteImageHostname = siteHostname
 const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
 const umamiOrigin = umamiHost ? new URL(umamiHost).origin : null
 const productionPublicSWRPagePaths = [
+  '/transparencia/igualdad',
+  '/transparencia/informes-economicos',
+  '/transparencia/mic',
+  '/legal',
+] as const
+const productionFastChangingPagePaths = [
   '/conocenos/comites',
   '/conocenos/equipo',
   '/conocenos/equipo/**',
@@ -22,15 +28,11 @@ const productionPublicSWRPagePaths = [
   '/conocenos/eventos/**',
   '/conocenos/miembros',
   '/conocenos/que-es',
-  '/transparencia/igualdad',
-  '/transparencia/informes-economicos',
-  '/transparencia/mic',
-  '/transparencia/normativa',
+  '/comision-de-asuntos-sectoriales',
   '/politica/informes-ejecutivos',
   '/politica/posicionamientos',
   '/politica/resoluciones',
-  '/comision-de-asuntos-sectoriales',
-  '/legal',
+  '/transparencia/normativa',
 ] as const
 
 const buildSWRRouteRules = (paths: readonly string[], ttlSeconds: number) =>
@@ -42,6 +44,10 @@ const buildNoRateLimitRouteRules = (paths: readonly string[]) =>
 const productionPublicSWRRouteRules = isDev
   ? {}
   : buildSWRRouteRules(productionPublicSWRPagePaths, 3600)
+
+const productionFastChangingPageRouteRules = isDev
+  ? {}
+  : buildSWRRouteRules(productionFastChangingPagePaths, 300)
 
 const routeRules = {
   '/admin/**': {
@@ -61,6 +67,7 @@ const routeRules = {
   },
   ...buildNoRateLimitRouteRules(INTERNAL_IMAGE_PROXY_PATH_BASES),
   ...productionPublicSWRRouteRules,
+  ...productionFastChangingPageRouteRules,
   '/_nuxt/**': {
     headers: {
       'Cache-Control': 'public, max-age=31536000, immutable',

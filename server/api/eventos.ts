@@ -1,7 +1,10 @@
 import { z } from 'zod'
 import { getExternalApiCacheOptions, setExternalApiCacheHeaders } from '../utils/externalApiCache'
 import { getEventsPayload } from '../utils/events'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+} from '../utils/publicRouteCache'
 import {
   publicPaginationQuerySchema,
   toOptionalSingleStringSchema,
@@ -18,7 +21,7 @@ export default defineCachedEventHandler(
     const { limit, offset, type, types } = validatePublicQuery(event, eventsListQuerySchema)
     const normalizedLimit = limit ?? 12
     const normalizedOffset = offset ?? 0
-    setExternalApiCacheHeaders(event, getExternalApiCacheOptions(event))
+    setExternalApiCacheHeaders(event, getExternalApiCacheOptions(event), 0)
 
     const payload = await getEventsPayload(event)
 
@@ -53,7 +56,7 @@ export default defineCachedEventHandler(
     }
   },
   {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
     getKey: (event) =>
       buildPublicRouteCacheKey(event, 'eventos', {
         includeLocale: false,

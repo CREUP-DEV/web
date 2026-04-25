@@ -129,3 +129,65 @@ export const toRelativeSitePath = (
     return trimmedValue
   }
 }
+
+interface ParsedRelativeUrl {
+  hash: string
+  pathname: string
+  search: string
+}
+
+const parseRelativeUrl = (value: string): ParsedRelativeUrl => {
+  const hashIndex = value.indexOf('#')
+  const beforeHash = hashIndex === -1 ? value : value.slice(0, hashIndex)
+  const hash = hashIndex === -1 ? '' : value.slice(hashIndex)
+  const searchIndex = beforeHash.indexOf('?')
+
+  return {
+    pathname: searchIndex === -1 ? beforeHash : beforeHash.slice(0, searchIndex),
+    search: searchIndex === -1 ? '' : beforeHash.slice(searchIndex),
+    hash,
+  }
+}
+
+export const getUrlPathname = (value: string): string => {
+  if (isAbsoluteHttpUrl(value)) {
+    try {
+      return new URL(value).pathname
+    } catch {
+      return parseRelativeUrl(value).pathname
+    }
+  }
+
+  return parseRelativeUrl(value).pathname
+}
+
+export const getUrlSearchParam = (value: string, name: string): string | null => {
+  try {
+    if (isAbsoluteHttpUrl(value)) {
+      return new URL(value).searchParams.get(name)
+    }
+
+    return new URLSearchParams(parseRelativeUrl(value).search).get(name)
+  } catch {
+    return null
+  }
+}
+
+export const setUrlSearchParam = (value: string, name: string, paramValue: string): string => {
+  if (isAbsoluteHttpUrl(value)) {
+    try {
+      const parsed = new URL(value)
+      parsed.searchParams.set(name, paramValue)
+      return parsed.toString()
+    } catch {
+      return value
+    }
+  }
+
+  const { pathname, search, hash } = parseRelativeUrl(value)
+  const params = new URLSearchParams(search)
+  params.set(name, paramValue)
+  const normalizedSearch = params.toString()
+
+  return `${pathname}${normalizedSearch ? `?${normalizedSearch}` : ''}${hash}`
+}

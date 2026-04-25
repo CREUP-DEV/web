@@ -51,6 +51,12 @@ export const PUBLIC_ROUTE_CACHE_OPTIONS = {
   swr: true,
 } as const
 
+export const FAST_EXTERNAL_ROUTE_CACHE_OPTIONS = {
+  base: 'cache',
+  maxAge: 5,
+  swr: true,
+} as const
+
 const normalizeQueryValue = (value: unknown) => {
   if (Array.isArray(value)) {
     return value.join(',')

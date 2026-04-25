@@ -34,10 +34,6 @@ const resolvedLogo = computed(() => {
 
   return props.logoLight ?? props.logoDark ?? ''
 })
-const resolvedLogoFormat = computed(() => {
-  const normalizedLogo = resolvedLogo.value.split('?')[0]?.toLowerCase() ?? ''
-  return normalizedLogo.endsWith('.svg') ? undefined : 'webp'
-})
 const networkIcons = socialNetworkIcons
 
 const emit = defineEmits<{
@@ -86,7 +82,7 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
               <div
                 class="detail-modal-media bg-elevated mx-auto flex aspect-square w-full max-w-48 items-center justify-center overflow-hidden rounded-[1.75rem] p-5 sm:max-w-56 sm:p-6"
               >
-                <NuxtImg
+                <AdaptiveImage
                   v-if="resolvedLogo"
                   :src="resolvedLogo"
                   :alt="imageAlt"
@@ -94,8 +90,8 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
                   height="224"
                   fit="inside"
                   sizes="(max-width: 1024px) 192px, 224px"
-                  :format="resolvedLogoFormat"
                   class="block size-full object-contain object-center"
+                  format="webp"
                   decoding="async"
                 />
                 <UIcon
@@ -164,7 +160,7 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
           <div
             class="detail-modal-media bg-elevated mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center overflow-hidden rounded-[1.75rem] p-5 lg:mx-0 lg:max-w-55 lg:p-6"
           >
-            <NuxtImg
+            <AdaptiveImage
               v-if="resolvedLogo"
               :src="resolvedLogo"
               :alt="imageAlt"
@@ -172,8 +168,8 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
               height="220"
               fit="inside"
               sizes="220px"
-              :format="resolvedLogoFormat"
               class="block size-full object-contain object-center"
+              format="webp"
               decoding="async"
             />
             <UIcon v-else name="i-tabler-building" class="text-muted size-14" aria-hidden="true" />

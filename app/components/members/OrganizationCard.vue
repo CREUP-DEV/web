@@ -22,11 +22,6 @@ const resolvedLogo = computed(() => {
 
   return props.logoLight ?? props.logoDark ?? ''
 })
-const resolvedLogoFormat = computed(() => {
-  const normalizedLogo = resolvedLogo.value.split('?')[0]?.toLowerCase() ?? ''
-  return normalizedLogo.endsWith('.svg') ? undefined : 'webp'
-})
-
 const emit = defineEmits<{
   (e: 'click'): void
 }>()
@@ -45,7 +40,7 @@ const emit = defineEmits<{
       <div
         class="ring-primary/20 group-hover:ring-primary/40 bg-elevated flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl ring-2 transition-all group-hover:shadow-sm"
       >
-        <NuxtImg
+        <AdaptiveImage
           v-if="resolvedLogo"
           :src="resolvedLogo"
           :alt="imageAlt"
@@ -53,8 +48,8 @@ const emit = defineEmits<{
           height="80"
           fit="inside"
           sizes="80px"
-          :format="resolvedLogoFormat"
           class="block size-full object-contain object-center p-1.5"
+          format="webp"
           loading="lazy"
           decoding="async"
         />

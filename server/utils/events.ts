@@ -2,7 +2,7 @@ import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { getPublicApiErrorMessage } from './apiErrorMessages'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from './externalApiCache'
-import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from './externalAssetProxy'
+import { toExternalImageProxyUrlWithKindHint, toExternalPdfProxyUrl } from './externalAssetProxy'
 import { logError } from './logger'
 import { getRequiredExternalApiBaseUrl } from './runtimeConfig'
 import { externalEventsResponseSchema } from './validation'
@@ -71,17 +71,17 @@ const toEventImageUrl = (
   source: string | null,
   event: H3Event,
   configuredBaseOrigin: string | null
-): string | null => {
+): Promise<string | null> => {
   if (!source) {
-    return null
+    return Promise.resolve(null)
   }
 
   const sourceOrigin = getUrlOrigin(source)
   if (sourceOrigin && configuredBaseOrigin && sourceOrigin !== configuredBaseOrigin) {
-    return source
+    return Promise.resolve(source)
   }
 
-  return toExternalImageProxyUrl(source, {
+  return toExternalImageProxyUrlWithKindHint(source, {
     event,
     forceProxyRelative: true,
     publicPathBase: EVENT_IMAGE_PUBLIC_BASE,
@@ -116,16 +116,20 @@ const mapOrganization = (
   },
   event: H3Event,
   configuredBaseOrigin: string | null
-): EventOrganizationOutput => ({
-  order: organization.order,
-  name: normalizeText(organization.name),
-  link: normalizeText(organization.link),
-  logoLight: toEventImageUrl(
-    normalizeText(organization.web_logo_light),
-    event,
-    configuredBaseOrigin
-  ),
-})
+): Promise<EventOrganizationOutput> =>
+  Promise.resolve({
+    order: organization.order,
+    name: normalizeText(organization.name),
+    link: normalizeText(organization.link),
+    logoLight: null,
+  }).then(async (base) => ({
+    ...base,
+    logoLight: await toEventImageUrl(
+      normalizeText(organization.web_logo_light),
+      event,
+      configuredBaseOrigin
+    ),
+  }))
 
 export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
@@ -157,48 +161,58 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
         })
       }
 
-      const events: EventOutput[] = parsedPayload.data.data
-        .sort((a, b) => a.order - b.order)
-        .map((entry) => ({
-          id: entry.event_id,
-          name: entry.event_name,
-          slug: entry.event_slug,
-          type: normalizeText(entry.event_type),
-          location: normalizeText(entry.event_location),
-          description: normalizeText(entry.event_description),
-          banner: {
-            url: toEventImageUrl(
-              normalizeText(entry.event_banner?.url),
-              event,
-              configuredBaseOrigin
+      const events: EventOutput[] = await Promise.all(
+        parsedPayload.data.data
+          .sort((a, b) => a.order - b.order)
+          .map(async (entry) => ({
+            id: entry.event_id,
+            name: entry.event_name,
+            slug: entry.event_slug,
+            type: normalizeText(entry.event_type),
+            location: normalizeText(entry.event_location),
+            description: normalizeText(entry.event_description),
+            banner: {
+              url: await toEventImageUrl(
+                normalizeText(entry.event_banner?.url),
+                event,
+                configuredBaseOrigin
+              ),
+            },
+            startDate: entry.event_start_date,
+            endDate: normalizeText(entry.event_end_date),
+            documents: (entry.documents ?? [])
+              .sort((a, b) => a.order - b.order)
+              .map((document) => ({
+                order: document.order,
+                title: normalizeText(document.title),
+                url: toEventPdfUrl(normalizeText(document.url), configuredBaseOrigin),
+              })),
+            organizers: await Promise.all(
+              (entry.organizers ?? [])
+                .sort((a, b) => a.order - b.order)
+                .map((organization) => mapOrganization(organization, event, configuredBaseOrigin))
             ),
-          },
-          startDate: entry.event_start_date,
-          endDate: normalizeText(entry.event_end_date),
-          documents: (entry.documents ?? [])
-            .sort((a, b) => a.order - b.order)
-            .map((document) => ({
-              order: document.order,
-              title: normalizeText(document.title),
-              url: toEventPdfUrl(normalizeText(document.url), configuredBaseOrigin),
-            })),
-          organizers: (entry.organizers ?? [])
-            .sort((a, b) => a.order - b.order)
-            .map((organization) => mapOrganization(organization, event, configuredBaseOrigin)),
-          venues: (entry.venues ?? [])
-            .sort((a, b) => a.order - b.order)
-            .map((organization) => mapOrganization(organization, event, configuredBaseOrigin)),
-          collaborators: (entry.collaborators ?? [])
-            .sort((a, b) => a.order - b.order)
-            .map((organization) => mapOrganization(organization, event, configuredBaseOrigin)),
-          galleryImages: (entry.gallery_images ?? [])
-            .sort((a, b) => a.order - b.order)
-            .map((image) => ({
-              order: image.order,
-              url: toEventImageUrl(normalizeText(image.url), event, configuredBaseOrigin),
-            })),
-          order: entry.order,
-        }))
+            venues: await Promise.all(
+              (entry.venues ?? [])
+                .sort((a, b) => a.order - b.order)
+                .map((organization) => mapOrganization(organization, event, configuredBaseOrigin))
+            ),
+            collaborators: await Promise.all(
+              (entry.collaborators ?? [])
+                .sort((a, b) => a.order - b.order)
+                .map((organization) => mapOrganization(organization, event, configuredBaseOrigin))
+            ),
+            galleryImages: await Promise.all(
+              (entry.gallery_images ?? [])
+                .sort((a, b) => a.order - b.order)
+                .map(async (image) => ({
+                  order: image.order,
+                  url: await toEventImageUrl(normalizeText(image.url), event, configuredBaseOrigin),
+                }))
+            ),
+            order: entry.order,
+          }))
+      )
 
       return {
         events,
