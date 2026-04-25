@@ -256,7 +256,7 @@ onBeforeUnmount(() => {
 <template>
   <div ref="mapContainerRef" class="relative w-full">
     <svg
-      viewBox="0 0 1282.91 843.72"
+      viewBox="0 0 1282.91 847.72"
       class="h-auto w-full"
       role="group"
       :aria-label="t('members.selectCommunity')"
