@@ -26,6 +26,7 @@ usePageSeo('committees.title', 'committees.description', {
 type SocialNetwork = SocialNetworkEntry
 
 interface CommitteeMember {
+  id: string
   order: number
   denomination: string | null
   photo: string | null
@@ -50,8 +51,10 @@ interface Committee {
 }
 
 interface CommitteesResponse {
-  committees: Committee[]
-  generatedAt?: string | null
+  data: Committee[]
+  meta: {
+    generatedAt?: string | null
+  }
 }
 interface EnrichedMember extends CommitteeMember {
   committeeName: string
@@ -62,7 +65,7 @@ const { data, pending, error, refresh } = useFetch<CommitteesResponse>('/api/com
   headers: localeApiHeaders,
 })
 
-const committees = computed(() => data.value?.committees ?? [])
+const committees = computed(() => data.value?.data ?? [])
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const getCommitteeName = (committee: Committee) =>
@@ -83,6 +86,14 @@ const memberCardTriggerClass =
 const selectedMember = ref<EnrichedMember | null>(null)
 const modalOpen = ref(false)
 const memberModalUi = detailModalUi
+
+const selectedMemberModalKey = computed(() => {
+  if (!selectedMember.value) {
+    return 'none'
+  }
+
+  return [selectedMember.value.id, selectedMember.value.photo ?? ''].join('|')
+})
 
 const openMemberModal = (member: CommitteeMember, committee: Committee) => {
   selectedMember.value = {
@@ -183,7 +194,7 @@ function encodeEmail(email: string) {
           >
             <article
               v-for="(member, idx) in committee.members"
-              :key="`committee-${committee.id}-member-${idx}`"
+              :key="member.id"
               :class="memberCardClass"
               :style="getEntranceDelay(idx)"
             >
@@ -199,6 +210,7 @@ function encodeEmail(email: string) {
                   >
                     <NuxtImg
                       v-if="member.photo"
+                      :key="`${member.id}-${member.photo}`"
                       :src="member.photo"
                       :alt="getMemberDisplayName(member)"
                       class="size-full object-cover"
@@ -251,6 +263,7 @@ function encodeEmail(email: string) {
       <template #body>
         <TeamPersonModal
           v-if="selectedMember"
+          :key="selectedMemberModalKey"
           :member="selectedMember"
           :display-name="getMemberDisplayName(selectedMember)"
           @close="closeMemberModal"

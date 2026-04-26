@@ -84,6 +84,7 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
               >
                 <AdaptiveImage
                   v-if="resolvedLogo"
+                  :key="resolvedLogo"
                   :src="resolvedLogo"
                   :alt="imageAlt"
                   width="224"
@@ -162,6 +163,7 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
           >
             <AdaptiveImage
               v-if="resolvedLogo"
+              :key="resolvedLogo"
               :src="resolvedLogo"
               :alt="imageAlt"
               width="220"

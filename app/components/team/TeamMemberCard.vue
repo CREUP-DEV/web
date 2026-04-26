@@ -3,6 +3,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import type { SocialNetworkEntry } from '~~/shared/utils/social'
 
 interface Member {
+  id: string
   photo: string | null
   denomination: string | null
   email: string
@@ -52,6 +53,7 @@ const triggerClass =
         >
           <NuxtImg
             v-if="member.photo"
+            :key="`${member.id}-${member.photo}`"
             :src="member.photo"
             :alt="displayName"
             width="112"

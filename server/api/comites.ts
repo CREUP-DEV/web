@@ -3,11 +3,11 @@ import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
   withExternalApiSWRCache,
-} from '../utils/externalApiCache'
-import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { logError } from '../utils/logger'
-import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
+} from '../utils/cache/externalApiCache'
+import { toExternalImageProxyUrl } from '../utils/external/externalAssetUrl'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { logError } from '../utils/core/logger'
+import { getRequiredExternalApiBaseUrl } from '../utils/core/runtimeConfig'
 import { externalCommitteesResponseSchema } from '../utils/validation'
 import {
   collectSocialNetworks,
@@ -16,6 +16,7 @@ import {
 } from '~~/shared/utils/social'
 
 interface CommitteeMemberOutput {
+  id: string
   order: number
   denomination: string | null
   photo: string | null
@@ -40,6 +41,23 @@ interface CommitteeOutput {
 }
 
 const normalizeText = normalizeSocialText
+const PUBLIC_COMMITTEES_CACHE_VERSION = 1
+
+const slugify = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+const buildStableCommitteeMemberId = (
+  parts: Array<string | null | undefined>,
+  fallbackIndex: number
+) => {
+  const baseId = slugify(parts.filter(Boolean).join('-'))
+  return baseId || `committee-member-${fallbackIndex + 1}`
+}
 
 export default defineEventHandler(async (event) => {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
@@ -48,7 +66,7 @@ export default defineEventHandler(async (event) => {
   setExternalApiCacheHeaders(event, cacheOptions, 0)
 
   return withExternalApiSWRCache(
-    `external-api:comites:${configuredBaseUrl}`,
+    `external-api:comites:v${PUBLIC_COMMITTEES_CACHE_VERSION}:${configuredBaseUrl}`,
     async () => {
       const endpoint = new URL('/api/comites', configuredBaseUrl).toString()
 
@@ -77,21 +95,37 @@ export default defineEventHandler(async (event) => {
         .map((committee) => {
           const members: CommitteeMemberOutput[] = committee.members
             .sort((a, b) => a.order - b.order)
-            .map((member) => {
+            .map((member, index) => {
               const socialNetworks = collectSocialNetworks(member.social_networks)
+              const normalizedDenomination = normalizeText(member.denomination) || null
+              const normalizedEmail = normalizeText(member.email) || ''
+              const normalizedName = normalizeText(member.name) || ''
+              const normalizedSurname = normalizeText(member.surname) || ''
+              const normalizedUniversity = normalizeText(member.university) || null
 
               return {
+                id: buildStableCommitteeMemberId(
+                  [
+                    normalizedEmail,
+                    normalizedName,
+                    normalizedSurname,
+                    normalizedDenomination,
+                    normalizedUniversity,
+                    String(committee.committee_id),
+                  ],
+                  index
+                ),
                 order: member.order,
-                denomination: normalizeText(member.denomination) || null,
+                denomination: normalizedDenomination,
                 photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
                   event,
                   forceProxyRelative: true,
                   publicPathBase: '/conocenos/imagenes',
                 }),
-                email: normalizeText(member.email) || '',
-                name: normalizeText(member.name) || '',
-                surname: normalizeText(member.surname) || '',
-                university: normalizeText(member.university) || null,
+                email: normalizedEmail,
+                name: normalizedName,
+                surname: normalizedSurname,
+                university: normalizedUniversity,
                 degree: normalizeText(member.degree) || null,
                 description: normalizeText(member.description) || null,
                 publicAgenda: member.public_agenda ?? false,
@@ -148,8 +182,10 @@ export default defineEventHandler(async (event) => {
         })
 
       return {
-        committees,
-        generatedAt: parsedPayload.data.generated_at ?? null,
+        data: committees,
+        meta: {
+          generatedAt: parsedPayload.data.generated_at ?? null,
+        },
       }
     },
     cacheOptions

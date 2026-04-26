@@ -6,6 +6,7 @@ import {
 } from '~~/shared/utils/social'
 
 interface TeamMemberModalPerson {
+  id?: string
   photo: string | null
   denomination: string | null
   email: string
@@ -91,6 +92,7 @@ const hasAssignmentInfo = computed(() =>
               >
                 <NuxtImg
                   v-if="member.photo"
+                  :key="`${member.id ?? displayName}-${member.photo}`"
                   :src="member.photo"
                   :alt="displayName"
                   width="224"
@@ -216,6 +218,7 @@ const hasAssignmentInfo = computed(() =>
           >
             <NuxtImg
               v-if="member.photo"
+              :key="`${member.id ?? displayName}-${member.photo}`"
               :src="member.photo"
               :alt="displayName"
               width="220"

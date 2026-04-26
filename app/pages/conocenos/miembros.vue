@@ -81,6 +81,19 @@ const selectedOrganizationDetailData = computed(() => {
   return null
 })
 
+const selectedOrganizationModalKey = computed(() => {
+  const selectedEntity = selectedMember.value ?? selectedSectorial.value
+  if (!selectedEntity) {
+    return 'none'
+  }
+
+  return [
+    'id' in selectedEntity ? selectedEntity.id : 'unknown',
+    selectedEntity.logoLight ?? '',
+    selectedEntity.logoDark ?? '',
+  ].join('|')
+})
+
 const openMemberModal = (member: (typeof allMembers.value)[number]) => {
   selectedMember.value = member
   selectedSectorial.value = null
@@ -309,6 +322,7 @@ watch(
       <template #body>
         <MembersOrganizationDetailModal
           v-if="selectedOrganizationDetailData"
+          :key="selectedOrganizationModalKey"
           v-bind="selectedOrganizationDetailData"
           @close="closeOrganizationModal"
         />

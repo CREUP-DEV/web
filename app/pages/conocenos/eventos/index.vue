@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CREUPEvent } from '@/composables/useEvents'
+import type { CREUPEvent } from '@/composables/events/useEvents'
 import { getEventTypeI18nKey } from '~~/shared/constants/eventTypes'
 
 const { t } = useI18n()

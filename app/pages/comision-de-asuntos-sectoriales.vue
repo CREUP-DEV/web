@@ -5,6 +5,7 @@ import type { SocialNetworkEntry } from '~~/shared/utils/social'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 
 interface CommitteeMember {
+  id: string
   order: number
   denomination: string | null
   photo: string | null
@@ -29,8 +30,10 @@ interface Committee {
 }
 
 interface CommitteesResponse {
-  committees: Committee[]
-  generatedAt?: string | null
+  data: Committee[]
+  meta: {
+    generatedAt?: string | null
+  }
 }
 
 const { t, locale } = useI18n()
@@ -72,8 +75,8 @@ const [
   }),
 ])
 
-const allCommittees = computed(() => committeesData.value?.committees ?? [])
-const allSectoriales = computed(() => sectorialesData.value?.sectoriales ?? [])
+const allCommittees = computed(() => committeesData.value?.data ?? [])
+const allSectoriales = computed(() => sectorialesData.value?.data ?? [])
 
 const emptyMembers = computed<OrganizationMember[]>(() => [])
 const {
@@ -148,6 +151,18 @@ const selectedSectorialDetailData = computed(() => {
   return buildSectorialDetailData(selectedSectorial.value)
 })
 
+const selectedSectorialModalKey = computed(() => {
+  if (!selectedSectorial.value) {
+    return 'none'
+  }
+
+  return [
+    selectedSectorial.value.id,
+    selectedSectorial.value.logoLight ?? '',
+    selectedSectorial.value.logoDark ?? '',
+  ].join('|')
+})
+
 const openSectorialModal = (sectorial: SectorialMember) => {
   selectedSectorial.value = sectorial
   sectorialModalOpen.value = true
@@ -161,6 +176,14 @@ const closeSectorialModal = () => {
 const selectedCommitteeMember = ref<CommitteeMember | null>(null)
 const committeeMemberModalOpen = ref(false)
 const committeeModalUi = detailModalUi
+
+const selectedCommitteeMemberModalKey = computed(() => {
+  if (!selectedCommitteeMember.value) {
+    return 'none'
+  }
+
+  return [selectedCommitteeMember.value.id, selectedCommitteeMember.value.photo ?? ''].join('|')
+})
 
 const openCommitteeMemberModal = (member: CommitteeMember) => {
   selectedCommitteeMember.value = member
@@ -292,7 +315,7 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
           >
             <TeamMemberCard
               v-for="(member, index) in committeeMembers"
-              :key="`committee-member-${index}`"
+              :key="member.id"
               :member="{ ...member, publicAgenda: false }"
               :display-name="getMemberDisplayName(member)"
               :view-profile-aria-label="
@@ -315,6 +338,7 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
       <template #body>
         <MembersOrganizationDetailModal
           v-if="selectedSectorialDetailData"
+          :key="selectedSectorialModalKey"
           v-bind="selectedSectorialDetailData"
           @close="closeSectorialModal"
         />
@@ -330,6 +354,7 @@ const getCommitteeMemberViewProfileAriaLabel = (fullName: string) =>
       <template #body>
         <TeamPersonModal
           v-if="selectedCommitteeMember"
+          :key="selectedCommitteeMemberModalKey"
           :member="selectedCommitteeMember"
           :display-name="getMemberDisplayName(selectedCommitteeMember)"
           @close="closeCommitteeMemberModal"

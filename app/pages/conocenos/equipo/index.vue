@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CalendarEvent } from '@/composables/useGoogleCalendar'
+import type { CalendarEvent } from '@/composables/events/useGoogleCalendar'
 import type { EnrichedMember } from '@/types/team'
 import { detailModalUi } from '@/utils/detailModalUi'
 
@@ -54,6 +54,14 @@ const agendaModalUi = {
 const memberModalUi = detailModalUi
 const agendaBodyClass = 'min-h-[220px] space-y-4 overflow-hidden px-1 pt-1'
 
+const selectedMemberModalKey = computed(() => {
+  if (!selectedMember.value) {
+    return 'none'
+  }
+
+  return [selectedMember.value.id, selectedMember.value.photo ?? ''].join('|')
+})
+
 const openMemberModal = (member: EnrichedMember) => {
   selectedMember.value = member
   queuedAgendaMember.value = null
@@ -68,13 +76,13 @@ const openAgenda = async (member: EnrichedMember) => {
   agendaOpen.value = true
 
   try {
-    const response = await $fetch<{ events: CalendarEvent[] }>('/api/member-calendar', {
+    const response = await $fetch<{ data: CalendarEvent[] }>('/api/member-calendar', {
       headers: localeApiHeaders.value,
       query: {
         calendarId: member.email,
       },
     })
-    agendaEvents.value = response.events ?? []
+    agendaEvents.value = response.data ?? []
   } catch {
     agendaError.value = true
   } finally {
@@ -186,7 +194,7 @@ const tabItems = computed(() => [
             >
               <TeamMemberCard
                 v-for="(member, index) in executiveMembers"
-                :key="`exec-${member.areaId}`"
+                :key="member.id"
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
@@ -214,7 +222,7 @@ const tabItems = computed(() => [
             >
               <TeamMemberCard
                 v-for="(member, idx) in extendedMembers"
-                :key="`ext-${member.areaId}-${idx}`"
+                :key="member.id"
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
@@ -248,7 +256,7 @@ const tabItems = computed(() => [
             >
               <TeamMemberCard
                 v-for="(member, idx) in area.members"
-                :key="`area-${area.id}-member-${idx}`"
+                :key="member.id"
                 :member="member"
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
@@ -273,6 +281,7 @@ const tabItems = computed(() => [
       <template #body>
         <TeamPersonModal
           v-if="selectedMember"
+          :key="selectedMemberModalKey"
           :member="selectedMember"
           :display-name="getMemberDisplayName(selectedMember)"
           :show-agenda-button="selectedMember.publicAgenda"

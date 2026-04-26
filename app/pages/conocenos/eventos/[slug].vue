@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { CREUPEvent, EventGalleryImage, EventOrganization } from '@/composables/useEvents'
+import type {
+  CREUPEvent,
+  EventGalleryImage,
+  EventOrganization,
+} from '@/composables/events/useEvents'
 import { getEventTypeI18nKey } from '~~/shared/constants/eventTypes'
 import { normalizeHostname, normalizeUrl } from '~~/shared/utils/url'
 
@@ -32,7 +36,7 @@ if (error.value) {
   })
 }
 
-const eventData = data.value?.event
+const eventData = data.value?.data
 
 if (!eventData) {
   throw createError({
@@ -43,7 +47,7 @@ if (!eventData) {
 }
 
 const event = computed<CREUPEvent>(() => {
-  const currentEvent = data.value?.event
+  const currentEvent = data.value?.data
 
   if (!currentEvent) {
     throw createError({

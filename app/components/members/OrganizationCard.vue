@@ -42,6 +42,7 @@ const emit = defineEmits<{
       >
         <AdaptiveImage
           v-if="resolvedLogo"
+          :key="resolvedLogo"
           :src="resolvedLogo"
           :alt="imageAlt"
           width="80"

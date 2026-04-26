@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { collectUpcomingCalendarSeries } from '@/composables/useCalendarEventSeries'
-import type { CalendarEvent } from '@/composables/useGoogleCalendar'
+import { collectUpcomingCalendarSeries } from '@/composables/events/useCalendarEventSeries'
+import type { CalendarEvent } from '@/composables/events/useGoogleCalendar'
 import type { EnrichedMember } from '@/types/team'
 
 const props = defineProps<{
@@ -29,6 +29,7 @@ const upcomingAgendaEvents = computed(() => {
       <div class="ring-primary/20 size-12 overflow-hidden rounded-full ring-2">
         <NuxtImg
           v-if="member.photo"
+          :key="`${member.id}-${member.photo}`"
           :src="member.photo"
           :alt="getMemberDisplayName(member)"
           width="96"

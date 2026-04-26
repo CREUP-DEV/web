@@ -3,6 +3,7 @@ import type { SocialNetworkEntry } from '~~/shared/utils/social'
 export type SocialNetwork = SocialNetworkEntry
 
 export interface OrgMember {
+  id: string
   order: number
   denomination: string | null
   photo: string | null
@@ -25,8 +26,10 @@ export interface OrgArea {
 }
 
 export interface OrgResponse {
-  areas: OrgArea[]
-  generatedAt?: string | null
+  data: OrgArea[]
+  meta: {
+    generatedAt?: string | null
+  }
 }
 
 export interface EnrichedMember extends OrgMember {
