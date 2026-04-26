@@ -1,7 +1,7 @@
 import { createError, defineEventHandler, getRouterParam, getRequestURL } from 'h3'
-import { proxyExternalAssetBySource } from '../../../utils/externalAssetProxy'
-import { getPublicApiErrorMessage } from '../../../utils/apiErrorMessages'
-import { resolvePolicyDocumentSourceByTypeAndFileName } from '../../../utils/policyDocumentDownloads'
+import { proxyExternalAssetBySource } from '../../../utils/external/externalAssetProxy'
+import { getPublicApiErrorMessage } from '../../../utils/locale/apiErrorMessages'
+import { resolvePolicyDocumentSourceByTypeAndFileName } from '../../../utils/policy/policyDocumentDownloads'
 import {
   policyDocumentFileNameParamSchema,
   policyDocumentTypeRouteParamSchema,

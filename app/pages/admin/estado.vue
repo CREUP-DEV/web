@@ -28,6 +28,18 @@ interface MetricsResponse {
         }
         status: 'ok' | 'error'
       }
+      externalAssetProxy: {
+        agent: {
+          configuredConnectionsPerOrigin: number
+          connected: number
+          free: number
+          origins: number
+          pending: number
+          queued: number
+          running: number
+          size: number
+        }
+      }
       redis: {
         status: 'ok' | 'error' | 'unconfigured'
       }
@@ -219,6 +231,41 @@ const formatDuration = (value: number) => `${Math.round(value)} ms`
                 <div class="flex justify-between gap-4">
                   <dt>Último error</dt>
                   <dd>{{ formatMetricDate(stats.infrastructure.database.pool.lastErrorAt) }}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="rounded-2xl border p-4">
+              <div class="flex items-center justify-between gap-3">
+                <p class="font-medium">Proxy de recursos</p>
+                <UBadge color="neutral" variant="subtle">
+                  {{ stats.infrastructure.externalAssetProxy.agent.origins }} orígenes
+                </UBadge>
+              </div>
+              <dl class="text-muted mt-3 space-y-2 text-sm">
+                <div class="flex justify-between gap-4">
+                  <dt>Conectadas</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.connected }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>Libres</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.free }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>Pendientes</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.pending }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>En cola</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.queued }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>Límite/origen</dt>
+                  <dd>
+                    {{
+                      stats.infrastructure.externalAssetProxy.agent.configuredConnectionsPerOrigin
+                    }}
+                  </dd>
                 </div>
               </dl>
             </div>

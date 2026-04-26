@@ -1,20 +1,20 @@
 import { defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
 import { equalityDocuments, equalityDocumentTranslations } from '../../../db/schema'
-import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
+import { finalizeAdminDocument } from '../../../utils/admin/adminDocumentUpload'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateEqualityDocumentsCache } from '../../../utils/adminCacheInvalidation'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateEqualityDocumentsCache } from '../../../utils/admin/adminCacheInvalidation'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
-} from '../../../utils/localizedContent'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+} from '../../../utils/locale/localizedContent'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { validateBody } from '../../../utils/validation'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'

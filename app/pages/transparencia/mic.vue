@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DEFAULT_MIC_MANIFEST } from '@/composables/useMicManifest'
+import { DEFAULT_MIC_MANIFEST } from '@/composables/ui/useMicManifest'
 
 const { t } = useI18n()
 const localePath = useLocalePath()

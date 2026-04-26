@@ -1,16 +1,16 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { db } from '../../../db'
 import { aboutPageContent } from '../../../db/schema'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateAboutPageCache } from '../../../utils/adminCacheInvalidation'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateAboutPageCache } from '../../../utils/admin/adminCacheInvalidation'
 import { updateAboutPageContentSchema, validateBody } from '../../../utils/validation'
 import { ABOUT_HERO_DEFAULT_IMAGE, ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 

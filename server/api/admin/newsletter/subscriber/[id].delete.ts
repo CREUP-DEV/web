@@ -2,13 +2,13 @@ import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletterSubscribers } from '../../../../db/schema'
-import { throwAdminMutationError } from '../../../../utils/adminErrors'
+import { throwAdminMutationError } from '../../../../utils/admin/adminErrors'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   recordNewsletterSubscriptionEvent,
-} from '../../../../utils/newsletterSubscribers'
+} from '../../../../utils/newsletter/newsletterSubscribers'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)

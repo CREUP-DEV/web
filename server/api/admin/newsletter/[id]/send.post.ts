@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
-import { enqueueNewsletterSendJob } from '../../../../utils/backgroundJobs'
-import { monthKeyToDate } from '../../../../utils/newsletters'
+import { enqueueNewsletterSendJob } from '../../../../utils/core/backgroundJobs'
+import { monthKeyToDate } from '../../../../utils/newsletter/newsletters'
 import { claimNewsletterForSending } from '../../../../services/newsletterDeliveryService'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 

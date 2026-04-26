@@ -18,8 +18,10 @@ interface NormativaCategory {
 }
 
 interface NormativaResponse {
-  categories: NormativaCategory[]
-  generatedAt?: string | null
+  data: NormativaCategory[]
+  meta: {
+    generatedAt?: string | null
+  }
 }
 
 const { t, te } = useI18n()
@@ -60,7 +62,7 @@ usePageSeo('regulations.title', 'regulations.description', {
 
 const { data, pending, error, refresh } = useFetch<NormativaResponse>('/api/normativa')
 
-const categories = computed(() => data.value?.categories ?? [])
+const categories = computed(() => data.value?.data ?? [])
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 90)
 
 function formatDate(dateStr: string): string {

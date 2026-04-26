@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { watchDebounced } from '@vueuse/core'
 import { CONTACT_FIELD_LIMITS, isValidOptionalContactPhone } from '~~/shared/utils/contactShared'
+import { EMAIL_PATTERN } from '~~/shared/utils/emailValidation'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { useTurnstile } from '@/composables/useTurnstile'
-import { useTurnstileAvailability } from '@/composables/useTurnstileAvailability'
+import { useTurnstile } from '@/composables/security/useTurnstile'
+import { useTurnstileAvailability } from '@/composables/security/useTurnstileAvailability'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -139,8 +140,6 @@ const formSubmitted = ref(false)
 
 const hasAnyTouchedField = computed(() => Object.values(touched).some(Boolean))
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 function validateContactPayload(payload: typeof contactPayload.value): boolean {
   const nextErrors: ValidationErrors = {}
 
@@ -267,6 +266,12 @@ function getFieldError(field: ValidatedField): string | undefined {
       : t('contactPage.form.errors.messageMax')
 }
 
+const getFieldErrorId = (field: ValidatedField) => `contact-${field}-error`
+
+function getFieldAriaDescribedBy(field: ValidatedField): string | undefined {
+  return shouldShowError(field) ? getFieldErrorId(field) : undefined
+}
+
 const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
 
 function markFieldTouched(field: keyof typeof touched) {
@@ -330,6 +335,9 @@ async function handleSubmit() {
     formSubmitted.value = false
     Object.keys(touched).forEach((k) => (touched[k as keyof typeof touched] = false))
     clearErrors()
+
+    await nextTick()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (error: unknown) {
     toast.add({
       title: getApiErrorMessage(error, t('contactPage.form.errorGeneric')),
@@ -414,6 +422,7 @@ async function handleSubmit() {
               v-model="form.name"
               type="text"
               autocomplete="name"
+              :aria-describedby="getFieldAriaDescribedBy('name')"
               :placeholder="t('contactPage.form.namePlaceholder')"
               required
               :disabled="isSubmitting"
@@ -421,6 +430,11 @@ async function handleSubmit() {
               class="w-full"
               @blur="markFieldTouched('name')"
             />
+            <template #error>
+              <p v-if="getFieldError('name')" :id="getFieldErrorId('name')">
+                {{ getFieldError('name') }}
+              </p>
+            </template>
           </UFormField>
 
           <UFormField :label="`${t('contactPage.form.email')} *`" :error="getFieldError('email')">
@@ -429,6 +443,7 @@ async function handleSubmit() {
               v-model="form.email"
               type="email"
               autocomplete="email"
+              :aria-describedby="getFieldAriaDescribedBy('email')"
               :placeholder="t('contactPage.form.emailPlaceholder')"
               required
               :disabled="isSubmitting"
@@ -436,6 +451,11 @@ async function handleSubmit() {
               class="w-full"
               @blur="markFieldTouched('email')"
             />
+            <template #error>
+              <p v-if="getFieldError('email')" :id="getFieldErrorId('email')">
+                {{ getFieldError('email') }}
+              </p>
+            </template>
           </UFormField>
 
           <Transition name="content-switch" mode="out-in">
@@ -446,12 +466,18 @@ async function handleSubmit() {
                   v-model="form.phone"
                   type="tel"
                   autocomplete="tel"
+                  :aria-describedby="getFieldAriaDescribedBy('phone')"
                   :placeholder="t('contactPage.form.phonePlaceholder')"
                   :disabled="isSubmitting"
                   :color="shouldShowError('phone') ? 'error' : undefined"
                   class="w-full"
                   @blur="markFieldTouched('phone')"
                 />
+                <template #error>
+                  <p v-if="getFieldError('phone')" :id="getFieldErrorId('phone')">
+                    {{ getFieldError('phone') }}
+                  </p>
+                </template>
               </UFormField>
 
               <UFormField
@@ -462,6 +488,7 @@ async function handleSubmit() {
                   id="contact-mediaName"
                   v-model="form.mediaName"
                   type="text"
+                  :aria-describedby="getFieldAriaDescribedBy('mediaName')"
                   :placeholder="t('contactPage.form.mediaNamePlaceholder')"
                   required
                   :disabled="isSubmitting"
@@ -469,6 +496,11 @@ async function handleSubmit() {
                   class="w-full"
                   @blur="markFieldTouched('mediaName')"
                 />
+                <template #error>
+                  <p v-if="getFieldError('mediaName')" :id="getFieldErrorId('mediaName')">
+                    {{ getFieldError('mediaName') }}
+                  </p>
+                </template>
               </UFormField>
             </div>
           </Transition>
@@ -481,6 +513,7 @@ async function handleSubmit() {
               id="contact-subject"
               v-model="form.subject"
               type="text"
+              :aria-describedby="getFieldAriaDescribedBy('subject')"
               :placeholder="t('contactPage.form.subjectPlaceholder')"
               required
               :disabled="isSubmitting"
@@ -488,6 +521,11 @@ async function handleSubmit() {
               class="w-full"
               @blur="markFieldTouched('subject')"
             />
+            <template #error>
+              <p v-if="getFieldError('subject')" :id="getFieldErrorId('subject')">
+                {{ getFieldError('subject') }}
+              </p>
+            </template>
           </UFormField>
 
           <UFormField
@@ -497,6 +535,7 @@ async function handleSubmit() {
             <UTextarea
               id="contact-message"
               v-model="form.message"
+              :aria-describedby="getFieldAriaDescribedBy('message')"
               :placeholder="t('contactPage.form.messagePlaceholder')"
               :rows="5"
               required
@@ -505,6 +544,11 @@ async function handleSubmit() {
               class="w-full"
               @blur="markFieldTouched('message')"
             />
+            <template #error>
+              <p v-if="getFieldError('message')" :id="getFieldErrorId('message')">
+                {{ getFieldError('message') }}
+              </p>
+            </template>
             <template #hint>
               <span :class="form.message.trim().length < 10 ? 'text-error' : 'text-muted'">
                 {{ form.message.trim().length }}/5000
@@ -520,7 +564,11 @@ async function handleSubmit() {
             <div class="flex justify-center">
               <div
                 id="contact-turnstile"
-                :aria-describedby="turnstileTokenFieldId"
+                :aria-describedby="
+                  [turnstileTokenFieldId, getFieldAriaDescribedBy('turnstileToken')]
+                    .filter(Boolean)
+                    .join(' ') || undefined
+                "
                 class="min-h-17"
               />
             </div>
@@ -531,6 +579,11 @@ async function handleSubmit() {
                   : t('contactPage.form.turnstileLoading')
               }}
             </p>
+            <template #error>
+              <p v-if="getFieldError('turnstileToken')" :id="getFieldErrorId('turnstileToken')">
+                {{ getFieldError('turnstileToken') }}
+              </p>
+            </template>
           </UFormField>
 
           <UButton

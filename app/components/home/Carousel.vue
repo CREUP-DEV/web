@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core'
-import type { CarouselItem } from '@/composables/useHomeData'
+import type { CarouselItem } from '@/composables/home/useHome'
 import { isExternalNavigationTarget } from '~~/shared/utils/url'
 
 const props = withDefaults(

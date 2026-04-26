@@ -22,12 +22,12 @@ async function confirm() {
   state.value = 'loading'
 
   try {
-    const result = await $fetch<{ redirectTo: string }>('/api/newsletter-confirm', {
+    const result = await $fetch<{ data: { redirectTo: string } }>('/api/newsletter-confirm', {
       method: 'POST',
       body: { token: token.value },
     })
 
-    await navigateTo(localePath(result.redirectTo))
+    await navigateTo(localePath(result.data.redirectTo))
   } catch {
     state.value = 'error'
   }

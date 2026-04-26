@@ -1,5 +1,5 @@
-import { logError } from '../utils/logger'
-import { reconcileAdminAssetPublication } from '../utils/adminAssetPublication'
+import { logError } from '../utils/core/logger'
+import { reconcileAdminAssetPublication } from '../utils/admin/adminAssetPublication'
 
 let reconciliationPromise: Promise<void> | null = null
 

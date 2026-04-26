@@ -2,21 +2,21 @@ import { createError, setHeader } from 'h3'
 import { desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { financialReports } from '../db/schema'
-import { isDatabaseUnavailableError } from '../utils/databaseErrors'
-import { toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
-import { logError } from '../utils/logger'
+import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
+import { toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
+import { logError } from '../utils/core/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { getRequestLocaleContext } from '../utils/requestLocale'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
-} from '../utils/publicRouteCache'
+} from '../utils/cache/publicRouteCache'
 import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
-import { throwSafePublicError } from '../utils/publicErrors'
-import { appendAssetVersion } from '../utils/assetVersion'
+import { throwSafePublicError } from '../utils/public/publicErrors'
+import { appendAssetVersion } from '../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -49,7 +49,7 @@ export default defineCachedEventHandler(
       ])
 
       return {
-        items: items.map((item) => ({
+        data: items.map((item) => ({
           id: item.id,
           title:
             pickLocalizedEntry(item.translations, locale, locales, fallbackLocale)?.title ?? '',
@@ -61,7 +61,9 @@ export default defineCachedEventHandler(
           ),
           approvedAt: dateValueToDateOnly(item.approvedAt),
         })),
-        total: countResult[0]?.count ?? 0,
+        meta: {
+          total: countResult[0]?.count ?? 0,
+        },
       }
     } catch (error) {
       if (isDatabaseUnavailableError(error)) {

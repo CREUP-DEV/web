@@ -23,13 +23,15 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
 const { data, error, pending, refresh } = await useFetch<{
-  content: AboutPageContent | null
-  memberCount: number | null
+  data: {
+    content: AboutPageContent | null
+    memberCount: number | null
+  }
 }>('/api/about-page', {
   key: PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY,
 })
 
-const memberCount = computed(() => data.value?.memberCount ?? fallbackMemberCount)
+const memberCount = computed(() => data.value?.data.memberCount ?? fallbackMemberCount)
 
 const formattedMemberCount = computed(() =>
   error.value
@@ -166,8 +168,8 @@ const relatedSections = computed(() => [
 ])
 
 const pageContent = computed(() => ({
-  heroImage: data.value?.content?.heroImage ?? null,
-  heroVisible: data.value?.content?.heroVisible ?? false,
+  heroImage: data.value?.data.content?.heroImage ?? null,
+  heroVisible: data.value?.data.content?.heroVisible ?? false,
   title: t('aboutPage.title'),
   lead: t('aboutPage.lead', { count: formattedMemberCount.value }),
   intro: t('aboutPage.intro'),

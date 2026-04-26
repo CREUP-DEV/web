@@ -1,17 +1,20 @@
 import { createError, setHeader } from 'h3'
-import { type GoogleCalendarEvent, transformGoogleCalendarItems } from '../utils/calendarEvents'
+import {
+  type GoogleCalendarEvent,
+  transformGoogleCalendarItems,
+} from '../utils/external/calendarEvents'
 import {
   getRequiredGoogleCalendarApiKey,
   getRequiredGoogleCalendarId,
-} from '../utils/googleCalendarConfig'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { logError } from '../utils/logger'
-import { getRequestLocaleContext } from '../utils/requestLocale'
+} from '../utils/external/googleCalendarConfig'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { logError } from '../utils/core/logger'
+import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
-} from '../utils/publicRouteCache'
+} from '../utils/cache/publicRouteCache'
 
 const GOOGLE_CALENDAR_MAX_RESULTS = 1000
 
@@ -20,8 +23,10 @@ interface GoogleCalendarResponse {
 }
 
 interface CalendarApiResponse {
-  events: ReturnType<typeof transformGoogleCalendarItems>
-  configured: boolean
+  data: ReturnType<typeof transformGoogleCalendarItems>
+  meta: {
+    configured: boolean
+  }
 }
 
 export default defineCachedEventHandler(
@@ -38,8 +43,10 @@ export default defineCachedEventHandler(
       logError('calendar.config', error, undefined, event)
 
       return {
-        events: [],
-        configured: false,
+        data: [],
+        meta: {
+          configured: false,
+        },
       } satisfies CalendarApiResponse
     }
 
@@ -81,12 +88,14 @@ export default defineCachedEventHandler(
       const items = data.items || []
 
       return {
-        events: transformGoogleCalendarItems(items, {
+        data: transformGoogleCalendarItems(items, {
           languageTag,
           locale,
           fallbackLocale,
         }),
-        configured: true,
+        meta: {
+          configured: true,
+        },
       } satisfies CalendarApiResponse
     } catch (error) {
       if (error && typeof error === 'object' && 'statusCode' in error) {

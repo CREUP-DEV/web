@@ -3,7 +3,7 @@ import { asc, sql } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems } from '../../../db/schema'
 import { adminCollectionQuerySchema, validateQuery } from '../../../utils/validation'
-import { logAdminCollectionCapHit } from '../../../utils/adminCollectionLimit'
+import { logAdminCollectionCapHit } from '../../../utils/admin/adminCollectionLimit'
 
 export default defineEventHandler(async (event) => {
   const query = validateQuery(event, adminCollectionQuerySchema)

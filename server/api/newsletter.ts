@@ -2,11 +2,11 @@ import { createError, setHeader } from 'h3'
 import { desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletters } from '../db/schema'
-import { isDatabaseUnavailableError } from '../utils/databaseErrors'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { logError } from '../utils/logger'
-import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
-import { monthKeyToDate } from '../utils/newsletters'
+import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { logError } from '../utils/core/logger'
+import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
+import { monthKeyToDate } from '../utils/newsletter/newsletters'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
@@ -14,15 +14,15 @@ import {
 import {
   loadSiteDefaultImageEntriesMap,
   resolveSiteDefaultImageUrlWithVersion,
-} from '../utils/siteDefaultImages'
+} from '../utils/admin/siteDefaultImages'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
-} from '../utils/publicRouteCache'
+} from '../utils/cache/publicRouteCache'
 import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
-import { throwSafePublicError } from '../utils/publicErrors'
-import { appendAssetVersion } from '../utils/assetVersion'
+import { throwSafePublicError } from '../utils/public/publicErrors'
+import { appendAssetVersion } from '../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -61,7 +61,7 @@ export default defineCachedEventHandler(
       )
 
       return {
-        items: items.map((item) => ({
+        data: items.map((item) => ({
           coverImage: item.coverImage
             ? appendAssetVersion(
                 toExternalImageProxyUrl(item.coverImage, {
@@ -80,7 +80,9 @@ export default defineCachedEventHandler(
           ),
           publicVisible: item.publicVisible,
         })),
-        total: countResult[0]?.count ?? 0,
+        meta: {
+          total: countResult[0]?.count ?? 0,
+        },
       }
     } catch (error) {
       if (isDatabaseUnavailableError(error)) {

@@ -42,7 +42,7 @@ const selectedTypes = computed<PressArticleType[]>(() => {
 })
 
 const { data: tagsData } = useTags()
-const availableTagSlugs = computed(() => new Set(tagsData.value?.items.map((tag) => tag.slug)))
+const availableTagSlugs = computed(() => new Set(tagsData.value?.data.map((tag) => tag.slug)))
 
 const selectedTags = computed<string[]>(() => {
   if (!tagParam.value) return []
@@ -66,8 +66,8 @@ const offset = computed(() => (page.value - 1) * LIMIT)
 
 const { data, pending, error, refresh } = usePress(typeQueryRef, tagQueryRef, LIMIT, offset)
 
-const articles = computed(() => data.value?.items ?? [])
-const total = computed(() => data.value?.total ?? 0)
+const articles = computed(() => data.value?.data ?? [])
+const total = computed(() => data.value?.meta.total ?? 0)
 const pageCount = computed(() => Math.ceil(total.value / LIMIT))
 const showErrorState = computed(() => Boolean(error.value) && articles.value.length === 0)
 

@@ -3,7 +3,10 @@ import { desc, sql } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
 import { paginationQuerySchema, validateQuery } from '../../../utils/validation'
-import { monthKeyToDate, NEWSLETTER_DELIVERY_MAX_ATTEMPTS } from '../../../utils/newsletters'
+import {
+  monthKeyToDate,
+  NEWSLETTER_DELIVERY_MAX_ATTEMPTS,
+} from '../../../utils/newsletter/newsletters'
 
 export default defineEventHandler(async (event) => {
   const { limit, offset } = validateQuery(event, paginationQuerySchema)

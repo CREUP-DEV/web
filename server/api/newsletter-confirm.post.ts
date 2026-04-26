@@ -1,9 +1,9 @@
 import { defineEventHandler, readBody, setHeader } from 'h3'
-import { buildLocalizedPath } from '../utils/urlBuilder'
+import { buildLocalizedPath } from '../utils/core/urlBuilder'
 import { newsletterTokenQuerySchema, validatePublicBody } from '../utils/validation'
-import { performNewsletterConfirmAction } from '../utils/newsletterSubscriptionActions'
-import { enforceRateLimit } from '../utils/rateLimit'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
+import { performNewsletterConfirmAction } from '../utils/newsletter/newsletterSubscriptionActions'
+import { enforceRateLimit } from '../utils/public/rateLimit'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 
 type NewsletterConfirmStatus = 'confirmed' | 'already-confirmed' | 'expired' | 'invalid'
 
@@ -28,7 +28,9 @@ export default defineEventHandler(async (event) => {
   const redirectPath = buildLocalizedPath(event, '/prensa/newsletter')
   const action = await performNewsletterConfirmAction(token)
   return {
-    redirectTo: buildConfirmRedirect(redirectPath, action.status),
-    ...action,
+    data: {
+      ...action,
+      redirectTo: buildConfirmRedirect(redirectPath, action.status),
+    },
   }
 })

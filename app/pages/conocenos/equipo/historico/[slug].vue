@@ -63,8 +63,8 @@ const slug = computed(() =>
 if (!slug.value) throw createError({ statusCode: 404 })
 
 type SlugResponse =
-  | ({ ambiguous: false } & MandateDetailResponse)
-  | { ambiguous: true; mandates: MandateInfo[] }
+  | { data: { ambiguous: false } & MandateDetailResponse }
+  | { data: { ambiguous: true; mandates: MandateInfo[] } }
 
 const { data, error, status } = await useFetch<SlugResponse>(
   () => `/api/organigrama/mandatos/by-slug/${slug.value}`,
@@ -81,21 +81,25 @@ if (error.value) {
   })
 }
 
-if (data.value?.ambiguous === true) {
+if (data.value?.data.ambiguous === true) {
   const year = slug.value.slice(0, 4)
   await navigateTo(localePath(`/conocenos/equipo/historico?select=${encodeURIComponent(year)}`), {
     redirectCode: 302,
   })
 }
 
-const mandate = computed(() => (data.value && !data.value.ambiguous ? data.value.mandate : null))
-const areas = computed(() => (data.value && !data.value.ambiguous ? data.value.areas : []))
+const mandate = computed(() =>
+  data.value && !data.value.data.ambiguous ? data.value.data.mandate : null
+)
+const areas = computed(() =>
+  data.value && !data.value.data.ambiguous ? data.value.data.areas : []
+)
 const areaVisibility = useVisibilityRegistry({ threshold: 0.12, animateVisibleOnMount: true })
 
 useLocalizedPressDetailSeo({
   path: computed(() => `/conocenos/equipo/historico/${slug.value}`),
   translatedLocales: computed(() =>
-    data.value && !data.value.ambiguous ? (data.value.translatedLocales ?? null) : null
+    data.value && !data.value.data.ambiguous ? (data.value.data.translatedLocales ?? null) : null
   ),
 })
 

@@ -2,8 +2,11 @@ import { createError, defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { assertAdminAccessCanBeRevoked, getAdminAccessForUpdate } from '../../../utils/adminAccess'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import {
+  assertAdminAccessCanBeRevoked,
+  getAdminAccessForUpdate,
+} from '../../../utils/admin/adminAccess'
 import {
   idRouteParamSchema,
   updateAdminAccessSchema,

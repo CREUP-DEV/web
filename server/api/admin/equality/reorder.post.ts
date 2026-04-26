@@ -2,9 +2,12 @@ import { defineEventHandler, readBody } from 'h3'
 import { inArray } from 'drizzle-orm'
 import { db } from '../../../db'
 import { equalityDocuments } from '../../../db/schema'
-import { invalidateEqualityDocumentsCache } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { assertCompleteReorderSet, buildReorderOrderExpression } from '../../../utils/adminReorder'
+import { invalidateEqualityDocumentsCache } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import {
+  assertCompleteReorderSet,
+  buildReorderOrderExpression,
+} from '../../../utils/admin/adminReorder'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {

@@ -2,22 +2,25 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { financialReports, financialReportTranslations } from '../../../db/schema'
-import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
+import { finalizeAdminDocument } from '../../../utils/admin/adminDocumentUpload'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateFinancialReportsCache } from '../../../utils/adminCacheInvalidation'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateFinancialReportsCache } from '../../../utils/admin/adminCacheInvalidation'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
   getRequiredTranslationValue,
-} from '../../../utils/localizedContent'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+} from '../../../utils/locale/localizedContent'
+import {
+  assertOptimisticLock,
+  buildOptimisticLockCondition,
+} from '../../../utils/admin/optimisticLock'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
 import { FINANCIAL_REPORTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'

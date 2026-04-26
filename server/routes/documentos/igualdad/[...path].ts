@@ -1,6 +1,9 @@
 import { defineEventHandler } from 'h3'
-import { throwPublicAssetNotFound, tryServePublicAssetByPathBase } from '../../../utils/publicAsset'
-import { proxyExternalAssetByPublicPathBase } from '../../../utils/externalAssetProxy'
+import {
+  throwPublicAssetNotFound,
+  tryServePublicAssetByPathBase,
+} from '../../../utils/public/publicAsset'
+import { proxyExternalAssetByPublicPathBase } from '../../../utils/external/externalAssetProxy'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 export default defineEventHandler(async (event) => {

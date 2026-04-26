@@ -18,8 +18,10 @@ export interface OrganizationMember {
 }
 
 export interface MembersResponse {
-  members: OrganizationMember[]
-  generatedAt?: string | null
+  data: OrganizationMember[]
+  meta: {
+    generatedAt?: string | null
+  }
 }
 
 export interface SectorialMember {
@@ -34,8 +36,10 @@ export interface SectorialMember {
 }
 
 export interface SectorialesResponse {
-  sectoriales: SectorialMember[]
-  generatedAt?: string | null
+  data: SectorialMember[]
+  meta: {
+    generatedAt?: string | null
+  }
 }
 
 export interface SocialEntity {

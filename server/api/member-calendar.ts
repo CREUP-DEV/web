@@ -1,15 +1,21 @@
 import { createError, setHeader } from 'h3'
-import { type GoogleCalendarEvent, transformGoogleCalendarItems } from '../utils/calendarEvents'
-import { getRequiredGoogleCalendarApiKey } from '../utils/googleCalendarConfig'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { logError } from '../utils/logger'
-import { assertMemberCalendarIsPublic, normalizeMemberCalendarId } from '../utils/memberCalendar'
-import { getRequestLocaleContext } from '../utils/requestLocale'
+import {
+  type GoogleCalendarEvent,
+  transformGoogleCalendarItems,
+} from '../utils/external/calendarEvents'
+import { getRequiredGoogleCalendarApiKey } from '../utils/external/googleCalendarConfig'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { logError } from '../utils/core/logger'
+import {
+  assertMemberCalendarIsPublic,
+  normalizeMemberCalendarId,
+} from '../utils/external/memberCalendar'
+import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
-} from '../utils/publicRouteCache'
+} from '../utils/cache/publicRouteCache'
 import { memberCalendarQuerySchema, validatePublicQuery } from '../utils/validation'
 
 interface GoogleCalendarResponse {
@@ -23,7 +29,7 @@ export default defineCachedEventHandler(
     const { locale, fallbackLocale, languageTag } = getRequestLocaleContext(event)
 
     if (!calendarId) {
-      return { events: [] }
+      return { data: [] }
     }
 
     const normalizedCalendarId = normalizeMemberCalendarId(calendarId)
@@ -34,7 +40,7 @@ export default defineCachedEventHandler(
       apiKey = getRequiredGoogleCalendarApiKey()
     } catch (error) {
       logError('member-calendar.config', error, { calendarId: normalizedCalendarId }, event)
-      return { events: [] }
+      return { data: [] }
     }
 
     const now = new Date()
@@ -82,7 +88,7 @@ export default defineCachedEventHandler(
       const data: GoogleCalendarResponse = await response.json()
 
       return {
-        events: transformGoogleCalendarItems(data.items || [], {
+        data: transformGoogleCalendarItems(data.items || [], {
           languageTag,
           locale,
           fallbackLocale,

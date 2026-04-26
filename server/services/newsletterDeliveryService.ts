@@ -4,9 +4,9 @@ import { createError } from 'h3'
 import { and, asc, count, eq, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterDeliveries, newsletters, newsletterSubscribers } from '../db/schema'
-import { sendNewsletterEmail } from '../utils/newsletterMailer'
-import { getSiteDefaultImageRaw } from '../utils/siteDefaultImages'
-import { logError, logInfo } from '../utils/logger'
+import { sendNewsletterEmail } from '../utils/email/newsletterMailer'
+import { getSiteDefaultImageRaw } from '../utils/admin/siteDefaultImages'
+import { logError, logInfo } from '../utils/core/logger'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
@@ -15,8 +15,8 @@ import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   recordNewsletterSubscriptionEvent,
-} from '../utils/newsletterSubscribers'
-import { NEWSLETTER_DELIVERY_MAX_ATTEMPTS } from '../utils/newsletters'
+} from '../utils/newsletter/newsletterSubscribers'
+import { NEWSLETTER_DELIVERY_MAX_ATTEMPTS } from '../utils/newsletter/newsletters'
 
 // Chunk size for seeding delivery rows (insert values). Separate from per-send batch size below.
 const NEWSLETTER_DELIVERY_SEED_CHUNK_SIZE = 500
@@ -427,16 +427,6 @@ async function markDeliveryFailed(deliveryId: string, error: unknown) {
     .where(eq(newsletterDeliveries.id, deliveryId))
 }
 
-async function requeueDelivery(deliveryId: string, message: string) {
-  await db
-    .update(newsletterDeliveries)
-    .set({
-      lastError: message,
-      status: NEWSLETTER_DELIVERY_STATUS.queued,
-    })
-    .where(eq(newsletterDeliveries.id, deliveryId))
-}
-
 async function requeueSendingNewsletterDeliveries(newsletterId: string, message: string) {
   await db
     .update(newsletterDeliveries)
@@ -512,12 +502,6 @@ export async function processNewsletterDeliveryRun(
 
       const tasks = batch.map(({ delivery, subscriber }) =>
         limit(async () => {
-          if (!(await isNewsletterDeliveryWorkerCurrent(item.id, workerToken))) {
-            cancelled = true
-            await requeueDelivery(delivery.id, 'Envío cancelado por administración')
-            return
-          }
-
           if (!subscriber || !subscriber.active) {
             await markDeliveryFailed(delivery.id, new Error('La suscripción ya no está activa'))
             await touchNewsletterDeliveryWorker(item.id, workerToken)

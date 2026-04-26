@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 import { useMediaQuery } from '@vueuse/core'
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from '@/composables/security/useAuth'
 import { getInitials } from '@/utils/initials'
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'

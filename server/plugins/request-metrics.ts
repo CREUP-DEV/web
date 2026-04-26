@@ -1,4 +1,4 @@
-import { recordRequestMetric } from '../utils/requestMetrics'
+import { recordRequestMetric } from '../utils/core/requestMetrics'
 
 const REQUEST_START_KEY = 'requestMetricsStartedAt'
 

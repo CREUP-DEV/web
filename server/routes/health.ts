@@ -2,11 +2,13 @@ import { createError, getHeader, setHeader, setResponseStatus } from 'h3'
 import type { H3Event } from 'h3'
 import { sql } from 'drizzle-orm'
 import { db } from '../db'
-import { getOptionalRuntimeConfigString } from '../utils/runtimeConfig'
-import { getRedisClient } from '../utils/redis'
-import { getSmtpTransporter } from '../utils/smtpTransporter'
+import { getOptionalRuntimeConfigString } from '../utils/core/runtimeConfig'
+import { getRedisClient } from '../utils/cache/redis'
+import { getSmtpTransporter } from '../utils/email/smtpTransporter'
+import { getExternalAssetProxyAgentStats } from '../utils/external/externalAssetProxyConfig'
 
 // External API probe timeout — short enough to not block orchestrator health polls
+const DATABASE_PROBE_TIMEOUT_MS = 5000
 const EXTERNAL_API_PROBE_TIMEOUT_MS = 3000
 const SMTP_PROBE_TIMEOUT_MS = 5000
 
@@ -93,7 +95,10 @@ export default defineEventHandler(async (event) => {
 
   // Database check — failure makes the app non-functional
   try {
-    await db.execute(sql`SELECT 1`)
+    await withTimeout(
+      db.execute(sql`SELECT 1`).then(() => undefined),
+      DATABASE_PROBE_TIMEOUT_MS
+    )
     checks.database = 'ok'
   } catch {
     checks.database = 'error'
@@ -146,5 +151,8 @@ export default defineEventHandler(async (event) => {
     status: overallStatus,
     timestamp: new Date().toISOString(),
     checks,
+    metrics: {
+      externalAssetProxy: getExternalAssetProxyAgentStats(),
+    },
   }
 })

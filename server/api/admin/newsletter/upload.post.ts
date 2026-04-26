@@ -1,9 +1,18 @@
 import { defineEventHandler, createError, readMultipartFormData } from 'h3'
 import { extname } from 'node:path'
-import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../../utils/externalAssetProxy'
-import { ALLOWED_ADMIN_IMAGE_EXTENSIONS, saveAdminImage } from '../../../utils/adminImageUpload'
-import { saveAdminDocument } from '../../../utils/adminDocumentUpload'
-import { assertUploadedFileSize, assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
+import {
+  toExternalImageProxyUrl,
+  toExternalPdfProxyUrl,
+} from '../../../utils/external/externalAssetUrl'
+import {
+  ALLOWED_ADMIN_IMAGE_EXTENSIONS,
+  saveAdminImage,
+} from '../../../utils/admin/adminImageUpload'
+import { saveAdminDocument } from '../../../utils/admin/adminDocumentUpload'
+import {
+  assertUploadedFileSize,
+  assertUploadRequestSize,
+} from '../../../utils/core/uploadRequestLimit'
 import { validateMultipartFile } from '../../../utils/validation'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,

@@ -1,13 +1,16 @@
 import { createError, setHeader } from 'h3'
 import { db } from '../db'
-import { isDatabaseUnavailableError } from '../utils/databaseErrors'
-import { toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { logError } from '../utils/logger'
-import { buildPublicRouteCacheKey, PUBLIC_ROUTE_CACHE_OPTIONS } from '../utils/publicRouteCache'
+import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
+import { toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { logError } from '../utils/core/logger'
+import {
+  buildPublicRouteCacheKey,
+  PUBLIC_ROUTE_CACHE_OPTIONS,
+} from '../utils/cache/publicRouteCache'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
-import { throwSafePublicError } from '../utils/publicErrors'
-import { appendAssetVersion } from '../utils/assetVersion'
+import { throwSafePublicError } from '../utils/public/publicErrors'
+import { appendAssetVersion } from '../utils/core/assetVersion'
 
 const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
   0,
@@ -20,11 +23,11 @@ export default defineCachedEventHandler(
       const item = await db.query.pressDossier.findFirst()
 
       if (!item?.active || !item.pdfUrl) {
-        return { item: null }
+        return { data: null }
       }
 
       return {
-        item: {
+        data: {
           id: item.id,
           active: item.active,
           pdfUrl: appendAssetVersion(

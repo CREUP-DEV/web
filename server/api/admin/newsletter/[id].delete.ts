@@ -2,9 +2,9 @@ import { createError, defineEventHandler } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
-import { cleanupUnusedAdminAssetSafely } from '../../../utils/adminAssetPublication'
-import { invalidateNewsletterArchiveCache } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { cleanupUnusedAdminAssetSafely } from '../../../utils/admin/adminAssetPublication'
+import { invalidateNewsletterArchiveCache } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,

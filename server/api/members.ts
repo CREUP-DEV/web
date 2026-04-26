@@ -1,9 +1,15 @@
 import { defineEventHandler } from 'h3'
-import { getAssociatedMembersResponse } from '../utils/publicMembers'
-import { setPublicApiCacheHeaders } from '../utils/publicRouteCache'
+import { getAssociatedMembersResponse } from '../utils/public/publicMembers'
+import { setPublicApiCacheHeaders } from '../utils/cache/publicRouteCache'
 
 export default defineEventHandler(async (event) => {
   setPublicApiCacheHeaders(event)
 
-  return getAssociatedMembersResponse(event)
+  const payload = await getAssociatedMembersResponse(event)
+  return {
+    data: payload.members,
+    meta: {
+      generatedAt: payload.generatedAt,
+    },
+  }
 })

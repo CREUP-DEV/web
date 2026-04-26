@@ -7,13 +7,16 @@ import {
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
-import { getPreferredTranslationValue } from '../../../utils/localizedContent'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
+} from '../../../utils/admin/adminAssetPublication'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { invalidateHomeDataCache } from '../../../utils/admin/adminCacheInvalidation'
+import { getPreferredTranslationValue } from '../../../utils/locale/localizedContent'
+import {
+  assertOptimisticLock,
+  buildOptimisticLockCondition,
+} from '../../../utils/admin/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { HOME_CAROUSEL_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updateCarouselItemSchema } from '~~/shared/utils/adminSchemas'

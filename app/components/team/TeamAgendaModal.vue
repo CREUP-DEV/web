@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CalendarEvent } from '@/composables/useGoogleCalendar'
+import type { CalendarEvent } from '@/composables/events/useGoogleCalendar'
 import type { EnrichedMember } from '@/types/team'
 import TeamAgendaContent from './TeamAgendaContent.vue'
 

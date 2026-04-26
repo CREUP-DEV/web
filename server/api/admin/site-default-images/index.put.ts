@@ -2,16 +2,16 @@ import { createError, defineEventHandler, readBody } from 'h3'
 import { sql } from 'drizzle-orm'
 import { db } from '../../../db'
 import { siteDefaultImages } from '../../../db/schema'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateSiteDefaultImagesCaches } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { assertOptimisticLock } from '../../../utils/optimisticLock'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateSiteDefaultImagesCaches } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { assertOptimisticLock } from '../../../utils/admin/optimisticLock'
 import { validateBody } from '../../../utils/validation'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,

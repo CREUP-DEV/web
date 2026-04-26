@@ -13,9 +13,11 @@ interface PolicyDocument {
 }
 
 interface PolicyDocumentsResponse {
-  documents: PolicyDocument[]
-  total: number
-  generatedAt?: string | null
+  data: PolicyDocument[]
+  meta: {
+    generatedAt?: string | null
+    total: number
+  }
 }
 
 const props = defineProps<{
@@ -39,8 +41,8 @@ const { data, pending, error, refresh } = useFetch<PolicyDocumentsResponse>(prop
   })),
 })
 
-const documents = computed(() => data.value?.documents ?? [])
-const total = computed(() => data.value?.total ?? 0)
+const documents = computed(() => data.value?.data ?? [])
+const total = computed(() => data.value?.meta.total ?? 0)
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, documents, error)

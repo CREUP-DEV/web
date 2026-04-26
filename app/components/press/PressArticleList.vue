@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core'
-import type { PressArticleType } from '@/composables/usePress'
+import type { PressArticleType } from '@/composables/press/usePress'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 
 const props = defineProps<{
@@ -22,8 +22,8 @@ const offset = computed(() => (page.value - 1) * LIMIT)
 
 const { data, pending, error, refresh } = usePress(props.type, tagQuery, LIMIT, offset)
 
-const articles = computed(() => data.value?.items ?? [])
-const total = computed(() => data.value?.total ?? 0)
+const articles = computed(() => data.value?.data ?? [])
+const total = computed(() => data.value?.meta.total ?? 0)
 const isLoading = computed(() => pending.value && articles.value.length === 0 && !error.value)
 const isRefreshing = computed(() => pending.value && articles.value.length > 0)
 const showErrorState = computed(() => Boolean(error.value) && articles.value.length === 0)

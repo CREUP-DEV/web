@@ -2,7 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletterSubscribers } from '../../../../db/schema'
-import { throwAdminMutationError } from '../../../../utils/adminErrors'
+import { throwAdminMutationError } from '../../../../utils/admin/adminErrors'
 import {
   idRouteParamSchema,
   updateSubscriberSchema,
@@ -14,7 +14,7 @@ import {
   NEWSLETTER_CONSENT_TEXT_VERSION,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   recordNewsletterSubscriptionEvent,
-} from '../../../../utils/newsletterSubscribers'
+} from '../../../../utils/newsletter/newsletterSubscribers'
 
 function buildSubscriberUpdateValues(
   existing: typeof newsletterSubscribers.$inferSelect,

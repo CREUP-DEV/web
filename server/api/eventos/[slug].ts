@@ -1,15 +1,15 @@
 import { createError } from 'h3'
-import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
+import { getPublicApiErrorMessage } from '../../utils/locale/apiErrorMessages'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
-} from '../../utils/externalApiCache'
-import { getEventBySlug } from '../../utils/events'
+} from '../../utils/cache/externalApiCache'
+import { getEventBySlug } from '../../utils/external/events'
 import { slugRouteParamSchema, validatePublicRouteParams } from '../../utils/validation'
 import {
   buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-} from '../../utils/publicRouteCache'
+} from '../../utils/cache/publicRouteCache'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -27,8 +27,10 @@ export default defineCachedEventHandler(
     }
 
     return {
-      event: matchedEvent,
-      generatedAt,
+      data: matchedEvent,
+      meta: {
+        generatedAt,
+      },
     }
   },
   {

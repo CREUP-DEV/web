@@ -5,19 +5,19 @@ import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
   withExternalApiSWRCache,
-} from '../utils/externalApiCache'
-import { toExternalImageProxyUrl } from '../utils/externalAssetProxy'
-import { isDatabaseUnavailableError } from '../utils/databaseErrors'
-import { getRequiredExternalApiBaseUrl } from '../utils/runtimeConfig'
-import { logError } from '../utils/logger'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
+} from '../utils/cache/externalApiCache'
+import { toExternalImageProxyUrl } from '../utils/external/externalAssetUrl'
+import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
+import { getRequiredExternalApiBaseUrl } from '../utils/core/runtimeConfig'
+import { logError } from '../utils/core/logger'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import {
   buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-} from '../utils/publicRouteCache'
-import { throwSafePublicError } from '../utils/publicErrors'
-import { appendAssetVersion } from '../utils/assetVersion'
+} from '../utils/cache/publicRouteCache'
+import { throwSafePublicError } from '../utils/public/publicErrors'
+import { appendAssetVersion } from '../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -79,20 +79,22 @@ export default defineCachedEventHandler(
     ])
 
     return {
-      content: content
-        ? {
-            heroVisible: content.heroVisible,
-            heroImage: content.heroImage
-              ? appendAssetVersion(
-                  toExternalImageProxyUrl(content.heroImage, {
-                    publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
-                  }),
-                  content.updatedAt
-                )
-              : null,
-          }
-        : null,
-      memberCount,
+      data: {
+        content: content
+          ? {
+              heroVisible: content.heroVisible,
+              heroImage: content.heroImage
+                ? appendAssetVersion(
+                    toExternalImageProxyUrl(content.heroImage, {
+                      publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
+                    }),
+                    content.updatedAt
+                  )
+                : null,
+            }
+          : null,
+        memberCount,
+      },
     }
   },
   {

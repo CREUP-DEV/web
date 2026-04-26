@@ -1,17 +1,17 @@
 import { defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
 import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { getPreferredTranslationValue } from '../../../utils/localizedContent'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateHomeDataCache } from '../../../utils/admin/adminCacheInvalidation'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getPreferredTranslationValue } from '../../../utils/locale/localizedContent'
 import { validateBody } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'

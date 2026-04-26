@@ -1,7 +1,7 @@
 import type { H3Event, MultiPartData } from 'h3'
 import { createError, getQuery, getRouterParam } from 'h3'
 import { z } from 'zod'
-import { getPublicApiErrorMessage } from '../apiErrorMessages'
+import { getPublicApiErrorMessage } from '../locale/apiErrorMessages'
 import { toOptionalSingleStringSchema, toSingleStringSchema } from './helpers'
 
 const multipartFileSchema = z.object({

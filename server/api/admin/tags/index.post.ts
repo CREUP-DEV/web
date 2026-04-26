@@ -4,11 +4,11 @@ import { tags, tagTranslations } from '../../../db/schema'
 import {
   filterTranslationsByContent,
   getRequiredTranslationValue,
-} from '../../../utils/localizedContent'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
-import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { assertTagSlugAvailable } from '../../../utils/tagMutations'
+} from '../../../utils/locale/localizedContent'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
+import { invalidatePressRelatedCaches } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { assertTagSlugAvailable } from '../../../utils/admin/tagMutations'
 import { validateBody } from '../../../utils/validation'
 import { createTagSchema } from '~~/shared/utils/adminSchemas'
 

@@ -1,0 +1,392 @@
+import type { externalOrganigramaMemberSocialSchema } from '../validation'
+import type { ExternalApiCacheOptions } from '../cache/externalApiCache'
+import type { H3Event } from 'h3'
+import {
+  getDefaultPublicApiErrorMessage,
+  getPublicApiErrorMessage,
+} from '../locale/apiErrorMessages'
+import { withExternalApiSWRCache } from '../cache/externalApiCache'
+import { toExternalImageProxyUrl } from './externalAssetUrl'
+import { logError } from '../core/logger'
+import { externalMandatesResponseSchema, externalMandateDetailResponseSchema } from '../validation'
+
+const getMandatesUnavailableMessage = (event?: H3Event) =>
+  event
+    ? getPublicApiErrorMessage(event, 'mandatesUnavailable')
+    : getDefaultPublicApiErrorMessage('mandatesUnavailable')
+
+const getMandateDetailUnavailableMessage = (event?: H3Event) =>
+  event
+    ? getPublicApiErrorMessage(event, 'mandateDetailUnavailable')
+    : getDefaultPublicApiErrorMessage('mandateDetailUnavailable')
+
+export const SUPPORTED_NETWORKS = [
+  'website',
+  'email',
+  'instagram',
+  'twitter',
+  'tiktok',
+  'bluesky',
+  'linkedin',
+  'telegram',
+  'discord',
+  'facebook',
+  'github',
+] as const
+
+export type SupportedNetwork = (typeof SUPPORTED_NETWORKS)[number]
+
+export interface MandateInfoOutput {
+  id: number
+  startDate: string
+  endDate: string | null
+  isCurrent: boolean
+}
+
+export interface MemberSocialOutput {
+  network: SupportedNetwork
+  value: string
+}
+
+export interface AssignmentMemberOutput {
+  order: number
+  denomination: string | null
+  photo: string | null
+  email: string
+  name: string
+  surname: string
+  university: string | null
+  degree: string | null
+  description: string | null
+  socialNetworks: MemberSocialOutput[]
+}
+
+export interface AssignmentOutput {
+  id: number
+  role: string | null
+  order: number
+  startDate: string
+  endDate: string | null
+  member: AssignmentMemberOutput
+}
+
+export interface AreaTermOutput {
+  areaTermId: number
+  areaId: number
+  name: string
+  nameTranslations: Record<string, string>
+  order: number
+  assignments: AssignmentOutput[]
+}
+
+export interface MandateDetailOutput {
+  mandate: MandateInfoOutput
+  areas: AreaTermOutput[]
+  generatedAt: string | null
+}
+
+interface MandateSlugIndex {
+  slugToMandates: Record<string, MandateInfoOutput[]>
+}
+
+const networkAliasMap: Record<string, SupportedNetwork> = {
+  website: 'website',
+  webpage: 'website',
+  web: 'website',
+  sitioweb: 'website',
+  paginaweb: 'website',
+  email: 'email',
+  mail: 'email',
+  correo: 'email',
+  correoelectronico: 'email',
+  instagram: 'instagram',
+  twitter: 'twitter',
+  x: 'twitter',
+  twitterx: 'twitter',
+  tiktok: 'tiktok',
+  bluesky: 'bluesky',
+  linkedin: 'linkedin',
+  telegram: 'telegram',
+  discord: 'discord',
+  facebook: 'facebook',
+  github: 'github',
+}
+
+const normalizeKey = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+
+const normalizeText = (value: string | null | undefined) => {
+  if (typeof value !== 'string') return ''
+  return value.trim()
+}
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const normalizeNetwork = (network: string): SupportedNetwork | null => {
+  const normalized = normalizeKey(network)
+  if (networkAliasMap[normalized]) return networkAliasMap[normalized]!
+  if (normalized.includes('correo') || normalized.includes('email')) return 'email'
+  if (normalized.includes('web') || normalized.includes('pagina') || normalized.includes('sitio'))
+    return 'website'
+  return null
+}
+
+const inferNetwork = (networkValue: string, value: string): SupportedNetwork | null => {
+  const inferred = normalizeNetwork(networkValue)
+  if (inferred) return inferred
+  if (emailPattern.test(value)) return 'email'
+  return null
+}
+
+type ExternalMember = ReturnType<typeof externalOrganigramaMemberSocialSchema.parse>
+
+const transformMemberSocials = (socialNetworks: ExternalMember[]): MemberSocialOutput[] => {
+  const socialMap = new Map<SupportedNetwork, string>()
+
+  for (const sn of socialNetworks ?? []) {
+    const value = normalizeText(sn.value)
+    const network = inferNetwork(normalizeText(sn.network), value)
+    if (!network || !value || socialMap.has(network)) continue
+    socialMap.set(network, value)
+  }
+
+  return SUPPORTED_NETWORKS.flatMap((network) => {
+    const value = socialMap.get(network)
+    if (!value) return []
+    return [{ network, value }]
+  })
+}
+
+const mapExternalMandate = (mandate: {
+  id: number
+  start_date: string
+  end_date: string | null
+  is_current: boolean
+}): MandateInfoOutput => ({
+  id: mandate.id,
+  startDate: mandate.start_date,
+  endDate: mandate.end_date,
+  isCurrent: mandate.is_current,
+})
+
+const mandateSlugCandidates = (startDate: string) => {
+  const [year, month, day] = startDate.split('-')
+  const candidates: string[] = []
+
+  if (year) {
+    candidates.push(year)
+  }
+
+  if (year && month) {
+    candidates.push(`${year}-${month}`)
+  }
+
+  if (year && month && day) {
+    candidates.push(`${year}-${month}-${day}`)
+  }
+
+  return candidates
+}
+
+async function fetchExternalMandates(
+  externalBaseUrl: string,
+  unavailableMessage: string,
+  event?: H3Event
+) {
+  const endpoint = new URL('/api/organigrama/mandatos', externalBaseUrl).toString()
+
+  let payload: unknown
+  try {
+    payload = await $fetch(endpoint)
+  } catch (error) {
+    logError('external.mandates.fetch', error, { endpoint }, event)
+    throw createError({
+      statusCode: 502,
+      message: unavailableMessage,
+    })
+  }
+
+  const parsed = externalMandatesResponseSchema.safeParse(payload)
+  if (!parsed.success) {
+    logError('external.mandates.invalid-payload', parsed.error, { endpoint }, event)
+    throw createError({
+      statusCode: 502,
+      message: unavailableMessage,
+    })
+  }
+
+  return parsed.data.data
+}
+
+export async function fetchMandatesList(
+  externalBaseUrl: string,
+  cacheOptions: ExternalApiCacheOptions,
+  event?: H3Event
+): Promise<MandateInfoOutput[]> {
+  const unavailableMessage = getMandatesUnavailableMessage(event)
+
+  return withExternalApiSWRCache(
+    `external-api:organigrama-mandates:${externalBaseUrl}`,
+    async () => {
+      const mandates = await fetchExternalMandates(externalBaseUrl, unavailableMessage, event)
+
+      return mandates
+        .sort((a, b) => b.start_date.localeCompare(a.start_date))
+        .map(mapExternalMandate)
+    },
+    cacheOptions
+  )
+}
+
+export async function fetchMandatesBySlug(
+  externalBaseUrl: string,
+  slug: string,
+  cacheOptions: ExternalApiCacheOptions,
+  event?: H3Event
+): Promise<MandateInfoOutput[]> {
+  const unavailableMessage = getMandatesUnavailableMessage(event)
+
+  const index = await withExternalApiSWRCache(
+    `external-api:organigrama-mandates-slug-index:${externalBaseUrl}`,
+    async (): Promise<MandateSlugIndex> => {
+      const mandates = await fetchExternalMandates(externalBaseUrl, unavailableMessage, event)
+      const sortedMandates = mandates
+        .sort((a, b) => b.start_date.localeCompare(a.start_date))
+        .map(mapExternalMandate)
+
+      const slugToMandates: Record<string, MandateInfoOutput[]> = {}
+
+      for (const mandate of sortedMandates) {
+        for (const candidate of mandateSlugCandidates(mandate.startDate)) {
+          const list = slugToMandates[candidate]
+          if (list) {
+            list.push(mandate)
+            continue
+          }
+
+          slugToMandates[candidate] = [mandate]
+        }
+      }
+
+      return { slugToMandates }
+    },
+    cacheOptions
+  )
+
+  return index.slugToMandates[slug] ?? []
+}
+
+export async function fetchMandateDetail(
+  externalBaseUrl: string,
+  mandateId: number,
+  cacheOptions: ExternalApiCacheOptions,
+  event?: H3Event
+): Promise<MandateDetailOutput> {
+  const unavailableMessage = getMandateDetailUnavailableMessage(event)
+
+  return withExternalApiSWRCache(
+    `external-api:organigrama-mandate-detail:${externalBaseUrl}:${mandateId}`,
+    async () => {
+      const endpoint = new URL(`/api/organigrama/mandatos/${mandateId}`, externalBaseUrl).toString()
+
+      let payload: unknown
+      try {
+        payload = await $fetch(endpoint)
+      } catch (error) {
+        logError('external.mandate-detail.fetch', error, { endpoint, mandateId }, event)
+        throw createError({
+          statusCode: 502,
+          message: unavailableMessage,
+        })
+      }
+
+      const parsed = externalMandateDetailResponseSchema.safeParse(payload)
+      if (!parsed.success) {
+        logError(
+          'external.mandate-detail.invalid-payload',
+          parsed.error,
+          {
+            endpoint,
+            mandateId,
+          },
+          event
+        )
+        throw createError({
+          statusCode: 502,
+          message: unavailableMessage,
+        })
+      }
+
+      const mandate: MandateInfoOutput = {
+        id: parsed.data.mandate.id,
+        startDate: parsed.data.mandate.start_date,
+        endDate: parsed.data.mandate.end_date,
+        isCurrent: parsed.data.mandate.is_current,
+      }
+
+      const areas: AreaTermOutput[] = parsed.data.data
+        .sort((a, b) => a.area_order - b.area_order)
+        .map((area) => {
+          const nameTranslations: Record<string, string> = {}
+          for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
+            const nl = normalizeText(locale)
+            const nt = normalizeText(translation)
+            if (!nl || !nt) continue
+            nameTranslations[nl] = nt
+          }
+          if (!nameTranslations.es) {
+            nameTranslations.es = area.area_name
+          }
+
+          const assignments: AssignmentOutput[] = area.assignments
+            .sort((a, b) => a.order - b.order || a.start_date.localeCompare(b.start_date))
+            .map((assignment) => {
+              const member = assignment.member
+              return {
+                id: assignment.id,
+                role: assignment.role ?? null,
+                order: assignment.order,
+                startDate: assignment.start_date,
+                endDate: assignment.end_date,
+                member: {
+                  order: member.order,
+                  denomination: normalizeText(member.denomination) || null,
+                  photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
+                    event,
+                    forceProxyRelative: true,
+                    publicPathBase: '/conocenos/imagenes',
+                  }),
+                  email: normalizeText(member.email) || '',
+                  name: normalizeText(member.name) || '',
+                  surname: normalizeText(member.surname) || '',
+                  university: normalizeText(member.university) || null,
+                  degree: normalizeText(member.degree) || null,
+                  description: normalizeText(member.description) || null,
+                  socialNetworks: transformMemberSocials(member.social_networks ?? []),
+                },
+              }
+            })
+
+          return {
+            areaTermId: area.area_term_id,
+            areaId: area.area_id,
+            name: area.area_name,
+            nameTranslations,
+            order: area.area_order,
+            assignments,
+          }
+        })
+
+      return {
+        mandate,
+        areas,
+        generatedAt: parsed.data.generated_at ?? null,
+      }
+    },
+    cacheOptions
+  )
+}

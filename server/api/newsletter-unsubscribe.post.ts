@@ -1,9 +1,9 @@
 import { defineEventHandler, getQuery, readBody, setHeader } from 'h3'
-import { buildLocalizedPath } from '../utils/urlBuilder'
+import { buildLocalizedPath } from '../utils/core/urlBuilder'
 import { newsletterTokenQuerySchema, validatePublicBody } from '../utils/validation'
-import { performNewsletterUnsubscribeAction } from '../utils/newsletterSubscriptionActions'
-import { enforceRateLimit } from '../utils/rateLimit'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
+import { performNewsletterUnsubscribeAction } from '../utils/newsletter/newsletterSubscriptionActions'
+import { enforceRateLimit } from '../utils/public/rateLimit'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, {
@@ -27,7 +27,9 @@ export default defineEventHandler(async (event) => {
   const redirectPath = buildLocalizedPath(event, '/prensa/newsletter')
   const action = await performNewsletterUnsubscribeAction(token)
   return {
-    ...action,
-    redirectTo: `${redirectPath}?unsubscribed=${action.status === 'unsubscribed' ? '1' : 'invalid'}`,
+    data: {
+      ...action,
+      redirectTo: `${redirectPath}?unsubscribed=${action.status === 'unsubscribed' ? '1' : 'invalid'}`,
+    },
   }
 })

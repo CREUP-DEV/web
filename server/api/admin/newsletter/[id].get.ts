@@ -2,7 +2,7 @@ import { createError, defineEventHandler } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletters } from '../../../db/schema'
-import { monthKeyToDate } from '../../../utils/newsletters'
+import { monthKeyToDate } from '../../../utils/newsletter/newsletters'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {

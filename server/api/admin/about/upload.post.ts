@@ -1,7 +1,7 @@
 import { defineEventHandler, readMultipartFormData } from 'h3'
-import { toExternalImageProxyUrl } from '../../../utils/externalAssetProxy'
-import { saveAdminImage } from '../../../utils/adminImageUpload'
-import { assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
+import { toExternalImageProxyUrl } from '../../../utils/external/externalAssetUrl'
+import { saveAdminImage } from '../../../utils/admin/adminImageUpload'
+import { assertUploadRequestSize } from '../../../utils/core/uploadRequestLimit'
 import { validateMultipartFile } from '../../../utils/validation'
 import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 

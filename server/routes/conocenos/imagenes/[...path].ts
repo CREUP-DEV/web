@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
-import { proxyExternalAssetByPublicPathBase } from '../../../utils/externalAssetProxy'
-import { tryServePublicAssetByPathBase } from '../../../utils/publicAsset'
+import { proxyExternalAssetByPublicPathBase } from '../../../utils/external/externalAssetProxy'
+import { tryServePublicAssetByPathBase } from '../../../utils/public/publicAsset'
 
 export default defineEventHandler(async (event) => {
   const localAsset = await tryServePublicAssetByPathBase(event, '/conocenos/imagenes')

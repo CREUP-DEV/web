@@ -4,11 +4,11 @@ import { pressArticles } from '../../db/schema'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
-} from '../../utils/externalApiCache'
+} from '../../utils/cache/externalApiCache'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { buildLocalizedAlternatesForLocaleCodes } from '~~/shared/utils/locale'
-import { getRequestLocaleContext } from '../../utils/requestLocale'
+import { getRequestLocaleContext } from '../../utils/locale/requestLocale'
 
 const PRESS_ARTICLE_BATCH_SIZE = 1000
 

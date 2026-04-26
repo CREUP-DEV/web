@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { hasMeaningfulRichTextHtml } from '../pressTranslation'
+import { hasMeaningfulRichTextHtml } from '../press/pressTranslation'
 import {
   dateOnlySchema,
   getRequiredLocaleTranslation,

@@ -4,26 +4,29 @@ import { db } from '../../db'
 import { pressArticles } from '../../db/schema'
 import { pickLocalizedEntry, getBaseLanguage } from '~~/shared/utils/locale'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
-import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../../utils/externalAssetProxy'
+import {
+  toExternalImageProxyUrl,
+  toExternalPdfProxyUrl,
+} from '../../utils/external/externalAssetUrl'
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import {
   getPressDefaultCoverEntriesRow,
   resolvePressArticleListImageWithVersion,
-} from '../../utils/siteDefaultImages'
+} from '../../utils/admin/siteDefaultImages'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
-import { isDatabaseUnavailableError } from '../../utils/databaseErrors'
-import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
-import { throwSafePublicError } from '../../utils/publicErrors'
-import { logError } from '../../utils/logger'
-import { resolvePressTranslation } from '../../utils/pressTranslation'
-import { getRequestLocaleContext } from '../../utils/requestLocale'
+import { isDatabaseUnavailableError } from '../../utils/core/databaseErrors'
+import { getPublicApiErrorMessage } from '../../utils/locale/apiErrorMessages'
+import { throwSafePublicError } from '../../utils/public/publicErrors'
+import { logError } from '../../utils/core/logger'
+import { resolvePressTranslation } from '../../utils/press/pressTranslation'
+import { getRequestLocaleContext } from '../../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
-} from '../../utils/publicRouteCache'
+} from '../../utils/cache/publicRouteCache'
 import { slugRouteParamSchema, validatePublicRouteParams } from '../../utils/validation'
-import { appendAssetVersion } from '../../utils/assetVersion'
+import { appendAssetVersion } from '../../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -99,7 +102,7 @@ export default defineCachedEventHandler(
         .filter((code): code is string => !!code)
 
       return {
-        article: {
+        data: {
           id: article.id,
           type: article.type,
           slug: article.slug,

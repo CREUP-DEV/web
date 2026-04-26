@@ -4,7 +4,7 @@ import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
 } from '~~/shared/constants/siteDefaultImages'
-import { loadSiteDefaultImagesMap } from '../../../utils/siteDefaultImages'
+import { loadSiteDefaultImagesMap } from '../../../utils/admin/siteDefaultImages'
 
 function maxUpdatedAtIso(rows: { updatedAt: Date }[]): string | null {
   if (!rows.length) return null

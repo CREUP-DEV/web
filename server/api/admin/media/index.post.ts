@@ -1,15 +1,15 @@
 import { defineEventHandler, readBody } from 'h3'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
-import { invalidatePressCache } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
+import { invalidatePressCache } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
+} from '../../../utils/admin/adminAssetPublication'
 import { validateBody } from '../../../utils/validation'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createMediaOutletSchema } from '~~/shared/utils/adminSchemas'

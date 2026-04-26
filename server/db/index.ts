@@ -6,7 +6,7 @@ import {
   requireConfigPositiveInt,
   requireConfigString,
 } from '../../shared/utils/config'
-import { logError } from '../utils/logger'
+import { logError } from '../utils/core/logger'
 import * as schema from './schema'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
@@ -16,7 +16,7 @@ function resolveDatabaseMaxConnections() {
   const rawValue = process.env.DATABASE_MAX_CONNECTIONS
 
   if (rawValue === undefined || rawValue === null || String(rawValue).trim() === '') {
-    return 10
+    return 20
   }
 
   try {
@@ -24,7 +24,7 @@ function resolveDatabaseMaxConnections() {
   } catch (error) {
     if (error instanceof ConfigError) {
       logError('db.config', error)
-      return 10
+      return 20
     }
 
     throw error
@@ -59,7 +59,8 @@ const pool = new Pool({
   connectionString,
   // Keep statements bounded and force every app session to use the canonical project timezone.
   options: `-c statement_timeout=30000 -c timezone=${databaseTimeZone}`,
-  // Cap concurrent DB connections. Tune to match your Postgres plan's limit.
+  // Newsletter delivery sends up to 5 messages concurrently while web traffic continues;
+  // keep this above that worker burst and tune it to match the Postgres plan's limit.
   max: configuredMaxConnections,
   // Release idle connections after 10 s to free server-side resources.
   idleTimeoutMillis: 10_000,

@@ -1,5 +1,8 @@
 import { defineEventHandler } from 'h3'
-import { throwPublicAssetNotFound, tryServePublicAssetByPathBase } from '../../../utils/publicAsset'
+import {
+  throwPublicAssetNotFound,
+  tryServePublicAssetByPathBase,
+} from '../../../utils/public/publicAsset'
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 
 export default defineEventHandler(async (event) => {

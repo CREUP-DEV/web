@@ -2,8 +2,8 @@ import { createError, defineEventHandler } from 'h3'
 import { and, eq, isNotNull, isNull } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletters } from '../../../../db/schema'
-import { removeNewsletterSendJob } from '../../../../utils/backgroundJobs'
-import { monthKeyToDate } from '../../../../utils/newsletters'
+import { removeNewsletterSendJob } from '../../../../utils/core/backgroundJobs'
+import { monthKeyToDate } from '../../../../utils/newsletter/newsletters'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 
 export default defineEventHandler(async (event) => {

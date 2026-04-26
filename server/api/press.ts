@@ -3,28 +3,28 @@ import { eq, desc, and, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, tags, pressArticleTags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
-import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/externalAssetProxy'
+import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
-import { isDatabaseUnavailableError } from '../utils/databaseErrors'
-import { logError } from '../utils/logger'
-import { resolvePressTranslationSummary } from '../utils/pressTranslation'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { getRequestLocaleContext } from '../utils/requestLocale'
+import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
+import { logError } from '../utils/core/logger'
+import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicApiCacheHeaders,
   setPublicRouteVaryHeaders,
-} from '../utils/publicRouteCache'
+} from '../utils/cache/publicRouteCache'
 import { pressListQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
-import { throwSafePublicError } from '../utils/publicErrors'
+import { throwSafePublicError } from '../utils/public/publicErrors'
 import {
   getPressDefaultCoverEntriesRow,
   resolvePressArticleListImageWithVersion,
-} from '../utils/siteDefaultImages'
+} from '../utils/admin/siteDefaultImages'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
-import { appendAssetVersion } from '../utils/assetVersion'
+import { appendAssetVersion } from '../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -167,7 +167,12 @@ export default defineCachedEventHandler(
         }
       })
 
-      return { items, total: countResult[0]?.count ?? 0 }
+      return {
+        data: items,
+        meta: {
+          total: countResult[0]?.count ?? 0,
+        },
+      }
     } catch (error) {
       if (isDatabaseUnavailableError(error)) {
         logError('public.press.database-unavailable', error, undefined, event)

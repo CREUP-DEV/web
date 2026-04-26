@@ -2,7 +2,7 @@ import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles } from '../../../db/schema'
-import { sanitizePressTranslations } from '../../../utils/pressTranslation'
+import { sanitizePressTranslations } from '../../../utils/press/pressTranslation'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 

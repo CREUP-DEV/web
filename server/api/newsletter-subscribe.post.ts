@@ -2,10 +2,10 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterSubscribers } from '../db/schema'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { getRequestLocaleContext } from '../utils/requestLocale'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import { validatePublicBody } from '../utils/validation'
-import { enforceRateLimit } from '../utils/rateLimit'
+import { enforceRateLimit } from '../utils/public/rateLimit'
 import { newsletterSubscribeSchema } from '~~/shared/utils/newsletterValidation'
 import {
   NEWSLETTER_CONSENT_SOURCES,
@@ -16,9 +16,12 @@ import {
   recordNewsletterSubscriptionEvent,
   sendNewsletterAlreadySubscribedEmail,
   sendNewsletterConfirmationEmail,
-} from '../utils/newsletterSubscribers'
-import { hasMinimumPublicFormSubmitDelay, verifyTurnstileTokenOrThrow } from '../utils/turnstile'
-import { throwSafePublicError } from '../utils/publicErrors'
+} from '../utils/newsletter/newsletterSubscribers'
+import {
+  hasMinimumPublicFormSubmitDelay,
+  verifyTurnstileTokenOrThrow,
+} from '../utils/core/turnstile'
+import { throwSafePublicError } from '../utils/public/publicErrors'
 
 export default defineEventHandler(async (event) => {
   const { locale, locales, defaultLocale } = getRequestLocaleContext(event)

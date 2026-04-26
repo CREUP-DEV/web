@@ -3,15 +3,15 @@ import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
   withExternalApiSWRCache,
-} from '../../utils/externalApiCache'
-import { getPublicApiErrorMessage } from '../../utils/apiErrorMessages'
-import { logError } from '../../utils/logger'
-import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
+} from '../../utils/cache/externalApiCache'
+import { getPublicApiErrorMessage } from '../../utils/locale/apiErrorMessages'
+import { logError } from '../../utils/core/logger'
+import { getRequiredExternalApiBaseUrl } from '../../utils/core/runtimeConfig'
 import { externalMandatesResponseSchema } from '../../utils/validation'
 import {
   buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-} from '../../utils/publicRouteCache'
+} from '../../utils/cache/publicRouteCache'
 
 interface MandateOutput {
   id: number
@@ -62,8 +62,10 @@ export default defineCachedEventHandler(
           }))
 
         return {
-          mandates,
-          generatedAt: parsed.data.generated_at ?? null,
+          data: mandates,
+          meta: {
+            generatedAt: parsed.data.generated_at ?? null,
+          },
         }
       },
       cacheOptions

@@ -137,7 +137,13 @@
   },
   "error": {
     "notFound": "Página no encontrada",
+    "forbidden": "No tienes acceso a esta página",
+    "server": "Ha ocurrido un error en nuestro servidor",
+    "unavailable": "Servicio temporalmente no disponible",
     "generic": "Ha ocurrido un error",
+    "forbiddenMessage": "Comprueba que has iniciado sesión con una cuenta autorizada.",
+    "serverMessage": "Lo sentimos, algo ha fallado por nuestra parte. Inténtalo de nuevo más tarde.",
+    "unavailableMessage": "Estamos realizando tareas técnicas o hay un servicio temporalmente caído. Inténtalo de nuevo en unos minutos.",
     "message": "Lo sentimos, algo salió mal. Por favor, inténtalo de nuevo más tarde.",
     "backHome": "Volver al inicio"
   },

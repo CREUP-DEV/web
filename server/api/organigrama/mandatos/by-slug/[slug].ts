@@ -2,10 +2,10 @@ import { createError, defineEventHandler } from 'h3'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
-} from '../../../../utils/externalApiCache'
-import { getPublicApiErrorMessage } from '../../../../utils/apiErrorMessages'
-import { fetchMandatesBySlug, fetchMandateDetail } from '../../../../utils/mandateDetail'
-import { getRequiredExternalApiBaseUrl } from '../../../../utils/runtimeConfig'
+} from '../../../../utils/cache/externalApiCache'
+import { getPublicApiErrorMessage } from '../../../../utils/locale/apiErrorMessages'
+import { fetchMandatesBySlug, fetchMandateDetail } from '../../../../utils/external/mandateDetail'
+import { getRequiredExternalApiBaseUrl } from '../../../../utils/core/runtimeConfig'
 import {
   mandateSlugRouteParamSchema,
   validatePublicRouteParams,
@@ -31,8 +31,10 @@ export default defineEventHandler(async (event) => {
 
   if (matches.length > 1) {
     return {
-      ambiguous: true as const,
-      mandates: matches,
+      data: {
+        ambiguous: true as const,
+        mandates: matches,
+      },
     }
   }
 
@@ -55,8 +57,10 @@ export default defineEventHandler(async (event) => {
   }
 
   return {
-    ambiguous: false as const,
-    ...detail,
-    translatedLocales: Array.from(translatedLocaleSet),
+    data: {
+      ambiguous: false as const,
+      ...detail,
+      translatedLocales: Array.from(translatedLocaleSet),
+    },
   }
 })

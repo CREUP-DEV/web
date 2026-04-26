@@ -21,7 +21,7 @@ async function unsubscribe() {
   state.value = 'loading'
 
   try {
-    const result = await $fetch<{ success: boolean; redirectTo: string }>(
+    const result = await $fetch<{ data: { success: boolean; redirectTo: string } }>(
       '/api/newsletter-unsubscribe',
       {
         method: 'POST',
@@ -29,7 +29,7 @@ async function unsubscribe() {
       }
     )
     state.value = 'done'
-    await navigateTo(localePath(result.redirectTo))
+    await navigateTo(localePath(result.data.redirectTo))
   } catch {
     state.value = 'error'
   }

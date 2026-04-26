@@ -4,13 +4,13 @@ import { newsletters } from '../../db/schema'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
-} from '../../utils/externalApiCache'
-import { getEventsPayload } from '../../utils/events'
-import { fetchMandatesList, type MandateInfoOutput } from '../../utils/mandateDetail'
-import { getRequiredExternalApiBaseUrl } from '../../utils/runtimeConfig'
-import { logError } from '../../utils/logger'
+} from '../../utils/cache/externalApiCache'
+import { getEventsPayload } from '../../utils/external/events'
+import { fetchMandatesList, type MandateInfoOutput } from '../../utils/external/mandateDetail'
+import { getRequiredExternalApiBaseUrl } from '../../utils/core/runtimeConfig'
+import { logError } from '../../utils/core/logger'
 import { buildLocalizedAlternatesForLocaleCodes } from '~~/shared/utils/locale'
-import { getRequestLocaleContext } from '../../utils/requestLocale'
+import { getRequestLocaleContext } from '../../utils/locale/requestLocale'
 
 const buildMandateSlug = (mandate: MandateInfoOutput, mandates: MandateInfoOutput[]) => {
   const year = mandate.startDate.slice(0, 4)

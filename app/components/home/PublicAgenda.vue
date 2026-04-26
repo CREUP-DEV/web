@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useSwipe } from '@vueuse/core'
-import type { CalendarEvent } from '@/composables/useGoogleCalendar'
-import { collectUpcomingCalendarSeries } from '@/composables/useCalendarEventSeries'
+import type { CalendarEvent } from '@/composables/events/useGoogleCalendar'
+import { collectUpcomingCalendarSeries } from '@/composables/events/useCalendarEventSeries'
 
 const props = defineProps<{
   events: CalendarEvent[]

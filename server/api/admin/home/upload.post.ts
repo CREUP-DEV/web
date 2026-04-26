@@ -1,7 +1,7 @@
 import { defineEventHandler, readMultipartFormData } from 'h3'
-import { saveAdminImage } from '../../../utils/adminImageUpload'
-import { toExternalImageProxyUrl } from '../../../utils/externalAssetProxy'
-import { assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
+import { saveAdminImage } from '../../../utils/admin/adminImageUpload'
+import { toExternalImageProxyUrl } from '../../../utils/external/externalAssetUrl'
+import { assertUploadRequestSize } from '../../../utils/core/uploadRequestLimit'
 import {
   adminUploadKindSchema,
   getMultipartTextField,

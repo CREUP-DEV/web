@@ -2,8 +2,11 @@ import { defineEventHandler, readBody } from 'h3'
 import { inArray } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems } from '../../../db/schema'
-import { assertCompleteReorderSet, buildReorderOrderExpression } from '../../../utils/adminReorder'
-import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
+import {
+  assertCompleteReorderSet,
+  buildReorderOrderExpression,
+} from '../../../utils/admin/adminReorder'
+import { invalidateHomeDataCache } from '../../../utils/admin/adminCacheInvalidation'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
 // POST - Reorder carousel items

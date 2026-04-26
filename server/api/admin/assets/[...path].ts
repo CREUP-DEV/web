@@ -6,9 +6,9 @@ import {
   isInternalAdminStoragePath,
   normalizeAdminStoredPath,
   resolveAdminStoredAbsolutePath,
-} from '../../../utils/adminStoredFile'
-import { logError } from '../../../utils/logger'
-import { throwMethodNotAllowed } from '../../../utils/throwMethodNotAllowed'
+} from '../../../utils/admin/adminStoredFile'
+import { logError } from '../../../utils/core/logger'
+import { throwMethodNotAllowed } from '../../../utils/core/throwMethodNotAllowed'
 import { adminAssetPathRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 
 const contentTypeByExtension: Record<string, string> = {

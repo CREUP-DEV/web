@@ -1,10 +1,13 @@
 import { z } from 'zod'
-import { getExternalApiCacheOptions, setExternalApiCacheHeaders } from '../utils/externalApiCache'
-import { getEventsPayload } from '../utils/events'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+} from '../utils/cache/externalApiCache'
+import { getEventsPayload } from '../utils/external/events'
 import {
   buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-} from '../utils/publicRouteCache'
+} from '../utils/cache/publicRouteCache'
 import {
   publicPaginationQuerySchema,
   toOptionalSingleStringSchema,
@@ -49,10 +52,12 @@ export default defineCachedEventHandler(
           : payload.events
 
     return {
-      events: filteredEvents.slice(normalizedOffset, normalizedOffset + normalizedLimit),
-      total: filteredEvents.length,
-      eventTypes: allEventTypes,
-      generatedAt: payload.generatedAt,
+      data: filteredEvents.slice(normalizedOffset, normalizedOffset + normalizedLimit),
+      meta: {
+        total: filteredEvents.length,
+        eventTypes: allEventTypes,
+        generatedAt: payload.generatedAt,
+      },
     }
   },
   {

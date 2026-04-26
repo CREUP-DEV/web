@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PressArticle } from '@/composables/usePress'
+import type { PressArticle } from '@/composables/press/usePress'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -9,11 +9,11 @@ if (!slug) throw createError({ statusCode: 404 })
 
 const { data, error } = await usePressArticle(slug)
 
-if (error.value || !data.value?.article) {
+if (error.value || !data.value?.data) {
   throw createError({ statusCode: 404, message: t('press.notFound') })
 }
 
-const article = computed<PressArticle>(() => data.value!.article as PressArticle)
+const article = computed<PressArticle>(() => data.value!.data as PressArticle)
 
 useLocalizedPressDetailSeo({
   path: `/prensa/notas-prensa/${slug}`,

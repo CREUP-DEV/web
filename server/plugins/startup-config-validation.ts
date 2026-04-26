@@ -5,7 +5,7 @@ import {
   requireConfigString,
   requireConfigUrl,
 } from '~~/shared/utils/config'
-import { logError } from '../utils/logger'
+import { logError } from '../utils/core/logger'
 
 function collectConfigValidationErrors(): string[] {
   const runtimeConfig = useRuntimeConfig()

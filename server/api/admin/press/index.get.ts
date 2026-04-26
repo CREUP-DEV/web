@@ -11,7 +11,7 @@ import { dateValueToDateOnly } from '~~/shared/utils/date'
 import {
   getPressDefaultCoversRow,
   resolvePressArticleListImage,
-} from '../../../utils/siteDefaultImages'
+} from '../../../utils/admin/siteDefaultImages'
 
 const adminPressQuerySchema = adminPressListQuerySchema.merge(paginationQuerySchema)
 const MIN_TRIGRAM_SEARCH_LENGTH = 3

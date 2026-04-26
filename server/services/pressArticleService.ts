@@ -3,23 +3,23 @@ import type { H3Event } from 'h3'
 import { and, eq, isNull, notInArray, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTranslations, pressArticleTags } from '../db/schema'
-import { finalizeAdminDocument } from '../utils/adminDocumentUpload'
-import { finalizeAdminImage } from '../utils/adminImageUpload'
+import { finalizeAdminDocument } from '../utils/admin/adminDocumentUpload'
+import { finalizeAdminImage } from '../utils/admin/adminImageUpload'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../utils/adminAssetPublication'
-import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/adminErrors'
-import { getRequiredTranslationValue } from '../utils/localizedContent'
+} from '../utils/admin/adminAssetPublication'
+import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/admin/adminErrors'
+import { getRequiredTranslationValue } from '../utils/locale/localizedContent'
 import {
   hasMeaningfulRichTextHtml,
   sanitizePressTranslations,
   sanitizeRichTextHtml,
-} from '../utils/pressTranslation'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../utils/optimisticLock'
-import { generatePressSlug } from '../utils/slug'
+} from '../utils/press/pressTranslation'
+import { assertOptimisticLock, buildOptimisticLockCondition } from '../utils/admin/optimisticLock'
+import { generatePressSlug } from '../utils/core/slug'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
 import { SUPPORTED_LOCALE_CODES, type SupportedLocaleCode } from '~~/shared/utils/locale'
 import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'

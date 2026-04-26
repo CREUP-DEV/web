@@ -2,9 +2,9 @@ import { defineEventHandler } from 'h3'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
-} from '../../../utils/externalApiCache'
-import { fetchMandateDetail } from '../../../utils/mandateDetail'
-import { getRequiredExternalApiBaseUrl } from '../../../utils/runtimeConfig'
+} from '../../../utils/cache/externalApiCache'
+import { fetchMandateDetail } from '../../../utils/external/mandateDetail'
+import { getRequiredExternalApiBaseUrl } from '../../../utils/core/runtimeConfig'
 import { numericIdRouteParamSchema, validatePublicRouteParams } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -15,5 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const { id: mandateId } = validatePublicRouteParams(event, numericIdRouteParamSchema)
 
-  return fetchMandateDetail(configuredBaseUrl, mandateId, cacheOptions, event)
+  return {
+    data: await fetchMandateDetail(configuredBaseUrl, mandateId, cacheOptions, event),
+  }
 })

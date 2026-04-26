@@ -2,8 +2,11 @@ import { defineEventHandler, readBody } from 'h3'
 import { inArray } from 'drizzle-orm'
 import { db } from '../../../db'
 import { tags } from '../../../db/schema'
-import { invalidateTagsCache } from '../../../utils/adminCacheInvalidation'
-import { assertCompleteReorderSet, buildReorderOrderExpression } from '../../../utils/adminReorder'
+import { invalidateTagsCache } from '../../../utils/admin/adminCacheInvalidation'
+import {
+  assertCompleteReorderSet,
+  buildReorderOrderExpression,
+} from '../../../utils/admin/adminReorder'
 import { updateOrderSchema, validateBody } from '../../../utils/validation'
 
 // POST - Reorder tags

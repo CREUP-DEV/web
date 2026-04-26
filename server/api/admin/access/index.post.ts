@@ -1,7 +1,7 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { createAdminAccessSchema, validateBody } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {

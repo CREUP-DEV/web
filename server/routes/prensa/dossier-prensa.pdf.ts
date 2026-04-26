@@ -1,6 +1,6 @@
 import { defineEventHandler } from 'h3'
 import { db } from '../../db'
-import { throwPublicAssetNotFound, tryServePublicAssetByPath } from '../../utils/publicAsset'
+import { throwPublicAssetNotFound, tryServePublicAssetByPath } from '../../utils/public/publicAsset'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 export default defineEventHandler(async (event) => {

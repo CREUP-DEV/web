@@ -1,6 +1,6 @@
 import { defineEventHandler, setHeader } from 'h3'
-import { requireAuth } from '../../utils/requireAuth'
-import { isEnvAdminEmail, normalizeAdminEmail } from '../../utils/adminAccess'
+import { requireAuth } from '../../utils/auth/requireAuth'
+import { isEnvAdminEmail, normalizeAdminEmail } from '../../utils/admin/adminAccess'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event)

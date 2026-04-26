@@ -4,12 +4,15 @@ import { tags, tagTranslations } from '../../../db/schema'
 import {
   filterTranslationsByContent,
   getRequiredTranslationValue,
-} from '../../../utils/localizedContent'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
-import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { assertTagSlugAvailable } from '../../../utils/tagMutations'
+} from '../../../utils/locale/localizedContent'
+import {
+  assertOptimisticLock,
+  buildOptimisticLockCondition,
+} from '../../../utils/admin/optimisticLock'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
+import { invalidatePressRelatedCaches } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { assertTagSlugAvailable } from '../../../utils/admin/tagMutations'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { updateTagSchema } from '~~/shared/utils/adminSchemas'
 

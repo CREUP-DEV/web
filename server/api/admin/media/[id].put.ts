@@ -2,16 +2,19 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
-import { invalidatePressCache } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
+import { invalidatePressCache } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
+} from '../../../utils/admin/adminAssetPublication'
+import {
+  assertOptimisticLock,
+  buildOptimisticLockCondition,
+} from '../../../utils/admin/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updateMediaOutletSchema } from '~~/shared/utils/adminSchemas'

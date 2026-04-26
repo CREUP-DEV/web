@@ -7,18 +7,21 @@ import {
   cleanupUnusedAdminAssetSafely,
   type CleanupUnusedAdminAssetOptions,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateNewsletterArchiveCache } from '../../../utils/adminCacheInvalidation'
-import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateNewsletterArchiveCache } from '../../../utils/admin/adminCacheInvalidation'
+import { finalizeAdminDocument } from '../../../utils/admin/adminDocumentUpload'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import {
+  assertOptimisticLock,
+  buildOptimisticLockCondition,
+} from '../../../utils/admin/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
   monthKeyToDate,
   normalizeNewsletterMonthInput,
-} from '../../../utils/newsletters'
+} from '../../../utils/newsletter/newsletters'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,

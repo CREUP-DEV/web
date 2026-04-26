@@ -10,7 +10,7 @@ import type {
   AdminPressArticle,
   AdminPressArticleType,
   AdminPressTag,
-} from '@/composables/useAdminPress'
+} from '@/composables/admin/useAdminPress'
 
 definePageMeta({
   layout: 'admin',

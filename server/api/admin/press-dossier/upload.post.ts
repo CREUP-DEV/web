@@ -1,7 +1,7 @@
 import { defineEventHandler, readMultipartFormData } from 'h3'
-import { toExternalPdfProxyUrl } from '../../../utils/externalAssetProxy'
-import { saveAdminDocument } from '../../../utils/adminDocumentUpload'
-import { assertUploadRequestSize } from '../../../utils/uploadRequestLimit'
+import { toExternalPdfProxyUrl } from '../../../utils/external/externalAssetUrl'
+import { saveAdminDocument } from '../../../utils/admin/adminDocumentUpload'
+import { assertUploadRequestSize } from '../../../utils/core/uploadRequestLimit'
 import { validateMultipartFile } from '../../../utils/validation'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 

@@ -6,19 +6,19 @@ import {
   cleanupUnusedAdminAssetSafely,
   type CleanupUnusedAdminAssetOptions,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateNewsletterArchiveCache } from '../../../utils/adminCacheInvalidation'
-import { enqueueNewsletterSendJob } from '../../../utils/backgroundJobs'
-import { finalizeAdminDocument } from '../../../utils/adminDocumentUpload'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { ensureSmtpTransporterVerified } from '../../../utils/smtpTransporter'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateNewsletterArchiveCache } from '../../../utils/admin/adminCacheInvalidation'
+import { enqueueNewsletterSendJob } from '../../../utils/core/backgroundJobs'
+import { finalizeAdminDocument } from '../../../utils/admin/adminDocumentUpload'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { ensureSmtpTransporterVerified } from '../../../utils/email/smtpTransporter'
 import { validateBody } from '../../../utils/validation'
 import {
   assertNewsletterMonthAvailable,
   monthKeyToDate,
   normalizeNewsletterMonthInput,
-} from '../../../utils/newsletters'
+} from '../../../utils/newsletter/newsletters'
 import { claimNewsletterForSending } from '../../../services/newsletterDeliveryService'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,

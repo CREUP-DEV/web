@@ -21,8 +21,10 @@ interface EqualityDocument {
 }
 
 interface EqualityDocumentsResponse {
-  items: EqualityDocument[]
-  total: number
+  data: EqualityDocument[]
+  meta: {
+    total: number
+  }
 }
 
 const { t, locale } = useI18n()
@@ -134,10 +136,10 @@ const resourceIcons = [
   'i-tabler-file-text',
 ]
 
-const docsTotal = computed(() => documentsData.value?.total ?? 0)
+const docsTotal = computed(() => documentsData.value?.meta.total ?? 0)
 
 const resources = computed(() =>
-  (documentsData.value?.items ?? []).map((item, index) => ({
+  (documentsData.value?.data ?? []).map((item, index) => ({
     ...item,
     icon: resourceIcons[(docsOffset.value + index) % resourceIcons.length] ?? 'i-tabler-file-text',
   }))

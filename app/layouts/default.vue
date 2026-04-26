@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { SeoAlternateLink } from '@/composables/useSeoAlternateLinksOverride'
+import type { SeoAlternateLink } from '@/composables/seo/useSeoAlternateLinksOverride'
 import {
   createOrganizationStructuredData,
   useStructuredData,
-} from '@/composables/useStructuredData'
+} from '@/composables/seo/useStructuredData'
 
 const { t } = useI18n()
 const siteConfig = useSiteConfig()

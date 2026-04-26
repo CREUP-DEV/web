@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq'
-import { cleanupExpiredAuthRows } from '../utils/authHousekeeping'
+import { cleanupExpiredAuthRows } from '../utils/auth/authHousekeeping'
 import {
   BACKGROUND_JOB_NAMES,
   BACKGROUND_QUEUE_NAMES,
@@ -7,10 +7,11 @@ import {
   enqueueStartupMaintenanceJobs,
   ensureBackgroundJobSchedulers,
   isNewsletterSendJob,
-} from '../utils/backgroundJobs'
-import { logError, logInfo } from '../utils/logger'
-import { cleanupExpiredNewsletterConfirmTokens } from '../utils/newsletterSubscribers'
-import { closeRedisClient, createBullMqConnection } from '../utils/redis'
+} from '../utils/core/backgroundJobs'
+import { logError, logInfo } from '../utils/core/logger'
+import { cleanupExpiredNewsletterConfirmTokens } from '../utils/newsletter/newsletterSubscribers'
+import { closeRedisClient, createBullMqConnection } from '../utils/cache/redis'
+import { closeSmtpTransporter } from '../utils/email/smtpTransporter'
 import {
   processClaimedNewsletterDelivery,
   processPendingNewsletterDeliveries,
@@ -167,6 +168,7 @@ export default defineNitroPlugin((nitro) => {
     await Promise.allSettled([newsletterWorker.close(), maintenanceWorker.close()])
 
     await closeBackgroundJobResources()
+    closeSmtpTransporter()
     await closeRedisClient()
   })
 })

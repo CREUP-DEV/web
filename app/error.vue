@@ -25,7 +25,19 @@ useHead({
 })
 
 const status = computed(() => error.status ?? 500)
-const statusMessage = computed(() => t('error.message'))
+const statusTitle = computed(() => {
+  if (status.value === 404) return t('error.notFound')
+  if (status.value === 403) return t('error.forbidden')
+  if (status.value === 500) return t('error.server')
+  if (status.value === 503) return t('error.unavailable')
+  return t('error.generic')
+})
+const statusMessage = computed(() => {
+  if (status.value === 403) return t('error.forbiddenMessage')
+  if (status.value === 500) return t('error.serverMessage')
+  if (status.value === 503) return t('error.unavailableMessage')
+  return t('error.message')
+})
 const seoTitle = computed(() => `${status.value} - CREUP`)
 
 useSeoMeta({
@@ -97,7 +109,7 @@ const handleNavigationClick = async (event: MouseEvent) => {
               {{ status }}
             </p>
             <h1 class="text-foreground mt-4 text-2xl font-semibold">
-              {{ status === 404 ? t('error.notFound') : t('error.generic') }}
+              {{ statusTitle }}
             </h1>
             <p class="text-muted mt-3 text-base">
               {{ statusMessage }}

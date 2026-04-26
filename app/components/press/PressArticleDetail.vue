@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PressArticle } from '@/composables/usePress'
+import type { PressArticle } from '@/composables/press/usePress'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
 import { toAbsoluteUrl } from '~~/shared/utils/url'

@@ -30,8 +30,10 @@ interface Mandate {
 }
 
 interface MandatesResponse {
-  mandates: Mandate[]
-  generatedAt?: string | null
+  data: Mandate[]
+  meta: {
+    generatedAt?: string | null
+  }
 }
 
 const { data, error, status, refresh } = await useFetch<MandatesResponse>(
@@ -41,7 +43,7 @@ const { data, error, status, refresh } = await useFetch<MandatesResponse>(
   }
 )
 
-const mandates = computed(() => data.value?.mandates ?? [])
+const mandates = computed(() => data.value?.data ?? [])
 const {
   elRef: mandatesRef,
   isVisible: mandatesVisible,

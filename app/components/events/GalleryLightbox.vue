@@ -2,7 +2,7 @@
 import { useMediaQuery } from '@vueuse/core'
 import 'photoswipe/style.css'
 import type PhotoSwipeLightbox from 'photoswipe/lightbox'
-import type { EventGalleryImage } from '@/composables/useEvents'
+import type { EventGalleryImage } from '@/composables/events/useEvents'
 
 type GalleryLightboxPhoto = EventGalleryImage & {
   url: string

@@ -1,17 +1,17 @@
 import { defineEventHandler, readBody } from 'h3'
 import { eq } from 'drizzle-orm'
 import { carouselItems, carouselItemTranslations } from '../../../db/schema'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
-import { getPreferredTranslationValue } from '../../../utils/localizedContent'
+} from '../../../utils/admin/adminAssetPublication'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { invalidateHomeDataCache } from '../../../utils/admin/adminCacheInvalidation'
+import { getPreferredTranslationValue } from '../../../utils/locale/localizedContent'
 import { validateBody } from '../../../utils/validation'
 import { HOME_CAROUSEL_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createCarouselItemSchema } from '~~/shared/utils/adminSchemas'

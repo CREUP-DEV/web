@@ -1,5 +1,5 @@
 import redisDriver from 'unstorage/drivers/redis'
-import { getOptionalRuntimeConfigString } from '../utils/runtimeConfig'
+import { getOptionalRuntimeConfigString } from '../utils/core/runtimeConfig'
 
 const CACHE_STORAGE_BASE = 'creup:web:cache'
 

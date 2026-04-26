@@ -1,4 +1,4 @@
-import type { AdminSession } from '../utils/requireAuth'
+import type { AdminSession } from '../utils/auth/requireAuth'
 
 declare module 'h3' {
   interface H3EventContext {

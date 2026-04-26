@@ -148,6 +148,9 @@ export default defineNuxtConfig({
   alias: {
     '@/composables': './app/composables',
   },
+  imports: {
+    dirs: ['composables/**'],
+  },
   modules: [
     'nuxt-security',
     '@nuxt/ui',
@@ -280,7 +283,7 @@ export default defineNuxtConfig({
 
   // Sitemap configuration
   sitemap: {
-    autoLastmod: true,
+    autoLastmod: false,
     sitemaps: {
       main: {
         includeAppSources: true,

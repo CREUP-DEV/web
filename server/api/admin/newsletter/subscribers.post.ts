@@ -2,14 +2,14 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletterSubscribers } from '../../../db/schema'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { updateSubscriberSchema, validateBody } from '../../../utils/validation'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_CONSENT_TEXT_VERSION,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   recordNewsletterSubscriptionEvent,
-} from '../../../utils/newsletterSubscribers'
+} from '../../../utils/newsletter/newsletterSubscribers'
 
 function buildAdminSubscriberUpdateValues(
   existing: typeof newsletterSubscribers.$inferSelect | null,

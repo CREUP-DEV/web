@@ -2,18 +2,21 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
-import { finalizeAdminImage } from '../../../utils/adminImageUpload'
-import { runAdminCrudTransaction } from '../../../utils/adminCrud'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
 import {
   type CleanupUnusedAdminAssetOptions,
   cleanupAdminAssetFinalizationsSafely,
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
-} from '../../../utils/adminAssetPublication'
-import { invalidateHomeDataCache } from '../../../utils/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/adminErrors'
-import { getPreferredTranslationValue } from '../../../utils/localizedContent'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../../../utils/optimisticLock'
+} from '../../../utils/admin/adminAssetPublication'
+import { invalidateHomeDataCache } from '../../../utils/admin/adminCacheInvalidation'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getPreferredTranslationValue } from '../../../utils/locale/localizedContent'
+import {
+  assertOptimisticLock,
+  buildOptimisticLockCondition,
+} from '../../../utils/admin/optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updateFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'

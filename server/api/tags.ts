@@ -2,18 +2,18 @@ import { createError, setHeader } from 'h3'
 import { and, asc, eq, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTags, tags } from '../db/schema'
-import { isDatabaseUnavailableError } from '../utils/databaseErrors'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
-import { logError } from '../utils/logger'
+import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { logError } from '../utils/core/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
-import { getRequestLocaleContext } from '../utils/requestLocale'
+import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
   setPublicRouteVaryHeaders,
-} from '../utils/publicRouteCache'
+} from '../utils/cache/publicRouteCache'
 import { tagsListQuerySchema, validatePublicQuery } from '../utils/validation'
-import { throwSafePublicError } from '../utils/publicErrors'
+import { throwSafePublicError } from '../utils/public/publicErrors'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -56,7 +56,7 @@ export default defineCachedEventHandler(
       })
 
       return {
-        items: tagsList.map((tag) => {
+        data: tagsList.map((tag) => {
           const trans = pickLocalizedEntry(tag.translations, locale, locales, fallbackLocale)
           return {
             slug: tag.slug,

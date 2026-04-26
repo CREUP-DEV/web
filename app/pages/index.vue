@@ -1,39 +1,25 @@
 <script setup lang="ts">
-import { useHomeData } from '@/composables/useHomeData'
-import { useGoogleCalendar } from '@/composables/useGoogleCalendar'
-import { usePress, type PressArticle } from '@/composables/usePress'
-import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
+import { useHome } from '@/composables/home/useHome'
+import { useGoogleCalendar } from '@/composables/events/useGoogleCalendar'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-const {
-  data: homeData,
-  pending: homeDataPending,
-  error: homeDataError,
-  refresh: refreshHomeData,
-} = await useHomeData()
+const { data: home, pending: homePending, error: homeError, refresh: refreshHome } = await useHome()
 const {
   events,
   pending: eventsLoading,
   error: eventsError,
   refresh: refreshEvents,
 } = useGoogleCalendar()
-const {
-  data: featuredPressData,
-  pending: featuredPressPending,
-  error: featuredPressError,
-  refresh: refreshFeaturedPress,
-} = await usePress(null, undefined, 4)
-
-const carouselItems = computed(() => homeData.value?.carousel ?? [])
-const links = computed(() => homeData.value?.featuredLinks ?? [])
-const hasHomeDataError = computed(() => Boolean(homeDataError.value))
+const carouselItems = computed(() => home.value?.data.carousel ?? [])
+const links = computed(() => home.value?.data.featuredLinks ?? [])
+const hasHomeError = computed(() => Boolean(homeError.value))
 const hasCarouselSection = computed(
-  () => homeDataPending.value || !!homeDataError.value || carouselItems.value.length > 0
+  () => homePending.value || !!homeError.value || carouselItems.value.length > 0
 )
 const hasFeaturedLinksSection = computed(
-  () => homeDataPending.value || !!homeDataError.value || links.value.length > 0
+  () => homePending.value || !!homeError.value || links.value.length > 0
 )
 const newsAndEventsSectionClass = computed(() => ({
   'pt-8 sm:pt-10': !hasCarouselSection.value,
@@ -41,10 +27,10 @@ const newsAndEventsSectionClass = computed(() => ({
   'py-4 sm:py-0': hasCarouselSection.value && hasFeaturedLinksSection.value,
 }))
 const featuredNewsItems = computed(() => {
-  return (featuredPressData.value?.items ?? []).map((article: PressArticle) => ({
+  return (home.value?.data.featuredPress.items ?? []).map((article) => ({
     title: article.title,
     image: article.image,
-    to: localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`),
+    to: article.path,
     alt: article.alt || undefined,
     description: article.description || undefined,
     tags: article.tags,
@@ -68,9 +54,9 @@ usePageSeo('meta.title', 'meta.description', {
 
     <HomeCarousel
       :items="carouselItems"
-      :pending="homeDataPending"
-      :error="hasHomeDataError"
-      @retry="refreshHomeData()"
+      :pending="homePending"
+      :error="hasHomeError"
+      @retry="refreshHome()"
     />
 
     <section :class="newsAndEventsSectionClass" :aria-label="t('home.newsAndEventsLabel')">
@@ -79,10 +65,10 @@ usePageSeo('meta.title', 'meta.description', {
           <div class="md:col-span-2">
             <HomeFeaturedNews
               :items="featuredNewsItems"
-              :pending="featuredPressPending"
-              :error="featuredPressError"
+              :pending="homePending"
+              :error="homeError"
               inline
-              @retry="refreshFeaturedPress()"
+              @retry="refreshHome()"
             />
           </div>
           <div class="md:col-span-1">
@@ -99,9 +85,9 @@ usePageSeo('meta.title', 'meta.description', {
 
     <HomeFeaturedLinks
       :items="links"
-      :pending="homeDataPending"
-      :error="hasHomeDataError"
-      @retry="refreshHomeData()"
+      :pending="homePending"
+      :error="hasHomeError"
+      @retry="refreshHome()"
     />
   </div>
 </template>

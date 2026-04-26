@@ -1,6 +1,6 @@
 import { defineEventHandler, setHeader } from 'h3'
-import { getAdminOperationalStats } from '../../utils/adminOperationalStats'
-import { requireEnvAdmin } from '../../utils/requireAuth'
+import { getAdminOperationalStats } from '../../utils/admin/adminOperationalStats'
+import { requireEnvAdmin } from '../../utils/auth/requireAuth'
 
 export default defineEventHandler(async (event) => {
   await requireEnvAdmin(event)

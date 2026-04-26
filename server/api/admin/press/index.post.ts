@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody } from 'h3'
-import { invalidatePressRelatedCaches } from '../../../utils/adminCacheInvalidation'
+import { invalidatePressRelatedCaches } from '../../../utils/admin/adminCacheInvalidation'
 import { createPressArticleSchema, validateBody } from '../../../utils/validation'
 import { createPressArticle } from '../../../services/pressArticleService'
 

@@ -2,9 +2,9 @@
 import type { AccordionItem } from '@nuxt/ui'
 import { getPublicNewsletterArchiveAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { EMAIL_MAX_LENGTH } from '~~/shared/utils/emailValidation'
-import * as turnstileComposable from '@/composables/useTurnstile'
-import { useTurnstileAvailability } from '@/composables/useTurnstileAvailability'
+import { EMAIL_MAX_LENGTH, EMAIL_PATTERN } from '~~/shared/utils/emailValidation'
+import * as turnstileComposable from '@/composables/security/useTurnstile'
+import { useTurnstileAvailability } from '@/composables/security/useTurnstileAvailability'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -97,7 +97,6 @@ const newsletterPayload = computed(() => ({
 type NewsletterField = 'email' | 'consent' | 'turnstileToken'
 
 const validationFieldOrder: NewsletterField[] = ['email', 'consent', 'turnstileToken']
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const hasEmailError = computed(() => {
   const email = form.email.trim()
@@ -225,14 +224,16 @@ const {
   pending: archivePendingPage,
   error: archiveFetchError,
 } = await useFetch<{
-  items: Newsletter[]
-  total: number
+  data: Newsletter[]
+  meta: {
+    total: number
+  }
 }>('/api/newsletter', {
   key: computed(() => getPublicNewsletterArchiveAsyncDataKey(offset.value)),
   query: computed(() => ({ limit: LIMIT, offset: offset.value })),
 })
-const newsletters = computed(() => data.value?.items ?? [])
-const total = computed(() => data.value?.total ?? 0)
+const newsletters = computed(() => data.value?.data ?? [])
+const total = computed(() => data.value?.meta.total ?? 0)
 const archiveError = computed(() => !!archiveFetchError.value)
 const {
   resultsRef: archiveResultsRef,

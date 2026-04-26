@@ -9,7 +9,7 @@ const { t } = useI18n()
 const { data: tagsData, pending } = useTags(() => props.type)
 
 const tagList = computed(() => {
-  const availableTags = tagsData.value?.items ?? []
+  const availableTags = tagsData.value?.data ?? []
   return availableTags
 })
 

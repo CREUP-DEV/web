@@ -4,16 +4,23 @@ import {
   getRequiredSmtpPressEmail,
   getRequiredSmtpToEmail,
   getRequiredSiteUrl,
-} from '../utils/runtimeConfig'
-import { getPublicApiErrorMessage } from '../utils/apiErrorMessages'
+} from '../utils/core/runtimeConfig'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { validatePublicBody } from '../utils/validation'
-import { enforceRateLimit } from '../utils/rateLimit'
-import { ensureSmtpTransporterVerified } from '../utils/smtpTransporter'
-import { logError } from '../utils/logger'
-import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
+import { enforceRateLimit } from '../utils/public/rateLimit'
+import { ensureSmtpTransporterVerified } from '../utils/email/smtpTransporter'
+import { logError } from '../utils/core/logger'
 import { contactFormSchema } from '~~/shared/utils/contactValidation'
-import { normalizeBaseUrl, buildAbsoluteUrl } from '../utils/urlBuilder'
-import { hasMinimumPublicFormSubmitDelay, verifyTurnstileTokenOrThrow } from '../utils/turnstile'
+import { normalizeBaseUrl, buildAbsoluteUrl } from '../utils/core/urlBuilder'
+import {
+  hasMinimumPublicFormSubmitDelay,
+  verifyTurnstileTokenOrThrow,
+} from '../utils/core/turnstile'
+import {
+  buildContactEmailHtml,
+  escapeHtml,
+  escapeHtmlForAttribute,
+} from '../utils/email/emailTemplates'
 
 const SPAM_PATTERNS = [
   /\[url=/i,
@@ -34,18 +41,6 @@ function sanitize(input: string, maxLen = 5000): string {
 
 function sanitizeEmailHeaderValue(value: string): string {
   return value.replace(/[\r\n\0]/g, '')
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
-function escapeHtmlForAttribute(value: string): string {
-  return escapeHtml(value)
 }
 
 export default defineEventHandler(async (event) => {
@@ -109,12 +104,10 @@ export default defineEventHandler(async (event) => {
 
   const sentAt = new Date().toISOString()
   const contactPageUrl = buildAbsoluteUrl(siteUrl, '/contacto')
-  const bannerImageUrl = buildAbsoluteUrl(siteUrl, NEWSLETTER_BRAND_BANNER_PATH)
 
   const contactLabel = isPress ? 'prensa' : 'contacto'
   const escapedName = escapeHtml(name)
   const escapedEmail = escapeHtmlForAttribute(email)
-  const escapedEmailText = escapeHtml(email)
   const escapedSubject = escapeHtml(subject)
   const escapedPhone = escapeHtml(phone || '(no indicado)')
   const escapedMediaName = escapeHtml(mediaName)
@@ -136,102 +129,19 @@ Enviado desde: ${contactPageUrl}
 Fecha: ${sentAt}
 `.trim()
 
-  const htmlBody = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nuevo mensaje de ${escapedContactLabel}</title>
-  <style>
-    @font-face { font-family: 'Red Rose'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/RedRose-Regular.woff2')}') format('woff2'); font-weight: 400; font-style: normal; }
-    @font-face { font-family: 'Red Rose'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/RedRose-Bold.woff2')}') format('woff2'); font-weight: 700; font-style: normal; }
-    @font-face { font-family: 'Raleway'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/Raleway-Regular.woff2')}') format('woff2'); font-weight: 400; font-style: normal; }
-    @font-face { font-family: 'Raleway'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/Raleway-Bold.woff2')}') format('woff2'); font-weight: 700; font-style: normal; }
-    @font-face { font-family: 'Raleway'; src: url('${buildAbsoluteUrl(siteUrl, '/documentos/fuentes/Raleway-Italic.woff2')}') format('woff2'); font-weight: 400; font-style: italic; }
-  </style>
-</head>
-<body style="margin:0; padding:0; background-color:#eaeaea;">
-  <div style="display:none; font-size:1px; color:#eaeaea; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
-    Mensaje de <b>${escapedName}</b>${isPress ? ` (${escapedMediaName})` : ''} - ${escapedSubject}
-  </div>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#eaeaea">
-    <tr>
-      <td align="center" style="padding: 16px;">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; background:transparent;">
-          <tr>
-            <td align="center" style="padding: 20px 8px 8px 8px;">
-              <h1 style="margin:0; font-size:28px; line-height:36px; font-weight:700; font-family: 'Red Rose', Georgia, serif; color:#2c2c2c;">
-                Nuevo mensaje de ${escapedContactLabel}
-              </h1>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 0 8px 8px 8px;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
-                style="background:#ffffff; border-top: 4px solid #792225; border-top-left-radius:5px; border-top-right-radius:5px;">
-                <tr>
-                  <td style="padding: 16px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
-                    <strong style="color:#2c2c2c;">De:</strong>
-                    ${escapedName}
-                    &lt;<a href="mailto:${escapedEmail}" style="color:#792225; text-decoration:none;">${escapedEmailText}</a>&gt;
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
-                    <strong style="color:#2c2c2c;">Asunto:</strong> ${escapedSubject}
-                  </td>
-                </tr>${
-                  isPress
-                    ? `
-                <tr>
-                  <td style="padding: 6px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
-                    <strong style="color:#2c2c2c;">Teléfono:</strong> ${escapedPhone}
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 16px 0 16px; font-family: 'Raleway', Arial, sans-serif; font-size:14px; color:#666666;">
-                    <strong style="color:#2c2c2c;">Medio:</strong> ${escapedMediaName}
-                  </td>
-                </tr>`
-                    : ''
-                }
-                <tr>
-                  <td style="padding: 12px 16px 0 16px;">
-                    <hr style="border:none; border-top:1px solid #eeeeee; margin:0;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 16px; font-family: 'Raleway', Arial, sans-serif; color:#2c2c2c; font-size:16px; line-height:26px;">${escapedMessage}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 16px 0 16px;">
-                    <hr style="border:none; border-top:1px solid #eeeeee; margin:0;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 16px 16px 16px; font-family: 'Raleway', Arial, sans-serif; font-size:12px; color:#999999; line-height:18px;">
-                    Enviado desde
-                    <a href="${contactPageUrl}" style="color:#792225; text-decoration:none;">${contactPageUrl}</a>
-                    · ${sentAt}
-                    <br />
-                    Puedes responder a este correo para contactar directamente con <strong>${escapedName}</strong>.
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding: 0 8px 20px 8px;">
-              <img src="${bannerImageUrl}" alt="CREUP" width="600"
-                style="display:block; width:100%; height:auto; margin:0 auto;" />
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`
+  const htmlBody = buildContactEmailHtml({
+    contactLabel: escapedContactLabel,
+    contactPageUrl,
+    email: escapedEmail,
+    isPress,
+    mediaName: escapedMediaName,
+    messageHtml: escapedMessage,
+    name: escapedName,
+    phone: escapedPhone,
+    sentAt,
+    siteUrl,
+    subject: escapedSubject,
+  })
 
   try {
     await transporter.sendMail({

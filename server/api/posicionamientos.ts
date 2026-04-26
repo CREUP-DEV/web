@@ -1,3 +1,3 @@
-import { createPolicyDocumentCollectionRouteHandler } from '../utils/policyDocuments'
+import { createPolicyDocumentCollectionRouteHandler } from '../utils/policy/policyDocuments'
 
 export default createPolicyDocumentCollectionRouteHandler('posicionamientos')
