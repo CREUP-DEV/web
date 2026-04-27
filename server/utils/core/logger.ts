@@ -84,10 +84,14 @@ function serializeError(error: unknown) {
     return sanitizeLogValue(error)
   }
 
+  const cause =
+    'cause' in error ? sanitizeLogValue((error as Error & { cause?: unknown }).cause) : undefined
+
   return {
     message: sanitizeLogString(error.message),
     name: error.name,
     stack: error.stack ? sanitizeLogString(error.stack) : undefined,
+    ...(cause !== undefined ? { cause } : {}),
   }
 }
 

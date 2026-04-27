@@ -27,7 +27,7 @@ const upcomingAgendaEvents = computed(() => {
   <div :class="bodyClass">
     <div class="flex items-center gap-3">
       <div class="ring-primary/20 size-12 overflow-hidden rounded-full ring-2">
-        <NuxtImg
+        <AdaptiveImage
           v-if="member.photo"
           :key="`${member.id}-${member.photo}`"
           :src="member.photo"

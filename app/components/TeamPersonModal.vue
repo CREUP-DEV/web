@@ -90,7 +90,7 @@ const hasAssignmentInfo = computed(() =>
               <div
                 class="detail-modal-media bg-surface-elevated dark:bg-surface-elevated mx-auto flex aspect-square w-full max-w-48 items-center justify-center overflow-hidden rounded-full sm:max-w-56"
               >
-                <NuxtImg
+                <AdaptiveImage
                   v-if="member.photo"
                   :key="`${member.id ?? displayName}-${member.photo}`"
                   :src="member.photo"
@@ -216,7 +216,7 @@ const hasAssignmentInfo = computed(() =>
           <div
             class="detail-modal-media bg-surface-elevated dark:bg-surface-elevated mx-auto flex aspect-square w-full max-w-42.5 items-center justify-center overflow-hidden rounded-full lg:mx-0 lg:max-w-55"
           >
-            <NuxtImg
+            <AdaptiveImage
               v-if="member.photo"
               :key="`${member.id ?? displayName}-${member.photo}`"
               :src="member.photo"

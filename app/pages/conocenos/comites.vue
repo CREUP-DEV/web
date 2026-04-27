@@ -208,7 +208,7 @@ function encodeEmail(email: string) {
                   <div
                     class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                   >
-                    <NuxtImg
+                    <AdaptiveImage
                       v-if="member.photo"
                       :key="`${member.id}-${member.photo}`"
                       :src="member.photo"

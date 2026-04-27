@@ -4,7 +4,7 @@ import {
   setExternalApiCacheHeaders,
   withExternalApiSWRCache,
 } from '../utils/cache/externalApiCache'
-import { toExternalImageProxyUrl } from '../utils/external/externalAssetUrl'
+import { toExternalImageProxyUrlWithKindHint } from '../utils/external/externalAssetKind'
 import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { logError } from '../utils/core/logger'
 import { getRequiredExternalApiBaseUrl } from '../utils/core/runtimeConfig'
@@ -90,96 +90,102 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      const committees: CommitteeOutput[] = parsedPayload.data.data
-        .sort((a, b) => a.committee_order - b.committee_order)
-        .map((committee) => {
-          const members: CommitteeMemberOutput[] = committee.members
-            .sort((a, b) => a.order - b.order)
-            .map((member, index) => {
-              const socialNetworks = collectSocialNetworks(member.social_networks)
-              const normalizedDenomination = normalizeText(member.denomination) || null
-              const normalizedEmail = normalizeText(member.email) || ''
-              const normalizedName = normalizeText(member.name) || ''
-              const normalizedSurname = normalizeText(member.surname) || ''
-              const normalizedUniversity = normalizeText(member.university) || null
+      const committees: CommitteeOutput[] = await Promise.all(
+        parsedPayload.data.data
+          .sort((a, b) => a.committee_order - b.committee_order)
+          .map(async (committee) => {
+            const members: CommitteeMemberOutput[] = await Promise.all(
+              committee.members
+                .sort((a, b) => a.order - b.order)
+                .map(async (member, index) => {
+                  const socialNetworks = collectSocialNetworks(member.social_networks)
+                  const normalizedDenomination = normalizeText(member.denomination) || null
+                  const normalizedEmail = normalizeText(member.email) || ''
+                  const normalizedName = normalizeText(member.name) || ''
+                  const normalizedSurname = normalizeText(member.surname) || ''
+                  const normalizedUniversity = normalizeText(member.university) || null
 
-              return {
-                id: buildStableCommitteeMemberId(
-                  [
-                    normalizedEmail,
-                    normalizedName,
-                    normalizedSurname,
-                    normalizedDenomination,
-                    normalizedUniversity,
-                    String(committee.committee_id),
-                  ],
-                  index
-                ),
-                order: member.order,
-                denomination: normalizedDenomination,
-                photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
-                  event,
-                  forceProxyRelative: true,
-                  publicPathBase: '/conocenos/imagenes',
-                }),
-                email: normalizedEmail,
-                name: normalizedName,
-                surname: normalizedSurname,
-                university: normalizedUniversity,
-                degree: normalizeText(member.degree) || null,
-                description: normalizeText(member.description) || null,
-                publicAgenda: member.public_agenda ?? false,
-                socialNetworks,
+                  return {
+                    id: buildStableCommitteeMemberId(
+                      [
+                        normalizedEmail,
+                        normalizedName,
+                        normalizedSurname,
+                        normalizedDenomination,
+                        normalizedUniversity,
+                        String(committee.committee_id),
+                      ],
+                      index
+                    ),
+                    order: member.order,
+                    denomination: normalizedDenomination,
+                    photo: await toExternalImageProxyUrlWithKindHint(
+                      normalizeText(member.web_photo),
+                      {
+                        event,
+                        forceProxyRelative: true,
+                        publicPathBase: '/conocenos/imagenes',
+                      }
+                    ),
+                    email: normalizedEmail,
+                    name: normalizedName,
+                    surname: normalizedSurname,
+                    university: normalizedUniversity,
+                    degree: normalizeText(member.degree) || null,
+                    description: normalizeText(member.description) || null,
+                    publicAgenda: member.public_agenda ?? false,
+                    socialNetworks,
+                  }
+                })
+            )
+            const nameTranslations: Record<string, string> = {}
+            for (const [locale, translation] of Object.entries(
+              committee.committee_name_translations ?? {}
+            )) {
+              const normalizedLocale = normalizeText(locale)
+              const normalizedTranslation = normalizeText(translation)
+
+              if (!normalizedLocale || !normalizedTranslation) {
+                continue
               }
-            })
 
-          const nameTranslations: Record<string, string> = {}
-          for (const [locale, translation] of Object.entries(
-            committee.committee_name_translations ?? {}
-          )) {
-            const normalizedLocale = normalizeText(locale)
-            const normalizedTranslation = normalizeText(translation)
-
-            if (!normalizedLocale || !normalizedTranslation) {
-              continue
+              nameTranslations[normalizedLocale] = normalizedTranslation
             }
 
-            nameTranslations[normalizedLocale] = normalizedTranslation
-          }
-
-          if (!nameTranslations.es) {
-            nameTranslations.es = committee.committee_name
-          }
-
-          const descriptionTranslations: Record<string, string> = {}
-          for (const [locale, translation] of Object.entries(
-            committee.committee_description_translations ?? {}
-          )) {
-            const normalizedLocale = normalizeText(locale)
-            const normalizedTranslation = normalizeText(translation)
-
-            if (!normalizedLocale || !normalizedTranslation) {
-              continue
+            if (!nameTranslations.es) {
+              nameTranslations.es = committee.committee_name
             }
 
-            descriptionTranslations[normalizedLocale] = normalizedTranslation
-          }
+            const descriptionTranslations: Record<string, string> = {}
+            for (const [locale, translation] of Object.entries(
+              committee.committee_description_translations ?? {}
+            )) {
+              const normalizedLocale = normalizeText(locale)
+              const normalizedTranslation = normalizeText(translation)
 
-          const rawDescription = normalizeText(committee.committee_description)
-          if (!descriptionTranslations.es && rawDescription) {
-            descriptionTranslations.es = rawDescription
-          }
+              if (!normalizedLocale || !normalizedTranslation) {
+                continue
+              }
 
-          return {
-            id: committee.committee_id,
-            name: committee.committee_name,
-            nameTranslations,
-            description: rawDescription || null,
-            descriptionTranslations,
-            order: committee.committee_order,
-            members,
-          }
-        })
+              descriptionTranslations[normalizedLocale] = normalizedTranslation
+            }
+
+            const rawDescription = normalizeText(committee.committee_description)
+            if (!descriptionTranslations.es && rawDescription) {
+              descriptionTranslations.es = rawDescription
+            }
+
+            return {
+              id: committee.committee_id,
+              name: committee.committee_name,
+              nameTranslations,
+              description: rawDescription || null,
+              descriptionTranslations,
+              order: committee.committee_order,
+              members,
+            }
+          })
+      )
 
       return {
         data: committees,

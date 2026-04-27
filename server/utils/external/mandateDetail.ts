@@ -6,7 +6,7 @@ import {
   getPublicApiErrorMessage,
 } from '../locale/apiErrorMessages'
 import { withExternalApiSWRCache } from '../cache/externalApiCache'
-import { toExternalImageProxyUrl } from './externalAssetUrl'
+import { toExternalImageProxyUrlWithKindHint } from './externalAssetKind'
 import { logError } from '../core/logger'
 import { externalMandatesResponseSchema, externalMandateDetailResponseSchema } from '../validation'
 
@@ -328,58 +328,65 @@ export async function fetchMandateDetail(
         isCurrent: parsed.data.mandate.is_current,
       }
 
-      const areas: AreaTermOutput[] = parsed.data.data
-        .sort((a, b) => a.area_order - b.area_order)
-        .map((area) => {
-          const nameTranslations: Record<string, string> = {}
-          for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
-            const nl = normalizeText(locale)
-            const nt = normalizeText(translation)
-            if (!nl || !nt) continue
-            nameTranslations[nl] = nt
-          }
-          if (!nameTranslations.es) {
-            nameTranslations.es = area.area_name
-          }
+      const areas: AreaTermOutput[] = await Promise.all(
+        parsed.data.data
+          .sort((a, b) => a.area_order - b.area_order)
+          .map(async (area) => {
+            const nameTranslations: Record<string, string> = {}
+            for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
+              const nl = normalizeText(locale)
+              const nt = normalizeText(translation)
+              if (!nl || !nt) continue
+              nameTranslations[nl] = nt
+            }
+            if (!nameTranslations.es) {
+              nameTranslations.es = area.area_name
+            }
 
-          const assignments: AssignmentOutput[] = area.assignments
-            .sort((a, b) => a.order - b.order || a.start_date.localeCompare(b.start_date))
-            .map((assignment) => {
-              const member = assignment.member
-              return {
-                id: assignment.id,
-                role: assignment.role ?? null,
-                order: assignment.order,
-                startDate: assignment.start_date,
-                endDate: assignment.end_date,
-                member: {
-                  order: member.order,
-                  denomination: normalizeText(member.denomination) || null,
-                  photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
-                    event,
-                    forceProxyRelative: true,
-                    publicPathBase: '/conocenos/imagenes',
-                  }),
-                  email: normalizeText(member.email) || '',
-                  name: normalizeText(member.name) || '',
-                  surname: normalizeText(member.surname) || '',
-                  university: normalizeText(member.university) || null,
-                  degree: normalizeText(member.degree) || null,
-                  description: normalizeText(member.description) || null,
-                  socialNetworks: transformMemberSocials(member.social_networks ?? []),
-                },
-              }
-            })
+            const assignments: AssignmentOutput[] = await Promise.all(
+              area.assignments
+                .sort((a, b) => a.order - b.order || a.start_date.localeCompare(b.start_date))
+                .map(async (assignment) => {
+                  const member = assignment.member
+                  return {
+                    id: assignment.id,
+                    role: assignment.role ?? null,
+                    order: assignment.order,
+                    startDate: assignment.start_date,
+                    endDate: assignment.end_date,
+                    member: {
+                      order: member.order,
+                      denomination: normalizeText(member.denomination) || null,
+                      photo: await toExternalImageProxyUrlWithKindHint(
+                        normalizeText(member.web_photo),
+                        {
+                          event,
+                          forceProxyRelative: true,
+                          publicPathBase: '/conocenos/imagenes',
+                        }
+                      ),
+                      email: normalizeText(member.email) || '',
+                      name: normalizeText(member.name) || '',
+                      surname: normalizeText(member.surname) || '',
+                      university: normalizeText(member.university) || null,
+                      degree: normalizeText(member.degree) || null,
+                      description: normalizeText(member.description) || null,
+                      socialNetworks: transformMemberSocials(member.social_networks ?? []),
+                    },
+                  }
+                })
+            )
 
-          return {
-            areaTermId: area.area_term_id,
-            areaId: area.area_id,
-            name: area.area_name,
-            nameTranslations,
-            order: area.area_order,
-            assignments,
-          }
-        })
+            return {
+              areaTermId: area.area_term_id,
+              areaId: area.area_id,
+              name: area.area_name,
+              nameTranslations,
+              order: area.area_order,
+              assignments,
+            }
+          })
+      )
 
       return {
         mandate,

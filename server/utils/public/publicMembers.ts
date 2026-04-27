@@ -8,7 +8,6 @@ import {
 } from '~~/shared/utils/social'
 import { getPublicApiErrorMessage } from '../locale/apiErrorMessages'
 import { toExternalImageProxyUrlWithKindHint } from '../external/externalAssetKind'
-import { toExternalImageProxyUrl } from '../external/externalAssetUrl'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from '../cache/externalApiCache'
 import { logError } from '../core/logger'
 import { getRequestLocaleContext } from '../locale/requestLocale'
@@ -359,73 +358,79 @@ async function loadTeamAreas(event: H3Event) {
         })
       }
 
-      const areas: PublicTeamArea[] = parsedPayload.data.data
-        .sort((a, b) => a.area_order - b.area_order)
-        .map((area) => {
-          const members: PublicTeamMember[] = area.members
-            .sort((a, b) => a.order - b.order)
-            .map((member) => {
-              const socialNetworks = collectSocialNetworks(member.social_networks)
-              const normalizedDenomination = normalizeText(member.denomination) || null
-              const normalizedEmail = normalizeText(member.email) || ''
-              const normalizedName = normalizeText(member.name) || ''
-              const normalizedSurname = normalizeText(member.surname) || ''
-              const normalizedUniversity = normalizeText(member.university) || null
+      const areas: PublicTeamArea[] = await Promise.all(
+        parsedPayload.data.data
+          .sort((a, b) => a.area_order - b.area_order)
+          .map(async (area) => {
+            const members: PublicTeamMember[] = await Promise.all(
+              area.members
+                .sort((a, b) => a.order - b.order)
+                .map(async (member) => {
+                  const socialNetworks = collectSocialNetworks(member.social_networks)
+                  const normalizedDenomination = normalizeText(member.denomination) || null
+                  const normalizedEmail = normalizeText(member.email) || ''
+                  const normalizedName = normalizeText(member.name) || ''
+                  const normalizedSurname = normalizeText(member.surname) || ''
+                  const normalizedUniversity = normalizeText(member.university) || null
 
-              return {
-                id: buildStablePersonId(
-                  [
-                    normalizedEmail,
-                    normalizedName,
-                    normalizedSurname,
-                    normalizedDenomination,
-                    normalizedUniversity,
-                  ],
-                  'team-member',
-                  member.order
-                ),
-                order: member.order,
-                denomination: normalizedDenomination,
-                photo: toExternalImageProxyUrl(normalizeText(member.web_photo), {
-                  event,
-                  forceProxyRelative: true,
-                  publicPathBase: '/conocenos/imagenes',
-                }),
-                email: normalizedEmail,
-                name: normalizedName,
-                surname: normalizedSurname,
-                university: normalizedUniversity,
-                degree: normalizeText(member.degree) || null,
-                description: normalizeText(member.description) || null,
-                publicAgenda: member.public_agenda ?? false,
-                socialNetworks,
+                  return {
+                    id: buildStablePersonId(
+                      [
+                        normalizedEmail,
+                        normalizedName,
+                        normalizedSurname,
+                        normalizedDenomination,
+                        normalizedUniversity,
+                      ],
+                      'team-member',
+                      member.order
+                    ),
+                    order: member.order,
+                    denomination: normalizedDenomination,
+                    photo: await toExternalImageProxyUrlWithKindHint(
+                      normalizeText(member.web_photo),
+                      {
+                        event,
+                        forceProxyRelative: true,
+                        publicPathBase: '/conocenos/imagenes',
+                      }
+                    ),
+                    email: normalizedEmail,
+                    name: normalizedName,
+                    surname: normalizedSurname,
+                    university: normalizedUniversity,
+                    degree: normalizeText(member.degree) || null,
+                    description: normalizeText(member.description) || null,
+                    publicAgenda: member.public_agenda ?? false,
+                    socialNetworks,
+                  }
+                })
+            )
+            const nameTranslations: Record<string, string> = {}
+            for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
+              const normalizedLocale = normalizeText(locale)
+              const normalizedTranslation = normalizeText(translation)
+
+              if (!normalizedLocale || !normalizedTranslation) {
+                continue
               }
-            })
 
-          const nameTranslations: Record<string, string> = {}
-          for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
-            const normalizedLocale = normalizeText(locale)
-            const normalizedTranslation = normalizeText(translation)
-
-            if (!normalizedLocale || !normalizedTranslation) {
-              continue
+              nameTranslations[normalizedLocale] = normalizedTranslation
             }
 
-            nameTranslations[normalizedLocale] = normalizedTranslation
-          }
+            if (!nameTranslations.es) {
+              nameTranslations.es = area.area_name
+            }
 
-          if (!nameTranslations.es) {
-            nameTranslations.es = area.area_name
-          }
-
-          return {
-            id: area.area_id,
-            name: area.area_name,
-            nameTranslations,
-            order: area.area_order,
-            members,
-          }
-        })
+            return {
+              id: area.area_id,
+              name: area.area_name,
+              nameTranslations,
+              order: area.area_order,
+              members,
+            }
+          })
+      )
 
       return {
         areas,

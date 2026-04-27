@@ -286,7 +286,7 @@ const modalAssignmentDuration = computed(() =>
                 <div
                   class="ring-primary/20 group-hover:ring-primary/40 size-24 overflow-hidden rounded-full ring-2 transition-all sm:size-28"
                 >
-                  <NuxtImg
+                  <AdaptiveImage
                     v-if="assignment.member.photo"
                     :src="assignment.member.photo"
                     :alt="getFullName(assignment.member)"

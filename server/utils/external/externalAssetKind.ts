@@ -9,6 +9,7 @@ import {
 import { fetchExternalAssetWithSafeRedirects } from './externalAssetFetch'
 import {
   appendAssetKindHint,
+  canonicalizeExternalAssetUrl,
   getImageKindFromPathname,
   isSpecialUrl,
   resolveSourceUrl,
@@ -25,7 +26,11 @@ export async function isExternalImageSvg(source: string | null | undefined, even
 
   try {
     const { allowedOrigins, assetBaseUrl: configuredBaseUrl } = getExternalAssetProxyConfig(event)
-    const sourceUrl = resolveSourceUrl(normalizedSource, configuredBaseUrl)
+    const sourceUrl = canonicalizeExternalAssetUrl(
+      resolveSourceUrl(normalizedSource, configuredBaseUrl),
+      configuredBaseUrl,
+      allowedOrigins
+    )
     const imageKindFromPathname = getImageKindFromPathname(sourceUrl.pathname)
 
     if (imageKindFromPathname) {

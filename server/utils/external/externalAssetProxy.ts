@@ -14,7 +14,11 @@ import {
   type ExternalAssetType,
 } from './externalAssetProxyConfig'
 import { fetchExternalAssetWithSafeRedirects } from './externalAssetFetch'
-import { resolveSourceFromPublicPath, resolveSourceUrl } from './externalAssetUrl'
+import {
+  canonicalizeExternalAssetUrl,
+  resolveSourceFromPublicPath,
+  resolveSourceUrl,
+} from './externalAssetUrl'
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
 const CACHE_CONTROL_FLOOR_SECONDS = 24 * 60 * 60
@@ -223,7 +227,11 @@ export const proxyExternalAssetBySource = async (
     })
   }
 
-  const sourceUrl = resolveSourceUrl(normalizedSource, configuredBaseUrl)
+  const sourceUrl = canonicalizeExternalAssetUrl(
+    resolveSourceUrl(normalizedSource, configuredBaseUrl),
+    configuredBaseUrl,
+    allowedOrigins
+  )
 
   if (!['http:', 'https:'].includes(sourceUrl.protocol)) {
     throw createError({

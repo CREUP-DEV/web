@@ -22,6 +22,33 @@ export const resolveSourceUrl = (src: string, baseUrl: string) => {
   }
 }
 
+export const canonicalizeExternalAssetUrl = (
+  sourceUrl: URL,
+  assetBaseUrl: string,
+  allowedOrigins?: Set<string>
+) => {
+  let configuredBaseUrl: URL
+
+  try {
+    configuredBaseUrl = new URL(assetBaseUrl)
+  } catch {
+    return sourceUrl
+  }
+
+  if (sourceUrl.origin === configuredBaseUrl.origin) {
+    return sourceUrl
+  }
+
+  if (allowedOrigins && !allowedOrigins.has(sourceUrl.origin)) {
+    return sourceUrl
+  }
+
+  const rewrittenUrl = new URL(sourceUrl.pathname + sourceUrl.search, configuredBaseUrl)
+  rewrittenUrl.hash = ''
+
+  return rewrittenUrl
+}
+
 const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value)
 const isLocalPath = (value: string) => value.startsWith('/') && !value.startsWith('//')
 
