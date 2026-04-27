@@ -65,6 +65,8 @@ pnpm db:seed
 
 `pnpm db:seed` no pide confirmación en desarrollo. En producción exige `--confirm` y `ALLOW_PRODUCTION_SEED=true`.
 
+En desarrollo local, `NUXT_SITE_URL` puede quedarse en `http://localhost:3000`. Si la imagen de producción debe compilarse incrustando otro origen público (por ejemplo al ejecutar `deploy.sh` desde una máquina cuyo `.env` sigue apuntando a localhost), define `NUXT_DEPLOY_SITE_URL`: `deploy.sh` y `deploy-local.sh` usarán esa variable solo como `--build-arg` del build; el runtime del contenedor sigue configurándose con `NUXT_SITE_URL` en el entorno donde arranca Compose (p. ej. el `.env` del VPS).
+
 ## Variables de entorno
 
 Casi toda la configuración es runtime; la imagen no lleva secretos ni URLs baked por defecto y las variables se leen al arrancar el contenedor.

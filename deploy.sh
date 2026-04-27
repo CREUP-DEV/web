@@ -25,11 +25,14 @@ load_env_file() {
 
 build_and_push_image() {
   local latest_image="${IMAGE_NAME}:latest"
+  # Embed public origin in the bundle at build time. When local .env keeps
+  # NUXT_SITE_URL on localhost, set NUXT_DEPLOY_SITE_URL to the production URL.
+  local build_site_url="${NUXT_DEPLOY_SITE_URL:-$NUXT_SITE_URL}"
 
   if docker buildx version >/dev/null 2>&1; then
     docker buildx build \
       --platform "$DOCKER_PLATFORM" \
-      --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+      --build-arg "NUXT_SITE_URL=$build_site_url" \
       --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
       --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
       -t "$IMAGE" \
@@ -41,7 +44,7 @@ build_and_push_image() {
       docker buildx build \
         --target runner-debug \
         --platform "$DOCKER_PLATFORM" \
-        --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+        --build-arg "NUXT_SITE_URL=$build_site_url" \
         --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
         --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
         -t "${IMAGE}-debug" \
@@ -54,7 +57,7 @@ build_and_push_image() {
 
   docker build \
     --platform "$DOCKER_PLATFORM" \
-    --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+    --build-arg "NUXT_SITE_URL=$build_site_url" \
     --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
     --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
     -t "$IMAGE" \
@@ -67,7 +70,7 @@ build_and_push_image() {
     docker build \
       --target runner-debug \
       --platform "$DOCKER_PLATFORM" \
-      --build-arg "NUXT_SITE_URL=$NUXT_SITE_URL" \
+      --build-arg "NUXT_SITE_URL=$build_site_url" \
       --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
       --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
       -t "${IMAGE}-debug" \
@@ -166,6 +169,9 @@ if [ "$SEED_ON_DEPLOY" = "true" ]; then
 fi
 
 log "Build and push: $IMAGE"
+if [ -n "${NUXT_DEPLOY_SITE_URL:-}" ]; then
+  log "Docker build embeds $NUXT_DEPLOY_SITE_URL (VPS runtime still uses its Compose NUXT_SITE_URL)"
+fi
 build_and_push_image
 
 if [ "$SEED_ON_DEPLOY" = "true" ]; then

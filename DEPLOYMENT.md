@@ -289,7 +289,9 @@ NUXT_UMAMI_HOST=https://umami.creup.es
 NUXT_UMAMI_ID=<your umami site id>
 ```
 
-`NUXT_SITE_URL` siempre debe existir durante el build de la imagen. Si usas Umami, `NUXT_UMAMI_HOST` y `NUXT_UMAMI_ID` también deben estar presentes durante `docker build` o `bash ./deploy.sh`, no solo al arrancar el contenedor. El módulo `nuxt-umami` y la CSP de Nuxt se resuelven en compilación.
+La URL pública incrustada en la imagen al compilar debe ser el origen real del sitio. `bash ./deploy.sh` pasa a `docker build` el valor `NUXT_DEPLOY_SITE_URL` si está definido en tu `.env` local; si no, usa `NUXT_SITE_URL`. Así puedes mantener `NUXT_SITE_URL=http://localhost:3000` en el entorno desde el que lanzas el build y definir `NUXT_DEPLOY_SITE_URL=https://creup.es` solo para esa fase; en el VPS, el contenedor sigue leyendo `NUXT_SITE_URL` del `.env` de producción (runtime).
+
+`deploy.sh` exige que `NUXT_SITE_URL` esté definido en el `.env` que carga (aunque sea `http://localhost:3000` en tu portátil). Si usas Umami, `NUXT_UMAMI_HOST` y `NUXT_UMAMI_ID` también deben estar presentes durante `docker build` o `bash ./deploy.sh`, no solo al arrancar el contenedor. El módulo `nuxt-umami` y la CSP de Nuxt se resuelven en compilación.
 
 > **Seguridad:** El archivo `.env` contiene secretos. Permisos recomendados `600`:
 >
@@ -309,11 +311,11 @@ mv docker-compose.production.example.yml docker-compose.yml
 
 El archivo Compose define:
 
-| Servicio   | Imagen                        | Notas                             |
-| ---------- | ----------------------------- | --------------------------------- |
-| `app`      | `ghcr.io/CREUP-DEV/web:<tag>` | Nitro SSR + BullMQ worker         |
+| Servicio   | Imagen                        | Notas                              |
+| ---------- | ----------------------------- | ---------------------------------- |
+| `app`      | `ghcr.io/CREUP-DEV/web:<tag>` | Nitro SSR + BullMQ worker          |
 | `postgres` | `postgres:18-alpine`          | Volumen de datos + scripts de init |
-| `redis`    | `redis:8-alpine`              | Persistencia AOF + contraseña     |
+| `redis`    | `redis:8-alpine`              | Persistencia AOF + contraseña      |
 
 **Los servicios no están expuestos a la red del host** salvo `app` en `APP_PORT` (por defecto `3000`). NGINX hace proxy a `127.0.0.1:3000`.
 

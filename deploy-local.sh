@@ -44,7 +44,7 @@ resolve_env_file() {
 }
 
 build_local_image() {
-  local build_site_url="${NUXT_SITE_URL:-${LOCAL_DEPLOY_SITE_URL:-http://localhost:8080}}"
+  local build_site_url="${NUXT_DEPLOY_SITE_URL:-${NUXT_SITE_URL:-${LOCAL_DEPLOY_SITE_URL:-http://localhost:8080}}}"
 
   if docker buildx version >/dev/null 2>&1; then
     docker buildx build \
