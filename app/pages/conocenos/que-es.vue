@@ -21,6 +21,7 @@ const fallbackMemberCountLabel = '+30'
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
+const aboutOverviewRef = useTemplateRef<HTMLElement>('aboutOverviewRef')
 
 const { data, error, pending, refresh } = await useFetch<{
   data: {
@@ -175,6 +176,13 @@ const pageContent = computed(() => ({
   intro: t('aboutPage.intro'),
 }))
 
+const scrollToOverview = () => {
+  aboutOverviewRef.value?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start',
+  })
+}
+
 usePageSeo(
   () => pageContent.value.title,
   () => t('aboutPage.description'),
@@ -256,9 +264,10 @@ usePageSeo(
 
           <div class="mt-6 flex flex-wrap justify-center gap-3">
             <UButton
-              href="#about-overview"
+              type="button"
               icon="i-tabler-arrow-down"
               :label="t('aboutPage.ctaIdentity')"
+              @click="scrollToOverview"
             />
             <UButton
               :to="localePath('/conocenos/miembros')"
@@ -294,7 +303,7 @@ usePageSeo(
         </UCard>
       </section>
 
-      <div id="about-overview" class="space-y-5">
+      <div id="about-overview" ref="aboutOverviewRef" class="space-y-5">
         <UCard class="border-l-primary motion-card border-l-4">
           <div class="flex items-start gap-4">
             <div
