@@ -41,7 +41,7 @@ function parseIpv6ToBigInt(ip: string): bigint | null {
   const groups = expanded.split(':')
   if (groups.length !== 8) return null
   try {
-    return groups.reduce((acc, g) => (acc << 16n) | BigInt(parseInt(g, 16)), 0n)
+    return groups.reduce((acc, g) => (acc << BigInt(16)) | BigInt(parseInt(g, 16)), BigInt(0))
   } catch {
     return null
   }
@@ -91,7 +91,7 @@ function isIpTrusted(rawIp: string | null | undefined): boolean {
     for (const cidr of TRUSTED_PROXY_CIDRS) {
       if (cidr.type !== 'v6') continue
       if (cidr.prefix === 0) return true
-      const mask = ((1n << BigInt(cidr.prefix)) - 1n) << BigInt(128 - cidr.prefix)
+      const mask = ((BigInt(1) << BigInt(cidr.prefix)) - BigInt(1)) << BigInt(128 - cidr.prefix)
       if ((ipv6Big & mask) === ((cidr.network as bigint) & mask)) return true
     }
     return false

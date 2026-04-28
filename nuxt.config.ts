@@ -243,18 +243,7 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
       failOnError: true,
-      routes: [
-        '/legal',
-        '/transparencia/igualdad',
-        '/transparencia/informes-economicos',
-        '/transparencia/mic',
-        '/transparencia/normativa',
-        '/en/legal',
-        '/en/transparencia/igualdad',
-        '/en/transparencia/informes-economicos',
-        '/en/transparencia/mic',
-        '/en/transparencia/normativa',
-      ],
+      routes: ['/legal', '/en/legal'],
     },
   },
 
