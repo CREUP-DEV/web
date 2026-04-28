@@ -167,6 +167,8 @@ sudo cp /opt/creup-web/deploy/nginx/creup.production.example.conf \
         /etc/nginx/sites-available/creup
 ```
 
+Edita la copia para ajustar `server_name`, rutas de certificado y upstream si es necesario.
+
 La plantilla ya gestiona la redirección HTTP→HTTPS, los upgrades de WebSocket y la cabecera crítica `X-Forwarded-For`. El requisito clave de seguridad es que `X-Forwarded-For` se asigne a `$remote_addr` (IP del cliente directo), **sin acumular** — así el rate limiter y la detección de IP ven la IP real:
 
 ```nginx
@@ -279,6 +281,11 @@ NUXT_EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES=15728640
 NUXT_EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES=41943040
 NUXT_EXTERNAL_API_CACHE_MAX_AGE_SECONDS=60
 NUXT_EXTERNAL_API_CACHE_STALE_SECONDS=300
+
+# ── Trusted proxy CIDRs (optional, default: 127.0.0.1/32,::1/128) ──
+# Only connections from these ranges will have X-Forwarded-For honored.
+# Add Docker bridge or private network ranges if NGINX runs on a different host.
+# NUXT_TRUSTED_PROXY_CIDRS=127.0.0.1/32,::1/128
 
 # ── Cloudflare Turnstile (anti-spam on public forms) ──
 NUXT_TURNSTILE_SECRET_KEY=<secret key>
@@ -578,7 +585,12 @@ Aumenta `DATABASE_MAX_CONNECTIONS` en `.env`, pero mantente muy por debajo del `
 
 ### El rate limiting no funciona
 
-El rate limiter requiere Redis y una cabecera `X-Forwarded-For` correcta. Si la cabecera falta o contiene varias IPs, el rate limiting se omite (fail-open por diseño). Verifica que NGINX asigna `X-Forwarded-For $remote_addr` — debe ser una asignación, no una acumulación.
+El rate limiter requiere Redis y que la IP del cliente se detecte correctamente. La app solo acepta `X-Forwarded-For` de conexiones que vengan de CIDRs configurados en `NUXT_TRUSTED_PROXY_CIDRS` (por defecto solo loopback). Verifica que:
+
+1. NGINX asigna `X-Forwarded-For $remote_addr` — asignación, no acumulación.
+2. La IP del proceso NGINX está en `NUXT_TRUSTED_PROXY_CIDRS` (por defecto `127.0.0.1/32,::1/128` cubre el caso estándar).
+
+Si NGINX corre en otro host, añade su IP o rango a `NUXT_TRUSTED_PROXY_CIDRS`.
 
 ### El login de administración falla (error de redirect OAuth)
 

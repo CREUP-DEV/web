@@ -39,6 +39,15 @@ export const canonicalizeExternalAssetUrl = (
     return sourceUrl
   }
 
+  // Some upstream payloads return absolute asset URLs with the right host but the
+  // wrong scheme. Canonicalize them onto the configured asset origin so proxy
+  // validation stays stable and mixed-scheme URLs do not break public pages.
+  if (sourceUrl.host === configuredBaseUrl.host) {
+    const rewrittenUrl = new URL(sourceUrl.pathname + sourceUrl.search, configuredBaseUrl)
+    rewrittenUrl.hash = ''
+    return rewrittenUrl
+  }
+
   if (allowedOrigins && !allowedOrigins.has(sourceUrl.origin)) {
     return sourceUrl
   }

@@ -102,14 +102,13 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    // Explicitly declare cookie attributes — SameSite=Lax + Secure in production is the
-    // baseline defense against CSRF without breaking redirect-based OAuth flows.
     cookies: {
       session_token: {
+        name: process.env.NODE_ENV === 'production' ? '__Host-admin-session' : 'admin-session',
         attributes: {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax' as const,
+          sameSite: 'strict' as const,
           path: '/',
         },
       },

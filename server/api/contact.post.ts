@@ -43,6 +43,15 @@ function sanitizeEmailHeaderValue(value: string): string {
   return value.replace(/[\r\n\0]/g, '')
 }
 
+function assertNoEmailHeaderInjection(value: string, message: string) {
+  if (/[\r\n]/.test(value)) {
+    throw createError({
+      statusCode: 400,
+      message,
+    })
+  }
+}
+
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, {
     namespace: 'contact',
@@ -85,6 +94,9 @@ export default defineEventHandler(async (event) => {
   const replyToEmail = sanitizeEmailHeaderValue(email)
   const isPress = contactType === 'press'
 
+  assertNoEmailHeaderInjection(email, antiSpamValidationFailedMessage)
+  assertNoEmailHeaderInjection(subject, antiSpamValidationFailedMessage)
+
   // Check all user-provided fields for spam patterns
   if (hasSpamPatterns(`${name} ${email} ${phone} ${mediaName} ${subject} ${message}`)) {
     throw createError({
@@ -98,6 +110,10 @@ export default defineEventHandler(async (event) => {
     ? getRequiredSmtpPressEmail(event, publicConfigMessage)
     : getRequiredSmtpToEmail(event, publicConfigMessage)
   const fromEmail = getRequiredSmtpFromEmail(event, publicConfigMessage)
+
+  assertNoEmailHeaderInjection(toEmail, publicConfigMessage)
+  assertNoEmailHeaderInjection(fromEmail, publicConfigMessage)
+
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(event, publicConfigMessage))
 
   const transporter = await ensureSmtpTransporterVerified(publicConfigMessage)

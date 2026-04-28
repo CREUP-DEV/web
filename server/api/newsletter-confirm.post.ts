@@ -24,6 +24,8 @@ export default defineEventHandler(async (event) => {
 
   setHeader(event, 'cache-control', 'no-store')
 
+  // Confirmation uses a one-time email token and rate limiting, so Turnstile
+  // is intentionally not required here.
   const { token } = validatePublicBody(event, newsletterTokenQuerySchema, await readBody(event))
   const redirectPath = buildLocalizedPath(event, '/prensa/newsletter')
   const action = await performNewsletterConfirmAction(token)

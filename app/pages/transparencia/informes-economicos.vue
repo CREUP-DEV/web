@@ -52,7 +52,7 @@ const { data, pending, error, refresh } = await useFetch<FinancialReportsRespons
 )
 
 const items = computed(() => data.value?.data ?? [])
-const total = computed(() => data.value?.meta.total ?? 0)
+const total = computed(() => data.value?.meta?.total ?? 0)
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, items, error)

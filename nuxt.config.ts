@@ -10,7 +10,6 @@ const siteUrl =
   getOptionalConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL') || 'http://localhost:3000'
 const siteHostname = new URL(siteUrl).hostname
 const canonicalSiteUrl = siteUrl
-const turnstileSiteKey = process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || ''
 const siteImageHostname = siteHostname
 const umamiHost = getOptionalConfigUrl(process.env.NUXT_UMAMI_HOST, 'NUXT_UMAMI_HOST')
 const umamiOrigin = umamiHost ? new URL(umamiHost).origin : null
@@ -96,22 +95,6 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
     server: {
       allowedHosts: isDev ? ['localhost', '127.0.0.1', '.trycloudflare.com'] : undefined,
-    },
-    optimizeDeps: {
-      include: [
-        '@nuxt/ui > prosemirror-state',
-        '@nuxt/ui > prosemirror-transform',
-        '@nuxt/ui > prosemirror-model',
-        '@nuxt/ui > prosemirror-view',
-        '@nuxt/ui > prosemirror-gapcursor',
-        'better-auth/vue',
-        '@formkit/auto-animate/vue',
-        'sortablejs',
-        '@internationalized/date',
-        'zod',
-        'photoswipe/lightbox',
-        'photoswipe',
-      ],
     },
     build: {
       rollupOptions: {
@@ -250,16 +233,28 @@ export default defineNuxtConfig({
     googleCalendarId: process.env.NUXT_GOOGLE_CALENDAR_ID,
     turnstileSecretKey: process.env.NUXT_TURNSTILE_SECRET_KEY,
     public: {
-      turnstileSiteKey,
+      turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY,
       siteUrl: siteUrl,
     },
   },
 
   nitro: {
-    compressPublicAssets: false,
+    compressPublicAssets: true,
     prerender: {
       crawlLinks: false,
       failOnError: true,
+      routes: [
+        '/legal',
+        '/transparencia/igualdad',
+        '/transparencia/informes-economicos',
+        '/transparencia/mic',
+        '/transparencia/normativa',
+        '/en/legal',
+        '/en/transparencia/igualdad',
+        '/en/transparencia/informes-economicos',
+        '/en/transparencia/mic',
+        '/en/transparencia/normativa',
+      ],
     },
   },
 
@@ -278,7 +273,7 @@ export default defineNuxtConfig({
   },
 
   ogImage: {
-    zeroRuntime: true,
+    enabled: false,
   },
 
   // Sitemap configuration
@@ -300,7 +295,7 @@ export default defineNuxtConfig({
   // Robots configuration
   robots: {
     allow: ['/'],
-    disallow: ['/admin/'],
+    disallow: ['/admin/', '/api/', '/_ipx/'],
   },
 
   routeRules,

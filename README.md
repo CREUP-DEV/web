@@ -27,7 +27,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL, Redis, BullMQ y 
 - Node.js compatible con Nuxt 4
 - `pnpm`
 - Docker y Docker Compose para el entorno local (PostgreSQL, Redis, Adminer y Mailpit)
-- En producción, un proxy inverso delante de Nitro. La app asume que NGINX sobreescribe `X-Forwarded-For` con la IP real del cliente.
+- En producción, un proxy inverso delante de Nitro. Configura `NUXT_TRUSTED_PROXY_CIDRS` con los CIDRs del proxy; solo las conexiones desde esos rangos tendrán `X-Forwarded-For` en cuenta. Por defecto, solo loopback (`127.0.0.1/32,::1/128`).
 
 ## Desarrollo local
 
@@ -79,7 +79,7 @@ En resumen:
 
 - **Obligatorias al arrancar:** `NUXT_SITE_URL`, `DATABASE_URL`, `APP_SECRET`, `ADMIN_EMAILS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NUXT_REDIS_URL`, `NUXT_EXTERNAL_API_BASE_URL`, `NUXT_GOOGLE_CALENDAR_API_KEY`, `NUXT_GOOGLE_CALENDAR_ID`, `NUXT_SMTP_HOST/PORT/SECURE/USER/PASS`
 - **Necesarias también en build:** `NUXT_SITE_URL` y, si activas Umami, `NUXT_UMAMI_HOST` + `NUXT_UMAMI_ID`
-- **Opcionales según funcionalidad:** `NUXT_EXTERNAL_ASSET_BASE_URL`, `NUXT_SMTP_FROM_EMAIL`, `NUXT_SMTP_TO_EMAIL`, `NUXT_SMTP_PRESS_EMAIL`, `NUXT_EXTERNAL_ASSET_PROXY_*`, `NUXT_EXTERNAL_API_CACHE_*`, `NUXT_TURNSTILE_*`, `NUXT_UMAMI_*`
+- **Opcionales según funcionalidad:** `NUXT_EXTERNAL_ASSET_BASE_URL`, `NUXT_SMTP_FROM_EMAIL`, `NUXT_SMTP_TO_EMAIL`, `NUXT_SMTP_PRESS_EMAIL`, `NUXT_EXTERNAL_ASSET_PROXY_*`, `NUXT_EXTERNAL_API_CACHE_*`, `NUXT_TURNSTILE_*`, `NUXT_UMAMI_*`, `NUXT_TRUSTED_PROXY_CIDRS`
 - **Solo en local (compose):** `POSTGRES_USER/PASSWORD/DB/PORT`, `REDIS_PORT`, `ADMINER_PORT`, `MAILPIT_SMTP_PORT`, `MAILPIT_WEB_PORT`
 
 `DATABASE_URL` va sin prefijo `NUXT_` porque se lee con `process.env` directamente. Cambiar de dominio no requiere reconstruir la imagen; basta con actualizar `NUXT_SITE_URL` y recrear el contenedor.
@@ -89,7 +89,7 @@ En resumen:
 - Redis es obligatorio para caché de handlers, SWR de APIs externas, rate limiting, almacenamiento de Better Auth y colas BullMQ.
 - Al menos una instancia de Nitro debe permanecer activa para procesar la cola de newsletters.
 - Los archivos subidos desde administración viven en `.data/admin-assets/` y subdirectorios de `public/`. No están versionados y deben incluirse en el plan de copias de seguridad.
-- Configura un límite de cuerpo en el proxy frontal alineado con el mayor upload permitido. La app usa un techo duro de 22 MB por petición y exige `Content-Length`.
+- Configura un límite de cuerpo en el proxy frontal alineado con el mayor upload permitido. La app usa un techo duro de 22 MB por petición, exige `Content-Length` y también cuenta los bytes realmente recibidos antes de procesar el multipart.
 - La ruta `/health` rechaza peticiones con `X-Forwarded-For` (devuelve 404), así que los health checks solo funcionan directamente, sin pasar por proxy.
 
 ## Scripts útiles

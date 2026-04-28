@@ -13,7 +13,7 @@ const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
 )
 
 export default defineEventHandler(async (event) => {
-  assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
+  await assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
 
   const formData = await readMultipartFormData(event)
   const file = validateMultipartFile(formData)

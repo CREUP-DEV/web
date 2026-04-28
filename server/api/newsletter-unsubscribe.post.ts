@@ -15,6 +15,8 @@ export default defineEventHandler(async (event) => {
 
   setHeader(event, 'cache-control', 'no-store')
 
+  // Unsubscribe uses a one-time email token and rate limiting, so Turnstile
+  // is intentionally not required here.
   const body = await readBody(event)
   const query = getQuery(event)
   const bodyToken =

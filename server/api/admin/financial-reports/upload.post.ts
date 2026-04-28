@@ -9,7 +9,7 @@ const UPLOAD_DIR = 'public/documentos/informes-economicos'
 const UPLOAD_MAX_REQUEST_BYTES = 22 * 1024 * 1024 // 22 MB hard ceiling (above PDF limit)
 
 export default defineEventHandler(async (event) => {
-  assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
+  await assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
 
   const formData = await readMultipartFormData(event)
   const file = validateMultipartFile(formData)

@@ -32,7 +32,7 @@ const uploadTargets = {
 const UPLOAD_MAX_REQUEST_BYTES = 6 * 1024 * 1024 // 6 MB hard ceiling (above image limit)
 
 export default defineEventHandler(async (event) => {
-  assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
+  await assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
 
   const formData = await readMultipartFormData(event)
   const file = validateMultipartFile(formData)
