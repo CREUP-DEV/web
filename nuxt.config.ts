@@ -240,11 +240,6 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
-    prerender: {
-      crawlLinks: false,
-      failOnError: true,
-      routes: ['/legal', '/en/legal'],
-    },
   },
 
   css: ['~/assets/css/main.css'],
