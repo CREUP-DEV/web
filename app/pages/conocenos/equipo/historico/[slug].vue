@@ -8,7 +8,7 @@ const { fallbackLocale } = useLocales()
 const route = useRoute()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
-const { getFullName } = usePersonHelpers()
+const { getDisplayName } = usePersonHelpers()
 
 type SocialNetwork = SocialNetworkEntry
 
@@ -279,7 +279,7 @@ const modalAssignmentDuration = computed(() =>
                   50
                 )
               "
-              :aria-label="getViewProfileAriaLabel(getFullName(assignment.member))"
+              :aria-label="getViewProfileAriaLabel(getDisplayName(assignment.member))"
               @click="openMemberModal(assignment)"
             >
               <div class="mb-4 flex justify-center">
@@ -289,7 +289,7 @@ const modalAssignmentDuration = computed(() =>
                   <AdaptiveImage
                     v-if="assignment.member.photo"
                     :src="assignment.member.photo"
-                    :alt="getFullName(assignment.member)"
+                    :alt="getDisplayName(assignment.member)"
                     class="size-full object-cover"
                   />
                   <div
@@ -306,7 +306,7 @@ const modalAssignmentDuration = computed(() =>
                   {{ assignment.member.denomination }}
                 </p>
                 <p class="text-foreground mt-1 font-semibold">
-                  {{ getFullName(assignment.member) }}
+                  {{ getDisplayName(assignment.member) }}
                 </p>
 
                 <div class="mt-2 flex items-center justify-center gap-1">
@@ -341,7 +341,7 @@ const modalAssignmentDuration = computed(() =>
         <TeamPersonModal
           v-if="selectedAssignment"
           :member="selectedAssignment.member"
-          :display-name="getFullName(selectedAssignment.member)"
+          :display-name="getDisplayName(selectedAssignment.member)"
           :assignment-start="modalAssignmentStart"
           :assignment-end="modalAssignmentEnd"
           :assignment-duration="modalAssignmentDuration"

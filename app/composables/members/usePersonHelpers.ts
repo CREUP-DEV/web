@@ -16,8 +16,8 @@ export function usePersonHelpers() {
   const getFullName = (person: Pick<PersonBase, 'name' | 'surname'>) =>
     [person.name, person.surname].filter(Boolean).join(' ').trim()
 
-  const getDisplayName = (person: Pick<PersonBase, 'name' | 'surname' | 'email'>) =>
-    getFullName(person) || person.email
+  const getDisplayName = (person: Pick<PersonBase, 'name' | 'surname'>) =>
+    getFullName(person) || t('common.unnamedPerson')
 
   const getSocialButtons = (person: Pick<PersonBase, 'socialNetworks'>) =>
     resolveSocialButtons(person.socialNetworks)

@@ -203,7 +203,7 @@ const hasAssignmentInfo = computed(() =>
 
             <div v-if="hasDescription" class="space-y-3">
               <p class="text-muted text-xs font-semibold tracking-[0.24em] uppercase">
-                {{ t('team.about', { name: member.name }) }}
+                {{ t('team.about', { name: displayName }) }}
               </p>
               <p class="text-base leading-8 sm:text-[1.05rem]">
                 {{ member.description }}
