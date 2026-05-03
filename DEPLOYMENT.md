@@ -30,7 +30,7 @@ El build siempre ocurre **en local o en CI** — el VPS solo hace pull y ejecuta
 Internet
     │
     ▼
- NGINX (host, puertos 80 + 443)
+ NGINX (host o servicio Docker, puertos 80 + 443)
   • Terminación TLS (Let's Encrypt)
   • Redirección HTTP → HTTPS
   • client_max_body_size 50m
@@ -45,7 +45,7 @@ Internet
   └────────────────────────────────────┘
 ```
 
-- NGINX corre en el host (no en Docker) y hace proxy a `127.0.0.1:3000`.
+- NGINX puede correr en el host y hacer proxy a `127.0.0.1:APP_PORT`, o como servicio Docker dentro de un Compose raíz compartido y hacer proxy al nombre del servicio (`app:3000` o el nombre real del servicio).
 - PostgreSQL y Redis **no** están expuestos al host — se comunican con `app` por la red bridge interna de Docker.
 - Los uploads viven en directorios del host montados como bind mounts, por lo que sobreviven a recreaciones de contenedores.
 - Las migraciones corren en un **contenedor efímero** durante cada despliegue, antes de reiniciar la app.
@@ -258,6 +258,11 @@ APP_PUBLIC_UPLOADS_DIR=./data/public-uploads
 APP_ADMIN_ASSETS_DIR=./data/admin-assets
 APPLY_MIGRATIONS_ON_DEPLOY=true
 
+# ── Compose deploy ──
+COMPOSE_APP_SERVICE=app
+COMPOSE_POSTGRES_SERVICE=postgres
+COMPOSE_NGINX_SERVICE=nginx
+
 # ── SMTP (required for contact form and newsletter) ──
 NUXT_SMTP_HOST=smtp.example.com
 NUXT_SMTP_PORT=587
@@ -324,7 +329,24 @@ El archivo Compose define:
 | `postgres` | `postgres:18-alpine`          | Volumen de datos + scripts de init |
 | `redis`    | `redis:8-alpine`              | Persistencia AOF + contraseña      |
 
-**Los servicios no están expuestos a la red del host** salvo `app` en `APP_PORT` (por defecto `3000`). NGINX hace proxy a `127.0.0.1:3000`.
+**Los servicios no están expuestos a la red del host** salvo `app` en `APP_PORT` (por defecto `3000`) cuando NGINX corre en el host. Si NGINX corre como servicio Docker, lo normal es no publicar `APP_PORT` y hacer proxy por la red interna al puerto `3000` del contenedor.
+
+El healthcheck de la app se define en el `Dockerfile`; el Compose lo hereda de la imagen. Solo añade `healthcheck:` en Compose si necesitas sobrescribirlo para un entorno concreto. `APP_PORT` es el puerto publicado en el host; dentro del contenedor Nitro escucha en `3000`.
+
+También es válido que este proyecto viva como archivo incluido desde un Compose raíz compartido:
+
+```yaml
+include:
+  - web/docker-compose.yml
+```
+
+En ese caso:
+
+- `COMPOSE_DIR` debe apuntar al directorio del Compose raíz.
+- `COMPOSE_APP_SERVICE` debe ser el nombre real del servicio web.
+- `COMPOSE_POSTGRES_SERVICE` debe ser el servicio PostgreSQL compartido si las migraciones dependen de él.
+- `COMPOSE_NGINX_SERVICE` debe ser el servicio NGINX si vive en el mismo Compose.
+- `deploy.sh` debe recrear solo `COMPOSE_APP_SERVICE`; no ejecutes `docker compose up -d` global con `IMAGE` exportado, porque otros servicios que usen `${IMAGE}` podrían arrancar con la imagen equivocada.
 
 ---
 
@@ -337,6 +359,12 @@ Tu `.env` local debe incluir:
 ```env
 VPS_HOST=dockeruser@ip-o-hostname-del-vps
 REMOTE_DIR=/opt/creup-web
+
+# Si el compose remoto vive fuera de REMOTE_DIR, por ejemplo en un Compose raíz compartido
+COMPOSE_DIR=/opt/compose-root
+COMPOSE_APP_SERVICE=app
+COMPOSE_POSTGRES_SERVICE=postgres
+COMPOSE_NGINX_SERVICE=nginx
 
 # Credenciales GHCR (o usa docker login ghcr.io manualmente)
 GHCR_USERNAME=tu-usuario-github
@@ -369,10 +397,11 @@ Qué hace paso a paso:
 2. Construye la imagen Docker (sin secretos baked — toda la config es runtime).
 3. Publica la imagen en GHCR.
 4. Conecta por SSH al VPS.
-5. `docker compose pull` — descarga la nueva imagen en el VPS.
+5. `docker compose pull "$COMPOSE_APP_SERVICE"` — descarga la nueva imagen en el VPS.
 6. Arranca `postgres` si no está en marcha (necesario para las migraciones).
-7. Ejecuta `docker compose run --rm app /app/ops/migrate.mjs` — aplica las migraciones Drizzle pendientes de forma atómica (el advisory lock evita ejecuciones concurrentes).
-8. `docker compose up -d` — recrea todos los contenedores.
+7. Ejecuta `docker compose run --rm "$COMPOSE_APP_SERVICE" /app/ops/migrate.mjs` — aplica las migraciones Drizzle pendientes de forma atómica (el advisory lock evita ejecuciones concurrentes).
+8. `docker compose up -d "$COMPOSE_APP_SERVICE"` — recrea solo la app.
+9. Recarga NGINX si `COMPOSE_NGINX_SERVICE` existe en el Compose.
 
 ### 8d. Seed inicial (solo la primera vez)
 
@@ -393,7 +422,7 @@ docker compose run --rm \
 
 ```bash
 # Health check directo (la app rechaza peticiones proxiadas a /health)
-curl http://127.0.0.1:3000/health
+curl "http://127.0.0.1:${APP_PORT:-3000}/health"
 # Esperado: {"status":"ok","timestamp":"...","checks":{"database":"ok","redis":"ok","externalApi":"ok","smtp":"ok"}}
 
 # Por dominio público (NGINX bloquea /health → 404)
@@ -424,7 +453,7 @@ Para volver a una etiqueta de imagen anterior:
 ```bash
 # En el VPS
 cd /opt/creup-web
-IMAGE=ghcr.io/CREUP-DEV/web:<etiqueta-anterior> docker compose up -d app
+IMAGE=ghcr.io/CREUP-DEV/web:<etiqueta-anterior> docker compose up -d "$COMPOSE_APP_SERVICE"
 ```
 
 Las migraciones son **unidireccionales** (nunca edites archivos de migración existentes). Si una migración debe revertirse, escribe una nueva migración que deshaga el cambio.
@@ -517,7 +546,7 @@ Usa un servicio como [Uptime Kuma](https://github.com/louislam/uptime-kuma) (sel
 ```bash
 # Añadir al crontab
 */5 * * * * \
-  curl -sf http://127.0.0.1:3000/health | grep -q '"status":"ok"' \
+  curl -sf "http://127.0.0.1:${APP_PORT:-3000}/health" | grep -q '"status":"ok"' \
   || echo "CREUP health check FAILED at $(date)" | mail -s "CREUP Alert" admin@creup.es
 ```
 
@@ -625,7 +654,7 @@ Comprueba que:
 
 ### Los emails de newsletter no se envían
 
-1. Comprueba el health endpoint: `curl http://127.0.0.1:3000/health` — SMTP debe mostrar `ok`.
+1. Comprueba el health endpoint: `curl "http://127.0.0.1:${APP_PORT:-3000}/health"` — SMTP debe mostrar `ok`.
 2. Revisa los logs: `docker logs creup-web-app | grep smtp`.
 3. Verifica las variables `NUXT_SMTP_*`. Puedes testear con:
 

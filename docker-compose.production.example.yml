@@ -33,16 +33,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "NODE_BIN=$$(command -v node || printf /nodejs/bin/node); $$NODE_BIN -e \"const port=process.env.NITRO_PORT||'3000';fetch('http://127.0.0.1:'+port+'/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))\"",
-        ]
-      interval: 30s
-      timeout: 5s
-      start_period: 30s
-      retries: 3
     deploy:
       resources:
         limits:
