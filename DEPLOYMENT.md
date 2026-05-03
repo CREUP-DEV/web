@@ -534,6 +534,29 @@ docker logs -f creup-web-postgres
 docker logs -f creup-web-redis
 ```
 
+### Purgar caché pública y de API externa
+
+La web guarda en Redis dos capas de caché: respuestas públicas de Nitro y respuestas de la API externa. Si en la API externa se rellena un campo que antes estaba vacío (foto, nombre, descripción, etc.) y producción sigue mostrando el valor viejo, purga ambas capas:
+
+```bash
+# En el VPS
+cd /opt/creup-web
+docker compose exec app node /app/ops/cache-purge.mjs
+```
+
+Para comprobar antes cuántas claves se borrarían:
+
+```bash
+docker compose exec app node /app/ops/cache-purge.mjs --dry-run
+```
+
+Si solo quieres purgar una capa:
+
+```bash
+docker compose exec app node /app/ops/cache-purge.mjs --external-only
+docker compose exec app node /app/ops/cache-purge.mjs --nitro-only
+```
+
 ---
 
 ## 12. Actualizar NGINX o Docker tras el despliegue

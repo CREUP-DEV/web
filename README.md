@@ -154,6 +154,7 @@ bash ./deploy-local.sh status
 bash ./deploy-local.sh logs [app|nginx|postgres|redis|mailpit|all]
 bash ./deploy-local.sh doctor [/ruta/publica.webp]
 bash ./deploy-local.sh down
+pnpm cache:purge
 ```
 
 El stack exporta `NODE_OPTIONS=--enable-source-maps --trace-uncaught` por defecto para que los errores del contenedor `app` sean más útiles en modo producción local. Puedes sobreescribirlo con `LOCAL_DEPLOY_NODE_OPTIONS=...` en `.env.local-deploy`.

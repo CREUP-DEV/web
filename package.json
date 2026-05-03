@@ -16,6 +16,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx drizzle/seed.ts",
     "build:seed": "esbuild drizzle/seed.ts --bundle --platform=node --format=esm --outfile=ops/seed.mjs --packages=external",
+    "cache:purge": "tsx scripts/purge-cache.ts",
+    "build:cache-purge": "esbuild scripts/purge-cache.ts --bundle --platform=node --format=esm --outfile=ops/cache-purge.mjs --packages=external",
     "i18n:check": "tsx scripts/check-i18n-parity.ts",
     "i18n:audit-identical": "tsx scripts/check-i18n-identical-values.ts"
   },
