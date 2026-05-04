@@ -1,4 +1,4 @@
-import type { NavigationMenuItem } from '@nuxt/ui'
+import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 import type { MaybeRef } from 'vue'
 import type { Locale } from 'vue-i18n'
 
@@ -83,10 +83,12 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
   const getLocaleIcon = (value?: Locale | string) =>
     localeItems.value.find((item: LocaleItem) => item.value === value)?.icon ?? ''
 
-  const mobileLocaleItems = computed(() =>
+  const mobileLocaleItems = computed<DropdownMenuItem[]>(() =>
     localeItems.value.map((item: LocaleItem) => ({
       label: item.label,
       icon: item.icon,
+      type: 'checkbox',
+      checked: item.value === locale.value,
       onSelect: () => {
         switchToLocale(item.value)
       },
@@ -126,6 +128,11 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       normalizedRoutePath.value.startsWith(`${normalizedSectionPath}/`)
     )
   }
+
+  const createMobileNavLink = (link: Omit<MobileNavLink, 'active'>): MobileNavLink => ({
+    ...link,
+    active: link.external ? false : isSectionActive(link.to),
+  })
 
   const items = computed<NavigationMenuItem[]>(() => [
     {
@@ -246,31 +253,31 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       icon: 'i-tabler-users-group',
       active: isSectionActive('/conocenos'),
       links: [
-        {
+        createMobileNavLink({
           label: t('nav.about.whatIs'),
           to: localizedPath('/conocenos/que-es'),
           icon: 'i-tabler-info-circle',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.about.members'),
           to: localizedPath('/conocenos/miembros'),
           icon: 'i-tabler-building-community',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.about.team'),
           to: localizedPath('/conocenos/equipo'),
           icon: 'i-tabler-user-heart',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.about.committees'),
           to: localizedPath('/conocenos/comites'),
           icon: 'i-tabler-sitemap',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.about.events'),
           to: localizedPath('/conocenos/eventos'),
           icon: 'i-tabler-calendar-event',
-        },
+        }),
       ],
     },
     {
@@ -279,21 +286,21 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       icon: 'i-tabler-scale',
       active: isSectionActive('/politica'),
       links: [
-        {
+        createMobileNavLink({
           label: t('nav.policy.positions'),
           to: localizedPath('/politica/posicionamientos/'),
           icon: 'i-tabler-file-description',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.policy.resolutions'),
           to: localizedPath('/politica/resoluciones/'),
           icon: 'i-tabler-writing-sign',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.policy.reports'),
           to: localizedPath('/politica/informes-ejecutivos/'),
           icon: 'i-tabler-report-analytics',
-        },
+        }),
       ],
     },
     {
@@ -302,16 +309,16 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       icon: 'i-tabler-speakerphone',
       active: isSectionActive('/prensa'),
       links: [
-        {
+        createMobileNavLink({
           label: t('nav.press.news'),
           to: localizedPath('/prensa/noticias/'),
           icon: 'i-tabler-news',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.press.newsletter'),
           to: localizedPath('/prensa/newsletter/'),
           icon: 'i-tabler-mail',
-        },
+        }),
         ...(resolvedPressDossierLink.value
           ? [
               {
@@ -331,26 +338,26 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       icon: 'i-tabler-building-bank',
       active: isSectionActive('/transparencia'),
       links: [
-        {
+        createMobileNavLink({
           label: t('nav.transparency.regulations'),
           to: localizedPath('/transparencia/normativa/'),
           icon: 'i-tabler-book-2',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.transparency.financialReports'),
           to: localizedPath('/transparencia/informes-economicos/'),
           icon: 'i-tabler-report-money',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.transparency.corporateIdentity'),
           to: localizedPath('/transparencia/mic/'),
           icon: 'i-lucide-badge',
-        },
-        {
+        }),
+        createMobileNavLink({
           label: t('nav.transparency.equality'),
           to: localizedPath('/transparencia/igualdad/'),
           icon: 'i-tabler-shield-heart',
-        },
+        }),
       ],
     },
   ])

@@ -60,26 +60,9 @@ const normalizeText = (value: string | null | undefined): string | null => {
   return trimmed || null
 }
 
-const getUrlOrigin = (value: string): string | null => {
-  try {
-    return new URL(value).origin
-  } catch {
-    return null
-  }
-}
-
-const toEventImageUrl = (
-  source: string | null,
-  event: H3Event,
-  configuredBaseOrigin: string | null
-): Promise<string | null> => {
+const toEventImageUrl = (source: string | null, event: H3Event): Promise<string | null> => {
   if (!source) {
     return Promise.resolve(null)
-  }
-
-  const sourceOrigin = getUrlOrigin(source)
-  if (sourceOrigin && configuredBaseOrigin && sourceOrigin !== configuredBaseOrigin) {
-    return Promise.resolve(source)
   }
 
   return toExternalImageProxyUrlWithKindHint(source, {
@@ -89,17 +72,9 @@ const toEventImageUrl = (
   })
 }
 
-const toEventPdfUrl = (
-  source: string | null,
-  configuredBaseOrigin: string | null
-): string | null => {
+const toEventPdfUrl = (source: string | null): string | null => {
   if (!source) {
     return null
-  }
-
-  const sourceOrigin = getUrlOrigin(source)
-  if (sourceOrigin && configuredBaseOrigin && sourceOrigin !== configuredBaseOrigin) {
-    return source
   }
 
   return toExternalPdfProxyUrl(source, {
@@ -115,8 +90,7 @@ const mapOrganization = (
     link?: string | null
     web_logo_light?: string | null
   },
-  event: H3Event,
-  configuredBaseOrigin: string | null
+  event: H3Event
 ): Promise<EventOrganizationOutput> =>
   Promise.resolve({
     order: organization.order,
@@ -125,16 +99,11 @@ const mapOrganization = (
     logoLight: null,
   }).then(async (base) => ({
     ...base,
-    logoLight: await toEventImageUrl(
-      normalizeText(organization.web_logo_light),
-      event,
-      configuredBaseOrigin
-    ),
+    logoLight: await toEventImageUrl(normalizeText(organization.web_logo_light), event),
   }))
 
 export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
-  const configuredBaseOrigin = getUrlOrigin(configuredBaseUrl)
   const unavailableMessage = getPublicApiErrorMessage(event, 'eventsUnavailable')
 
   return withExternalApiSWRCache(
@@ -173,11 +142,7 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
             location: normalizeText(entry.event_location),
             description: normalizeText(entry.event_description),
             banner: {
-              url: await toEventImageUrl(
-                normalizeText(entry.event_banner?.url),
-                event,
-                configuredBaseOrigin
-              ),
+              url: await toEventImageUrl(normalizeText(entry.event_banner?.url), event),
             },
             startDate: entry.event_start_date,
             endDate: normalizeText(entry.event_end_date),
@@ -186,29 +151,29 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
               .map((document) => ({
                 order: document.order,
                 title: normalizeText(document.title),
-                url: toEventPdfUrl(normalizeText(document.url), configuredBaseOrigin),
+                url: toEventPdfUrl(normalizeText(document.url)),
               })),
             organizers: await Promise.all(
               (entry.organizers ?? [])
                 .sort((a, b) => a.order - b.order)
-                .map((organization) => mapOrganization(organization, event, configuredBaseOrigin))
+                .map((organization) => mapOrganization(organization, event))
             ),
             venues: await Promise.all(
               (entry.venues ?? [])
                 .sort((a, b) => a.order - b.order)
-                .map((organization) => mapOrganization(organization, event, configuredBaseOrigin))
+                .map((organization) => mapOrganization(organization, event))
             ),
             collaborators: await Promise.all(
               (entry.collaborators ?? [])
                 .sort((a, b) => a.order - b.order)
-                .map((organization) => mapOrganization(organization, event, configuredBaseOrigin))
+                .map((organization) => mapOrganization(organization, event))
             ),
             galleryImages: await Promise.all(
               (entry.gallery_images ?? [])
                 .sort((a, b) => a.order - b.order)
                 .map(async (image) => ({
                   order: image.order,
-                  url: await toEventImageUrl(normalizeText(image.url), event, configuredBaseOrigin),
+                  url: await toEventImageUrl(normalizeText(image.url), event),
                 }))
             ),
             order: entry.order,

@@ -173,6 +173,7 @@ export default defineNuxtConfig({
           ...(umamiOrigin ? [umamiOrigin] : []),
           'https://challenges.cloudflare.com',
         ],
+        'report-uri': ['/api/csp-report'],
         'frame-src': ['https://challenges.cloudflare.com'],
         'frame-ancestors': ["'none'"],
         'object-src': ["'none'"],

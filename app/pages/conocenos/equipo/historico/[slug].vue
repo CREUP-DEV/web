@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { detailModalUi } from '@/utils/detailModalUi'
 import type { SocialNetworkEntry } from '~~/shared/utils/social'
+import { buildSocialUrl } from '~~/shared/utils/social'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
+import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
+import { toAbsoluteUrl } from '~~/shared/utils/url'
 
 const { t, locale } = useI18n()
 const { fallbackLocale } = useLocales()
@@ -9,6 +12,8 @@ const route = useRoute()
 const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 const { getDisplayName } = usePersonHelpers()
+const siteConfig = useSiteConfig()
+const siteUrl = useRuntimeSiteUrl()
 
 type SocialNetwork = SocialNetworkEntry
 
@@ -95,6 +100,40 @@ const areas = computed(() =>
   data.value && !data.value.data.ambiguous ? data.value.data.areas : []
 )
 const areaVisibility = useVisibilityRegistry({ threshold: 0.12, animateVisibleOnMount: true })
+const pageUrl = computed(() =>
+  toAbsoluteUrl(localePath(`/conocenos/equipo/historico/${slug.value}`), siteUrl.value)
+)
+const structuredDataPeople = computed(() => {
+  const people = new Map<string, Record<string, unknown>>()
+
+  for (const area of areas.value) {
+    for (const assignment of area.assignments) {
+      const member = assignment.member
+      const fullName = getDisplayName(member)
+      const personKey = member.email || fullName
+      const sameAs = member.socialNetworks
+        .filter((social) => social.network !== 'email')
+        .map((social) => buildSocialUrl(social.network, social.value))
+        .filter((url): url is string => Boolean(url))
+
+      people.set(personKey, {
+        '@type': 'Person',
+        name: fullName,
+        image: toAbsoluteUrl(member.photo, siteUrl.value) || undefined,
+        jobTitle: assignment.role || member.denomination || undefined,
+        affiliation: member.university
+          ? {
+              '@type': 'Organization',
+              name: member.university,
+            }
+          : undefined,
+        sameAs: sameAs.length ? sameAs : undefined,
+      })
+    }
+  }
+
+  return [...people.values()]
+})
 
 useLocalizedPressDetailSeo({
   path: computed(() => `/conocenos/equipo/historico/${slug.value}`),
@@ -115,6 +154,38 @@ usePageSeo(
       ? `${t('mandates.mandateOf')} ${formatShortDate(mandate.value.startDate)} — ${mandate.value.endDate ? formatShortDate(mandate.value.endDate) : t('mandates.present')}`
       : t('mandates.title'),
   () => t('mandates.detailDescription')
+)
+
+useHead(
+  computed(() => {
+    if (!mandate.value || structuredDataPeople.value.length === 0) {
+      return {}
+    }
+
+    return {
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: serializeJsonForHtmlScript({
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: `${t('mandates.title')} ${formatShortDate(mandate.value.startDate)}`,
+            url: pageUrl.value || undefined,
+            publisher: {
+              '@type': 'Organization',
+              name: siteConfig.name,
+              url: siteUrl.value || undefined,
+            },
+            itemListElement: structuredDataPeople.value.map((person, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              item: person,
+            })),
+          }),
+        },
+      ],
+    }
+  })
 )
 
 const getAreaName = (area: AreaTerm) =>

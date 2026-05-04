@@ -91,6 +91,7 @@ En resumen:
 - Los archivos subidos desde administración viven en `.data/admin-assets/` y subdirectorios de `public/`. No están versionados y deben incluirse en el plan de copias de seguridad.
 - Configura un límite de cuerpo en el proxy frontal alineado con el mayor upload permitido. La app usa un techo duro de 22 MB por petición, exige `Content-Length` y también cuenta los bytes realmente recibidos antes de procesar el multipart.
 - La ruta `/health` rechaza peticiones con `X-Forwarded-For` (devuelve 404), así que los health checks solo funcionan directamente, sin pasar por proxy.
+- La CSP envía informes a `/api/csp-report`. El endpoint valida el cuerpo, aplica rate limiting y escribe un resumen en logs para poder endurecer directivas como `style-src` con datos reales.
 
 ## Scripts útiles
 

@@ -164,6 +164,17 @@ export const memberCalendarQuerySchema = z.object({
   calendarId: toOptionalSingleStringSchema(z.string().trim().email('El calendario no es válido')),
 })
 
+export const cspReportBodySchema = z.union([
+  z.looseObject({
+    'csp-report': z.record(z.string(), z.unknown()),
+  }),
+  z.looseObject({
+    type: z.string().trim().max(200).optional(),
+    body: z.record(z.string(), z.unknown()).optional(),
+  }),
+  z.array(z.record(z.string(), z.unknown())).max(20),
+])
+
 export const externalAssetTypeRouteParamSchema = z.object({
   type: z.enum(['image', 'pdf']),
 })
