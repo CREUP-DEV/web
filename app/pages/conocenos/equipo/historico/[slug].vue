@@ -151,7 +151,7 @@ const {
 usePageSeo(
   () =>
     mandate.value
-      ? `${t('mandates.mandateOf')} ${formatShortDate(mandate.value.startDate)} — ${mandate.value.endDate ? formatShortDate(mandate.value.endDate) : t('mandates.present')}`
+      ? `${t('mandates.mandateOf')} ${formatShortDate(mandate.value.startDate)} - ${mandate.value.endDate ? formatShortDate(mandate.value.endDate) : t('mandates.present')}`
       : t('mandates.title'),
   () => t('mandates.detailDescription')
 )
@@ -271,7 +271,7 @@ const modalAssignmentDuration = computed(() =>
             </UBadge>
             <p class="text-muted text-lg">
               {{ formatDate(mandate.startDate) }}
-              —
+              -
               {{ mandate.endDate ? formatDate(mandate.endDate) : t('mandates.present') }}
             </p>
           </div>
@@ -384,7 +384,7 @@ const modalAssignmentDuration = computed(() =>
                   <UIcon name="i-tabler-calendar" class="text-muted size-3.5 shrink-0" />
                   <span class="text-muted text-xs">
                     {{ formatCompactDate(assignment.startDate) }}
-                    —
+                    -
                     {{
                       assignment.endDate
                         ? formatCompactDate(assignment.endDate)

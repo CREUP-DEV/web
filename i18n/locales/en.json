@@ -436,7 +436,7 @@
     "logosTitle": "Logo Downloads",
     "logosDescription": "Below you can view and download all CREUP logo variants. The brand must always be reproduced following the corporate standards set out in this manual. Therefore, ",
     "logosWarning": "colors and proportions must never be altered.",
-    "logoAlt": "CREUP Logo — {version}",
+    "logoAlt": "CREUP Logo - {version}",
     "downloadSvg": "SVG",
     "downloadPng": "PNG",
     "logos": {

@@ -40,7 +40,7 @@ export function useDatePresets() {
       return formattedStartDate
     }
 
-    return `${formattedStartDate} — ${formatShortDate(endDate, options)}`
+    return `${formattedStartDate} - ${formatShortDate(endDate, options)}`
   }
 
   const isDateRangeUpcoming = (startDate: string, endDate?: string | null) => {

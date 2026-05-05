@@ -583,7 +583,7 @@ function formatMonth(dateStr: string): string {
                   variant="outline"
                   block
                   class="w-full min-w-0"
-                  :aria-label="`${t('newsletterPage.archive.download')} — ${formatMonth(nl.month)}`"
+                  :aria-label="`${t('newsletterPage.archive.download')} - ${formatMonth(nl.month)}`"
                 >
                   {{ t('newsletterPage.archive.download') }}
                 </UButton>

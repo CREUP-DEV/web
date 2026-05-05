@@ -436,7 +436,7 @@
     "logosTitle": "Descarga del Imagotipo",
     "logosDescription": "A continuación podrás ver y descargar todas las variantes del imagotipo de CREUP. La marca debe reproducirse siempre siguiendo los estándares corporativos recogidos en este manual. Así, ",
     "logosWarning": "nunca podrán alterarse los colores o las proporciones explicadas.",
-    "logoAlt": "Logo CREUP — {version}",
+    "logoAlt": "Logo CREUP - {version}",
     "downloadSvg": "SVG",
     "downloadPng": "PNG",
     "logos": {

@@ -180,7 +180,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
             <div class="flex items-center gap-2">
               <h2 class="text-foreground font-semibold">
                 {{ formatShortDate(mandate.startDate) }}
-                —
+                -
                 {{ mandate.endDate ? formatShortDate(mandate.endDate) : t('mandates.present') }}
               </h2>
               <UBadge v-if="mandate.isCurrent" color="primary" variant="soft" size="sm">
@@ -189,7 +189,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
             </div>
             <p class="text-muted mt-1 text-sm">
               {{ formatDate(mandate.startDate) }}
-              —
+              -
               {{ mandate.endDate ? formatDate(mandate.endDate) : t('mandates.present') }}
             </p>
             <p class="text-muted mt-0.5 text-xs">
@@ -237,7 +237,7 @@ const getDurationText = (startDate: string, endDate: string | null): string => {
               <div class="flex items-center gap-2">
                 <span class="text-foreground font-semibold">
                   {{ formatDate(mandate.startDate) }}
-                  —
+                  -
                   {{ mandate.endDate ? formatDate(mandate.endDate) : t('mandates.present') }}
                 </span>
                 <UBadge v-if="mandate.isCurrent" color="primary" variant="soft" size="sm">
