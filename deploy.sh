@@ -98,6 +98,28 @@ remote_compose_up() {
   ssh "$VPS_HOST" 'bash -se' <<EOF
 set -euo pipefail
 
+cleanup_old_app_images() {
+  local image_name="\$1"
+  local keep_count="\$2"
+
+  if ! [[ "\$keep_count" =~ ^[0-9]+$ ]] || [ "\$keep_count" -lt 1 ]; then
+    echo "== Skip app image cleanup =="
+    return
+  fi
+
+  mapfile -t image_ids < <(docker image ls "\$image_name" --format '{{.ID}}' | awk '!seen[\$0]++')
+
+  if [ "\${#image_ids[@]}" -le "\$keep_count" ]; then
+    echo "== App image cleanup: nothing to remove =="
+    return
+  fi
+
+  echo "== Remove old app images =="
+  for image_id in "\${image_ids[@]:\$keep_count}"; do
+    docker image rm "\$image_id" || true
+  done
+}
+
 cd "${COMPOSE_DIR}"
 
 export IMAGE="${IMAGE}"
@@ -127,6 +149,8 @@ if docker compose config --services | grep -qx "${COMPOSE_NGINX_SERVICE}"; then
   echo "== Reload NGINX =="
   docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload
 fi
+
+cleanup_old_app_images "${IMAGE_NAME}" "${DEPLOY_IMAGE_RETENTION}"
 EOF
 }
 
@@ -163,6 +187,7 @@ COMPOSE_DIR="${COMPOSE_DIR:-$REMOTE_DIR}"
 COMPOSE_APP_SERVICE="${COMPOSE_APP_SERVICE:-app}"
 COMPOSE_POSTGRES_SERVICE="${COMPOSE_POSTGRES_SERVICE:-postgres}"
 COMPOSE_NGINX_SERVICE="${COMPOSE_NGINX_SERVICE:-nginx}"
+DEPLOY_IMAGE_RETENTION="${DEPLOY_IMAGE_RETENTION:-2}"
 
 if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
   log "GHCR login"

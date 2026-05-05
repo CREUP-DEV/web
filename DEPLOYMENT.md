@@ -373,6 +373,7 @@ GHCR_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 IMAGE_NAME=ghcr.io/CREUP-DEV/web
 DOCKER_PLATFORM=linux/amd64
 APPLY_MIGRATIONS_ON_DEPLOY=true
+DEPLOY_IMAGE_RETENTION=2
 
 # Si activas Umami, estas variables se inyectan también en el build
 NUXT_UMAMI_HOST=https://umami.creup.es
@@ -402,6 +403,7 @@ Qué hace paso a paso:
 7. Ejecuta `docker compose run --rm "$COMPOSE_APP_SERVICE" /app/ops/migrate.mjs` — aplica las migraciones Drizzle pendientes de forma atómica (el advisory lock evita ejecuciones concurrentes).
 8. `docker compose up -d "$COMPOSE_APP_SERVICE"` — recrea solo la app.
 9. Recarga NGINX si `COMPOSE_NGINX_SERVICE` existe en el Compose.
+10. Elimina en el VPS las imágenes antiguas de `IMAGE_NAME`, conservando las `DEPLOY_IMAGE_RETENTION` más recientes.
 
 ### 8d. Seed inicial (solo la primera vez)
 
@@ -443,6 +445,8 @@ bash ./deploy.sh
 ```
 
 El script aplica las migraciones antes de recrear el contenedor de la app, por lo que no hay ventana de tiempo en que el nuevo código corra contra un esquema antiguo.
+
+Tras arrancar correctamente, el script limpia imágenes Docker antiguas de la app en el VPS. Por defecto conserva 2 imágenes distintas de `IMAGE_NAME`: la actual y la anterior. Puedes aumentar el margen para rollback con `DEPLOY_IMAGE_RETENTION=3` o desactivar la limpieza con `DEPLOY_IMAGE_RETENTION=0`.
 
 **Nota:** Docker Compose `up -d` para el contenedor antiguo antes de arrancar el nuevo. Para un sitio de bajo tráfico este hueco de ~2 segundos es aceptable; zero-downtime real requeriría un load balancer con réplicas.
 
