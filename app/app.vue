@@ -88,6 +88,7 @@ useSchemaOrg([
 
 <template>
   <UApp :locale="currentUiLocale">
+    <NuxtLoadingIndicator color="var(--ui-primary)" :height="3" />
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />
