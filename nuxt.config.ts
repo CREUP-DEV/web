@@ -240,7 +240,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    compressPublicAssets: true,
+    compressPublicAssets: false,
   },
 
   css: ['~/assets/css/main.css'],
