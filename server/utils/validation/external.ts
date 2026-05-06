@@ -195,6 +195,7 @@ export const externalEventOrganizationSchema = z.object({
   name: z.string().nullable().optional(),
   link: z.string().nullable().optional(),
   web_logo_light: z.string().nullable().optional(),
+  web_logo_dark: z.string().nullable().optional(),
 })
 
 export const externalEventGalleryImageSchema = z.object({

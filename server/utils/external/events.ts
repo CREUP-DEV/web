@@ -24,6 +24,7 @@ interface EventOrganizationOutput {
   name: string | null
   link: string | null
   logoLight: string | null
+  logoDark: string | null
 }
 
 interface EventGalleryImageOutput {
@@ -89,25 +90,34 @@ const mapOrganization = (
     name?: string | null
     link?: string | null
     web_logo_light?: string | null
+    web_logo_dark?: string | null
   },
   event: H3Event
-): Promise<EventOrganizationOutput> =>
-  Promise.resolve({
+): Promise<EventOrganizationOutput> => {
+  const base = {
     order: organization.order,
     name: normalizeText(organization.name),
     link: normalizeText(organization.link),
     logoLight: null,
-  }).then(async (base) => ({
+    logoDark: null,
+  }
+
+  return Promise.all([
+    toEventImageUrl(normalizeText(organization.web_logo_light), event),
+    toEventImageUrl(normalizeText(organization.web_logo_dark), event),
+  ]).then(([logoLight, logoDark]) => ({
     ...base,
-    logoLight: await toEventImageUrl(normalizeText(organization.web_logo_light), event),
+    logoLight,
+    logoDark,
   }))
+}
 
 export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const unavailableMessage = getPublicApiErrorMessage(event, 'eventsUnavailable')
 
   return withExternalApiSWRCache(
-    `external-api:eventos:${configuredBaseUrl}`,
+    `external-api:eventos:v2:${configuredBaseUrl}`,
     async () => {
       const endpoint = new URL('/api/eventos', configuredBaseUrl).toString()
 

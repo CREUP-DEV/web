@@ -15,6 +15,7 @@ export interface EventOrganization {
   name: string | null
   link: string | null
   logoLight: string | null
+  logoDark: string | null
 }
 
 export interface EventGalleryImage {

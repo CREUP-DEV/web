@@ -12,6 +12,7 @@ type EventGalleryImageWithUrl = EventGalleryImage & {
 }
 
 const { t } = useI18n()
+const colorMode = useColorMode()
 const route = useRoute()
 const localePath = useLocalePath()
 const siteUrl = useRuntimeSiteUrl()
@@ -127,6 +128,13 @@ const getEventTypeLabel = (eventType: string | null) => {
 const organizationLogoImageClass = 'h-20 w-full max-w-72 object-contain'
 const organizationLogoImageWidth = 288
 const organizationLogoImageHeight = 80
+const getOrganizationLogo = (organization: EventOrganization): string => {
+  if (colorMode.value === 'dark') {
+    return organization.logoDark ?? organization.logoLight ?? ''
+  }
+
+  return organization.logoLight ?? organization.logoDark ?? ''
+}
 
 const photosPerPage = 12
 const currentGalleryPage = ref(1)
@@ -275,12 +283,13 @@ function getPhotoAlt(index: number): string {
             <UCard v-for="org in event.organizers" :key="org.order" class="text-center">
               <div class="flex flex-col items-center gap-3">
                 <AdaptiveImage
-                  v-if="org.logoLight"
-                  :src="org.logoLight"
+                  v-if="getOrganizationLogo(org)"
+                  :key="getOrganizationLogo(org)"
+                  :src="getOrganizationLogo(org)"
                   :alt="org.name ?? ''"
                   :width="organizationLogoImageWidth"
                   :height="organizationLogoImageHeight"
-                  fit="contain"
+                  fit="inside"
                   format="webp"
                   :class="organizationLogoImageClass"
                   loading="lazy"
@@ -309,12 +318,13 @@ function getPhotoAlt(index: number): string {
             <UCard v-for="venue in event.venues" :key="venue.order" class="text-center">
               <div class="flex flex-col items-center gap-3">
                 <AdaptiveImage
-                  v-if="venue.logoLight"
-                  :src="venue.logoLight"
+                  v-if="getOrganizationLogo(venue)"
+                  :key="getOrganizationLogo(venue)"
+                  :src="getOrganizationLogo(venue)"
                   :alt="venue.name ?? ''"
                   :width="organizationLogoImageWidth"
                   :height="organizationLogoImageHeight"
-                  fit="contain"
+                  fit="inside"
                   format="webp"
                   :class="organizationLogoImageClass"
                   loading="lazy"
@@ -343,12 +353,13 @@ function getPhotoAlt(index: number): string {
             <UCard v-for="collab in event.collaborators" :key="collab.order" class="text-center">
               <div class="flex flex-col items-center gap-3">
                 <AdaptiveImage
-                  v-if="collab.logoLight"
-                  :src="collab.logoLight"
+                  v-if="getOrganizationLogo(collab)"
+                  :key="getOrganizationLogo(collab)"
+                  :src="getOrganizationLogo(collab)"
                   :alt="collab.name ?? ''"
                   :width="organizationLogoImageWidth"
                   :height="organizationLogoImageHeight"
-                  fit="contain"
+                  fit="inside"
                   format="webp"
                   :class="organizationLogoImageClass"
                   loading="lazy"
