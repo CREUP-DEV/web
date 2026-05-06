@@ -5,7 +5,10 @@ import { getExternalApiCacheOptions, withExternalApiSWRCache } from '../cache/ex
 import { toExternalImageProxyUrlWithKindHint } from './externalAssetKind'
 import { toExternalPdfProxyUrl } from './externalAssetUrl'
 import { logError } from '../core/logger'
-import { getRequiredExternalApiBaseUrl } from '../core/runtimeConfig'
+import {
+  getRequiredExternalApiBaseUrl,
+  getRequiredExternalAssetBaseUrl,
+} from '../core/runtimeConfig'
 import { externalEventsResponseSchema } from '../validation'
 import { EVENT_DOCUMENT_PUBLIC_BASE, EVENT_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 
@@ -55,6 +58,8 @@ export interface EventsPayload {
   generatedAt: string | null
 }
 
+const EXTERNAL_EVENTS_CACHE_VERSION = 3
+
 const normalizeText = (value: string | null | undefined): string | null => {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
@@ -73,12 +78,13 @@ const toEventImageUrl = (source: string | null, event: H3Event): Promise<string 
   })
 }
 
-const toEventPdfUrl = (source: string | null): string | null => {
+const toEventPdfUrl = (source: string | null, event: H3Event): string | null => {
   if (!source) {
     return null
   }
 
   return toExternalPdfProxyUrl(source, {
+    event,
     forceProxyRelative: true,
     publicPathBase: EVENT_DOCUMENT_PUBLIC_BASE,
   })
@@ -114,10 +120,11 @@ const mapOrganization = (
 
 export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
+  const configuredAssetBaseUrl = getRequiredExternalAssetBaseUrl(event)
   const unavailableMessage = getPublicApiErrorMessage(event, 'eventsUnavailable')
 
   return withExternalApiSWRCache(
-    `external-api:eventos:v2:${configuredBaseUrl}`,
+    `external-api:eventos:v${EXTERNAL_EVENTS_CACHE_VERSION}:${configuredBaseUrl}:${configuredAssetBaseUrl}`,
     async () => {
       const endpoint = new URL('/api/eventos', configuredBaseUrl).toString()
 
@@ -161,7 +168,7 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
               .map((document) => ({
                 order: document.order,
                 title: normalizeText(document.title),
-                url: toEventPdfUrl(normalizeText(document.url)),
+                url: toEventPdfUrl(normalizeText(document.url), event),
               })),
             organizers: await Promise.all(
               (entry.organizers ?? [])

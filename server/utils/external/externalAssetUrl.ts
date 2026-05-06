@@ -71,7 +71,12 @@ const isAlreadyProxied = (value: string) => {
   }
 
   try {
-    const pathname = new URL(value).pathname
+    const parsedUrl = new URL(value)
+    if (parsedUrl.origin !== getPublicSiteOrigin()) {
+      return false
+    }
+
+    const { pathname } = parsedUrl
     return PROXIED_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))
   } catch {
     return false
@@ -120,10 +125,14 @@ const buildSemanticAssetPath = (
 ) => {
   const configuredBaseUrl = getConfiguredBaseUrl(options.event)
   const pathBase = options.publicPathBase || getDefaultAssetPathBase(type)
-  const { assetBaseOrigin } = getExternalAssetProxyConfig(options.event)
+  const { allowedOrigins, assetBaseOrigin } = getExternalAssetProxyConfig(options.event)
 
   if (isAbsoluteHttpUrl(source)) {
-    const sourceUrl = new URL(source)
+    const sourceUrl = canonicalizeExternalAssetUrl(
+      new URL(source),
+      configuredBaseUrl,
+      allowedOrigins
+    )
     sourceUrl.hash = ''
     const pathParts = { pathname: sourceUrl.pathname, search: sourceUrl.search }
 

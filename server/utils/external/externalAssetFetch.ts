@@ -36,7 +36,10 @@ export async function fetchExternalAssetWithSafeRedirects(
     redirect: 'manual',
     signal: options.signal,
   }
-  const response = await fetch(url, requestInit)
+  const response = (await fetch(
+    url,
+    requestInit as Parameters<typeof fetch>[1]
+  )) as unknown as Response
 
   if (response.status < 300 || response.status >= 400) {
     return response
@@ -44,6 +47,7 @@ export async function fetchExternalAssetWithSafeRedirects(
 
   const location = response.headers.get('location')
   if (!location) {
+    await response.body?.cancel()
     throw options.createError('missing_location')
   }
 
@@ -51,16 +55,25 @@ export async function fetchExternalAssetWithSafeRedirects(
   try {
     nextUrl = new URL(location, url)
   } catch {
+    await response.body?.cancel()
     throw options.createError('invalid_url')
   }
 
   if (!['http:', 'https:'].includes(nextUrl.protocol)) {
+    await response.body?.cancel()
     throw options.createError('invalid_protocol')
   }
 
+  if (nextUrl.username || nextUrl.password) {
+    await response.body?.cancel()
+    throw options.createError('invalid_url')
+  }
+
   if (!options.allowedOrigins.has(nextUrl.origin)) {
+    await response.body?.cancel()
     throw options.createError('invalid_origin')
   }
 
+  await response.body?.cancel()
   return fetchExternalAssetWithSafeRedirects(nextUrl.toString(), options, hops + 1)
 }
