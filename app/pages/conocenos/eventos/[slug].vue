@@ -124,6 +124,10 @@ const getEventTypeLabel = (eventType: string | null) => {
   return key ? t(key) : (eventType ?? '')
 }
 
+const organizationLogoImageClass = 'h-20 w-full max-w-72 object-contain'
+const organizationLogoImageWidth = 288
+const organizationLogoImageHeight = 80
+
 const photosPerPage = 12
 const currentGalleryPage = ref(1)
 const loadedGalleryImages = reactive(new Set<string>())
@@ -274,10 +278,11 @@ function getPhotoAlt(index: number): string {
                   v-if="org.logoLight"
                   :src="org.logoLight"
                   :alt="org.name ?? ''"
-                  width="160"
-                  height="48"
+                  :width="organizationLogoImageWidth"
+                  :height="organizationLogoImageHeight"
+                  fit="contain"
                   format="webp"
-                  class="h-12 w-auto object-contain"
+                  :class="organizationLogoImageClass"
                   loading="lazy"
                 />
                 <p class="text-sm font-medium">{{ org.name }}</p>
@@ -307,10 +312,11 @@ function getPhotoAlt(index: number): string {
                   v-if="venue.logoLight"
                   :src="venue.logoLight"
                   :alt="venue.name ?? ''"
-                  width="160"
-                  height="48"
+                  :width="organizationLogoImageWidth"
+                  :height="organizationLogoImageHeight"
+                  fit="contain"
                   format="webp"
-                  class="h-12 w-auto object-contain"
+                  :class="organizationLogoImageClass"
                   loading="lazy"
                 />
                 <p class="text-sm font-medium">{{ venue.name }}</p>
@@ -340,10 +346,11 @@ function getPhotoAlt(index: number): string {
                   v-if="collab.logoLight"
                   :src="collab.logoLight"
                   :alt="collab.name ?? ''"
-                  width="160"
-                  height="48"
+                  :width="organizationLogoImageWidth"
+                  :height="organizationLogoImageHeight"
+                  fit="contain"
                   format="webp"
-                  class="h-12 w-auto object-contain"
+                  :class="organizationLogoImageClass"
                   loading="lazy"
                 />
                 <p class="text-sm font-medium">{{ collab.name }}</p>
