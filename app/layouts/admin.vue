@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
+import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 import { useMediaQuery } from '@vueuse/core'
 import { useAuth } from '@/composables/security/useAuth'
 import { getInitials } from '@/utils/initials'
@@ -12,7 +12,7 @@ const publicSitePath = computed(() => localePath('/'))
 
 const route = useRoute()
 const isMobileSidebar = useMediaQuery('(max-width: 1023px)')
-const sidebarOpen = useState('admin-sidebar-open', () => true)
+const sidebarOpen = useState('admin-sidebar-open', () => false)
 const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
 
 const avatarLoadFailed = ref(false)
@@ -84,6 +84,16 @@ const navigationItems = computed<NavigationMenuItem[][]>(() => [
         }
       },
     })),
+  ],
+])
+
+const userMenuItems = computed<DropdownMenuItem[][]>(() => [
+  [
+    {
+      label: 'Cerrar sesión',
+      icon: 'i-tabler-logout',
+      onSelect: signOut,
+    },
   ],
 ])
 
@@ -162,6 +172,7 @@ useHead({
               variant="ghost"
               class="absolute top-0 -right-1 shrink-0 lg:hidden"
               aria-label="Cerrar menú lateral"
+              title="Cerrar menú lateral"
               @click="close"
             />
           </div>
@@ -189,54 +200,87 @@ useHead({
                 state === 'expanded' ? 'gap-3' : 'justify-center',
               ]"
             >
-              <img
-                v-if="session.data?.user?.image && !avatarLoadFailed"
-                :src="session.data.user.image"
-                :alt="
-                  session.data.user.name
-                    ? `Avatar de ${session.data.user.name}`
-                    : 'Avatar de usuario'
-                "
-                class="size-8 shrink-0 rounded-full text-xs"
-                loading="eager"
-                decoding="async"
-                @error="avatarLoadFailed = true"
-              />
-              <div
-                v-else
-                class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
-                aria-hidden="true"
-              >
-                {{ adminInitials }}
-              </div>
-
-              <Transition
-                enter-active-class="transition-all duration-200 ease-out"
-                enter-from-class="opacity-0 -translate-x-1"
-                enter-to-class="opacity-100 translate-x-0"
-                leave-active-class="transition-all duration-150 ease-in"
-                leave-from-class="opacity-100 translate-x-0"
-                leave-to-class="opacity-0 -translate-x-1"
-              >
-                <div v-if="state === 'expanded'" class="flex min-w-0 flex-1 items-center gap-1">
-                  <div class="min-w-0 flex-1">
-                    <p class="line-clamp-2 text-sm leading-tight font-medium">
-                      {{ session.data?.user?.name || 'Administración' }}
-                    </p>
-                    <p class="text-muted truncate text-xs">{{ session.data?.user?.email }}</p>
-                  </div>
-
-                  <UButton
-                    icon="i-tabler-logout"
-                    variant="ghost"
-                    class="shrink-0"
-                    size="sm"
-                    title="Cerrar sesión"
-                    aria-label="Cerrar sesión"
-                    @click="signOut"
-                  />
+              <template v-if="state === 'expanded'">
+                <img
+                  v-if="session.data?.user?.image && !avatarLoadFailed"
+                  :src="session.data.user.image"
+                  :alt="
+                    session.data.user.name
+                      ? `Avatar de ${session.data.user.name}`
+                      : 'Avatar de usuario'
+                  "
+                  class="size-8 shrink-0 rounded-full text-xs"
+                  loading="eager"
+                  decoding="async"
+                  @error="avatarLoadFailed = true"
+                />
+                <div
+                  v-else
+                  class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                  aria-hidden="true"
+                >
+                  {{ adminInitials }}
                 </div>
-              </Transition>
+
+                <Transition
+                  enter-active-class="transition-all duration-200 ease-out"
+                  enter-from-class="opacity-0 -translate-x-1"
+                  enter-to-class="opacity-100 translate-x-0"
+                  leave-active-class="transition-all duration-150 ease-in"
+                  leave-from-class="opacity-100 translate-x-0"
+                  leave-to-class="opacity-0 -translate-x-1"
+                >
+                  <div v-if="state === 'expanded'" class="flex min-w-0 flex-1 items-center gap-1">
+                    <div class="min-w-0 flex-1">
+                      <p class="line-clamp-2 text-sm leading-tight font-medium">
+                        {{ session.data?.user?.name || 'Administración' }}
+                      </p>
+                      <p class="text-muted truncate text-xs">{{ session.data?.user?.email }}</p>
+                    </div>
+
+                    <UButton
+                      icon="i-tabler-logout"
+                      variant="ghost"
+                      class="shrink-0"
+                      size="sm"
+                      title="Cerrar sesión"
+                      aria-label="Cerrar sesión"
+                      @click="signOut"
+                    />
+                  </div>
+                </Transition>
+              </template>
+
+              <UDropdownMenu v-else :items="userMenuItems">
+                <UButton
+                  variant="ghost"
+                  color="neutral"
+                  class="rounded-full p-0"
+                  aria-label="Menú de usuario"
+                  title="Menú de usuario"
+                >
+                  <img
+                    v-if="session.data?.user?.image && !avatarLoadFailed"
+                    :src="session.data.user.image"
+                    :alt="
+                      session.data.user.name
+                        ? `Avatar de ${session.data.user.name}`
+                        : 'Avatar de usuario'
+                    "
+                    class="size-8 shrink-0 rounded-full text-xs"
+                    loading="eager"
+                    decoding="async"
+                    @error="avatarLoadFailed = true"
+                  />
+                  <span
+                    v-else
+                    class="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                    aria-hidden="true"
+                  >
+                    {{ adminInitials }}
+                  </span>
+                </UButton>
+              </UDropdownMenu>
             </div>
 
             <template #fallback>
@@ -272,15 +316,16 @@ useHead({
         <header
           class="border-default flex h-(--ui-header-height) shrink-0 items-center gap-3 border-b px-4"
         >
-          <UButton
-            :icon="toggleSidebarIcon"
-            color="neutral"
-            variant="ghost"
-            class="shrink-0"
-            :aria-label="toggleSidebarLabel"
-            :title="toggleSidebarLabel"
-            @click="sidebarOpen = !sidebarOpen"
-          />
+          <UTooltip :text="toggleSidebarLabel">
+            <UButton
+              :icon="toggleSidebarIcon"
+              color="neutral"
+              variant="ghost"
+              class="shrink-0"
+              :aria-label="toggleSidebarLabel"
+              @click="sidebarOpen = !sidebarOpen"
+            />
+          </UTooltip>
 
           <Transition
             mode="out-in"
@@ -306,7 +351,6 @@ useHead({
             icon="i-tabler-external-link"
             variant="ghost"
             color="neutral"
-            size="sm"
           >
             Ver sitio
           </UButton>
