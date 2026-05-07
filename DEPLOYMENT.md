@@ -83,7 +83,20 @@ sudo chown $USER:$USER /opt/creup-web
 cd /opt/creup-web
 
 # Crear los directorios de datos que se montarán como bind mounts
-mkdir -p data/public-uploads data/admin-assets
+mkdir -p \
+  data/public-uploads/inicio/imagenes \
+  data/public-uploads/conocenos/imagenes \
+  data/public-uploads/eventos/imagenes \
+  data/public-uploads/eventos/documentos \
+  data/public-uploads/prensa/imagenes \
+  data/public-uploads/prensa/documentos \
+  data/public-uploads/prensa/newsletter/portadas \
+  data/public-uploads/prensa/newsletter/documentos \
+  data/public-uploads/prensa/newsletter/imagenes-por-defecto \
+  data/public-uploads/documentos/externos \
+  data/public-uploads/documentos/igualdad \
+  data/public-uploads/documentos/informes-economicos \
+  data/admin-assets
 ```
 
 ### 3b. Copiar los archivos del proyecto al VPS

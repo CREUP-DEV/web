@@ -98,6 +98,26 @@ remote_compose_up() {
   ssh "$VPS_HOST" 'bash -se' <<EOF
 set -euo pipefail
 
+ensure_host_data_dirs() {
+  local public_uploads_dir="\${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}"
+  local admin_assets_dir="\${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}"
+
+  mkdir -p \
+    "\$public_uploads_dir/inicio/imagenes" \
+    "\$public_uploads_dir/conocenos/imagenes" \
+    "\$public_uploads_dir/eventos/imagenes" \
+    "\$public_uploads_dir/eventos/documentos" \
+    "\$public_uploads_dir/prensa/imagenes" \
+    "\$public_uploads_dir/prensa/documentos" \
+    "\$public_uploads_dir/prensa/newsletter/portadas" \
+    "\$public_uploads_dir/prensa/newsletter/documentos" \
+    "\$public_uploads_dir/prensa/newsletter/imagenes-por-defecto" \
+    "\$public_uploads_dir/documentos/externos" \
+    "\$public_uploads_dir/documentos/igualdad" \
+    "\$public_uploads_dir/documentos/informes-economicos" \
+    "\$admin_assets_dir"
+}
+
 cleanup_old_app_images() {
   local image_name="\$1"
   local keep_count="\$2"
@@ -122,7 +142,16 @@ cleanup_old_app_images() {
 
 cd "${COMPOSE_DIR}"
 
+if [ -f .env ]; then
+  set -a
+  . ./.env
+  set +a
+fi
+
 export IMAGE="${IMAGE}"
+
+echo "== Ensure host data directories =="
+ensure_host_data_dirs
 
 echo "== Pull images =="
 docker compose pull "${COMPOSE_APP_SERVICE}"
