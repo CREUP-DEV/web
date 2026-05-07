@@ -17,7 +17,7 @@ services:
       - ${DEPLOY_ENV_FILE:-.env}
     environment:
       NODE_ENV: production
-      NODE_OPTIONS: ${LOCAL_DEPLOY_NODE_OPTIONS:---enable-source-maps --trace-uncaught}
+      NODE_OPTIONS: ${LOCAL_DEPLOY_NODE_OPTIONS:---max-old-space-size=384 --enable-source-maps --trace-uncaught}
       TZ: ${TZ:-Europe/Madrid}
       HOST: 0.0.0.0
       NITRO_PORT: 3000
