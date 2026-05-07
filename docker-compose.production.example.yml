@@ -1,7 +1,7 @@
 services:
   app:
     image: ${IMAGE:-ghcr.io/creup-dev/web:latest}
-    container_name: creup-web-app
+    container_name: web-app
     restart: unless-stopped
     env_file:
       - .env
@@ -41,7 +41,7 @@ services:
 
   postgres:
     image: postgres:18-alpine
-    container_name: creup-web-postgres
+    container_name: web-postgres
     restart: unless-stopped
     command:
       [
@@ -72,7 +72,7 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: creup-web-redis
+    container_name: web-redis
     restart: unless-stopped
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}

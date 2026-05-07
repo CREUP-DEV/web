@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:18-alpine
-    container_name: creup-web-postgres
+    container_name: web-postgres
     restart: no
     command:
       [
@@ -30,7 +30,7 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: creup-web-redis
+    container_name: web-redis
     restart: no
     command: [ "redis-server", "--appendonly", "yes" ]
     ports:

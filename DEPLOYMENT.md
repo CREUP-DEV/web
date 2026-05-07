@@ -481,7 +481,7 @@ FILENAME="${BACKUP_DIR}/creup_${TIMESTAMP}.sql.gz"
 
 mkdir -p "$BACKUP_DIR"
 
-docker exec creup-web-postgres pg_dump \
+docker exec web-postgres pg_dump \
   -U creup -d creup --no-owner --no-acl \
   | gzip > "$FILENAME"
 
@@ -503,7 +503,7 @@ Restaurar desde backup:
 
 ```bash
 gunzip -c backup.sql.gz \
-  | docker exec -i creup-web-postgres psql -U creup -d creup
+  | docker exec -i web-postgres psql -U creup -d creup
 ```
 
 ### Archivos subidos
@@ -558,13 +558,13 @@ Usa un servicio como [Uptime Kuma](https://github.com/louislam/uptime-kuma) (sel
 
 ```bash
 # Logs de la app (JSON estructurado de Nitro)
-docker logs -f creup-web-app
+docker logs -f web-app
 
 # Logs de PostgreSQL
-docker logs -f creup-web-postgres
+docker logs -f web-postgres
 
 # Logs de Redis
-docker logs -f creup-web-redis
+docker logs -f web-redis
 ```
 
 ### Purgar caché pública y de API externa
@@ -630,7 +630,7 @@ docker compose up -d postgres redis
 La app valida las variables de entorno críticas al arrancar y falla rápido con un error claro si falta alguna:
 
 ```bash
-docker logs creup-web-app 2>&1 | grep -A 5 "startup"
+docker logs web-app 2>&1 | grep -A 5 "startup"
 ```
 
 Causas habituales: `NUXT_REDIS_URL`, `APP_SECRET`, `NUXT_SMTP_HOST`, `NUXT_EXTERNAL_API_BASE_URL` no definidas o mal formadas. Si la API externa y los assets viven en orígenes distintos, verifica también `NUXT_EXTERNAL_ASSET_BASE_URL` y `NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS`.
@@ -659,7 +659,7 @@ Comprueba que:
 ### Los emails de newsletter no se envían
 
 1. Comprueba el health endpoint: `curl "http://127.0.0.1:${APP_PORT:-3000}/health"` — SMTP debe mostrar `ok`.
-2. Revisa los logs: `docker logs creup-web-app | grep smtp`.
+2. Revisa los logs: `docker logs web-app | grep smtp`.
 3. Verifica las variables `NUXT_SMTP_*`. Puedes testear con:
 
 ```bash
