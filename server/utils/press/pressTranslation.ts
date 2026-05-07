@@ -1,6 +1,6 @@
 import createDOMPurify, { type WindowLike } from 'dompurify'
 import { parseHTML } from 'linkedom'
-import { getBaseLanguage } from '~~/shared/utils/locale'
+import { getBaseLanguage } from '../../../shared/utils/locale'
 
 type PressTranslationLike = {
   locale: string
