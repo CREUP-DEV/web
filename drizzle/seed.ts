@@ -19,6 +19,7 @@ import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
   PRESS_DEFAULT_COVERS_PUBLIC_PATH,
+  PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_MEDIA_LOGO_PUBLIC_PATH,
   PRESS_DOSSIER_PUBLIC_PATH,
 } from '../shared/constants/assetPaths'
@@ -88,6 +89,38 @@ const createFinancialReportPdfPathBuilder = () => {
 
     const reportSlug = nextUsage === 1 ? baseSlug : `${baseSlug}-${nextUsage}`
     return `${FINANCIAL_REPORTS_PUBLIC_PATH}/${reportSlug}.pdf`
+  }
+}
+
+const createPressDocumentPdfPathBuilder = () => {
+  const slugUsage = new Map<string, number>()
+
+  return (title: string, publishedAt: Date) => {
+    const baseSlug = slugify(title) || 'documento-prensa'
+    const nextUsage = (slugUsage.get(baseSlug) ?? 0) + 1
+    slugUsage.set(baseSlug, nextUsage)
+    const year = publishedAt.getUTCFullYear()
+    const month = String(publishedAt.getUTCMonth() + 1).padStart(2, '0')
+    const occurrenceSlug = nextUsage === 1 ? baseSlug : `${baseSlug}-${nextUsage}`
+
+    const orderedSlugs = [
+      occurrenceSlug,
+      `${occurrenceSlug}-${year}-${month}`,
+      `${occurrenceSlug}-${year}`,
+      baseSlug,
+      `${baseSlug}-${year}-${month}`,
+      `${baseSlug}-${year}`,
+      `${baseSlug}-2`,
+    ]
+
+    for (const documentSlug of [...new Set(orderedSlugs)]) {
+      const publicPath = `${PRESS_DOCUMENT_PUBLIC_PATH}/${documentSlug}.pdf`
+      if (publicAssetExists(publicPath)) {
+        return publicPath
+      }
+    }
+
+    throw new Error(`Missing press document asset for seed article: ${title}`)
   }
 }
 
@@ -888,7 +921,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-dice-basta-a-la-subida-de-precios-en-los-com.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '15/12/2025',
@@ -906,7 +939,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-exige-una-estrategia-nacional-de-salud-mental-universi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/10/2025',
@@ -924,7 +957,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/a-la-espera-del-estatuto-de-becario-el-ministerio-de-trabajo.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '25/09/2025',
@@ -942,7 +975,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-denuncia-que-la-subida-del-14-en-el-precio-de-las-habi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/09/2025',
@@ -960,7 +993,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-denuncia-la-injerencia-en-la-autonomia-universitaria-2.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/07/2025',
@@ -977,7 +1010,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-de-la-representacion-del-estudiantado-en-apoyo-de.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/07/2025',
@@ -995,7 +1028,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/universidades-privadas-en-hospitales-publicos-la-conselleria.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/07/2025',
@@ -1013,7 +1046,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-apuesta-por-una-universidad-de-calidad-2025.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '12/05/2025',
@@ -1030,7 +1063,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-celebra-su-77-asamblea-general-ordinaria-en-la-univers.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '5/04/2025',
@@ -1047,7 +1080,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-lamenta-los-hechos-producidos-por-la-dana-y-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/10/2024',
@@ -1065,7 +1098,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-ministerio-de-trabajo-sigue-sin-reunirse-con-el-estudiant.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/10/2024',
@@ -1083,7 +1116,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-espanol-denuncia-las-violentas-actuaciones-c.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '29/07/2024',
@@ -1101,7 +1134,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-rechaza-los-acuerdos-firmados-en-el-pacto-sobre-la-pru.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/07/2024',
@@ -1119,7 +1152,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-responde-a-las-universidades-israelies-y-al-gobierno-y.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/05/2024',
@@ -1137,7 +1170,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-defiende-las-protestas-en-apoyo-a-palestina-2024-05.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '10/05/2024',
@@ -1154,7 +1187,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/los-estudiantes-piden-al-gobierno-retomar-las-negociaciones-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/12/2023',
@@ -1172,7 +1205,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/la-creup-pide-al-gobierno-que-esta-legislatura-los-estudiant.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/11/2023',
@@ -1192,7 +1225,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/aumentan-las-penalizaciones-e-intereses-economicos-para-los-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/11/2023',
@@ -1210,7 +1243,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/espana-acogera-en-zaragoza-la-46-edicion-de-la-european-stud.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '25/09/2023',
@@ -1227,7 +1260,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-de-las-universidades-publicas-condena-los-me.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/09/2023',
@@ -1247,7 +1280,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/maria-navarro-nueva-presidenta-de-la-creup-2023-08.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '28/08/2023',
@@ -1264,7 +1297,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-de-las-universidades-publicas-condena-los-me.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/08/2023',
@@ -1284,7 +1317,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-se-reune-con-los-partidos-politicos-para-trasladar-las.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/07/2023',
@@ -1302,7 +1335,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-reivindica-la-nueva-legislatura-como-una-nueva-oportun.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/07/2023',
@@ -1320,7 +1353,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-muestra-su-firme-oposicion-al-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/06/2023',
@@ -1342,7 +1375,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-denuncia-la-exclusion-del-estudiantado-en-la-negociaci.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/06/2023',
@@ -1360,7 +1393,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-denuncia-que-el-estatuto-del-b.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/02/2023',
@@ -1377,7 +1410,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/bajan-las-matriculas-universitarias-los-problemas-continuan.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/02/2023',
@@ -1394,7 +1427,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/querido-estudiante-que-no-te-enganen-2023-01.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '12/01/2023',
@@ -1411,7 +1444,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-exige-cambios-urgentes-en-la-l.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/12/2022',
@@ -1429,7 +1462,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-ministerio-de-trabajo-abandona-al-estudiantado-en-el-esta.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/11/2022',
@@ -1447,7 +1480,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-ministerio-de-trabajo-ignora-las-reclamaciones-del-estudi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/10/2022',
@@ -1465,7 +1498,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-reivindica-en-el-congreso-una-transformacion-profunda-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/09/2022',
@@ -1483,7 +1516,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-comparece-en-el-congreso-para-defender-las-reivindicac.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/09/2022',
@@ -1501,7 +1534,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-demanda-al-ministerio-de-traba.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/08/2022',
@@ -1519,7 +1552,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/subirats-deja-de-lado-al-estudiantado-en-el-anteproyecto-de-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/06/2022',
@@ -1537,7 +1570,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-reivindica-cambios-al-ministerio-de-universi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '2/06/2022',
@@ -1555,7 +1588,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-evidencia-que-la-losu-no-avanz.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '10/05/2022',
@@ -1573,7 +1606,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-se-reune-con-yolanda-diaz-para-analizar-los-puntos-cla.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/05/2022',
@@ -1591,7 +1624,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-reivindica-unas-practicas-form.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '6/05/2022',
@@ -1608,7 +1641,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/la-representacion-estudiantil-consigue-el-paro-academico-com.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/05/2022',
@@ -1626,7 +1659,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-reivindica-unas-practicas-acad.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/04/2022',
@@ -1643,7 +1676,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-rechaza-el-cierre-de-los-edifi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '21/04/2022',
@@ -1661,7 +1694,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-pide-al-gobierno-que-difunda-m.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '24/02/2022',
@@ -1679,7 +1712,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-conquista-avances-en-las-becas.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/02/2022',
@@ -1697,7 +1730,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-reclama-a-las-instituciones-universitarias-q.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/02/2022',
@@ -1715,7 +1748,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-reclama-a-yolanda-diaz-acordar.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/02/2022',
@@ -1733,7 +1766,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/la-universidad-de-sevilla-acoge-las-reuniones-de-la-directiv.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/02/2022',
@@ -1751,7 +1784,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-traslada-a-subirats-la-necesid.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '20/01/2022',
@@ -1769,7 +1802,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-considera-insuficiente-el-prot.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/01/2022',
@@ -1787,7 +1820,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-propone-a-subirats-reiniciar-l.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '20/12/2021',
@@ -1804,7 +1837,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-consejo-de-estudiantes-universitario-del-estado-aprueba-c.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/11/2021',
@@ -1822,7 +1855,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-anuncia-movilizaciones-contra-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/11/2021',
@@ -1840,7 +1873,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-enfado-del-estudiantado-universitario-explota-y-sifueraca.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '5/11/2021',
@@ -1858,7 +1891,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-no-avanza-respe.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/10/2021',
@@ -1876,7 +1909,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-reclama-cambios-en-la-ley-de-convivencia-uni.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/10/2021',
@@ -1894,7 +1927,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-reclama-que-la-ley-castells-inicie-el-camino.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/10/2021',
@@ -1912,7 +1945,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-no-avanza-en-de.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/10/2021',
@@ -1930,7 +1963,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/los-estudiantes-denuncian-que-la-ley-castells-solo-ha-sido-n.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/09/2021',
@@ -1948,7 +1981,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-prepara-sus-alegaciones-a-una-ley-castells-p.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/09/2021',
@@ -1966,7 +1999,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-muestra-su-oposicion-unanime-a-la-ley-castel.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/09/2021',
@@ -1984,7 +2017,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/castells-planta-al-estudiantado-para-acudir-a-la-mesa-de-dia.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/09/2021',
@@ -2001,7 +2034,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/estudiantes-demandan-avanzar-en-la-convivencia-universitaria.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/09/2021',
@@ -2019,7 +2052,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/el-estudiantado-denuncia-que-la-ley-castells-supone-un-atras.webp',
-      pdfUrl: '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-supone-un-atras.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/08/2021',
@@ -2037,7 +2070,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/las-becas-del-ministerio-incluiran-reivindicaciones-del-estu.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '3/08/2021',
@@ -2055,7 +2088,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/la-universidad-de-salamanca-acoge-la-lxix-asamblea-general-o.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/07/2021',
@@ -2072,7 +2105,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-y-crue-renuevan-su-compromiso-de-colaboracion-para-la-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/06/2021',
@@ -2090,7 +2123,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/carta-abierta-a-las-instituciones-para-garantizar-la-segurid.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/05/2021',
@@ -2112,7 +2145,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-pide-garantias-a-la-nueva-ley-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '26/05/2021',
@@ -2130,7 +2163,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-de-universidades-publicas-denuncia-que-el-nu.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '21/05/2021',
@@ -2148,7 +2181,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/creup-reclama-modificaciones-en-el-nuevo-real-decreto-de-bec.webp',
-      pdfUrl: '/prensa/documentos/creup-reclama-modificaciones-en-el-nuevo-real-decreto-de-bec.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '13/04/2021',
@@ -2165,7 +2198,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/el-ministerio-convoca-por-primera-vez-desde-que-comenzo-la-p.webp',
-      pdfUrl: '/prensa/documentos/el-ministerio-convoca-por-primera-vez-desde-que-comenzo-la-p.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/02/2021',
@@ -2183,7 +2216,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-denuncia-la-falta-de-prevision-en-las-universidades-pa.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '12/01/2021',
@@ -2200,7 +2233,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/carta-abierta-al-ministerio-de-universidades-2021-01.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/01/2021',
@@ -2217,7 +2250,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-reclama-que-la-calidad-sea-un-requisito-indispensable-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/12/2020',
@@ -2235,7 +2268,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/creup-se-reune-con-los-grupos-parlamentarios-durante-el-inic.webp',
-      pdfUrl: '/prensa/documentos/creup-se-reune-con-los-grupos-parlamentarios-durante-el-inic.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/09/2020',
@@ -2252,7 +2285,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/estudiantes-universitarios-lanzan-sus-peticiones-para-el-com.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/08/2020',
@@ -2271,7 +2304,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/miles-de-estudiantes-tendran-que-dejar-la-universidad-si-no-.webp',
-      pdfUrl: '/prensa/documentos/miles-de-estudiantes-tendran-que-dejar-la-universidad-si-no-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '28/04/2020',
@@ -2289,7 +2322,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/el-estudiantado-sigue-sin-saber-como-finalizara-el-curso-202.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '3/04/2020',
@@ -2306,7 +2339,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/representantes-de-estudiantes-piden-a-instituciones-y-univer.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '26/03/2020',
@@ -2324,7 +2357,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/el-estudiantado-reivindica-su-participacion-en-la-iniciativa.webp',
-      pdfUrl: '/prensa/documentos/el-estudiantado-reivindica-su-participacion-en-la-iniciativa.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '13/02/2020',
@@ -2342,7 +2375,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/esn-espana-y-creup-piden-un-aumento-de-la-cofinanciacion-nac.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/12/2019',
@@ -2362,7 +2395,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-crue-y-esn-piden-al-gobierno-que-apoye-triplicar-la-fi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '7/11/2019',
@@ -2382,7 +2415,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/el-estudiantado-estrecha-lazos-por-la-internacionalizacion-d.webp',
-      pdfUrl: '/prensa/documentos/el-estudiantado-estrecha-lazos-por-la-internacionalizacion-d.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/10/2019',
@@ -2402,7 +2435,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/el-bloqueo-politico-deja-un-ano-mas-a-las-asociaciones-de-un.webp',
-      pdfUrl: '/prensa/documentos/el-bloqueo-politico-deja-un-ano-mas-a-las-asociaciones-de-un.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/10/2019',
@@ -2422,7 +2455,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-se-reune-con-los-grupos-parlamentarios-para-plantear-l.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/09/2019',
@@ -2441,7 +2474,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/la-red-espanola-de-inmigracion-y-la-coordinadora-de-represen.webp',
-      pdfUrl: '/prensa/documentos/la-red-espanola-de-inmigracion-y-la-coordinadora-de-represen.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/08/2019',
@@ -2461,7 +2494,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/la-coordinadora-de-representantes-de-estudiantes-de-universi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '18/06/2019',
@@ -2481,8 +2514,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/la-coordinadora-de-representantes-de-estudiantes-de-universi-2.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '6/06/2019',
@@ -2502,7 +2534,7 @@ async function main() {
     {
       type: 'press_release',
       image: '/prensa/imagenes/ii-congreso-creup-crue-y-x-encuentro-creup-2019-03.webp',
-      pdfUrl: '/prensa/documentos/ii-congreso-creup-crue-y-x-encuentro-creup-2019-03.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/03/2019',
@@ -2521,7 +2553,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/los-estudiantes-valoran-como-un-primer-paso-positivo-las-med.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/10/2018',
@@ -2541,7 +2573,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/representantes-de-estudiantes-de-universidades-publicas-recl.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '2/08/2018',
@@ -2561,7 +2593,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/carta-abierta-al-grupo-parlamentario-ciudadanos-en-el-congre.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '18/06/2018',
@@ -2580,7 +2612,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/sobre-los-nuevos-criterios-para-becas-2018-05.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/05/2018',
@@ -2599,7 +2631,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/caso-cifuentes-2018-04.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '5/04/2018',
@@ -2618,7 +2650,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-y-crue-firman-un-convenio-de-cooperacion-2018-01.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/01/2018',
@@ -2637,7 +2669,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-inaugura-el-curso-academico-20172018-2017-09.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '20/09/2017',
@@ -2656,7 +2688,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/i-congreso-la-universidad-del-manana-2017-04.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/04/2017',
@@ -2675,7 +2707,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/gorka-martin-nuevo-presidente-de-creup-2016-06.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '20/06/2016',
@@ -2694,7 +2726,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-traslada-a-la-defensora-del-pueblo-los-problemas-del-s.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/06/2016',
@@ -2714,7 +2746,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-clausura-su-lvi-asamblea-general-exigiendo-un-sistema-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/11/2015',
@@ -2734,7 +2766,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-se-posiciona-en-contra-de-la-ley-universitaria-para-an.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/02/2026',
@@ -2751,7 +2783,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-de-creup-ante-la-intervencion-militar-en-la-unive.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '15/01/2026',
@@ -2768,7 +2800,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-de-creup-acerca-de-las-manifestaciones-de-las-uni.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/11/2025',
@@ -2786,7 +2818,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-de-creup-sobre-el-veto-a-nuevos-grados-en-univers.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/07/2025',
@@ -2804,7 +2836,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-de-repulsa-a-las-agresiones-contra-las-protestas-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '21/06/2024',
@@ -2822,7 +2854,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-de-repulsa-al-acto-de-violencia-machista-vivido-e.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '7/10/2022',
@@ -2840,7 +2872,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/manifiesto-por-la-universidad-publica-2021-11.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/11/2021',
@@ -2857,7 +2889,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/crue-creup-y-ceune-rechazan-las-enmiendas-pactadas-por-psoe-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '29/10/2021',
@@ -2875,7 +2907,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/carta-abierta-sobre-la-situacion-del-estudiantado-afgano-202.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '5/09/2021',
@@ -2892,7 +2924,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/en-defensa-de-la-seguridad-de-la-comunidad-universitaria-202.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '28/01/2021',
@@ -2909,8 +2941,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/estudiantes-universitarios-lanzan-sus-peticiones-para-el-com-2.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/08/2020',
@@ -2927,7 +2958,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/malestar-del-estudiantado-ante-las-declaraciones-realizadas.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/05/2020',
@@ -2944,7 +2975,7 @@ async function main() {
     {
       type: 'statement',
       image: '/prensa/imagenes/el-ministro-de-universidades-se-reune-con-los-representantes.webp',
-      pdfUrl: '/prensa/documentos/el-ministro-de-universidades-se-reune-con-los-representantes.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/04/2020',
@@ -2961,7 +2992,7 @@ async function main() {
     {
       type: 'statement',
       image: '/prensa/imagenes/recogida-de-pertenencias-de-estudiantes-2020-04.webp',
-      pdfUrl: '/prensa/documentos/recogida-de-pertenencias-de-estudiantes-2020-04.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/04/2020',
@@ -2978,7 +3009,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/medidas-anunciadas-por-crue-en-el-articulo-las-universidades.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '1/04/2020',
@@ -3000,7 +3031,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-se-suma-al-movimiento-yomequedoencasa-2020-03.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/03/2020',
@@ -3017,7 +3048,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/los-representantes-de-estudiantes-del-estado-ponen-sobre-la-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/03/2020',
@@ -3035,7 +3066,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/carta-abierta-al-ministerio-de-ciencia-innovacion-y-universi.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '15/10/2019',
@@ -3054,7 +3085,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/propuestas-de-cara-a-la-xiv-legislatura-2019-09.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/09/2019',
@@ -3073,7 +3104,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-no-solicita-una-prueba-unica-sino-una-equiparabilidad-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '7/06/2019',
@@ -3093,7 +3124,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/propuesta-de-creacion-de-una-comision-mixta-en-el-congreso-s.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '29/04/2019',
@@ -3113,7 +3144,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-lamenta-el-dano-nuevamente-causado-por-los-representan.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/09/2018',
@@ -3133,7 +3164,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-creup-28j-orgullo-lgtb-2018-06.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '28/06/2018',
@@ -3152,7 +3183,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-muestra-todo-su-apoyo-al-estudiantado-que-ha-realizado.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/06/2018',
@@ -3172,7 +3203,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/creup-insta-a-aneca-a-revisar-el-master-de-la-urjc-2018-03.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '29/03/2018',
@@ -3191,7 +3222,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/comunicado-sobre-el-8m-2018-03.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/03/2018',
@@ -3210,7 +3241,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/el-dia-de-la-mujer-y-la-nina-en-la-ciencia-nos-recuerdan-las.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/02/2018',
@@ -3230,7 +3261,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/casos-como-el-de-albacete-se-han-convertido-en-un-motivo-de-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/01/2018',
@@ -3250,7 +3281,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/ministro-de-educacion-repite-desplante-cita-al-estudiantado-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/12/2017',
@@ -3269,7 +3300,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/el-rd-destinado-a-garantizar-un-derecho-se-ha-convertido-en-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/07/2017',
@@ -3289,7 +3320,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/ministro-de-educacion-menosprecia-a-los-estudiantes-una-vez-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/07/2017',
@@ -3308,7 +3339,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/la-comunidad-estudiantil-celebra-avances-en-la-reduccion-de-.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/06/2017',
@@ -3328,7 +3359,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/respecto-a-los-plagios-en-la-universidad-2016-12.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '15/12/2016',
@@ -3347,7 +3378,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/manifiesto-17now-2016-11.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/11/2016',
@@ -3366,7 +3397,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/denuncia-de-los-abusos-en-la-universidad-de-sevilla-2016-11.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '13/11/2016',
@@ -3385,7 +3416,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl: '/prensa/documentos/los-estudiantes-celebran-la-unificacion-del-programa-erasmus.pdf',
+      hasPdf: true,
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '6/07/2016',
@@ -10236,8 +10267,8 @@ async function main() {
     },
   ] as const
 
-  // Import slug utility
   const { generatePressSlug } = await import('../server/utils/core/slug')
+  const buildPressDocumentPdfPath = createPressDocumentPdfPathBuilder()
 
   for (let i = 0; i < pressData.length; i++) {
     const item = pressData[i]
@@ -10259,7 +10290,10 @@ async function main() {
           type: item.type,
           slug,
           image: item.image,
-          pdfUrl: item.pdfUrl,
+          pdfUrl:
+            'hasPdf' in item && item.hasPdf
+              ? buildPressDocumentPdfPath(esTranslation.title, publishedAtDate)
+              : null,
           externalUrl: item.externalUrl,
           mediaOutletId: item.mediaOutletId,
           active: true,

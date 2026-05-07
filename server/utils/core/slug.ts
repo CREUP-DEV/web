@@ -12,6 +12,7 @@ export function slugify(text: string): string {
     .replace(/-+/g, '-') // Collapse multiple hyphens
     .replace(/^-|-$/g, '') // Trim leading/trailing hyphens
     .slice(0, 60) // Limit length
+    .replace(/^-|-$/g, '') // Trim again in case the length cut ended on a hyphen
 }
 
 export function buildReadableFileSlug(title: string, date?: Date | string | null): string {
