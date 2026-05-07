@@ -14,8 +14,10 @@ export function useTags(type?: MaybeRefOrGetter<string | null | undefined>) {
   const localeApiHeaders = useLocaleApiHeaders()
   const typeValue = computed(() => toValue(type) ?? null)
 
+  const key = computed(() => `tags-${locale.value}-${typeValue.value || 'none'}`)
+
   return useAsyncData<TagsResponse>(
-    () => `tags-${locale.value}-${typeValue.value || 'none'}`,
+    key,
     () => {
       const params = new URLSearchParams()
 

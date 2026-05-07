@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePressArchiveFilters } from '@/composables/press/usePressArchiveFilters'
 import { PRESS_ARTICLE_TYPES, type PressArticleType } from '~~/shared/constants/pressTypes'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 
@@ -21,17 +22,8 @@ const typeParam = useSyncedQueryParam<string | null>('types', {
   parse: (v) => v,
   serialize: (v) => v ?? null,
 })
-const tagParam = useSyncedQueryParam<string | null>('tag', {
-  parse: (v) => v,
-  serialize: (v) => v ?? null,
-})
-const page = useSyncedQueryParam<number>('page', {
-  parse: (rawValue) => {
-    const parsed = Number(rawValue)
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : 1
-  },
-  serialize: (value) => (value > 1 ? String(Math.floor(value)) : null),
-})
+
+const { page, toggleTag, selectedTags, tagsData, tagsPending } = usePressArchiveFilters(() => null)
 
 const selectedTypes = computed<PressArticleType[]>(() => {
   if (!typeParam.value) return []
@@ -41,18 +33,7 @@ const selectedTypes = computed<PressArticleType[]>(() => {
     .filter((s): s is PressArticleType => (PRESS_ARTICLE_TYPES as readonly string[]).includes(s))
 })
 
-const { data: tagsData } = useTags()
-const availableTagSlugs = computed(() => new Set(tagsData.value?.data.map((tag) => tag.slug)))
-
-const selectedTags = computed<string[]>(() => {
-  if (!tagParam.value) return []
-  return tagParam.value
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s) => s && availableTagSlugs.value.has(s))
-})
-
-watch([typeParam, tagParam], () => {
+watch(typeParam, () => {
   page.value = 1
 })
 
@@ -78,19 +59,6 @@ const toggleType = (pressType: PressArticleType) => {
   const idx = current.indexOf(pressType)
   const next = idx >= 0 ? current.filter((t) => t !== pressType) : [...current, pressType]
   typeParam.value = next.length > 0 ? next.join(',') : null
-  page.value = 1
-}
-
-const toggleTag = (slug: string | null) => {
-  if (!slug) {
-    tagParam.value = null
-    page.value = 1
-    return
-  }
-  const current = selectedTags.value
-  const idx = current.indexOf(slug)
-  const next = idx >= 0 ? current.filter((s) => s !== slug) : [...current, slug]
-  tagParam.value = next.length > 0 ? next.join(',') : null
   page.value = 1
 }
 
@@ -155,6 +123,8 @@ const getArticleAnimationStyle = (index: number) => ({
         </div>
 
         <HomeTagSelector
+          :tags="tagsData?.data ?? []"
+          :pending="tagsPending"
           :selected-slugs="selectedTags"
           :aria-label="t('press.news.filterByTag')"
           class="mt-2"

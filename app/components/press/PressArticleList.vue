@@ -17,7 +17,9 @@ const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
 const LIMIT = 12
-const { page, toggleTag, selectedTags, tagQuery } = usePressArchiveFilters(() => props.type)
+const { page, toggleTag, selectedTags, tagQuery, tagsData, tagsPending } = usePressArchiveFilters(
+  () => props.type
+)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
 const { data, pending, error, refresh } = usePress(props.type, tagQuery, LIMIT, offset)
@@ -133,7 +135,8 @@ watch(page, () => {
       </header>
 
       <HomeTagSelector
-        :type="type"
+        :tags="tagsData?.data ?? []"
+        :pending="tagsPending"
         :selected-slugs="selectedTags"
         :aria-label="title"
         class="mb-6"

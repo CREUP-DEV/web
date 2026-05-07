@@ -1,6 +1,10 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { PressArticleType } from '@/composables/press/usePress'
 
+/**
+ * Tag filters + `page` / `tag` query sync for press archive pages.
+ * Pass `() => null` for the combined hub (`/prensa/noticias`) so `/api/tags` returns tags across all article types.
+ */
 export function usePressArchiveFilters(type: MaybeRefOrGetter<PressArticleType | null>) {
   const tags = useTags(type)
 
@@ -71,5 +75,6 @@ export function usePressArchiveFilters(type: MaybeRefOrGetter<PressArticleType |
     selectedTags,
     tagQuery,
     tagsData: tags.data,
+    tagsPending: tags.pending,
   }
 }

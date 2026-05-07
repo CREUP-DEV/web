@@ -1,19 +1,18 @@
 <script setup lang="ts">
+import type { Tag } from '@/composables/press/useTags'
+
 const props = defineProps<{
-  type?: string
+  tags: Tag[]
+  pending?: boolean
   selectedSlugs: string[]
   ariaLabel?: string
 }>()
 
 const { t } = useI18n()
-const { data: tagsData, pending } = useTags(() => props.type)
 
-const tagList = computed(() => {
-  const availableTags = tagsData.value?.data ?? []
-  return availableTags
-})
+const tagList = computed(() => props.tags)
 
-const isLoading = computed(() => pending.value || tagsData.value == null)
+const isLoading = computed(() => props.pending ?? false)
 const groupAriaLabel = computed(() => props.ariaLabel ?? t('home.latestNews'))
 
 const emit = defineEmits<{
