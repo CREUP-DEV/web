@@ -1,4 +1,4 @@
-import { createError, getRequestHeader, toWebRequest, type H3Event } from 'h3'
+import { createError, getRequestHeader, type H3Event } from 'h3'
 
 export async function assertUploadRequestSize(event: H3Event, maxBytes: number, message: string) {
   const rawContentLengthHeader = getRequestHeader(event, 'content-length')
@@ -21,34 +21,6 @@ export async function assertUploadRequestSize(event: H3Event, maxBytes: number, 
 
   if (rawContentLength > maxBytes) {
     throw createError({ statusCode: 413, message })
-  }
-
-  const requestClone = toWebRequest(event).clone()
-  const reader = requestClone.body?.getReader()
-
-  if (!reader) {
-    return
-  }
-
-  let totalBytes = 0
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read()
-
-      if (done) {
-        return
-      }
-
-      totalBytes += value.byteLength
-
-      if (totalBytes > maxBytes) {
-        await reader.cancel(message)
-        throw createError({ statusCode: 413, message })
-      }
-    }
-  } finally {
-    reader.releaseLock()
   }
 }
 
