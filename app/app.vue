@@ -1,23 +1,95 @@
-<script setup>
-import * as locales from '@nuxt/ui/locale'
+<script setup lang="ts">
+import { en, es } from '@nuxt/ui/locale'
+import { getBaseLanguage } from '~~/shared/utils/locale'
 
 const { locale, t } = useI18n()
+const { getLanguageTag } = useLocales()
+const localeHead = useLocaleHead({ seo: true })
+const siteConfig = useSiteConfig()
+const siteUrl = useRuntimeSiteUrl()
 
-const lang = computed(() => locales[locale.value].code)
-const dir = computed(() => locales[locale.value].dir)
+const nuxtUiLocales = { en, es } as const
+const currentUiLocale = computed(
+  () =>
+    nuxtUiLocales[getBaseLanguage(getLanguageTag(locale.value)) as keyof typeof nuxtUiLocales] ??
+    nuxtUiLocales[getBaseLanguage(getLanguageTag()) as keyof typeof nuxtUiLocales] ??
+    nuxtUiLocales.es
+)
 
-useHead({
+const lang = computed(() => getLanguageTag(locale.value))
+const dir = computed(() => currentUiLocale.value.dir)
+
+useHead(() => ({
   htmlAttrs: {
-    lang,
-    dir,
+    lang: localeHead.value.htmlAttrs?.lang ?? lang.value,
+    dir: (localeHead.value.htmlAttrs?.dir ?? dir.value) as 'auto' | 'ltr' | 'rtl',
   },
-  title: () => t('meta.title'),
-  meta: [{ name: 'description', content: () => t('meta.description') }],
-})
+  meta: [
+    ...(localeHead.value.meta ?? []),
+    { name: 'theme-color', content: '#792225' },
+    { name: 'author', content: 'CREUP' },
+  ],
+  link: [
+    ...(localeHead.value.link ?? [])
+      .filter((link) => link.rel !== 'canonical')
+      .map((link) => {
+        if (!['alternate', 'canonical'].includes(link.rel || '') || typeof link.href !== 'string') {
+          return link
+        }
+
+        try {
+          const parsedUrl = new URL(link.href, siteUrl.value)
+          const runtimeHref = new URL(
+            `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`,
+            siteUrl.value
+          ).toString()
+          return {
+            ...link,
+            href: runtimeHref,
+          }
+        } catch {
+          return link
+        }
+      }),
+    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg', sizes: 'any' },
+    { rel: 'shortcut icon', type: 'image/x-icon', href: '/favicon.ico' },
+  ],
+}))
+
+useSchemaOrg([
+  defineWebSite({
+    '@id': () => `${siteUrl.value}#website`,
+    name: () => String(siteConfig.name ?? 'CREUP'),
+    url: () => siteUrl.value,
+    inLanguage: () => lang.value,
+  }),
+  defineOrganization({
+    '@id': () => `${siteUrl.value}#organization`,
+    name: 'CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas',
+    url: () => siteUrl.value,
+    logo: () => `${siteUrl.value}/favicon.svg`,
+    description: () => t('nuxtSiteConfig.description'),
+    sameAs: [
+      'https://www.instagram.com/CREUPCREUP',
+      'https://x.com/CREUPCREUP',
+      'https://www.linkedin.com/company/creup',
+      'https://www.facebook.com/CREUPCREUP',
+      'https://www.tiktok.com/@creupestudiantes',
+      'https://telegram.me/CREUP',
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'Press',
+      email: 'prensa@creup.es',
+    },
+  }),
+])
 </script>
 
 <template>
-  <UApp :locale="locales[locale]">
+  <UApp :locale="currentUiLocale">
+    <NuxtLoadingIndicator color="var(--ui-primary)" :height="3" />
+    <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

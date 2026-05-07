@@ -1,20 +1,51 @@
-import { defineEventHandler, getCookie } from 'h3'
+import { defineEventHandler, getCookie, getHeader, getRequestURL } from 'h3'
+import {
+  extractLocaleCodeFromPathname,
+  normalizeLocaleDefinitions,
+  parseAcceptLanguageHeader,
+  resolveConfiguredLocaleCode,
+  resolveLocaleCode,
+} from '~~/shared/utils/locale'
 
 export default defineEventHandler((event) => {
   const config = useRuntimeConfig(event)
+  const runtimeI18n = config.public.i18n as {
+    defaultLocale?: unknown
+    detectBrowserLanguage?: { cookieKey?: string }
+    locales?: unknown
+  }
+  const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
+  const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
+  const cookieKey = runtimeI18n.detectBrowserLanguage?.cookieKey
+  const pathname = getRequestURL(event).pathname
+  const isApiRequest = pathname === '/api' || pathname.startsWith('/api/')
+  const headerLocale = resolveLocaleCode(
+    getHeader(event, 'x-request-locale') ?? getHeader(event, 'x-locale'),
+    locales,
+    ''
+  )
+  const pathnameLocale = extractLocaleCodeFromPathname(pathname, locales)
 
-  const cookie = getCookie(event, config.public.i18n.detectBrowserLanguage.cookieKey)
+  const cookie = cookieKey ? getCookie(event, cookieKey) : undefined
+  let resolved = defaultLocale
 
-  let resolved = config.public.i18n.defaultLocale
+  if (pathnameLocale) {
+    resolved = pathnameLocale
+  } else if (isApiRequest && headerLocale) {
+    resolved = headerLocale
+  } else if (cookie) {
+    resolved = resolveLocaleCode(cookie, locales, defaultLocale)
+  } else {
+    const acceptedLocales = parseAcceptLanguageHeader(getHeader(event, 'accept-language'))
 
-  if (cookie) {
-    const locales = config.public.i18n.locales as Array<{ code: string }>
-    const codes = locales.map((l) => String(l.code).toLowerCase())
-    const matched = codes.find((code) => cookie.startsWith(code))
-    if (matched) resolved = matched
+    for (const acceptedLocale of acceptedLocales) {
+      const matchedLocale = resolveLocaleCode(acceptedLocale, locales, '')
+      if (matchedLocale) {
+        resolved = matchedLocale
+        break
+      }
+    }
   }
 
-  // Attach to request context for downstream handlers with a safe custom key
-  const ctx = event.context as unknown as { requestLocale: string }
-  ctx.requestLocale = resolved
+  event.context.requestLocale = resolved
 })

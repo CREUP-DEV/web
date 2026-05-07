@@ -1,29 +1,30 @@
 {
   "nav": {
     "home": "Home",
+    "admin": "Admin panel",
     "about": {
       "label": "About",
       "whatIs": "What is CREUP?",
       "members": "Members",
       "team": "Team",
-      "structure": "Organisational structure"
+      "committees": "Committees",
+      "events": "Events"
     },
     "policy": {
-      "label": "University Politics",
+      "label": "University Policy",
       "positions": "Positions",
       "resolutions": "Resolutions",
       "reports": "Executive Reports"
     },
     "events": {
-      "label": "Events",
       "generalAssemblies": "General Assemblies",
       "trainingStages": "Training Stages",
       "meetingsCongresses": "Meetings and Congresses"
     },
     "press": {
       "label": "Press",
+      "news": "News",
       "newsletter": "Newsletter",
-      "pressContact": "Press contact",
       "pressReleases": "Press releases",
       "statements": "Statements",
       "inMedia": "In the media",
@@ -34,14 +35,15 @@
       "agreements": "Agreements",
       "regulations": "Regulations",
       "financialReports": "Financial reports",
-      "publicAgenda": "Public agenda",
-      "corporateIdentity": "Corporate Identity"
+      "corporateIdentity": "Corporate Identity",
+      "equality": "Equality"
     },
     "contact": "Contact"
   },
   "footer": {
-    "tagline": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
-    "legal": "Legal notice and general terms"
+    "tagline": "CREUP - Coordinator of Student Representatives of Public Universities",
+    "legal": "Legal notice and general terms",
+    "legalNav": "Legal and cookies"
   },
   "social": {
     "instagram": "Instagram",
@@ -52,11 +54,776 @@
     "telegram": "Telegram"
   },
   "meta": {
-    "title": "CREUP - Coordinadora de Representantes de Estudiantes de Universidades Públicas",
+    "title": "Home",
+    "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain.",
+    "legal": {
+      "description": "Legal notice, terms of use, privacy, cookies and links policy of CREUP.",
+      "ogDescription": "Read the legal notice and general terms of use for the CREUP website."
+    }
+  },
+  "nuxtSiteConfig": {
+    "name": "CREUP",
     "description": "The Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) is the national association representing more than 1,000,000 students across Spain."
   },
   "home": {
+    "newsAndEventsLabel": "Press and events",
+    "viewAllNews": "View all",
     "latestNews": "Latest News",
-    "featuredLinks": "Featured Links"
+    "featuredLinks": "Featured Links",
+    "publicAgenda": "Public Agenda",
+    "noNews": "No news available for this tag",
+    "retry": "Retry",
+    "newsLoadError": "Could not load the news at this time.",
+    "featuredLinksLoadError": "Could not load featured links at this time.",
+    "carousel": {
+      "label": "Featured announcements carousel",
+      "previous": "Previous slide",
+      "next": "Next slide",
+      "defaultButtonText": "Learn more",
+      "goToSlide": "Go to slide {n}",
+      "loadError": "Could not load featured items."
+    },
+    "calendar": {
+      "label": "Event calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "hasEvents": "There are events on this day",
+      "noEvents": "No events scheduled for this day.",
+      "selectDay": "Select a day to see scheduled events.",
+      "upcomingEvents": "Upcoming events",
+      "noUpcomingEvents": "No upcoming events scheduled.",
+      "loadError": "Could not load the calendar. Please try again later.",
+      "multiDay": "Multi-day",
+      "allDay": "All day"
+    }
+  },
+  "accessibility": {
+    "skipToNavigation": "Skip to navigation",
+    "skipToMain": "Skip to main content",
+    "mainNavigation": "Main navigation",
+    "mobileNavigation": "Mobile navigation",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "siteLogo": "CREUP logo",
+    "externalLink": "Opens in a new tab",
+    "loading": "Loading...",
+    "paginationNavigation": "Pagination navigation",
+    "breadcrumb": "Breadcrumb",
+    "contentImage": "Content image"
+  },
+  "common": {
+    "all": "All",
+    "readMore": "Read more",
+    "viewAll": "View all",
+    "visitWebsite": "Visit website",
+    "back": "Back",
+    "comingSoon": "Content coming soon.",
+    "close": "Close",
+    "unnamedPerson": "Name not specified",
+    "copyEmail": "Copy email",
+    "emailCopied": "Email copied to clipboard"
+  },
+  "language": {
+    "toggle": "Change language",
+    "openMenu": "Open language selector",
+    "locales": {
+      "es": "Spanish",
+      "en": "English"
+    }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light mode",
+    "dark": "Dark mode"
+  },
+  "error": {
+    "notFound": "Page not found",
+    "forbidden": "You do not have access to this page",
+    "server": "Something went wrong on our end",
+    "unavailable": "Service temporarily unavailable",
+    "generic": "An error occurred",
+    "forbiddenMessage": "Check that you are signed in with an authorized account.",
+    "serverMessage": "Sorry, something failed on our side. Please try again later.",
+    "unavailableMessage": "We are doing technical work or a service is temporarily down. Please try again in a few minutes.",
+    "message": "Sorry, something went wrong. Please try again later.",
+    "backHome": "Back to home"
+  },
+  "team": {
+    "title": "Team",
+    "description": "Meet the people who are part of the CREUP team.",
+    "viewProfile": "View profile",
+    "email": "Email",
+    "university": "University",
+    "degree": "Degree",
+    "period": "Period",
+    "duration": "Duration",
+    "publicAgenda": "Public agenda",
+    "publicAgendaOf": "{name}'s public agenda",
+    "memberModalTitle": "Team profile",
+    "memberModalDescription": "Profile details for the person.",
+    "agendaModalDescription": "Upcoming events in the person's public agenda.",
+    "noEvents": "No upcoming events scheduled.",
+    "agendaLoadError": "Could not load the agenda. Please try again.",
+    "about": "About {name}",
+    "hierarchyView": "By hierarchy",
+    "areaView": "By area",
+    "executiveCommission": "Executive Committee",
+    "extendedCommission": "Extended Executive Committee",
+    "loadError": "Team data could not be loaded right now.",
+    "viewHistory": "Position history"
+  },
+  "mandates": {
+    "title": "Position History",
+    "description": "Browse past CREUP teams.",
+    "detailDescription": "Details of positions held during a CREUP mandate.",
+    "mandateOf": "Mandate of",
+    "backToTeam": "Back to team",
+    "backToMandates": "Back to mandates",
+    "current": "Current",
+    "present": "Present",
+    "ended": "Ended",
+    "noMandates": "No mandates on record.",
+    "noAreas": "No areas on record for this mandate.",
+    "noAssignments": "No positions assigned in this area.",
+    "loadError": "Mandate information could not be loaded.",
+    "durationDays": "{count} day | {count} days",
+    "durationMonths": "{count} month | {count} months",
+    "disambiguateTitle": "Mandates of {year}",
+    "disambiguateDescription": "There are several mandates for this year. Select the one you want to view."
+  },
+  "aboutPage": {
+    "title": "What is CREUP?",
+    "description": "We are the leading student representation platform for public universities in Spain.",
+    "lead": "We are a state association that brings together the student councils of public universities, giving a voice to more than one million students across Spain.",
+    "intro": "We coordinate national student representation and defend our rights and participation in university policymaking.",
+    "dynamicContentLoadErrorTitle": "Could not refresh dynamic content",
+    "dynamicContentLoadErrorDescription": "Reference values are shown while the connection recovers.",
+    "snapshotTitle": "CREUP at a glance",
+    "ctaIdentity": "How we work",
+    "ctaMembers": "View members",
+    "stats": {
+      "universities": {
+        "label": "member public universities"
+      },
+      "students": {
+        "label": "students represented"
+      },
+      "years": {
+        "suffix": "years",
+        "label": "working for students"
+      }
+    },
+    "identityTitle": "We are the students' voice",
+    "identityParagraph1": "We act as interlocutors with key institutions so that our perspective as students is part of university policy-making.",
+    "identityParagraph2": "Our goal is to ensure that students' voices are heard in building and improving the university system, promoting a public education model that is high-quality, inclusive, and accessible.",
+    "activityTitle": "How we work",
+    "activityParagraph1": "We hold two General Assemblies each year where we agree on priorities, positions, and shared strategic lines.",
+    "activityParagraph2": "We promote training events and spaces for exchanging experiences and views among student representatives and other social actors in the university system.",
+    "purposeTitle": "Our commitment to society",
+    "purposeParagraph": "We give students a voice and work every day for a fairer, more participatory, and higher-quality Higher Education system. We believe in public universities as a driver of social mobility.",
+    "missionTitle": "Mission",
+    "missionText": "To give university students a voice in building and improving the Spanish University System, promoting Higher Education that is high-quality, accessible, and inclusive. We work so that our rights, needs, and interests are heard and considered in decision-making.",
+    "visionTitle": "Vision",
+    "visionText": "To become the leading student representation body at the national level, serving as a link with associations, institutions, and public and private organizations, both nationally and internationally. We aim to help build a university system that is fairer, more innovative, and better adapted to society's needs.",
+    "valuesTitle": "Values that define us",
+    "valuesDescription": "The student representation model we promote is grounded in clear and shared principles.",
+    "values": {
+      "independence": {
+        "title": "Independence",
+        "description": "We act autonomously so students are represented above interests unrelated to our needs."
+      },
+      "cooperation": {
+        "title": "Cooperation",
+        "description": "We build common positions through shared work among universities and student representatives across the country."
+      },
+      "nonDiscrimination": {
+        "title": "Non-discrimination",
+        "description": "We defend an inclusive, diverse university free from barriers for everyone."
+      },
+      "socialCommitment": {
+        "title": "Social commitment",
+        "description": "We understand Higher Education as a tool for equity, collective progress, and social transformation."
+      },
+      "participation": {
+        "title": "Participation",
+        "description": "We encourage students to take an active role in the decisions that shape our present and future."
+      }
+    },
+    "sectionsTitle": "Keep discovering us",
+    "sectionsDescription": "Explore the sections where our work is organized:",
+    "sections": {
+      "members": {
+        "title": "Members",
+        "description": "See the student organizations that make up CREUP.",
+        "cta": "Go to Members"
+      },
+      "team": {
+        "title": "Team",
+        "description": "Meet the people who take on representation and coordination responsibilities.",
+        "cta": "Go to Team"
+      },
+      "committees": {
+        "title": "Committees",
+        "description": "Discover our working committees and their members.",
+        "cta": "Go to Committees"
+      },
+      "events": {
+        "title": "Events",
+        "description": "Browse our assemblies, meetings, and training events.",
+        "cta": "Go to Events"
+      }
+    }
+  },
+  "equalityPage": {
+    "title": "Equality and harassment prevention",
+    "description": "Public space with documents and resources on equality, diversity, inclusive communication, and the Safe Point used during our events.",
+    "eyebrow": "Equality and Social Dimension",
+    "lead": "On this page you can consult documents and resources related to equality, diversity, discrimination prevention, and the basic information about the Safe Point we have in place during assemblies, meetings, and other events.",
+    "ctaDocuments": "View documents",
+    "ctaContact": "Email the Safe Point",
+    "heroPoints": {
+      "centralize": "Resources gathered in one place",
+      "access": "Clear access from the public website",
+      "support": "Documentation to prevent, respond, and support"
+    },
+    "resourcesTitle": "Documents to consult",
+    "openDocument": "Open document",
+    "loadError": "Equality documents could not be loaded right now.",
+    "empty": "There are no published equality documents yet.",
+    "actionTitle": "If something happens during one of our events",
+    "actionSteps": {
+      "safety": {
+        "title": "Prioritize safety",
+        "description": "If there is an immediate risk, leave the situation, look for support from someone you trust, and contact 112 or emergency services if needed."
+      },
+      "notify": {
+        "title": "Report what happened",
+        "description": "During the event you can approach the Safe Point, the trusted people assigned to it, or the person responsible for equality in the extended Executive Committee. If you need to report it later, you can use this email."
+      },
+      "details": {
+        "title": "Gather relevant information",
+        "description": "Write down dates, places, people involved, and any available evidence. The protocols stress only asking for the necessary information and protecting confidentiality."
+      },
+      "support": {
+        "title": "Read the protocol and ask for support",
+        "description": "The protocols explain what safeguards are in place, which protective measures can be activated, and how to ask for support if sexual harassment or discrimination takes place."
+      }
+    },
+    "pointSafeTitle": "What the Safe Point is",
+    "pointSafeDescription": "The Safe Point is the resource we have in place at our events to offer information, a listening ear, and support in situations involving sexual harassment or discrimination.",
+    "pointSafeCalloutTitle": "How it works",
+    "pointSafeCalloutDescription": "The Safe Point operates on the ground during assemblies, meetings, and other activities we organize. At each event, at least one trusted person is appointed and their contact details are shared with all attendees.",
+    "pointSafePrimary": "Email the Safe Point",
+    "pointSafeItems": {
+      "prevention": {
+        "title": "Before anything happens",
+        "description": "It helps set expectations, share the protocols, and make clear that our events are meant to be safe and respectful spaces."
+      },
+      "guidance": {
+        "title": "When someone needs support",
+        "description": "It offers a clear point of contact where someone can pause, explain what happened, get guidance, and think through the next steps."
+      },
+      "followUp": {
+        "title": "If follow-up is needed",
+        "description": "It helps document what happened, connect with the responsible people, and continue the support process with the level of discretion each case needs."
+      }
+    },
+    "scopeTitle": "What situations are covered",
+    "scopeItems": {
+      "sexualViolence": "Sexual harassment and conduct against sexual freedom",
+      "gender": "Sexism, gender-based violence, and structural inequality",
+      "lgbtiq": "Sexual orientation, identity, and gender expression",
+      "ethnicity": "Racism, xenophobia, and discrimination based on origin or ethnicity",
+      "disability": "Ableism, accessibility, and support needs",
+      "otherDiscrimination": "Other forms of discrimination based on age, social condition, or other personal or social circumstances"
+    },
+    "supportTitle": "Do you need to contact the Safe Point?",
+    "supportDescription": "If you want to tell us about something that happened during one of our events or you need guidance, you can email the Safe Point directly. This page gives you the documents and the contact route; support itself is provided in the context of the activities we organize. In urgent situations, also use the specialized services at your university, in your area, or call 112.",
+    "supportPrimary": "Email the Safe Point",
+    "supportSecondary": "View the documents"
+  },
+  "members": {
+    "title": "Members",
+    "description": "Discover the organizations that actively participate in CREUP.",
+    "introText": "Two types of entities actively participate in CREUP:",
+    "introAssociated": "Student councils from public universities, acting as associated members.",
+    "introSectoriales": "National sectorial associations representing students from specific fields of knowledge, as partner entities.",
+    "introAssociatedCta": "View associated members",
+    "introSectorialesCta": "View partner sectorials",
+    "associatedTitle": "Associated members",
+    "associatedDescription": "Student councils from public universities.",
+    "allMembers": "All members",
+    "showAll": "Show all",
+    "loadError": "Members could not be loaded right now.",
+    "noMembers": "No members associated in this community.",
+    "unknownUniversity": "University not specified",
+    "unknownDenomination": "Designation not specified",
+    "viewDetails": "View details",
+    "memberModalTitle": "Organisation details",
+    "memberModalDescription": "Details of the selected organization.",
+    "descriptionLabel": "Description",
+    "initials": "Initials",
+    "community": "Community",
+    "info": "Information and contact",
+    "socialNetworks": "Social networks",
+    "networks": {
+      "website": "Website",
+      "email": "Contact email",
+      "instagram": "Instagram",
+      "twitter": "Twitter / X",
+      "tiktok": "TikTok",
+      "bluesky": "Bluesky",
+      "linkedin": "LinkedIn",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "facebook": "Facebook",
+      "github": "GitHub"
+    },
+    "membersIn": "Members in {community}",
+    "selectCommunity": "Select an autonomous community on the map to see its members.",
+    "mapAccessibleHelp": "If you cannot use the map, you can use the community filters or jump directly to the members list.",
+    "representedCommunities": "{count} communities with representation",
+    "mapSelectionSummary": "Showing members from {community}",
+    "mapSelectionAllSummary": "Showing all associated members",
+    "mapLegendLabel": "Map legend",
+    "mapLegendSelected": "Selected community",
+    "mapLegendActive": "Active representation",
+    "mapLegendInactive": "No registered members",
+    "mapFilterTitle": "Filter by community without using the map",
+    "mapTooltipCount": "{count} member | {count} members",
+    "mapTooltipEmpty": "No registered members",
+    "mapSelectedState": "Selected",
+    "mapAvailableState": "Has representation",
+    "mapUnavailableState": "No representation",
+    "skipMap": "Go to list",
+    "communities": {
+      "andalucia": "Andalusia",
+      "aragon": "Aragon",
+      "asturias": "Asturias",
+      "baleares": "Balearic Islands",
+      "canarias": "Canary Islands",
+      "cantabria": "Cantabria",
+      "castilla-la-mancha": "Castile-La Mancha",
+      "castilla-y-leon": "Castile and León",
+      "cataluna": "Catalonia",
+      "ceuta": "Ceuta",
+      "extremadura": "Extremadura",
+      "galicia": "Galicia",
+      "la-rioja": "La Rioja",
+      "madrid": "Madrid",
+      "melilla": "Melilla",
+      "murcia": "Murcia",
+      "navarra": "Navarre",
+      "pais-vasco": "Basque Country",
+      "valencia": "Valencian Community"
+    },
+    "sectoriales": {
+      "title": "Sectorial associations",
+      "description": "Associations representing students from specific fields of knowledge.",
+      "allSectoriales": "All sectorial associations",
+      "noSectoriales": "No sectorial associations available.",
+      "loadError": "Sectorial associations could not be loaded right now.",
+      "viewDetails": "View details"
+    }
+  },
+  "mic": {
+    "title": "Corporate Identity Manual",
+    "description": "Core elements of CREUP's visual identity: logos, corporate colors, and the full brand manual.",
+    "introTitle": "Introduction",
+    "introParagraph1": "This Visual Identity Manual contains the core elements of the visual identity of the Coordinadora de Representantes de Estudiantes de Universidades Públicas, hereinafter CREUP.",
+    "introParagraph2": "These elements establish the construction guidelines, typography usage, and chromatic applications of the brand. Consolidating the brand image requires special attention to the recommendations set out in this manual, as a document that ensures consistency in public communication and outreach.",
+    "introParagraph3": "The manual should therefore be a dynamic tool, present in all corporate image applications. It remains, however, open to the creativity of the person using it.",
+    "logosTitle": "Logo Downloads",
+    "logosDescription": "Below you can view and download all CREUP logo variants. The brand must always be reproduced following the corporate standards set out in this manual. Therefore, ",
+    "logosWarning": "colors and proportions must never be altered.",
+    "logoAlt": "CREUP Logo - {version}",
+    "downloadSvg": "SVG",
+    "downloadPng": "PNG",
+    "logos": {
+      "horizontalFull": "Full horizontal version",
+      "horizontalShort": "Short horizontal version",
+      "vertical": "Vertical version",
+      "downloadAllHorizontalFull": "Download all, full horizontal version (zip)",
+      "downloadAllHorizontalShort": "Download all, short horizontal version (zip)",
+      "downloadAllVertical": "Download all, vertical version (zip)"
+    },
+    "variants": {
+      "granate": "Garnet",
+      "grisOscuro": "Dark Grey",
+      "grisClaro": "Light Grey",
+      "azul": "Blue",
+      "beige": "Beige",
+      "blancoPuro": "Pure White"
+    },
+    "colorsTitle": "Corporate Colors",
+    "colorsDescription": "In addition to white, these are the corporate colors and their codes.",
+    "colorsTable": {
+      "color": "Color",
+      "preview": "Preview",
+      "hex": "HEX",
+      "rgb": "RGB",
+      "cmyk": "CMYK",
+      "pantone": "PANTONE"
+    },
+    "colors": {
+      "burgundy": "Corporate Burgundy",
+      "blue": "Corporate Blue",
+      "beige": "Corporate Beige",
+      "darkGray": "Dark Grey",
+      "lightGray": "Light Grey"
+    },
+    "copied": "Copied: {value}",
+    "copyError": "Could not copy to clipboard",
+    "downloadTitle": "Download the Corporate Identity Manual",
+    "downloadDescription": "Here you can download the full manual in PDF format.",
+    "downloadButton": "Download MIC"
+  },
+  "events": {
+    "title": "Events",
+    "description": "Browse assemblies, meetings, and training activities organized by CREUP.",
+    "loadError": "Events could not be loaded right now.",
+    "noEvents": "No events available.",
+    "allTypes": "All",
+    "filterByType": "Filter by event type",
+    "types": {
+      "asamblea": "Assembly",
+      "congresoYEncuentro": "Congress and Meeting",
+      "stageFormativo": "Training Stage",
+      "otro": "Other"
+    },
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "backToEvents": "Back to events",
+    "notFound": "Event not found.",
+    "documents": "Documents",
+    "document": "Document",
+    "organizers": "Organizer | Organizers",
+    "venues": "Venue | Venues",
+    "collaborators": "Collaborator | Collaborators",
+    "visitWebsite": "Visit website",
+    "bannerAlt": "{event} banner",
+    "gallery": "Gallery",
+    "galleryPhotoAlt": "Photo {number} of {event}",
+    "galleryPrevious": "Previous photo",
+    "galleryNext": "Next photo",
+    "galleryClose": "Close viewer",
+    "galleryCounter": "{current} of {total}",
+    "galleryLoading": "Loading image…",
+    "galleryZoomIn": "Zoom in",
+    "galleryZoomOut": "Zoom out",
+    "galleryResetZoom": "Reset zoom"
+  },
+  "committees": {
+    "title": "Committees",
+    "description": "Beyond the Extended Executive Committee, CREUP has specialized committees that focus their work on specific areas of student representation or the internal functioning of the association.",
+    "email": "Email",
+    "viewProfile": "View profile",
+    "memberModalDescription": "Profile details for the person.",
+    "noMembers": "This committee currently has no assigned members.",
+    "loadError": "Committees could not be loaded right now.",
+    "copyEmail": "Copy email",
+    "university": "University",
+    "degree": "Degree"
+  },
+  "sectorialCommitteePage": {
+    "title": "Sectorial Affairs Committee",
+    "description": "Technical page dedicated to the Sectorial Affairs Committee.",
+    "intro": "Specific page for the Sectorial Affairs Committee with the list of sectorial associations and the committee team.",
+    "loadError": "The information for this commission could not be loaded right now.",
+    "committeeNotFound": "The Sectorial Affairs Committee was not found in the committees source.",
+    "teamDescription": "People who are part of {committee}.",
+    "fallbackCommitteeTitle": "Sectorial Affairs Committee"
+  },
+  "policy": {
+    "download": "Download",
+    "positions": {
+      "title": "Positions",
+      "description": "Positions express the political stance of the General Assembly on topics related to the Association's purposes.",
+      "loadError": "Positions could not be loaded right now.",
+      "empty": "No positions available."
+    },
+    "resolutions": {
+      "title": "Resolutions",
+      "description": "Resolutions are documents through which the General Assembly expresses its opinion on any situation raised by its members.",
+      "loadError": "Resolutions could not be loaded right now.",
+      "empty": "No resolutions available."
+    },
+    "reports": {
+      "title": "Executive Reports",
+      "description": "Executive reports are prepared in relation to regulations, indicating either the minimum requirements they must include or the amendments CREUP wishes to propose.",
+      "loadError": "Executive reports could not be loaded right now.",
+      "empty": "No executive reports available."
+    }
+  },
+  "regulations": {
+    "title": "Regulations",
+    "description": "CREUP's internal regulations approved by the General Assembly, arranged in a normative hierarchy: the statutes form the foundational rules and take precedence over all others; the regime regulations govern the organisational structure; and the operating regulations define how each body functions in practice.",
+    "loadError": "Regulations could not be loaded right now.",
+    "empty": "No regulations available.",
+    "categories": {
+      "estatutos": "Statutes",
+      "reglamentos-de-regimen": "Regime Regulations",
+      "reglamentos-de-funcionamiento": "Operating Regulations"
+    }
+  },
+  "financialReports": {
+    "title": "Financial Reports",
+    "description": "CREUP financial reports approved by the General Assembly, detailing the financial management of the organisation's activities and events.",
+    "loadError": "Financial reports could not be loaded right now.",
+    "empty": "No financial reports available.",
+    "approvedOn": "Approved on {date}",
+    "download": "Download"
+  },
+  "press": {
+    "allTags": "All",
+    "downloadPdf": "Download PDF",
+    "pagination": "Pagination",
+    "readOriginal": "Read original article",
+    "readFull": "Read full article",
+    "share": "Share",
+    "shareActions": {
+      "copy": "Copy link",
+      "whatsapp": "Share on WhatsApp",
+      "native": "Share",
+      "x": "Share on X",
+      "linkedin": "Share on LinkedIn",
+      "facebook": "Share on Facebook",
+      "telegram": "Share on Telegram",
+      "email": "Share by email",
+      "print": "Print"
+    },
+    "copy": {
+      "success": "Link copied",
+      "error": "Could not copy the link"
+    },
+    "notFound": "The requested article was not found.",
+    "releases": {
+      "title": "Press Releases",
+      "description": "Official CREUP press releases for media outlets.",
+      "empty": "No press releases available.",
+      "loadError": "Press releases could not be loaded right now.",
+      "backToList": "Back to press releases"
+    },
+    "statements": {
+      "title": "Press Statements",
+      "description": "Official CREUP statements on current affairs.",
+      "empty": "No statements available.",
+      "loadError": "Statements could not be loaded right now.",
+      "backToList": "Back to statements"
+    },
+    "inMedia": {
+      "title": "In the Media",
+      "description": "CREUP appearances and mentions in the media.",
+      "empty": "No media appearances available.",
+      "loadError": "Media appearances could not be loaded right now.",
+      "backToList": "Back to media appearances"
+    },
+    "news": {
+      "title": "News",
+      "description": "Press releases, statements and media appearances from CREUP.",
+      "empty": "No news available for the selected filters.",
+      "loadError": "News could not be loaded right now.",
+      "filterByType": "Filter by type",
+      "filterByTag": "Filter by tag",
+      "backToList": "Back to news"
+    }
+  },
+  "cookies": {
+    "banner": {
+      "title": "We respect your privacy",
+      "description": "This website only uses cookies and technical storage necessary for language, accessibility, and the administration session. In addition, CREUP uses a self-hosted Umami instance for aggregated usage measurement without cookies or persistent identifiers.",
+      "dismiss": "Understood",
+      "learnMore": "Privacy and cookies"
+    },
+    "footerLink": "Cookies and privacy"
+  },
+  "contactPage": {
+    "seo": {
+      "title": "Contact",
+      "description": "Get in touch with CREUP. Send us a message or email us at info{'@'}creup.es."
+    },
+    "title": "Contact",
+    "subtitle": "Have a question or proposal? Write to us and we'll get back to you as soon as possible.",
+    "email": "You can also email us directly at",
+    "contactType": {
+      "label": "Contact type",
+      "general": "General contact",
+      "generalDescription": "Questions, proposals, or any other inquiry.",
+      "press": "Press contact",
+      "pressDescription": "Media requests, interviews, and press releases."
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you{'@'}email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+34 600 000 000",
+      "mediaName": "Media outlet",
+      "mediaNamePlaceholder": "Name of the media outlet",
+      "subject": "Subject",
+      "subjectPlaceholder": "Message subject",
+      "message": "Message",
+      "messagePlaceholder": "Write your message here...",
+      "honeypotLabel": "Middle name",
+      "turnstile": "Anti-spam verification",
+      "turnstileHelp": "Complete the verification to submit the form.",
+      "turnstileLoading": "Loading anti-spam verification...",
+      "submit": "Send message",
+      "sending": "Sending...",
+      "success": "Message sent successfully. We'll get back to you as soon as possible.",
+      "errorGeneric": "Could not send the message. Please try again later.",
+      "privacyInfoTitle": "Basic data protection information",
+      "privacyInfoController": "Website owner (art. 10 LSSI-CE) and data controller: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP).",
+      "privacyInfoPurpose": "Purpose: manage and respond to inquiries sent through this form.",
+      "privacyInfoLegalBasis": "Legal basis: handling the request sent by the data subject and, where applicable, taking steps requested by the data subject prior to entering into a relationship.",
+      "privacyInfoRecipients": "Recipients: data will not be disclosed to third parties, except where legally required.",
+      "privacyInfoRetention": "Retention: data is not added to a website database; it is kept in the corporate mailbox only for the time needed to manage your inquiry and, where applicable, for legally required periods.",
+      "privacyInfoRights": "Rights: you may access, rectify and erase your data, and exercise other rights by writing to info{'@'}creup.es. You may also lodge a complaint with the Spanish Data Protection Authority (www.aepd.es).",
+      "privacyInfoMorePrefix": "Additional information:",
+      "privacyInfoMoreLink": "Legal notice and privacy policy",
+      "errors": {
+        "nameRequired": "Name is required",
+        "nameMin": "Name must be at least 2 characters",
+        "nameMax": "Name must be 100 characters or less",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email address",
+        "phoneInvalid": "Enter a valid phone number",
+        "mediaNameRequired": "Media outlet name is required",
+        "mediaNameMax": "Media outlet name must be 200 characters or less",
+        "subjectRequired": "Subject is required",
+        "subjectMin": "Subject must be at least 3 characters",
+        "subjectMax": "Subject must be 200 characters or less",
+        "messageRequired": "Message is required",
+        "messageMin": "Message must be at least 10 characters",
+        "messageMax": "Message must be 5000 characters or less",
+        "turnstileRequired": "Complete the anti-spam verification"
+      }
+    }
+  },
+  "newsletterPage": {
+    "seo": {
+      "title": "Newsletter",
+      "description": "Subscribe to the CREUP newsletter and download previous issues."
+    },
+    "title": "Newsletter",
+    "subtitle": "Stay up to date with the latest CREUP news. Receive our monthly newsletter directly in your inbox.",
+    "dateLocale": "en-GB",
+    "confirmed": {
+      "title": "Subscription confirmed",
+      "description": "Your address is now active for receiving the CREUP newsletter."
+    },
+    "alreadyConfirmed": {
+      "title": "Subscription already confirmed",
+      "description": "This address was already active for the CREUP newsletter."
+    },
+    "confirmedExpired": {
+      "title": "The confirmation link has expired",
+      "description": "Submit the subscription form again to receive a new link."
+    },
+    "confirmedInvalid": {
+      "title": "The confirmation link is not valid",
+      "description": "Check the email you received or subscribe again to generate a new link."
+    },
+    "unsubscribe": {
+      "title": "You have unsubscribed from the newsletter",
+      "description": "You will no longer receive CREUP newsletter emails at this address."
+    },
+    "unsubscribeInvalid": {
+      "title": "This unsubscribe link is no longer valid",
+      "description": "Use the most recent unsubscribe link available in one of your newsletter emails to manage your subscription."
+    },
+    "form": {
+      "ariaLabel": "Newsletter subscription form",
+      "heading": "Subscribe to the newsletter",
+      "email": "Email",
+      "emailPlaceholder": "you{'@'}email.com",
+      "honeypotLabel": "Middle name",
+      "turnstile": "Anti-spam verification",
+      "turnstileHelp": "Complete the verification to finish your subscription.",
+      "turnstileLoading": "Loading anti-spam verification...",
+      "submit": "Subscribe",
+      "sending": "Subscribing...",
+      "pendingConfirmation": "We have sent you an email to confirm your subscription.",
+      "errorGeneric": "Could not complete the subscription. Please try again later.",
+      "consentPrefix": "I accept the processing of my data to manage the newsletter subscription in accordance with the ",
+      "consentLink": "legal notice and privacy policy",
+      "consentSuffix": ".",
+      "privacyInfoTitle": "Basic data protection information",
+      "privacyInfoController": "Website owner (art. 10 LSSI-CE) and data controller: Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP).",
+      "privacyInfoPurpose": "Purpose: manage the newsletter subscription and send periodic communications about CREUP's activities.",
+      "privacyInfoLegalBasis": "Legal basis: the data subject's consent (art. 6(1)(a) GDPR).",
+      "privacyInfoRecipients": "Recipients: data will not be disclosed to third parties, except where legally required.",
+      "privacyInfoRetention": "Retention: data will be kept while the subscription is active. After unsubscribing, a minimal suppression record will be retained to prevent unwanted future mailings and to handle potential incidents or complaints.",
+      "privacyInfoRights": "Rights: you may access, rectify and erase your data, and exercise other rights by writing to info{'@'}creup.es. You may also lodge a complaint with the Spanish Data Protection Authority (www.aepd.es).",
+      "privacyInfoMorePrefix": "Additional information:",
+      "privacyInfoMoreLink": "Legal notice and privacy policy",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Enter a valid email address",
+        "consentRequired": "You must accept the privacy policy to subscribe",
+        "turnstileRequired": "Complete the anti-spam verification"
+      }
+    },
+    "archive": {
+      "ariaLabel": "Newsletter archive",
+      "title": "Previous issues",
+      "empty": "No newsletters have been published yet.",
+      "download": "Download PDF"
+    }
+  },
+  "admin": {
+    "errors": {
+      "slugExists": "A tag with this slug already exists",
+      "tagOrderSaveFailed": "Could not save tag order",
+      "tagSaveFailed": "Could not save the tag",
+      "tagDeleteFailed": "Could not delete the tag",
+      "saveFailed": "Error saving",
+      "deleteFailed": "Error deleting",
+      "loadFailed": "Error loading data"
+    },
+    "messages": {
+      "tagOrderSaved": "Tag order saved",
+      "tagUpdated": "Tag updated",
+      "tagCreated": "Tag created",
+      "tagDeleted": "Tag deleted"
+    },
+    "success": {
+      "saved": "Saved successfully",
+      "deleted": "Deleted successfully",
+      "orderSaved": "Order saved successfully"
+    }
+  },
+  "confirmSubscription": {
+    "seo": {
+      "title": "Confirm newsletter subscription",
+      "description": "Confirm your subscription to the CREUP newsletter."
+    },
+    "confirmedTitle": "Subscription confirmed",
+    "confirmedDescription": "Your address is now active for receiving the CREUP newsletter.",
+    "alreadyConfirmedTitle": "Subscription already confirmed",
+    "alreadyConfirmedDescription": "This address was already active for the CREUP newsletter.",
+    "expiredTitle": "The confirmation link has expired",
+    "expiredDescription": "Submit the subscription form again to receive a new link.",
+    "processingTitle": "Confirming your subscription",
+    "processingDescription": "We are activating your CREUP newsletter subscription.",
+    "invalidTitle": "Invalid link",
+    "invalidDescription": "The confirmation link is not valid. Please check the email you received or subscribe again.",
+    "errorTitle": "An error occurred",
+    "errorDescription": "Your subscription could not be confirmed. Please try again or resubmit the subscription form.",
+    "backToNewsletter": "Back to newsletter"
+  },
+  "unsubscribePage": {
+    "seo": {
+      "title": "Unsubscribe from newsletter",
+      "description": "Cancel your CREUP newsletter subscription."
+    },
+    "processingTitle": "Processing your unsubscription",
+    "processingDescription": "We are canceling your CREUP newsletter subscription.",
+    "invalidTitle": "Invalid link",
+    "invalidDescription": "The unsubscribe link is not valid. Please check the email you received.",
+    "errorTitle": "An error occurred",
+    "errorDescription": "Your unsubscription could not be processed. Please try again.",
+    "backToNewsletter": "Back to newsletter"
   }
 }

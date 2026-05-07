@@ -1,78 +1,136 @@
 <script setup lang="ts">
-/**
- * UsefulLinksRow
- * Renders a row of "links of interest" (image + title).
- * - Auto-wraps to multiple rows on small screens.
- * - Each card is a compact tile; good for 4–8 links.
- */
+import { isExternalNavigationTarget } from '~~/shared/utils/url'
 
 type LinkItem = {
-  title: string // Localized already
-  image: string // Thumbnail or small banner
-  to: string // Internal or external link
+  title: string
+  image: string
+  to: string
   alt?: string
 }
 
-const props = defineProps<{
-  items: LinkItem[]
+const props = withDefaults(
+  defineProps<{
+    items: LinkItem[]
+    pending?: boolean
+    error?: boolean
+  }>(),
+  {
+    pending: false,
+    error: false,
+  }
+)
+const emit = defineEmits<{
+  retry: []
 }>()
+
+const { t } = useI18n()
+const localePath = useLocalePath()
+const featuredLinkImageSizes = 'xs:50vw sm:33vw md:16vw xl:192px'
 </script>
 
 <template>
-  <section aria-labelledby="featured-links-heading" class="py-4 sm:py-6">
+  <section
+    v-if="props.pending || props.error || props.items.length"
+    aria-labelledby="featured-links-heading"
+    class="py-4 sm:py-6"
+  >
     <UContainer>
       <header class="mb-3 flex items-center justify-between sm:mb-5">
-        <h2 id="featured-links-heading" class="text-lg font-semibold sm:text-xl">
-          {{ $t('home.featuredLinks') }}
+        <h2 id="featured-links-heading" class="text-xl font-semibold sm:text-2xl">
+          {{ t('home.featuredLinks') }}
         </h2>
       </header>
 
-      <!-- Loading skeleton tiles -->
-      <div
-        v-if="!props.items.length"
-        aria-hidden="true"
-        class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6"
-      >
+      <div aria-live="polite" :aria-busy="props.pending || undefined">
         <div
-          v-for="n in 6"
-          :key="n"
-          class="overflow-hidden rounded-xl bg-white/5 ring-1 ring-black/5"
+          v-if="props.pending"
+          aria-hidden="true"
+          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-6"
         >
-          <USkeleton class="aspect-square" />
-          <div class="p-2.5 sm:p-3">
-            <USkeleton class="h-4 w-3/4" />
+          <div v-for="n in 6" :key="n" class="bg-surface/50 overflow-hidden rounded-xl">
+            <USkeleton class="aspect-square" />
+            <div class="p-2.5 sm:p-3">
+              <USkeleton class="h-4 w-3/4" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Responsive tiles: 2 / 3 / 6 columns depending on width -->
-      <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6">
-        <NuxtLink
-          v-for="(item, idx) in props.items"
-          :key="idx"
-          :to="item.to"
-          class="group focus-visible:ring-primary/60 overflow-hidden rounded-xl bg-white/5 ring-1 ring-black/5 hover:ring-black/10 focus:outline-none focus-visible:ring-2"
-          :aria-label="item.title"
+        <div v-else-if="props.error" class="space-y-3">
+          <UAlert
+            color="error"
+            variant="soft"
+            icon="i-tabler-alert-triangle"
+            :title="t('home.featuredLinksLoadError')"
+          />
+          <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="emit('retry')">
+            {{ t('home.retry') }}
+          </UButton>
+        </div>
+
+        <ul
+          v-else
+          class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-6"
+          role="list"
         >
-          <div class="aspect-square bg-neutral-200 dark:bg-neutral-800">
-            <img
-              :src="item.image"
-              :alt="item.alt || item.title"
-              class="size-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          <div class="flex items-start justify-between gap-2 p-2.5 sm:p-3">
-            <p class="line-clamp-2 text-sm leading-tight font-medium">
-              {{ item.title }}
-            </p>
-            <UIcon
-              name="i-tabler-external-link"
-              class="mt-0.5 shrink-0 opacity-60 transition-opacity group-hover:opacity-100"
-            />
-          </div>
-        </NuxtLink>
+          <li v-for="item in props.items" :key="`${item.to}-${item.image}-${item.title}`">
+            <a
+              v-if="isExternalNavigationTarget(item.to)"
+              :href="item.to"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div class="bg-muted aspect-square">
+                <NuxtImg
+                  :src="item.image"
+                  :alt="item.alt ?? ''"
+                  width="288"
+                  height="288"
+                  class="motion-link-media size-full object-cover"
+                  loading="lazy"
+                  :sizes="featuredLinkImageSizes"
+                  quality="70"
+                />
+              </div>
+              <div class="p-2.5 sm:p-3">
+                <UTooltip :text="item.title">
+                  <p
+                    class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
+                  >
+                    {{ item.title }}
+                  </p>
+                </UTooltip>
+              </div>
+            </a>
+            <NuxtLink
+              v-else
+              :to="localePath(item.to)"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
+            >
+              <div class="bg-muted aspect-square">
+                <NuxtImg
+                  :src="item.image"
+                  :alt="item.alt ?? ''"
+                  width="288"
+                  height="288"
+                  class="motion-link-media size-full object-cover"
+                  loading="lazy"
+                  :sizes="featuredLinkImageSizes"
+                  quality="70"
+                />
+              </div>
+              <div class="p-2.5 sm:p-3">
+                <UTooltip :text="item.title">
+                  <p
+                    class="group-hover:text-primary text-sm leading-tight font-medium transition-colors sm:line-clamp-2"
+                  >
+                    {{ item.title }}
+                  </p>
+                </UTooltip>
+              </div>
+            </NuxtLink>
+          </li>
+        </ul>
       </div>
     </UContainer>
   </section>

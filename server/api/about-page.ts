@@ -1,0 +1,104 @@
+import { createError, setHeader } from 'h3'
+import { db } from '../db'
+import { externalAssociatedMembersCountResponseSchema } from '../utils/validation'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+  withExternalApiSWRCache,
+} from '../utils/cache/externalApiCache'
+import { toExternalImageProxyUrl } from '../utils/external/externalAssetUrl'
+import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
+import { getRequiredExternalApiBaseUrl } from '../utils/core/runtimeConfig'
+import { logError } from '../utils/core/logger'
+import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import {
+  buildPublicRouteCacheKey,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+} from '../utils/cache/publicRouteCache'
+import { throwSafePublicError } from '../utils/public/publicErrors'
+import { appendAssetVersion } from '../utils/core/assetVersion'
+
+export default defineCachedEventHandler(
+  async (event) => {
+    const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
+    const cacheOptions = getExternalApiCacheOptions(event)
+
+    setExternalApiCacheHeaders(event, cacheOptions, 0)
+
+    const [content, memberCount] = await Promise.all([
+      db.query.aboutPageContent.findFirst().catch((error) => {
+        if (isDatabaseUnavailableError(error)) {
+          logError('public.about-page.database-unavailable', error, undefined, event)
+          setHeader(event, 'retry-after', 60)
+          throw createError({
+            statusCode: 503,
+            message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
+          })
+        }
+
+        throwSafePublicError(event, 'public.about-page.unexpected-error', error)
+      }),
+      withExternalApiSWRCache(
+        `external-api:members-count:${configuredBaseUrl}`,
+        async () => {
+          const endpoint = new URL('/api/usuarios/asociados/numero', configuredBaseUrl).toString()
+
+          let payload: unknown
+          try {
+            payload = await $fetch(endpoint)
+          } catch (error) {
+            logError('public.about-page.member-count.fetch', error, { endpoint }, event)
+            throw createError({
+              statusCode: 502,
+              message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
+            })
+          }
+
+          const parsedPayload = externalAssociatedMembersCountResponseSchema.safeParse(payload)
+          if (!parsedPayload.success) {
+            logError(
+              'public.about-page.member-count.invalid-payload',
+              parsedPayload.error,
+              { endpoint },
+              event
+            )
+            throw createError({
+              statusCode: 502,
+              message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
+            })
+          }
+
+          return parsedPayload.data
+        },
+        cacheOptions
+      ).catch((error) => {
+        logError('public.about-page.member-count.unavailable', error, undefined, event)
+        return null
+      }),
+    ])
+
+    return {
+      data: {
+        content: content
+          ? {
+              heroVisible: content.heroVisible,
+              heroImage: content.heroImage
+                ? appendAssetVersion(
+                    toExternalImageProxyUrl(content.heroImage, {
+                      publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
+                    }),
+                    content.updatedAt
+                  )
+                : null,
+            }
+          : null,
+        memberCount,
+      },
+    }
+  },
+  {
+    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+    getKey: (event) => buildPublicRouteCacheKey(event, 'about-page', { includeLocale: false }),
+  }
+)

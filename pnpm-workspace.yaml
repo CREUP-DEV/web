@@ -1,7 +1,10 @@
+ignoredBuiltDependencies:
+  - msgpackr-extract
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - '@tailwindcss/oxide'
   - esbuild
+  - msgpackr-extract
   - sharp
   - unrs-resolver
   - vue-demi

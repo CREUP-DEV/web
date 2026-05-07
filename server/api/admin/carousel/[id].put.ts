@@ -1,0 +1,166 @@
+import { createError, defineEventHandler, readBody } from 'h3'
+import { and, eq } from 'drizzle-orm'
+import { db } from '../../../db'
+import { carouselItems, carouselItemTranslations } from '../../../db/schema'
+import {
+  type CleanupUnusedAdminAssetOptions,
+  cleanupAdminAssetFinalizationsSafely,
+  cleanupUnusedAdminAssetSafely,
+  trackAdminAssetFinalization,
+} from '../../../utils/admin/adminAssetPublication'
+import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
+import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
+import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { invalidateHomeDataCache } from '../../../utils/admin/adminCacheInvalidation'
+import { getPreferredTranslationValue } from '../../../utils/locale/localizedContent'
+import {
+  assertOptimisticLock,
+  buildOptimisticLockCondition,
+} from '../../../utils/admin/optimisticLock'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
+import { HOME_CAROUSEL_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { updateCarouselItemSchema } from '~~/shared/utils/adminSchemas'
+import { toRelativeSitePath } from '~~/shared/utils/url'
+
+const IMAGE_UPLOAD_DIR = 'public/inicio/imagenes/carrusel'
+
+function getCarouselImageSlug(translations: Array<{ locale: string; title: string }>) {
+  return getPreferredTranslationValue(translations, 'title')
+}
+
+export default defineEventHandler(async (event) => {
+  const { id } = validateRouteParams(event, idRouteParamSchema)
+  const body = await readBody(event)
+
+  let dbUpdated = false
+  let previousImage: string | null = null
+  let image: string | null = null
+  const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
+
+  try {
+    const existingItem = await db.query.carouselItems.findFirst({
+      where: eq(carouselItems.id, id),
+    })
+
+    if (!existingItem) {
+      throw createError({ statusCode: 404, message: 'No encontrado' })
+    }
+
+    const validated = validateBody(updateCarouselItemSchema, body)
+    const normalizedHref = toRelativeSitePath(validated.href, useRuntimeConfig(event).siteUrl)
+    assertOptimisticLock(
+      validated.updatedAt,
+      existingItem.updatedAt,
+      'El elemento del carrusel fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+    )
+
+    previousImage = existingItem.image
+
+    if (validated.image) {
+      if (validated.image === existingItem.image) {
+        image = existingItem.image
+      } else {
+        const nextImage = await finalizeAdminImage({
+          storagePath: validated.image,
+          uploadDir: IMAGE_UPLOAD_DIR,
+          publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
+          slug: getCarouselImageSlug(validated.translations),
+          publish: validated.active,
+          fallbackBaseName: 'banner',
+          replaceStoragePath: existingItem.image,
+        })
+        image = nextImage
+        trackAdminAssetFinalization(cleanupTargets, {
+          sourceStoragePath: validated.image,
+          storagePath: nextImage,
+          allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+        })
+      }
+    } else {
+      image = null
+    }
+
+    const item = await runAdminCrudTransaction(async (tx) => {
+      await tx
+        .delete(carouselItemTranslations)
+        .where(eq(carouselItemTranslations.carouselItemId, id))
+
+      const whereCondition = validated.updatedAt
+        ? and(
+            eq(carouselItems.id, id),
+            buildOptimisticLockCondition(carouselItems.updatedAt, validated.updatedAt)
+          )
+        : eq(carouselItems.id, id)
+
+      const updatedRows = await tx
+        .update(carouselItems)
+        .set({
+          image,
+          href: normalizedHref ?? validated.href,
+          order: validated.order,
+          active: validated.active,
+        })
+        .where(whereCondition)
+        .returning({ id: carouselItems.id })
+
+      if (updatedRows.length === 0) {
+        throw createError({
+          statusCode: 409,
+          message:
+            'El elemento del carrusel fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        })
+      }
+
+      if (validated.translations.length > 0) {
+        await tx.insert(carouselItemTranslations).values(
+          validated.translations.map((translation) => ({
+            locale: translation.locale,
+            title: translation.title,
+            buttonText: translation.buttonText ?? '',
+            alt: translation.alt || null,
+            carouselItemId: id,
+          }))
+        )
+      }
+
+      return tx.query.carouselItems.findFirst({
+        where: eq(carouselItems.id, id),
+        with: { translations: true },
+      })
+    }, 'No se pudo actualizar el elemento del carrusel')
+    dbUpdated = true
+
+    if (previousImage !== image) {
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: previousImage,
+          allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+        },
+        'admin.carousel.update.cleanup',
+        event
+      )
+    }
+
+    await invalidateHomeDataCache()
+    return { data: item }
+  } catch (error) {
+    await cleanupAdminAssetFinalizationsSafely(
+      cleanupTargets,
+      'admin.carousel.update.rollback',
+      event
+    )
+
+    if (!dbUpdated && image && image !== previousImage) {
+      await cleanupUnusedAdminAssetSafely(
+        {
+          storagePath: image,
+          allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+        },
+        'admin.carousel.update.rollback.cleanup',
+        event
+      )
+    }
+
+    throwAdminMutationError('admin.carousel.update', error, event)
+  }
+})

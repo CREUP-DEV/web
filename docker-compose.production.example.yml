@@ -1,0 +1,100 @@
+services:
+  app:
+    image: ${IMAGE:-ghcr.io/creup-dev/web:latest}
+    container_name: creup-web-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      TZ: ${TZ:-Europe/Madrid}
+      HOST: 0.0.0.0
+      NITRO_PORT: 3000
+      NUXT_SITE_URL: ${NUXT_SITE_URL}
+    ports:
+      - ${APP_PORT:-3000}:3000
+    volumes:
+      # Keep build assets from the image (/_nuxt) and persist only mutable upload targets.
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/inicio/imagenes:/app/.output/public/inicio/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/conocenos/imagenes:/app/.output/public/conocenos/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/eventos/imagenes:/app/.output/public/eventos/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/eventos/documentos:/app/.output/public/eventos/documentos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/imagenes:/app/.output/public/prensa/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/documentos:/app/.output/public/prensa/documentos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/portadas:/app/.output/public/prensa/newsletter/portadas
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/documentos:/app/.output/public/prensa/newsletter/documentos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/imagenes-por-defecto:/app/.output/public/prensa/newsletter/imagenes-por-defecto
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/externos:/app/.output/public/documentos/externos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/igualdad:/app/.output/public/documentos/igualdad
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/informes-economicos:/app/.output/public/documentos/informes-economicos
+      - ${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}:/app/.output/.data/admin-assets
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: creup-web-postgres
+    restart: unless-stopped
+    command:
+      [
+        "postgres",
+        "-c",
+        "timezone=${TZ:-Europe/Madrid}",
+        "-c",
+        "log_timezone=${TZ:-Europe/Madrid}",
+      ]
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      # Applied only when PGDATA is initialized for the first time.
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=es-ES"
+    expose:
+      - 5432
+    volumes:
+      - creup_web_postgres_data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    container_name: creup-web-redis
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command:
+      [
+        "sh",
+        "-c",
+        "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"",
+      ]
+    volumes:
+      - creup_web_redis_data:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+volumes:
+  creup_web_postgres_data:
+  creup_web_redis_data:

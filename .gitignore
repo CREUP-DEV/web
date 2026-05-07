@@ -5,6 +5,7 @@
 .nitro
 .cache
 dist
+data
 
 # Node dependencies
 node_modules
@@ -22,3 +23,34 @@ logs
 .env
 .env.*
 !.env.example
+
+# uploaded content
+public/documentos/**/*.pdf
+public/prensa/**/*.pdf
+public/prensa/**/*.jpg
+public/prensa/**/*.jpeg
+public/prensa/**/*.png
+public/prensa/**/*.gif
+public/prensa/**/*.webp
+public/prensa/**/*.avif
+public/prensa/**/*.svg
+public/conocenos/**/*.jpg
+public/conocenos/**/*.jpeg
+public/conocenos/**/*.png
+public/conocenos/**/*.gif
+public/conocenos/**/*.webp
+public/conocenos/**/*.avif
+public/conocenos/**/*.svg
+public/inicio/**/*.jpg
+public/inicio/**/*.jpeg
+public/inicio/**/*.png
+public/inicio/**/*.gif
+public/inicio/**/*.webp
+public/inicio/**/*.avif
+public/inicio/**/*.svg
+public/**/_tmp/**
+public/marca/*
+!public/marca/manifest.json
+
+# Generated build artifacts
+ops/seed.mjs
