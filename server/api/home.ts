@@ -214,12 +214,14 @@ export default defineCachedEventHandler(
           mediaOutlet: item.mediaOutlet
             ? {
                 name: item.mediaOutlet.name,
-                logo: appendAssetVersion(
-                  toExternalImageProxyUrl(item.mediaOutlet.logo, {
-                    publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
-                  }) ?? item.mediaOutlet.logo,
-                  item.mediaOutlet.updatedAt
-                ),
+                logo: item.mediaOutlet.logo
+                  ? appendAssetVersion(
+                      toExternalImageProxyUrl(item.mediaOutlet.logo, {
+                        publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
+                      }) ?? item.mediaOutlet.logo,
+                      item.mediaOutlet.updatedAt
+                    )
+                  : null,
                 website: item.mediaOutlet.website,
               }
             : null,

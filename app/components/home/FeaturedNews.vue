@@ -12,7 +12,7 @@ type NewsItem = {
     name: string
   }>
   mediaOutletName?: string
-  mediaOutletLogo?: string
+  mediaOutletLogo?: string | null
 }
 
 const props = defineProps<{

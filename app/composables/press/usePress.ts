@@ -10,7 +10,7 @@ export interface PressArticleTag {
 
 export interface PressArticleMediaOutlet {
   name: string
-  logo: string
+  logo: string | null
   website: string
 }
 

@@ -224,6 +224,7 @@ watch(page, () => {
                     <span aria-hidden="true">&middot;</span>
                     <span class="flex items-center gap-1">
                       <NuxtImg
+                        v-if="article.mediaOutlet.logo"
                         :src="article.mediaOutlet.logo"
                         :alt="article.mediaOutlet.name"
                         height="16"

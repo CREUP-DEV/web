@@ -141,7 +141,7 @@ usePageSeo(
               rel="noopener noreferrer"
               class="hover:text-primary inline-flex items-center gap-1.5 transition-colors"
             >
-              <span class="inline-flex h-5 max-w-24 items-center">
+              <span v-if="article.mediaOutlet.logo" class="inline-flex h-5 max-w-24 items-center">
                 <NuxtImg
                   :src="article.mediaOutlet.logo"
                   :alt="article.mediaOutlet.name"
