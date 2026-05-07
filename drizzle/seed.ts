@@ -91,6 +91,12 @@ const createFinancialReportPdfPathBuilder = () => {
   }
 }
 
+type FinancialReportSeed = {
+  title: string
+  approvedAt: Date
+  pdfUrl?: string
+}
+
 async function main() {
   const cliArgs = new Set(process.argv.slice(2))
   const hasConfirmFlag = cliArgs.has('--confirm')
@@ -10479,7 +10485,7 @@ async function main() {
   console.log('📊 Creating financial reports...')
   await db.delete(schema.financialReports)
 
-  const financialReportsData = [
+  const financialReportsData: FinancialReportSeed[] = [
     {
       title: 'Informe Económico del XI Stage Formativo',
       approvedAt: new Date('2025-04-04'),
@@ -10515,7 +10521,7 @@ async function main() {
     const [report] = await db
       .insert(schema.financialReports)
       .values({
-        pdfUrl: 'pdfUrl' in item ? item.pdfUrl : buildFinancialReportPdfPath(item.title),
+        pdfUrl: item.pdfUrl ?? buildFinancialReportPdfPath(item.title),
         approvedAt: item.approvedAt,
         order: i,
         active: true,
