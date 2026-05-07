@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PressArticle } from '@/composables/press/usePress'
-import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
 import { toAbsoluteUrl } from '~~/shared/utils/url'
 
@@ -103,6 +102,15 @@ const externalLinkLabel = computed(() => {
   return t('press.readFull')
 })
 
+const getTagArchivePath = (tagSlug: string) => {
+  const params = new URLSearchParams({
+    types: props.article.type,
+    tag: tagSlug,
+  })
+
+  return `/prensa/noticias?${params.toString()}`
+}
+
 usePageSeo(
   () => props.article.title,
   () => props.article.description,
@@ -169,7 +177,7 @@ usePageSeo(
           <NuxtLink
             v-for="tag in article.tags"
             :key="tag.slug"
-            :to="localePath(`${getPressArticlePublicListPath(props.article.type)}?tag=${tag.slug}`)"
+            :to="localePath(getTagArchivePath(tag.slug))"
             class="bg-secondary/10 text-secondary hover:bg-secondary/20 rounded-full px-3 py-1 text-sm transition-colors"
           >
             {{ tag.name }}
