@@ -48,7 +48,10 @@ const resolveLiteralValue = <T extends string>(value: SeoValue<T> | undefined): 
 const resolveTranslatedValue = (value: SeoValue, t: ReturnType<typeof useI18n>['t']) =>
   typeof value === 'function' ? (value() ?? undefined) : t(value)
 
-const DEFAULT_OG_IMAGE_PATH = '/og/default.webp'
+const DEFAULT_OG_IMAGE_PATH = '/og/default.jpg'
+const DEFAULT_OG_IMAGE_WIDTH = '1200'
+const DEFAULT_OG_IMAGE_HEIGHT = '630'
+const DEFAULT_OG_IMAGE_TYPE = 'image/jpeg'
 
 export function usePageSeo(
   titleValue: SeoValue,
@@ -85,6 +88,9 @@ export function usePageSeo(
     ogDescription: description,
     ogUrl: () => canonicalUrl.value,
     ogImage: () => ogImage.value,
+    ogImageWidth: () => (explicitOgImage.value ? undefined : DEFAULT_OG_IMAGE_WIDTH),
+    ogImageHeight: () => (explicitOgImage.value ? undefined : DEFAULT_OG_IMAGE_HEIGHT),
+    ogImageType: () => (explicitOgImage.value ? undefined : DEFAULT_OG_IMAGE_TYPE),
     ogType,
     twitterCard: 'summary_large_image',
     twitterTitle: title,

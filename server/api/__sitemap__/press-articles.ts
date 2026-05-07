@@ -21,6 +21,7 @@ function buildI18nEntry(
 ) {
   return {
     loc,
+    _sitemap: 'press',
     _i18n: {
       alternatives: buildLocalizedAlternatesForLocaleCodes(
         loc,
