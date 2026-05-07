@@ -74,6 +74,7 @@ useSchemaOrg([
       'https://x.com/CREUPCREUP',
       'https://www.linkedin.com/company/creup',
       'https://www.facebook.com/CREUPCREUP',
+      'https://github.com/CREUP-DEV/',
       'https://www.tiktok.com/@creupestudiantes',
       'https://telegram.me/CREUP',
     ],

@@ -28,6 +28,11 @@ export const useSocials = () => {
       to: 'https://www.facebook.com/CREUPCREUP',
     },
     {
+      label: t('social.github'),
+      icon: 'i-tabler-brand-github',
+      to: 'https://github.com/CREUP-DEV/',
+    },
+    {
       label: t('social.telegram'),
       icon: 'i-tabler-brand-telegram',
       to: 'https://telegram.me/CREUP',
