@@ -314,12 +314,7 @@ export default defineNuxtConfig({
     defaultLocale: 'es',
     baseUrl: canonicalSiteUrl,
     strategy: 'prefix_except_default',
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: 'user-locale',
-      fallbackLocale: 'es',
-      redirectOn: 'root',
-    },
+    detectBrowserLanguage: false,
   },
 
   // Performance optimizations

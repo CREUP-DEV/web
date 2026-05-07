@@ -11,12 +11,15 @@ export default defineEventHandler((event) => {
   const config = useRuntimeConfig(event)
   const runtimeI18n = config.public.i18n as {
     defaultLocale?: unknown
-    detectBrowserLanguage?: { cookieKey?: string }
+    detectBrowserLanguage?: false | { cookieKey?: string }
     locales?: unknown
   }
   const locales = normalizeLocaleDefinitions(runtimeI18n.locales)
   const defaultLocale = resolveConfiguredLocaleCode(runtimeI18n.defaultLocale, locales)
-  const cookieKey = runtimeI18n.detectBrowserLanguage?.cookieKey
+  const cookieKey =
+    typeof runtimeI18n.detectBrowserLanguage === 'object'
+      ? runtimeI18n.detectBrowserLanguage.cookieKey
+      : undefined
   const pathname = getRequestURL(event).pathname
   const isApiRequest = pathname === '/api' || pathname.startsWith('/api/')
   const headerLocale = resolveLocaleCode(
@@ -33,9 +36,9 @@ export default defineEventHandler((event) => {
     resolved = pathnameLocale
   } else if (isApiRequest && headerLocale) {
     resolved = headerLocale
-  } else if (cookie) {
+  } else if (isApiRequest && cookie) {
     resolved = resolveLocaleCode(cookie, locales, defaultLocale)
-  } else {
+  } else if (isApiRequest) {
     const acceptedLocales = parseAcceptLanguageHeader(getHeader(event, 'accept-language'))
 
     for (const acceptedLocale of acceptedLocales) {
