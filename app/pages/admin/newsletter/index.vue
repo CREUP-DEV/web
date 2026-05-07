@@ -50,6 +50,8 @@ const route = useRoute()
 const router = useRouter()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
+const MAX_NEWSLETTER_IMAGE_SIZE = 5 * 1024 * 1024
+const MAX_NEWSLETTER_PDF_SIZE = 20 * 1024 * 1024
 
 const {
   data,
@@ -95,6 +97,8 @@ const imageUpload = useAdminFileUpload({
   endpoint: '/api/admin/newsletter/upload',
   successMessage: 'Imagen subida correctamente',
   errorMessage: 'No se pudo subir la imagen',
+  maxFileSizeBytes: MAX_NEWSLETTER_IMAGE_SIZE,
+  maxFileSizeMessage: 'La imagen supera el tamaño máximo (5MB)',
   onUploaded: (storagePath) => {
     form.coverImage = storagePath
   },
@@ -102,6 +106,10 @@ const imageUpload = useAdminFileUpload({
 })
 const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/newsletter/upload',
+  successMessage: 'PDF subido correctamente',
+  errorMessage: 'No se pudo subir el PDF',
+  maxFileSizeBytes: MAX_NEWSLETTER_PDF_SIZE,
+  maxFileSizeMessage: 'El PDF supera el tamaño máximo (20MB)',
   onUploaded: (storagePath) => {
     form.pdfUrl = storagePath
   },

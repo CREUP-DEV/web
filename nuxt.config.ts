@@ -40,6 +40,30 @@ const buildSWRRouteRules = (paths: readonly string[], ttlSeconds: number) =>
 const buildNoRateLimitRouteRules = (paths: readonly string[]) =>
   Object.fromEntries(paths.map((path) => [`${path}/**`, { security: { rateLimiter: false } }]))
 
+const ADMIN_UPLOAD_SECURITY_MAX_REQUEST_BYTES = 24 * 1024 * 1024
+const adminUploadRoutePaths = [
+  '/api/admin/about/upload',
+  '/api/admin/equality/upload',
+  '/api/admin/financial-reports/upload',
+  '/api/admin/home/upload',
+  '/api/admin/media/upload',
+  '/api/admin/newsletter/upload',
+  '/api/admin/press/upload',
+  '/api/admin/press-dossier/upload',
+] as const
+const adminUploadRouteRules = Object.fromEntries(
+  adminUploadRoutePaths.map((path) => [
+    path,
+    {
+      security: {
+        requestSizeLimiter: {
+          maxUploadFileRequestInBytes: ADMIN_UPLOAD_SECURITY_MAX_REQUEST_BYTES,
+        },
+      },
+    },
+  ])
+)
+
 const productionPublicSWRRouteRules = isDev
   ? {}
   : buildSWRRouteRules(productionPublicSWRPagePaths, 3600)
@@ -64,6 +88,7 @@ const routeRules = {
       rateLimiter: false,
     },
   },
+  ...adminUploadRouteRules,
   ...buildNoRateLimitRouteRules(INTERNAL_IMAGE_PROXY_PATH_BASES),
   ...productionPublicSWRRouteRules,
   ...productionFastChangingPageRouteRules,

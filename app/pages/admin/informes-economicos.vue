@@ -68,11 +68,14 @@ const { items, prependItem, removeItem, replaceItem } = useAdminMutableCollectio
 })
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
+const MAX_FINANCIAL_REPORT_PDF_SIZE = 20 * 1024 * 1024
 
 const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/financial-reports/upload',
   successMessage: 'PDF subido correctamente',
   errorMessage: 'No se pudo subir el PDF',
+  maxFileSizeBytes: MAX_FINANCIAL_REPORT_PDF_SIZE,
+  maxFileSizeMessage: 'El PDF supera el tamaño máximo (20MB)',
   onUploaded: (storagePath) => {
     form.pdfUrl = storagePath
   },

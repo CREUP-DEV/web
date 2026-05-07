@@ -1,14 +1,31 @@
+import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
+
 interface UseAdminFileUploadOptions {
   endpoint: string
   errorMessage: string
   extraFields?: Record<string, string>
   getFallbackPreview?: () => string | null
+  maxFileSizeBytes?: number
+  maxFileSizeMessage?: string
   onUploaded: (storagePath: string) => void
   successMessage: string
 }
 
 interface UploadedAdminFileResponse {
   storagePath: string
+}
+
+function getUploadErrorMessage(error: unknown, fallback: string) {
+  const message = getApiErrorMessage(error, fallback)
+
+  if (
+    getApiErrorStatusCode(error) === 413 &&
+    (message === fallback || /payload|entity|large/i.test(message))
+  ) {
+    return 'El archivo o la solicitud supera el tamaño máximo permitido'
+  }
+
+  return message
 }
 
 export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
@@ -52,6 +69,20 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
     activeUploadController.value = uploadController
 
     let uploadSucceeded = false
+
+    if (options.maxFileSizeBytes && file.size > options.maxFileSizeBytes) {
+      preview.value = options.getFallbackPreview?.() ?? null
+      activeUploadController.value = null
+      activeUploadId.value = null
+      target.value = ''
+      toast.add({
+        title:
+          options.maxFileSizeMessage ??
+          `El archivo supera el tamaño máximo (${Math.round(options.maxFileSizeBytes / 1024 / 1024)}MB)`,
+        color: 'error',
+      })
+      return
+    }
 
     const reader = new FileReader()
     reader.onload = (loadEvent) => {
@@ -114,7 +145,7 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
       preview.value = options.getFallbackPreview?.() ?? null
 
       toast.add({
-        title: options.errorMessage,
+        title: getUploadErrorMessage(error, options.errorMessage),
         color: 'error',
       })
     } finally {
@@ -147,6 +178,8 @@ interface UseAdminDocumentUploadOptions {
   endpoint: string
   successMessage?: string
   errorMessage?: string
+  maxFileSizeBytes?: number
+  maxFileSizeMessage?: string
   onUploaded: (storagePath: string) => void
 }
 
@@ -194,6 +227,21 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
     activeUploadController.value = uploadController
 
     fileName.value = file.name
+
+    if (options.maxFileSizeBytes && file.size > options.maxFileSizeBytes) {
+      fileName.value = null
+      activeUploadController.value = null
+      activeUploadId.value = null
+      target.value = ''
+      toast.add({
+        title:
+          options.maxFileSizeMessage ??
+          `El archivo supera el tamaño máximo (${Math.round(options.maxFileSizeBytes / 1024 / 1024)}MB)`,
+        color: 'error',
+      })
+      return
+    }
+
     isUploading.value = true
 
     try {
@@ -234,7 +282,10 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
       }
 
       fileName.value = null
-      toast.add({ title: options.errorMessage ?? 'No se pudo subir el archivo', color: 'error' })
+      toast.add({
+        title: getUploadErrorMessage(error, options.errorMessage ?? 'No se pudo subir el archivo'),
+        color: 'error',
+      })
     } finally {
       if (activeUploadController.value === uploadController) {
         activeUploadController.value = null

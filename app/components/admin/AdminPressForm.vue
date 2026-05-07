@@ -89,11 +89,16 @@ const submitDisabledReason = computed(() => {
   return ''
 })
 
+const MAX_PRESS_IMAGE_SIZE = 5 * 1024 * 1024
+const MAX_PRESS_PDF_SIZE = 20 * 1024 * 1024
+
 // File uploads
 const imageUpload = useAdminFileUpload({
   endpoint: '/api/admin/press/upload',
   successMessage: 'Imagen subida correctamente',
   errorMessage: 'No se pudo subir la imagen',
+  maxFileSizeBytes: MAX_PRESS_IMAGE_SIZE,
+  maxFileSizeMessage: 'La imagen supera el tamaño máximo (5MB)',
   onUploaded: (storagePath) => {
     clearErrors()
     form.image = storagePath
@@ -102,6 +107,10 @@ const imageUpload = useAdminFileUpload({
 })
 const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/press/upload',
+  successMessage: 'PDF subido correctamente',
+  errorMessage: 'No se pudo subir el PDF',
+  maxFileSizeBytes: MAX_PRESS_PDF_SIZE,
+  maxFileSizeMessage: 'El PDF supera el tamaño máximo (20MB)',
   onUploaded: (storagePath) => {
     clearErrors()
     form.pdfUrl = storagePath
