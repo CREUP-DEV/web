@@ -6,32 +6,9 @@ const getFirstQueryValue = (value: string | string[] | null | undefined) => {
   return value ?? null
 }
 
-const buildQueryString = (
-  query: Record<string, string | (string | null | undefined)[] | null | undefined>
-) => {
-  const searchParams = new URLSearchParams()
-
-  for (const [key, rawValue] of Object.entries(query)) {
-    if (Array.isArray(rawValue)) {
-      for (const entry of rawValue) {
-        if (entry != null && entry !== '') {
-          searchParams.append(key, entry)
-        }
-      }
-      continue
-    }
-
-    if (rawValue != null && rawValue !== '') {
-      searchParams.set(key, rawValue)
-    }
-  }
-
-  const search = searchParams.toString()
-  return search ? `?${search}` : ''
-}
-
 const replaceUrlQueryParam = (
   route: ReturnType<typeof useRoute>,
+  router: ReturnType<typeof useRouter>,
   key: string,
   value: string | null
 ) => {
@@ -52,8 +29,11 @@ const replaceUrlQueryParam = (
           [key]: value,
         }
 
-  const nextUrl = `${route.path}${buildQueryString(nextQuery)}${route.hash || ''}`
-  window.history.replaceState(window.history.state, '', nextUrl)
+  void router.replace({
+    path: route.path,
+    query: nextQuery,
+    hash: route.hash,
+  })
 }
 
 export function useSyncedQueryParam<T>(
@@ -64,6 +44,7 @@ export function useSyncedQueryParam<T>(
   }
 ) {
   const route = useRoute()
+  const router = useRouter()
   const rawValue = computed(() =>
     getFirstQueryValue(route.query[key] as string | string[] | null | undefined)
   )
@@ -78,7 +59,7 @@ export function useSyncedQueryParam<T>(
   )
 
   watch(state, (value) => {
-    replaceUrlQueryParam(route, key, options.serialize(value))
+    replaceUrlQueryParam(route, router, key, options.serialize(value))
   })
 
   if (import.meta.client) {
@@ -87,7 +68,7 @@ export function useSyncedQueryParam<T>(
       (value) => {
         const normalized = options.serialize(options.parse(value))
         if (value !== normalized) {
-          replaceUrlQueryParam(route, key, normalized)
+          replaceUrlQueryParam(route, router, key, normalized)
         }
       },
       { immediate: true }
