@@ -4,6 +4,7 @@
  */
 
 import 'dotenv/config'
+import { existsSync } from 'node:fs'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from '../server/db/schema'
 import { requireConfigString } from '../shared/utils/config'
@@ -22,6 +23,7 @@ import {
   PRESS_DOSSIER_PUBLIC_PATH,
 } from '../shared/constants/assetPaths'
 import { slugify } from '../server/utils/core/slug'
+import { sanitizeRichTextHtml } from '../server/utils/press/pressTranslation'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
@@ -42,6 +44,12 @@ const buildNewsletterPdfPath = (monthKey: string) =>
 
 const buildNewsletterCoverPath = (monthKey: string) =>
   `${NEWSLETTER_COVER_IMAGE_PUBLIC_PATH}/newsletter-${monthKey}-portada.webp`
+
+const buildPublicAssetPath = (publicPath: string) => `public${publicPath}`
+
+const publicAssetExists = (publicPath: string) => {
+  return existsSync(buildPublicAssetPath(publicPath))
+}
 
 const parseSpanishDate = (value: string) => {
   const [dayRaw, monthRaw, yearRaw] = value.split('/')
@@ -67,6 +75,8 @@ function assertUniqueValues(values: string[], label: string) {
     seen.add(value)
   }
 }
+
+const MEDIA_OUTLET_PLACEHOLDER_LOGO = `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/medio-generico.svg`
 
 const createFinancialReportPdfPathBuilder = () => {
   const slugUsage = new Map<string, number>()
@@ -331,235 +341,235 @@ async function main() {
       key: '20-minutos',
       name: '20 Minutos',
       website: 'https://www.20minutos.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/20-minutos.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'abc',
       name: 'ABC',
       website: 'https://www.abc.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/abc.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'acpua',
       name: 'ACPUA',
       website: 'https://acpua.aragon.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/acpua.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'andalucia-informacion',
       name: 'Andalucía Información',
       website: 'https://www.andaluciainformacion.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/andalucia-informacion.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'aprendemas',
       name: 'Aprendemas',
       website: 'https://www.aprendemas.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/aprendemas.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'aula-magna',
       name: 'Aula Magna',
       website: 'https://www.aulamagna.com.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/aula-magna.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'bolsamania',
       name: 'Bolsamanía',
       website: 'https://www.bolsamania.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/bolsamania.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'cadena-ser',
       name: 'Cadena SER',
       website: 'https://cadenaser.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/cadena-ser.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/cadena-ser.svg`,
     },
     {
       key: 'canal-sur',
       name: 'Canal Sur',
       website: 'https://www.canalsur.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/canal-sur.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'castellon-informacion',
       name: 'Castellón Información',
       website: 'https://www.castelloninformacion.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/castellon-informacion.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'catalunya-press',
       name: 'Catalunya Press',
       website: 'https://www.catalunyapress.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/catalunya-press.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'cinco-dias',
       name: 'Cinco Días',
       website: 'https://cincodias.elpais.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/cinco-dias.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'cope',
       name: 'COPE',
       website: 'https://www.cope.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/cope.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'crue',
       name: 'CRUE',
       website: 'https://www.crue.org/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/crue.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'cuadernos-de-pedagogia',
       name: 'Cuadernos de Pedagogía',
       website: 'https://www.cuadernosdepedagogia.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/cuadernos-de-pedagogia.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'diario-de-leon',
       name: 'Diario de León',
       website: 'https://www.diariodeleon.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/diario-de-leon.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'diario-jaen',
       name: 'Diario Jaén',
       website: 'https://www.diariojaen.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/diario-jaen.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'diario-siglo-xxi',
       name: 'Diario Siglo XXI',
       website: 'https://www.diariosigloxxi.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/diario-siglo-xxi.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'diario-veterinario',
       name: 'Diario Veterinario',
       website: 'https://www.diarioveterinario.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/diario-veterinario.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'dream-alcala',
       name: 'Dream Alcalá',
       website: 'https://www.dream-alcala.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/dream-alcala.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'economia-digital',
       name: 'Economía Digital',
       website: 'https://www.economiadigital.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/economia-digital.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'educaweb',
       name: 'Educaweb',
       website: 'https://www.educaweb.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/educaweb.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-boletin',
       name: 'El Boletín',
       website: 'https://www.elboletin.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-boletin.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-confidencial',
       name: 'El Confidencial',
       website: 'https://www.elconfidencial.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-confidencial.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-correo',
       name: 'El Correo',
       website: 'https://www.elcorreo.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-correo.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-debate',
       name: 'El Debate',
       website: 'https://www.eldebate.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-debate.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-debate.svg`,
     },
     {
       key: 'el-diario-alerta',
       name: 'El Diario Alerta',
       website: 'https://www.eldiarioalerta.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-diario-alerta.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-economista',
       name: 'El Economista',
       website: 'https://www.eleconomista.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-economista.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-espanol',
       name: 'El Español',
       website: 'https://www.elespanol.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-espanol.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-huffpost',
       name: 'El HuffPost',
       website: 'https://www.huffingtonpost.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-huffpost.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-imparcial',
       name: 'El Imparcial',
       website: 'https://www.elimparcial.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-imparcial.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-liberal',
       name: 'El Liberal',
       website: 'https://www.elliberal.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-liberal.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-mundo',
       name: 'El Mundo',
       website: 'https://www.elmundo.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-mundo.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-nacional',
       name: 'El Nacional',
       website: 'https://www.elnacional.cat/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-nacional.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-pais',
       name: 'El País',
       website: 'https://elpais.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-pais.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-pais.svg`,
     },
     {
       key: 'el-plural',
       name: 'El Plural',
       website: 'https://www.elplural.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-plural.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'el-salto',
       name: 'El Salto',
       website: 'https://www.elsaltodiario.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/el-salto.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'eldiario-es',
       name: 'elDiario.es',
       website: 'https://www.eldiario.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/eldiario-es.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/eldiarioes.svg`,
     },
     {
       key: 'esdiario',
       name: 'EsDiario',
       website: 'https://www.esdiario.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/esdiario.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'espacios-de-educacion-superior',
@@ -577,223 +587,217 @@ async function main() {
       key: 'europa-press-tv',
       name: 'Europa Press TV',
       website: 'https://www.europapress.tv/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/europa-press-tv.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'galicia-press',
       name: 'Galicia Press',
       website: 'https://www.galiciapress.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/galicia-press.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'gn-diario',
       name: 'GN Diario',
       website: 'https://www.gndiario.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/gn-diario.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'granada-hoy',
       name: 'Granada Hoy',
       website: 'https://www.granadahoy.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/granada-hoy.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'heraldo',
       name: 'Heraldo',
       website: 'https://www.heraldo.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/heraldo.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'il-fatto-quotidiano',
       name: 'Il Fatto Quotidiano',
       website: 'https://www.ilfattoquotidiano.it/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/il-fatto-quotidiano.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'infolibre',
       name: 'infoLibre',
       website: 'https://www.infolibre.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/infolibre.webp`,
-    },
-    {
-      key: 'innovaspain',
-      name: 'InnovaSpain',
-      website: 'https://www.innovaspain.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/innovaspain.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'la-informacion',
       name: 'La Información',
       website: 'https://www.lainformacion.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/la-informacion.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'la-moncloa',
       name: 'La Moncloa',
       website: 'https://www.lamoncloa.gob.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/la-moncloa.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'la-razon',
       name: 'La Razón',
       website: 'https://www.larazon.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/la-razon.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/la-razon.svg`,
     },
     {
       key: 'la-vanguardia',
       name: 'La Vanguardia',
       website: 'https://www.lavanguardia.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/la-vanguardia.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/la-vanguardia.svg`,
     },
     {
       key: 'lanza-digital',
       name: 'Lanza Digital',
       website: 'https://www.lanzadigital.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/lanza-digital.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'lasexta',
       name: 'laSexta',
       website: 'https://www.lasexta.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/lasexta.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'madridpress',
       name: 'MadridPress',
       website: 'https://madridpress.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/madridpress.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'magisnet',
       name: 'Magisnet',
       website: 'https://www.magisnet.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/magisnet.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'magisterio',
       name: 'Magisterio',
       website: 'https://www.magisnet.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/magisterio.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'maldita-es',
       name: 'Maldita.es',
       website: 'https://maldita.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/maldita-es.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'moncloa-com',
       name: 'Moncloa.com',
       website: 'https://www.moncloa.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/moncloa-com.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/moncloacom.webp`,
     },
     {
       key: 'mundo-deportivo',
       name: 'Mundo Deportivo',
       website: 'https://www.mundodeportivo.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/mundo-deportivo.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'murcia-economia',
       name: 'Murcia Economía',
       website: 'https://murciaeconomia.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/murcia-economia.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'murcia-com',
       name: 'Murcia.com',
       website: 'https://www.murcia.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/murcia-com.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'newtral',
       name: 'Newtral',
       website: 'https://www.newtral.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/newtral.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'onda-cero',
       name: 'Onda Cero',
       website: 'https://www.ondacero.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/onda-cero.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'portal-parados',
       name: 'Portal Parados',
       website: 'https://www.portalparados.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/portal-parados.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'publico',
       name: 'Público',
       website: 'https://www.publico.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/publico.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'que',
       name: 'Qué!',
       website: 'https://www.que.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/que.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'redaccion-medica',
       name: 'Redacción Médica',
       website: 'https://www.redaccionmedica.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/redaccion-medica.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'revista-nuve',
       name: 'Revista NUVE',
       website: 'https://revistanuve.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/revista-nuve.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'rtve',
       name: 'RTVE',
       website: 'https://www.rtve.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/rtve.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/rtve.svg`,
     },
     {
       key: 'salamanca-24-horas',
       name: 'Salamanca 24 Horas',
       website: 'https://www.salamanca24horas.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/salamanca-24-horas.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'salamanca-rtv-al-dia',
       name: 'Salamanca RTV al Día',
       website: 'https://salamancartvaldia.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/salamanca-rtv-al-dia.webp`,
+      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/salamanca-rtve-al-dia.webp`,
     },
     {
       key: 'servimedia',
       name: 'Servimedia',
       website: 'https://www.servimedia.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/servimedia.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'telecinco',
       name: 'Telecinco',
       website: 'https://www.telecinco.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/telecinco.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'telemadrid',
       name: 'Telemadrid',
       website: 'https://www.telemadrid.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/telemadrid.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'teleprensa',
       name: 'Teleprensa',
       website: 'https://www.teleprensa.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/teleprensa.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'the-objective',
       name: 'The Objective',
       website: 'https://theobjective.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/the-objective.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'tribuna-salamanca',
@@ -805,31 +809,31 @@ async function main() {
       key: 'uned',
       name: 'UNED',
       website: 'https://portal.uned.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/uned.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'universidad-de-alcala',
       name: 'Universidad de Alcalá',
       website: 'https://portalcomunicacion.uah.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/universidad-de-alcala.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'universidad-de-cantabria',
       name: 'Universidad de Cantabria',
       website: 'https://web.unican.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/universidad-de-cantabria.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'universidad-de-zaragoza',
       name: 'Universidad de Zaragoza',
       website: 'https://www.unizar.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/universidad-de-zaragoza.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'universitat-de-valencia',
       name: 'Universitat de València',
       website: 'https://www.uv.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/universitat-de-valencia.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'valencia-plaza',
@@ -841,19 +845,19 @@ async function main() {
       key: 'vozpopuli',
       name: 'Vozpópuli',
       website: 'https://www.vozpopuli.com/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/vozpopuli.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'a-punt',
       name: 'À Punt',
       website: 'https://www.apuntmedia.es/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/a-punt.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
     {
       key: 'exito-educativo',
       name: 'Éxito Educativo',
       website: 'https://exitoeducativo.net/',
-      logo: `${PRESS_MEDIA_LOGO_PUBLIC_PATH}/exito-educativo.webp`,
+      logo: MEDIA_OUTLET_PLACEHOLDER_LOGO,
     },
   ]
 
@@ -878,8 +882,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-dice-basta-a-la-subida-de-precios-en-los-com-2025-12.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-dice-basta-a-la-subida-de-precios-en-los-com.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '15/12/2025',
@@ -897,8 +900,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-exige-una-estrategia-nacional-de-salud-mental-universi-2025-10.pdf',
+      pdfUrl: '/prensa/documentos/creup-exige-una-estrategia-nacional-de-salud-mental-universi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/10/2025',
@@ -916,8 +918,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/a-la-espera-del-estatuto-de-becario-el-ministerio-de-trabajo-2025-09.pdf',
+      pdfUrl: '/prensa/documentos/a-la-espera-del-estatuto-de-becario-el-ministerio-de-trabajo.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '25/09/2025',
@@ -935,8 +936,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-denuncia-que-la-subida-del-14-en-el-precio-de-las-habi-2025-09.pdf',
+      pdfUrl: '/prensa/documentos/creup-denuncia-que-la-subida-del-14-en-el-precio-de-las-habi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/09/2025',
@@ -954,8 +954,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-denuncia-la-injerencia-en-la-autonomia-universitaria-2025-07.pdf',
+      pdfUrl: '/prensa/documentos/creup-denuncia-la-injerencia-en-la-autonomia-universitaria-2.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/07/2025',
@@ -972,8 +971,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/comunicado-de-la-representacion-del-estudiantado-en-apoyo-de-2025-07.pdf',
+      pdfUrl: '/prensa/documentos/comunicado-de-la-representacion-del-estudiantado-en-apoyo-de.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/07/2025',
@@ -991,8 +989,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/universidades-privadas-en-hospitales-publicos-la-conselleria-2025-07.pdf',
+      pdfUrl: '/prensa/documentos/universidades-privadas-en-hospitales-publicos-la-conselleria.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/07/2025',
@@ -1010,8 +1007,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-apuesta-por-una-universidad-de-calidad-2025-05.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-apuesta-por-una-universidad-de-calidad-2025.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '12/05/2025',
@@ -1028,8 +1024,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-celebra-su-77-asamblea-general-ordinaria-en-la-univers-2025-04.pdf',
+      pdfUrl: '/prensa/documentos/creup-celebra-su-77-asamblea-general-ordinaria-en-la-univers.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '5/04/2025',
@@ -1046,8 +1041,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-lamenta-los-hechos-producidos-por-la-dana-y--2024-10.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-lamenta-los-hechos-producidos-por-la-dana-y-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/10/2024',
@@ -1065,8 +1059,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-ministerio-de-trabajo-sigue-sin-reunirse-con-el-estudiant-2024-10.pdf',
+      pdfUrl: '/prensa/documentos/el-ministerio-de-trabajo-sigue-sin-reunirse-con-el-estudiant.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/10/2024',
@@ -1084,8 +1077,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-espanol-denuncia-las-violentas-actuaciones-c-2024-07.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-espanol-denuncia-las-violentas-actuaciones-c.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '29/07/2024',
@@ -1103,8 +1095,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-rechaza-los-acuerdos-firmados-en-el-pacto-sobre-la-pru-2024-07.pdf',
+      pdfUrl: '/prensa/documentos/creup-rechaza-los-acuerdos-firmados-en-el-pacto-sobre-la-pru.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/07/2024',
@@ -1122,8 +1113,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-responde-a-las-universidades-israelies-y-al-gobierno-y-2024-05.pdf',
+      pdfUrl: '/prensa/documentos/creup-responde-a-las-universidades-israelies-y-al-gobierno-y.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/05/2024',
@@ -1158,8 +1148,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/los-estudiantes-piden-al-gobierno-retomar-las-negociaciones--2023-12.pdf',
+      pdfUrl: '/prensa/documentos/los-estudiantes-piden-al-gobierno-retomar-las-negociaciones-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/12/2023',
@@ -1177,8 +1166,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/la-creup-pide-al-gobierno-que-esta-legislatura-los-estudiant-2023-11.pdf',
+      pdfUrl: '/prensa/documentos/la-creup-pide-al-gobierno-que-esta-legislatura-los-estudiant.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/11/2023',
@@ -1198,8 +1186,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/aumentan-las-penalizaciones-e-intereses-economicos-para-los--2023-11.pdf',
+      pdfUrl: '/prensa/documentos/aumentan-las-penalizaciones-e-intereses-economicos-para-los-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/11/2023',
@@ -1217,8 +1204,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/espana-acogera-en-zaragoza-la-46-edicion-de-la-european-stud-2023-09.pdf',
+      pdfUrl: '/prensa/documentos/espana-acogera-en-zaragoza-la-46-edicion-de-la-european-stud.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '25/09/2023',
@@ -1235,8 +1221,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-de-las-universidades-publicas-condena-los-me-2023-09.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-de-las-universidades-publicas-condena-los-me.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/09/2023',
@@ -1273,8 +1258,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-de-las-universidades-publicas-condena-los-me-2023-08.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-de-las-universidades-publicas-condena-los-me.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/08/2023',
@@ -1294,8 +1278,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-se-reune-con-los-partidos-politicos-para-trasladar-las-2023-07.pdf',
+      pdfUrl: '/prensa/documentos/creup-se-reune-con-los-partidos-politicos-para-trasladar-las.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/07/2023',
@@ -1313,8 +1296,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-reivindica-la-nueva-legislatura-como-una-nueva-oportun-2023-07.pdf',
+      pdfUrl: '/prensa/documentos/creup-reivindica-la-nueva-legislatura-como-una-nueva-oportun.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/07/2023',
@@ -1332,8 +1314,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-muestra-su-firme-oposicion-al--2023-06.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-muestra-su-firme-oposicion-al-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/06/2023',
@@ -1355,8 +1336,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-denuncia-la-exclusion-del-estudiantado-en-la-negociaci-2023-06.pdf',
+      pdfUrl: '/prensa/documentos/creup-denuncia-la-exclusion-del-estudiantado-en-la-negociaci.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/06/2023',
@@ -1374,8 +1354,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-denuncia-que-el-estatuto-del-b-2023-02.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-denuncia-que-el-estatuto-del-b.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/02/2023',
@@ -1392,8 +1371,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/bajan-las-matriculas-universitarias-los-problemas-continuan-2023-02.pdf',
+      pdfUrl: '/prensa/documentos/bajan-las-matriculas-universitarias-los-problemas-continuan.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/02/2023',
@@ -1427,8 +1405,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-exige-cambios-urgentes-en-la-l-2022-12.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-exige-cambios-urgentes-en-la-l.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/12/2022',
@@ -1446,8 +1423,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-ministerio-de-trabajo-abandona-al-estudiantado-en-el-esta-2022-11.pdf',
+      pdfUrl: '/prensa/documentos/el-ministerio-de-trabajo-abandona-al-estudiantado-en-el-esta.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/11/2022',
@@ -1465,8 +1441,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-ministerio-de-trabajo-ignora-las-reclamaciones-del-estudi-2022-10.pdf',
+      pdfUrl: '/prensa/documentos/el-ministerio-de-trabajo-ignora-las-reclamaciones-del-estudi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/10/2022',
@@ -1484,8 +1459,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-reivindica-en-el-congreso-una-transformacion-profunda--2022-09.pdf',
+      pdfUrl: '/prensa/documentos/creup-reivindica-en-el-congreso-una-transformacion-profunda-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/09/2022',
@@ -1503,8 +1477,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-comparece-en-el-congreso-para-defender-las-reivindicac-2022-09.pdf',
+      pdfUrl: '/prensa/documentos/creup-comparece-en-el-congreso-para-defender-las-reivindicac.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/09/2022',
@@ -1522,8 +1495,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-demanda-al-ministerio-de-traba-2022-08.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-demanda-al-ministerio-de-traba.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/08/2022',
@@ -1541,8 +1513,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/subirats-deja-de-lado-al-estudiantado-en-el-anteproyecto-de--2022-06.pdf',
+      pdfUrl: '/prensa/documentos/subirats-deja-de-lado-al-estudiantado-en-el-anteproyecto-de-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/06/2022',
@@ -1560,8 +1531,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-reivindica-cambios-al-ministerio-de-universi-2022-06.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-reivindica-cambios-al-ministerio-de-universi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '2/06/2022',
@@ -1579,8 +1549,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-evidencia-que-la-losu-no-avanz-2022-05.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-evidencia-que-la-losu-no-avanz.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '10/05/2022',
@@ -1598,8 +1567,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-se-reune-con-yolanda-diaz-para-analizar-los-puntos-cla-2022-05.pdf',
+      pdfUrl: '/prensa/documentos/creup-se-reune-con-yolanda-diaz-para-analizar-los-puntos-cla.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/05/2022',
@@ -1617,8 +1585,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-reivindica-unas-practicas-form-2022-05.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-reivindica-unas-practicas-form.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '6/05/2022',
@@ -1635,8 +1602,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/la-representacion-estudiantil-consigue-el-paro-academico-com-2022-05.pdf',
+      pdfUrl: '/prensa/documentos/la-representacion-estudiantil-consigue-el-paro-academico-com.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/05/2022',
@@ -1654,8 +1620,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-reivindica-unas-practicas-acad-2022-04.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-reivindica-unas-practicas-acad.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/04/2022',
@@ -1672,8 +1637,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-rechaza-el-cierre-de-los-edifi-2022-04.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-rechaza-el-cierre-de-los-edifi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '21/04/2022',
@@ -1691,8 +1655,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-pide-al-gobierno-que-difunda-m-2022-02.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-pide-al-gobierno-que-difunda-m.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '24/02/2022',
@@ -1710,8 +1673,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-conquista-avances-en-las-becas-2022-02.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-conquista-avances-en-las-becas.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/02/2022',
@@ -1729,8 +1691,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-reclama-a-las-instituciones-universitarias-q-2022-02.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-reclama-a-las-instituciones-universitarias-q.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/02/2022',
@@ -1748,8 +1709,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-reclama-a-yolanda-diaz-acordar-2022-02.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-reclama-a-yolanda-diaz-acordar.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/02/2022',
@@ -1767,8 +1727,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/la-universidad-de-sevilla-acoge-las-reuniones-de-la-directiv-2022-02.pdf',
+      pdfUrl: '/prensa/documentos/la-universidad-de-sevilla-acoge-las-reuniones-de-la-directiv.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/02/2022',
@@ -1786,8 +1745,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-traslada-a-subirats-la-necesid-2022-01.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-traslada-a-subirats-la-necesid.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '20/01/2022',
@@ -1805,8 +1763,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-considera-insuficiente-el-prot-2022-01.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-considera-insuficiente-el-prot.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/01/2022',
@@ -1824,8 +1781,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-propone-a-subirats-reiniciar-l-2021-12.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-propone-a-subirats-reiniciar-l.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '20/12/2021',
@@ -1842,8 +1798,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-consejo-de-estudiantes-universitario-del-estado-aprueba-c-2021-11.pdf',
+      pdfUrl: '/prensa/documentos/el-consejo-de-estudiantes-universitario-del-estado-aprueba-c.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/11/2021',
@@ -1861,8 +1816,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-anuncia-movilizaciones-contra--2021-11.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-anuncia-movilizaciones-contra-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/11/2021',
@@ -1880,8 +1834,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-enfado-del-estudiantado-universitario-explota-y-sifueraca-2021-11.pdf',
+      pdfUrl: '/prensa/documentos/el-enfado-del-estudiantado-universitario-explota-y-sifueraca.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '5/11/2021',
@@ -1899,8 +1852,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-no-avanza-respe-2021-10.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-no-avanza-respe.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/10/2021',
@@ -1918,8 +1870,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-reclama-cambios-en-la-ley-de-convivencia-uni-2021-10.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-reclama-cambios-en-la-ley-de-convivencia-uni.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/10/2021',
@@ -1937,8 +1888,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-reclama-que-la-ley-castells-inicie-el-camino-2021-10.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-reclama-que-la-ley-castells-inicie-el-camino.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/10/2021',
@@ -1956,8 +1906,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-no-avanza-en-de-2021-10.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-no-avanza-en-de.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/10/2021',
@@ -1975,8 +1924,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/los-estudiantes-denuncian-que-la-ley-castells-solo-ha-sido-n-2021-09.pdf',
+      pdfUrl: '/prensa/documentos/los-estudiantes-denuncian-que-la-ley-castells-solo-ha-sido-n.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/09/2021',
@@ -1994,8 +1942,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-prepara-sus-alegaciones-a-una-ley-castells-p-2021-09.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-prepara-sus-alegaciones-a-una-ley-castells-p.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/09/2021',
@@ -2013,8 +1960,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-muestra-su-oposicion-unanime-a-la-ley-castel-2021-09.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-muestra-su-oposicion-unanime-a-la-ley-castel.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/09/2021',
@@ -2032,8 +1978,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/castells-planta-al-estudiantado-para-acudir-a-la-mesa-de-dia-2021-09.pdf',
+      pdfUrl: '/prensa/documentos/castells-planta-al-estudiantado-para-acudir-a-la-mesa-de-dia.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/09/2021',
@@ -2050,8 +1995,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/estudiantes-demandan-avanzar-en-la-convivencia-universitaria-2021-09.pdf',
+      pdfUrl: '/prensa/documentos/estudiantes-demandan-avanzar-en-la-convivencia-universitaria.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/09/2021',
@@ -2068,10 +2012,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/el-estudiantado-denuncia-que-la-ley-castells-supone-un-atras-2021-08.webp',
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-supone-un-atras-2021-08.pdf',
+      image: '/prensa/imagenes/el-estudiantado-denuncia-que-la-ley-castells-supone-un-atras.webp',
+      pdfUrl: '/prensa/documentos/el-estudiantado-denuncia-que-la-ley-castells-supone-un-atras.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/08/2021',
@@ -2089,8 +2031,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/las-becas-del-ministerio-incluiran-reivindicaciones-del-estu-2021-08.pdf',
+      pdfUrl: '/prensa/documentos/las-becas-del-ministerio-incluiran-reivindicaciones-del-estu.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '3/08/2021',
@@ -2108,8 +2049,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/la-universidad-de-salamanca-acoge-la-lxix-asamblea-general-o-2021-07.pdf',
+      pdfUrl: '/prensa/documentos/la-universidad-de-salamanca-acoge-la-lxix-asamblea-general-o.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/07/2021',
@@ -2126,8 +2066,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-y-crue-renuevan-su-compromiso-de-colaboracion-para-la--2021-06.pdf',
+      pdfUrl: '/prensa/documentos/creup-y-crue-renuevan-su-compromiso-de-colaboracion-para-la-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/06/2021',
@@ -2145,8 +2084,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/carta-abierta-a-las-instituciones-para-garantizar-la-segurid-2021-05.pdf',
+      pdfUrl: '/prensa/documentos/carta-abierta-a-las-instituciones-para-garantizar-la-segurid.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/05/2021',
@@ -2168,8 +2106,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-universitario-pide-garantias-a-la-nueva-ley--2021-05.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-universitario-pide-garantias-a-la-nueva-ley-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '26/05/2021',
@@ -2187,8 +2124,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-de-universidades-publicas-denuncia-que-el-nu-2021-05.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-de-universidades-publicas-denuncia-que-el-nu.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '21/05/2021',
@@ -2205,10 +2141,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/creup-reclama-modificaciones-en-el-nuevo-real-decreto-de-bec-2021-04.webp',
-      pdfUrl:
-        '/prensa/documentos/creup-reclama-modificaciones-en-el-nuevo-real-decreto-de-bec-2021-04.pdf',
+      image: '/prensa/imagenes/creup-reclama-modificaciones-en-el-nuevo-real-decreto-de-bec.webp',
+      pdfUrl: '/prensa/documentos/creup-reclama-modificaciones-en-el-nuevo-real-decreto-de-bec.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '13/04/2021',
@@ -2224,10 +2158,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/el-ministerio-convoca-por-primera-vez-desde-que-comenzo-la-p-2021-02.webp',
-      pdfUrl:
-        '/prensa/documentos/el-ministerio-convoca-por-primera-vez-desde-que-comenzo-la-p-2021-02.pdf',
+      image: '/prensa/imagenes/el-ministerio-convoca-por-primera-vez-desde-que-comenzo-la-p.webp',
+      pdfUrl: '/prensa/documentos/el-ministerio-convoca-por-primera-vez-desde-que-comenzo-la-p.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/02/2021',
@@ -2245,8 +2177,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-denuncia-la-falta-de-prevision-en-las-universidades-pa-2021-01.pdf',
+      pdfUrl: '/prensa/documentos/creup-denuncia-la-falta-de-prevision-en-las-universidades-pa.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '12/01/2021',
@@ -2280,8 +2211,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-reclama-que-la-calidad-sea-un-requisito-indispensable--2020-12.pdf',
+      pdfUrl: '/prensa/documentos/creup-reclama-que-la-calidad-sea-un-requisito-indispensable-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/12/2020',
@@ -2298,10 +2228,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/creup-se-reune-con-los-grupos-parlamentarios-durante-el-inic-2020-09.webp',
-      pdfUrl:
-        '/prensa/documentos/creup-se-reune-con-los-grupos-parlamentarios-durante-el-inic-2020-09.pdf',
+      image: '/prensa/imagenes/creup-se-reune-con-los-grupos-parlamentarios-durante-el-inic.webp',
+      pdfUrl: '/prensa/documentos/creup-se-reune-con-los-grupos-parlamentarios-durante-el-inic.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '17/09/2020',
@@ -2318,8 +2246,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/estudiantes-universitarios-lanzan-sus-peticiones-para-el-com-2020-08.pdf',
+      pdfUrl: '/prensa/documentos/estudiantes-universitarios-lanzan-sus-peticiones-para-el-com.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/08/2020',
@@ -2337,10 +2264,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/miles-de-estudiantes-tendran-que-dejar-la-universidad-si-no--2020-04.webp',
-      pdfUrl:
-        '/prensa/documentos/miles-de-estudiantes-tendran-que-dejar-la-universidad-si-no--2020-04.pdf',
+      image: '/prensa/imagenes/miles-de-estudiantes-tendran-que-dejar-la-universidad-si-no-.webp',
+      pdfUrl: '/prensa/documentos/miles-de-estudiantes-tendran-que-dejar-la-universidad-si-no-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '28/04/2020',
@@ -2358,8 +2283,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-sigue-sin-saber-como-finalizara-el-curso-2020-04.pdf',
+      pdfUrl: '/prensa/documentos/el-estudiantado-sigue-sin-saber-como-finalizara-el-curso-202.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '3/04/2020',
@@ -2376,8 +2300,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/representantes-de-estudiantes-piden-a-instituciones-y-univer-2020-03.pdf',
+      pdfUrl: '/prensa/documentos/representantes-de-estudiantes-piden-a-instituciones-y-univer.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '26/03/2020',
@@ -2394,10 +2317,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/el-estudiantado-reivindica-su-participacion-en-la-iniciativa-2020-02.webp',
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-reivindica-su-participacion-en-la-iniciativa-2020-02.pdf',
+      image: '/prensa/imagenes/el-estudiantado-reivindica-su-participacion-en-la-iniciativa.webp',
+      pdfUrl: '/prensa/documentos/el-estudiantado-reivindica-su-participacion-en-la-iniciativa.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '13/02/2020',
@@ -2415,8 +2336,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/esn-espana-y-creup-piden-un-aumento-de-la-cofinanciacion-nac-2019-12.pdf',
+      pdfUrl: '/prensa/documentos/esn-espana-y-creup-piden-un-aumento-de-la-cofinanciacion-nac.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/12/2019',
@@ -2436,8 +2356,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-crue-y-esn-piden-al-gobierno-que-apoye-triplicar-la-fi-2019-11.pdf',
+      pdfUrl: '/prensa/documentos/creup-crue-y-esn-piden-al-gobierno-que-apoye-triplicar-la-fi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '7/11/2019',
@@ -2456,10 +2375,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/el-estudiantado-estrecha-lazos-por-la-internacionalizacion-d-2019-10.webp',
-      pdfUrl:
-        '/prensa/documentos/el-estudiantado-estrecha-lazos-por-la-internacionalizacion-d-2019-10.pdf',
+      image: '/prensa/imagenes/el-estudiantado-estrecha-lazos-por-la-internacionalizacion-d.webp',
+      pdfUrl: '/prensa/documentos/el-estudiantado-estrecha-lazos-por-la-internacionalizacion-d.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/10/2019',
@@ -2478,10 +2395,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/el-bloqueo-politico-deja-un-ano-mas-a-las-asociaciones-de-un-2019-10.webp',
-      pdfUrl:
-        '/prensa/documentos/el-bloqueo-politico-deja-un-ano-mas-a-las-asociaciones-de-un-2019-10.pdf',
+      image: '/prensa/imagenes/el-bloqueo-politico-deja-un-ano-mas-a-las-asociaciones-de-un.webp',
+      pdfUrl: '/prensa/documentos/el-bloqueo-politico-deja-un-ano-mas-a-las-asociaciones-de-un.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '4/10/2019',
@@ -2501,8 +2416,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-se-reune-con-los-grupos-parlamentarios-para-plantear-l-2019-09.pdf',
+      pdfUrl: '/prensa/documentos/creup-se-reune-con-los-grupos-parlamentarios-para-plantear-l.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/09/2019',
@@ -2520,10 +2434,8 @@ async function main() {
     },
     {
       type: 'press_release',
-      image:
-        '/prensa/imagenes/la-red-espanola-de-inmigracion-y-la-coordinadora-de-represen-2019-08.webp',
-      pdfUrl:
-        '/prensa/documentos/la-red-espanola-de-inmigracion-y-la-coordinadora-de-represen-2019-08.pdf',
+      image: '/prensa/imagenes/la-red-espanola-de-inmigracion-y-la-coordinadora-de-represen.webp',
+      pdfUrl: '/prensa/documentos/la-red-espanola-de-inmigracion-y-la-coordinadora-de-represen.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/08/2019',
@@ -2543,8 +2455,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/la-coordinadora-de-representantes-de-estudiantes-de-universi-2019-06.pdf',
+      pdfUrl: '/prensa/documentos/la-coordinadora-de-representantes-de-estudiantes-de-universi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '18/06/2019',
@@ -2565,7 +2476,7 @@ async function main() {
       type: 'press_release',
       image: null,
       pdfUrl:
-        '/prensa/documentos/la-coordinadora-de-representantes-de-estudiantes-de-universi-2019-06-2.pdf',
+        '/prensa/documentos/la-coordinadora-de-representantes-de-estudiantes-de-universi-2.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '6/06/2019',
@@ -2604,8 +2515,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/los-estudiantes-valoran-como-un-primer-paso-positivo-las-med-2018-10.pdf',
+      pdfUrl: '/prensa/documentos/los-estudiantes-valoran-como-un-primer-paso-positivo-las-med.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/10/2018',
@@ -2625,8 +2535,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/representantes-de-estudiantes-de-universidades-publicas-recl-2018-08.pdf',
+      pdfUrl: '/prensa/documentos/representantes-de-estudiantes-de-universidades-publicas-recl.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '2/08/2018',
@@ -2646,8 +2555,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/carta-abierta-al-grupo-parlamentario-ciudadanos-en-el-congre-2018-06.pdf',
+      pdfUrl: '/prensa/documentos/carta-abierta-al-grupo-parlamentario-ciudadanos-en-el-congre.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '18/06/2018',
@@ -2754,7 +2662,7 @@ async function main() {
           description:
             'El I Congreso “La Universidad del Mañana” tendrá lugar en la Universidad Politécnica de Madrid el 20 y 21 de abril de 2017, es el primer Congreso celebrado conjuntamente entre la Coordinadora de Representantes de Estudiantes de las Universidades Públicas (CREUP) y la Conferencia de Rectores de las Universidades de España (CRUE). A lo largo […]',
           contentHtml:
-            '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"> <html><body data-rsssl=1><p>El I Congreso &ldquo;La Universidad del Ma&ntilde;ana&rdquo; tendr&aacute; lugar en la <strong>Universidad Polit&eacute;cnica de Madrid</strong> el <strong>20 y 21 de abril de 2017</strong>, es el primer Congreso celebrado conjuntamente entre la Coordinadora de Representantes de Estudiantes de las Universidades P&uacute;blicas (CREUP) y la Conferencia de Rectores de las Universidades de Espa&ntilde;a (CRUE). A lo largo de dos d&iacute;as, <strong>m&aacute;s de cien participantes</strong> de toda la pen&iacute;nsula intercambiar&aacute;n ideas y plantear&aacute;n un nuevo panorama para la Educaci&oacute;n Universitaria en Espa&ntilde;a.</p> <p>El Sistema Universitario Espa&ntilde;ol ha vivido una de sus &eacute;pocas m&aacute;s convulsas en los &uacute;ltimos a&ntilde;os. Despu&eacute;s de duros recortes, inestabilidad y poco debate, se abre tras la crisis econ&oacute;mica, una nueva etapa donde juntos tenemos que decidir cu&aacute;l debe ser el futuro de la Universidad en Espa&ntilde;a de los pr&oacute;ximos a&ntilde;os.</p> <p>La formaci&oacute;n, el debate y la comprensi&oacute;n se tornan valores m&aacute;s importantes que nunca si queremos llegar a un punto en com&uacute;n sobre que&#769; modelo de Universidad necesita nuestro pa&iacute;s. Esta primera edici&oacute;n (La Universidad del Ma&ntilde;ana) pretende ser un espacio donde poder llevar a cabo esta labor. El primer evento conjunto entre <strong>Rectorados y </strong><strong>Representantes de Estudiantes</strong> pretende ser un punto de encuentro donde a trav&eacute;s de distintas mesas redondas, profundizar sobre el presente y el futuro de la Universidad Espa&ntilde;ola.</p> <p>Para m&aacute;s informaci&oacute;n puede consultar la p&aacute;gina web del evento: <a href="https://www.creup.es/congreso">I Congreso CREUP -CRUE &laquo;La Universidad del Ma&ntilde;ana&raquo;</a> o ponerse en contacto con nosotros.</p> </body></html>',
+            '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"> <html><body data-rsssl=1><p>El I Congreso &ldquo;La Universidad del Ma&ntilde;ana&rdquo; tendr&aacute; lugar en la <strong>Universidad Polit&eacute;cnica de Madrid</strong> el <strong>20 y 21 de abril de 2017</strong>, es el primer Congreso celebrado conjuntamente entre la Coordinadora de Representantes de Estudiantes de las Universidades P&uacute;blicas (CREUP) y la Conferencia de Rectores de las Universidades de Espa&ntilde;a (CRUE). A lo largo de dos d&iacute;as, <strong>m&aacute;s de cien participantes</strong> de toda la pen&iacute;nsula intercambiar&aacute;n ideas y plantear&aacute;n un nuevo panorama para la Educaci&oacute;n Universitaria en Espa&ntilde;a.</p> <p>El Sistema Universitario Espa&ntilde;ol ha vivido una de sus &eacute;pocas m&aacute;s convulsas en los &uacute;ltimos a&ntilde;os. Despu&eacute;s de duros recortes, inestabilidad y poco debate, se abre tras la crisis econ&oacute;mica, una nueva etapa donde juntos tenemos que decidir cu&aacute;l debe ser el futuro de la Universidad en Espa&ntilde;a de los pr&oacute;ximos a&ntilde;os.</p> <p>La formaci&oacute;n, el debate y la comprensi&oacute;n se tornan valores m&aacute;s importantes que nunca si queremos llegar a un punto en com&uacute;n sobre que&#769; modelo de Universidad necesita nuestro pa&iacute;s. Esta primera edici&oacute;n (La Universidad del Ma&ntilde;ana) pretende ser un espacio donde poder llevar a cabo esta labor. El primer evento conjunto entre <strong>Rectorados y </strong><strong>Representantes de Estudiantes</strong> pretende ser un punto de encuentro donde a trav&eacute;s de distintas mesas redondas, profundizar sobre el presente y el futuro de la Universidad Espa&ntilde;ola.</p> <p>Para m&aacute;s informaci&oacute;n puede consultar la p&aacute;gina web del evento: <a href="/prensa/documentos/i-congreso-la-universidad-del-manana-2017-04.pdf">I Congreso CREUP -CRUE &laquo;La Universidad del Ma&ntilde;ana&raquo;</a> o ponerse en contacto con nosotros.</p> </body></html>',
         },
       ],
     },
@@ -2780,8 +2688,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-traslada-a-la-defensora-del-pueblo-los-problemas-del-s-2016-06.pdf',
+      pdfUrl: '/prensa/documentos/creup-traslada-a-la-defensora-del-pueblo-los-problemas-del-s.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/06/2016',
@@ -2801,8 +2708,7 @@ async function main() {
     {
       type: 'press_release',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-clausura-su-lvi-asamblea-general-exigiendo-un-sistema--2015-11.pdf',
+      pdfUrl: '/prensa/documentos/creup-clausura-su-lvi-asamblea-general-exigiendo-un-sistema-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '30/11/2015',
@@ -2822,8 +2728,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-se-posiciona-en-contra-de-la-ley-universitaria-para-an-2026-02.pdf',
+      pdfUrl: '/prensa/documentos/creup-se-posiciona-en-contra-de-la-ley-universitaria-para-an.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/02/2026',
@@ -2840,8 +2745,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/comunicado-de-creup-ante-la-intervencion-militar-en-la-unive-2026-01.pdf',
+      pdfUrl: '/prensa/documentos/comunicado-de-creup-ante-la-intervencion-militar-en-la-unive.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '15/01/2026',
@@ -2858,8 +2762,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/comunicado-de-creup-acerca-de-las-manifestaciones-de-las-uni-2025-11.pdf',
+      pdfUrl: '/prensa/documentos/comunicado-de-creup-acerca-de-las-manifestaciones-de-las-uni.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '27/11/2025',
@@ -2877,8 +2780,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/comunicado-de-creup-sobre-el-veto-a-nuevos-grados-en-univers-2025-07.pdf',
+      pdfUrl: '/prensa/documentos/comunicado-de-creup-sobre-el-veto-a-nuevos-grados-en-univers.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/07/2025',
@@ -2896,8 +2798,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/comunicado-de-repulsa-a-las-agresiones-contra-las-protestas--2024-06.pdf',
+      pdfUrl: '/prensa/documentos/comunicado-de-repulsa-a-las-agresiones-contra-las-protestas-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '21/06/2024',
@@ -2915,8 +2816,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/comunicado-de-repulsa-al-acto-de-violencia-machista-vivido-e-2022-10.pdf',
+      pdfUrl: '/prensa/documentos/comunicado-de-repulsa-al-acto-de-violencia-machista-vivido-e.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '7/10/2022',
@@ -2951,8 +2851,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/crue-creup-y-ceune-rechazan-las-enmiendas-pactadas-por-psoe--2021-10.pdf',
+      pdfUrl: '/prensa/documentos/crue-creup-y-ceune-rechazan-las-enmiendas-pactadas-por-psoe-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '29/10/2021',
@@ -2970,8 +2869,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/carta-abierta-sobre-la-situacion-del-estudiantado-afgano-2021-09.pdf',
+      pdfUrl: '/prensa/documentos/carta-abierta-sobre-la-situacion-del-estudiantado-afgano-202.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '5/09/2021',
@@ -2988,8 +2886,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/en-defensa-de-la-seguridad-de-la-comunidad-universitaria-2021-01.pdf',
+      pdfUrl: '/prensa/documentos/en-defensa-de-la-seguridad-de-la-comunidad-universitaria-202.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '28/01/2021',
@@ -3007,7 +2904,7 @@ async function main() {
       type: 'statement',
       image: null,
       pdfUrl:
-        '/prensa/documentos/estudiantes-universitarios-lanzan-sus-peticiones-para-el-com-2020-08-2.pdf',
+        '/prensa/documentos/estudiantes-universitarios-lanzan-sus-peticiones-para-el-com-2.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '31/08/2020',
@@ -3024,8 +2921,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/malestar-del-estudiantado-ante-las-declaraciones-realizadas-2020-05.pdf',
+      pdfUrl: '/prensa/documentos/malestar-del-estudiantado-ante-las-declaraciones-realizadas.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/05/2020',
@@ -3041,10 +2937,8 @@ async function main() {
     },
     {
       type: 'statement',
-      image:
-        '/prensa/imagenes/el-ministro-de-universidades-se-reune-con-los-representantes-2020-04.webp',
-      pdfUrl:
-        '/prensa/documentos/el-ministro-de-universidades-se-reune-con-los-representantes-2020-04.pdf',
+      image: '/prensa/imagenes/el-ministro-de-universidades-se-reune-con-los-representantes.webp',
+      pdfUrl: '/prensa/documentos/el-ministro-de-universidades-se-reune-con-los-representantes.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '19/04/2020',
@@ -3078,8 +2972,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/medidas-anunciadas-por-crue-en-el-articulo-las-universidades-2020-04.pdf',
+      pdfUrl: '/prensa/documentos/medidas-anunciadas-por-crue-en-el-articulo-las-universidades.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '1/04/2020',
@@ -3118,8 +3011,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/los-representantes-de-estudiantes-del-estado-ponen-sobre-la--2020-03.pdf',
+      pdfUrl: '/prensa/documentos/los-representantes-de-estudiantes-del-estado-ponen-sobre-la-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '8/03/2020',
@@ -3137,8 +3029,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/carta-abierta-al-ministerio-de-ciencia-innovacion-y-universi-2019-10.pdf',
+      pdfUrl: '/prensa/documentos/carta-abierta-al-ministerio-de-ciencia-innovacion-y-universi.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '15/10/2019',
@@ -3176,8 +3067,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-no-solicita-una-prueba-unica-sino-una-equiparabilidad--2019-06.pdf',
+      pdfUrl: '/prensa/documentos/creup-no-solicita-una-prueba-unica-sino-una-equiparabilidad-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '7/06/2019',
@@ -3197,8 +3087,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/propuesta-de-creacion-de-una-comision-mixta-en-el-congreso-s-2019-04.pdf',
+      pdfUrl: '/prensa/documentos/propuesta-de-creacion-de-una-comision-mixta-en-el-congreso-s.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '29/04/2019',
@@ -3218,8 +3107,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-lamenta-el-dano-nuevamente-causado-por-los-representan-2018-09.pdf',
+      pdfUrl: '/prensa/documentos/creup-lamenta-el-dano-nuevamente-causado-por-los-representan.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/09/2018',
@@ -3258,8 +3146,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/creup-muestra-todo-su-apoyo-al-estudiantado-que-ha-realizado-2018-06.pdf',
+      pdfUrl: '/prensa/documentos/creup-muestra-todo-su-apoyo-al-estudiantado-que-ha-realizado.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '9/06/2018',
@@ -3317,8 +3204,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-dia-de-la-mujer-y-la-nina-en-la-ciencia-nos-recuerdan-las-2018-02.pdf',
+      pdfUrl: '/prensa/documentos/el-dia-de-la-mujer-y-la-nina-en-la-ciencia-nos-recuerdan-las.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '11/02/2018',
@@ -3338,8 +3224,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/casos-como-el-de-albacete-se-han-convertido-en-un-motivo-de--2018-01.pdf',
+      pdfUrl: '/prensa/documentos/casos-como-el-de-albacete-se-han-convertido-en-un-motivo-de-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/01/2018',
@@ -3359,8 +3244,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/ministro-de-educacion-repite-desplante-cita-al-estudiantado--2017-12.pdf',
+      pdfUrl: '/prensa/documentos/ministro-de-educacion-repite-desplante-cita-al-estudiantado-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '22/12/2017',
@@ -3379,8 +3263,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/el-rd-destinado-a-garantizar-un-derecho-se-ha-convertido-en--2017-07.pdf',
+      pdfUrl: '/prensa/documentos/el-rd-destinado-a-garantizar-un-derecho-se-ha-convertido-en-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '23/07/2017',
@@ -3400,8 +3283,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/ministro-de-educacion-menosprecia-a-los-estudiantes-una-vez--2017-07.pdf',
+      pdfUrl: '/prensa/documentos/ministro-de-educacion-menosprecia-a-los-estudiantes-una-vez-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '14/07/2017',
@@ -3420,8 +3302,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/la-comunidad-estudiantil-celebra-avances-en-la-reduccion-de--2017-06.pdf',
+      pdfUrl: '/prensa/documentos/la-comunidad-estudiantil-celebra-avances-en-la-reduccion-de-.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '16/06/2017',
@@ -3498,8 +3379,7 @@ async function main() {
     {
       type: 'statement',
       image: null,
-      pdfUrl:
-        '/prensa/documentos/los-estudiantes-celebran-la-unificacion-del-programa-erasmus-2016-07.pdf',
+      pdfUrl: '/prensa/documentos/los-estudiantes-celebran-la-unificacion-del-programa-erasmus.pdf',
       externalUrl: null,
       mediaOutletId: null,
       publishedAt: '6/07/2016',
@@ -3512,7 +3392,7 @@ async function main() {
           description:
             'La Coordinadora de Representantes de Universidades Públicas (CREUP) celebra la retirada del programa «Erasmus.es» para transferir su presupuesto a un único programa de becas de movilidad europea y con ello eliminar el requisito del nivel B2 en idiomas para obtener una ayuda extraordinaria, y el aumento del período de financiación de 5 meses a 7. […]',
           contentHtml:
-            '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"> <html><body data-rsssl=1><p>La Coordinadora de Representantes de Universidades P&uacute;blicas (CREUP) celebra la retirada del programa &laquo;Erasmus.es&raquo; para transferir su presupuesto a un &uacute;nico programa de becas de movilidad europea y con ello eliminar el requisito del nivel B2 en idiomas para obtener una ayuda extraordinaria, y el aumento del per&iacute;odo de financiaci&oacute;n de 5 meses a 7.</p> <p>&laquo;Nos alegramos que el ministerio haga caso a las peticiones que llevamos a&ntilde;os reclamando. El programa Erasmus.es era un programa elitista, que castigaba a aquellos estudiantes que por sus circunstancias socioecon&oacute;micas no han podido formarse en un nivel superior en un idioma&rdquo;, afirma Gorka Mart&iacute;n, Presidente de CREUP.</p> <p>Sin embargo, la medida no se considera suficiente, ya que Espa&ntilde;a sigue siendo uno de los pa&iacute;ses con la menor cuant&iacute;a de beca de los pa&iacute;ses participantes en el Programa. La actual situaci&oacute;n excluye de manera inmediata a los estudiantes con menores recursos econ&oacute;micos contribuyendo a la elitizaci&oacute;n y exclusividad de estos programas. Es por ello que la financiaci&oacute;n en los programas de movilidad por parte del Estado debe incrementarse, para conseguir la financiaci&oacute;n de la estancia completa del estudiante tanto en los programas de duraci&oacute;n corta como larga.</p> <p>&ldquo;La financiaci&oacute;n sigue siendo una de las principales barreras a la movilidad, y por consiguiente a la internacionalizaci&oacute;n de la Educaci&oacute;n Superior. Procurar la financiaci&oacute;n a estos estudiantes va en beneficio de la sociedad, convirti&eacute;ndola en una sociedad multicultural, m&aacute;s competitiva e internacionalizada&rdquo;, dice Mart&iacute;n.</p> <p>M&aacute;s informaci&oacute;n en el Posicionamiento de CREUP en Internacionalizaci&oacute;n y Movilidad [enlace: <a href="https://www.creup.es/politica-universitaria/posicionamientos/internacionalizacion/">Internacionalizaci&oacute;n</a>].</p> </body></html>',
+            '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd"> <html><body data-rsssl=1><p>La Coordinadora de Representantes de Universidades P&uacute;blicas (CREUP) celebra la retirada del programa &laquo;Erasmus.es&raquo; para transferir su presupuesto a un &uacute;nico programa de becas de movilidad europea y con ello eliminar el requisito del nivel B2 en idiomas para obtener una ayuda extraordinaria, y el aumento del per&iacute;odo de financiaci&oacute;n de 5 meses a 7.</p> <p>&laquo;Nos alegramos que el ministerio haga caso a las peticiones que llevamos a&ntilde;os reclamando. El programa Erasmus.es era un programa elitista, que castigaba a aquellos estudiantes que por sus circunstancias socioecon&oacute;micas no han podido formarse en un nivel superior en un idioma&rdquo;, afirma Gorka Mart&iacute;n, Presidente de CREUP.</p> <p>Sin embargo, la medida no se considera suficiente, ya que Espa&ntilde;a sigue siendo uno de los pa&iacute;ses con la menor cuant&iacute;a de beca de los pa&iacute;ses participantes en el Programa. La actual situaci&oacute;n excluye de manera inmediata a los estudiantes con menores recursos econ&oacute;micos contribuyendo a la elitizaci&oacute;n y exclusividad de estos programas. Es por ello que la financiaci&oacute;n en los programas de movilidad por parte del Estado debe incrementarse, para conseguir la financiaci&oacute;n de la estancia completa del estudiante tanto en los programas de duraci&oacute;n corta como larga.</p> <p>&ldquo;La financiaci&oacute;n sigue siendo una de las principales barreras a la movilidad, y por consiguiente a la internacionalizaci&oacute;n de la Educaci&oacute;n Superior. Procurar la financiaci&oacute;n a estos estudiantes va en beneficio de la sociedad, convirti&eacute;ndola en una sociedad multicultural, m&aacute;s competitiva e internacionalizada&rdquo;, dice Mart&iacute;n.</p> <p>M&aacute;s informaci&oacute;n en el Posicionamiento de CREUP en Internacionalizaci&oacute;n y Movilidad [enlace: <a href="/prensa/documentos/los-estudiantes-celebran-la-unificacion-del-programa-erasmus.pdf">Internacionalizaci&oacute;n</a>].</p> </body></html>',
         },
       ],
     },
@@ -4208,24 +4088,6 @@ async function main() {
           title: 'CREUP alerta de la bajada continua de las matrículas universitarias',
           description:
             '«Bajan las matrículas universitarias y los problemas continúan», señalan desde la Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP).',
-        },
-      ],
-    },
-    {
-      type: 'media_appearance',
-      image: null,
-      pdfUrl: null,
-      externalUrl:
-        'https://www.lavanguardia.com/economia/20230216/8762095/universitarios-denuncian-estatuto-becario-fraude.html',
-      mediaOutletId: mediaOutlets['la-vanguardia'],
-      publishedAt: '16/02/2023',
-      tagSlugs: ['internships-employability', 'student-representation', 'university-policy'],
-      translations: [
-        {
-          locale: 'es',
-          title: 'Los universitarios denuncian que el estatuto del becario «es un fraude»',
-          description:
-            'El estudiantado universitario denunció que el Estatuto del Becario «es un fraude» y reclamó una regulación de las prácticas que realmente proteja a los estudiantes.',
         },
       ],
     },
@@ -9826,24 +9688,6 @@ async function main() {
       type: 'media_appearance',
       image: null,
       pdfUrl: null,
-      externalUrl: 'https://www.innovaspain.com/crue-universidades-espanolas-cop25/',
-      mediaOutletId: mediaOutlets['innovaspain'],
-      publishedAt: '13/12/2019',
-      tagSlugs: ['university-policy', 'university-quality', 'university-life-wellbeing'],
-      translations: [
-        {
-          locale: 'es',
-          title:
-            'Las universidades españolas, dispuestas a liderar una acción decidida por el clima',
-          description:
-            'CRUE aprovecha la COP25 para reivindicar el papel de la universidad ante el cambio climático y defender una acción decidida desde la educación superior.',
-        },
-      ],
-    },
-    {
-      type: 'media_appearance',
-      image: null,
-      pdfUrl: null,
       externalUrl:
         'http://www.diarioveterinario.com/texto-diario/mostrar/1650959/universidades-espanolas-comprometen-luchar-contra-cambio-climatico',
       mediaOutletId: mediaOutlets['diario-veterinario'],
@@ -9913,7 +9757,7 @@ async function main() {
       image: null,
       pdfUrl: null,
       externalUrl:
-        'https://www.lavanguardia.com/vida/20191107/471443766148/universidades-y-estudian%E2%80%8C%20tes-piden-al-gobierno-que-ayude-a-triplicar-la-financiacion-del-programa-erasmus.html%E2%80%8C',
+        'https://www.lavanguardia.com/vida/20191107/471443766148/universidades-y-estudiantes-piden-al-gobierno-que-ayude-a-triplicar-la-financiacion-del-programa-erasmus.html',
       mediaOutletId: mediaOutlets['la-vanguardia'],
       publishedAt: '9/11/2019',
       tagSlugs: [
@@ -10422,7 +10266,7 @@ async function main() {
           locale: t.locale,
           title: t.title,
           description: t.description,
-          contentHtml: 'contentHtml' in t ? (t.contentHtml ?? null) : null,
+          contentHtml: 'contentHtml' in t ? sanitizeRichTextHtml(t.contentHtml) : null,
           pressArticleId: article.id,
         }))
       )
@@ -10647,14 +10491,11 @@ async function main() {
     {
       title:
         'Informe Económico del VI Congreso CREUP-CRUE y XIV Encuentro Estatal de Representantes de CREUP',
+      pdfUrl: `${FINANCIAL_REPORTS_PUBLIC_PATH}/informe-economico-del-vi-congreso-creup-crue-y-xiv-encuentro.pdf`,
       approvedAt: new Date('2025-04-04'),
     },
     {
       title: "Informe Económico de la 46th European Students' Convention",
-      approvedAt: new Date('2024-12-15'),
-    },
-    {
-      title: 'Informe Económico de la 75.ª AGO',
       approvedAt: new Date('2024-12-15'),
     },
     {
@@ -10674,7 +10515,7 @@ async function main() {
     const [report] = await db
       .insert(schema.financialReports)
       .values({
-        pdfUrl: buildFinancialReportPdfPath(item.title),
+        pdfUrl: 'pdfUrl' in item ? item.pdfUrl : buildFinancialReportPdfPath(item.title),
         approvedAt: item.approvedAt,
         order: i,
         active: true,
@@ -10692,17 +10533,6 @@ async function main() {
   const newslettersData = [
     { year: 2026, month: 2 },
     { year: 2026, month: 1 },
-    { year: 2025, month: 11 },
-    { year: 2025, month: 10 },
-    { year: 2025, month: 9 },
-    { year: 2025, month: 6 },
-    { year: 2025, month: 5 },
-    { year: 2025, month: 3 },
-    { year: 2025, month: 2 },
-    { year: 2024, month: 12 },
-    { year: 2024, month: 11 },
-    { year: 2024, month: 10 },
-    { year: 2024, month: 9 },
   ]
 
   assertUniqueValues(
@@ -10713,11 +10543,12 @@ async function main() {
   for (let i = 0; i < newslettersData.length; i++) {
     const item = newslettersData[i]
     const monthKey = buildNewsletterMonthKey(item.year, item.month)
+    const coverImage = buildNewsletterCoverPath(monthKey)
 
     await db.insert(schema.newsletters).values({
       month: new Date(Date.UTC(item.year, item.month - 1, 1)),
       monthKey,
-      coverImage: buildNewsletterCoverPath(monthKey),
+      coverImage: publicAssetExists(coverImage) ? coverImage : null,
       pdfUrl: buildNewsletterPdfPath(monthKey),
       publicVisible: true,
     })
