@@ -13,7 +13,7 @@ import {
   assertUploadedFileSize,
   assertUploadRequestSize,
 } from '../../../utils/core/uploadRequestLimit'
-import { validateMultipartFile } from '../../../utils/validation'
+import { getMultipartFileBuffer, validateMultipartFile } from '../../../utils/validation'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   const formData = await readMultipartFormData(event)
   const file = validateMultipartFile(formData)
-  const fileData = Buffer.from(file.data)
+  const fileData = getMultipartFileBuffer(file.data)
 
   const ext = extname(file.filename).toLowerCase()
   const isImage = ALLOWED_ADMIN_IMAGE_EXTENSIONS.includes(

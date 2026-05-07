@@ -1,5 +1,6 @@
 import type { H3Event, MultiPartData } from 'h3'
 import { createError, getQuery, getRouterParam } from 'h3'
+import { Buffer } from 'node:buffer'
 import { z } from 'zod'
 import { getPublicApiErrorMessage } from '../locale/apiErrorMessages'
 import { toOptionalSingleStringSchema, toSingleStringSchema } from './helpers'
@@ -125,6 +126,14 @@ export function validateMultipartFile(
   }
 
   return parsedFile.data
+}
+
+export function getMultipartFileBuffer(data: Uint8Array) {
+  if (Buffer.isBuffer(data)) {
+    return data
+  }
+
+  return Buffer.from(data.buffer, data.byteOffset, data.byteLength)
 }
 
 export function getMultipartTextField(

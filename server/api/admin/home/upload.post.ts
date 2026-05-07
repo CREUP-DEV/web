@@ -4,6 +4,7 @@ import { toExternalImageProxyUrl } from '../../../utils/external/externalAssetUr
 import { assertUploadRequestSize } from '../../../utils/core/uploadRequestLimit'
 import {
   adminUploadKindSchema,
+  getMultipartFileBuffer,
   getMultipartTextField,
   validateInput,
   validateMultipartFile,
@@ -43,7 +44,7 @@ export default defineEventHandler(async (event) => {
 
   const target = uploadTargets[kind]
   const { storagePath } = await saveAdminImage({
-    data: Buffer.from(file.data),
+    data: getMultipartFileBuffer(file.data),
     filename: file.filename,
     uploadDir: target.uploadDir,
     publicPath: target.publicPath,
