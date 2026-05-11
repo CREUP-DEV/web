@@ -200,7 +200,7 @@ export default defineNuxtConfig({
         ],
         'report-uri': ['/api/csp-report'],
         'frame-src': ['https://challenges.cloudflare.com'],
-        'frame-ancestors': ["'none'"],
+        'frame-ancestors': ['https://firu.es', 'https://www.firu.es'],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
         'form-action': ["'self'"],
@@ -212,7 +212,7 @@ export default defineNuxtConfig({
         includeSubdomains: true,
       },
       xContentTypeOptions: 'nosniff',
-      xFrameOptions: 'DENY',
+      xFrameOptions: false,
       referrerPolicy: 'strict-origin-when-cross-origin',
       permissionsPolicy: {
         camera: [],
