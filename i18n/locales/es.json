@@ -628,9 +628,13 @@
       "title": "Noticias",
       "description": "Notas de prensa, comunicados y apariciones en medios de CREUP.",
       "empty": "No hay noticias disponibles con los filtros seleccionados.",
+      "emptySearch": "No hay noticias que coincidan con la búsqueda.",
       "loadError": "No se han podido cargar las noticias en este momento.",
       "filterByType": "Filtrar por tipo",
       "filterByTag": "Filtrar por etiqueta",
+      "searchLabel": "Buscar noticias",
+      "searchPlaceholder": "Buscar por título o resumen",
+      "clearSearch": "Borrar búsqueda",
       "backToList": "Volver a noticias"
     }
   },

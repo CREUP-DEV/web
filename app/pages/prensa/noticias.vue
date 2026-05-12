@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watchDebounced } from '@vueuse/core'
 import { usePressArchiveFilters } from '@/composables/press/usePressArchiveFilters'
 import { PRESS_ARTICLE_TYPES, type PressArticleType } from '~~/shared/constants/pressTypes'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
@@ -23,6 +24,13 @@ const typeParam = useSyncedQueryParam<string | null>('types', {
   serialize: (v) => v ?? null,
 })
 
+const searchQuery = useSyncedQueryParam<string | null>('q', {
+  parse: (v) => v?.trim() || null,
+  serialize: (v) => v?.trim() || null,
+})
+
+const searchInput = ref(searchQuery.value ?? '')
+
 const { page, toggleTag, selectedTags, tagsData, tagsPending } = usePressArchiveFilters(() => null)
 
 const selectedTypes = computed<PressArticleType[]>(() => {
@@ -37,6 +45,23 @@ watch(typeParam, () => {
   page.value = 1
 })
 
+watch(searchQuery, (value) => {
+  if ((value ?? '') !== searchInput.value.trim()) {
+    searchInput.value = value ?? ''
+  }
+})
+
+watchDebounced(
+  searchInput,
+  (value) => {
+    const next = value.trim() || null
+    if (next === searchQuery.value) return
+    searchQuery.value = next
+    page.value = 1
+  },
+  { debounce: 300, maxWait: 800 }
+)
+
 const typeQueryRef = computed(() =>
   selectedTypes.value.length > 0 ? (selectedTypes.value as PressArticleType[]) : null
 )
@@ -45,12 +70,21 @@ const tagQueryRef = computed(() =>
 )
 const offset = computed(() => (page.value - 1) * LIMIT)
 
-const { data, pending, error, refresh } = usePress(typeQueryRef, tagQueryRef, LIMIT, offset)
+const { data, pending, error, refresh } = usePress(
+  typeQueryRef,
+  tagQueryRef,
+  LIMIT,
+  offset,
+  searchQuery
+)
 
 const articles = computed(() => data.value?.data ?? [])
 const total = computed(() => data.value?.meta.total ?? 0)
 const pageCount = computed(() => Math.ceil(total.value / LIMIT))
 const showErrorState = computed(() => Boolean(error.value) && articles.value.length === 0)
+const emptyMessage = computed(() =>
+  searchQuery.value ? t('press.news.emptySearch') : t('press.news.empty')
+)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, articles, error)
 
@@ -91,35 +125,59 @@ const getArticleAnimationStyle = (index: number) => ({
       </header>
 
       <div class="mb-6 space-y-4">
-        <div
-          class="flex flex-wrap items-center gap-2"
-          role="group"
-          :aria-label="t('press.news.filterByType')"
-        >
-          <UButton
-            type="button"
-            size="md"
-            color="primary"
-            icon="i-tabler-list"
-            :variant="selectedTypes.length === 0 ? 'solid' : 'outline'"
-            :aria-pressed="selectedTypes.length === 0"
-            @click="typeParam = null"
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div
+            class="flex flex-wrap items-center gap-2"
+            role="group"
+            :aria-label="t('press.news.filterByType')"
           >
-            {{ t('common.all') }}
-          </UButton>
-          <UButton
-            v-for="pressType in PRESS_ARTICLE_TYPES"
-            :key="pressType"
-            type="button"
-            size="md"
-            color="primary"
-            :variant="selectedTypes.includes(pressType) ? 'solid' : 'outline'"
-            :icon="typeIcons[pressType]"
-            :aria-pressed="selectedTypes.includes(pressType)"
-            @click="toggleType(pressType)"
+            <UButton
+              type="button"
+              size="md"
+              color="primary"
+              icon="i-tabler-list"
+              :variant="selectedTypes.length === 0 ? 'solid' : 'outline'"
+              :aria-pressed="selectedTypes.length === 0"
+              @click="typeParam = null"
+            >
+              {{ t('common.all') }}
+            </UButton>
+            <UButton
+              v-for="pressType in PRESS_ARTICLE_TYPES"
+              :key="pressType"
+              type="button"
+              size="md"
+              color="primary"
+              :variant="selectedTypes.includes(pressType) ? 'solid' : 'outline'"
+              :icon="typeIcons[pressType]"
+              :aria-pressed="selectedTypes.includes(pressType)"
+              @click="toggleType(pressType)"
+            >
+              {{ typeLabels[pressType] }}
+            </UButton>
+          </div>
+
+          <UInput
+            v-model="searchInput"
+            class="w-full lg:max-w-sm lg:min-w-80"
+            icon="i-tabler-search"
+            size="lg"
+            type="search"
+            :placeholder="t('press.news.searchPlaceholder')"
+            :aria-label="t('press.news.searchLabel')"
           >
-            {{ typeLabels[pressType] }}
-          </UButton>
+            <template v-if="searchInput" #trailing>
+              <UButton
+                type="button"
+                color="neutral"
+                variant="link"
+                size="sm"
+                icon="i-tabler-x"
+                :aria-label="t('press.news.clearSearch')"
+                @click="searchInput = ''"
+              />
+            </template>
+          </UInput>
         </div>
 
         <HomeTagSelector
@@ -161,7 +219,7 @@ const getArticleAnimationStyle = (index: number) => ({
 
         <div v-else-if="!articles.length" class="text-muted py-12 text-center">
           <UIcon name="i-tabler-news-off" class="mx-auto mb-2 size-8 opacity-50" />
-          <p>{{ t('press.news.empty') }}</p>
+          <p>{{ emptyMessage }}</p>
         </div>
 
         <TransitionGroup

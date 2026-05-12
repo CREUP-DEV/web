@@ -49,6 +49,7 @@ export function usePress(
   tagSlug?: MaybeRef<string | null | undefined>,
   limit?: MaybeRef<number | undefined>,
   offset?: MaybeRef<number | undefined>,
+  search?: MaybeRef<string | null | undefined>,
   options?: {
     enabled?: MaybeRef<boolean | undefined>
   }
@@ -61,6 +62,7 @@ export function usePress(
     return Array.isArray(val) ? val : val
   })
   const tagValue = computed(() => unref(tagSlug) ?? null)
+  const searchValue = computed(() => unref(search)?.trim() || null)
   const limitValue = computed(() => {
     const value = unref(limit)
     if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
@@ -86,7 +88,7 @@ export function usePress(
   })
 
   const pressKey = computed(() => {
-    return `press-${locale.value}-${typeKey.value}-${tagValue.value || 'none'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
+    return `press-${locale.value}-${typeKey.value}-${tagValue.value || 'none'}-${searchValue.value || 'none'}-${limitValue.value ?? 'all'}-${offsetValue.value}`
   })
 
   return useAsyncData<PressResponse>(
@@ -111,6 +113,9 @@ export function usePress(
       if (tagValue.value) {
         params.set('tag', tagValue.value)
       }
+      if (searchValue.value) {
+        params.set('q', searchValue.value)
+      }
       if (limitValue.value != null) {
         params.set('limit', String(limitValue.value))
       }
@@ -128,7 +133,7 @@ export function usePress(
           total: 0,
         },
       }),
-      watch: [locale, typeValue, tagValue, limitValue, offsetValue, enabledValue],
+      watch: [locale, typeValue, tagValue, searchValue, limitValue, offsetValue, enabledValue],
     }
   )
 }

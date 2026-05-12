@@ -628,9 +628,13 @@
       "title": "News",
       "description": "Press releases, statements and media appearances from CREUP.",
       "empty": "No news available for the selected filters.",
+      "emptySearch": "No news matches your search.",
       "loadError": "News could not be loaded right now.",
       "filterByType": "Filter by type",
       "filterByTag": "Filter by tag",
+      "searchLabel": "Search news",
+      "searchPlaceholder": "Search by title or summary",
+      "clearSearch": "Clear search",
       "backToList": "Back to news"
     }
   },

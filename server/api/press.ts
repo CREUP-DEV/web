@@ -1,7 +1,7 @@
 import { createError, setHeader } from 'h3'
 import { eq, desc, and, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
-import { pressArticles, tags, pressArticleTags } from '../db/schema'
+import { pressArticles, pressArticleTranslations, tags, pressArticleTags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
@@ -26,6 +26,10 @@ import {
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 
+function escapeLikePattern(value: string) {
+  return value.replace(/[%_\\]/g, '\\$&')
+}
+
 export default defineCachedEventHandler(
   async (event) => {
     setPublicApiCacheHeaders(event)
@@ -35,6 +39,7 @@ export default defineCachedEventHandler(
     const type = query.type
     const typesParam = query.types
     const tagParam = query.tag
+    const search = query.q?.trim()
     const limit = query.limit
     const offset = query.offset
 
@@ -74,6 +79,22 @@ export default defineCachedEventHandler(
           .where(inArray(tags.slug, tagSlugs))
 
         conditions.push(inArray(pressArticles.id, articleIdsByTag))
+      }
+
+      if (search) {
+        const pattern = `%${escapeLikePattern(search)}%`
+        const searchLocales = [...new Set([locale, fallbackLocale])]
+        const articleIdsBySearch = db
+          .select({ pressArticleId: pressArticleTranslations.pressArticleId })
+          .from(pressArticleTranslations)
+          .where(
+            and(
+              inArray(pressArticleTranslations.locale, searchLocales),
+              sql`(${pressArticleTranslations.title} ilike ${pattern} escape '\\' or ${pressArticleTranslations.description} ilike ${pattern} escape '\\')`
+            )
+          )
+
+        conditions.push(inArray(pressArticles.id, articleIdsBySearch))
       }
 
       const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0]
@@ -192,7 +213,7 @@ export default defineCachedEventHandler(
     ...PUBLIC_ROUTE_CACHE_OPTIONS,
     getKey: (event) =>
       buildPublicRouteCacheKey(event, 'public-press', {
-        queryKeys: ['type', 'types', 'tag', 'limit', 'offset'],
+        queryKeys: ['type', 'types', 'tag', 'q', 'limit', 'offset'],
       }),
   }
 )
