@@ -26,6 +26,16 @@ const communityQuery = useSyncedQueryParam<string | null>('community', {
   parse: (rawValue) => rawValue,
   serialize: (value) => value ?? null,
 })
+const sectionQuery = useSyncedQueryParam<string | null>('section', {
+  parse: (rawValue) => {
+    if (rawValue === 'mores' || rawValue === 'sectoriales') {
+      return rawValue
+    }
+
+    return null
+  },
+  serialize: (value) => value ?? null,
+})
 const validCommunities = new Set(SPAIN_REGION_PATHS.map((region) => region.community))
 const {
   communityFilters,
@@ -112,12 +122,40 @@ const closeOrganizationModal = () => {
   selectedSectorial.value = null
 }
 
+const scrollToSection = (section: 'mores' | 'sectoriales') => {
+  sectionQuery.value = section
+
+  if (!import.meta.client || pending.value) {
+    return
+  }
+
+  nextTick(() => {
+    const targetId = section === 'mores' ? 'associated-section' : 'sectoriales-list'
+    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
+
 watch(
   communityQuery,
   (community) => {
     if (community && !validCommunities.has(community)) {
       communityQuery.value = null
     }
+  },
+  { immediate: true }
+)
+
+watch(
+  [sectionQuery, pending],
+  ([section, isPending]) => {
+    if (!import.meta.client || !section || isPending) {
+      return
+    }
+
+    nextTick(() => {
+      const targetId = section === 'mores' ? 'associated-section' : 'sectoriales-list'
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   },
   { immediate: true }
 )
@@ -140,7 +178,13 @@ watch(
                 <span class="font-medium">1.</span>
                 {{ t('members.introAssociated') }}
               </p>
-              <UButton href="#members-list" size="xs" variant="soft" icon="i-tabler-arrow-down">
+              <UButton
+                type="button"
+                size="xs"
+                variant="soft"
+                icon="i-tabler-arrow-down"
+                @click="scrollToSection('mores')"
+              >
                 {{ t('members.introAssociatedCta') }}
               </UButton>
             </li>
@@ -149,7 +193,13 @@ watch(
                 <span class="font-medium">2.</span>
                 {{ t('members.introSectoriales') }}
               </p>
-              <UButton href="#sectoriales-list" size="xs" variant="soft" icon="i-tabler-arrow-down">
+              <UButton
+                type="button"
+                size="xs"
+                variant="soft"
+                icon="i-tabler-arrow-down"
+                @click="scrollToSection('sectoriales')"
+              >
                 {{ t('members.introSectorialesCta') }}
               </UButton>
             </li>
@@ -196,7 +246,7 @@ watch(
       </div>
 
       <template v-else>
-        <section aria-labelledby="associated-heading">
+        <section id="associated-section" aria-labelledby="associated-heading" class="scroll-mt-24">
           <h2
             id="associated-heading"
             class="border-primary mb-6 border-b-2 pb-2 text-2xl font-semibold"
@@ -260,7 +310,11 @@ watch(
 
     <UContainer class="pb-8 sm:pb-12">
       <template v-if="!pending && !error">
-        <section id="sectoriales-list" aria-labelledby="sectoriales-heading" class="mt-2">
+        <section
+          id="sectoriales-list"
+          aria-labelledby="sectoriales-heading"
+          class="mt-2 scroll-mt-24"
+        >
           <h2
             id="sectoriales-heading"
             class="border-primary mb-6 border-b-2 pb-2 text-2xl font-semibold"

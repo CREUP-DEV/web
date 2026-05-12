@@ -537,6 +537,11 @@
   },
   "policy": {
     "download": "Descargar",
+    "landing": {
+      "title": "Política Universitaria",
+      "description": "Accede a los documentos con los que CREUP fija posición, aprueba resoluciones y analiza normativa universitaria.",
+      "viewDocuments": "Ver documentos"
+    },
     "positions": {
       "title": "Posicionamientos",
       "description": "Los posicionamientos expresan la posición política de la Asamblea General frente a temáticas relacionadas con los fines de la Asociación.",

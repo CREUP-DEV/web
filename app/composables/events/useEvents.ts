@@ -41,6 +41,8 @@ export interface CREUPEvent {
   order: number
 }
 
+const OTHER_EVENT_TYPE = 'Otro'
+
 interface EventsResponse {
   data: CREUPEvent[]
   meta: {
@@ -103,9 +105,12 @@ export function useEvents(options?: {
   const pageCount = computed(() => Math.ceil(total.value / limitValue.value))
 
   const eventTypes = computed(() => {
-    return [...(data.value?.meta.eventTypes ?? [])].sort((a, b) =>
-      a.localeCompare(b, getLanguageTag(locale.value))
-    )
+    return [...(data.value?.meta.eventTypes ?? [])].sort((a, b) => {
+      if (a === OTHER_EVENT_TYPE) return 1
+      if (b === OTHER_EVENT_TYPE) return -1
+
+      return a.localeCompare(b, getLanguageTag(locale.value))
+    })
   })
 
   const findBySlug = (slug: string) =>

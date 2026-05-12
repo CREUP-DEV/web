@@ -26,9 +26,28 @@ usePageSeo('events.title', 'events.description', {
   ],
 })
 
-const selectedTypes = ref<string[]>([])
-const page = ref(1)
+const typeParam = useSyncedQueryParam<string | null>('types', {
+  parse: (rawValue) => rawValue,
+  serialize: (value) => value ?? null,
+})
+const page = useSyncedQueryParam<number>('page', {
+  parse: (rawValue) => {
+    const parsed = Number(rawValue)
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : 1
+  },
+  serialize: (value) => (value > 1 ? String(Math.floor(value)) : null),
+})
 const offset = computed(() => (page.value - 1) * EVENTS_PAGE_SIZE)
+const selectedTypes = computed<string[]>(() => {
+  if (!typeParam.value) {
+    return []
+  }
+
+  return typeParam.value
+    .split(',')
+    .map((eventType) => eventType.trim())
+    .filter(Boolean)
+})
 
 const { events, eventTypes, total, pageCount, error, status, refresh } = useEvents({
   types: selectedTypes,
@@ -43,6 +62,26 @@ watch(selectedTypes, () => {
   page.value = 1
 })
 
+watch(
+  [typeParam, eventTypes],
+  ([types, availableTypes]) => {
+    if (!types || availableTypes.length === 0) {
+      return
+    }
+
+    const validTypes = types
+      .split(',')
+      .map((eventType) => eventType.trim())
+      .filter((eventType) => eventType && availableTypes.includes(eventType))
+
+    if (validTypes.length !== types.split(',').filter(Boolean).length) {
+      typeParam.value = validTypes.length > 0 ? validTypes.join(',') : null
+      page.value = 1
+    }
+  },
+  { immediate: true }
+)
+
 watch(page, () => {
   nextTick(() => {
     if (resultsRef.value instanceof HTMLElement) {
@@ -54,14 +93,15 @@ watch(page, () => {
 const toggleEventType = (eventType: string) => {
   const idx = selectedTypes.value.indexOf(eventType)
   if (idx >= 0) {
-    selectedTypes.value = selectedTypes.value.filter((t) => t !== eventType)
+    const next = selectedTypes.value.filter((t) => t !== eventType)
+    typeParam.value = next.length > 0 ? next.join(',') : null
   } else {
-    selectedTypes.value = [...selectedTypes.value, eventType]
+    typeParam.value = [...selectedTypes.value, eventType].join(',')
   }
 }
 
 const clearEventTypes = () => {
-  selectedTypes.value = []
+  typeParam.value = null
 }
 
 const getEventTypeLabel = (eventType: string | null) => {
