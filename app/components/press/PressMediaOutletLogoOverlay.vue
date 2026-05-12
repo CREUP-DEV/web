@@ -54,13 +54,13 @@ const rootClass = computed(() => {
     return `${shell} absolute right-3 bottom-3 z-10 max-w-[min(22rem,calc(100%-1.25rem))] px-3 py-2.5 sm:right-5 sm:bottom-5 sm:max-w-[min(26rem,calc(100%-2rem))] sm:px-4 sm:py-3`
   }
 
-  return `${shell} pointer-events-none absolute right-2 bottom-2 z-10 max-w-[min(12rem,calc(100%-1rem))] px-2 py-1.5`
+  return `${shell} pointer-events-none absolute right-2 bottom-2 z-10 max-w-[min(9rem,calc(100%-1rem))] px-1.5 py-1`
 })
 
 const frameClass = computed(() =>
   isDetailSize.value
     ? 'relative flex min-h-[3.25rem] min-w-[9rem] items-center justify-center sm:min-h-[4.25rem] sm:min-w-[11rem]'
-    : 'relative flex min-h-8 min-w-[6.5rem] items-center justify-center'
+    : 'relative flex min-h-6 min-w-[4.75rem] items-center justify-center'
 )
 
 const skeletonClass = computed(() =>
@@ -69,12 +69,12 @@ const skeletonClass = computed(() =>
     : 'absolute inset-1 z-0 rounded-sm'
 )
 
-const imgWidth = computed(() => (isDetailSize.value ? 420 : 240))
-const imgHeight = computed(() => (isDetailSize.value ? 56 : 32))
+const imgWidth = computed(() => (isDetailSize.value ? 420 : 180))
+const imgHeight = computed(() => (isDetailSize.value ? 56 : 24))
 const imgClass = computed(() =>
   isDetailSize.value
     ? 'relative z-[1] mx-auto block max-h-14 w-auto max-w-full object-contain sm:max-h-[4.5rem]'
-    : 'relative z-[1] mx-auto block max-h-8 w-auto max-w-full object-contain'
+    : 'relative z-[1] mx-auto block max-h-6 w-auto max-w-full object-contain'
 )
 
 const linkClass =
