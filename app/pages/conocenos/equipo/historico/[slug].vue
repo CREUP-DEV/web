@@ -74,6 +74,7 @@ type SlugResponse =
 const { data, error, status } = await useFetch<SlugResponse>(
   () => `/api/organigrama/mandatos/by-slug/${slug.value}`,
   {
+    cache: 'no-cache',
     headers: localeApiHeaders,
   }
 )

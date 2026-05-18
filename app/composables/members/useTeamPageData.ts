@@ -4,6 +4,7 @@ export const useTeamPageData = async () => {
   const localeApiHeaders = useLocaleApiHeaders()
 
   const { data, error, pending, refresh } = await useFetch<OrgResponse>('/api/organigrama', {
+    cache: 'no-cache',
     headers: localeApiHeaders,
     lazy: true,
   })

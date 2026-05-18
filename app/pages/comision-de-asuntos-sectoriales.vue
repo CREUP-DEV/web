@@ -66,10 +66,12 @@ const [
   },
 ] = await Promise.all([
   useFetch<CommitteesResponse>('/api/comites', {
+    cache: 'no-cache',
     headers: localeApiHeaders,
     lazy: true,
   }),
   useFetch<SectorialesResponse>('/api/sectoriales', {
+    cache: 'no-cache',
     headers: localeApiHeaders,
     lazy: true,
   }),
