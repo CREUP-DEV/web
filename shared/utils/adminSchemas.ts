@@ -5,9 +5,9 @@ const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
   message: 'Invalid locale / El locale no es válido',
 })
 
-const optimisticLockSchema = z.object({
+const optimisticLockFields = {
   updatedAt: z.string().datetime().optional(),
-})
+}
 
 const safeHrefSchema = z
   .string()
@@ -90,7 +90,7 @@ export const createCarouselItemSchema = z
     }
   })
 
-export const updateCarouselItemSchema = createCarouselItemSchema.merge(optimisticLockSchema)
+export const updateCarouselItemSchema = createCarouselItemSchema.safeExtend(optimisticLockFields)
 
 export const featuredLinkTranslationSchema = z.object({
   locale: localeSchema,
@@ -125,7 +125,7 @@ export const createFeaturedLinkSchema = z
     }
   })
 
-export const updateFeaturedLinkSchema = createFeaturedLinkSchema.merge(optimisticLockSchema)
+export const updateFeaturedLinkSchema = createFeaturedLinkSchema.safeExtend(optimisticLockFields)
 
 export const createMediaOutletSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(200),
@@ -134,7 +134,7 @@ export const createMediaOutletSchema = z.object({
   order: z.number().int().min(0).default(0),
 })
 
-export const updateMediaOutletSchema = createMediaOutletSchema.merge(optimisticLockSchema)
+export const updateMediaOutletSchema = createMediaOutletSchema.safeExtend(optimisticLockFields)
 
 export const tagTranslationSchema = z.object({
   locale: localeSchema,
@@ -169,7 +169,7 @@ export const createTagSchema = z
     }
   })
 
-export const updateTagSchema = createTagSchema.merge(optimisticLockSchema)
+export const updateTagSchema = createTagSchema.safeExtend(optimisticLockFields)
 
 export const equalityDocumentTranslationSchema = z.object({
   locale: localeSchema,
@@ -213,7 +213,8 @@ export const createEqualityDocumentSchema = z
     }
   })
 
-export const updateEqualityDocumentSchema = createEqualityDocumentSchema.merge(optimisticLockSchema)
+export const updateEqualityDocumentSchema =
+  createEqualityDocumentSchema.safeExtend(optimisticLockFields)
 
 export const financialReportTranslationSchema = z.object({
   locale: localeSchema,
@@ -251,14 +252,15 @@ export const createFinancialReportSchema = z
     }
   })
 
-export const updateFinancialReportSchema = createFinancialReportSchema.merge(optimisticLockSchema)
+export const updateFinancialReportSchema =
+  createFinancialReportSchema.safeExtend(optimisticLockFields)
 
 export const updatePressDossierSchema = z
   .object({
     pdfUrl: z.string().min(1, 'El PDF es requerido').nullable(),
     active: z.boolean().default(false),
   })
-  .merge(optimisticLockSchema)
+  .safeExtend(optimisticLockFields)
   .superRefine((data, ctx) => {
     if (data.active && !data.pdfUrl) {
       ctx.addIssue({
@@ -288,7 +290,7 @@ export const updateSiteDefaultImagesSchema = z
     carouselSlideImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     ogImage: z.union([z.null(), pressDefaultCoverStoragePath]),
   })
-  .merge(optimisticLockSchema)
+  .safeExtend(optimisticLockFields)
 
 const newsletterMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido')
 
@@ -303,7 +305,7 @@ export const createNewsletterSchema = z.object({
   publicVisible: z.boolean().default(true),
 })
 
-export const updateNewsletterSchema = createNewsletterSchema.merge(optimisticLockSchema)
+export const updateNewsletterSchema = createNewsletterSchema.safeExtend(optimisticLockFields)
 
 export const createNewsletterRequestSchema = createNewsletterSchema.extend({
   sendEmail: z.boolean().default(false),

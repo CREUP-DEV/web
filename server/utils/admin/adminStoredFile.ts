@@ -190,7 +190,7 @@ async function cleanupExpiredTempFiles(absoluteTempDir: string) {
 
   const expirationThreshold = Date.now() - TEMP_FILE_MAX_AGE_MS
 
-  const getFileAgeMs = (metadata: Awaited<ReturnType<typeof stat>>) => metadata.mtimeMs
+  const getFileAgeMs = (metadata: NonNullable<Awaited<ReturnType<typeof stat>>>) => metadata.mtimeMs
 
   await Promise.all(
     entries.map(async (entry) => {
