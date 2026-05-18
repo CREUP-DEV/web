@@ -199,7 +199,10 @@ export default defineNuxtConfig({
           'https://challenges.cloudflare.com',
         ],
         'report-uri': ['/api/csp-report'],
-        'frame-src': ['https://challenges.cloudflare.com'],
+        'frame-src': [
+          ...(isDev ? ["'self'", 'http://localhost:*', 'http://127.0.0.1:*'] : []),
+          'https://challenges.cloudflare.com',
+        ],
         'frame-ancestors': ['https://firu.es', 'https://www.firu.es'],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
