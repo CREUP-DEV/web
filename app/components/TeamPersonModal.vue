@@ -48,6 +48,7 @@ const hasDescription = computed(() => Boolean(props.member.description?.trim()))
 const hasAssignmentInfo = computed(() =>
   Boolean(props.assignmentStart || props.assignmentEnd || props.assignmentDuration)
 )
+const aboutName = computed(() => props.member.name.trim() || props.displayName)
 </script>
 
 <template>
@@ -203,7 +204,7 @@ const hasAssignmentInfo = computed(() =>
 
             <div v-if="hasDescription" class="space-y-3">
               <p class="text-muted text-xs font-semibold tracking-[0.24em] uppercase">
-                {{ t('team.about', { name: displayName }) }}
+                {{ t('team.about', { name: aboutName }) }}
               </p>
               <p class="text-base leading-8 sm:text-[1.05rem]">
                 {{ member.description }}
