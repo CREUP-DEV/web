@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { db } from '../../db'
-import { siteDefaultImages } from '../../db/schema'
+import { siteDefaultImages } from '../../db/schema/shared'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
