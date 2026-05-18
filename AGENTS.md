@@ -201,6 +201,17 @@ This is the standard pattern for ALL admin file uploads. Never write files direc
 
 See `server/services/pressArticleService.ts` for a full working example.
 
+### Runtime-served Admin Assets
+
+When adding a new admin-managed upload location under `public/`, verify how that public path is served in production. Files uploaded after Docker build are not automatically part of Nitro's generated `.output/public`.
+
+For any new public asset base path used by admin uploads:
+
+1. Add it to the appropriate shared asset path constants if it may be consumed by IPX or public URLs.
+2. Add a matching `server/routes/**/[...path].ts` handler using the shared public asset helpers, unless an existing route already covers that base path.
+3. Add or verify route rules needed for public asset delivery, such as disabling rate limiting for image proxy paths.
+4. Confirm the upload preview URL and the saved public URL both work after the record is persisted.
+
 ### Rich Text Sanitization (`server/utils/pressTranslation.ts`)
 
 Admin-authored rich text stored in the DB **must be sanitized before storage AND before public rendering**. Use the server-side sanitizer:
