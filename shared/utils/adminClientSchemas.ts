@@ -498,6 +498,7 @@ export const updateSiteDefaultImagesClientSchema = buildValidator((payload, issu
   validateSlot('mediaAppearanceImage', payload.mediaAppearanceImage)
   validateSlot('newsletterCoverImage', payload.newsletterCoverImage)
   validateSlot('carouselSlideImage', payload.carouselSlideImage)
+  validateSlot('ogImage', payload.ogImage)
 
   if (typeof payload.updatedAt !== 'string' && payload.updatedAt !== undefined) {
     issues.push({ message: 'Fecha de versión no válida', path: ['updatedAt'] })
@@ -516,6 +517,7 @@ export const updateSiteDefaultImagesClientSchema = buildValidator((payload, issu
     mediaAppearanceImage: normalize(payload.mediaAppearanceImage),
     newsletterCoverImage: normalize(payload.newsletterCoverImage),
     carouselSlideImage: normalize(payload.carouselSlideImage),
+    ogImage: normalize(payload.ogImage),
     updatedAt: payload.updatedAt as string | undefined,
   }
 })

@@ -4,6 +4,7 @@ import {
   NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
   PRESS_DEFAULT_COVERS_PUBLIC_PATH,
   PRESS_IMAGE_PUBLIC_BASE,
+  SITE_OG_IMAGE_PUBLIC_PATH,
 } from './assetPaths'
 
 /** DB `site_default_images.scope` values. */
@@ -11,6 +12,7 @@ export const SITE_DEFAULT_IMAGE_SCOPE = {
   press: 'press',
   newsletter: 'newsletter',
   carousel: 'carousel',
+  seo: 'seo',
 } as const
 
 export type SiteDefaultImageScope =
@@ -23,6 +25,7 @@ export const SITE_DEFAULT_IMAGE_SLOT = {
   mediaAppearance: 'media_appearance',
   newsletterCover: 'cover',
   carouselSlide: 'slide',
+  ogImage: 'og_image',
 } as const
 
 export type SiteDefaultImageSlot =
@@ -37,6 +40,8 @@ export interface SiteDefaultImageSlotDefinition {
   publicPath: string
   /** Base path for `toExternalImageProxyUrl` when resolving public URLs. */
   proxyPublicBase: string
+  /** Keep each replacement URL unique for consumers that cache image URLs aggressively. */
+  uniqueFilename?: boolean
 }
 
 export const SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS: readonly SiteDefaultImageSlotDefinition[] = [
@@ -79,6 +84,15 @@ export const SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS: readonly SiteDefaultImageSlotD
     uploadDir: 'public/inicio/imagenes/carrusel-por-defecto',
     publicPath: HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
     proxyPublicBase: HOME_IMAGE_PUBLIC_BASE,
+  },
+  {
+    scope: SITE_DEFAULT_IMAGE_SCOPE.seo,
+    slot: SITE_DEFAULT_IMAGE_SLOT.ogImage,
+    finalizeSlug: 'creup-og',
+    uploadDir: 'public/og',
+    publicPath: SITE_OG_IMAGE_PUBLIC_PATH,
+    proxyPublicBase: SITE_OG_IMAGE_PUBLIC_PATH,
+    uniqueFilename: true,
   },
 ] as const
 

@@ -13,6 +13,7 @@ interface SiteDefaultImagesPayload {
   mediaAppearanceImage: string | null
   newsletterCoverImage: string | null
   carouselSlideImage: string | null
+  ogImage: string | null
   updatedAt: string | null
 }
 
@@ -35,6 +36,7 @@ const form = reactive({
   mediaAppearanceImage: null as string | null,
   newsletterCoverImage: null as string | null,
   carouselSlideImage: null as string | null,
+  ogImage: null as string | null,
 })
 
 const releaseUpload = useAdminFileUpload({
@@ -93,6 +95,18 @@ const carouselUpload = useAdminFileUpload({
   getFallbackPreview: () => form.carouselSlideImage,
 })
 
+const ogUpload = useAdminFileUpload({
+  endpoint: '/api/admin/home/upload',
+  extraFields: { kind: 'site_og' },
+  successMessage: 'Imagen subida correctamente',
+  errorMessage: 'No se pudo subir la imagen',
+  onUploaded: (storagePath) => {
+    clearErrors()
+    form.ogImage = storagePath
+  },
+  getFallbackPreview: () => form.ogImage,
+})
+
 const isSaving = ref(false)
 
 const buildPayloadSnapshot = () =>
@@ -102,6 +116,7 @@ const buildPayloadSnapshot = () =>
     mediaAppearanceImage: form.mediaAppearanceImage,
     newsletterCoverImage: form.newsletterCoverImage,
     carouselSlideImage: form.carouselSlideImage,
+    ogImage: form.ogImage,
   })
 
 const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
@@ -114,11 +129,13 @@ watch(
     form.mediaAppearanceImage = item?.mediaAppearanceImage ?? null
     form.newsletterCoverImage = item?.newsletterCoverImage ?? null
     form.carouselSlideImage = item?.carouselSlideImage ?? null
+    form.ogImage = item?.ogImage ?? null
     releaseUpload.setPreview(item?.pressReleaseImage ?? null)
     statementUpload.setPreview(item?.statementImage ?? null)
     mediaUpload.setPreview(item?.mediaAppearanceImage ?? null)
     newsletterUpload.setPreview(item?.newsletterCoverImage ?? null)
     carouselUpload.setPreview(item?.carouselSlideImage ?? null)
+    ogUpload.setPreview(item?.ogImage ?? null)
     clearErrors()
     resetFormSnapshot()
   },
@@ -132,6 +149,7 @@ const save = async () => {
     mediaAppearanceImage: form.mediaAppearanceImage,
     newsletterCoverImage: form.newsletterCoverImage,
     carouselSlideImage: form.carouselSlideImage,
+    ogImage: form.ogImage,
   }
 
   if (!validate(updateSiteDefaultImagesClientSchema, payload)) {
@@ -541,6 +559,74 @@ const save = async () => {
             </div>
             <p v-if="getFieldError('carouselSlideImage')" class="text-error text-xs" role="alert">
               {{ getFieldError('carouselSlideImage') }}
+            </p>
+          </div>
+        </UCard>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-base font-semibold">SEO y redes sociales</h2>
+        <p class="text-muted max-w-xl text-xs">
+          ogImage por defecto para páginas sin imagen propia. Sube un JPG de
+          <span class="text-foreground/90">1200×630 px</span>.
+        </p>
+        <UCard class="max-w-md">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 text-sm font-semibold">
+              <UIcon name="i-tabler-share-3" class="text-muted size-4" />
+              ogImage por defecto
+            </div>
+            <div
+              v-if="ogUpload.preview.value"
+              class="relative aspect-1200/630 w-full overflow-hidden rounded-lg border"
+            >
+              <img :src="ogUpload.preview.value" alt="" class="size-full object-cover" />
+            </div>
+            <div
+              v-else
+              class="bg-muted/10 flex aspect-1200/630 w-full items-center justify-center rounded-lg border-2 border-dashed"
+            >
+              <p class="text-muted px-3 text-center text-xs">Sin ogImage por defecto</p>
+            </div>
+            <input
+              :ref="ogUpload.inputRef"
+              type="file"
+              accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
+              class="sr-only"
+              tabindex="-1"
+              aria-hidden="true"
+              @change="ogUpload.handleFileSelect"
+            />
+            <div class="flex flex-wrap gap-2">
+              <UButton
+                type="button"
+                variant="outline"
+                size="xs"
+                icon="i-tabler-upload"
+                :loading="ogUpload.isUploading.value"
+                @click="ogUpload.triggerFileDialog()"
+              >
+                {{ ogUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+              </UButton>
+              <UButton
+                v-if="form.ogImage"
+                type="button"
+                variant="ghost"
+                color="error"
+                size="xs"
+                icon="i-tabler-trash"
+                @click="
+                  () => {
+                    form.ogImage = null
+                    ogUpload.setPreview(null)
+                  }
+                "
+              >
+                Quitar
+              </UButton>
+            </div>
+            <p v-if="getFieldError('ogImage')" class="text-error text-xs" role="alert">
+              {{ getFieldError('ogImage') }}
             </p>
           </div>
         </UCard>

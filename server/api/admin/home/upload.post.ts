@@ -14,6 +14,7 @@ import {
   HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
   HOME_IMAGE_PUBLIC_BASE,
+  SITE_OG_IMAGE_PUBLIC_PATH,
 } from '~~/shared/constants/assetPaths'
 
 const uploadTargets = {
@@ -28,6 +29,11 @@ const uploadTargets = {
   featured_link: {
     uploadDir: 'public/inicio/imagenes/enlaces-destacados',
     publicPath: HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
+  },
+  site_og: {
+    uploadDir: 'public/og',
+    publicPath: SITE_OG_IMAGE_PUBLIC_PATH,
+    outputFormat: 'jpeg',
   },
 } as const
 const UPLOAD_MAX_REQUEST_BYTES = 6 * 1024 * 1024 // 6 MB hard ceiling (above image limit)
@@ -48,6 +54,7 @@ export default defineEventHandler(async (event) => {
     filename: file.filename,
     uploadDir: target.uploadDir,
     publicPath: target.publicPath,
+    outputFormat: 'outputFormat' in target ? target.outputFormat : undefined,
     temporary: true,
   })
 

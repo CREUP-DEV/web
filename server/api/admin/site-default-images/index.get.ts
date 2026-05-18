@@ -17,6 +17,7 @@ export default defineEventHandler(async () => {
   const press = map.get(SITE_DEFAULT_IMAGE_SCOPE.press)
   const newsletter = map.get(SITE_DEFAULT_IMAGE_SCOPE.newsletter)
   const carousel = map.get(SITE_DEFAULT_IMAGE_SCOPE.carousel)
+  const seo = map.get(SITE_DEFAULT_IMAGE_SCOPE.seo)
 
   const rows = await db.query.siteDefaultImages.findMany({ columns: { updatedAt: true } })
 
@@ -27,6 +28,7 @@ export default defineEventHandler(async () => {
       mediaAppearanceImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.mediaAppearance) ?? null,
       newsletterCoverImage: newsletter?.get(SITE_DEFAULT_IMAGE_SLOT.newsletterCover) ?? null,
       carouselSlideImage: carousel?.get(SITE_DEFAULT_IMAGE_SLOT.carouselSlide) ?? null,
+      ogImage: seo?.get(SITE_DEFAULT_IMAGE_SLOT.ogImage) ?? null,
       updatedAt: maxUpdatedAtIso(rows),
     },
   }

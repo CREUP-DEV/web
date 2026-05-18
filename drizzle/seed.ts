@@ -372,6 +372,11 @@ async function main() {
       slot: SITE_DEFAULT_IMAGE_SLOT.carouselSlide,
       image: `${HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH}/banner-carrusel-defecto.webp`,
     },
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.seo,
+      slot: SITE_DEFAULT_IMAGE_SLOT.ogImage,
+      image: '/og/default.jpg',
+    },
   ])
 
   console.log('🗞️ Creating media outlets...')

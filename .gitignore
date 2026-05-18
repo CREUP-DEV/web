@@ -48,6 +48,14 @@ public/inicio/**/*.gif
 public/inicio/**/*.webp
 public/inicio/**/*.avif
 public/inicio/**/*.svg
+public/og/**/*.jpg
+public/og/**/*.jpeg
+public/og/**/*.png
+public/og/**/*.gif
+public/og/**/*.webp
+public/og/**/*.avif
+public/og/**/*.svg
+!public/og/default.jpg
 public/**/_tmp/**
 public/marca/*
 !public/marca/manifest.json

@@ -55,7 +55,7 @@ export const tagTranslationsRelations = relations(tagTranslations, ({ one }) => 
 }))
 
 /**
- * Configurable fallback images keyed by `(scope, slot)` — press types, newsletter cover, carousel slide.
+ * Configurable fallback images keyed by `(scope, slot)` — press types, newsletter cover, carousel slide, SEO image.
  * Rows are seeded for every known slot; `image` may be null until an admin uploads one.
  */
 export const siteDefaultImages = pgTable(
@@ -79,7 +79,8 @@ export const siteDefaultImages = pgTable(
         ('press', 'statement'),
         ('press', 'media_appearance'),
         ('newsletter', 'cover'),
-        ('carousel', 'slide')
+        ('carousel', 'slide'),
+        ('seo', 'og_image')
       )`
     ),
   ]

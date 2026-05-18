@@ -209,3 +209,19 @@ export async function getSiteDefaultImageRaw(scope: string, slot: string): Promi
   })
   return row?.image ?? null
 }
+
+export async function getSiteDefaultOgImageUrlWithVersion(): Promise<string | null> {
+  const row = await db.query.siteDefaultImages.findFirst({
+    where: and(
+      eq(siteDefaultImages.scope, SITE_DEFAULT_IMAGE_SCOPE.seo),
+      eq(siteDefaultImages.slot, SITE_DEFAULT_IMAGE_SLOT.ogImage)
+    ),
+    columns: { image: true, updatedAt: true },
+  })
+
+  if (!row?.image) {
+    return null
+  }
+
+  return appendAssetVersion(row.image, row.updatedAt)
+}

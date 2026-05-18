@@ -286,6 +286,7 @@ export const updateSiteDefaultImagesSchema = z
     mediaAppearanceImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     newsletterCoverImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     carouselSlideImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    ogImage: z.union([z.null(), pressDefaultCoverStoragePath]),
   })
   .merge(optimisticLockSchema)
 

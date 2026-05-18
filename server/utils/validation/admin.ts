@@ -25,7 +25,7 @@ export const updateAdminAccessSchema = z.object({
 })
 
 export const adminUploadKindSchema = z.object({
-  kind: z.enum(['carousel', 'carousel_default', 'featured_link']),
+  kind: z.enum(['carousel', 'carousel_default', 'featured_link', 'site_og']),
 })
 
 export const updateOrderSchema = z.object({

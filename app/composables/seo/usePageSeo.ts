@@ -66,6 +66,7 @@ export function usePageSeo(
   const title = () => resolveTranslatedValue(titleValue, t)
   const description = () => resolveTranslatedValue(descriptionValue, t)
   const explicitOgImage = computed(() => resolveLiteralValue(options.ogImage))
+  const siteDefaultOgImage = useState<string | null>('site-default-og-image', () => null)
   const breadcrumbItems = computed(() => toValue(options.breadcrumbs) ?? null)
 
   const canonicalUrl = computed(() => {
@@ -74,7 +75,7 @@ export function usePageSeo(
   })
 
   const ogImage = computed(() => {
-    const imagePath = explicitOgImage.value ?? DEFAULT_OG_IMAGE_PATH
+    const imagePath = explicitOgImage.value ?? siteDefaultOgImage.value ?? DEFAULT_OG_IMAGE_PATH
     return toAbsoluteUrl(imagePath, siteUrl.value) ?? undefined
   })
 

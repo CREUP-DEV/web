@@ -28,6 +28,7 @@ type SlotPayloadKey =
   | 'mediaAppearanceImage'
   | 'newsletterCoverImage'
   | 'carouselSlideImage'
+  | 'ogImage'
 
 const SLOT_PAYLOAD_MAP: Record<SlotPayloadKey, { scope: string; slot: string }> = {
   pressReleaseImage: {
@@ -50,6 +51,22 @@ const SLOT_PAYLOAD_MAP: Record<SlotPayloadKey, { scope: string; slot: string }> 
     scope: SITE_DEFAULT_IMAGE_SCOPE.carousel,
     slot: SITE_DEFAULT_IMAGE_SLOT.carouselSlide,
   },
+  ogImage: {
+    scope: SITE_DEFAULT_IMAGE_SCOPE.seo,
+    slot: SITE_DEFAULT_IMAGE_SLOT.ogImage,
+  },
+}
+
+const SLOT_KEY_BY_SCOPE_SLOT = new Map(
+  Object.entries(SLOT_PAYLOAD_MAP).map(([key, value]) => [`${value.scope}\0${value.slot}`, key])
+)
+
+function getPayloadKeyForSlot(scope: string, slot: string): SlotPayloadKey {
+  const key = SLOT_KEY_BY_SCOPE_SLOT.get(`${scope}\0${slot}`)
+  if (!key) {
+    throw createError({ statusCode: 500, message: 'Configuración de slot no válida' })
+  }
+  return key as SlotPayloadKey
 }
 
 function allowedPrefixForSlot(scope: string, slot: string): string {
@@ -88,7 +105,7 @@ async function finalizeDefaultSlot(options: {
     storagePath: incoming,
     uploadDir: def.uploadDir,
     publicPath: def.publicPath,
-    slug: def.finalizeSlug,
+    slug: def.uniqueFilename ? undefined : def.finalizeSlug,
     publish: true,
     fallbackBaseName: def.finalizeSlug,
     replaceStoragePath: previous ?? undefined,
@@ -167,6 +184,12 @@ export default defineEventHandler(async (event) => {
       previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.carousel, SITE_DEFAULT_IMAGE_SLOT.carouselSlide),
       cleanupTargets,
     })
+    const nextOgImage = await finalizeDefaultSlot({
+      key: 'ogImage',
+      incoming: validated.ogImage,
+      previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.seo, SITE_DEFAULT_IMAGE_SLOT.ogImage),
+      cleanupTargets,
+    })
 
     const nextByKey: Record<SlotPayloadKey, string | null> = {
       pressReleaseImage: nextPressRelease,
@@ -174,22 +197,12 @@ export default defineEventHandler(async (event) => {
       mediaAppearanceImage: nextMedia,
       newsletterCoverImage: nextNewsletter,
       carouselSlideImage: nextCarousel,
+      ogImage: nextOgImage,
     }
 
     await db.transaction(async (tx) => {
       for (const def of SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS) {
-        const key = (
-          def.slot === SITE_DEFAULT_IMAGE_SLOT.pressRelease
-            ? 'pressReleaseImage'
-            : def.slot === SITE_DEFAULT_IMAGE_SLOT.statement
-              ? 'statementImage'
-              : def.slot === SITE_DEFAULT_IMAGE_SLOT.mediaAppearance
-                ? 'mediaAppearanceImage'
-                : def.slot === SITE_DEFAULT_IMAGE_SLOT.newsletterCover
-                  ? 'newsletterCoverImage'
-                  : 'carouselSlideImage'
-        ) as SlotPayloadKey
-
+        const key = getPayloadKeyForSlot(def.scope, def.slot)
         const image = nextByKey[key]
 
         await tx
@@ -210,18 +223,7 @@ export default defineEventHandler(async (event) => {
     })
 
     for (const def of SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS) {
-      const key = (
-        def.slot === SITE_DEFAULT_IMAGE_SLOT.pressRelease
-          ? 'pressReleaseImage'
-          : def.slot === SITE_DEFAULT_IMAGE_SLOT.statement
-            ? 'statementImage'
-            : def.slot === SITE_DEFAULT_IMAGE_SLOT.mediaAppearance
-              ? 'mediaAppearanceImage'
-              : def.slot === SITE_DEFAULT_IMAGE_SLOT.newsletterCover
-                ? 'newsletterCoverImage'
-                : 'carouselSlideImage'
-      ) as SlotPayloadKey
-
+      const key = getPayloadKeyForSlot(def.scope, def.slot)
       const previous = getPrev(def.scope, def.slot)
       const next = nextByKey[key]
       if (previous && previous !== next) {
@@ -251,6 +253,7 @@ export default defineEventHandler(async (event) => {
         mediaAppearanceImage: nextMedia,
         newsletterCoverImage: nextNewsletter,
         carouselSlideImage: nextCarousel,
+        ogImage: nextOgImage,
         updatedAt,
       },
     }

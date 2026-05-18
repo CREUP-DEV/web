@@ -233,6 +233,7 @@ interface SaveAdminImageOptions {
   uploadDir: string
   publicPath: string
   maxFileSizeBytes?: number
+  outputFormat?: 'jpeg' | 'webp'
   slug?: string
   temporary?: boolean
 }
@@ -254,6 +255,28 @@ async function convertRasterImageToWebp(data: Buffer) {
       .toBuffer()
   } catch (error) {
     logError('admin-image-upload.convert-raster', error)
+    throw createError({
+      statusCode: 400,
+      message: 'La imagen subida no se ha podido procesar',
+    })
+  }
+}
+
+async function convertImageToJpeg(data: Buffer) {
+  const metadata = await sharp(data, { animated: false }).metadata()
+  validateRasterImageMetadata(metadata)
+
+  try {
+    return await sharp(data, {
+      animated: false,
+      limitInputPixels: MAX_RASTER_IMAGE_PIXELS,
+    })
+      .rotate()
+      .flatten({ background: '#ffffff' })
+      .jpeg({ quality: 90, mozjpeg: true })
+      .toBuffer()
+  } catch (error) {
+    logError('admin-image-upload.convert-jpeg', error)
     throw createError({
       statusCode: 400,
       message: 'La imagen subida no se ha podido procesar',
@@ -298,11 +321,16 @@ export async function saveAdminImage(options: SaveAdminImageOptions) {
   const originalNameSlug = slugify(basename(options.filename, originalExtension))
   const baseSlug = requestedSlug || originalNameSlug || 'imagen'
   const isVector = VECTOR_IMAGE_EXTENSIONS.has(originalExtension)
-  const outputExtension = isVector ? '.svg' : '.webp'
+  const outputFormat = options.outputFormat ?? 'webp'
+  const outputExtension = outputFormat === 'jpeg' ? '.jpg' : isVector ? '.svg' : '.webp'
   const absoluteUploadDir = join(process.cwd(), options.uploadDir)
-  const outputData = isVector
-    ? sanitizeSvgContent(options.data)
-    : await convertRasterImageToWebp(options.data)
+  const sanitizedData = isVector ? sanitizeSvgContent(options.data) : options.data
+  const outputData =
+    outputFormat === 'jpeg'
+      ? await convertImageToJpeg(sanitizedData)
+      : isVector
+        ? sanitizedData
+        : await convertRasterImageToWebp(sanitizedData)
 
   if (options.temporary) {
     return saveTemporaryAdminFile({
