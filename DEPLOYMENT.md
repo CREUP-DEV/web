@@ -466,7 +466,19 @@ Tras arrancar correctamente, el script limpia imágenes Docker antiguas de la ap
 
 ### Rollback
 
-Para volver a una etiqueta de imagen anterior:
+Cada despliegue guarda la imagen que estaba corriendo en `.last_app_image` dentro del directorio de Compose del VPS. Para volver a esa imagen desde tu ordenador:
+
+```bash
+bash ./rollback.sh
+```
+
+También puedes volver a una etiqueta concreta:
+
+```bash
+IMAGE_TAG=<etiqueta-anterior> bash ./rollback.sh
+```
+
+O ejecutar el rollback manual en el VPS:
 
 ```bash
 # En el VPS

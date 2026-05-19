@@ -98,6 +98,8 @@ remote_compose_up() {
   ssh "$VPS_HOST" 'bash -se' <<EOF
 set -euo pipefail
 
+ROLLBACK_IMAGE_FILE="${ROLLBACK_IMAGE_FILE}"
+
 ensure_host_data_dirs() {
   local public_uploads_dir="\${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}"
   local admin_assets_dir="\${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}"
@@ -141,6 +143,51 @@ cleanup_old_app_images() {
   done
 }
 
+resolve_current_app_image() {
+  local service="\$1"
+  local image_name="\$2"
+  local container_id
+  local current_image
+  local current_image_id
+  local current_digest
+
+  container_id="\$(docker compose ps -q "\$service" 2>/dev/null || true)"
+  if [ -z "\$container_id" ]; then
+    return 0
+  fi
+
+  current_image="\$(docker inspect --format '{{.Config.Image}}' "\$container_id")"
+  if [ -z "\$current_image" ]; then
+    return 0
+  fi
+
+  if [ "\${current_image##*:}" != "latest" ]; then
+    printf '%s\n' "\$current_image"
+    return 0
+  fi
+
+  current_image_id="\$(docker inspect --format '{{.Image}}' "\$container_id")"
+  current_digest="\$(docker image inspect "\$current_image_id" --format '{{range .RepoDigests}}{{println .}}{{end}}' | grep -F -m 1 "\$image_name@" || true)"
+
+  printf '%s\n' "\${current_digest:-\$current_image}"
+}
+
+save_current_app_image_for_rollback() {
+  local service="\$1"
+  local image_name="\$2"
+  local rollback_file="\$3"
+  local current_image
+
+  current_image="\$(resolve_current_app_image "\$service" "\$image_name")"
+  if [ -z "\$current_image" ]; then
+    echo "== Rollback image: no running app container found =="
+    return
+  fi
+
+  printf '%s\n' "\$current_image" > "\$rollback_file"
+  echo "== Rollback image saved: \$current_image =="
+}
+
 cd "${COMPOSE_DIR}"
 
 if [ -f .env ]; then
@@ -153,6 +200,9 @@ export IMAGE="${IMAGE}"
 
 echo "== Ensure host data directories =="
 ensure_host_data_dirs
+
+echo "== Save current app image for rollback =="
+save_current_app_image_for_rollback "${COMPOSE_APP_SERVICE}" "${IMAGE_NAME}" "\$ROLLBACK_IMAGE_FILE"
 
 echo "== Pull images =="
 docker compose pull "${COMPOSE_APP_SERVICE}"
@@ -218,6 +268,7 @@ COMPOSE_APP_SERVICE="${COMPOSE_APP_SERVICE:-app}"
 COMPOSE_POSTGRES_SERVICE="${COMPOSE_POSTGRES_SERVICE:-postgres}"
 COMPOSE_NGINX_SERVICE="${COMPOSE_NGINX_SERVICE:-nginx}"
 DEPLOY_IMAGE_RETENTION="${DEPLOY_IMAGE_RETENTION:-2}"
+ROLLBACK_IMAGE_FILE="${ROLLBACK_IMAGE_FILE:-.last_app_image}"
 
 if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
   log "GHCR login"

@@ -210,7 +210,8 @@ For any new public asset base path used by admin uploads:
 1. Add it to the appropriate shared asset path constants if it may be consumed by IPX or public URLs.
 2. Add a matching `server/routes/**/[...path].ts` handler using the shared public asset helpers, unless an existing route already covers that base path.
 3. Add or verify route rules needed for public asset delivery, such as disabling rate limiting for image proxy paths.
-4. Confirm the upload preview URL and the saved public URL both work after the record is persisted.
+4. Add the matching bind mount / host directory setup anywhere production or local deployment persists uploads (`docker-compose*.yml`, `deploy.sh`, deployment docs, and related env examples when applicable). The container path must match the finalized public path under `/app/.output/public/...`.
+5. Confirm the upload preview URL and the saved public URL both work after the record is persisted and after the app container is recreated.
 
 ### Rich Text Sanitization (`server/utils/pressTranslation.ts`)
 
