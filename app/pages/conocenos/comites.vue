@@ -62,7 +62,7 @@ interface EnrichedMember extends CommitteeMember {
 }
 
 const { data, pending, error, refresh } = useFetch<CommitteesResponse>('/api/comites', {
-  cache: 'no-cache',
+  cache: 'no-store',
   headers: localeApiHeaders,
 })
 

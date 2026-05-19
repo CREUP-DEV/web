@@ -77,7 +77,7 @@ const openAgenda = async (member: EnrichedMember) => {
 
   try {
     const response = await $fetch<{ data: CalendarEvent[] }>('/api/member-calendar', {
-      cache: 'no-cache',
+      cache: 'no-store',
       headers: localeApiHeaders.value,
       query: {
         calendarId: member.email,
