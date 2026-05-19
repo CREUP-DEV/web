@@ -84,7 +84,7 @@ export async function sendNewsletterEmail(
   const fromEmail = getRequiredSmtpFromEmail(undefined, configErrorMessage)
   const siteUrl = normalizeBaseUrl(getRequiredSiteUrl(undefined, configErrorMessage))
   const monthStr = formatMonth(new Date(newsletter.month))
-  const subject = `Newsletter CREUP — ${monthStr}`
+  const subject = `Newsletter CREUP - ${monthStr}`
   const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, subscriber.subscribedAt)
   const unsubscribeUrl = buildAbsoluteUrl(
     siteUrl,
