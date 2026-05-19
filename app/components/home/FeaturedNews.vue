@@ -243,7 +243,7 @@ onBeforeUnmount(() => {
               class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
               <div class="bg-muted relative aspect-video">
-                <NuxtImg
+                <AdaptiveImage
                   v-if="item.image"
                   :src="item.image"
                   :alt="item.alt ?? ''"

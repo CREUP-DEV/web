@@ -241,7 +241,7 @@ const getArticleAnimationStyle = (index: number) => ({
               class="motion-link-card group focus-visible:ring-primary/60 bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
               <div class="bg-muted relative aspect-video overflow-hidden">
-                <NuxtImg
+                <AdaptiveImage
                   v-if="article.image"
                   :src="article.image"
                   :alt="article.alt || ''"

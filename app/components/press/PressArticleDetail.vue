@@ -150,7 +150,7 @@ usePageSeo(
               class="hover:text-primary inline-flex items-center gap-1.5 transition-colors"
             >
               <span v-if="article.mediaOutlet.logo" class="inline-flex h-5 max-w-24 items-center">
-                <NuxtImg
+                <AdaptiveImage
                   :src="article.mediaOutlet.logo"
                   :alt="article.mediaOutlet.name"
                   height="20"
@@ -187,7 +187,7 @@ usePageSeo(
 
       <AnimateIn v-if="article.image" tag="figure" :index="2" :threshold="0.12" class="mb-8">
         <div class="motion-card-subtle bg-muted relative overflow-hidden rounded-xl">
-          <NuxtImg
+          <AdaptiveImage
             :src="article.image"
             :alt="article.alt || ''"
             width="960"

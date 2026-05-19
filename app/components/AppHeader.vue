@@ -56,13 +56,19 @@ watch(menuOpen, (isOpen) => {
     }"
   >
     <template #title>
-      <UColorModeImage
-        light="/nav/creup-site-header-logo-light.svg"
-        dark="/nav/creup-site-header-logo-dark.svg"
+      <img
+        src="/nav/creup-site-header-logo-light.svg"
         :alt="t('accessibility.siteLogo')"
         width="144"
         height="32"
-        class="h-8 w-auto"
+        class="h-8 w-auto dark:hidden"
+      />
+      <img
+        src="/nav/creup-site-header-logo-dark.svg"
+        :alt="t('accessibility.siteLogo')"
+        width="144"
+        height="32"
+        class="hidden h-8 w-auto dark:block"
       />
     </template>
 

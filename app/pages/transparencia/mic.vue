@@ -211,7 +211,7 @@ const copyColorToClipboard = (text: string) =>
                       :class="desktopPreviewFrameClass(section.slug)"
                       :style="previewSurfaceStyle(variant.slug)"
                     >
-                      <NuxtImg
+                      <AdaptiveImage
                         :src="previewAssetUrl(section.slug, variant.slug)"
                         :alt="logoAlt(variant.labelKey)"
                         :class="desktopPreviewImageClass(section.slug)"
@@ -274,7 +274,7 @@ const copyColorToClipboard = (text: string) =>
                 :class="mobilePreviewFrameClass(section.slug)"
                 :style="previewSurfaceStyle(variant.slug)"
               >
-                <NuxtImg
+                <AdaptiveImage
                   :src="previewAssetUrl(section.slug, variant.slug)"
                   :alt="logoAlt(variant.labelKey)"
                   :class="mobilePreviewImageClass(section.slug)"

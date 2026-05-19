@@ -81,7 +81,7 @@ const featuredLinkImageSizes = 'xs:50vw sm:33vw md:16vw xl:192px'
               rel="noopener noreferrer"
             >
               <div class="bg-muted aspect-square">
-                <NuxtImg
+                <AdaptiveImage
                   :src="item.image"
                   :alt="item.alt ?? ''"
                   width="288"
@@ -108,7 +108,7 @@ const featuredLinkImageSizes = 'xs:50vw sm:33vw md:16vw xl:192px'
               class="motion-link-card group focus-visible:ring-primary/60 bg-surface/50 hover:bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
               <div class="bg-muted aspect-square">
-                <NuxtImg
+                <AdaptiveImage
                   :src="item.image"
                   :alt="item.alt ?? ''"
                   width="288"

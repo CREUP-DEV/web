@@ -75,7 +75,7 @@ const getImageFormat = (src?: string) => (src?.toLowerCase().endsWith('.svg') ? 
       >
         <article class="border-default flex flex-col overflow-hidden rounded-xl border">
           <div class="bg-muted relative aspect-1925/550 w-full overflow-hidden">
-            <NuxtImg
+            <AdaptiveImage
               v-if="item.image"
               :src="item.image"
               :alt="item.alt || ''"

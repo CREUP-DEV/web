@@ -552,7 +552,7 @@ function formatMonth(dateStr: string): string {
                 <div
                   class="bg-muted relative mb-4 aspect-square w-full min-w-0 overflow-hidden rounded-lg"
                 >
-                  <NuxtImg
+                  <AdaptiveImage
                     v-if="nl.coverImage"
                     :src="nl.coverImage"
                     :alt="formatMonth(nl.month)"

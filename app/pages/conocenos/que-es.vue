@@ -241,7 +241,7 @@ usePageSeo(
           class="space-y-4"
         >
           <div class="bg-muted aspect-1925/550 overflow-hidden rounded-3xl border">
-            <NuxtImg
+            <AdaptiveImage
               :src="pageContent.heroImage"
               :alt="pageContent.title"
               width="1925"

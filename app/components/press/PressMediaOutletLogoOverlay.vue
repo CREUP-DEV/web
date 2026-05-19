@@ -93,7 +93,7 @@ const linkClass =
         :class="linkClass"
         :aria-label="outletName"
       >
-        <NuxtImg
+        <AdaptiveImage
           :key="logoUrl"
           :src="logoUrl"
           :alt="outletName"
@@ -106,7 +106,7 @@ const linkClass =
           @error="onImgError"
         />
       </a>
-      <NuxtImg
+      <AdaptiveImage
         v-else
         :key="logoUrl"
         :src="logoUrl"

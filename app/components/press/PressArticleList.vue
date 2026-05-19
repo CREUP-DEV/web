@@ -194,7 +194,7 @@ watch(page, () => {
               class="motion-link-card group focus-visible:ring-primary/60 bg-surface ring-default block overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
               <div class="bg-muted relative aspect-video overflow-hidden">
-                <NuxtImg
+                <AdaptiveImage
                   v-if="article.image"
                   :src="article.image"
                   :alt="article.alt || ''"
@@ -223,7 +223,7 @@ watch(page, () => {
                   <template v-if="article.mediaOutlet && type !== 'media_appearance'">
                     <span aria-hidden="true">&middot;</span>
                     <span class="flex items-center gap-1">
-                      <NuxtImg
+                      <AdaptiveImage
                         v-if="article.mediaOutlet.logo"
                         :src="article.mediaOutlet.logo"
                         :alt="article.mediaOutlet.name"
