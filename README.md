@@ -73,7 +73,7 @@ Casi toda la configuración es runtime; la imagen no lleva secretos ni URLs bake
 
 Excepción importante: `NUXT_SITE_URL`, `NUXT_UMAMI_HOST` y `NUXT_UMAMI_ID` también deben estar disponibles durante `pnpm build` o `docker build`, porque Nuxt las usa al compilar la configuración del sitio y del módulo de analítica.
 
-El bloque completo de variables con descripciones y valores de ejemplo está en [`DEPLOYMENT.md §6`](./DEPLOYMENT.md#6-prepare-the-production-environment-file).
+El bloque completo de variables con descripciones y valores de ejemplo está en [`DEPLOYMENT.md`](./DEPLOYMENT.md#6-preparar-el-archivo-de-entorno-de-producción).
 
 En resumen:
 
