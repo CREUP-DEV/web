@@ -5,6 +5,24 @@ interface UseTeamDirectoryOptions {
   areas: Ref<OrgArea[]>
 }
 
+const sortCommitteeResponsibleMembersLast = <T extends { isCommitteeResponsible: boolean }>(
+  members: T[]
+) => {
+  const primaryMembers: T[] = []
+  const committeeResponsibleMembers: T[] = []
+
+  for (const member of members) {
+    if (member.isCommitteeResponsible) {
+      committeeResponsibleMembers.push(member)
+      continue
+    }
+
+    primaryMembers.push(member)
+  }
+
+  return [...primaryMembers, ...committeeResponsibleMembers]
+}
+
 export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
   const { t, locale } = useI18n()
   const { fallbackLocale } = useLocales()
@@ -25,9 +43,11 @@ export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
   })
 
   const executiveMembers = computed<EnrichedMember[]>(() => {
-    return areas.value
-      .filter((area) => area.members.length > 0)
-      .map((area) => toEnrichedMember(area.members[0]!, area, true))
+    return sortCommitteeResponsibleMembersLast(
+      areas.value
+        .filter((area) => area.members.length > 0)
+        .map((area) => toEnrichedMember(area.members[0]!, area, true))
+    )
   })
 
   const extendedMembers = computed<EnrichedMember[]>(() => {
@@ -39,7 +59,7 @@ export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
       }
     }
 
-    return result
+    return sortCommitteeResponsibleMembersLast(result)
   })
 
   const allMembers = computed<EnrichedMember[]>(() =>

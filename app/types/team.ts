@@ -13,6 +13,7 @@ export interface OrgMember {
   university: string | null
   degree: string | null
   description: string | null
+  isCommitteeResponsible: boolean
   publicAgenda: boolean
   socialNetworks: SocialNetwork[]
 }

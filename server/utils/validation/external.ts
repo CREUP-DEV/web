@@ -36,7 +36,7 @@ export const externalAssetPublicPathParamSchema = z.object({
     .trim()
     .min(1)
     .max(2048)
-    .refine((value) => {
+    .refine((value: string) => {
       try {
         const decoded = decodeURIComponent(value)
         return (
@@ -81,6 +81,7 @@ export const externalOrganigramaMemberSchema = z.object({
   university: z.string().nullable().optional(),
   degree: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
+  is_committee_responsible: z.boolean().optional().default(false),
   public_agenda: z.boolean().optional().default(false),
   social_networks: z.array(externalOrganigramaMemberSocialSchema).nullable().optional().default([]),
 })
@@ -120,6 +121,7 @@ export const externalMandateAssignmentMemberSchema = z.object({
   university: z.string().nullable().optional(),
   degree: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
+  is_committee_responsible: z.boolean().optional().default(false),
   social_networks: z.array(externalOrganigramaMemberSocialSchema).nullable().optional().default([]),
 })
 

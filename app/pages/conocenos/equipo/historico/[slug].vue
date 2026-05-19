@@ -27,6 +27,7 @@ interface AssignmentMember {
   university: string | null
   degree: string | null
   description: string | null
+  isCommitteeResponsible: boolean
   socialNetworks: SocialNetwork[]
 }
 

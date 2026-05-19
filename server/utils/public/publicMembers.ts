@@ -13,10 +13,19 @@ import { logError } from '../core/logger'
 import { getRequestLocaleContext } from '../locale/requestLocale'
 import { getRequiredExternalApiBaseUrl } from '../core/runtimeConfig'
 import {
+  externalAssociatedMemberSchema,
   externalAssociatedMembersResponseSchema,
+  externalOrganigramaAreaSchema,
+  externalOrganigramaMemberSchema,
   externalOrganigramaResponseSchema,
+  externalSectorialMemberSchema,
   externalSectorialMembersResponseSchema,
 } from '../validation'
+
+type ExternalAssociatedMember = ReturnType<typeof externalAssociatedMemberSchema.parse>
+type ExternalSectorialMember = ReturnType<typeof externalSectorialMemberSchema.parse>
+type ExternalOrganigramaArea = ReturnType<typeof externalOrganigramaAreaSchema.parse>
+type ExternalOrganigramaMember = ReturnType<typeof externalOrganigramaMemberSchema.parse>
 
 export interface PublicAssociatedMember {
   id: string
@@ -55,6 +64,7 @@ export interface PublicTeamMember {
   university: string | null
   degree: string | null
   description: string | null
+  isCommitteeResponsible: boolean
   publicAgenda: boolean
   socialNetworks: SocialNetworkEntry[]
 }
@@ -135,7 +145,7 @@ const normalizeCommunity = (communityName: string) => {
 }
 
 const normalizeText = normalizeSocialText
-const PUBLIC_MEMBERS_CACHE_VERSION = 1
+const PUBLIC_MEMBERS_CACHE_VERSION = 2
 
 const buildStableMemberSlug = (
   parts: Array<string | null | undefined>,
@@ -192,8 +202,9 @@ async function loadAssociatedMembers(event: H3Event) {
         })
       }
 
+      const externalMembers = parsedPayload.data.data
       const members: PublicAssociatedMember[] = await Promise.all(
-        parsedPayload.data.data.map(async (member, index) => {
+        externalMembers.map(async (member: ExternalAssociatedMember, index: number) => {
           const socialNetworks = collectSocialNetworks(member.social_networks)
 
           const denomination = normalizeText(member.denomination)
@@ -278,8 +289,9 @@ async function loadSectoriales(event: H3Event) {
         })
       }
 
+      const externalSectorialMembers = parsedPayload.data.data
       const sectoriales: PublicSectorialMember[] = await Promise.all(
-        parsedPayload.data.data.map(async (member, index) => {
+        externalSectorialMembers.map(async (member: ExternalSectorialMember, index: number) => {
           const socialNetworks = collectSocialNetworks(member.social_networks)
 
           const denomination = normalizeText(member.denomination)
@@ -358,14 +370,19 @@ async function loadTeamAreas(event: H3Event) {
         })
       }
 
+      const externalAreas = parsedPayload.data.data
       const areas: PublicTeamArea[] = await Promise.all(
-        parsedPayload.data.data
-          .sort((a, b) => a.area_order - b.area_order)
-          .map(async (area) => {
+        externalAreas
+          .sort(
+            (a: ExternalOrganigramaArea, b: ExternalOrganigramaArea) => a.area_order - b.area_order
+          )
+          .map(async (area: ExternalOrganigramaArea) => {
             const members: PublicTeamMember[] = await Promise.all(
               area.members
-                .sort((a, b) => a.order - b.order)
-                .map(async (member) => {
+                .sort(
+                  (a: ExternalOrganigramaMember, b: ExternalOrganigramaMember) => a.order - b.order
+                )
+                .map(async (member: ExternalOrganigramaMember) => {
                   const socialNetworks = collectSocialNetworks(member.social_networks)
                   const normalizedDenomination = normalizeText(member.denomination) || null
                   const normalizedEmail = normalizeText(member.email) || ''
@@ -401,13 +418,16 @@ async function loadTeamAreas(event: H3Event) {
                     university: normalizedUniversity,
                     degree: normalizeText(member.degree) || null,
                     description: normalizeText(member.description) || null,
+                    isCommitteeResponsible: member.is_committee_responsible ?? false,
                     publicAgenda: member.public_agenda ?? false,
                     socialNetworks,
                   }
                 })
             )
             const nameTranslations: Record<string, string> = {}
-            for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
+            for (const [locale, translation] of Object.entries(
+              area.area_name_translations ?? {}
+            ) as Array<[string, string]>) {
               const normalizedLocale = normalizeText(locale)
               const normalizedTranslation = normalizeText(translation)
 

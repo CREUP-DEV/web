@@ -1,4 +1,3 @@
-import type { externalOrganigramaMemberSocialSchema } from '../validation'
 import type { ExternalApiCacheOptions } from '../cache/externalApiCache'
 import type { H3Event } from 'h3'
 import {
@@ -8,7 +7,18 @@ import {
 import { withExternalApiSWRCache } from '../cache/externalApiCache'
 import { toExternalImageProxyUrlWithKindHint } from './externalAssetKind'
 import { logError } from '../core/logger'
-import { externalMandatesResponseSchema, externalMandateDetailResponseSchema } from '../validation'
+import {
+  type externalOrganigramaMemberSocialSchema,
+  type externalMandateAreaTermSchema,
+  type externalMandateAssignmentSchema,
+  type externalMandateSchema,
+  externalMandateDetailResponseSchema,
+  externalMandatesResponseSchema,
+} from '../validation'
+
+type ExternalMandate = ReturnType<typeof externalMandateSchema.parse>
+type ExternalMandateAreaTerm = ReturnType<typeof externalMandateAreaTermSchema.parse>
+type ExternalMandateAssignment = ReturnType<typeof externalMandateAssignmentSchema.parse>
 
 const getMandatesUnavailableMessage = (event?: H3Event) =>
   event
@@ -58,6 +68,7 @@ export interface AssignmentMemberOutput {
   university: string | null
   degree: string | null
   description: string | null
+  isCommitteeResponsible: boolean
   socialNetworks: MemberSocialOutput[]
 }
 
@@ -84,6 +95,8 @@ export interface MandateDetailOutput {
   areas: AreaTermOutput[]
   generatedAt: string | null
 }
+
+const MANDATE_DETAIL_CACHE_VERSION = 2
 
 interface MandateSlugIndex {
   slugToMandates: Record<string, MandateInfoOutput[]>
@@ -196,7 +209,7 @@ async function fetchExternalMandates(
   externalBaseUrl: string,
   unavailableMessage: string,
   event?: H3Event
-) {
+): Promise<ExternalMandate[]> {
   const endpoint = new URL('/api/organigrama/mandatos', externalBaseUrl).toString()
 
   let payload: unknown
@@ -235,7 +248,7 @@ export async function fetchMandatesList(
       const mandates = await fetchExternalMandates(externalBaseUrl, unavailableMessage, event)
 
       return mandates
-        .sort((a, b) => b.start_date.localeCompare(a.start_date))
+        .sort((a: ExternalMandate, b: ExternalMandate) => b.start_date.localeCompare(a.start_date))
         .map(mapExternalMandate)
     },
     cacheOptions
@@ -255,7 +268,7 @@ export async function fetchMandatesBySlug(
     async (): Promise<MandateSlugIndex> => {
       const mandates = await fetchExternalMandates(externalBaseUrl, unavailableMessage, event)
       const sortedMandates = mandates
-        .sort((a, b) => b.start_date.localeCompare(a.start_date))
+        .sort((a: ExternalMandate, b: ExternalMandate) => b.start_date.localeCompare(a.start_date))
         .map(mapExternalMandate)
 
       const slugToMandates: Record<string, MandateInfoOutput[]> = {}
@@ -289,7 +302,7 @@ export async function fetchMandateDetail(
   const unavailableMessage = getMandateDetailUnavailableMessage(event)
 
   return withExternalApiSWRCache(
-    `external-api:organigrama-mandate-detail:${externalBaseUrl}:${mandateId}`,
+    `external-api:organigrama-mandate-detail:v${MANDATE_DETAIL_CACHE_VERSION}:${externalBaseUrl}:${mandateId}`,
     async () => {
       const endpoint = new URL(`/api/organigrama/mandatos/${mandateId}`, externalBaseUrl).toString()
 
@@ -328,12 +341,17 @@ export async function fetchMandateDetail(
         isCurrent: parsed.data.mandate.is_current,
       }
 
+      const externalAreas = parsed.data.data
       const areas: AreaTermOutput[] = await Promise.all(
-        parsed.data.data
-          .sort((a, b) => a.area_order - b.area_order)
-          .map(async (area) => {
+        externalAreas
+          .sort(
+            (a: ExternalMandateAreaTerm, b: ExternalMandateAreaTerm) => a.area_order - b.area_order
+          )
+          .map(async (area: ExternalMandateAreaTerm) => {
             const nameTranslations: Record<string, string> = {}
-            for (const [locale, translation] of Object.entries(area.area_name_translations ?? {})) {
+            for (const [locale, translation] of Object.entries(
+              area.area_name_translations ?? {}
+            ) as Array<[string, string]>) {
               const nl = normalizeText(locale)
               const nt = normalizeText(translation)
               if (!nl || !nt) continue
@@ -345,8 +363,11 @@ export async function fetchMandateDetail(
 
             const assignments: AssignmentOutput[] = await Promise.all(
               area.assignments
-                .sort((a, b) => a.order - b.order || a.start_date.localeCompare(b.start_date))
-                .map(async (assignment) => {
+                .sort(
+                  (a: ExternalMandateAssignment, b: ExternalMandateAssignment) =>
+                    a.order - b.order || a.start_date.localeCompare(b.start_date)
+                )
+                .map(async (assignment: ExternalMandateAssignment) => {
                   const member = assignment.member
                   return {
                     id: assignment.id,
@@ -371,6 +392,7 @@ export async function fetchMandateDetail(
                       university: normalizeText(member.university) || null,
                       degree: normalizeText(member.degree) || null,
                       description: normalizeText(member.description) || null,
+                      isCommitteeResponsible: member.is_committee_responsible ?? false,
                       socialNetworks: transformMemberSocials(member.social_networks ?? []),
                     },
                   }
