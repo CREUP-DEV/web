@@ -103,6 +103,7 @@ ensure_host_data_dirs() {
   local admin_assets_dir="\${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}"
 
   mkdir -p \
+    "\$public_uploads_dir/og" \
     "\$public_uploads_dir/inicio/imagenes" \
     "\$public_uploads_dir/conocenos/imagenes" \
     "\$public_uploads_dir/eventos/imagenes" \

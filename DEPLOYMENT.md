@@ -84,6 +84,7 @@ cd /opt/creup-web
 
 # Crear los directorios de datos que se montarán como bind mounts
 mkdir -p \
+  data/public-uploads/og \
   data/public-uploads/inicio/imagenes \
   data/public-uploads/conocenos/imagenes \
   data/public-uploads/eventos/imagenes \

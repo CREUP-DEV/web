@@ -29,6 +29,7 @@ services:
       NUXT_SMTP_SECURE: "false"
     volumes:
       # Keep build assets from the image (/_nuxt) and persist only mutable upload targets.
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/og:/app/.output/public/og
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/inicio/imagenes:/app/.output/public/inicio/imagenes
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/conocenos/imagenes:/app/.output/public/conocenos/imagenes
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/eventos/imagenes:/app/.output/public/eventos/imagenes
@@ -73,7 +74,7 @@ services:
       - creup_web_local_postgres_data:/var/lib/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -87,14 +88,14 @@ services:
       [
         "sh",
         "-c",
-        "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"",
+        'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"',
       ]
     expose:
       - 6379
     volumes:
       - creup_web_local_redis_data:/data
     healthcheck:
-      test: [ "CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping" ]
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping']
       interval: 10s
       timeout: 5s
       retries: 5

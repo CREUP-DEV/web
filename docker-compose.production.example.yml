@@ -16,6 +16,7 @@ services:
       - ${APP_PORT:-3000}:3000
     volumes:
       # Keep build assets from the image (/_nuxt) and persist only mutable upload targets.
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/og:/app/.output/public/og
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/inicio/imagenes:/app/.output/public/inicio/imagenes
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/conocenos/imagenes:/app/.output/public/conocenos/imagenes
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/eventos/imagenes:/app/.output/public/eventos/imagenes
@@ -66,7 +67,7 @@ services:
       - creup_web_postgres_data:/var/lib/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -81,12 +82,12 @@ services:
       [
         "sh",
         "-c",
-        "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\"",
+        'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"',
       ]
     volumes:
       - creup_web_redis_data:/data
     healthcheck:
-      test: [ "CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping" ]
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping']
       interval: 10s
       timeout: 5s
       retries: 5
