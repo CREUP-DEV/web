@@ -630,6 +630,8 @@
       "empty": "No hay noticias disponibles con los filtros seleccionados.",
       "emptySearch": "No hay noticias que coincidan con la búsqueda.",
       "loadError": "No se han podido cargar las noticias en este momento.",
+      "allTypes": "Todos los tipos",
+      "allTags": "Todas las etiquetas",
       "filterByType": "Filtrar por tipo",
       "filterByTag": "Filtrar por etiqueta",
       "searchLabel": "Buscar noticias",

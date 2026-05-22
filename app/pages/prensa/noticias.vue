@@ -31,7 +31,12 @@ const searchQuery = useSyncedQueryParam<string | null>('q', {
 
 const searchInput = ref(searchQuery.value ?? '')
 
-const { page, toggleTag, selectedTags, tagsData, tagsPending } = usePressArchiveFilters(() => null)
+const { page, toggleTag, selectedTags, tagQuery, tagsData, tagsPending } = usePressArchiveFilters(
+  () => null
+)
+
+const ALL_TYPES_VALUE = '__all_types__'
+const ALL_TAGS_VALUE = '__all_tags__'
 
 const selectedTypes = computed<PressArticleType[]>(() => {
   if (!typeParam.value) return []
@@ -108,6 +113,69 @@ const typeIcons: Record<PressArticleType, string> = {
   media_appearance: 'i-tabler-broadcast',
 }
 
+const typeSelectItems = computed(() => [
+  {
+    value: ALL_TYPES_VALUE,
+    label: t('press.news.allTypes'),
+    icon: 'i-tabler-list',
+  },
+  ...PRESS_ARTICLE_TYPES.map((pressType) => ({
+    value: pressType,
+    label: typeLabels[pressType],
+    icon: typeIcons[pressType],
+  })),
+])
+
+const selectedTypeSelectValues = computed(() =>
+  selectedTypes.value.length > 0 ? selectedTypes.value : [ALL_TYPES_VALUE]
+)
+
+const tagSelectItems = computed(() => [
+  {
+    value: ALL_TAGS_VALUE,
+    label: t('press.news.allTags'),
+  },
+  ...(tagsData.value?.data ?? []).map((tag) => ({
+    value: tag.slug,
+    label: tag.name,
+  })),
+])
+
+const selectedTagSelectValues = computed(() =>
+  selectedTags.value.length > 0 ? selectedTags.value : [ALL_TAGS_VALUE]
+)
+
+const updateMobileTypeSelection = (values: string[] | undefined) => {
+  const nextValues = values ?? []
+  const currentShowsAll = selectedTypes.value.length === 0
+  const validTypes = nextValues.filter((value): value is PressArticleType =>
+    (PRESS_ARTICLE_TYPES as readonly string[]).includes(value)
+  )
+
+  if (nextValues.includes(ALL_TYPES_VALUE) && !currentShowsAll) {
+    typeParam.value = null
+  } else {
+    typeParam.value = validTypes.length > 0 ? validTypes.join(',') : null
+  }
+
+  page.value = 1
+}
+
+const updateMobileTagSelection = (values: string[] | undefined) => {
+  const nextValues = values ?? []
+  const currentShowsAll = selectedTags.value.length === 0
+  const availableSlugs = new Set((tagsData.value?.data ?? []).map((tag) => tag.slug))
+  const validTags = nextValues.filter((value) => availableSlugs.has(value))
+
+  if (nextValues.includes(ALL_TAGS_VALUE) && !currentShowsAll) {
+    tagQuery.value = null
+  } else {
+    tagQuery.value = validTags.length > 0 ? validTags.join(',') : null
+  }
+
+  page.value = 1
+}
+
 const formatDate = (iso: string) =>
   formatLocaleDate(iso, { year: 'numeric', month: 'long', day: 'numeric' })
 
@@ -125,9 +193,38 @@ const getArticleAnimationStyle = (index: number) => ({
       </header>
 
       <div class="mb-6 space-y-4">
+        <div class="space-y-2 lg:hidden">
+          <USelectMenu
+            :model-value="selectedTypeSelectValues"
+            :items="typeSelectItems"
+            value-key="value"
+            multiple
+            icon="i-tabler-category"
+            class="w-full min-w-0"
+            :aria-label="t('press.news.filterByType')"
+            :placeholder="t('press.news.filterByType')"
+            :ui="{ placeholder: 'truncate text-muted', itemLabel: 'truncate' }"
+            @update:model-value="updateMobileTypeSelection"
+          />
+
+          <USelectMenu
+            :model-value="selectedTagSelectValues"
+            :items="tagSelectItems"
+            value-key="value"
+            multiple
+            icon="i-tabler-tags"
+            class="w-full min-w-0"
+            :aria-label="t('press.news.filterByTag')"
+            :placeholder="t('press.news.filterByTag')"
+            :disabled="tagsPending"
+            :ui="{ placeholder: 'truncate text-muted', itemLabel: 'truncate' }"
+            @update:model-value="updateMobileTagSelection"
+          />
+        </div>
+
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div
-            class="flex flex-wrap items-center gap-2"
+            class="hidden flex-wrap items-center gap-2 lg:flex"
             role="group"
             :aria-label="t('press.news.filterByType')"
           >
@@ -185,7 +282,7 @@ const getArticleAnimationStyle = (index: number) => ({
           :pending="tagsPending"
           :selected-slugs="selectedTags"
           :aria-label="t('press.news.filterByTag')"
-          class="mt-2"
+          class="mt-2 hidden lg:block"
           @toggle="toggleTag"
         />
       </div>

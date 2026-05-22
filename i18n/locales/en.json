@@ -630,6 +630,8 @@
       "empty": "No news available for the selected filters.",
       "emptySearch": "No news matches your search.",
       "loadError": "News could not be loaded right now.",
+      "allTypes": "All types",
+      "allTags": "All tags",
       "filterByType": "Filter by type",
       "filterByTag": "Filter by tag",
       "searchLabel": "Search news",
