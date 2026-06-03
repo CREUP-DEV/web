@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CREUPEvent } from '@/composables/events/useEvents'
+import type { CREUPEventListItem } from '@/composables/events/useEvents'
 import { getEventTypeI18nKey } from '~~/shared/constants/eventTypes'
 
 const { t } = useI18n()
@@ -109,17 +109,17 @@ const getEventTypeLabel = (eventType: string | null) => {
   return key ? t(key) : (eventType ?? '')
 }
 
-const formatDateRange = (event: CREUPEvent): string => {
+const formatDateRange = (event: CREUPEventListItem): string => {
   return formatDateRangeText(event.startDate, event.endDate, {
     includeYear: true,
   })
 }
 
-const isUpcoming = (event: CREUPEvent): boolean => {
+const isUpcoming = (event: CREUPEventListItem): boolean => {
   return isDateRangeUpcoming(event.startDate, event.endDate)
 }
 
-const isOngoing = (event: CREUPEvent): boolean => {
+const isOngoing = (event: CREUPEventListItem): boolean => {
   return isDateRangeOngoing(event.startDate, event.endDate)
 }
 

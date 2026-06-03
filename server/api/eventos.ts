@@ -51,8 +51,22 @@ export default defineCachedEventHandler(
           ? payload.events.filter((entry) => entry.type === normalizedType)
           : payload.events
 
+    // List DTO: only the fields the events index renders. Full shape stays in /api/eventos/[slug].
+    const listItems = filteredEvents
+      .slice(normalizedOffset, normalizedOffset + normalizedLimit)
+      .map((entry) => ({
+        id: entry.id,
+        name: entry.name,
+        slug: entry.slug,
+        type: entry.type,
+        location: entry.location,
+        startDate: entry.startDate,
+        endDate: entry.endDate,
+        banner: { url: entry.banner.url },
+      }))
+
     return {
-      data: filteredEvents.slice(normalizedOffset, normalizedOffset + normalizedLimit),
+      data: listItems,
       meta: {
         total: filteredEvents.length,
         eventTypes: allEventTypes,

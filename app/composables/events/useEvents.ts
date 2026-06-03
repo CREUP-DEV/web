@@ -41,10 +41,16 @@ export interface CREUPEvent {
   order: number
 }
 
+/** Slim shape returned by the list endpoint (`/api/eventos`); detail keeps the full `CREUPEvent`. */
+export type CREUPEventListItem = Pick<
+  CREUPEvent,
+  'id' | 'name' | 'slug' | 'type' | 'location' | 'startDate' | 'endDate' | 'banner'
+>
+
 const OTHER_EVENT_TYPE = 'Otro'
 
 interface EventsResponse {
-  data: CREUPEvent[]
+  data: CREUPEventListItem[]
   meta: {
     eventTypes: string[]
     generatedAt: string | null
