@@ -1,15 +1,28 @@
-import { defineEventHandler } from 'h3'
+import {
+  getExternalApiCacheOptions,
+  setExternalApiCacheHeaders,
+} from '../utils/cache/externalApiCache'
 import { getAssociatedMembersResponse } from '../utils/public/publicMembers'
-import { setPublicApiCacheHeaders } from '../utils/cache/publicRouteCache'
+import {
+  buildPublicRouteCacheKey,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+} from '../utils/cache/publicRouteCache'
 
-export default defineEventHandler(async (event) => {
-  setPublicApiCacheHeaders(event)
+export default defineCachedEventHandler(
+  async (event) => {
+    const cacheOptions = getExternalApiCacheOptions(event)
+    setExternalApiCacheHeaders(event, cacheOptions, 0)
 
-  const payload = await getAssociatedMembersResponse(event)
-  return {
-    data: payload.members,
-    meta: {
-      generatedAt: payload.generatedAt,
-    },
+    const payload = await getAssociatedMembersResponse(event)
+    return {
+      data: payload.members,
+      meta: {
+        generatedAt: payload.generatedAt,
+      },
+    }
+  },
+  {
+    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+    getKey: (event) => buildPublicRouteCacheKey(event, 'members', { includeLocale: false }),
   }
-})
+)

@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
+import pLimit from 'p-limit'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 import {
   collectSocialNetworks,
@@ -203,50 +204,54 @@ async function loadAssociatedMembers(event: H3Event) {
       }
 
       const externalMembers = parsedPayload.data.data
+      // Bound the cold-cache image-kind probing fan-out (only extensionless URLs hit the network).
+      const probeLimit = pLimit(5)
       const members: PublicAssociatedMember[] = await Promise.all(
-        externalMembers.map(async (member: ExternalAssociatedMember, index: number) => {
-          const socialNetworks = collectSocialNetworks(member.social_networks)
+        externalMembers.map((member: ExternalAssociatedMember, index: number) =>
+          probeLimit(async () => {
+            const socialNetworks = collectSocialNetworks(member.social_networks)
 
-          const denomination = normalizeText(member.denomination)
-          const initials = normalizeText(member.initials)
-          const university = normalizeText(member.university)
-          const autonomousCommunityName = normalizeText(member.autonomous_community)
+            const denomination = normalizeText(member.denomination)
+            const initials = normalizeText(member.initials)
+            const university = normalizeText(member.university)
+            const autonomousCommunityName = normalizeText(member.autonomous_community)
 
-          const slug = buildStableMemberSlug(
-            [initials, denomination, university, autonomousCommunityName],
-            'member',
-            index
-          )
+            const slug = buildStableMemberSlug(
+              [initials, denomination, university, autonomousCommunityName],
+              'member',
+              index
+            )
 
-          return {
-            id: slug,
-            slug,
-            order: member.order,
-            denomination,
-            initials,
-            university,
-            autonomousCommunity: normalizeCommunity(autonomousCommunityName),
-            autonomousCommunityName,
-            description: normalizeText(member.description) || null,
-            logoLight: await toExternalImageProxyUrlWithKindHint(
-              normalizeText(member.web_logo_light),
-              {
-                event,
-                forceProxyRelative: true,
-                publicPathBase: '/conocenos/imagenes',
-              }
-            ),
-            logoDark: await toExternalImageProxyUrlWithKindHint(
-              normalizeText(member.web_logo_dark),
-              {
-                event,
-                forceProxyRelative: true,
-                publicPathBase: '/conocenos/imagenes',
-              }
-            ),
-            socialNetworks,
-          }
-        })
+            return {
+              id: slug,
+              slug,
+              order: member.order,
+              denomination,
+              initials,
+              university,
+              autonomousCommunity: normalizeCommunity(autonomousCommunityName),
+              autonomousCommunityName,
+              description: normalizeText(member.description) || null,
+              logoLight: await toExternalImageProxyUrlWithKindHint(
+                normalizeText(member.web_logo_light),
+                {
+                  event,
+                  forceProxyRelative: true,
+                  publicPathBase: '/conocenos/imagenes',
+                }
+              ),
+              logoDark: await toExternalImageProxyUrlWithKindHint(
+                normalizeText(member.web_logo_dark),
+                {
+                  event,
+                  forceProxyRelative: true,
+                  publicPathBase: '/conocenos/imagenes',
+                }
+              ),
+              socialNetworks,
+            }
+          })
+        )
       )
 
       members.sort((a, b) => a.order - b.order)
@@ -290,44 +295,47 @@ async function loadSectoriales(event: H3Event) {
       }
 
       const externalSectorialMembers = parsedPayload.data.data
+      const probeLimit = pLimit(5)
       const sectoriales: PublicSectorialMember[] = await Promise.all(
-        externalSectorialMembers.map(async (member: ExternalSectorialMember, index: number) => {
-          const socialNetworks = collectSocialNetworks(member.social_networks)
+        externalSectorialMembers.map((member: ExternalSectorialMember, index: number) =>
+          probeLimit(async () => {
+            const socialNetworks = collectSocialNetworks(member.social_networks)
 
-          const denomination = normalizeText(member.denomination)
-          const initials = normalizeText(member.initials)
+            const denomination = normalizeText(member.denomination)
+            const initials = normalizeText(member.initials)
 
-          const id = buildStableMemberSlug(
-            [initials, denomination, normalizeText(member.description)],
-            'sectorial',
-            index
-          )
+            const id = buildStableMemberSlug(
+              [initials, denomination, normalizeText(member.description)],
+              'sectorial',
+              index
+            )
 
-          return {
-            id,
-            order: member.order,
-            denomination,
-            initials,
-            description: normalizeText(member.description) || null,
-            logoLight: await toExternalImageProxyUrlWithKindHint(
-              normalizeText(member.web_logo_light),
-              {
-                event,
-                forceProxyRelative: true,
-                publicPathBase: '/conocenos/imagenes',
-              }
-            ),
-            logoDark: await toExternalImageProxyUrlWithKindHint(
-              normalizeText(member.web_logo_dark),
-              {
-                event,
-                forceProxyRelative: true,
-                publicPathBase: '/conocenos/imagenes',
-              }
-            ),
-            socialNetworks,
-          }
-        })
+            return {
+              id,
+              order: member.order,
+              denomination,
+              initials,
+              description: normalizeText(member.description) || null,
+              logoLight: await toExternalImageProxyUrlWithKindHint(
+                normalizeText(member.web_logo_light),
+                {
+                  event,
+                  forceProxyRelative: true,
+                  publicPathBase: '/conocenos/imagenes',
+                }
+              ),
+              logoDark: await toExternalImageProxyUrlWithKindHint(
+                normalizeText(member.web_logo_dark),
+                {
+                  event,
+                  forceProxyRelative: true,
+                  publicPathBase: '/conocenos/imagenes',
+                }
+              ),
+              socialNetworks,
+            }
+          })
+        )
       )
 
       sectoriales.sort((a, b) => a.order - b.order)
@@ -371,6 +379,8 @@ async function loadTeamAreas(event: H3Event) {
       }
 
       const externalAreas = parsedPayload.data.data
+      // Shared limiter bounds total concurrent image-kind probes across all areas' members.
+      const probeLimit = pLimit(5)
       const areas: PublicTeamArea[] = await Promise.all(
         externalAreas
           .sort(
@@ -382,47 +392,49 @@ async function loadTeamAreas(event: H3Event) {
                 .sort(
                   (a: ExternalOrganigramaMember, b: ExternalOrganigramaMember) => a.order - b.order
                 )
-                .map(async (member: ExternalOrganigramaMember) => {
-                  const socialNetworks = collectSocialNetworks(member.social_networks)
-                  const normalizedDenomination = normalizeText(member.denomination) || null
-                  const normalizedEmail = normalizeText(member.email) || ''
-                  const normalizedName = normalizeText(member.name) || ''
-                  const normalizedSurname = normalizeText(member.surname) || ''
-                  const normalizedUniversity = normalizeText(member.university) || null
+                .map((member: ExternalOrganigramaMember) =>
+                  probeLimit(async () => {
+                    const socialNetworks = collectSocialNetworks(member.social_networks)
+                    const normalizedDenomination = normalizeText(member.denomination) || null
+                    const normalizedEmail = normalizeText(member.email) || ''
+                    const normalizedName = normalizeText(member.name) || ''
+                    const normalizedSurname = normalizeText(member.surname) || ''
+                    const normalizedUniversity = normalizeText(member.university) || null
 
-                  return {
-                    id: buildStablePersonId(
-                      [
-                        normalizedEmail,
-                        normalizedName,
-                        normalizedSurname,
-                        normalizedDenomination,
-                        normalizedUniversity,
-                      ],
-                      'team-member',
-                      member.order
-                    ),
-                    order: member.order,
-                    denomination: normalizedDenomination,
-                    photo: await toExternalImageProxyUrlWithKindHint(
-                      normalizeText(member.web_photo),
-                      {
-                        event,
-                        forceProxyRelative: true,
-                        publicPathBase: '/conocenos/imagenes',
-                      }
-                    ),
-                    email: normalizedEmail,
-                    name: normalizedName,
-                    surname: normalizedSurname,
-                    university: normalizedUniversity,
-                    degree: normalizeText(member.degree) || null,
-                    description: normalizeText(member.description) || null,
-                    isCommitteeResponsible: member.is_committee_responsible ?? false,
-                    publicAgenda: member.public_agenda ?? false,
-                    socialNetworks,
-                  }
-                })
+                    return {
+                      id: buildStablePersonId(
+                        [
+                          normalizedEmail,
+                          normalizedName,
+                          normalizedSurname,
+                          normalizedDenomination,
+                          normalizedUniversity,
+                        ],
+                        'team-member',
+                        member.order
+                      ),
+                      order: member.order,
+                      denomination: normalizedDenomination,
+                      photo: await toExternalImageProxyUrlWithKindHint(
+                        normalizeText(member.web_photo),
+                        {
+                          event,
+                          forceProxyRelative: true,
+                          publicPathBase: '/conocenos/imagenes',
+                        }
+                      ),
+                      email: normalizedEmail,
+                      name: normalizedName,
+                      surname: normalizedSurname,
+                      university: normalizedUniversity,
+                      degree: normalizeText(member.degree) || null,
+                      description: normalizeText(member.description) || null,
+                      isCommitteeResponsible: member.is_committee_responsible ?? false,
+                      publicAgenda: member.public_agenda ?? false,
+                      socialNetworks,
+                    }
+                  })
+                )
             )
             const nameTranslations: Record<string, string> = {}
             for (const [locale, translation] of Object.entries(

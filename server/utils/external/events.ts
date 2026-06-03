@@ -1,5 +1,6 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
+import pLimit, { type LimitFunction } from 'p-limit'
 import { getPublicApiErrorMessage } from '../locale/apiErrorMessages'
 import { getExternalApiCacheOptions, withExternalApiSWRCache } from '../cache/externalApiCache'
 import { toExternalImageProxyUrlWithKindHint } from './externalAssetKind'
@@ -66,16 +67,23 @@ const normalizeText = (value: string | null | undefined): string | null => {
   return trimmed || null
 }
 
-const toEventImageUrl = (source: string | null, event: H3Event): Promise<string | null> => {
+const toEventImageUrl = (
+  source: string | null,
+  event: H3Event,
+  limit: LimitFunction
+): Promise<string | null> => {
   if (!source) {
     return Promise.resolve(null)
   }
 
-  return toExternalImageProxyUrlWithKindHint(source, {
-    event,
-    forceProxyRelative: true,
-    publicPathBase: EVENT_IMAGE_PUBLIC_BASE,
-  })
+  // Route the network probe through the shared limiter so cold-cache warm-up stays bounded.
+  return limit(() =>
+    toExternalImageProxyUrlWithKindHint(source, {
+      event,
+      forceProxyRelative: true,
+      publicPathBase: EVENT_IMAGE_PUBLIC_BASE,
+    })
+  )
 }
 
 const toEventPdfUrl = (source: string | null, event: H3Event): string | null => {
@@ -98,7 +106,8 @@ const mapOrganization = (
     web_logo_light?: string | null
     web_logo_dark?: string | null
   },
-  event: H3Event
+  event: H3Event,
+  limit: LimitFunction
 ): Promise<EventOrganizationOutput> => {
   const base = {
     order: organization.order,
@@ -109,8 +118,8 @@ const mapOrganization = (
   }
 
   return Promise.all([
-    toEventImageUrl(normalizeText(organization.web_logo_light), event),
-    toEventImageUrl(normalizeText(organization.web_logo_dark), event),
+    toEventImageUrl(normalizeText(organization.web_logo_light), event, limit),
+    toEventImageUrl(normalizeText(organization.web_logo_dark), event, limit),
   ]).then(([logoLight, logoDark]) => ({
     ...base,
     logoLight,
@@ -148,6 +157,8 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
         })
       }
 
+      // One shared limiter bounds total concurrent image probes across all events and their assets.
+      const probeLimit = pLimit(5)
       const events: EventOutput[] = await Promise.all(
         parsedPayload.data.data
           .sort((a, b) => a.order - b.order)
@@ -159,7 +170,7 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
             location: normalizeText(entry.event_location),
             description: normalizeText(entry.event_description),
             banner: {
-              url: await toEventImageUrl(normalizeText(entry.event_banner?.url), event),
+              url: await toEventImageUrl(normalizeText(entry.event_banner?.url), event, probeLimit),
             },
             startDate: entry.event_start_date,
             endDate: normalizeText(entry.event_end_date),
@@ -173,24 +184,24 @@ export async function getEventsPayload(event: H3Event): Promise<EventsPayload> {
             organizers: await Promise.all(
               (entry.organizers ?? [])
                 .sort((a, b) => a.order - b.order)
-                .map((organization) => mapOrganization(organization, event))
+                .map((organization) => mapOrganization(organization, event, probeLimit))
             ),
             venues: await Promise.all(
               (entry.venues ?? [])
                 .sort((a, b) => a.order - b.order)
-                .map((organization) => mapOrganization(organization, event))
+                .map((organization) => mapOrganization(organization, event, probeLimit))
             ),
             collaborators: await Promise.all(
               (entry.collaborators ?? [])
                 .sort((a, b) => a.order - b.order)
-                .map((organization) => mapOrganization(organization, event))
+                .map((organization) => mapOrganization(organization, event, probeLimit))
             ),
             galleryImages: await Promise.all(
               (entry.gallery_images ?? [])
                 .sort((a, b) => a.order - b.order)
                 .map(async (image) => ({
                   order: image.order,
-                  url: await toEventImageUrl(normalizeText(image.url), event),
+                  url: await toEventImageUrl(normalizeText(image.url), event, probeLimit),
                 }))
             ),
             order: entry.order,

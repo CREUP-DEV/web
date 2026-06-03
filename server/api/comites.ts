@@ -1,9 +1,13 @@
-import { createError, defineEventHandler } from 'h3'
+import { createError, type H3Event } from 'h3'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
   withExternalApiSWRCache,
 } from '../utils/cache/externalApiCache'
+import {
+  buildPublicRouteCacheKey,
+  FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+} from '../utils/cache/publicRouteCache'
 import { toExternalImageProxyUrlWithKindHint } from '../utils/external/externalAssetKind'
 import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { logError } from '../utils/core/logger'
@@ -59,7 +63,7 @@ const buildStableCommitteeMemberId = (
   return baseId || `committee-member-${fallbackIndex + 1}`
 }
 
-export default defineEventHandler(async (event) => {
+async function buildCommitteesResponse(event: H3Event) {
   const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
   const cacheOptions = getExternalApiCacheOptions(event)
 
@@ -196,4 +200,9 @@ export default defineEventHandler(async (event) => {
     },
     cacheOptions
   )
+}
+
+export default defineCachedEventHandler((event) => buildCommitteesResponse(event), {
+  ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  getKey: (event) => buildPublicRouteCacheKey(event, 'comites', { includeLocale: false }),
 })

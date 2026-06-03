@@ -1,16 +1,14 @@
-async function clearAllCachedHandlers() {
-  const storage = useStorage('cache')
-  const keys = await storage.getKeys('nitro/handlers')
-  await Promise.all(keys.map((key) => storage.removeItem(key)))
-}
+import { logWarn } from '../core/logger'
 
 async function invalidateCachedHandlersMatching(substring: string) {
   const storage = useStorage('cache')
   const keys = await storage.getKeys('nitro/handlers')
   const matchingKeys = keys.filter((key) => key.includes(substring))
 
+  // A zero-match is a no-op: warn (likely a renamed/typo'd prefix) instead of flushing every
+  // cached handler, which used to mask the mistake and discard unrelated caches.
   if (matchingKeys.length === 0) {
-    await clearAllCachedHandlers()
+    logWarn('admin.cache-invalidation.no-match', { substring })
     return
   }
 
