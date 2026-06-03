@@ -34,7 +34,7 @@ Internet
   • Terminación TLS (Let's Encrypt)
   • Redirección HTTP → HTTPS
   • client_max_body_size 50m
-  • Fija X-Forwarded-For a $remote_addr (valor único, no acumulado)
+  • Fija X-Real-IP y X-Forwarded-For a $remote_addr
     │
     ▼
  Red bridge de Docker
@@ -183,13 +183,15 @@ sudo cp /opt/creup-web/deploy/nginx/creup.production.example.conf \
 
 Edita la copia para ajustar `server_name`, rutas de certificado y upstream si es necesario.
 
-La plantilla ya gestiona la redirección HTTP→HTTPS, los upgrades de WebSocket y la cabecera crítica `X-Forwarded-For`. El requisito clave de seguridad es que `X-Forwarded-For` se asigne a `$remote_addr` (IP del cliente directo), **sin acumular** — así el rate limiter y la detección de IP ven la IP real:
+La plantilla ya gestiona la redirección HTTP→HTTPS, los upgrades de WebSocket y las cabeceras críticas `X-Forwarded-For` y `X-Real-IP`. El requisito clave de seguridad es que ambas se asignen a `$remote_addr` (IP del cliente directo), **sin acumular** — así el rate limiter y la detección de IP ven la IP real:
 
 ```nginx
 # CRÍTICO: sobreescribir, no acumular, para que Nitro vea exactamente una IP.
 proxy_set_header X-Forwarded-For $remote_addr;
 proxy_set_header X-Real-IP       $remote_addr;
 ```
+
+La aplicación prefiere `X-Real-IP` sobre `X-Forwarded-For` cuando la conexión llega desde un proxy de confianza (`NUXT_TRUSTED_PROXY_CIDRS`), siempre que NGINX sobrescriba esa cabecera con `$remote_addr`. Si solo está disponible `X-Forwarded-For`, se recorre de derecha a izquierda omitiendo los saltos de proxy de confianza.
 
 Refuerzo adicional para el bloque HTTPS:
 
@@ -659,7 +661,7 @@ La app valida las variables de entorno críticas al arrancar y falla rápido con
 docker logs web-app 2>&1 | grep -A 5 "startup"
 ```
 
-Causas habituales: `NUXT_REDIS_URL`, `APP_SECRET`, `NUXT_SMTP_HOST`, `NUXT_EXTERNAL_API_BASE_URL` no definidas o mal formadas. Si la API externa y los assets viven en orígenes distintos, verifica también `NUXT_EXTERNAL_ASSET_BASE_URL` y `NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS`.
+Causas habituales: `NUXT_REDIS_URL`, `APP_SECRET`, `BETTER_AUTH_URL`/`NUXT_SITE_URL`, `NUXT_SMTP_HOST`, `NUXT_EXTERNAL_API_BASE_URL` no definidas o mal formadas. Si la API externa y los assets viven en orígenes distintos, verifica también `NUXT_EXTERNAL_ASSET_BASE_URL` y `NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS`.
 
 ### "Too many connections" de PostgreSQL
 
@@ -667,9 +669,9 @@ Aumenta `DATABASE_MAX_CONNECTIONS` en `.env`, pero mantente muy por debajo del `
 
 ### El rate limiting no funciona
 
-El rate limiter requiere Redis y que la IP del cliente se detecte correctamente. La app solo acepta `X-Forwarded-For` de conexiones que vengan de CIDRs configurados en `NUXT_TRUSTED_PROXY_CIDRS` (por defecto solo loopback). Verifica que:
+El rate limiter requiere Redis y que la IP del cliente se detecte correctamente. La app solo acepta `X-Real-IP` y `X-Forwarded-For` de conexiones que vengan de CIDRs configurados en `NUXT_TRUSTED_PROXY_CIDRS` (por defecto solo loopback). Verifica que:
 
-1. NGINX asigna `X-Forwarded-For $remote_addr` — asignación, no acumulación.
+1. NGINX asigna `X-Real-IP $remote_addr` y `X-Forwarded-For $remote_addr` — asignación, no acumulación.
 2. La IP del proceso NGINX está en `NUXT_TRUSTED_PROXY_CIDRS` (por defecto `127.0.0.1/32,::1/128` cubre el caso estándar).
 
 Si NGINX corre en otro host, añade su IP o rango a `NUXT_TRUSTED_PROXY_CIDRS`.

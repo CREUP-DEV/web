@@ -152,13 +152,26 @@ export function getClientIp(event: H3Event): string | null {
     return remoteAddress
   }
 
-  const forwardedIp = getHeader(event, 'x-forwarded-for')
-    ?.split(',')
-    .map((entry) => normalizeIpAddress(entry))
-    .find(Boolean)
+  // X-Real-IP is set by NGINX to $remote_addr (not client-forwarded) — trust it first.
   const realIp = normalizeIpAddress(getHeader(event, 'x-real-ip'))
+  if (realIp) return realIp
 
-  return forwardedIp || realIp || remoteAddress
+  // Walk XFF right-to-left, skipping trusted proxy hops, to reach the actual client IP.
+  const xffHeader = getHeader(event, 'x-forwarded-for')
+  if (xffHeader) {
+    const hops = xffHeader
+      .split(',')
+      .map((entry) => normalizeIpAddress(entry))
+      .filter((ip): ip is string => ip !== null)
+    for (let i = hops.length - 1; i >= 0; i--) {
+      const hop = hops[i]
+      if (hop && !isIpTrusted(hop)) {
+        return hop
+      }
+    }
+  }
+
+  return remoteAddress
 }
 
 /**
