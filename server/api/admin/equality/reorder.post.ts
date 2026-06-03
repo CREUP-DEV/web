@@ -1,49 +1,14 @@
-import { defineEventHandler, readBody } from 'h3'
-import { inArray } from 'drizzle-orm'
-import { db } from '../../../db'
+import { defineEventHandler } from 'h3'
 import { equalityDocuments } from '../../../db/schema'
 import { invalidateEqualityDocumentsCache } from '../../../utils/admin/adminCacheInvalidation'
-import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
-import {
-  assertCompleteReorderSet,
-  buildReorderOrderExpression,
-} from '../../../utils/admin/adminReorder'
-import { updateOrderSchema, validateBody } from '../../../utils/validation'
+import { reorderCollection } from '../../../utils/admin/adminReorder'
 
-export default defineEventHandler(async (event) => {
-  try {
-    const body = await readBody(event)
-
-    const validated = validateBody(updateOrderSchema, body)
-    const reorderedIds = validated.items.map((item) => item.id)
-    const reorderedOrder = buildReorderOrderExpression(
-      equalityDocuments.id,
-      equalityDocuments.order,
-      validated.items
-    )
-
-    await db.transaction(async (tx) => {
-      const existingItems = await tx
-        .select({ id: equalityDocuments.id })
-        .from(equalityDocuments)
-        .for('update')
-
-      assertCompleteReorderSet(
-        validated.items,
-        existingItems.map((item) => item.id)
-      )
-
-      if (validated.items.length > 0) {
-        await tx
-          .update(equalityDocuments)
-          .set({ order: reorderedOrder })
-          .where(inArray(equalityDocuments.id, reorderedIds))
-      }
-    })
-
-    await invalidateEqualityDocumentsCache()
-    return { data: { success: true } }
-  } catch (error) {
-    throwAdminMutationError('admin.equality.reorder', error, event)
-  }
-})
+export default defineEventHandler((event) =>
+  reorderCollection(event, {
+    table: equalityDocuments,
+    idColumn: equalityDocuments.id,
+    orderColumn: equalityDocuments.order,
+    invalidate: invalidateEqualityDocumentsCache,
+    scope: 'admin.equality.reorder',
+  })
+)

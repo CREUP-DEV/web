@@ -227,6 +227,8 @@ export const <resource>Crud = defineAssetBackedTranslatableCrud({
 
 Config modules live in `server/utils/admin/crud/` (outside `server/api/` so Nitro does not route them). Used by carousel, links, equality, financial-reports, media. Returns `{ data }` envelopes. Document-backed resources pass `finalize: finalizeAdminDocument`; response shaping (e.g. date normalization) goes in `refetch`.
 
+For collection reorder endpoints, use `reorderCollection(event, { table, idColumn, orderColumn, invalidate, scope })` from `server/utils/admin/adminReorder.ts` — it owns the validate → row-lock → `assertCompleteReorderSet` → bulk update → invalidate sequence inside a wrapped try/catch, so reorder failures return a normalized `{ message }` error instead of a raw 500. Each `reorder.post.ts` is a one-line call.
+
 ### Runtime-served Admin Assets
 
 When adding a new admin-managed upload location under `public/`, verify how that public path is served in production. Files uploaded after Docker build are not automatically part of Nitro's generated `.output/public`.
