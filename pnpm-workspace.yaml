@@ -1,3 +1,6 @@
+overrides:
+  '@internationalized/date': 3.12.2
+  ioredis: 5.11.0
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true

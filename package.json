@@ -43,7 +43,7 @@
     "dompurify": "^3.4.7",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
-    "ioredis": "^5.11.0",
+    "ioredis": "5.11.0",
     "linkedom": "^0.18.12",
     "nodemailer": "^8.0.10",
     "nuxt": "^4.4.7",
