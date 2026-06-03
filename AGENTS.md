@@ -201,6 +201,32 @@ This is the standard pattern for ALL admin file uploads. Never write files direc
 
 See `server/services/pressArticleService.ts` for a full working example.
 
+### Asset-backed CRUD Factory (`server/utils/admin/defineAssetBackedTranslatableCrud.ts`)
+
+For simple image/document-backed resources with optional translations, do NOT hand-write the create/update choreography. Call the factory instead — it owns the full sequence (validate → finalize asset + track → transaction: delete translations, optimistic-locked update, re-insert translations, refetch → conditional unused-asset cleanup → cache invalidation → catch: rollback finalizations + `throwAdminMutationError`).
+
+```typescript
+// server/utils/admin/crud/<resource>.ts
+export const <resource>Crud = defineAssetBackedTranslatableCrud({
+  schema: { create, update },          // shared Zod schemas
+  validate,                            // optional post-schema assertion (e.g. required ES title)
+  asset: {
+    uploadDir, publicPath, fallbackBaseName,
+    finalize: finalizeAdminDocument,   // optional; defaults to finalizeAdminImage
+    getSource: (v) => v.image,         // incoming temp storagePath, or null
+    deriveSlug, getPublish,            // optional
+  },
+  main: { table, idColumn, updatedAtColumn, buildValues, loadExisting, refetch },
+  translations: { table, fkColumn, buildRows },  // omit for single-language resources
+  invalidate, messages, scope,
+})
+// route files are one-liners:
+// index.post.ts → export default <resource>Crud.createHandler
+// [id].put.ts   → export default <resource>Crud.updateHandler
+```
+
+Config modules live in `server/utils/admin/crud/` (outside `server/api/` so Nitro does not route them). Used by carousel, links, equality, financial-reports, media. Returns `{ data }` envelopes. Document-backed resources pass `finalize: finalizeAdminDocument`; response shaping (e.g. date normalization) goes in `refetch`.
+
 ### Runtime-served Admin Assets
 
 When adding a new admin-managed upload location under `public/`, verify how that public path is served in production. Files uploaded after Docker build are not automatically part of Nitro's generated `.output/public`.
@@ -591,7 +617,7 @@ Use `toast.add(...)` from `useToast()` for all user feedback.
 
 ### Do Not Repeat Logic
 
-Before writing a new utility, check `server/utils/`, `shared/utils/`, and `app/composables/`. There are already helpers for locale resolution, file upload, rich text sanitization, rate limiting, validation, error messages, admin collection state, form validation, and more.
+Before writing a new utility, check `server/utils/`, `shared/utils/`, and `app/composables/`. There are already helpers for locale resolution, file upload, rich text sanitization, rate limiting, validation, error messages, admin collection state, form validation, and more. For image/document-backed admin resources, use `defineAssetBackedTranslatableCrud` instead of re-implementing the finalize/transaction/cleanup choreography.
 
 ### Import Aliases
 
