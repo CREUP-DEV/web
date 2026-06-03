@@ -29,21 +29,14 @@ export function normalizeAdminEmail(email: string) {
   return email.trim().toLowerCase()
 }
 
-let cachedEnvAdminEmails: string[] | null = null
-
 export function getEnvAdminEmails() {
-  if (cachedEnvAdminEmails !== null) {
-    return cachedEnvAdminEmails
-  }
-
   const rawEmails = process.env.ADMIN_EMAILS
 
   if (rawEmails === undefined) {
-    cachedEnvAdminEmails = []
-    return cachedEnvAdminEmails
+    return []
   }
 
-  cachedEnvAdminEmails = Array.from(
+  return Array.from(
     new Set(
       rawEmails
         .split(/[,\s]+/)
@@ -51,8 +44,6 @@ export function getEnvAdminEmails() {
         .filter(Boolean)
     )
   )
-
-  return cachedEnvAdminEmails
 }
 
 export function isEnvAdminEmail(email: string) {

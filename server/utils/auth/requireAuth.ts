@@ -18,6 +18,9 @@ export async function requireAuth(event: H3Event) {
 
   const session = await auth.api.getSession({
     headers: event.headers,
+    query: {
+      disableCookieCache: true,
+    },
   })
 
   if (!session) {

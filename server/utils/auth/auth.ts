@@ -1,17 +1,12 @@
 import { betterAuth } from 'better-auth'
+import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { eq } from 'drizzle-orm'
 import { getOptionalConfigUrl, requireConfigString } from '~~/shared/utils/config'
 import { db } from '../../db'
 import { users, sessions, accounts, verifications } from '../../db/schema'
 import { isAdminEmailAuthorized, normalizeAdminEmail } from '../admin/adminAccess'
 import { buildRedisKey, getRedisClient } from '../cache/redis'
-
-interface SignInUser {
-  id: string
-  email?: string | null
-  name?: string | null
-  image?: string | null
-}
 
 function getAuthBaseUrl() {
   return (
@@ -22,9 +17,14 @@ function getAuthBaseUrl() {
   )
 }
 
-function getTrustedOrigins() {
+function getTrustedOrigins(): string[] {
   const origin = getAuthBaseUrl()
-  return origin ? [origin] : []
+  if (!origin) {
+    throw new Error(
+      'No base URL configured for better-auth trustedOrigins. Set BETTER_AUTH_URL, NUXT_SITE_URL, or SITE_URL.'
+    )
+  }
+  return [origin]
 }
 
 const authSecondaryStorage = {
@@ -45,6 +45,13 @@ const authSecondaryStorage = {
 
     await redis.set(storageKey, value)
   },
+}
+
+async function assertAdminEmailCanAuthenticate(email: string | null | undefined) {
+  const normalizedEmail = email ? normalizeAdminEmail(email) : ''
+  if (!normalizedEmail || !(await isAdminEmailAuthorized(normalizedEmail))) {
+    throw new APIError('FORBIDDEN', { message: 'Acceso no autorizado.' })
+  }
 }
 
 export const auth = betterAuth({
@@ -86,6 +93,9 @@ export const auth = betterAuth({
       },
     },
   },
+  onAPIError: {
+    errorURL: '/admin/login',
+  },
   secondaryStorage: authSecondaryStorage,
   socialProviders: {
     google: {
@@ -96,10 +106,6 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
-    cookieCache: {
-      enabled: true,
-      maxAge: 60 * 5, // 5 minutes
-    },
   },
   advanced: {
     cookies: {
@@ -114,16 +120,39 @@ export const auth = betterAuth({
       },
     },
   },
-  callbacks: {
-    async signIn({ user }: { user: SignInUser }) {
-      const normalizedEmail = user.email ? normalizeAdminEmail(user.email) : ''
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          await assertAdminEmailCanAuthenticate(user.email)
+        },
+      },
+    },
+    account: {
+      create: {
+        before: async (account) => {
+          const [userRow] = await db
+            .select({ email: users.email })
+            .from(users)
+            .where(eq(users.id, account.userId))
+            .limit(1)
 
-      if (!normalizedEmail || !(await isAdminEmailAuthorized(normalizedEmail))) {
-        return {
-          error: 'Acceso no autorizado. Solo los administradores pueden acceder.',
-        }
-      }
-      return { success: true }
+          await assertAdminEmailCanAuthenticate(userRow?.email)
+        },
+      },
+    },
+    session: {
+      create: {
+        before: async (session) => {
+          const [userRow] = await db
+            .select({ email: users.email })
+            .from(users)
+            .where(eq(users.id, session.userId))
+            .limit(1)
+
+          await assertAdminEmailCanAuthenticate(userRow?.email)
+        },
+      },
     },
   },
   trustedOrigins: getTrustedOrigins(),

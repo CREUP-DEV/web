@@ -9,6 +9,7 @@ export const useAuth = () => {
     return authClient.signIn.social({
       provider: 'google',
       callbackURL: '/admin',
+      errorCallbackURL: '/admin/login',
     })
   }
 

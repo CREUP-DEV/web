@@ -1,4 +1,4 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, setHeader } from 'h3'
 import { requireAuth, type AdminAuthEventContext } from '../utils/auth/requireAuth'
 import {
   assertAdminCsrfMutationRequest,
@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
   }
 
   assertSameOriginAdminMutationRequest(event)
+  setHeader(event, 'cache-control', 'no-store')
   const session = await requireAuth(event)
   ensureAdminCsrfCookie(event)
   assertAdminCsrfMutationRequest(event)
