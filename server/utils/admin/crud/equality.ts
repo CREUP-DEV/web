@@ -1,3 +1,4 @@
+import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { equalityDocuments, equalityDocumentTranslations } from '../../../db/schema'
@@ -69,7 +70,7 @@ export const equalityCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidateEqualityDocumentsCache,
   messages: {
-    notFound: 'No encontrado',
+    notFound: ADMIN_NOT_FOUND_MESSAGE,
     optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
     createFailed: 'No se pudo crear el documento de igualdad',
     updateFailed: 'No se pudo actualizar el documento de igualdad',

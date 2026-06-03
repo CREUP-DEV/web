@@ -16,6 +16,9 @@ import { assertTagSlugAvailable } from '../../../utils/admin/tagMutations'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { updateTagSchema } from '~~/shared/utils/adminSchemas'
 
+const OPTIMISTIC_LOCK_MESSAGE =
+  'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.'
+
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
   const body = await readBody(event)
@@ -48,11 +51,7 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      assertOptimisticLock(
-        validated.updatedAt,
-        existingItem.updatedAt,
-        'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.'
-      )
+      assertOptimisticLock(validated.updatedAt, existingItem.updatedAt, OPTIMISTIC_LOCK_MESSAGE)
 
       const updatedRows = await tx
         .update(tags)
@@ -71,10 +70,7 @@ export default defineEventHandler(async (event) => {
         .returning({ id: tags.id })
 
       if (updatedRows.length === 0) {
-        throw createError({
-          statusCode: 409,
-          message: 'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.',
-        })
+        throw createError({ statusCode: 409, message: OPTIMISTIC_LOCK_MESSAGE })
       }
 
       await tx.delete(tagTranslations).where(eq(tagTranslations.tagId, id))

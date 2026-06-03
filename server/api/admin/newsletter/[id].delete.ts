@@ -1,3 +1,4 @@
+import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError, defineEventHandler } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingItem) {
-      throw createError({ statusCode: 404, message: 'No encontrado' })
+      throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
     }
 
     await db.delete(newsletters).where(eq(newsletters.id, id))

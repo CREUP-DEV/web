@@ -1,3 +1,4 @@
+import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError } from 'h3'
 import type { H3Event } from 'h3'
 import { and, eq, isNull, notInArray, sql } from 'drizzle-orm'
@@ -396,7 +397,7 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
       where: eq(pressArticles.id, id),
     })
 
-    if (!existingItem) throw createError({ statusCode: 404, message: 'No encontrado' })
+    if (!existingItem) throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
 
     assertOptimisticLock(
       data.updatedAt,

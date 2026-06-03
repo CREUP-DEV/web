@@ -1,3 +1,4 @@
+import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
@@ -80,7 +81,7 @@ export const financialReportsCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidateFinancialReportsCache,
   messages: {
-    notFound: 'No encontrado',
+    notFound: ADMIN_NOT_FOUND_MESSAGE,
     optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
     createFailed: 'No se pudo crear el informe económico',
     updateFailed: 'No se pudo actualizar el informe económico',

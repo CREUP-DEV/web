@@ -1,3 +1,4 @@
+import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
@@ -23,7 +24,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!item) {
-    throw createError({ statusCode: 404, message: 'No encontrado' })
+    throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
   }
 
   return {

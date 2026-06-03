@@ -1,5 +1,6 @@
 import { createError } from 'h3'
 import { sql, type SQLWrapper } from 'drizzle-orm'
+import { ADMIN_OPTIMISTIC_LOCK_MESSAGE } from '~~/shared/constants/adminMessages'
 
 export function getOptimisticLockTimestampMs(value: string | Date | null | undefined) {
   if (!value) {
@@ -13,7 +14,7 @@ export function getOptimisticLockTimestampMs(value: string | Date | null | undef
 export function assertOptimisticLock(
   clientUpdatedAt: string | null | undefined,
   serverUpdatedAt: string | Date | null | undefined,
-  message: string
+  message: string = ADMIN_OPTIMISTIC_LOCK_MESSAGE
 ) {
   if (!clientUpdatedAt) {
     return

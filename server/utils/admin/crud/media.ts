@@ -1,3 +1,4 @@
+import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
@@ -37,7 +38,7 @@ export const mediaCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidatePressCache,
   messages: {
-    notFound: 'No encontrado',
+    notFound: ADMIN_NOT_FOUND_MESSAGE,
     optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
     createFailed: 'No se pudo crear el medio',
     updateFailed: 'No se pudo actualizar el medio',

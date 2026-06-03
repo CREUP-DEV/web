@@ -1,3 +1,4 @@
+import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems, carouselItemTranslations } from '../../../db/schema'
@@ -55,7 +56,7 @@ export const carouselCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidateHomeDataCache,
   messages: {
-    notFound: 'No encontrado',
+    notFound: ADMIN_NOT_FOUND_MESSAGE,
     optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
     createFailed: 'No se pudo crear el elemento del carrusel',
     updateFailed: 'No se pudo actualizar el elemento del carrusel',
