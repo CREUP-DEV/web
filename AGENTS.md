@@ -344,6 +344,10 @@ const {
 
 Use this for any admin page with a list + create/edit modal pattern.
 
+### Admin Newsletters (`app/composables/admin/useAdminNewsletters.ts`)
+
+Data + send/cancel layer for the newsletter admin list: owns the list fetch, the mutable collection (`items` + mutators), `maxDeliveryAttempts`, the `Newsletter` type and `toNewsletterListItem` normalizer, the manual-send and cancel flows (state + handlers), and the polling timer that refreshes while any newsletter is sending. The page keeps form/modal/submit/delete logic and reaches the collection mutators through this composable's return. Mirrors the per-resource pattern of `useAdminPress`.
+
 ### Admin File Upload (`app/composables/useAdminFileUpload.ts`)
 
 Handles file picker, upload POST, preview, and error toasts:

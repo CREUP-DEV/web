@@ -1,103 +1,55 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
+import {
+  NEWSLETTER_MAX_IMAGE_SIZE,
+  NEWSLETTER_MAX_PDF_SIZE,
+} from '~~/shared/constants/newsletterUpload'
 import { createNewsletterRequestClientSchema } from '~~/shared/utils/adminClientSchemas'
+import type { Newsletter } from '@/composables/admin/useAdminNewsletters'
 
 definePageMeta({
   layout: 'admin',
   title: 'Newsletter',
 })
 
-interface Newsletter {
-  id: string
-  month: string
-  monthKey: string
-  coverImage: string | null
-  pdfUrl: string
-  publicVisible: boolean
-  isSending: boolean
-  sentAt: string | null
-  createdAt: string
-  updatedAt: string
-  lastDeliverySentCount: number | null
-  lastDeliveryTotal: number | null
-  lastDeliveryErrorCount: number | null
-}
-
-/** Aligns a newsletter row from API (POST/GET) with list `Newsletter` shape including `isSending`. */
-function toNewsletterListItem(raw: Record<string, unknown>): Newsletter {
-  return {
-    id: String(raw.id),
-    monthKey: String(raw.monthKey),
-    month: String(raw.month),
-    coverImage: (raw.coverImage as string | null) ?? null,
-    pdfUrl: String(raw.pdfUrl),
-    publicVisible: Boolean(raw.publicVisible),
-    isSending: Boolean(raw.isSending),
-    sentAt: (raw.sentAt as string | null) ?? null,
-    createdAt: String(raw.createdAt),
-    updatedAt: String(raw.updatedAt),
-    lastDeliverySentCount:
-      raw.lastDeliverySentCount != null ? Number(raw.lastDeliverySentCount) : null,
-    lastDeliveryTotal: raw.lastDeliveryTotal != null ? Number(raw.lastDeliveryTotal) : null,
-    lastDeliveryErrorCount:
-      raw.lastDeliveryErrorCount != null ? Number(raw.lastDeliveryErrorCount) : null,
-  }
-}
-
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
-const MAX_NEWSLETTER_IMAGE_SIZE = 5 * 1024 * 1024
-const MAX_NEWSLETTER_PDF_SIZE = 20 * 1024 * 1024
 
 const {
-  data,
-  error: fetchError,
+  fetchError,
   pending,
   refresh,
-} = await useFetch<{
-  data: Newsletter[]
-  meta: {
-    total: number
-    maxDeliveryAttempts: number
-  }
-}>('/api/admin/newsletter', {
-  lazy: true,
-})
-const sortNewsletters = (left: Newsletter, right: Newsletter) => {
-  const rightMonth = new Date(right.month).getTime() || 0
-  const leftMonth = new Date(left.month).getTime() || 0
+  items,
+  prependItem,
+  removeItem,
+  replaceItem,
+  updateMeta,
+  maxDeliveryAttempts,
+  toNewsletterListItem,
+  sendingItemId,
+  itemToManualSend,
+  showManualSendModal,
+  confirmManualSend,
+  handleManualSend,
+  itemToCancel,
+  showCancelModal,
+  isCancelling,
+  confirmCancel,
+  handleCancelSend,
+} = useAdminNewsletters()
 
-  if (leftMonth !== rightMonth) {
-    return rightMonth - leftMonth
-  }
-
-  return right.id.localeCompare(left.id, 'es')
-}
-
-const { items, prependItem, removeItem, replaceItem, updateItem, updateMeta } =
-  useAdminMutableCollection(data, {
-    sortItems: sortNewsletters,
-  })
-const maxDeliveryAttempts = computed(() => data.value?.meta.maxDeliveryAttempts ?? 3)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
-const isCancelling = ref(false)
-const sendingItemId = ref<string | null>(null)
-const itemToManualSend = ref<Newsletter | null>(null)
-const showManualSendModal = ref(false)
-const itemToCancel = ref<Newsletter | null>(null)
-const showCancelModal = ref(false)
-let sendingRefreshTimer: ReturnType<typeof setInterval> | null = null
 
 const imageUpload = useAdminFileUpload({
   endpoint: '/api/admin/newsletter/upload',
   successMessage: 'Imagen subida correctamente',
   errorMessage: 'No se pudo subir la imagen',
-  maxFileSizeBytes: MAX_NEWSLETTER_IMAGE_SIZE,
+  maxFileSizeBytes: NEWSLETTER_MAX_IMAGE_SIZE,
   maxFileSizeMessage: 'La imagen supera el tamaño máximo (5MB)',
   onUploaded: (storagePath) => {
     form.coverImage = storagePath
@@ -108,7 +60,7 @@ const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/newsletter/upload',
   successMessage: 'PDF subido correctamente',
   errorMessage: 'No se pudo subir el PDF',
-  maxFileSizeBytes: MAX_NEWSLETTER_PDF_SIZE,
+  maxFileSizeBytes: NEWSLETTER_MAX_PDF_SIZE,
   maxFileSizeMessage: 'El PDF supera el tamaño máximo (20MB)',
   onUploaded: (storagePath) => {
     form.pdfUrl = storagePath
@@ -314,72 +266,6 @@ async function handleSubmit() {
   }
 }
 
-function confirmManualSend(item: Newsletter) {
-  itemToManualSend.value = item
-  showManualSendModal.value = true
-}
-
-async function handleManualSend() {
-  if (!itemToManualSend.value) return
-
-  const item = itemToManualSend.value
-  sendingItemId.value = item.id
-
-  try {
-    await $fetch<{
-      data?: {
-        queued?: boolean
-      }
-      queued?: boolean
-    }>(`/api/admin/newsletter/${item.id}/send`, {
-      method: 'POST',
-    })
-
-    updateItem(item.id, (current) => ({
-      ...current,
-      isSending: true,
-    }))
-    await refresh()
-    showManualSendModal.value = false
-    itemToManualSend.value = null
-    toast.add({ title: 'Envío iniciado', color: 'success' })
-  } catch (error) {
-    toast.add({
-      title: getApiErrorMessage(error, 'No se pudo enviar la newsletter'),
-      color: 'error',
-    })
-  } finally {
-    sendingItemId.value = null
-  }
-}
-
-function confirmCancel(item: Newsletter) {
-  itemToCancel.value = item
-  showCancelModal.value = true
-}
-
-async function handleCancelSend() {
-  if (!itemToCancel.value) return
-  isCancelling.value = true
-  try {
-    await $fetch(`/api/admin/newsletter/${itemToCancel.value.id}/send`, { method: 'DELETE' })
-    updateItem(itemToCancel.value.id, (current) => ({
-      ...current,
-      isSending: false,
-    }))
-    showCancelModal.value = false
-    itemToCancel.value = null
-    toast.add({ title: 'Envío cancelado', color: 'success' })
-  } catch (error) {
-    toast.add({
-      title: getApiErrorMessage(error, 'No se pudo cancelar el envío'),
-      color: 'error',
-    })
-  } finally {
-    isCancelling.value = false
-  }
-}
-
 async function handleDelete() {
   if (!itemToDelete.value) return
   const newsletterToDelete = itemToDelete.value
@@ -432,21 +318,6 @@ watch(
   },
   { immediate: true }
 )
-
-onMounted(() => {
-  sendingRefreshTimer = setInterval(() => {
-    if (items.value.some((item) => item.isSending)) {
-      void refresh()
-    }
-  }, 10_000)
-})
-
-onBeforeUnmount(() => {
-  if (sendingRefreshTimer) {
-    clearInterval(sendingRefreshTimer)
-    sendingRefreshTimer = null
-  }
-})
 </script>
 
 <template>

@@ -18,10 +18,14 @@ import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
 } from '~~/shared/constants/assetPaths'
+import {
+  NEWSLETTER_MAX_IMAGE_SIZE,
+  NEWSLETTER_MAX_PDF_SIZE,
+} from '~~/shared/constants/newsletterUpload'
 
 const ALLOWED_PDF_EXTENSIONS = ['.pdf']
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
-const MAX_PDF_SIZE = 20 * 1024 * 1024 // 20MB
+const MAX_IMAGE_SIZE = NEWSLETTER_MAX_IMAGE_SIZE
+const MAX_PDF_SIZE = NEWSLETTER_MAX_PDF_SIZE
 const IMAGE_UPLOAD_DIR = 'public/prensa/newsletter/portadas'
 const PDF_UPLOAD_DIR = 'public/prensa/newsletter/documentos'
 
