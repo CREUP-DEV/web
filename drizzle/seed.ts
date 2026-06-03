@@ -113,7 +113,13 @@ const createPressDocumentPdfPathBuilder = () => {
       `${baseSlug}-2`,
     ]
 
-    for (const documentSlug of [...new Set(orderedSlugs)]) {
+    // Stored asset filenames were truncated to 60 chars at creation time, so
+    // also probe the 60-char-truncated form of each candidate slug.
+    const candidateSlugs = orderedSlugs.flatMap((documentSlug) =>
+      documentSlug.length > 60 ? [documentSlug, documentSlug.slice(0, 60)] : [documentSlug]
+    )
+
+    for (const documentSlug of [...new Set(candidateSlugs)]) {
       const publicPath = `${PRESS_DOCUMENT_PUBLIC_PATH}/${documentSlug}.pdf`
       if (publicAssetExists(publicPath)) {
         return publicPath
