@@ -326,6 +326,11 @@ export const updateSubscriberSchema = z.object({
   active: z.boolean(),
 })
 
+export const retryFailedJobSchema = z.object({
+  jobId: z.string().min(1),
+  queue: z.enum(['newsletter', 'maintenance']),
+})
+
 export const createAdminAccessSchema = z.object({
   email: z
     .string()
