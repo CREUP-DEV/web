@@ -122,6 +122,10 @@ export default defineNuxtConfig({
       allowedHosts: isDev ? ['localhost', '127.0.0.1', '.trycloudflare.com'] : undefined,
     },
     build: {
+      // Framework vendor (Vue + reka-ui) and the already-lazy rich-text editor
+      // chunk exceed Vite's default 500 kB raw-size warning; they are split and
+      // cached/loaded on demand, so raise the threshold to silence the noise.
+      chunkSizeWarningLimit: 700,
       rollupOptions: {
         output: {
           manualChunks(id: string) {
