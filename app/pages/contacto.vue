@@ -272,8 +272,6 @@ function getFieldAriaDescribedBy(field: ValidatedField): string | undefined {
   return shouldShowError(field) ? getFieldErrorId(field) : undefined
 }
 
-const isFormValid = computed(() => Object.keys(fieldErrors.value).length === 0)
-
 function markFieldTouched(field: keyof typeof touched) {
   touched[field] = true
   validateContactPayload(contactPayload.value)
@@ -398,6 +396,7 @@ async function handleSubmit() {
         <form
           class="space-y-6"
           aria-describedby="contact-form-description"
+          novalidate
           @submit.prevent="handleSubmit"
         >
           <p id="contact-form-description" class="sr-only">
@@ -591,16 +590,14 @@ async function handleSubmit() {
             color="primary"
             block
             :loading="isSubmitting"
-            :disabled="
-              !isFormValid || isSubmitting || (turnstileEnabled && (!isTurnstileReady || !token))
-            "
+            :disabled="isSubmitting || (turnstileEnabled && (!isTurnstileReady || !token))"
             icon="i-tabler-send"
           >
             {{ isSubmitting ? t('contactPage.form.sending') : t('contactPage.form.submit') }}
           </UButton>
 
           <div
-            class="text-dimmed space-y-2 text-sm"
+            class="text-muted space-y-2 text-sm"
             :aria-label="t('contactPage.form.privacyInfoTitle')"
           >
             <p class="font-medium">

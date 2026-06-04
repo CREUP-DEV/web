@@ -367,7 +367,7 @@ function formatMonth(dateStr: string): string {
         :style="entranceStyle(formVisible, formShouldAnimate, 2)"
       >
         <UCard class="motion-card-subtle">
-          <form class="space-y-5" @submit.prevent="handleSubscribe">
+          <form class="space-y-5" novalidate @submit.prevent="handleSubscribe">
             <p class="text-center text-lg font-semibold">
               {{ t('newsletterPage.form.heading') }}
             </p>
@@ -451,9 +451,7 @@ function formatMonth(dateStr: string): string {
               color="primary"
               block
               :loading="isSubmitting"
-              :disabled="
-                !isFormValid || isSubmitting || (turnstileEnabled && (!isTurnstileReady || !token))
-              "
+              :disabled="isSubmitting || (turnstileEnabled && (!isTurnstileReady || !token))"
               icon="i-tabler-mail-plus"
             >
               {{

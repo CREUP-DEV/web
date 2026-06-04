@@ -24,6 +24,10 @@ const localePath = useLocalePath()
 const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 const carouselImageSizes = 'xs:100vw sm:100vw md:100vw lg:100vw xl:1280px'
 
+// WCAG 2.2.2: the carousel is treated as non-essential decorative motion. There is no visible
+// pause/play control by design, so autoplay is gated off entirely under prefers-reduced-motion and
+// pauses on pointer hover / keyboard focus. No banner content is lost without autoplay (dots allow
+// manual navigation).
 const autoplay = computed(() => {
   if (props.items.length <= 1 || prefersReducedMotion.value) return false
   return { delay: 10000, stopOnMouseEnter: true, stopOnFocusIn: true }

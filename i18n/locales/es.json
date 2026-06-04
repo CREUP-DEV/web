@@ -89,6 +89,7 @@
       "previousMonth": "Mes anterior",
       "nextMonth": "Mes siguiente",
       "hasEvents": "Hay eventos este día",
+      "dayWithEvents": "{day} {month}, {count} evento | {day} {month}, {count} eventos",
       "noEvents": "No hay eventos programados para este día.",
       "selectDay": "Selecciona un día para ver los eventos programados.",
       "upcomingEvents": "Próximos eventos",

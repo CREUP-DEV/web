@@ -132,6 +132,15 @@ const hasEvents = (day: number): boolean => visibleMonthEvents.value.has(getDayD
 const getEventsForDay = (day: number): CalendarEvent[] =>
   visibleMonthEvents.value.get(getDayDate(day)) ?? []
 
+// Accessible day label: append the event count so days with events are perceivable without colour.
+const getDayAriaLabel = (day: number): string => {
+  const count = getEventsForDay(day).length
+  if (count > 0) {
+    return t('home.calendar.dayWithEvents', { day, month: monthName.value, count }, count)
+  }
+  return `${day} ${monthName.value}`
+}
+
 // Upcoming events (next 4 events from today)
 const upcomingEvents = computed(() => {
   return collectUpcomingCalendarSeries(props.events, {
@@ -297,7 +306,7 @@ useSwipe(calendarEl, {
             <template #default="{ open }">
               <button
                 type="button"
-                :aria-label="`${day} ${monthName}`"
+                :aria-label="getDayAriaLabel(day)"
                 :aria-expanded="open"
                 class="focus-visible:ring-primary-500 relative flex aspect-square items-center justify-center rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2"
                 :class="[
@@ -312,6 +321,12 @@ useSwipe(calendarEl, {
                 @pointerdown="onDayPointerDown(day)"
               >
                 <span>{{ day }}</span>
+                <!-- Non-colour (shape) marker so days with events are distinguishable without relying on the text colour. -->
+                <span
+                  v-if="hasEvents(day)"
+                  aria-hidden="true"
+                  class="bg-primary absolute bottom-1 size-1 rounded-full"
+                />
               </button>
             </template>
             <template #content>

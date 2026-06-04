@@ -89,6 +89,7 @@
       "previousMonth": "Previous month",
       "nextMonth": "Next month",
       "hasEvents": "There are events on this day",
+      "dayWithEvents": "{day} {month}, {count} event | {day} {month}, {count} events",
       "noEvents": "No events scheduled for this day.",
       "selectDay": "Select a day to see scheduled events.",
       "upcomingEvents": "Upcoming events",
