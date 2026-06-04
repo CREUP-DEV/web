@@ -559,6 +559,10 @@ Pattern for locale-dependent detail pages:
 
 See `app/pages/prensa/comunicados/[slug].vue` for full reference implementation.
 
+**Ownership:** split the `useLocaleHead({ seo: true })` output between the two files so nothing is emitted twice:
+- `app/app.vue` owns `htmlAttrs` and the locale **meta** (`og:locale`, `og:locale:alternate` — already in correct OG format from `useLocaleHead`; do not add them manually). It drops `canonical` and `alternate` **links** from its spread.
+- `app/layouts/default.vue` owns the i18n canonical + `rel="alternate"` hreflang **links** only (returns just `link`, never `...resolvedHead`), so the detail-page alternate override (`seo-alternate-links-override`) wins and ES-only pages don't leak a `hreflang="en"` entry.
+
 ### Public Page SEO
 
 - `useSeoMeta` for title, description, og:image.

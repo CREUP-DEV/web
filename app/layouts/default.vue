@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import type { SeoAlternateLink } from '@/composables/seo/useSeoAlternateLinksOverride'
-import {
-  createOrganizationStructuredData,
-  useStructuredData,
-} from '@/composables/seo/useStructuredData'
 
 const { t } = useI18n()
-const siteConfig = useSiteConfig()
 const siteUrl = useRuntimeSiteUrl()
 const { data: pressDossierLink } = await usePressDossierLink()
 const alternateLinksOverride = useState<SeoAlternateLink[] | null>(
@@ -25,15 +20,6 @@ const isLocaleAlternateLink = (link: { rel?: string; id?: string }) => {
 
   return link.id === 'i18n-xd' || link.id?.startsWith('i18n-alt-') === true
 }
-
-useStructuredData(
-  computed(() => [
-    createOrganizationStructuredData({
-      name: String(siteConfig.name ?? '').trim(),
-      url: siteUrl.value || null,
-    }),
-  ])
-)
 
 const mapRuntimeHeadUrls = (links: NonNullable<NonNullable<typeof head.value.link>>) =>
   links.map((link) => {
@@ -56,22 +42,19 @@ const mapRuntimeHeadUrls = (links: NonNullable<NonNullable<typeof head.value.lin
     }
   })
 
+// Owns only the i18n canonical + alternate links. htmlAttrs and og:locale* meta come from
+// app.vue's useLocaleHead spread, so re-emitting resolvedHead here would duplicate them.
 useHead(() => {
-  const resolvedHead = head.value
-  const runtimeLinks = mapRuntimeHeadUrls(resolvedHead.link ?? [])
+  const runtimeLinks = mapRuntimeHeadUrls(head.value.link ?? [])
 
   if (alternateLinksOverride.value === null) {
-    return {
-      ...resolvedHead,
-      link: runtimeLinks,
-    }
+    return { link: runtimeLinks }
   }
 
   const nonAlternateLinks = runtimeLinks.filter((link) => !isLocaleAlternateLink(link))
 
   return {
-    ...resolvedHead,
-    link: [...nonAlternateLinks, ...alternateLinksOverride.value] as typeof resolvedHead.link,
+    link: [...nonAlternateLinks, ...alternateLinksOverride.value] as typeof runtimeLinks,
   }
 })
 </script>

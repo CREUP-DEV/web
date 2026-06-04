@@ -31,6 +31,9 @@ interface UsePageSeoOptions {
   ogType?: SeoValue<SeoOgType>
   webPageType?: WebPageSchemaType
   breadcrumbs?: MaybeRefOrGetter<BreadcrumbStructuredDataItem[] | null | undefined>
+  /** ISO timestamps emitted as article:published_time / article:modified_time when ogType is 'article'. */
+  articlePublishedTime?: SeoValue
+  articleModifiedTime?: SeoValue
 }
 
 const resolveLiteralValue = <T extends string>(value: SeoValue<T> | undefined): T | undefined => {
@@ -71,7 +74,10 @@ export function usePageSeo(
 
   const canonicalUrl = computed(() => {
     const canonicalPath = resolveLiteralValue(options.canonicalPath) ?? route.path
-    return toAbsoluteUrl(canonicalPath, siteUrl.value) ?? undefined
+    // Strip the trailing slash (except root) so canonicals honour nuxt.config trailingSlash:false
+    // and don't create duplicate-content URLs.
+    const normalizedPath = canonicalPath !== '/' ? canonicalPath.replace(/\/+$/, '') : canonicalPath
+    return toAbsoluteUrl(normalizedPath, siteUrl.value) ?? undefined
   })
 
   const ogImage = computed(() => {
@@ -93,6 +99,8 @@ export function usePageSeo(
     ogImageHeight: () => (explicitOgImage.value ? undefined : DEFAULT_OG_IMAGE_HEIGHT),
     ogImageType: () => (explicitOgImage.value ? undefined : DEFAULT_OG_IMAGE_TYPE),
     ogType,
+    articlePublishedTime: () => resolveLiteralValue(options.articlePublishedTime),
+    articleModifiedTime: () => resolveLiteralValue(options.articleModifiedTime),
     twitterCard: 'summary_large_image',
     twitterTitle: title,
     twitterDescription: description,

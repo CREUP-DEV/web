@@ -117,6 +117,8 @@ usePageSeo(
   {
     ogImage: () => props.article.image,
     ogType: () => 'article',
+    articlePublishedTime: () => props.article.publishedAt,
+    articleModifiedTime: () => props.article.updatedAt,
   }
 )
 </script>

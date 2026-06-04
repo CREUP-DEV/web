@@ -24,33 +24,19 @@ useHead(() => ({
     lang: localeHead.value.htmlAttrs?.lang ?? lang.value,
     dir: (localeHead.value.htmlAttrs?.dir ?? dir.value) as 'auto' | 'ltr' | 'rtl',
   },
+  // useLocaleHead({ seo: true }) already emits og:locale + og:locale:alternate in the correct
+  // OG format; app.vue is the sole owner of these locale meta tags.
   meta: [
     ...(localeHead.value.meta ?? []),
     { name: 'theme-color', content: '#792225' },
     { name: 'author', content: 'CREUP' },
   ],
+  // i18n canonical + alternate links are owned solely by layouts/default.vue, so the press-detail
+  // alternate override applies and ES-only pages don't leak a hreflang="en" entry. Drop both here.
   link: [
-    ...(localeHead.value.link ?? [])
-      .filter((link) => link.rel !== 'canonical')
-      .map((link) => {
-        if (!['alternate', 'canonical'].includes(link.rel || '') || typeof link.href !== 'string') {
-          return link
-        }
-
-        try {
-          const parsedUrl = new URL(link.href, siteUrl.value)
-          const runtimeHref = new URL(
-            `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`,
-            siteUrl.value
-          ).toString()
-          return {
-            ...link,
-            href: runtimeHref,
-          }
-        } catch {
-          return link
-        }
-      }),
+    ...(localeHead.value.link ?? []).filter(
+      (link) => link.rel !== 'canonical' && link.rel !== 'alternate'
+    ),
     { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg', sizes: 'any' },
     { rel: 'shortcut icon', type: 'image/x-icon', href: '/favicon.ico' },
   ],

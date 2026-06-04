@@ -67,6 +67,8 @@ usePageSeo(
   {
     ogImage: () => event.value.banner.url ?? undefined,
     ogType: () => 'article',
+    articlePublishedTime: () => event.value.startDate,
+    articleModifiedTime: () => event.value.endDate ?? event.value.startDate,
   }
 )
 
