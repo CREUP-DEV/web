@@ -8,7 +8,7 @@ import type {
 } from '@/types/adminPress'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { pressArticleClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { pressArticleClientSchema } from './pressArticleFormSchema'
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import {

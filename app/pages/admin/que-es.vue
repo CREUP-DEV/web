@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { updateAboutPageContentClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { updateAboutPageContentSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -121,7 +121,7 @@ const saveContent = async () => {
     return
   }
 
-  if (!validate(updateAboutPageContentClientSchema, payload)) {
+  if (!validate(updateAboutPageContentSchema, payload)) {
     return
   }
 

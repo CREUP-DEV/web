@@ -3,12 +3,12 @@ import { saveAdminImage } from '../../../utils/admin/adminImageUpload'
 import { toExternalImageProxyUrl } from '../../../utils/external/externalAssetUrl'
 import { assertUploadRequestSize } from '../../../utils/core/uploadRequestLimit'
 import {
-  adminUploadKindSchema,
   getMultipartFileBuffer,
   getMultipartTextField,
   validateInput,
   validateMultipartFile,
 } from '../../../utils/validation'
+import { adminUploadKindSchema } from '~~/shared/utils/adminSchemas'
 import {
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
   HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,

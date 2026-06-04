@@ -5,7 +5,7 @@ import {
   NEWSLETTER_MAX_IMAGE_SIZE,
   NEWSLETTER_MAX_PDF_SIZE,
 } from '~~/shared/constants/newsletterUpload'
-import { createNewsletterRequestClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createNewsletterRequestSchema } from '~~/shared/utils/adminSchemas'
 import type { Newsletter } from '@/composables/admin/useAdminNewsletters'
 
 definePageMeta({
@@ -198,7 +198,7 @@ async function handleSubmit() {
     return
   }
 
-  if (!validate(createNewsletterRequestClientSchema, basePayload)) {
+  if (!validate(createNewsletterRequestSchema, basePayload)) {
     return
   }
 

@@ -46,7 +46,7 @@ server/
   routes/           Non-API server routes (health.ts, asset proxy routes)
   services/         pressArticleService.ts, newsletterDeliveryService.ts (complex mutations)
   utils/            All server helpers — see Key Helpers section below
-  db/               schema.ts, index.ts (Drizzle client)
+  db/               schema/ (table modules), index.ts (Drizzle client)
 shared/
   utils/            locale.ts, date.ts, config.ts, apiError.ts, adminSchemas.ts
   constants/        assetPaths.ts, pressTypes.ts
@@ -105,14 +105,14 @@ pickLocalizedValue(values, locale, fallbackLocale, defaultCode)
 buildLocalizedAlternates(path, locales, defaultLocale)
 ```
 
-### Request Locale (`server/utils/requestLocale.ts`)
+### Request Locale (`server/utils/locale/requestLocale.ts`)
 
 ```typescript
 // Get locale from the current request context (set by server/middleware/locale.ts):
 const { locale, fallbackLocale } = getRequestLocaleContext(event)
 ```
 
-### Public API Error Messages (`server/utils/apiErrorMessages.ts`)
+### Public API Error Messages (`server/utils/locale/apiErrorMessages.ts`)
 
 All locale-aware public error messages live here. Never inline Spanish/English strings in public route handlers — add a key and use:
 
@@ -132,7 +132,7 @@ getApiErrorMessage(error, 'Fallback message')
 
 Use this in all admin form catch blocks instead of hardcoded strings.
 
-### Rate Limiting (`server/utils/rateLimit.ts`)
+### Rate Limiting (`server/utils/public/rateLimit.ts`)
 
 Redis-backed, per-IP rate limiter. Use for all public mutation endpoints:
 
@@ -158,9 +158,11 @@ validateRouteParams(event, schema)
 validateMultipartFile(formData)
 ```
 
-Reuse existing schemas. Add new schemas to the appropriate file under `server/utils/validation/`. Shared admin schemas (used by both server and client) go in `shared/utils/adminSchemas.ts`.
+Reuse existing schemas. Add new schemas to the appropriate file under `server/utils/validation/`. **All admin zod schemas have a single definition in `shared/utils/adminSchemas.ts`** — import them directly from there (server handlers get the `validate*` helpers separately from the `server/utils/validation` barrel). Do not redefine an admin schema elsewhere.
 
-### Admin Image Upload (`server/utils/adminImageUpload.ts`)
+Admin forms import these same zod schemas client-side and validate against them via `useFormValidation` (zod is shipped in the admin bundle, which is acceptable for the non-public panel). The one exception is the press article form: the server press schema validates rich text through a server-only sanitization helper, so it can't be single-sourced — its client validator lives co-located at `app/components/admin/pressArticleFormSchema.ts` (UX only; the server remains authoritative).
+
+### Admin Image Upload (`server/utils/admin/adminImageUpload.ts`)
 
 ```typescript
 // Process and store an image (raster → WebP, SVG sanitized):
@@ -172,7 +174,7 @@ await saveAdminImage({ data, filename, uploadDir, publicPath, maxFileSizeBytes, 
 finalizeAdminImage({ storagePath, uploadDir, publicPath, slug, publish, replaceStoragePath })
 ```
 
-### Admin Document Upload (`server/utils/adminDocumentUpload.ts`)
+### Admin Document Upload (`server/utils/admin/adminDocumentUpload.ts`)
 
 ```typescript
 // Validate and store a PDF:
@@ -241,7 +243,7 @@ For any new public asset base path used by admin uploads:
 4. Add the matching bind mount / host directory setup anywhere production or local deployment persists uploads (`docker-compose*.yml`, `deploy.sh`, deployment docs, and related env examples when applicable). The container path must match the finalized public path under `/app/.output/public/...`.
 5. Confirm the upload preview URL and the saved public URL both work after the record is persisted and after the app container is recreated.
 
-### Rich Text Sanitization (`server/utils/pressTranslation.ts`)
+### Rich Text Sanitization (`server/utils/press/pressTranslation.ts`)
 
 Admin-authored rich text stored in the DB **must be sanitized before storage AND before public rendering**. Use the server-side sanitizer:
 
@@ -256,7 +258,7 @@ External links (`target="_blank"`) automatically get `rel="noopener noreferrer"`
 
 **Never use `v-html` with unsanitized content.** The `PressRichText` component handles safe rendering.
 
-### SVG Sanitization (`server/utils/adminImageUpload.ts`)
+### SVG Sanitization (`server/utils/admin/adminImageUpload.ts`)
 
 SVGs uploaded by admins go through a two-stage sanitizer:
 
@@ -265,7 +267,7 @@ SVGs uploaded by admins go through a two-stage sanitizer:
 
 Max file size (5 MB) is enforced before sanitization runs.
 
-### External API Cache (`server/utils/externalApiCache.ts`)
+### External API Cache (`server/utils/cache/externalApiCache.ts`)
 
 Redis-backed stale-while-revalidate cache for external API calls. Avoids hammering external dependencies:
 
@@ -375,7 +377,7 @@ const { validate, getFieldError, clearErrors } = useFormValidation()
 if (!validate(mySchema, payload)) return
 ```
 
-Use this pattern for admin forms and internal tooling flows. For public pages under strict CSP, avoid importing Zod schemas into client bundles. Keep Zod at the server boundary and use CSP-safe manual client checks for UX feedback.
+Use this pattern for admin forms and internal tooling flows — pass the shared zod schema from `shared/utils/adminSchemas.ts` directly (its `safeParse` plugs into `validate`). For **public** pages under strict CSP, keep Zod at the server boundary and use CSP-safe manual client checks for UX feedback instead of importing Zod into the public bundle.
 
 ### Locale Composables (`app/composables/useLocales.ts`)
 
@@ -532,7 +534,7 @@ export const widgetTranslations = pgTable('widget_translations', {
 
 ### Migration Workflow
 
-1. Edit `server/db/schema.ts`.
+1. Edit the relevant table module under `server/db/schema/`.
 2. `pnpm db:generate` — creates migration file under `drizzle/`.
 3. `pnpm db:migrate` — applies migrations via the project runner, which loads `.env`, logs progress, acquires the advisory lock, and creates required PostgreSQL extensions (currently `pg_trgm`) before running Drizzle migrations.
 4. `pnpm db:seed` — if seed data needs updating. In development it runs without confirmation; in production it requires `--confirm` and `ALLOW_PRODUCTION_SEED=true`.

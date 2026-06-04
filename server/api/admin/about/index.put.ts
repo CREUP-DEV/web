@@ -11,7 +11,8 @@ import {
   trackAdminAssetFinalization,
 } from '../../../utils/admin/adminAssetPublication'
 import { invalidateAboutPageCache } from '../../../utils/admin/adminCacheInvalidation'
-import { updateAboutPageContentSchema, validateBody } from '../../../utils/validation'
+import { validateBody } from '../../../utils/validation'
+import { updateAboutPageContentSchema } from '~~/shared/utils/adminSchemas'
 import { ABOUT_HERO_DEFAULT_IMAGE, ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 const ABOUT_IMAGE_UPLOAD_DIR = 'public/conocenos/imagenes'

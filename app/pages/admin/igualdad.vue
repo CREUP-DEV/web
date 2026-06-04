@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createEqualityDocumentClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -191,7 +191,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!validate(createEqualityDocumentClientSchema, payload)) {
+  if (!validate(createEqualityDocumentSchema, payload)) {
     return
   }
 

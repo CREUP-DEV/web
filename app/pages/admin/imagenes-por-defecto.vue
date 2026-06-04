@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { updateSiteDefaultImagesClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { updateSiteDefaultImagesSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -152,7 +152,7 @@ const save = async () => {
     ogImage: form.ogImage,
   }
 
-  if (!validate(updateSiteDefaultImagesClientSchema, payload)) {
+  if (!validate(updateSiteDefaultImagesSchema, payload)) {
     return
   }
 

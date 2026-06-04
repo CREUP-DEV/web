@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
-import { createTagClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createTagSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -157,7 +157,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!validate(createTagClientSchema, payload)) {
+  if (!validate(createTagSchema, payload)) {
     return
   }
 

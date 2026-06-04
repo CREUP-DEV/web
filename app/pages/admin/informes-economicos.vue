@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createFinancialReportClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createFinancialReportSchema } from '~~/shared/utils/adminSchemas'
 import {
   calendarDateLikeToDateOnly,
   dateValueToDateOnly,
@@ -201,7 +201,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!validate(createFinancialReportClientSchema, payload)) {
+  if (!validate(createFinancialReportSchema, payload)) {
     return
   }
 

@@ -4,12 +4,8 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletterSubscribers } from '../../../../db/schema'
 import { throwAdminMutationError } from '../../../../utils/admin/adminErrors'
-import {
-  idRouteParamSchema,
-  updateSubscriberSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../../utils/validation'
+import { updateSubscriberSchema } from '~~/shared/utils/adminSchemas'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_CONSENT_TEXT_VERSION,

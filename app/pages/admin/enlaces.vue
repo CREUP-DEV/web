@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createFeaturedLinkClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -195,7 +195,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!validate(createFeaturedLinkClientSchema, payload)) {
+  if (!validate(createFeaturedLinkSchema, payload)) {
     return
   }
 

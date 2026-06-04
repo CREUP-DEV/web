@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createCarouselItemClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createCarouselItemSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -195,7 +195,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!validate(createCarouselItemClientSchema, payload)) {
+  if (!validate(createCarouselItemSchema, payload)) {
     return
   }
 

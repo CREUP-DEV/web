@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createAdminAccessClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createAdminAccessSchema } from '~~/shared/utils/adminSchemas'
 import { getInitials } from '@/utils/initials'
 
 definePageMeta({
@@ -116,7 +116,7 @@ const {
 })
 
 const isCreateFormValid = computed(
-  () => createAdminAccessClientSchema.safeParse(buildCreatePayload()).success
+  () => createAdminAccessSchema.safeParse(buildCreatePayload()).success
 )
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
@@ -164,7 +164,7 @@ const handleCreate = async () => {
     return
   }
 
-  if (!validate(createAdminAccessClientSchema, payload)) {
+  if (!validate(createAdminAccessSchema, payload)) {
     return
   }
 

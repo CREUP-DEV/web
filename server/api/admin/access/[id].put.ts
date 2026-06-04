@@ -7,12 +7,8 @@ import {
   assertAdminAccessCanBeRevoked,
   getAdminAccessForUpdate,
 } from '../../../utils/admin/adminAccess'
-import {
-  idRouteParamSchema,
-  updateAdminAccessSchema,
-  validateBody,
-  validateRouteParams,
-} from '../../../utils/validation'
+import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
+import { updateAdminAccessSchema } from '~~/shared/utils/adminSchemas'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)

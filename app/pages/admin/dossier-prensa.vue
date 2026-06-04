@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { updatePressDossierClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -138,7 +138,7 @@ const saveDossier = async () => {
       active: form.active,
     }
 
-    if (!validate(updatePressDossierClientSchema, payload)) {
+    if (!validate(updatePressDossierSchema, payload)) {
       return
     }
 

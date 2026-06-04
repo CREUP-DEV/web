@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { createMediaOutletClientSchema } from '~~/shared/utils/adminClientSchemas'
+import { createMediaOutletSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
@@ -148,7 +148,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!validate(createMediaOutletClientSchema, payload)) {
+  if (!validate(createMediaOutletSchema, payload)) {
     return
   }
 

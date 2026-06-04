@@ -3,7 +3,8 @@ import { inArray, sql, type AnyColumn } from 'drizzle-orm'
 import type { PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { db } from '../../db'
 import { throwAdminMutationError } from './adminErrors'
-import { updateOrderSchema, validateBody } from '../validation'
+import { validateBody } from '../validation'
+import { updateOrderSchema } from '~~/shared/utils/adminSchemas'
 
 interface ReorderItem {
   id: string

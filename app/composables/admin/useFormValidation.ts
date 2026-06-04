@@ -1,7 +1,9 @@
 type ValidationErrors = Record<string, string>
+// Shape kept compatible with both zod's `safeParse` output (issue `path` is `PropertyKey[]`) and the
+// hand-written press form validator, so either can be passed to `validate`.
 type ValidationIssue = {
   message: string
-  path: Array<string | number>
+  path: ReadonlyArray<PropertyKey>
 }
 
 type ValidationSuccess<TPayload> = {
@@ -11,7 +13,7 @@ type ValidationSuccess<TPayload> = {
 
 type ValidationFailure = {
   error: {
-    issues: ValidationIssue[]
+    issues: ReadonlyArray<ValidationIssue>
   }
   success: false
 }
