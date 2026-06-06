@@ -63,14 +63,18 @@ const sortNewsletters = (left: Newsletter, right: Newsletter) => {
  * collection mutators through this composable's return.
  */
 export function useAdminNewsletters() {
-  const toast = useToast()
+  const localeApiHeaders = useLocaleApiHeaders()
+  const toast = useAdminToast()
 
   const {
     data,
     error: fetchError,
     pending,
     refresh,
-  } = useFetch<NewsletterListResponse>('/api/admin/newsletter', { lazy: true })
+  } = useFetch<NewsletterListResponse>('/api/admin/newsletter', {
+    headers: localeApiHeaders,
+    lazy: true,
+  })
 
   const { items, prependItem, removeItem, replaceItem, updateItem, updateMeta } =
     useAdminMutableCollection(data, { sortItems: sortNewsletters })

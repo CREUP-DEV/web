@@ -78,6 +78,12 @@ const routeRules = {
       'X-Robots-Tag': 'noindex, nofollow, noarchive',
     },
   },
+  // Localized admin routes (prefix_except_default) must be excluded from indexing too.
+  '/en/admin/**': {
+    headers: {
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
+    },
+  },
   '/api/**': {
     headers: {
       'X-Robots-Tag': 'noindex, nofollow, noarchive',
@@ -312,7 +318,7 @@ export default defineNuxtConfig({
   // Robots configuration
   robots: {
     allow: ['/'],
-    disallow: ['/admin/', '/api/', '/_ipx/'],
+    disallow: ['/admin/', '/en/admin/', '/api/', '/_ipx/'],
   },
 
   routeRules,

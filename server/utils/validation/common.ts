@@ -2,6 +2,7 @@ import type { H3Event, MultiPartData } from 'h3'
 import { createError, getQuery, getRouterParam } from 'h3'
 import { Buffer } from 'node:buffer'
 import { z } from 'zod'
+import { getAdminApiErrorMessage } from '../locale/adminApiErrorMessages'
 import { getPublicApiErrorMessage } from '../locale/apiErrorMessages'
 import { toOptionalSingleStringSchema, toSingleStringSchema } from './helpers'
 
@@ -9,12 +10,6 @@ const multipartFileSchema = z.object({
   data: z.instanceof(Uint8Array),
   filename: z.string().trim().min(1),
 })
-
-function formatValidationError(error: z.ZodError) {
-  return error.issues
-    .map((issue: z.core.$ZodIssue) => `${issue.path.join('.')}: ${issue.message}`)
-    .join(', ')
-}
 
 function validatePublicSchema<T>(event: H3Event, schema: z.ZodSchema<T>, input: unknown): T {
   const result = schema.safeParse(input)
@@ -29,17 +24,19 @@ function validatePublicSchema<T>(event: H3Event, schema: z.ZodSchema<T>, input: 
   return result.data
 }
 
-export function validateInput<T>(schema: z.ZodSchema<T>, input: unknown): T {
-  return validateAdminInput(schema, input)
+export function validateInput<T>(event: H3Event, schema: z.ZodSchema<T>, input: unknown): T {
+  return validateAdminInput(event, schema, input)
 }
 
-export function validateAdminInput<T>(schema: z.ZodSchema<T>, input: unknown): T {
+export function validateAdminInput<T>(event: H3Event, schema: z.ZodSchema<T>, input: unknown): T {
   const result = schema.safeParse(input)
 
   if (!result.success) {
+    // Per-field messages are localized client-side (useFormValidation). The server backstop —
+    // reached only when client validation is bypassed — returns a generic locale-aware message.
     throw createError({
       statusCode: 400,
-      message: formatValidationError(result.error),
+      message: getAdminApiErrorMessage(event, 'invalidInput'),
     })
   }
 
@@ -50,12 +47,12 @@ export function validatePublicInput<T>(event: H3Event, schema: z.ZodSchema<T>, i
   return validatePublicSchema(event, schema, input)
 }
 
-export function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): T {
-  return validateAdminBody(schema, body)
+export function validateBody<T>(event: H3Event, schema: z.ZodSchema<T>, body: unknown): T {
+  return validateAdminBody(event, schema, body)
 }
 
-export function validateAdminBody<T>(schema: z.ZodSchema<T>, body: unknown): T {
-  return validateAdminInput(schema, body)
+export function validateAdminBody<T>(event: H3Event, schema: z.ZodSchema<T>, body: unknown): T {
+  return validateAdminInput(event, schema, body)
 }
 
 export function validatePublicBody<T>(event: H3Event, schema: z.ZodSchema<T>, body: unknown): T {
@@ -67,7 +64,7 @@ export function validateQuery<T>(event: H3Event, schema: z.ZodSchema<T>): T {
 }
 
 export function validateAdminQuery<T>(event: H3Event, schema: z.ZodSchema<T>): T {
-  return validateAdminInput(schema, getQuery(event))
+  return validateAdminInput(event, schema, getQuery(event))
 }
 
 export function validatePublicQuery<T>(event: H3Event, schema: z.ZodSchema<T>): T {
@@ -89,7 +86,7 @@ export function validateAdminRouteParams<T extends z.ZodRawShape>(
     Object.keys(schema.shape).map((key) => [key, getRouterParam(event, key)])
   )
 
-  return validateAdminInput(schema, params)
+  return validateAdminInput(event, schema, params)
 }
 
 export function validatePublicRouteParams<T extends z.ZodRawShape>(
@@ -104,16 +101,23 @@ export function validatePublicRouteParams<T extends z.ZodRawShape>(
 }
 
 export function validateMultipartFile(
+  event: H3Event,
   formData: MultiPartData[] | undefined,
   fieldName = 'file'
 ): z.infer<typeof multipartFileSchema> {
   if (!formData?.length) {
-    throw createError({ statusCode: 400, message: 'No se ha enviado ningún archivo' })
+    throw createError({
+      statusCode: 400,
+      message: getAdminApiErrorMessage(event, 'fileMissing'),
+    })
   }
 
   const file = formData.find((entry) => entry.name === fieldName)
   if (!file) {
-    throw createError({ statusCode: 400, message: 'Archivo no válido' })
+    throw createError({
+      statusCode: 400,
+      message: getAdminApiErrorMessage(event, 'fileInvalid'),
+    })
   }
 
   const parsedFile = multipartFileSchema.safeParse({
@@ -122,7 +126,10 @@ export function validateMultipartFile(
   })
 
   if (!parsedFile.success) {
-    throw createError({ statusCode: 400, message: 'Archivo no válido' })
+    throw createError({
+      statusCode: 400,
+      message: getAdminApiErrorMessage(event, 'fileInvalid'),
+    })
   }
 
   return parsedFile.data

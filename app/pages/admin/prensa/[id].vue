@@ -8,9 +8,12 @@ definePageMeta({
   title: 'Editar artículo de prensa',
 })
 
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const localePath = useLocalePath()
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
+const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const isSubmitting = ref(false)
 const pressFormRef = ref<{ hasUnsavedChanges?: boolean } | null>(null)
@@ -22,15 +25,16 @@ const articleId = computed(() =>
 if (!articleId.value) throw createError({ statusCode: 404 })
 
 const { data, error: fetchError } = await useFetch<AdminPressArticleDetailResponse>(
-  `/api/admin/press/${articleId.value}`
+  `/api/admin/press/${articleId.value}`,
+  { headers: localeApiHeaders }
 )
 
 if (fetchError.value || !data.value) {
   if (import.meta.client) {
-    toast.add({ title: 'No se encontró el artículo', color: 'error' })
+    toast.add({ title: t('admin.press.toast.notFound'), color: 'error' })
   }
 
-  await navigateTo(ADMIN_ROUTES.press)
+  await navigateTo(localePath(ADMIN_ROUTES.press))
 }
 
 const article = computed(() => data.value?.data ?? null)
@@ -58,7 +62,7 @@ onBeforeRouteLeave(() => {
     return true
   }
 
-  return window.confirm('Hay cambios sin guardar. Si sales ahora, se perderán.')
+  return window.confirm(t('admin.press.unsavedChangesPrompt'))
 })
 
 const handleSubmit = async (payload: Record<string, unknown>) => {
@@ -70,20 +74,19 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
     })
     await refreshAllClientAsyncData()
     allowNavigationWithoutPrompt.value = true
-    toast.add({ title: 'Artículo actualizado correctamente', color: 'success' })
-    router.push(ADMIN_ROUTES.press)
+    toast.add({ title: t('admin.press.toast.updated'), color: 'success' })
+    router.push(localePath(ADMIN_ROUTES.press))
   } catch (e: unknown) {
     const status = getApiErrorStatusCode(e)
     if (status === 409) {
       toast.add({
-        title: 'Conflicto al guardar',
-        description:
-          'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+        title: t('admin.press.toast.conflictTitle'),
+        description: t('admin.press.toast.conflictDescription'),
         color: 'warning',
       })
     } else {
       toast.add({
-        title: getApiErrorMessage(e, 'No se pudo actualizar el artículo'),
+        title: getApiErrorMessage(e, t('admin.press.toast.updateError')),
         color: 'error',
       })
     }
@@ -94,7 +97,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 
 const handleCancel = () => {
   allowNavigationWithoutPrompt.value = true
-  router.push(ADMIN_ROUTES.press)
+  router.push(localePath(ADMIN_ROUTES.press))
 }
 </script>
 

@@ -8,7 +8,9 @@ definePageMeta({
   title: 'Crear artículo de prensa',
 })
 
-const toast = useToast()
+const { t } = useI18n()
+const localePath = useLocalePath()
+const toast = useAdminToast()
 const route = useRoute()
 const router = useRouter()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
@@ -49,7 +51,7 @@ onBeforeRouteLeave(() => {
     return true
   }
 
-  return window.confirm('Hay cambios sin guardar. Si sales ahora, se perderán.')
+  return window.confirm(t('admin.press.unsavedChangesPrompt'))
 })
 
 const handleSubmit = async (payload: Record<string, unknown>) => {
@@ -61,10 +63,10 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
     })
     await refreshAllClientAsyncData()
     allowNavigationWithoutPrompt.value = true
-    toast.add({ title: 'Artículo creado correctamente', color: 'success' })
-    router.push(ADMIN_ROUTES.press)
+    toast.add({ title: t('admin.press.toast.created'), color: 'success' })
+    router.push(localePath(ADMIN_ROUTES.press))
   } catch (e) {
-    toast.add({ title: getApiErrorMessage(e, 'No se pudo crear el artículo'), color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, t('admin.press.toast.createError')), color: 'error' })
   } finally {
     isSubmitting.value = false
   }
@@ -72,7 +74,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 
 const handleCancel = () => {
   allowNavigationWithoutPrompt.value = true
-  router.push(ADMIN_ROUTES.press)
+  router.push(localePath(ADMIN_ROUTES.press))
 }
 </script>
 

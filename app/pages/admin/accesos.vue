@@ -8,7 +8,9 @@ definePageMeta({
   title: 'Accesos',
 })
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
 interface AdminAccessItem {
@@ -47,7 +49,9 @@ const {
   error: fetchError,
   refresh,
   pending,
-} = await useFetch<AdminAccessResponse>('/api/admin/access')
+} = await useFetch<AdminAccessResponse>('/api/admin/access', {
+  headers: localeApiHeaders,
+})
 
 const items = computed(() => data.value?.data ?? [])
 const summary = computed(() => data.value?.meta ?? { total: 0, active: 0, env: 0 })
@@ -126,7 +130,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', {
 
 const formatLastAccess = (value: string | null) => {
   if (!value) {
-    return 'Todavía no ha iniciado sesión'
+    return t('admin.access.neverLoggedIn')
   }
 
   return dateFormatter.format(new Date(value))
@@ -135,11 +139,11 @@ const formatLastAccess = (value: string | null) => {
 const getSourceLabel = (source: AdminAccessItem['source']) => {
   switch (source) {
     case 'both':
-      return 'Base de datos y .env'
+      return t('admin.access.sourceBoth')
     case 'env':
-      return 'Desde .env'
+      return t('admin.access.sourceEnv')
     default:
-      return 'Desde panel'
+      return t('admin.access.sourcePanel')
   }
 }
 
@@ -211,10 +215,10 @@ const handleCreate = async () => {
     }
 
     closeModal()
-    toast.add({ title: 'Acceso añadido', color: 'success' })
+    toast.add({ title: t('admin.access.addedToast'), color: 'success' })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo añadir el acceso'),
+      title: getApiErrorMessage(error, t('admin.access.addErrorToast')),
       color: 'error',
     })
   } finally {
@@ -246,7 +250,7 @@ const toggleAccess = async (item: AdminAccessItem) => {
     })
 
     toast.add({
-      title: nextActive ? 'Acceso activado' : 'Acceso desactivado',
+      title: nextActive ? t('admin.access.activatedToast') : t('admin.access.deactivatedToast'),
       color: 'success',
     })
   } catch (error) {
@@ -256,7 +260,7 @@ const toggleAccess = async (item: AdminAccessItem) => {
     }
 
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo actualizar el acceso'),
+      title: getApiErrorMessage(error, t('admin.access.updateErrorToast')),
       color: 'error',
     })
   } finally {
@@ -294,10 +298,10 @@ const handleDelete = async () => {
     }
 
     closeDeleteModal()
-    toast.add({ title: 'Acceso eliminado', color: 'success' })
+    toast.add({ title: t('admin.access.deletedToast'), color: 'success' })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo eliminar el acceso'),
+      title: getApiErrorMessage(error, t('admin.access.deleteErrorToast')),
       color: 'error',
     })
   } finally {
@@ -310,27 +314,28 @@ const handleDelete = async () => {
   <div class="space-y-6">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Accesos al panel</h1>
-        <p class="text-muted mt-2 max-w-2xl text-sm">
-          Autoriza correos concretos para iniciar sesión con Google. Los accesos definidos en
-          <code>.env</code> son permanentes desde el panel y deben eliminarse desde allí.
-        </p>
+        <h1 class="text-2xl font-bold">{{ t('admin.access.title') }}</h1>
+        <i18n-t keypath="admin.access.intro" tag="p" class="text-muted mt-2 max-w-2xl text-sm">
+          <template #env>
+            <code>.env</code>
+          </template>
+        </i18n-t>
       </div>
 
-      <UButton icon="i-tabler-plus" @click="openCreate">Añadir correo</UButton>
+      <UButton icon="i-tabler-plus" @click="openCreate">{{ t('admin.access.addEmail') }}</UButton>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
       <div class="bg-surface rounded-2xl p-4">
-        <p class="text-muted text-sm">Accesos totales</p>
+        <p class="text-muted text-sm">{{ t('admin.access.totalAccesses') }}</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.total }}</p>
       </div>
       <div class="bg-surface rounded-2xl p-4">
-        <p class="text-muted text-sm">Activos</p>
+        <p class="text-muted text-sm">{{ t('admin.access.activeAccesses') }}</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.active }}</p>
       </div>
       <div class="bg-surface rounded-2xl p-4">
-        <p class="text-muted text-sm">Protegidos por .env</p>
+        <p class="text-muted text-sm">{{ t('admin.access.envProtected') }}</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.env }}</p>
       </div>
     </div>
@@ -375,11 +380,11 @@ const handleDelete = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los accesos"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.access.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -420,10 +425,10 @@ const handleDelete = async () => {
               <div class="min-w-0 space-y-2">
                 <div class="flex flex-wrap items-center gap-2">
                   <h2 class="text-lg font-semibold">
-                    {{ item.name || 'Pendiente de primer inicio de sesión' }}
+                    {{ item.name || t('admin.access.pendingFirstLogin') }}
                   </h2>
                   <UBadge :color="item.active ? 'success' : 'neutral'" variant="soft">
-                    {{ item.active ? 'Activo' : 'Inactivo' }}
+                    {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
                   </UBadge>
                   <UBadge color="info" variant="soft">
                     {{ getSourceLabel(item.source) }}
@@ -432,15 +437,22 @@ const handleDelete = async () => {
 
                 <p class="text-sm font-medium break-all">{{ item.email }}</p>
                 <p class="text-muted text-sm">
-                  Último acceso: {{ formatLastAccess(item.lastAccessAt) }}
+                  {{ t('admin.access.lastAccess', { date: formatLastAccess(item.lastAccessAt) }) }}
                 </p>
               </div>
             </div>
 
             <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-              <p v-if="item.protectedByEnv" class="text-muted text-sm">
-                Este acceso se gestiona desde <code>.env</code>.
-              </p>
+              <i18n-t
+                v-if="item.protectedByEnv"
+                keypath="admin.access.managedByEnv"
+                tag="p"
+                class="text-muted text-sm"
+              >
+                <template #env>
+                  <code>.env</code>
+                </template>
+              </i18n-t>
 
               <template v-else-if="item.databaseId">
                 <UButton
@@ -448,10 +460,10 @@ const handleDelete = async () => {
                   :loading="isTogglingId === item.id"
                   @click="toggleAccess(item)"
                 >
-                  {{ item.active ? 'Desactivar' : 'Activar' }}
+                  {{ item.active ? t('admin.access.deactivate') : t('admin.access.activate') }}
                 </UButton>
                 <UButton color="error" variant="ghost" @click="confirmDelete(item)">
-                  Eliminar
+                  {{ t('admin.common.delete') }}
                 </UButton>
               </template>
             </div>
@@ -460,9 +472,9 @@ const handleDelete = async () => {
       </TransitionGroup>
 
       <div v-if="!items.length" class="py-12 text-center">
-        <p class="text-muted">No hay accesos configurados todavía.</p>
+        <p class="text-muted">{{ t('admin.access.empty') }}</p>
         <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
-          Añadir acceso
+          {{ t('admin.access.addItem') }}
         </UButton>
       </div>
     </div>
@@ -470,32 +482,32 @@ const handleDelete = async () => {
     <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-md' }">
       <template #content>
         <div class="p-6">
-          <h2 class="text-lg font-bold">Añadir acceso</h2>
+          <h2 class="text-lg font-bold">{{ t('admin.access.addItem') }}</h2>
           <p class="text-muted mt-2 text-sm">
-            El acceso se concederá al correo indicado cuando inicie sesión con Google.
+            {{ t('admin.access.modalDescription') }}
           </p>
 
           <form id="admin-access-form" class="mt-6 space-y-4" @submit.prevent="handleCreate">
-            <UFormField label="Correo autorizado" :error="getFieldError('email')">
+            <UFormField :label="t('admin.access.emailLabel')" :error="getFieldError('email')">
               <UInput
                 v-model="form.email"
                 type="email"
                 class="w-full"
-                placeholder="nombre@dominio.es"
+                :placeholder="t('admin.access.emailPlaceholder')"
                 @update:model-value="clearErrors"
               />
             </UFormField>
           </form>
 
           <div class="mt-6 flex justify-end gap-2">
-            <UButton variant="ghost" @click="closeModal">Cancelar</UButton>
+            <UButton variant="ghost" @click="closeModal">{{ t('admin.common.cancel') }}</UButton>
             <UButton
               type="submit"
               form="admin-access-form"
               :loading="isSubmitting"
               :disabled="!hasFormChanges || !isCreateFormValid || isSubmitting"
             >
-              Guardar
+              {{ t('admin.common.save') }}
             </UButton>
           </div>
         </div>
@@ -509,17 +521,22 @@ const handleDelete = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Eliminar acceso</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.access.deleteTitle') }}</h2>
           </div>
 
-          <p class="text-muted mb-6 text-sm">
-            Se eliminará el acceso de <strong>{{ itemToDelete?.email }}</strong> al panel de
-            administración.
-          </p>
+          <i18n-t keypath="admin.access.deleteDescription" tag="p" class="text-muted mb-6 text-sm">
+            <template #email>
+              <strong>{{ itemToDelete?.email }}</strong>
+            </template>
+          </i18n-t>
 
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="closeDeleteModal">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="closeDeleteModal">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">{{
+              t('admin.common.delete')
+            }}</UButton>
           </div>
         </div>
       </template>

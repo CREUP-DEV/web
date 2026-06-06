@@ -7,6 +7,7 @@ import {
   assertAdminAccessCanBeRevoked,
   getAdminAccessForUpdate,
 } from '../../../utils/admin/adminAccess'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
@@ -17,10 +18,13 @@ export default defineEventHandler(async (event) => {
       const entry = await getAdminAccessForUpdate(tx, id)
 
       if (!entry) {
-        throw createError({ statusCode: 404, message: 'Acceso no encontrado' })
+        throw createError({
+          statusCode: 404,
+          message: getAdminApiErrorMessage(event, 'accessNotFound'),
+        })
       }
 
-      await assertAdminAccessCanBeRevoked(tx, entry)
+      await assertAdminAccessCanBeRevoked(tx, entry, event)
       await tx.delete(adminAccess).where(eq(adminAccess.id, id))
     })
 

@@ -13,6 +13,7 @@ import {
 import { invalidateAboutPageCache } from '../../../utils/admin/adminCacheInvalidation'
 import { validateBody } from '../../../utils/validation'
 import { updateAboutPageContentSchema } from '~~/shared/utils/adminSchemas'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { ABOUT_HERO_DEFAULT_IMAGE, ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 const ABOUT_IMAGE_UPLOAD_DIR = 'public/conocenos/imagenes'
@@ -23,7 +24,7 @@ export default defineEventHandler(async (event) => {
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
   try {
-    const validated = validateBody(updateAboutPageContentSchema, body)
+    const validated = validateBody(event, updateAboutPageContentSchema, body)
     let previousHeroImage: string | null = null
 
     const item = await db.transaction(async (tx) => {
@@ -36,8 +37,7 @@ export default defineEventHandler(async (event) => {
         if (clientUpdatedAt !== serverUpdatedAt) {
           throw createError({
             statusCode: 409,
-            message:
-              'El contenido de Qué es CREUP fue modificado por otro usuario. Recarga la página y reintenta.',
+            message: getAdminApiErrorMessage(event, 'aboutOptimisticLock'),
           })
         }
       }
@@ -87,7 +87,10 @@ export default defineEventHandler(async (event) => {
       }
 
       if (!upserted) {
-        throw createError({ statusCode: 500, message: 'No se pudo guardar el contenido' })
+        throw createError({
+          statusCode: 500,
+          message: getAdminApiErrorMessage(event, 'aboutSaveFailed'),
+        })
       }
 
       return upserted

@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { carouselItems, carouselItemTranslations } from '../../../db/schema'
@@ -8,9 +7,6 @@ import { getPreferredTranslationValue } from '../../locale/localizedContent'
 import { HOME_CAROUSEL_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createCarouselItemSchema, updateCarouselItemSchema } from '~~/shared/utils/adminSchemas'
 import { toRelativeSitePath } from '~~/shared/utils/url'
-
-const OPTIMISTIC_LOCK_MESSAGE =
-  'El elemento del carrusel fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
 
 export const carouselCrud = defineAssetBackedTranslatableCrud({
   schema: { create: createCarouselItemSchema, update: updateCarouselItemSchema },
@@ -56,10 +52,10 @@ export const carouselCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidateHomeDataCache,
   messages: {
-    notFound: ADMIN_NOT_FOUND_MESSAGE,
-    optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
-    createFailed: 'No se pudo crear el elemento del carrusel',
-    updateFailed: 'No se pudo actualizar el elemento del carrusel',
+    notFound: 'notFound',
+    optimisticLock: 'carouselOptimisticLock',
+    createFailed: 'carouselCreateFailed',
+    updateFailed: 'carouselUpdateFailed',
   },
   scope: { create: 'admin.carousel.create', update: 'admin.carousel.update' },
 })

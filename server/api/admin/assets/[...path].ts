@@ -8,6 +8,7 @@ import {
   resolveAdminStoredAbsolutePath,
 } from '../../../utils/admin/adminStoredFile'
 import { logError } from '../../../utils/core/logger'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { throwMethodNotAllowed } from '../../../utils/core/throwMethodNotAllowed'
 import { adminAssetPathRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 
@@ -59,13 +60,19 @@ export default defineEventHandler(async (event) => {
   const { path } = validateRouteParams(event, adminAssetPathRouteParamSchema)
 
   if (hasParentDirectoryTraversal(path)) {
-    throw createError({ statusCode: 404, message: 'Archivo no encontrado' })
+    throw createError({
+      statusCode: 404,
+      message: getAdminApiErrorMessage(event, 'assetFileNotFound'),
+    })
   }
 
   const storagePath = normalizeAdminStoredPath(`${ADMIN_ASSET_ROUTE_BASE}/${path}`)
 
   if (!isInternalAdminStoragePath(storagePath)) {
-    throw createError({ statusCode: 404, message: 'Archivo no encontrado' })
+    throw createError({
+      statusCode: 404,
+      message: getAdminApiErrorMessage(event, 'assetFileNotFound'),
+    })
   }
 
   const absolutePath = resolveAdminStoredAbsolutePath(storagePath)
@@ -74,7 +81,10 @@ export default defineEventHandler(async (event) => {
     const metadata = await stat(absolutePath)
 
     if (!metadata.isFile()) {
-      throw createError({ statusCode: 404, message: 'Archivo no encontrado' })
+      throw createError({
+        statusCode: 404,
+        message: getAdminApiErrorMessage(event, 'assetFileNotFound'),
+      })
     }
 
     const extension = extname(absolutePath).toLowerCase()
@@ -97,10 +107,13 @@ export default defineEventHandler(async (event) => {
     }
 
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
-      throw createError({ statusCode: 404, message: 'Archivo no encontrado' })
+      throw createError({
+        statusCode: 404,
+        message: getAdminApiErrorMessage(event, 'assetFileNotFound'),
+      })
     }
 
     logError('admin.assets.read-unexpected-error', error, { storagePath }, event)
-    throw createError({ statusCode: 500, message: 'Error interno del servidor' })
+    throw createError({ statusCode: 500, message: getAdminApiErrorMessage(event, 'internalError') })
   }
 })

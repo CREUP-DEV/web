@@ -6,6 +6,8 @@ import {
   getRichTextPlainText,
 } from '~~/shared/utils/richText'
 
+const { t } = useI18n()
+
 const model = defineModel<string>({ required: true })
 
 const plainText = computed(() => getRichTextPlainText(model.value))
@@ -59,7 +61,7 @@ const editorToolbarItems: EditorToolbarItem[][] = [
       v-model="model"
       content-type="html"
       :placeholder="{
-        placeholder: 'Escribe aquí el contenido...',
+        placeholder: t('admin.editor.contentPlaceholder'),
         mode: 'firstLine',
       }"
       :image="false"
@@ -84,8 +86,13 @@ const editorToolbarItems: EditorToolbarItem[][] = [
       :class="countStateClass"
     >
       <span>
-        {{ countFormatter.format(visibleCharacterCount) }} caracteres visibles ·
-        {{ countFormatter.format(wordCount) }} palabras
+        {{
+          t('admin.editor.visibleCharacters', {
+            count: countFormatter.format(visibleCharacterCount),
+          })
+        }}
+        ·
+        {{ t('admin.editor.words', { count: countFormatter.format(wordCount) }) }}
       </span>
       <span>
         HTML:

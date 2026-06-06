@@ -1,4 +1,4 @@
-import { createError } from 'h3'
+import { createError, type H3Event } from 'h3'
 import createDOMPurify, { type WindowLike } from 'dompurify'
 import { DOMParser, parseHTML } from 'linkedom'
 import { access, mkdir, writeFile } from 'node:fs/promises'
@@ -7,6 +7,7 @@ import sharp from 'sharp'
 import { slugify } from '../core/slug'
 import { finalizeAdminFile, saveTemporaryAdminFile } from './adminStoredFile'
 import { logError } from '../core/logger'
+import { resolveAdminApiMessage } from '../locale/adminApiErrorMessages'
 
 export const ALLOWED_ADMIN_IMAGE_EXTENSIONS = [
   '.jpg',
@@ -96,58 +97,64 @@ const hasUnsafeCssReference = (value: string) => {
   return false
 }
 
-const invalidSvgError = () =>
+const invalidSvgError = (event?: H3Event) =>
   createError({
     statusCode: 400,
-    message: 'El SVG subido no es válido',
+    message: resolveAdminApiMessage('svgInvalid', event),
   })
 
-const disallowedSvgError = () =>
+const disallowedSvgError = (event?: H3Event) =>
   createError({
     statusCode: 400,
-    message: 'El SVG contiene elementos no permitidos',
+    message: resolveAdminApiMessage('svgForbidden', event),
   })
 
-const invalidRasterImageError = (reason: string) =>
-  createError({
+const invalidRasterImageError = (reason: string, event?: H3Event) => {
+  logError('admin-image-upload.raster', new Error(reason))
+  return createError({
     statusCode: 400,
-    message: `La imagen subida no es válida (${reason})`,
+    message: resolveAdminApiMessage('rasterImageInvalid', event),
   })
+}
 
-function validateRasterImageMetadata(metadata: sharp.Metadata) {
+function validateRasterImageMetadata(metadata: sharp.Metadata, event?: H3Event) {
   const width = metadata.width
   const height = metadata.height
 
   if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
-    throw invalidRasterImageError('dimensiones no válidas')
+    throw invalidRasterImageError('dimensiones no válidas', event)
   }
 
   if (width > MAX_RASTER_IMAGE_DIMENSION || height > MAX_RASTER_IMAGE_DIMENSION) {
     throw invalidRasterImageError(
-      `dimensiones demasiado grandes (máximo ${MAX_RASTER_IMAGE_DIMENSION}px por lado)`
+      `dimensiones demasiado grandes (máximo ${MAX_RASTER_IMAGE_DIMENSION}px por lado)`,
+      event
     )
   }
 
   const frames = metadata.pages ?? 1
   if (!Number.isInteger(frames) || frames <= 0) {
-    throw invalidRasterImageError('número de fotogramas no válido')
+    throw invalidRasterImageError('número de fotogramas no válido', event)
   }
 
   if (frames > MAX_RASTER_IMAGE_FRAMES) {
-    throw invalidRasterImageError(`demasiados fotogramas (máximo ${MAX_RASTER_IMAGE_FRAMES})`)
+    throw invalidRasterImageError(
+      `demasiados fotogramas (máximo ${MAX_RASTER_IMAGE_FRAMES})`,
+      event
+    )
   }
 
   const totalPixels = width * height * frames
   if (totalPixels > MAX_RASTER_IMAGE_PIXELS) {
-    throw invalidRasterImageError('demasiados píxeles para procesar de forma segura')
+    throw invalidRasterImageError('demasiados píxeles para procesar de forma segura', event)
   }
 }
 
-function sanitizeSvgContent(data: Buffer): Buffer {
+function sanitizeSvgContent(data: Buffer, event?: H3Event): Buffer {
   const source = data.toString('utf8').trim()
 
   if (!source) {
-    throw invalidSvgError()
+    throw invalidSvgError(event)
   }
 
   const sanitized = svgPurifier.sanitize(source, {
@@ -159,7 +166,7 @@ function sanitizeSvgContent(data: Buffer): Buffer {
   }) as string
 
   if (!sanitized.trim()) {
-    throw invalidSvgError()
+    throw invalidSvgError(event)
   }
 
   let svgDocument: ReturnType<DOMParser['parseFromString']>
@@ -167,22 +174,22 @@ function sanitizeSvgContent(data: Buffer): Buffer {
   try {
     svgDocument = new DOMParser().parseFromString(sanitized, 'image/svg+xml')
   } catch {
-    throw invalidSvgError()
+    throw invalidSvgError(event)
   }
 
   if (svgDocument.querySelector('parsererror')) {
-    throw invalidSvgError()
+    throw invalidSvgError(event)
   }
 
   const rootElement = svgDocument.documentElement
   if (!rootElement || rootElement.tagName.toLowerCase() !== 'svg') {
-    throw invalidSvgError()
+    throw invalidSvgError(event)
   }
 
   for (const element of Array.from(svgDocument.querySelectorAll('*')) as SanitizedSvgElement[]) {
     const tagName = element.tagName.toLowerCase()
     if (blockedSvgTags.has(tagName)) {
-      throw disallowedSvgError()
+      throw disallowedSvgError(event)
     }
 
     for (const attributeName of element.getAttributeNames()) {
@@ -221,7 +228,7 @@ function sanitizeSvgContent(data: Buffer): Buffer {
   const serializedSvg = rootElement.outerHTML
 
   if (!serializedSvg.trim()) {
-    throw invalidSvgError()
+    throw invalidSvgError(event)
   }
 
   return Buffer.from(serializedSvg, 'utf8')
@@ -236,14 +243,16 @@ interface SaveAdminImageOptions {
   outputFormat?: 'jpeg' | 'webp'
   slug?: string
   temporary?: boolean
+  /** Request event for locale-aware error messages; falls back to es when omitted. */
+  event?: H3Event
 }
 
 // 5MB default upload cap; individual endpoints can override with maxFileSizeBytes
 const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024
 
-async function convertRasterImageToWebp(data: Buffer) {
+async function convertRasterImageToWebp(data: Buffer, event?: H3Event) {
   const metadata = await sharp(data, { animated: true }).metadata()
-  validateRasterImageMetadata(metadata)
+  validateRasterImageMetadata(metadata, event)
 
   try {
     return await sharp(data, {
@@ -257,14 +266,14 @@ async function convertRasterImageToWebp(data: Buffer) {
     logError('admin-image-upload.convert-raster', error)
     throw createError({
       statusCode: 400,
-      message: 'La imagen subida no se ha podido procesar',
+      message: resolveAdminApiMessage('imageProcessFailed', event),
     })
   }
 }
 
-async function convertImageToJpeg(data: Buffer) {
+async function convertImageToJpeg(data: Buffer, event?: H3Event) {
   const metadata = await sharp(data, { animated: false }).metadata()
-  validateRasterImageMetadata(metadata)
+  validateRasterImageMetadata(metadata, event)
 
   try {
     return await sharp(data, {
@@ -279,7 +288,7 @@ async function convertImageToJpeg(data: Buffer) {
     logError('admin-image-upload.convert-jpeg', error)
     throw createError({
       statusCode: 400,
-      message: 'La imagen subida no se ha podido procesar',
+      message: resolveAdminApiMessage('imageProcessFailed', event),
     })
   }
 }
@@ -301,7 +310,10 @@ export async function saveAdminImage(options: SaveAdminImageOptions) {
   const maxFileSizeBytes = options.maxFileSizeBytes ?? DEFAULT_MAX_FILE_SIZE
 
   if (options.data.length > maxFileSizeBytes) {
-    throw createError({ statusCode: 400, message: 'El archivo supera el tamaño máximo (5MB)' })
+    throw createError({
+      statusCode: 400,
+      message: resolveAdminApiMessage('fileTooLargeMb', options.event).replace('{mb}', '5'),
+    })
   }
 
   const originalExtension = extname(options.filename).toLowerCase()
@@ -313,7 +325,10 @@ export async function saveAdminImage(options: SaveAdminImageOptions) {
   ) {
     throw createError({
       statusCode: 400,
-      message: `Formato no permitido. Formatos admitidos: ${ALLOWED_ADMIN_IMAGE_EXTENSIONS.join(', ')}`,
+      message: resolveAdminApiMessage('formatNotAllowed', options.event).replace(
+        '{formats}',
+        ALLOWED_ADMIN_IMAGE_EXTENSIONS.join(', ')
+      ),
     })
   }
 
@@ -324,13 +339,13 @@ export async function saveAdminImage(options: SaveAdminImageOptions) {
   const outputFormat = options.outputFormat ?? 'webp'
   const outputExtension = outputFormat === 'jpeg' ? '.jpg' : isVector ? '.svg' : '.webp'
   const absoluteUploadDir = join(process.cwd(), options.uploadDir)
-  const sanitizedData = isVector ? sanitizeSvgContent(options.data) : options.data
+  const sanitizedData = isVector ? sanitizeSvgContent(options.data, options.event) : options.data
   const outputData =
     outputFormat === 'jpeg'
-      ? await convertImageToJpeg(sanitizedData)
+      ? await convertImageToJpeg(sanitizedData, options.event)
       : isVector
         ? sanitizedData
-        : await convertRasterImageToWebp(sanitizedData)
+        : await convertRasterImageToWebp(sanitizedData, options.event)
 
   if (options.temporary) {
     return saveTemporaryAdminFile({

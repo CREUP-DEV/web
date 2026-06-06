@@ -7,7 +7,9 @@ definePageMeta({
   title: 'Medios',
 })
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
@@ -28,6 +30,7 @@ const {
 } = await useFetch<{
   data: MediaOutlet[]
 }>('/api/admin/media', {
+  headers: localeApiHeaders,
   lazy: true,
 })
 
@@ -71,8 +74,8 @@ const {
   handleFileSelect,
 } = useAdminFileUpload({
   endpoint: '/api/admin/media/upload',
-  successMessage: 'Logo subido correctamente',
-  errorMessage: 'No se pudo subir el logo',
+  successMessage: t('admin.media.logoUploaded'),
+  errorMessage: t('admin.media.logoUploadFailed'),
   onUploaded: (storagePath) => {
     form.logo = storagePath
   },
@@ -133,9 +136,9 @@ const saveOrder = async () => {
   try {
     await persistOrder()
     await refreshAllClientAsyncData()
-    toast.add({ title: 'Orden guardado', color: 'success' })
+    toast.add({ title: t('admin.media.orderSavedToast'), color: 'success' })
   } catch (e) {
-    toast.add({ title: getApiErrorMessage(e, 'No se pudo guardar el orden'), color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, t('admin.media.orderErrorToast')), color: 'error' })
   }
 }
 
@@ -167,7 +170,7 @@ const handleSubmit = async () => {
       )
       replaceItem(response.data)
       await refreshAllClientAsyncData()
-      toast.add({ title: 'Medio actualizado', color: 'success' })
+      toast.add({ title: t('admin.media.updatedToast'), color: 'success' })
     } else {
       const response = await $fetch<{ data: MediaOutlet }>('/api/admin/media', {
         method: 'POST',
@@ -175,12 +178,12 @@ const handleSubmit = async () => {
       })
       replaceItem(response.data)
       await refreshAllClientAsyncData()
-      toast.add({ title: 'Medio creado', color: 'success' })
+      toast.add({ title: t('admin.media.createdToast'), color: 'success' })
     }
     closeModal()
     clearErrors()
   } catch (e) {
-    toast.add({ title: getApiErrorMessage(e, 'No se pudo guardar el medio'), color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, t('admin.media.saveErrorToast')), color: 'error' })
   } finally {
     isSubmitting.value = false
   }
@@ -194,9 +197,9 @@ const handleDelete = async () => {
     removeItem(itemToDelete.value.id)
     await refreshAllClientAsyncData()
     closeDeleteModal()
-    toast.add({ title: 'Medio eliminado', color: 'success' })
+    toast.add({ title: t('admin.media.deletedToast'), color: 'success' })
   } catch (e) {
-    toast.add({ title: getApiErrorMessage(e, 'No se pudo eliminar el medio'), color: 'error' })
+    toast.add({ title: getApiErrorMessage(e, t('admin.media.deleteErrorToast')), color: 'error' })
   } finally {
     isDeleting.value = false
   }
@@ -206,13 +209,19 @@ const handleDelete = async () => {
 <template>
   <div>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Medios de comunicación</h1>
+      <h1 class="text-2xl font-bold">{{ t('admin.media.title') }}</h1>
       <div class="flex gap-2">
         <template v-if="hasOrderChanges">
-          <UButton variant="outline" @click="cancelOrderChanges">Cancelar</UButton>
-          <UButton :loading="isSavingOrder" @click="saveOrder">Guardar orden</UButton>
+          <UButton variant="outline" @click="cancelOrderChanges">{{
+            t('admin.common.cancel')
+          }}</UButton>
+          <UButton :loading="isSavingOrder" @click="saveOrder">{{
+            t('admin.common.saveOrder')
+          }}</UButton>
         </template>
-        <UButton v-else icon="i-tabler-plus" @click="openCreate">Añadir</UButton>
+        <UButton v-else icon="i-tabler-plus" @click="openCreate">{{
+          t('admin.common.add')
+        }}</UButton>
       </div>
     </div>
 
@@ -226,11 +235,11 @@ const handleDelete = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los medios"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.media.loadErrorTitle')"
+        :description="t('admin.media.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -246,7 +255,7 @@ const handleDelete = async () => {
           </div>
           <img
             :src="item.logo"
-            :alt="`Logo de ${item.name}`"
+            :alt="t('admin.media.logoAlt', { name: item.name })"
             class="h-12 w-20 rounded-lg border object-contain p-1"
           />
           <div class="flex-1 overflow-hidden">
@@ -265,7 +274,7 @@ const handleDelete = async () => {
               icon="i-tabler-pencil"
               variant="ghost"
               size="sm"
-              aria-label="Editar medio"
+              :aria-label="t('admin.media.editAria')"
               @click="openEdit(item)"
             />
             <UButton
@@ -273,7 +282,7 @@ const handleDelete = async () => {
               variant="ghost"
               color="error"
               size="sm"
-              aria-label="Eliminar medio"
+              :aria-label="t('admin.media.deleteAria')"
               @click="confirmDelete(item)"
             />
           </div>
@@ -288,7 +297,7 @@ const handleDelete = async () => {
           <h3 class="font-medium">{{ item.name }}</h3>
           <img
             :src="item.logo"
-            :alt="`Logo de ${item.name}`"
+            :alt="t('admin.media.logoAlt', { name: item.name })"
             class="mx-auto h-16 w-28 rounded-lg border object-contain p-1"
           />
           <a
@@ -304,7 +313,7 @@ const handleDelete = async () => {
               icon="i-tabler-pencil"
               variant="ghost"
               size="sm"
-              aria-label="Editar medio"
+              :aria-label="t('admin.media.editAria')"
               @click="openEdit(item)"
             />
             <UButton
@@ -312,7 +321,7 @@ const handleDelete = async () => {
               variant="ghost"
               color="error"
               size="sm"
-              aria-label="Eliminar medio"
+              :aria-label="t('admin.media.deleteAria')"
               @click="confirmDelete(item)"
             />
           </div>
@@ -320,9 +329,9 @@ const handleDelete = async () => {
       </div>
 
       <div v-if="!localItems.length" class="py-12 text-center">
-        <p class="text-muted">No hay medios de comunicación todavía.</p>
+        <p class="text-muted">{{ t('admin.media.empty') }}</p>
         <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
-          Añadir medio
+          {{ t('admin.media.addItem') }}
         </UButton>
       </div>
     </div>
@@ -332,19 +341,27 @@ const handleDelete = async () => {
         <div class="flex max-h-[80vh] flex-col">
           <div class="overflow-y-auto p-6">
             <h2 class="mb-4 text-lg font-bold">
-              {{ editingItem ? 'Editar medio' : 'Nuevo medio' }}
+              {{ editingItem ? t('admin.media.editTitle') : t('admin.media.newTitle') }}
             </h2>
 
             <form id="media-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Nombre" :error="getFieldError('name')">
-                <UInput v-model="form.name" placeholder="Nombre del medio" class="w-full" />
+              <UFormField :label="t('admin.media.nameLabel')" :error="getFieldError('name')">
+                <UInput
+                  v-model="form.name"
+                  :placeholder="t('admin.media.namePlaceholder')"
+                  class="w-full"
+                />
               </UFormField>
 
-              <UFormField label="Web" :error="getFieldError('website')">
-                <UInput v-model="form.website" placeholder="https://..." class="w-full" />
+              <UFormField :label="t('admin.media.websiteLabel')" :error="getFieldError('website')">
+                <UInput
+                  v-model="form.website"
+                  :placeholder="t('admin.media.websitePlaceholder')"
+                  class="w-full"
+                />
               </UFormField>
 
-              <UFormField label="Logo" :error="getFieldError('logo')">
+              <UFormField :label="t('admin.media.logoLabel')" :error="getFieldError('logo')">
                 <div class="space-y-3">
                   <div
                     v-if="logoPreview"
@@ -352,7 +369,7 @@ const handleDelete = async () => {
                   >
                     <img
                       :src="logoPreview"
-                      alt="Vista previa del logo"
+                      :alt="t('admin.media.logoPreviewAlt')"
                       class="max-h-32 max-w-full object-contain"
                     />
                   </div>
@@ -371,21 +388,23 @@ const handleDelete = async () => {
                     :loading="isUploading"
                     @click="triggerFileInput"
                   >
-                    {{ logoPreview ? 'Cambiar logo' : 'Subir logo' }}
+                    {{ logoPreview ? t('admin.media.changeLogo') : t('admin.media.uploadLogo') }}
                   </UButton>
                 </div>
               </UFormField>
             </form>
           </div>
           <div class="flex justify-end gap-2 border-t p-4">
-            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="button" variant="ghost" @click="showModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
             <UButton
               type="submit"
               form="media-form"
               :loading="isSubmitting"
               :disabled="Boolean(editingItem) && !hasFormChanges"
             >
-              {{ editingItem ? 'Guardar' : 'Crear' }}
+              {{ editingItem ? t('admin.common.save') : t('admin.common.create') }}
             </UButton>
           </div>
         </div>
@@ -399,15 +418,18 @@ const handleDelete = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Confirmar eliminación</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.common.confirmDeleteTitle') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Estás seguro de que deseas eliminar "{{ itemToDelete?.name }}"? Esta acción no se puede
-            deshacer.
+            {{ t('admin.media.deleteConfirm', { name: itemToDelete?.name }) }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
+              {{ t('admin.common.delete') }}
+            </UButton>
           </div>
         </div>
       </template>

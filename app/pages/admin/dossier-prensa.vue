@@ -14,7 +14,9 @@ interface PressDossierItem {
   updatedAt: string
 }
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
@@ -25,7 +27,9 @@ const {
   refresh: refreshDossier,
 } = await useFetch<{
   data: PressDossierItem | null
-}>('/api/admin/press-dossier')
+}>('/api/admin/press-dossier', {
+  headers: localeApiHeaders,
+})
 
 const dossierItem = computed(() => dossierData.value?.data ?? null)
 
@@ -153,9 +157,12 @@ const saveDossier = async () => {
     dossierData.value = { data: response.data }
     clearErrors()
     await refreshAllClientAsyncData()
-    toast.add({ title: 'Dossier guardado', color: 'success' })
+    toast.add({ title: t('admin.pressDossier.saveSuccess'), color: 'success' })
   } catch (error) {
-    toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el dossier'), color: 'error' })
+    toast.add({
+      title: getApiErrorMessage(error, t('admin.pressDossier.saveError')),
+      color: 'error',
+    })
   } finally {
     isUploadingPdf.value = false
     isSaving.value = false
@@ -167,9 +174,9 @@ const saveDossier = async () => {
   <div class="space-y-8">
     <section>
       <div>
-        <h1 class="text-2xl font-bold">Dossier de prensa</h1>
+        <h1 class="text-2xl font-bold">{{ t('admin.pressDossier.title') }}</h1>
         <p class="text-muted mt-1 text-sm">
-          Sube el PDF que se enlazará desde el menú de navegación cuando esté activo.
+          {{ t('admin.pressDossier.intro') }}
         </p>
       </div>
     </section>
@@ -183,11 +190,11 @@ const saveDossier = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudo cargar el dossier de prensa"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.pressDossier.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshDossier()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -204,11 +211,13 @@ const saveDossier = async () => {
                 </div>
                 <div>
                   <p class="font-medium">
-                    {{ currentPdfName || 'No hay dossier subido' }}
+                    {{ currentPdfName || t('admin.pressDossier.noDossier') }}
                   </p>
                   <p class="text-muted text-sm">
                     {{
-                      form.pdfUrl ? 'PDF preparado para publicar.' : 'Sube un PDF para activarlo.'
+                      form.pdfUrl
+                        ? t('admin.pressDossier.pdfReady')
+                        : t('admin.pressDossier.pdfUploadHint')
                     }}
                   </p>
                 </div>
@@ -231,7 +240,11 @@ const saveDossier = async () => {
                     :loading="isUploadingPdf"
                     @click="triggerPdfUpload"
                   >
-                    {{ form.pdfUrl ? 'Cambiar PDF' : 'Subir PDF' }}
+                    {{
+                      form.pdfUrl
+                        ? t('admin.pressDossier.changePdf')
+                        : t('admin.pressDossier.uploadPdf')
+                    }}
                   </UButton>
 
                   <UButton
@@ -244,7 +257,7 @@ const saveDossier = async () => {
                     color="neutral"
                     icon="i-tabler-external-link"
                   >
-                    Ver PDF actual
+                    {{ t('admin.pressDossier.viewCurrentPdf') }}
                   </UButton>
 
                   <UButton
@@ -255,17 +268,19 @@ const saveDossier = async () => {
                     icon="i-tabler-trash"
                     @click="requestClearPdf"
                   >
-                    Quitar PDF
+                    {{ t('admin.pressDossier.removePdf') }}
                   </UButton>
                 </div>
               </UFormField>
             </div>
 
             <div class="rounded-xl border px-4 py-3">
-              <p class="text-sm font-medium">Estado</p>
+              <p class="text-sm font-medium">{{ t('admin.pressDossier.statusLabel') }}</p>
               <div class="mt-2 flex items-center gap-2">
                 <USwitch v-model="form.active" :disabled="!form.pdfUrl && !pendingPdfName" />
-                <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+                <span class="text-sm">{{
+                  form.active ? t('admin.common.active') : t('admin.common.inactive')
+                }}</span>
               </div>
             </div>
           </div>
@@ -279,7 +294,7 @@ const saveDossier = async () => {
             :disabled="!hasFormChanges"
             @click="saveDossier"
           >
-            Guardar cambios
+            {{ t('admin.pressDossier.saveChanges') }}
           </UButton>
         </div>
       </div>
@@ -292,15 +307,18 @@ const saveDossier = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-base font-bold">Quitar PDF</h2>
+            <h2 class="text-base font-bold">{{ t('admin.pressDossier.removePdf') }}</h2>
           </div>
           <p class="text-muted mb-6 text-sm">
-            Se eliminará el PDF seleccionado del dossier de prensa. Tendrás que volver a subirlo si
-            quieres recuperarlo.
+            {{ t('admin.pressDossier.removePdfConfirm') }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showClearPdfModal = false">Cancelar</UButton>
-            <UButton color="error" @click="confirmClearPdf">Quitar PDF</UButton>
+            <UButton variant="ghost" @click="showClearPdfModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" @click="confirmClearPdf">{{
+              t('admin.pressDossier.removePdf')
+            }}</UButton>
           </div>
         </div>
       </template>

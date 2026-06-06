@@ -11,18 +11,19 @@ import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { assertTagSlugAvailable } from '../../../utils/admin/tagMutations'
 import { validateBody } from '../../../utils/validation'
 import { createTagSchema } from '~~/shared/utils/adminSchemas'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   try {
-    const validated = validateBody(createTagSchema, body)
+    const validated = validateBody(event, createTagSchema, body)
     await assertTagSlugAvailable(validated.slug)
 
     if (!getRequiredTranslationValue(validated.translations, 'name')) {
       throw createError({
         statusCode: 400,
-        message: 'El nombre en español es requerido',
+        message: getAdminApiErrorMessage(event, 'requiredNameEs'),
       })
     }
 

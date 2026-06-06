@@ -1,9 +1,9 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError, defineEventHandler } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { tags } from '../../../db/schema'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!item) {
-    throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+    throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
   }
 
   return { data: item }

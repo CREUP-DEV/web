@@ -14,7 +14,9 @@ interface AboutContent {
   updatedAt: string
 }
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshAboutPage } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
@@ -25,7 +27,9 @@ const {
   refresh: refreshContent,
 } = await useFetch<{
   data: AboutContent | null
-}>('/api/admin/about')
+}>('/api/admin/about', {
+  headers: localeApiHeaders,
+})
 
 const contentItem = computed(() => contentData.value?.data ?? null)
 
@@ -45,8 +49,8 @@ const showClearHeroModal = ref(false)
 const heroImageVersion = ref<number | null>(null)
 const heroUpload = useAdminFileUpload({
   endpoint: '/api/admin/about/upload',
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.about.uploadSuccess'),
+  errorMessage: t('admin.about.uploadError'),
   onUploaded: (storagePath) => {
     clearErrors()
     contentForm.heroImage = storagePath
@@ -139,10 +143,10 @@ const saveContent = async () => {
     await refreshContent()
     await refreshAboutPage()
     heroUpload.setPreview(null)
-    toast.add({ title: 'Cambios guardados', color: 'success' })
+    toast.add({ title: t('admin.about.saveSuccess'), color: 'success' })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudieron guardar los cambios'),
+      title: getApiErrorMessage(error, t('admin.about.saveError')),
       color: 'error',
     })
   } finally {
@@ -155,8 +159,8 @@ const saveContent = async () => {
   <div class="space-y-8">
     <section>
       <div>
-        <h1 class="text-2xl font-bold">Qué es CREUP</h1>
-        <p class="text-muted mt-1 text-sm">Gestiona el banner principal visible en la página.</p>
+        <h1 class="text-2xl font-bold">{{ t('admin.about.title') }}</h1>
+        <p class="text-muted mt-1 text-sm">{{ t('admin.about.subtitle') }}</p>
       </div>
     </section>
 
@@ -170,11 +174,11 @@ const saveContent = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudo cargar el contenido de Qué es CREUP"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.about.loadError')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshContent()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -184,11 +188,11 @@ const saveContent = async () => {
           <img
             v-if="heroPreview"
             :src="heroPreview"
-            alt="Vista previa del banner principal"
+            :alt="t('admin.about.heroPreviewAlt')"
             class="size-full object-cover"
           />
           <div v-else class="text-muted flex size-full items-center justify-center text-sm">
-            No hay banner subido
+            {{ t('admin.about.noBannerUploaded') }}
           </div>
         </div>
 
@@ -209,24 +213,26 @@ const saveContent = async () => {
                 >
                   {{
                     !contentForm.heroImage
-                      ? 'Sin banner'
+                      ? t('admin.about.noBanner')
                       : contentForm.heroVisible
-                        ? 'Visible'
-                        : 'Oculto'
+                        ? t('admin.about.visible')
+                        : t('admin.about.hidden')
                   }}
                 </UBadge>
                 <UBadge v-if="hasPendingHeroChanges" color="primary" variant="subtle" size="sm">
-                  Cambios pendientes
+                  {{ t('admin.about.pendingChanges') }}
                 </UBadge>
               </div>
 
               <div>
-                <p class="font-medium">{{ currentHeroName || 'No hay banner configurado' }}</p>
+                <p class="font-medium">
+                  {{ currentHeroName || t('admin.about.noBannerConfigured') }}
+                </p>
                 <p class="text-muted mt-1 text-sm">
                   {{
                     contentForm.heroImage
-                      ? 'Activa el interruptor para mostrarlo en la web o quítalo si ya no debe usarse.'
-                      : 'Sube una imagen para habilitar el banner en la página pública.'
+                      ? t('admin.about.heroHelpWithImage')
+                      : t('admin.about.heroHelpNoImage')
                   }}
                 </p>
               </div>
@@ -239,7 +245,11 @@ const saveContent = async () => {
                   :loading="heroUpload.isUploading.value"
                   @click="triggerHeroUpload"
                 >
-                  {{ contentForm.heroImage ? 'Cambiar imagen' : 'Subir imagen' }}
+                  {{
+                    contentForm.heroImage
+                      ? t('admin.about.changeImage')
+                      : t('admin.about.uploadImage')
+                  }}
                 </UButton>
 
                 <UButton
@@ -250,7 +260,7 @@ const saveContent = async () => {
                   icon="i-tabler-x"
                   @click="discardPendingHero"
                 >
-                  Descartar selección
+                  {{ t('admin.about.discardSelection') }}
                 </UButton>
 
                 <UButton
@@ -261,7 +271,7 @@ const saveContent = async () => {
                   icon="i-tabler-trash"
                   @click="requestClearHero"
                 >
-                  Quitar banner
+                  {{ t('admin.about.removeBanner') }}
                 </UButton>
               </div>
               <p v-if="getFieldError('heroImage')" class="text-error text-sm">
@@ -270,17 +280,19 @@ const saveContent = async () => {
             </div>
 
             <div class="rounded-xl border px-4 py-3 lg:min-w-56">
-              <p class="text-sm font-medium">Estado</p>
+              <p class="text-sm font-medium">{{ t('admin.about.statusLabel') }}</p>
               <p class="text-muted mt-1 text-sm">
                 {{
                   contentForm.heroImage
-                    ? 'Controla si el banner se muestra en la página.'
-                    : 'Necesitas una imagen para poder activarlo.'
+                    ? t('admin.about.statusHelpWithImage')
+                    : t('admin.about.statusHelpNoImage')
                 }}
               </p>
               <div class="mt-3 flex items-center gap-2">
                 <USwitch v-model="contentForm.heroVisible" :disabled="!contentForm.heroImage" />
-                <span class="text-sm">{{ contentForm.heroVisible ? 'Visible' : 'Oculto' }}</span>
+                <span class="text-sm">{{
+                  contentForm.heroVisible ? t('admin.about.visible') : t('admin.about.hidden')
+                }}</span>
               </div>
             </div>
           </div>
@@ -302,11 +314,11 @@ const saveContent = async () => {
             :disabled="!hasPendingHeroChanges"
             @click="saveContent"
           >
-            Guardar cambios
+            {{ t('admin.about.saveChanges') }}
           </UButton>
         </div>
 
-        <p class="text-muted text-sm leading-relaxed">Proporción recomendada: 1925 x 550 px.</p>
+        <p class="text-muted text-sm leading-relaxed">{{ t('admin.about.recommendedRatio') }}</p>
       </div>
     </UCard>
 
@@ -317,15 +329,18 @@ const saveContent = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-base font-bold">Quitar banner</h2>
+            <h2 class="text-base font-bold">{{ t('admin.about.removeBanner') }}</h2>
           </div>
           <p class="text-muted mb-6 text-sm">
-            Se eliminará la imagen seleccionada del banner principal. Tendrás que guardarla de nuevo
-            si cambias de idea.
+            {{ t('admin.about.removeBannerConfirm') }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showClearHeroModal = false">Cancelar</UButton>
-            <UButton color="error" @click="confirmClearHero">Quitar banner</UButton>
+            <UButton variant="ghost" @click="showClearHeroModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" @click="confirmClearHero">{{
+              t('admin.about.removeBanner')
+            }}</UButton>
           </div>
         </div>
       </template>

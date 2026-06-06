@@ -14,6 +14,7 @@ import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { validateBody } from '../../../utils/validation'
 import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 
 const PDF_UPLOAD_DIR = 'public/prensa'
 const PRESS_DOSSIER_FILE_SLUG = 'dossier-prensa'
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
   try {
-    const validated = validateBody(updatePressDossierSchema, body)
+    const validated = validateBody(event, updatePressDossierSchema, body)
     const item = await db.transaction(async (tx) => {
       const existingItem = await tx.query.pressDossier.findFirst()
 
@@ -40,8 +41,7 @@ export default defineEventHandler(async (event) => {
         if (clientUpdatedAt !== serverUpdatedAt) {
           throw createError({
             statusCode: 409,
-            message:
-              'El dossier de prensa fue modificado por otro usuario. Recarga la página y reintenta.',
+            message: getAdminApiErrorMessage(event, 'pressDossierOptimisticLock'),
           })
         }
       }
@@ -87,7 +87,10 @@ export default defineEventHandler(async (event) => {
       }
 
       if (!upserted) {
-        throw createError({ statusCode: 500, message: 'No se pudo guardar el dossier' })
+        throw createError({
+          statusCode: 500,
+          message: getAdminApiErrorMessage(event, 'pressDossierSaveFailed'),
+        })
       }
 
       return { previousPdfUrl, upserted }

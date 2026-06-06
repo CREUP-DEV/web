@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
@@ -6,6 +5,7 @@ import { financialReports, financialReportTranslations } from '../../../db/schem
 import { invalidateFinancialReportsCache } from '../adminCacheInvalidation'
 import { finalizeAdminDocument } from '../adminDocumentUpload'
 import { defineAssetBackedTranslatableCrud } from '../defineAssetBackedTranslatableCrud'
+import { getAdminApiErrorMessage } from '../../locale/adminApiErrorMessages'
 import {
   filterTranslationsByContent,
   getPreferredTranslationValue,
@@ -17,9 +17,6 @@ import {
   createFinancialReportSchema,
   updateFinancialReportSchema,
 } from '~~/shared/utils/adminSchemas'
-
-const OPTIMISTIC_LOCK_MESSAGE =
-  'El informe fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
 
 async function refetchNormalized(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
@@ -34,9 +31,12 @@ async function refetchNormalized(
 
 export const financialReportsCrud = defineAssetBackedTranslatableCrud({
   schema: { create: createFinancialReportSchema, update: updateFinancialReportSchema },
-  validate: (validated) => {
+  validate: (validated, event) => {
     if (!getRequiredTranslationValue(validated.translations, 'title')) {
-      throw createError({ statusCode: 400, message: 'El título en español es obligatorio' })
+      throw createError({
+        statusCode: 400,
+        message: getAdminApiErrorMessage(event, 'requiredTitleEs'),
+      })
     }
   },
   asset: {
@@ -81,10 +81,10 @@ export const financialReportsCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidateFinancialReportsCache,
   messages: {
-    notFound: ADMIN_NOT_FOUND_MESSAGE,
-    optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
-    createFailed: 'No se pudo crear el informe económico',
-    updateFailed: 'No se pudo actualizar el informe económico',
+    notFound: 'notFound',
+    optimisticLock: 'financialReportOptimisticLock',
+    createFailed: 'financialReportCreateFailed',
+    updateFailed: 'financialReportUpdateFailed',
   },
   scope: { create: 'admin.financial-reports.create', update: 'admin.financial-reports.update' },
 })

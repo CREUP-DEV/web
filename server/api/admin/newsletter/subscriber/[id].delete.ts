@@ -1,9 +1,9 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletterSubscribers } from '../../../../db/schema'
 import { throwAdminMutationError } from '../../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../../utils/locale/adminApiErrorMessages'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
 import {
   NEWSLETTER_CONSENT_SOURCES,
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existing) {
-      throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
     }
 
     await db.transaction(async (tx) => {

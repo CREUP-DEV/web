@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
 
 const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
-  message: 'Invalid locale / El locale no es válido',
+  message: 'admin.validation.invalidLocale',
 })
 
 const optimisticLockFields = {
@@ -18,7 +18,7 @@ const safeHrefSchema = z
       value.startsWith('#') ||
       value.startsWith('http://') ||
       value.startsWith('https://'),
-    'El enlace debe ser una ruta relativa o una URL http/https'
+    'admin.validation.hrefFormat'
   )
 
 const getRequiredTranslationIndex = <T extends { locale: string }>(translations: T[]) =>
@@ -48,7 +48,7 @@ const addNoDuplicateLocalesIssue = (
   if (new Set(locales).size !== locales.length) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'No puede haber traducciones duplicadas para el mismo idioma',
+      message: 'admin.validation.duplicateLocale',
       path: ['translations'],
     })
   }
@@ -71,7 +71,7 @@ export const createCarouselItemSchema = z
     href: safeHrefSchema,
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
-    translations: z.array(carouselTranslationSchema).min(1, 'Se requiere al menos una traducción'),
+    translations: z.array(carouselTranslationSchema).min(1, 'admin.validation.translationRequired'),
   })
   .superRefine((data, ctx) => {
     addNoDuplicateLocalesIssue(ctx, data.translations)
@@ -85,7 +85,7 @@ export const createCarouselItemSchema = z
         ctx,
         data.translations,
         'title',
-        'El título en español es obligatorio'
+        'admin.validation.defaultTitleRequired'
       )
     }
   })
@@ -100,13 +100,13 @@ export const featuredLinkTranslationSchema = z.object({
 
 export const createFeaturedLinkSchema = z
   .object({
-    image: z.string().min(1, 'La imagen es requerida').max(2048),
+    image: z.string().min(1, 'admin.validation.imageRequired').max(2048),
     to: safeHrefSchema,
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
     translations: z
       .array(featuredLinkTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
+      .min(1, 'admin.validation.translationRequired'),
   })
   .superRefine((data, ctx) => {
     addNoDuplicateLocalesIssue(ctx, data.translations)
@@ -120,7 +120,7 @@ export const createFeaturedLinkSchema = z
         ctx,
         data.translations,
         'title',
-        'El título en español es obligatorio'
+        'admin.validation.defaultTitleRequired'
       )
     }
   })
@@ -128,9 +128,9 @@ export const createFeaturedLinkSchema = z
 export const updateFeaturedLinkSchema = createFeaturedLinkSchema.safeExtend(optimisticLockFields)
 
 export const createMediaOutletSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido').max(200),
-  website: z.string().url('La URL no es válida').max(2048),
-  logo: z.string().min(1, 'El logo es requerido').max(2048),
+  name: z.string().min(1, 'admin.validation.nameRequired').max(200),
+  website: z.string().url('admin.validation.invalidUrl').max(2048),
+  logo: z.string().min(1, 'admin.validation.logoRequired').max(2048),
   order: z.number().int().min(0).default(0),
 })
 
@@ -145,12 +145,12 @@ export const createTagSchema = z
   .object({
     slug: z
       .string()
-      .min(1, 'El slug es requerido')
+      .min(1, 'admin.validation.slugRequired')
       .max(100)
-      .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones')
-      .refine((value) => value !== 'all', "El slug 'all' está reservado"),
+      .regex(/^[a-z0-9-]+$/, 'admin.validation.slugFormat')
+      .refine((value) => value !== 'all', 'admin.validation.slugReserved'),
     order: z.number().int().min(0).default(0),
-    translations: z.array(tagTranslationSchema).min(1, 'Se requiere al menos una traducción'),
+    translations: z.array(tagTranslationSchema).min(1, 'admin.validation.translationRequired'),
   })
   .superRefine((data, ctx) => {
     addNoDuplicateLocalesIssue(ctx, data.translations)
@@ -164,7 +164,7 @@ export const createTagSchema = z
         ctx,
         data.translations,
         'name',
-        'El nombre en español es obligatorio'
+        'admin.validation.defaultNameRequired'
       )
     }
   })
@@ -180,12 +180,12 @@ export const equalityDocumentTranslationSchema = z.object({
 
 export const createEqualityDocumentSchema = z
   .object({
-    pdfUrl: z.string().min(1, 'El PDF es requerido'),
+    pdfUrl: z.string().min(1, 'admin.validation.pdfRequired'),
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
     translations: z
       .array(equalityDocumentTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
+      .min(1, 'admin.validation.translationRequired'),
   })
   .superRefine((data, ctx) => {
     addNoDuplicateLocalesIssue(ctx, data.translations)
@@ -199,7 +199,7 @@ export const createEqualityDocumentSchema = z
         ctx,
         data.translations,
         'title',
-        'El título en español es obligatorio'
+        'admin.validation.defaultTitleRequired'
       )
     }
 
@@ -208,7 +208,7 @@ export const createEqualityDocumentSchema = z
         ctx,
         data.translations,
         'description',
-        'La descripción en español es obligatoria'
+        'admin.validation.defaultDescriptionRequired'
       )
     }
   })
@@ -223,17 +223,17 @@ export const financialReportTranslationSchema = z.object({
 
 const dateOnlySchema = z
   .string()
-  .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'La fecha no es válida')
+  .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'admin.validation.invalidDate')
 
 export const createFinancialReportSchema = z
   .object({
-    pdfUrl: z.string().min(1, 'El PDF es requerido'),
+    pdfUrl: z.string().min(1, 'admin.validation.pdfRequired'),
     approvedAt: dateOnlySchema,
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
     translations: z
       .array(financialReportTranslationSchema)
-      .min(1, 'Se requiere al menos una traducción'),
+      .min(1, 'admin.validation.translationRequired'),
   })
   .superRefine((data, ctx) => {
     addNoDuplicateLocalesIssue(ctx, data.translations)
@@ -247,7 +247,7 @@ export const createFinancialReportSchema = z
         ctx,
         data.translations,
         'title',
-        'El título en español es obligatorio'
+        'admin.validation.defaultTitleRequired'
       )
     }
   })
@@ -257,7 +257,7 @@ export const updateFinancialReportSchema =
 
 export const updatePressDossierSchema = z
   .object({
-    pdfUrl: z.string().min(1, 'El PDF es requerido').nullable(),
+    pdfUrl: z.string().min(1, 'admin.validation.pdfRequired').nullable(),
     active: z.boolean().default(false),
   })
   .safeExtend(optimisticLockFields)
@@ -265,7 +265,7 @@ export const updatePressDossierSchema = z
     if (data.active && !data.pdfUrl) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Debes subir un PDF para activar el dossier',
+        message: 'admin.validation.dossierPdfRequired',
         path: ['pdfUrl'],
       })
     }
@@ -278,7 +278,7 @@ const pressDefaultCoverStoragePath = z
   .max(2048)
   .refine(
     (v) => !v.startsWith('http://') && !v.startsWith('https://'),
-    'La imagen debe ser una ruta de almacenamiento, no una URL'
+    'admin.validation.storagePathNotUrl'
   )
 
 export const updateSiteDefaultImagesSchema = z
@@ -292,7 +292,9 @@ export const updateSiteDefaultImagesSchema = z
   })
   .safeExtend(optimisticLockFields)
 
-const newsletterMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'El mes no es válido')
+const newsletterMonthSchema = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])-01$/, 'admin.validation.invalidMonth')
 
 export const createNewsletterSchema = z.object({
   month: newsletterMonthSchema,
@@ -301,7 +303,7 @@ export const createNewsletterSchema = z.object({
     (value) => (value === undefined ? null : value),
     z.union([z.null(), z.string().min(1).max(2048)])
   ),
-  pdfUrl: z.string().min(1, 'El PDF es requerido').max(2048),
+  pdfUrl: z.string().min(1, 'admin.validation.pdfRequired').max(2048),
   publicVisible: z.boolean().default(true),
 })
 
@@ -316,13 +318,13 @@ export const createNewsletterRequestSchema = createNewsletterSchema.extend({
 // server-side definition. ---
 
 export const updateAboutPageContentSchema = z.object({
-  heroImage: z.string().min(1, 'La imagen es requerida').nullable(),
+  heroImage: z.string().min(1, 'admin.validation.imageRequired').nullable(),
   heroVisible: z.boolean().default(false),
   updatedAt: z.string().datetime().optional(),
 })
 
 export const updateSubscriberSchema = z.object({
-  email: z.string().email('El email no es válido'),
+  email: z.string().email('admin.validation.invalidEmail'),
   active: z.boolean(),
 })
 
@@ -335,7 +337,7 @@ export const createAdminAccessSchema = z.object({
   email: z
     .string()
     .trim()
-    .email('El correo no es válido')
+    .email('admin.validation.invalidMail')
     .transform((email) => email.toLowerCase()),
   active: z.boolean().default(true),
 })

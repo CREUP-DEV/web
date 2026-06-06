@@ -4,15 +4,13 @@ import type { PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { db } from '../../db'
 import { throwAdminMutationError } from './adminErrors'
 import { validateBody } from '../validation'
+import { getAdminApiErrorMessage } from '../locale/adminApiErrorMessages'
 import { updateOrderSchema } from '~~/shared/utils/adminSchemas'
 
 interface ReorderItem {
   id: string
   order: number
 }
-
-const REORDER_ERROR_MESSAGE =
-  'La lista enviada no coincide con el estado actual. Recarga la página antes de reordenar.'
 
 export function buildReorderOrderExpression(
   idColumn: AnyColumn,
@@ -29,11 +27,15 @@ export function buildReorderOrderExpression(
   )} else ${orderColumn} end`
 }
 
-export function assertCompleteReorderSet(items: ReorderItem[], existingIds: string[]) {
+export function assertCompleteReorderSet(
+  event: H3Event,
+  items: ReorderItem[],
+  existingIds: string[]
+) {
   if (items.length !== existingIds.length) {
     throw createError({
       statusCode: 409,
-      message: REORDER_ERROR_MESSAGE,
+      message: getAdminApiErrorMessage(event, 'reorderMismatch'),
     })
   }
 
@@ -43,7 +45,7 @@ export function assertCompleteReorderSet(items: ReorderItem[], existingIds: stri
   if (uniqueRequestIds.size !== requestIds.length) {
     throw createError({
       statusCode: 400,
-      message: 'La lista contiene elementos duplicados',
+      message: getAdminApiErrorMessage(event, 'reorderDuplicates'),
     })
   }
 
@@ -52,7 +54,7 @@ export function assertCompleteReorderSet(items: ReorderItem[], existingIds: stri
   if (existingIdSet.size !== existingIds.length) {
     throw createError({
       statusCode: 500,
-      message: 'El estado actual no es válido para reordenar',
+      message: getAdminApiErrorMessage(event, 'reorderInvalidState'),
     })
   }
 
@@ -60,7 +62,7 @@ export function assertCompleteReorderSet(items: ReorderItem[], existingIds: stri
     if (!existingIdSet.has(requestId)) {
       throw createError({
         statusCode: 409,
-        message: REORDER_ERROR_MESSAGE,
+        message: getAdminApiErrorMessage(event, 'reorderMismatch'),
       })
     }
   }
@@ -85,7 +87,7 @@ export async function reorderCollection(event: H3Event, config: ReorderCollectio
 
   try {
     const body = await readBody(event)
-    const validated = validateBody(updateOrderSchema, body)
+    const validated = validateBody(event, updateOrderSchema, body)
     const reorderedIds = validated.items.map((item) => item.id)
     const reorderedOrder = buildReorderOrderExpression(idColumn, orderColumn, validated.items)
 
@@ -93,6 +95,7 @@ export async function reorderCollection(event: H3Event, config: ReorderCollectio
       const existingItems = await tx.select({ id: idColumn }).from(table).for('update')
 
       assertCompleteReorderSet(
+        event,
         validated.items,
         existingItems.map((item) => item.id as string)
       )

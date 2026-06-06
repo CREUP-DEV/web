@@ -70,7 +70,7 @@ function validateTranslationArray<
 ) {
   if (!Array.isArray(translations) || translations.length === 0) {
     issues.push({
-      message: 'Se requiere al menos una traducción',
+      message: 'admin.validation.translationRequired',
       path: ['translations'],
     })
     return
@@ -82,7 +82,7 @@ function validateTranslationArray<
   translations.forEach((entry, index) => {
     if (!isPlainObject(entry)) {
       issues.push({
-        message: 'Traducción no válida',
+        message: 'admin.validation.invalidTranslation',
         path: ['translations', index],
       })
       return
@@ -91,7 +91,7 @@ function validateTranslationArray<
     const locale = entry.locale
     if (!isSupportedLocale(locale)) {
       issues.push({
-        message: 'Invalid locale / El locale no es válido',
+        message: 'admin.validation.invalidLocale',
         path: ['translations', index, 'locale'],
       })
       return
@@ -108,7 +108,7 @@ function validateTranslationArray<
 
   if (new Set(locales).size !== locales.length) {
     issues.push({
-      message: 'No puede haber traducciones duplicadas para el mismo idioma',
+      message: 'admin.validation.duplicateLocale',
       path: ['translations'],
     })
   }
@@ -149,7 +149,7 @@ function buildValidator<TPayload>(
 
 export const pressArticleClientSchema = buildValidator((payload, issues) => {
   if (!isPlainObject(payload)) {
-    issues.push({ message: 'Entrada no válida', path: [] })
+    issues.push({ message: 'admin.validation.invalidInput', path: [] })
     return null
   }
 
@@ -163,54 +163,54 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
   const tagIds = payload.tagIds
 
   if (!PRESS_ARTICLE_TYPE_SET.has(type)) {
-    issues.push({ message: 'Tipo de artículo no válido', path: ['type'] })
+    issues.push({ message: 'admin.validation.invalidArticleType', path: ['type'] })
   }
 
   if (image !== null && image !== undefined) {
     if (typeof image !== 'string') {
-      issues.push({ message: 'La imagen de portada no es válida', path: ['image'] })
+      issues.push({ message: 'admin.validation.invalidCoverImage', path: ['image'] })
     } else if (image.trim() === '') {
       // omit — treated as no custom cover
     } else if (image.length > 2048) {
-      issues.push({ message: 'La imagen no es válida', path: ['image'] })
+      issues.push({ message: 'admin.validation.invalidImage', path: ['image'] })
     } else if (image.startsWith('http://') || image.startsWith('https://')) {
       issues.push({
-        message: 'La imagen debe ser una ruta interna, no una URL externa',
+        message: 'admin.validation.imageMustBeInternal',
         path: ['image'],
       })
     }
   }
 
   if (pdfUrl !== null && pdfUrl !== undefined && (typeof pdfUrl !== 'string' || !pdfUrl.trim())) {
-    issues.push({ message: 'El PDF no es válido', path: ['pdfUrl'] })
+    issues.push({ message: 'admin.validation.invalidPdf', path: ['pdfUrl'] })
   }
 
   if (externalUrl !== null && externalUrl !== undefined) {
     if (typeof externalUrl !== 'string' || !externalUrl.trim() || !isValidUrl(externalUrl)) {
-      issues.push({ message: 'La URL externa no es válida', path: ['externalUrl'] })
+      issues.push({ message: 'admin.validation.invalidExternalUrl', path: ['externalUrl'] })
     }
   }
 
   if (mediaOutletId !== null && mediaOutletId !== undefined) {
     if (typeof mediaOutletId !== 'string' || !mediaOutletId.trim()) {
-      issues.push({ message: 'El medio no es válido', path: ['mediaOutletId'] })
+      issues.push({ message: 'admin.validation.invalidMediaOutlet', path: ['mediaOutletId'] })
     }
   }
 
   if (typeof active !== 'boolean') {
-    issues.push({ message: 'Estado no válido', path: ['active'] })
+    issues.push({ message: 'admin.validation.invalidActive', path: ['active'] })
   }
 
   if (publishedAt !== undefined && publishedAt !== null) {
     if (typeof publishedAt !== 'string' || !DATE_ONLY_PATTERN.test(publishedAt)) {
-      issues.push({ message: 'La fecha de publicación no es válida', path: ['publishedAt'] })
+      issues.push({ message: 'admin.validation.invalidPublishedAt', path: ['publishedAt'] })
     }
   }
 
   if (!Array.isArray(tagIds)) {
-    issues.push({ message: 'Las etiquetas no son válidas', path: ['tagIds'] })
+    issues.push({ message: 'admin.validation.invalidTags', path: ['tagIds'] })
   } else if (tagIds.some((tagId) => typeof tagId !== 'string' || !tagId.trim())) {
-    issues.push({ message: 'Las etiquetas no son válidas', path: ['tagIds'] })
+    issues.push({ message: 'admin.validation.invalidTags', path: ['tagIds'] })
   }
 
   validateTranslationArray<
@@ -226,18 +226,18 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
     issues,
     payload.translations,
     'title',
-    'El título en español es obligatorio',
+    'admin.validation.defaultTitleRequired',
     (translation, index, nextIssues) => {
       if (asTrimmedString(translation.title).length > 200) {
         nextIssues.push({
-          message: 'El título no puede superar los 200 caracteres',
+          message: 'admin.validation.titleTooLong',
           path: ['translations', index, 'title'],
         })
       }
 
       if (asTrimmedString(translation.description).length > 2000) {
         nextIssues.push({
-          message: 'La descripción no puede superar los 2000 caracteres',
+          message: 'admin.validation.descriptionTooLong',
           path: ['translations', index, 'description'],
         })
       }
@@ -245,12 +245,12 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
       if (translation.contentHtml != null) {
         if (typeof translation.contentHtml !== 'string') {
           nextIssues.push({
-            message: 'El contenido no es válido',
+            message: 'admin.validation.invalidContent',
             path: ['translations', index, 'contentHtml'],
           })
         } else if (translation.contentHtml.length > ADMIN_RICH_TEXT_MAX_HTML_LENGTH) {
           nextIssues.push({
-            message: 'El contenido es demasiado largo',
+            message: 'admin.validation.contentTooLong',
             path: ['translations', index, 'contentHtml'],
           })
         }
@@ -258,7 +258,7 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
 
       if (asTrimmedString(translation.alt).length > 200) {
         nextIssues.push({
-          message: 'El texto alternativo no puede superar los 200 caracteres',
+          message: 'admin.validation.altTooLong',
           path: ['translations', index, 'alt'],
         })
       }
@@ -281,21 +281,21 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
     !hasMeaningfulHtml(requiredContentHtml)
   ) {
     issues.push({
-      message: 'Debes añadir contenido o subir un PDF para notas de prensa y comunicados',
+      message: 'admin.validation.contentOrPdfRequired',
       path: ['translations', 0, 'contentHtml'],
     })
   }
 
   if (type === 'media_appearance' && !asTrimmedString(externalUrl)) {
     issues.push({
-      message: 'La URL externa es obligatoria para apariciones en medios',
+      message: 'admin.validation.externalUrlRequired',
       path: ['externalUrl'],
     })
   }
 
   if (type === 'media_appearance' && !asTrimmedString(mediaOutletId)) {
     issues.push({
-      message: 'El medio de comunicación es obligatorio para apariciones en medios',
+      message: 'admin.validation.mediaOutletRequired',
       path: ['mediaOutletId'],
     })
   }

@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { featuredLinks, featuredLinkTranslations } from '../../../db/schema'
@@ -8,9 +7,6 @@ import { getPreferredTranslationValue } from '../../locale/localizedContent'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createFeaturedLinkSchema, updateFeaturedLinkSchema } from '~~/shared/utils/adminSchemas'
 import { toRelativeSitePath } from '~~/shared/utils/url'
-
-const OPTIMISTIC_LOCK_MESSAGE =
-  'El enlace fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
 
 export const linksCrud = defineAssetBackedTranslatableCrud({
   schema: { create: createFeaturedLinkSchema, update: updateFeaturedLinkSchema },
@@ -55,10 +51,10 @@ export const linksCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidateHomeDataCache,
   messages: {
-    notFound: ADMIN_NOT_FOUND_MESSAGE,
-    optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
-    createFailed: 'No se pudo crear el enlace',
-    updateFailed: 'No se pudo actualizar el enlace',
+    notFound: 'notFound',
+    optimisticLock: 'linkOptimisticLock',
+    createFailed: 'linkCreateFailed',
+    updateFailed: 'linkUpdateFailed',
   },
   scope: { create: 'admin.links.create', update: 'admin.links.update' },
 })

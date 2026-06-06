@@ -6,7 +6,7 @@ import { idRouteParamSchema, validateRouteParams } from '../../../../utils/valid
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
-  const item = await claimNewsletterForSending(id)
+  const item = await claimNewsletterForSending(id, event)
 
   await enqueueNewsletterSendJob({
     newsletterId: item.id,

@@ -7,7 +7,9 @@ definePageMeta({
   title: 'Etiquetas',
 })
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
@@ -40,6 +42,7 @@ const {
 } = await useFetch<{
   data: Tag[]
 }>('/api/admin/tags', {
+  headers: localeApiHeaders,
   lazy: true,
 })
 
@@ -137,12 +140,12 @@ const saveOrder = async () => {
     await persistOrder()
     await refreshAllClientAsyncData()
     toast.add({
-      title: 'Orden guardado correctamente',
+      title: t('admin.tags.orderSavedToast'),
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo guardar el orden'),
+      title: getApiErrorMessage(e, t('admin.tags.orderErrorToast')),
       color: 'error',
     })
   }
@@ -174,7 +177,7 @@ const handleSubmit = async () => {
       replaceItem(response.data)
       await refreshAllClientAsyncData()
       toast.add({
-        title: 'Etiqueta actualizada',
+        title: t('admin.tags.updatedToast'),
         color: 'success',
       })
     } else {
@@ -185,7 +188,7 @@ const handleSubmit = async () => {
       replaceItem(response.data)
       await refreshAllClientAsyncData()
       toast.add({
-        title: 'Etiqueta creada',
+        title: t('admin.tags.createdToast'),
         color: 'success',
       })
     }
@@ -195,12 +198,12 @@ const handleSubmit = async () => {
     const err = e as { data?: { message?: string } }
     if (getApiErrorStatusCode(e) === 409 && err.data?.message === 'SLUG_EXISTS') {
       toast.add({
-        title: 'Ya existe una etiqueta con ese slug',
+        title: t('admin.tags.slugExistsToast'),
         color: 'error',
       })
     } else {
       toast.add({
-        title: getApiErrorMessage(e, 'No se pudo guardar la etiqueta'),
+        title: getApiErrorMessage(e, t('admin.tags.saveErrorToast')),
         color: 'error',
       })
     }
@@ -218,12 +221,12 @@ const handleDelete = async () => {
     await refreshAllClientAsyncData()
     closeDeleteModal()
     toast.add({
-      title: 'Etiqueta eliminada',
+      title: t('admin.tags.deletedToast'),
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo eliminar la etiqueta'),
+      title: getApiErrorMessage(e, t('admin.tags.deleteErrorToast')),
       color: 'error',
     })
   } finally {
@@ -235,13 +238,19 @@ const handleDelete = async () => {
 <template>
   <div>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Etiquetas</h1>
+      <h1 class="text-2xl font-bold">{{ t('admin.tags.title') }}</h1>
       <div class="flex gap-2">
         <template v-if="hasOrderChanges">
-          <UButton variant="outline" @click="cancelOrderChanges">Cancelar</UButton>
-          <UButton :loading="isSavingOrder" @click="saveOrder">Guardar orden</UButton>
+          <UButton variant="outline" @click="cancelOrderChanges">{{
+            t('admin.common.cancel')
+          }}</UButton>
+          <UButton :loading="isSavingOrder" @click="saveOrder">{{
+            t('admin.common.saveOrder')
+          }}</UButton>
         </template>
-        <UButton v-else icon="i-tabler-plus" @click="openCreate">Añadir</UButton>
+        <UButton v-else icon="i-tabler-plus" @click="openCreate">{{
+          t('admin.common.add')
+        }}</UButton>
       </div>
     </div>
 
@@ -255,11 +264,11 @@ const handleDelete = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar las etiquetas"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.tags.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -274,14 +283,16 @@ const handleDelete = async () => {
         </div>
         <div class="min-w-0 flex-1">
           <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.name }}</h3>
-          <p class="text-muted text-sm break-all">Slug: {{ item.slug }}</p>
+          <p class="text-muted text-sm break-all">
+            {{ t('admin.tags.slugPrefix') }}{{ item.slug }}
+          </p>
         </div>
         <div class="flex shrink-0 gap-2">
           <UButton
             icon="i-tabler-pencil"
             variant="ghost"
             size="sm"
-            aria-label="Editar etiqueta"
+            :aria-label="t('admin.tags.editAria')"
             @click="openEdit(item)"
           />
           <UButton
@@ -289,16 +300,16 @@ const handleDelete = async () => {
             variant="ghost"
             color="error"
             size="sm"
-            aria-label="Eliminar etiqueta"
+            :aria-label="t('admin.tags.deleteAria')"
             @click="confirmDelete(item)"
           />
         </div>
       </div>
 
       <div v-if="!localItems.length" class="py-12 text-center">
-        <p class="text-muted">No hay etiquetas todavía.</p>
+        <p class="text-muted">{{ t('admin.tags.empty') }}</p>
         <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
-          Añadir etiqueta
+          {{ t('admin.tags.addItem') }}
         </UButton>
       </div>
     </div>
@@ -308,12 +319,16 @@ const handleDelete = async () => {
         <div class="flex max-h-[80vh] flex-col">
           <div class="overflow-y-auto p-6">
             <h2 class="mb-4 text-lg font-bold">
-              {{ editingItem ? 'Editar etiqueta' : 'Nueva etiqueta' }}
+              {{ editingItem ? t('admin.tags.editTitle') : t('admin.tags.newTitle') }}
             </h2>
 
             <form id="tags-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Slug (identificador único)" :error="getFieldError('slug')">
-                <UInput v-model="form.slug" placeholder="mi-etiqueta" class="w-full" />
+              <UFormField :label="t('admin.tags.slugLabel')" :error="getFieldError('slug')">
+                <UInput
+                  v-model="form.slug"
+                  :placeholder="t('admin.tags.slugPlaceholder')"
+                  class="w-full"
+                />
               </UFormField>
 
               <div
@@ -326,7 +341,11 @@ const handleDelete = async () => {
                   {{ getLocaleName(trans.locale) }}
                 </h4>
                 <UFormField
-                  :label="`Nombre ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
+                  :label="
+                    isDefaultLocale(trans.locale)
+                      ? t('admin.tags.nameLabel')
+                      : `${t('admin.tags.nameLabel')} ${t('admin.common.optional')}`
+                  "
                   :error="getFieldError(`translations.${index}.name`)"
                 >
                   <UInput v-model="trans.name" class="w-full" />
@@ -335,14 +354,16 @@ const handleDelete = async () => {
             </form>
           </div>
           <div class="flex justify-end gap-2 border-t p-4">
-            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="button" variant="ghost" @click="showModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
             <UButton
               type="submit"
               form="tags-form"
               :loading="isSubmitting"
               :disabled="Boolean(editingItem) && !hasFormChanges"
             >
-              {{ editingItem ? 'Guardar' : 'Crear' }}
+              {{ editingItem ? t('admin.common.save') : t('admin.common.create') }}
             </UButton>
           </div>
         </div>
@@ -356,16 +377,22 @@ const handleDelete = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Confirmar eliminación</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.common.confirmDeleteTitle') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Estás seguro de que deseas eliminar la etiqueta "{{
-              itemToDelete?.translations[0]?.name
-            }}"? Esta acción no se puede deshacer.
+            {{
+              t('admin.common.deleteConfirm', {
+                name: itemToDelete?.translations[0]?.name,
+              })
+            }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
+              {{ t('admin.common.delete') }}
+            </UButton>
           </div>
         </div>
       </template>

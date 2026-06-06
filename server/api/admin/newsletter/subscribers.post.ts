@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { newsletterSubscribers } from '../../../db/schema'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { validateBody } from '../../../utils/validation'
 import { updateSubscriberSchema } from '~~/shared/utils/adminSchemas'
 import {
@@ -62,7 +63,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   try {
-    const validated = validateBody(updateSubscriberSchema, body)
+    const validated = validateBody(event, updateSubscriberSchema, body)
     const email = validated.email.trim().toLowerCase()
 
     const [item] = await db.transaction(async (tx) => {
@@ -80,7 +81,7 @@ export default defineEventHandler(async (event) => {
         if (!updated) {
           throw createError({
             statusCode: 500,
-            message: 'No se pudo guardar el suscriptor',
+            message: getAdminApiErrorMessage(event, 'subscriberSaveFailed'),
           })
         }
 
@@ -108,7 +109,7 @@ export default defineEventHandler(async (event) => {
       if (!created) {
         throw createError({
           statusCode: 500,
-          message: 'No se pudo guardar el suscriptor',
+          message: getAdminApiErrorMessage(event, 'subscriberSaveFailed'),
         })
       }
 

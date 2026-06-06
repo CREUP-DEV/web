@@ -31,6 +31,9 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const localePath = useLocalePath()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -50,8 +53,10 @@ const isHydratingForm = ref(false)
 // Fetch supporting data
 const [{ data: tagsData, error: tagsError }, { data: mediaData, error: mediaError }] =
   await Promise.all([
-    useFetch<{ data: PressTagAdmin[] }>('/api/admin/tags'),
-    useFetch<{ data: PressMediaOutletAdmin[] }>('/api/admin/media'),
+    useFetch<{ data: PressTagAdmin[] }>('/api/admin/tags', { headers: localeApiHeaders }),
+    useFetch<{ data: PressMediaOutletAdmin[] }>('/api/admin/media', {
+      headers: localeApiHeaders,
+    }),
   ])
 
 const tags = computed(() => tagsData.value?.data ?? [])
@@ -59,15 +64,15 @@ const mediaOutlets = computed(() => mediaData.value?.data ?? [])
 const supportDataError = computed(() => tagsError.value ?? mediaError.value ?? null)
 const supportDataErrorTitle = computed(() => {
   if (tagsError.value && mediaError.value) {
-    return 'No se pudieron cargar etiquetas ni medios'
+    return t('admin.press.form.supportLoadErrorBoth')
   }
 
   if (tagsError.value) {
-    return 'No se pudieron cargar las etiquetas'
+    return t('admin.press.form.supportLoadErrorTags')
   }
 
   if (mediaError.value) {
-    return 'No se pudieron cargar los medios'
+    return t('admin.press.form.supportLoadErrorMedia')
   }
 
   return ''
@@ -78,7 +83,7 @@ const submitDisabledReason = computed(() => {
   }
 
   if (isEditing.value && !hasUnsavedChanges.value) {
-    return 'No hay cambios pendientes'
+    return t('admin.press.form.noPendingChanges')
   }
 
   const imageFieldError = getFieldError('image')
@@ -95,10 +100,10 @@ const MAX_PRESS_PDF_SIZE = 20 * 1024 * 1024
 // File uploads
 const imageUpload = useAdminFileUpload({
   endpoint: '/api/admin/press/upload',
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.press.form.imageUploaded'),
+  errorMessage: t('admin.press.form.imageUploadError'),
   maxFileSizeBytes: MAX_PRESS_IMAGE_SIZE,
-  maxFileSizeMessage: 'La imagen supera el tamaño máximo (5MB)',
+  maxFileSizeMessage: t('admin.press.form.imageTooLarge'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.image = storagePath
@@ -107,10 +112,10 @@ const imageUpload = useAdminFileUpload({
 })
 const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/press/upload',
-  successMessage: 'PDF subido correctamente',
-  errorMessage: 'No se pudo subir el PDF',
+  successMessage: t('admin.press.form.pdfUploaded'),
+  errorMessage: t('admin.press.form.pdfUploadError'),
   maxFileSizeBytes: MAX_PRESS_PDF_SIZE,
-  maxFileSizeMessage: 'El PDF supera el tamaño máximo (20MB)',
+  maxFileSizeMessage: t('admin.press.form.pdfTooLarge'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.pdfUrl = storagePath
@@ -170,9 +175,9 @@ const resetUnsavedChangesBaseline = () => {
 }
 
 const typeLabels: Record<PressArticleType, string> = {
-  press_release: 'Notas de prensa',
-  statement: 'Comunicados',
-  media_appearance: 'En los medios',
+  press_release: t('admin.press.types.pressRelease'),
+  statement: t('admin.press.types.statement'),
+  media_appearance: t('admin.press.types.mediaAppearance'),
 }
 
 const typeIcons: Record<PressArticleType, string> = {
@@ -183,7 +188,7 @@ const typeIcons: Record<PressArticleType, string> = {
 
 const publicArticleUrl = computed(() => {
   if (!props.article?.slug) return null
-  return `${getPressArticlePublicListPath(props.article.type)}/${props.article.slug}`
+  return localePath(`${getPressArticlePublicListPath(props.article.type)}/${props.article.slug}`)
 })
 
 const canSubmit = computed(() => !supportDataError.value)
@@ -329,10 +334,7 @@ const confirmCancel = () => {
       variant="soft"
       :title="supportDataErrorTitle"
       :description="
-        getApiErrorMessage(
-          supportDataError,
-          'Recarga la página para volver a cargar los datos de apoyo.'
-        )
+        getApiErrorMessage(supportDataError, t('admin.press.form.supportLoadErrorDescription'))
       "
       class="mb-6"
     />
@@ -348,12 +350,13 @@ const confirmCancel = () => {
           size="sm"
           @click="handleCancel"
         >
-          Volver
+          {{ t('admin.press.form.back') }}
         </UButton>
         <USeparator orientation="vertical" class="h-5 shrink-0" />
         <UIcon :name="typeIcons[form.type]" class="text-muted size-4 shrink-0" />
         <span class="text-muted truncate text-sm">
-          {{ isEditing ? 'Editando' : 'Nuevo' }} · {{ typeLabels[form.type] }}
+          {{ isEditing ? t('admin.press.form.editingLabel') : t('admin.press.form.newLabel') }} ·
+          {{ typeLabels[form.type] }}
         </span>
       </div>
       <div class="flex shrink-0 items-center gap-2">
@@ -365,7 +368,7 @@ const confirmCancel = () => {
           size="sm"
           :to="publicArticleUrl"
           target="_blank"
-          aria-label="Ver artículo en la web"
+          :aria-label="t('admin.press.viewOnWebAria')"
         />
         <UButton
           type="submit"
@@ -374,7 +377,7 @@ const confirmCancel = () => {
           :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
           :title="submitDisabledReason || undefined"
         >
-          {{ isEditing ? 'Guardar cambios' : 'Crear artículo' }}
+          {{ isEditing ? t('admin.press.form.saveChanges') : t('admin.press.form.createArticle') }}
         </UButton>
       </div>
     </div>
@@ -385,15 +388,18 @@ const confirmCancel = () => {
           <div>
             <h3 class="flex items-center gap-2 font-semibold">
               <UIcon name="i-tabler-broadcast" class="text-muted size-5" />
-              Aparición en medios
+              {{ t('admin.press.form.mediaAppearanceTitle') }}
             </h3>
             <p class="text-muted mt-1 text-xs">
-              Indica el enlace a la noticia original y el medio que la publicó.
+              {{ t('admin.press.form.mediaAppearanceHint') }}
             </p>
           </div>
 
           <div class="grid gap-4 sm:grid-cols-2">
-            <UFormField label="Enlace a la noticia *" :error="getFieldError('externalUrl')">
+            <UFormField
+              :label="`${t('admin.press.form.externalUrlLabel')} *`"
+              :error="getFieldError('externalUrl')"
+            >
               <UInput
                 :model-value="form.externalUrl ?? undefined"
                 placeholder="https://..."
@@ -402,13 +408,16 @@ const confirmCancel = () => {
               />
             </UFormField>
 
-            <UFormField label="Medio *" :error="getFieldError('mediaOutletId')">
+            <UFormField
+              :label="`${t('admin.press.form.mediaOutletLabel')} *`"
+              :error="getFieldError('mediaOutletId')"
+            >
               <USelectMenu
                 :model-value="form.mediaOutletId ?? undefined"
                 :items="mediaOutletSelectItems"
                 value-key="value"
                 class="w-full"
-                placeholder="Selecciona un medio..."
+                :placeholder="t('admin.press.form.mediaOutletPlaceholder')"
                 :disabled="Boolean(supportDataError)"
                 @update:model-value="form.mediaOutletId = $event ?? null"
               />
@@ -425,14 +434,20 @@ const confirmCancel = () => {
             <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
             {{ getLocaleName(trans.locale) }}
             <UBadge v-if="isDefaultLocale(trans.locale)" variant="subtle" color="primary" size="sm">
-              Obligatorio
+              {{ t('admin.press.form.requiredBadge') }}
             </UBadge>
-            <span v-else class="text-muted text-xs font-normal">(opcional)</span>
+            <span v-else class="text-muted text-xs font-normal">{{
+              t('admin.common.optional')
+            }}</span>
           </h3>
 
           <div class="space-y-4">
             <UFormField
-              :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'"
+              :label="
+                isDefaultLocale(trans.locale)
+                  ? `${t('admin.press.form.titleLabel')} *`
+                  : t('admin.press.form.titleLabel')
+              "
               :error="getFieldError(`translations.${index}.title`)"
             >
               <UInput
@@ -443,20 +458,24 @@ const confirmCancel = () => {
             </UFormField>
 
             <UFormField
-              :label="isDefaultLocale(trans.locale) ? 'Descripción breve *' : 'Descripción breve'"
+              :label="
+                isDefaultLocale(trans.locale)
+                  ? `${t('admin.press.form.descriptionLabel')} *`
+                  : t('admin.press.form.descriptionLabel')
+              "
               :error="getFieldError(`translations.${index}.description`)"
             >
               <UTextarea
                 v-model="trans.description"
                 class="w-full"
                 :rows="2"
-                placeholder="Breve resumen del artículo para SEO y listados"
+                :placeholder="t('admin.press.form.descriptionPlaceholder')"
               />
             </UFormField>
 
             <UFormField
               v-if="form.type === 'press_release' || form.type === 'statement'"
-              label="Contenido completo"
+              :label="t('admin.press.form.contentLabel')"
               :error="getFieldError(`translations.${index}.contentHtml`)"
             >
               <ClientOnly>
@@ -466,24 +485,24 @@ const confirmCancel = () => {
                     v-model="trans.contentHtml"
                     class="w-full"
                     :rows="10"
-                    placeholder="Escribe aquí el contenido completo de la noticia..."
+                    :placeholder="t('admin.press.form.contentPlaceholder')"
                   />
                 </template>
               </ClientOnly>
               <p class="text-muted mt-2 text-xs">
                 {{
                   isDefaultLocale(trans.locale)
-                    ? 'Obligatorio si no subes PDF. En otros idiomas puedes dejarlo vacío y se mostrará el contenido en español.'
-                    : 'Opcional. Si lo dejas vacío, se mostrará el contenido en español.'
+                    ? t('admin.press.form.contentHintDefault')
+                    : t('admin.press.form.contentHintOther')
                 }}
               </p>
             </UFormField>
 
-            <UFormField label="Texto alternativo de la imagen">
+            <UFormField :label="t('admin.press.form.altLabel')">
               <UInput
                 v-model="trans.alt"
                 class="w-full"
-                placeholder="Descripción de la imagen de portada"
+                :placeholder="t('admin.press.form.altPlaceholder')"
               />
             </UFormField>
           </div>
@@ -494,10 +513,10 @@ const confirmCancel = () => {
         <div class="space-y-5 rounded-xl border p-5">
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-settings" class="text-muted size-4" />
-            Configuración
+            {{ t('admin.press.form.configTitle') }}
           </h3>
 
-          <UFormField v-if="!isEditing" label="Tipo de artículo">
+          <UFormField v-if="!isEditing" :label="t('admin.press.form.typeLabel')">
             <USelectMenu
               v-model="form.type"
               :items="Object.entries(typeLabels).map(([value, label]) => ({ value, label }))"
@@ -510,7 +529,7 @@ const confirmCancel = () => {
             <span>{{ typeLabels[form.type] }}</span>
           </div>
 
-          <UFormField label="Fecha publicación">
+          <UFormField :label="t('admin.press.form.publishedAtLabel')">
             <UInputDate ref="inputDate" v-model="publishedAt" class="w-full">
               <template #trailing>
                 <UPopover :reference="inputDate?.inputsRef[3]?.$el" :popper="{ strategy: 'fixed' }">
@@ -519,7 +538,7 @@ const confirmCancel = () => {
                     variant="link"
                     size="sm"
                     icon="i-tabler-calendar"
-                    aria-label="Seleccionar fecha"
+                    :aria-label="t('admin.press.form.selectDateAria')"
                     class="px-0"
                   />
                   <template #content>
@@ -530,21 +549,23 @@ const confirmCancel = () => {
             </UInputDate>
           </UFormField>
 
-          <UFormField label="Estado">
+          <UFormField :label="t('admin.press.form.statusLabel')">
             <div class="flex items-center gap-2">
               <USwitch v-model="form.active" />
-              <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+              <span class="text-sm">{{
+                form.active ? t('admin.common.active') : t('admin.common.inactive')
+              }}</span>
             </div>
           </UFormField>
 
-          <UFormField label="Etiquetas">
+          <UFormField :label="t('admin.press.form.tagsLabel')">
             <USelectMenu
               v-model="form.tagIds"
               :items="tagSelectItems"
               value-key="value"
               multiple
               class="w-full"
-              placeholder="Selecciona etiquetas..."
+              :placeholder="t('admin.press.form.tagsPlaceholder')"
               :disabled="Boolean(supportDataError)"
             />
           </UFormField>
@@ -556,23 +577,23 @@ const confirmCancel = () => {
         >
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-photo" class="text-muted size-4" />
-            Imagen de portada
+            {{ t('admin.press.form.coverImageTitle') }}
           </h3>
           <p class="text-muted text-xs">
-            Opcional. Si no subes imagen, se usará la
+            {{ t('admin.press.form.coverImageHintBefore') }}
             <NuxtLink
-              :to="ADMIN_ROUTES.siteDefaultImages"
+              :to="localePath(ADMIN_ROUTES.siteDefaultImages)"
               class="text-primary underline underline-offset-2"
             >
-              portada por defecto
+              {{ t('admin.press.form.coverImageHintLink') }}
             </NuxtLink>
-            del tipo de artículo (si está configurada).
+            {{ t('admin.press.form.coverImageHintAfter') }}
           </p>
 
           <div v-if="imageUpload.preview.value" class="overflow-hidden rounded-lg border">
             <img
               :src="imageUpload.preview.value"
-              alt="Vista previa de la imagen"
+              :alt="t('admin.press.form.imagePreviewAlt')"
               class="aspect-video w-full object-cover"
             />
           </div>
@@ -582,7 +603,7 @@ const confirmCancel = () => {
           >
             <div class="text-muted text-center">
               <UIcon name="i-tabler-photo-plus" class="mx-auto mb-1 size-7 opacity-50" />
-              <p class="text-xs">Sin imagen</p>
+              <p class="text-xs">{{ t('admin.press.form.noImage') }}</p>
             </div>
           </div>
           <input
@@ -602,7 +623,11 @@ const confirmCancel = () => {
               :loading="imageUpload.isUploading.value"
               @click="imageUpload.triggerFileDialog"
             >
-              {{ imageUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+              {{
+                imageUpload.preview.value
+                  ? t('admin.press.form.changeImage')
+                  : t('admin.press.form.uploadImage')
+              }}
             </UButton>
             <UButton
               v-if="form.image"
@@ -613,13 +638,13 @@ const confirmCancel = () => {
               size="sm"
               @click="clearCoverImage"
             >
-              Quitar imagen
+              {{ t('admin.press.form.removeImage') }}
             </UButton>
           </div>
           <p v-if="getFieldError('image')" class="text-error text-xs" role="alert">
             {{ getFieldError('image') }}
           </p>
-          <p v-else class="text-muted text-xs">JPG, PNG, WebP, SVG o AVIF</p>
+          <p v-else class="text-muted text-xs">{{ t('admin.press.form.imageFormats') }}</p>
         </div>
 
         <div
@@ -628,7 +653,7 @@ const confirmCancel = () => {
         >
           <h3 class="flex items-center gap-2 text-sm font-semibold">
             <UIcon name="i-tabler-file-type-pdf" class="text-muted size-4" />
-            Documento PDF
+            {{ t('admin.press.form.pdfTitle') }}
           </h3>
 
           <div
@@ -643,7 +668,7 @@ const confirmCancel = () => {
               color="error"
               icon="i-tabler-x"
               size="xs"
-              aria-label="Quitar PDF"
+              :aria-label="t('admin.press.form.removePdfAria')"
               @click="handleRemovePdf"
             />
           </div>
@@ -663,10 +688,14 @@ const confirmCancel = () => {
             :loading="pdfUpload.isUploading.value"
             @click="pdfUpload.triggerFileDialog"
           >
-            {{ pdfUpload.fileName.value ? 'Cambiar PDF' : 'Subir PDF' }}
+            {{
+              pdfUpload.fileName.value
+                ? t('admin.press.form.changePdf')
+                : t('admin.press.form.uploadPdf')
+            }}
           </UButton>
           <p class="text-muted text-xs">
-            Opcional. Si no subes PDF, añade el contenido en el editor.
+            {{ t('admin.press.form.pdfHint') }}
           </p>
         </div>
       </aside>
@@ -681,14 +710,18 @@ const confirmCancel = () => {
             >
               <UIcon name="i-tabler-alert-triangle" class="text-warning size-6" />
             </div>
-            <h2 class="text-base font-bold">Cambios sin guardar</h2>
+            <h2 class="text-base font-bold">{{ t('admin.press.form.cancelModalTitle') }}</h2>
           </div>
           <p class="text-muted mb-6 text-sm">
-            Si sales ahora perderás los cambios realizados. ¿Quieres continuar?
+            {{ t('admin.press.form.cancelModalBody') }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showCancelModal = false">Seguir editando</UButton>
-            <UButton color="warning" @click="confirmCancel">Salir sin guardar</UButton>
+            <UButton variant="ghost" @click="showCancelModal = false">{{
+              t('admin.press.form.keepEditing')
+            }}</UButton>
+            <UButton color="warning" @click="confirmCancel">{{
+              t('admin.press.form.discardChanges')
+            }}</UButton>
           </div>
         </div>
       </template>

@@ -1,9 +1,9 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressArticles } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/admin/adminAssetPublication'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { sanitizePressTranslations } from '../../../utils/press/pressTranslation'
 import { throwMethodNotAllowed } from '../../../utils/core/throwMethodNotAllowed'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!item) {
-      throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
     }
 
     return {
@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingItem) {
-      throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
     }
 
     await db.delete(pressArticles).where(eq(pressArticles.id, id))

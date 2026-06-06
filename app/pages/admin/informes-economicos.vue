@@ -29,7 +29,9 @@ interface FinancialReport {
   translations: FinancialReportTranslation[]
 }
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
@@ -50,6 +52,7 @@ const {
 } = await useFetch<{
   data: FinancialReport[]
 }>('/api/admin/financial-reports', {
+  headers: localeApiHeaders,
   lazy: true,
 })
 const sortFinancialReports = (left: FinancialReport, right: FinancialReport) => {
@@ -72,10 +75,10 @@ const MAX_FINANCIAL_REPORT_PDF_SIZE = 20 * 1024 * 1024
 
 const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/financial-reports/upload',
-  successMessage: 'PDF subido correctamente',
-  errorMessage: 'No se pudo subir el PDF',
+  successMessage: t('admin.financialReports.pdfUploaded'),
+  errorMessage: t('admin.financialReports.pdfUploadFailed'),
   maxFileSizeBytes: MAX_FINANCIAL_REPORT_PDF_SIZE,
-  maxFileSizeMessage: 'El PDF supera el tamaño máximo (20MB)',
+  maxFileSizeMessage: t('admin.financialReports.pdfTooLarge'),
   onUploaded: (storagePath) => {
     form.pdfUrl = storagePath
   },
@@ -189,7 +192,9 @@ function getAdditionalTranslationCount(item: FinancialReport) {
 function getAdditionalTranslationLabel(item: FinancialReport) {
   const count = getAdditionalTranslationCount(item)
   if (count === 0) return ''
-  return `${count} idioma adicional${count > 1 ? 'es' : ''}`
+  return count > 1
+    ? t('admin.financialReports.additionalLanguagesPlural', { count })
+    : t('admin.financialReports.additionalLanguage', { count })
 }
 
 const handleSubmit = async () => {
@@ -220,7 +225,7 @@ const handleSubmit = async () => {
       )
       replaceItem(response.data)
       await refreshAllClientAsyncData()
-      toast.add({ title: 'Informe actualizado', color: 'success' })
+      toast.add({ title: t('admin.financialReports.updatedToast'), color: 'success' })
     } else {
       const response = await $fetch<{ data: FinancialReport }>('/api/admin/financial-reports', {
         method: 'POST',
@@ -228,13 +233,16 @@ const handleSubmit = async () => {
       })
       prependItem(response.data)
       await refreshAllClientAsyncData()
-      toast.add({ title: 'Informe creado', color: 'success' })
+      toast.add({ title: t('admin.financialReports.createdToast'), color: 'success' })
     }
 
     closeModal()
     clearErrors()
   } catch (error) {
-    toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el informe'), color: 'error' })
+    toast.add({
+      title: getApiErrorMessage(error, t('admin.financialReports.saveErrorToast')),
+      color: 'error',
+    })
   } finally {
     isSubmitting.value = false
   }
@@ -250,11 +258,11 @@ const handleDelete = async () => {
     })
     removeItem(itemToDelete.value.id)
     await refreshAllClientAsyncData()
-    toast.add({ title: 'Informe eliminado', color: 'success' })
+    toast.add({ title: t('admin.financialReports.deletedToast'), color: 'success' })
     closeDeleteModal()
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo eliminar el informe'),
+      title: getApiErrorMessage(error, t('admin.financialReports.deleteErrorToast')),
       color: 'error',
     })
   } finally {
@@ -267,12 +275,14 @@ const handleDelete = async () => {
   <div>
     <div class="mb-6 flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Informes Económicos</h1>
+        <h1 class="text-2xl font-bold">{{ t('admin.financialReports.title') }}</h1>
         <p class="text-muted mt-1 text-sm">
-          Gestiona los informes económicos de CREUP aprobados por la Asamblea General.
+          {{ t('admin.financialReports.subtitle') }}
         </p>
       </div>
-      <UButton icon="i-tabler-plus" @click="openCreate">Nuevo informe</UButton>
+      <UButton icon="i-tabler-plus" @click="openCreate">{{
+        t('admin.financialReports.newReport')
+      }}</UButton>
     </div>
 
     <div v-if="pending" class="space-y-3" aria-hidden="true">
@@ -285,20 +295,20 @@ const handleDelete = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los informes"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.financialReports.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
     <UCard v-else-if="items.length === 0" class="text-center">
       <div class="flex flex-col items-center gap-3 py-8">
         <UIcon name="i-tabler-file-analytics" class="text-muted size-10" />
-        <p class="text-muted">No hay informes económicos todavía.</p>
+        <p class="text-muted">{{ t('admin.financialReports.empty') }}</p>
         <UButton variant="soft" icon="i-tabler-plus" @click="openCreate">
-          Crear primer informe
+          {{ t('admin.financialReports.createFirst') }}
         </UButton>
       </div>
     </UCard>
@@ -313,11 +323,15 @@ const handleDelete = async () => {
               <div class="flex flex-wrap items-center gap-2">
                 <p class="truncate font-medium">{{ getReportTitle(item) }}</p>
                 <UBadge :color="item.active ? 'success' : 'neutral'" variant="subtle" size="sm">
-                  {{ item.active ? 'Activo' : 'Inactivo' }}
+                  {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
                 </UBadge>
               </div>
               <div class="mt-1 flex flex-wrap items-center gap-2">
-                <p class="text-muted text-sm">Aprobado el {{ formatDate(item.approvedAt) }}</p>
+                <p class="text-muted text-sm">
+                  {{
+                    t('admin.financialReports.approvedOn', { date: formatDate(item.approvedAt) })
+                  }}
+                </p>
                 <UBadge
                   v-if="getAdditionalTranslationCount(item) > 0"
                   color="info"
@@ -341,13 +355,13 @@ const handleDelete = async () => {
               icon="i-tabler-external-link"
               size="sm"
             >
-              Ver PDF
+              {{ t('admin.financialReports.viewPdf') }}
             </UButton>
             <UButton
               variant="ghost"
               icon="i-tabler-edit"
               size="sm"
-              aria-label="Editar informe"
+              :aria-label="t('admin.financialReports.editAria')"
               @click="openEdit(item)"
             />
             <UButton
@@ -355,7 +369,7 @@ const handleDelete = async () => {
               color="error"
               icon="i-tabler-trash"
               size="sm"
-              aria-label="Eliminar informe"
+              :aria-label="t('admin.financialReports.deleteAria')"
               @click="confirmDelete(item)"
             />
           </div>
@@ -367,10 +381,14 @@ const handleDelete = async () => {
       <template #content>
         <div class="p-6">
           <h2 class="mb-2 text-lg font-bold">
-            {{ editingItem ? 'Editar informe' : 'Nuevo informe económico' }}
+            {{
+              editingItem
+                ? t('admin.financialReports.editTitle')
+                : t('admin.financialReports.newTitle')
+            }}
           </h2>
           <p class="text-muted mb-6 text-sm">
-            El título en español es obligatorio. El resto de idiomas son opcionales.
+            {{ t('admin.financialReports.formHint') }}
           </p>
 
           <form class="space-y-5" @submit.prevent="handleSubmit">
@@ -389,13 +407,17 @@ const handleDelete = async () => {
                     variant="subtle"
                     size="sm"
                   >
-                    Obligatorio
+                    {{ t('admin.financialReports.required') }}
                   </UBadge>
-                  <span v-else class="text-muted text-xs">(opcional)</span>
+                  <span v-else class="text-muted text-xs">{{ t('admin.common.optional') }}</span>
                 </div>
 
                 <UFormField
-                  :label="isDefaultLocale(translation.locale) ? 'Título *' : 'Título'"
+                  :label="
+                    isDefaultLocale(translation.locale)
+                      ? `${t('admin.financialReports.titleLabel')} *`
+                      : t('admin.financialReports.titleLabel')
+                  "
                   :error="getFieldError(`translations.${index}.title`)"
                 >
                   <UInput
@@ -403,19 +425,25 @@ const handleDelete = async () => {
                     class="w-full"
                     :placeholder="
                       isDefaultLocale(translation.locale)
-                        ? 'Informe Económico de...'
-                        : 'Economic Report for...'
+                        ? t('admin.financialReports.titlePlaceholderEs')
+                        : t('admin.financialReports.titlePlaceholderOther')
                     "
                   />
                 </UFormField>
               </div>
             </div>
 
-            <UFormField label="Fecha de aprobación *" :error="getFieldError('approvedAt')">
+            <UFormField
+              :label="`${t('admin.financialReports.approvedAtLabel')} *`"
+              :error="getFieldError('approvedAt')"
+            >
               <UInputDate v-model="approvedAt" class="w-full" />
             </UFormField>
 
-            <UFormField label="Documento PDF *" :error="getFieldError('pdfUrl')">
+            <UFormField
+              :label="`${t('admin.financialReports.pdfLabel')} *`"
+              :error="getFieldError('pdfUrl')"
+            >
               <div
                 v-if="pdfUpload.fileName"
                 class="bg-muted/30 mb-2 flex items-center gap-2 rounded-lg border p-3"
@@ -439,25 +467,37 @@ const handleDelete = async () => {
                 :loading="pdfUpload.isUploading.value"
                 @click="pdfUpload.triggerFileDialog"
               >
-                {{ pdfUpload.fileName ? 'Cambiar PDF' : 'Subir PDF' }}
+                {{
+                  pdfUpload.fileName
+                    ? t('admin.financialReports.changePdf')
+                    : t('admin.financialReports.uploadPdf')
+                }}
               </UButton>
             </UFormField>
 
-            <UFormField label="Estado">
+            <UFormField :label="t('admin.financialReports.statusLabel')">
               <div class="flex items-center gap-2">
                 <USwitch v-model="form.active" />
-                <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+                <span class="text-sm">{{
+                  form.active ? t('admin.common.active') : t('admin.common.inactive')
+                }}</span>
               </div>
             </UFormField>
 
             <div class="flex justify-end gap-2 pt-2">
-              <UButton variant="ghost" @click="showModal = false">Cancelar</UButton>
+              <UButton variant="ghost" @click="showModal = false">{{
+                t('admin.common.cancel')
+              }}</UButton>
               <UButton
                 type="submit"
                 :loading="isSubmitting"
                 :disabled="Boolean(editingItem) && !hasFormChanges"
               >
-                {{ editingItem ? 'Guardar cambios' : 'Crear informe' }}
+                {{
+                  editingItem
+                    ? t('admin.financialReports.saveChanges')
+                    : t('admin.financialReports.createReport')
+                }}
               </UButton>
             </div>
           </form>
@@ -472,15 +512,19 @@ const handleDelete = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Eliminar informe</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.financialReports.deleteTitle') }}</h2>
           </div>
-          <p class="text-muted mb-1 text-sm">¿Seguro que quieres eliminar este informe?</p>
+          <p class="text-muted mb-1 text-sm">{{ t('admin.financialReports.deletePrompt') }}</p>
           <p v-if="itemToDelete" class="mb-6 text-sm font-medium">
             {{ getReportTitle(itemToDelete) }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">{{
+              t('admin.common.delete')
+            }}</UButton>
           </div>
         </div>
       </template>

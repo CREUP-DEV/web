@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError } from 'h3'
 import type { H3Event } from 'h3'
 import { and, eq, isNull, notInArray, sql } from 'drizzle-orm'
@@ -14,6 +13,7 @@ import {
 } from '../utils/admin/adminAssetPublication'
 import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/admin/adminErrors'
 import { getRequiredTranslationValue } from '../utils/locale/localizedContent'
+import { getAdminApiErrorMessage } from '../utils/locale/adminApiErrorMessages'
 import {
   hasMeaningfulRichTextHtml,
   sanitizePressTranslations,
@@ -165,7 +165,11 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
         })
         .returning()
 
-      if (!item) throw createError({ statusCode: 500, message: 'Error al crear el artículo' })
+      if (!item)
+        throw createError({
+          statusCode: 500,
+          message: getAdminApiErrorMessage(event, 'pressArticleCreateFailed'),
+        })
 
       if (data.translations.length > 0) {
         await tx
@@ -220,7 +224,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
       }).catch(() => {
         throw createError({
           statusCode: 409,
-          message: 'No se pudo generar un slug único para el artículo',
+          message: getAdminApiErrorMessage(event, 'pressArticleSlugFailed'),
         })
       })
     }
@@ -331,8 +335,7 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
       if (updatedRows.length === 0) {
         throw createError({
           statusCode: 409,
-          message:
-            'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+          message: getAdminApiErrorMessage(event, 'pressArticleOptimisticLock'),
         })
       }
 
@@ -397,12 +400,13 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
       where: eq(pressArticles.id, id),
     })
 
-    if (!existingItem) throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+    if (!existingItem)
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
 
     assertOptimisticLock(
       data.updatedAt,
       existingItem.updatedAt,
-      'El artículo fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
+      getAdminApiErrorMessage(event, 'pressArticleOptimisticLock')
     )
 
     const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
@@ -441,7 +445,7 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
       }).catch(() => {
         throw createError({
           statusCode: 409,
-          message: 'No se pudo generar un slug único para el artículo',
+          message: getAdminApiErrorMessage(event, 'pressArticleSlugFailed'),
         })
       })
     }

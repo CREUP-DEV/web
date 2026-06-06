@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
@@ -6,6 +5,7 @@ import { featuredLinks } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/admin/adminAssetPublication'
 import { invalidateHomeDataCache } from '../../../utils/admin/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import { HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingItem) {
-      throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
     }
 
     await db.delete(featuredLinks).where(eq(featuredLinks.id, id))

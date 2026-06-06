@@ -64,6 +64,7 @@ export function useAdminPress(
   type: MaybeRef<AdminPressArticleType | null>,
   search: MaybeRef<string>
 ) {
+  const localeApiHeaders = useLocaleApiHeaders()
   const typeValue = computed(() => unref(type))
   const searchValue = computed(() => unref(search))
   const debouncedSearch = refDebounced(searchValue, 300)
@@ -88,7 +89,9 @@ export function useAdminPress(
       if (debouncedSearch.value) params.set('search', debouncedSearch.value)
       params.set('limit', String(ADMIN_PRESS_PAGE_SIZE))
       params.set('offset', String(offset.value))
-      return $fetch<AdminPressResponse>(`/api/admin/press?${params.toString()}`)
+      return $fetch<AdminPressResponse>(`/api/admin/press?${params.toString()}`, {
+        headers: localeApiHeaders.value,
+      })
     },
     {
       default: () => ({ data: [], meta: { total: 0 } }),

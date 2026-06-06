@@ -42,6 +42,33 @@ const ALLOWLIST: AllowlistEntry[] = [
   },
   { pattern: /^contactPage\.form\.phonePlaceholder$/, reason: 'Phone format stays the same.' },
   { pattern: /^newsletterPage\.form\.consentSuffix$/, reason: 'Punctuation only.' },
+  { pattern: /^mic\.colorsTable\.(hex|rgb|cmyk|pantone)$/, reason: 'Color-space acronyms.' },
+  // Admin panel: terms that are intentionally identical in es/en.
+  {
+    pattern: /^admin\.newsletter\.monthPicker\.[a-z]{3}$/,
+    reason: 'Month abbreviations that coincide in es/en.',
+  },
+  {
+    pattern:
+      /^admin\.stats\.(autoLabel|newsletterBacklog|statusOk|statusError|idle|redis|uptime|waiting|active|delayed|failed|completed)$/,
+    reason: 'Technical / BullMQ / proper-noun status labels shown verbatim in both locales.',
+  },
+  {
+    pattern:
+      /^admin\.(nav\.newsletter\.name|newsletter\.list\.title|siteDefaultImages\.newsletterHeading|dashboard\.newsletter)$/,
+    reason: 'Newsletter is a brand term kept in English.',
+  },
+  { pattern: /^admin\.(equality|newsletter\.list)\.pdfLabel$/, reason: 'PDF acronym.' },
+  {
+    pattern:
+      /^admin\.(media\.logoLabel|equality\.metaLabel|tags\.slugPrefix|about\.visible|media\.websitePlaceholder|financialReports\.titlePlaceholderOther)$/,
+    reason: 'Proper/technical labels or example placeholders identical in both locales.',
+  },
+  {
+    pattern:
+      /^admin\.(siteDefaultImages\.seoIntroAfter|newsletter\.subscribers\.deleteConfirmSuffix)$/,
+    reason: 'Punctuation only.',
+  },
 ]
 
 function loadLocale(file: string): JSONValue {

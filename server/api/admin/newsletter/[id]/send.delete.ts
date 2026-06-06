@@ -1,8 +1,8 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError, defineEventHandler } from 'h3'
 import { and, eq, isNotNull, isNull } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletters } from '../../../../db/schema'
+import { getAdminApiErrorMessage } from '../../../../utils/locale/adminApiErrorMessages'
 import { removeNewsletterSendJob } from '../../../../utils/core/backgroundJobs'
 import { monthKeyToDate } from '../../../../utils/newsletter/newsletters'
 import { idRouteParamSchema, validateRouteParams } from '../../../../utils/validation'
@@ -15,13 +15,13 @@ export default defineEventHandler(async (event) => {
   })
 
   if (!item) {
-    throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+    throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
   }
 
   if (!item.lastDeliveryWorkerToken || item.lastDeliveryFinishedAt) {
     throw createError({
       statusCode: 409,
-      message: 'La newsletter no se está enviando en este momento',
+      message: getAdminApiErrorMessage(event, 'newsletterNotSending'),
     })
   }
 
@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
   if (!updated) {
     throw createError({
       statusCode: 409,
-      message: 'La newsletter no se está enviando en este momento',
+      message: getAdminApiErrorMessage(event, 'newsletterNotSending'),
     })
   }
 

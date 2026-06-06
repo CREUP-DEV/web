@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { equalityDocuments, equalityDocumentTranslations } from '../../../db/schema'
@@ -14,9 +13,6 @@ import {
   createEqualityDocumentSchema,
   updateEqualityDocumentSchema,
 } from '~~/shared/utils/adminSchemas'
-
-const OPTIMISTIC_LOCK_MESSAGE =
-  'El documento fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.'
 
 export const equalityCrud = defineAssetBackedTranslatableCrud({
   schema: { create: createEqualityDocumentSchema, update: updateEqualityDocumentSchema },
@@ -70,10 +66,10 @@ export const equalityCrud = defineAssetBackedTranslatableCrud({
   },
   invalidate: invalidateEqualityDocumentsCache,
   messages: {
-    notFound: ADMIN_NOT_FOUND_MESSAGE,
-    optimisticLock: OPTIMISTIC_LOCK_MESSAGE,
-    createFailed: 'No se pudo crear el documento de igualdad',
-    updateFailed: 'No se pudo actualizar el documento de igualdad',
+    notFound: 'notFound',
+    optimisticLock: 'equalityOptimisticLock',
+    createFailed: 'equalityCreateFailed',
+    updateFailed: 'equalityUpdateFailed',
   },
   scope: { create: 'admin.equality.create', update: 'admin.equality.update' },
 })

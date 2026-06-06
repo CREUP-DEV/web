@@ -1,12 +1,13 @@
 import pLimit from 'p-limit'
 import { createId } from '@paralleldrive/cuid2'
-import { createError } from 'h3'
+import { createError, type H3Event } from 'h3'
 import { and, asc, count, eq, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterDeliveries, newsletters, newsletterSubscribers } from '../db/schema'
 import { sendNewsletterEmail } from '../utils/email/newsletterMailer'
 import { getSiteDefaultImageRaw } from '../utils/admin/siteDefaultImages'
 import { logError, logInfo } from '../utils/core/logger'
+import { resolveAdminApiMessage } from '../utils/locale/adminApiErrorMessages'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
@@ -681,7 +682,10 @@ export async function requeueActiveNewsletterDeliveriesForShutdown() {
   })
 }
 
-export async function claimNewsletterForSending(id: string): Promise<NewsletterRecord> {
+export async function claimNewsletterForSending(
+  id: string,
+  event?: H3Event
+): Promise<NewsletterRecord> {
   const claimedItem = await claimNewsletterDeliveryWorker(id)
 
   if (claimedItem) {
@@ -710,24 +714,30 @@ export async function claimNewsletterForSending(id: string): Promise<NewsletterR
   })
 
   if (!current) {
-    throw createError({ statusCode: 404, message: 'Newsletter no encontrada' })
+    throw createError({
+      statusCode: 404,
+      message: resolveAdminApiMessage('newsletterNotFound', event),
+    })
   }
 
   if (current.sentAt) {
     throw createError({
       statusCode: 409,
-      message: 'La newsletter ya se ha enviado',
+      message: resolveAdminApiMessage('newsletterAlreadySent', event),
     })
   }
 
   if (current.lastDeliveryWorkerToken) {
     throw createError({
       statusCode: 409,
-      message: 'La newsletter ya se está enviando',
+      message: resolveAdminApiMessage('newsletterAlreadySending', event),
     })
   }
 
-  throw createError({ statusCode: 409, message: 'No se puede enviar la newsletter' })
+  throw createError({
+    statusCode: 409,
+    message: resolveAdminApiMessage('newsletterCannotSend', event),
+  })
 }
 
 export async function sendNewsletterById(id: string): Promise<{

@@ -6,14 +6,14 @@ type AdminCrudTransactionContext = Parameters<AdminCrudTransaction>[0]
 
 export async function runAdminCrudTransaction<T>(
   mutation: (tx: AdminCrudTransactionContext) => Promise<T | null | undefined>,
-  errorMessage: string
+  errorMessage: string | (() => string)
 ): Promise<NonNullable<T>> {
   const result = await db.transaction(mutation)
 
   if (result == null) {
     throw createError({
       statusCode: 500,
-      message: errorMessage,
+      message: typeof errorMessage === 'function' ? errorMessage() : errorMessage,
     })
   }
 

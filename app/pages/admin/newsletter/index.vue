@@ -13,9 +13,11 @@ definePageMeta({
   title: 'Newsletter',
 })
 
-const toast = useToast()
+const { t } = useI18n()
+const toast = useAdminToast()
 const route = useRoute()
 const router = useRouter()
+const localePath = useLocalePath()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
@@ -47,10 +49,10 @@ const isDeleting = ref(false)
 
 const imageUpload = useAdminFileUpload({
   endpoint: '/api/admin/newsletter/upload',
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.newsletter.list.imageUploaded'),
+  errorMessage: t('admin.newsletter.list.imageUploadFailed'),
   maxFileSizeBytes: NEWSLETTER_MAX_IMAGE_SIZE,
-  maxFileSizeMessage: 'La imagen supera el tamaño máximo (5MB)',
+  maxFileSizeMessage: t('admin.newsletter.list.imageTooLarge'),
   onUploaded: (storagePath) => {
     form.coverImage = storagePath
   },
@@ -58,10 +60,10 @@ const imageUpload = useAdminFileUpload({
 })
 const pdfUpload = useAdminDocumentUpload({
   endpoint: '/api/admin/newsletter/upload',
-  successMessage: 'PDF subido correctamente',
-  errorMessage: 'No se pudo subir el PDF',
+  successMessage: t('admin.newsletter.list.pdfUploaded'),
+  errorMessage: t('admin.newsletter.list.pdfUploadFailed'),
   maxFileSizeBytes: NEWSLETTER_MAX_PDF_SIZE,
-  maxFileSizeMessage: 'El PDF supera el tamaño máximo (20MB)',
+  maxFileSizeMessage: t('admin.newsletter.list.pdfTooLarge'),
   onUploaded: (storagePath) => {
     form.pdfUrl = storagePath
   },
@@ -222,7 +224,7 @@ async function handleSubmit() {
         replaceItem(toNewsletterListItem(response.data))
       }
       await refreshAllClientAsyncData()
-      toast.add({ title: 'Newsletter actualizada', color: 'success' })
+      toast.add({ title: t('admin.newsletter.list.updatedToast'), color: 'success' })
     } else {
       const response = await $fetch<{
         data?: {
@@ -251,14 +253,16 @@ async function handleSubmit() {
         await refresh()
       }
       await refreshAllClientAsyncData()
-      const msg = emailQueued ? 'Newsletter creada y envío iniciado' : 'Newsletter creada'
+      const msg = emailQueued
+        ? t('admin.newsletter.list.createdSendingToast')
+        : t('admin.newsletter.list.createdToast')
       toast.add({ title: msg, color: 'success' })
     }
     closeModal()
     clearErrors()
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo guardar la newsletter'),
+      title: getApiErrorMessage(error, t('admin.newsletter.list.saveErrorToast')),
       color: 'error',
     })
   } finally {
@@ -279,10 +283,10 @@ async function handleDelete() {
     }))
     await refreshAllClientAsyncData()
     closeDeleteModal()
-    toast.add({ title: 'Newsletter eliminada', color: 'success' })
+    toast.add({ title: t('admin.newsletter.list.deletedToast'), color: 'success' })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo eliminar la newsletter'),
+      title: getApiErrorMessage(error, t('admin.newsletter.list.deleteErrorToast')),
       color: 'error',
     })
   } finally {
@@ -296,12 +300,12 @@ const canSubmit = computed(
 
 const createSubmitButtonLabel = computed(() => {
   if (editingItem.value) {
-    return 'Guardar'
+    return t('admin.common.save')
   }
   if (isSubmitting.value && form.sendEmail) {
-    return 'Creando e iniciando envío…'
+    return t('admin.newsletter.list.creatingSending')
   }
-  return 'Crear'
+  return t('admin.common.create')
 })
 
 watch(
@@ -323,12 +327,16 @@ watch(
 <template>
   <div>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Newsletter</h1>
+      <h1 class="text-2xl font-bold">{{ t('admin.newsletter.list.title') }}</h1>
       <div class="flex gap-2">
-        <UButton :to="ADMIN_ROUTES.newsletterSubscribers" icon="i-tabler-users" variant="outline">
-          Suscriptores
+        <UButton
+          :to="localePath(ADMIN_ROUTES.newsletterSubscribers)"
+          icon="i-tabler-users"
+          variant="outline"
+        >
+          {{ t('admin.newsletter.list.subscribersButton') }}
         </UButton>
-        <UButton icon="i-tabler-plus" @click="openCreate">Añadir</UButton>
+        <UButton icon="i-tabler-plus" @click="openCreate">{{ t('admin.common.add') }}</UButton>
       </div>
     </div>
 
@@ -342,16 +350,16 @@ watch(
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar las newsletters"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.newsletter.list.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
     <div v-else-if="items.length === 0" class="text-muted py-12 text-center">
-      No hay newsletters. Pulsa «Añadir» para crear la primera.
+      {{ t('admin.newsletter.list.empty') }}
     </div>
 
     <div v-else class="space-y-4">
@@ -376,23 +384,36 @@ watch(
         </div>
         <div class="flex-1 overflow-hidden">
           <h3 class="font-medium">{{ formatMonth(item.monthKey) }}</h3>
-          <div class="text-muted mt-0.5 text-sm">Creada {{ formatDate(item.createdAt) }}</div>
+          <div class="text-muted mt-0.5 text-sm">
+            {{ t('admin.newsletter.list.createdOn', { date: formatDate(item.createdAt) }) }}
+          </div>
           <div v-if="item.sentAt" class="text-muted mt-0.5 text-sm">
-            Enviada {{ formatDate(item.sentAt) }}
+            {{ t('admin.newsletter.list.sentOn', { date: formatDate(item.sentAt) }) }}
           </div>
           <div v-else-if="item.isSending" class="text-muted mt-0.5 text-sm">
             <template v-if="item.lastDeliveryTotal !== null && item.lastDeliveryTotal > 0">
-              Enviando {{ item.lastDeliverySentCount ?? 0 }} de {{ item.lastDeliveryTotal }}
+              {{
+                t('admin.newsletter.list.sendingProgress', {
+                  sent: item.lastDeliverySentCount ?? 0,
+                  total: item.lastDeliveryTotal,
+                })
+              }}
             </template>
-            <template v-else>Enviándose ahora</template>
+            <template v-else>{{ t('admin.newsletter.list.sendingNow') }}</template>
           </div>
-          <div v-else class="text-muted mt-0.5 text-sm">Pendiente de envío</div>
+          <div v-else class="text-muted mt-0.5 text-sm">
+            {{ t('admin.newsletter.list.pendingSend') }}
+          </div>
           <div class="mt-1 flex flex-wrap items-center gap-2">
             <span
               :class="item.publicVisible ? 'bg-primary/10 text-primary' : 'bg-muted text-muted'"
               class="rounded-full px-2 py-0.5 text-xs"
             >
-              {{ item.publicVisible ? 'Visible en web' : 'Oculta en web' }}
+              {{
+                item.publicVisible
+                  ? t('admin.newsletter.list.visibleBadge')
+                  : t('admin.newsletter.list.hiddenBadge')
+              }}
             </span>
             <span
               :class="
@@ -404,7 +425,13 @@ watch(
               "
               class="rounded-full px-2 py-0.5 text-xs"
             >
-              {{ item.isSending ? 'Enviándose' : item.sentAt ? 'Ya enviada' : 'Pendiente' }}
+              {{
+                item.isSending
+                  ? t('admin.newsletter.list.sendingBadge')
+                  : item.sentAt
+                    ? t('admin.newsletter.list.sentBadge')
+                    : t('admin.newsletter.list.pendingBadge')
+              }}
             </span>
             <a
               :href="item.pdfUrl"
@@ -412,7 +439,7 @@ watch(
               rel="noopener noreferrer"
               class="bg-warning/10 text-warning rounded-full px-2 py-0.5 text-xs hover:underline"
             >
-              PDF <span class="sr-only">(se abre en nueva pestaña)</span>
+              PDF <span class="sr-only">{{ t('admin.newsletter.list.opensNewTab') }}</span>
             </a>
           </div>
           <!-- Delivery stats: shown once a delivery has been attempted -->
@@ -421,19 +448,20 @@ watch(
             class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs"
           >
             <span class="text-muted">
-              <span class="font-medium">{{ item.lastDeliverySentCount ?? 0 }}</span> enviados
+              <span class="font-medium">{{ item.lastDeliverySentCount ?? 0 }}</span>
+              {{ t('admin.newsletter.list.sentCount') }}
             </span>
             <span v-if="(item.lastDeliveryErrorCount ?? 0) > 0" class="text-error font-medium">
-              {{ item.lastDeliveryErrorCount }} fallidos
+              {{ t('admin.newsletter.list.failedCount', { count: item.lastDeliveryErrorCount }) }}
             </span>
             <UTooltip
               v-if="(item.lastDeliveryErrorCount ?? 0) > 0"
-              :text="`Los envíos fallidos no se reintentan automáticamente (máx. ${maxDeliveryAttempts} intentos por destinatario). Usa el botón de envío manual para volver a intentarlo.`"
+              :text="t('admin.newsletter.list.failedTooltip', { max: maxDeliveryAttempts })"
             >
               <UIcon
                 name="i-tabler-info-circle"
                 class="text-error size-3.5 cursor-help"
-                aria-label="Los envíos fallidos requieren reenvío manual"
+                :aria-label="t('admin.newsletter.list.failedAria')"
               />
             </UTooltip>
           </div>
@@ -446,8 +474,10 @@ watch(
             color="error"
             size="sm"
             :loading="isCancelling && itemToCancel?.id === item.id"
-            :aria-label="`Cancelar envío de newsletter de ${formatMonth(item.monthKey)}`"
-            title="Cancelar envío"
+            :aria-label="
+              t('admin.newsletter.list.cancelSendAria', { month: formatMonth(item.monthKey) })
+            "
+            :title="t('admin.newsletter.list.cancelSend')"
             @click="confirmCancel(item)"
           />
           <UButton
@@ -458,16 +488,16 @@ watch(
             :loading="sendingItemId === item.id"
             :disabled="!item.publicVisible || sendingItemId === item.id"
             :title="
-              !item.publicVisible ? 'Debe estar visible en la web para poder enviarla' : undefined
+              !item.publicVisible ? t('admin.newsletter.list.sendRequiresVisible') : undefined
             "
-            :aria-label="`Enviar newsletter de ${formatMonth(item.monthKey)}`"
+            :aria-label="t('admin.newsletter.list.sendAria', { month: formatMonth(item.monthKey) })"
             @click="confirmManualSend(item)"
           />
           <UButton
             icon="i-tabler-pencil"
             variant="ghost"
             size="sm"
-            :aria-label="`Editar newsletter de ${formatMonth(item.monthKey)}`"
+            :aria-label="t('admin.newsletter.list.editAria', { month: formatMonth(item.monthKey) })"
             @click="openEdit(item)"
           />
           <UButton
@@ -475,7 +505,9 @@ watch(
             variant="ghost"
             color="error"
             size="sm"
-            :aria-label="`Eliminar newsletter de ${formatMonth(item.monthKey)}`"
+            :aria-label="
+              t('admin.newsletter.list.deleteAria', { month: formatMonth(item.monthKey) })
+            "
             @click="confirmDelete(item)"
           />
         </div>
@@ -485,12 +517,17 @@ watch(
     <UModal v-model:open="showModal">
       <template #header>
         <h2 class="text-lg font-semibold">
-          {{ editingItem ? 'Editar newsletter' : 'Nueva newsletter' }}
+          {{
+            editingItem ? t('admin.newsletter.list.editTitle') : t('admin.newsletter.list.newTitle')
+          }}
         </h2>
       </template>
       <template #body>
         <form class="space-y-5" @submit.prevent="handleSubmit">
-          <UFormField label="Mes *" :error="getFieldError('month')">
+          <UFormField
+            :label="`${t('admin.newsletter.list.monthLabel')} *`"
+            :error="getFieldError('month')"
+          >
             <AdminNewsletterMonthPicker
               v-model="form.month"
               :disabled-months="reservedMonthKeys"
@@ -499,8 +536,8 @@ watch(
           </UFormField>
 
           <UFormField
-            label="Imagen de portada (opcional)"
-            description="Si la dejas vacía, se usará la portada por defecto del sitio."
+            :label="`${t('admin.newsletter.list.coverImageLabel')} ${t('admin.common.optional')}`"
+            :description="t('admin.newsletter.list.coverImageDescription')"
             :error="getFieldError('coverImage')"
           >
             <div class="flex items-center gap-4">
@@ -508,7 +545,7 @@ watch(
                 role="button"
                 tabindex="0"
                 class="bg-muted flex size-24 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border"
-                aria-label="Seleccionar imagen de portada"
+                :aria-label="t('admin.newsletter.list.selectCoverImageAria')"
                 @click="imageUpload.triggerFileDialog"
                 @keydown.enter="imageUpload.triggerFileDialog"
                 @keydown.space.prevent="imageUpload.triggerFileDialog"
@@ -516,7 +553,7 @@ watch(
                 <img
                   v-if="imageUpload.preview.value"
                   :src="imageUpload.preview.value"
-                  alt="Portada"
+                  :alt="t('admin.newsletter.list.coverPreviewAlt')"
                   class="size-full object-cover"
                 />
                 <UIcon v-else name="i-tabler-photo-plus" class="text-muted size-8" />
@@ -527,7 +564,11 @@ watch(
                 :loading="imageUpload.isUploading.value"
                 @click="imageUpload.triggerFileDialog"
               >
-                {{ imageUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+                {{
+                  imageUpload.preview.value
+                    ? t('admin.newsletter.list.changeImage')
+                    : t('admin.newsletter.list.uploadImage')
+                }}
               </UButton>
               <UButton
                 v-if="form.coverImage"
@@ -542,7 +583,7 @@ watch(
                   }
                 "
               >
-                Quitar
+                {{ t('admin.newsletter.list.removeImage') }}
               </UButton>
               <input
                 :ref="imageUpload.inputRef"
@@ -554,7 +595,10 @@ watch(
             </div>
           </UFormField>
 
-          <UFormField label="PDF *" :error="getFieldError('pdfUrl')">
+          <UFormField
+            :label="`${t('admin.newsletter.list.pdfLabel')} *`"
+            :error="getFieldError('pdfUrl')"
+          >
             <div class="flex items-center gap-4">
               <UIcon
                 :name="pdfUpload.fileName.value ? 'i-tabler-file-check' : 'i-tabler-file-upload'"
@@ -570,7 +614,11 @@ watch(
                 :loading="pdfUpload.isUploading.value"
                 @click="pdfUpload.triggerFileDialog"
               >
-                {{ pdfUpload.fileName.value ? 'Cambiar PDF' : 'Subir PDF' }}
+                {{
+                  pdfUpload.fileName.value
+                    ? t('admin.newsletter.list.changePdf')
+                    : t('admin.newsletter.list.uploadPdf')
+                }}
               </UButton>
               <input
                 :ref="pdfUpload.inputRef"
@@ -582,26 +630,26 @@ watch(
             </div>
           </UFormField>
 
-          <UFormField label="Visible en la web">
+          <UFormField :label="t('admin.newsletter.list.visibleLabel')">
             <USwitch v-model="form.publicVisible" />
             <template #hint>
               <span class="text-dimmed text-xs">
-                Necesario para que los suscriptores puedan descargarla.
+                {{ t('admin.newsletter.list.visibleHint') }}
               </span>
             </template>
           </UFormField>
 
-          <UFormField v-if="!editingItem" label="Enviar correo a suscriptores">
+          <UFormField v-if="!editingItem" :label="t('admin.newsletter.list.sendEmailLabel')">
             <USwitch v-model="form.sendEmail" />
             <template #hint>
               <span class="text-dimmed text-xs">
-                Si no se envía ahora, podrás hacerlo manualmente una sola vez más adelante.
+                {{ t('admin.newsletter.list.sendEmailHint') }}
               </span>
             </template>
           </UFormField>
 
           <div class="flex justify-end gap-2 pt-2">
-            <UButton variant="outline" @click="closeModal">Cancelar</UButton>
+            <UButton variant="outline" @click="closeModal">{{ t('admin.common.cancel') }}</UButton>
             <UButton
               type="submit"
               :loading="isSubmitting"
@@ -623,21 +671,23 @@ watch(
             >
               <UIcon name="i-tabler-send" class="text-primary size-6" />
             </div>
-            <h2 class="text-lg font-bold">Confirmar envío</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.newsletter.list.sendModalTitle') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Seguro que quieres enviar la newsletter de
+            {{ t('admin.newsletter.list.sendConfirmPrefix') }}
             <strong>{{ itemToManualSend ? formatMonth(itemToManualSend.monthKey) : '' }}</strong
-            >? Esta acción iniciará el envío a todos los suscriptores activos.
+            >{{ t('admin.newsletter.list.sendConfirmSuffix') }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showManualSendModal = false">Cancelar</UButton>
+            <UButton variant="ghost" @click="showManualSendModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
             <UButton
               color="primary"
               :loading="Boolean(itemToManualSend && sendingItemId === itemToManualSend.id)"
               @click="handleManualSend"
             >
-              Enviar ahora
+              {{ t('admin.newsletter.list.sendNow') }}
             </UButton>
           </div>
         </div>
@@ -653,17 +703,19 @@ watch(
             >
               <UIcon name="i-tabler-player-stop" class="text-warning size-6" />
             </div>
-            <h2 class="text-lg font-bold">Cancelar envío</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.newsletter.list.cancelSend') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Seguro que quieres cancelar el envío de la newsletter de
+            {{ t('admin.newsletter.list.cancelConfirmPrefix') }}
             <strong>{{ itemToCancel ? formatMonth(itemToCancel.monthKey) : '' }}</strong
-            >? Los correos ya enviados no se revertirán.
+            >{{ t('admin.newsletter.list.cancelConfirmSuffix') }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showCancelModal = false">Volver</UButton>
+            <UButton variant="ghost" @click="showCancelModal = false">{{
+              t('admin.newsletter.list.back')
+            }}</UButton>
             <UButton color="error" :loading="isCancelling" @click="handleCancelSend">
-              Cancelar envío
+              {{ t('admin.newsletter.list.cancelSend') }}
             </UButton>
           </div>
         </div>
@@ -677,16 +729,20 @@ watch(
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Eliminar newsletter</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.newsletter.list.deleteModalTitle') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Seguro que quieres eliminar la newsletter de
+            {{ t('admin.newsletter.list.deleteConfirmPrefix') }}
             <strong>{{ itemToDelete ? formatMonth(itemToDelete.monthKey) : '' }}</strong
-            >? Esta acción no se puede deshacer.
+            >{{ t('admin.newsletter.list.deleteConfirmSuffix') }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">{{
+              t('admin.common.delete')
+            }}</UButton>
           </div>
         </div>
       </template>

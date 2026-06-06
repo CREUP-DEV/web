@@ -7,6 +7,7 @@ import {
   assertAdminAccessCanBeRevoked,
   getAdminAccessForUpdate,
 } from '../../../utils/admin/adminAccess'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { updateAdminAccessSchema } from '~~/shared/utils/adminSchemas'
 
@@ -15,16 +16,19 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   try {
-    const validated = validateBody(updateAdminAccessSchema, body)
+    const validated = validateBody(event, updateAdminAccessSchema, body)
     const item = await db.transaction(async (tx) => {
       const entry = await getAdminAccessForUpdate(tx, id)
 
       if (!entry) {
-        throw createError({ statusCode: 404, message: 'Acceso no encontrado' })
+        throw createError({
+          statusCode: 404,
+          message: getAdminApiErrorMessage(event, 'accessNotFound'),
+        })
       }
 
       if (!validated.active) {
-        await assertAdminAccessCanBeRevoked(tx, entry)
+        await assertAdminAccessCanBeRevoked(tx, entry, event)
       }
 
       const [updated] = await tx
@@ -36,7 +40,7 @@ export default defineEventHandler(async (event) => {
       if (!updated) {
         throw createError({
           statusCode: 500,
-          message: 'No se pudo actualizar el acceso',
+          message: getAdminApiErrorMessage(event, 'accessUpdateFailed'),
         })
       }
 

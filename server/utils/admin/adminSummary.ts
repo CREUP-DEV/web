@@ -1,9 +1,81 @@
 import { sql } from 'drizzle-orm'
+import type { H3Event } from 'h3'
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { PRESS_TYPE_LABELS } from '~~/shared/constants/pressTypes'
 import type { AdminSectionKey } from '~~/shared/constants/adminSections'
-import { DEFAULT_LOCALE_CODE } from '~~/shared/utils/locale'
+import type { LocaleDefinition } from '~~/shared/utils/locale'
+import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { db } from '../../db'
+import { getRequestLocaleContext } from '../locale/requestLocale'
+
+type SummaryLocale = 'es' | 'en'
+
+const SUMMARY_LABELS: Record<SummaryLocale, Record<string, string>> = {
+  es: {
+    aboutBannerTitle: 'Banner “Qué es CREUP”',
+    aboutNoBanner: 'Sin banner configurado',
+    aboutVisible: 'Visible en la web pública',
+    aboutSavedHidden: 'Guardado, pero oculto',
+    carouselUntitled: 'Slide sin título',
+    statusActive: 'Activo',
+    statusInactive: 'Inactivo',
+    equalityFallback: 'Documento de igualdad',
+    equalityActive: 'Documento activo',
+    equalityInactive: 'Documento inactivo',
+    newsletterPrefix: 'Newsletter',
+    newsletterSendingNow: 'Enviándose ahora',
+    newsletterSent: 'Ya enviada',
+    newsletterPending: 'Pendiente de envío',
+    newsletterVisibleWeb: 'visible en web',
+    newsletterHiddenWeb: 'oculta en web',
+    pressFallback: 'Artículo de prensa',
+    pressTypeFallback: 'Prensa',
+    pressDossierTitle: 'Dossier de prensa',
+    pressDossierNoPdf: 'Sin PDF configurado',
+    pressDossierActive: 'PDF activo',
+    pressDossierInactive: 'PDF guardado pero inactivo',
+    linksFallback: 'Enlace destacado',
+    linksActive: 'Bloque activo',
+    linksInactive: 'Bloque inactivo',
+    tagPrefix: 'Etiqueta',
+    financialFallback: 'Informe económico',
+    financialActive: 'Informe activo',
+    financialInactive: 'Informe inactivo',
+  },
+  en: {
+    aboutBannerTitle: '“What is CREUP” banner',
+    aboutNoBanner: 'No banner configured',
+    aboutVisible: 'Visible on the public website',
+    aboutSavedHidden: 'Saved, but hidden',
+    carouselUntitled: 'Untitled slide',
+    statusActive: 'Active',
+    statusInactive: 'Inactive',
+    equalityFallback: 'Equality document',
+    equalityActive: 'Active document',
+    equalityInactive: 'Inactive document',
+    newsletterPrefix: 'Newsletter',
+    newsletterSendingNow: 'Sending now',
+    newsletterSent: 'Already sent',
+    newsletterPending: 'Pending delivery',
+    newsletterVisibleWeb: 'visible on web',
+    newsletterHiddenWeb: 'hidden on web',
+    pressFallback: 'Press article',
+    pressTypeFallback: 'Press',
+    pressDossierTitle: 'Press dossier',
+    pressDossierNoPdf: 'No PDF configured',
+    pressDossierActive: 'Active PDF',
+    pressDossierInactive: 'PDF saved but inactive',
+    linksFallback: 'Featured link',
+    linksActive: 'Active block',
+    linksInactive: 'Inactive block',
+    tagPrefix: 'Tag',
+    financialFallback: 'Economic report',
+    financialActive: 'Active report',
+    financialInactive: 'Inactive report',
+  },
+}
+
+const resolveSummaryLocale = (locale: string): SummaryLocale => (locale === 'en' ? 'en' : 'es')
 
 export interface DashboardRecentActivityItem {
   sectionKey: AdminSectionKey
@@ -107,16 +179,17 @@ const parseTranslations = <K extends string>(value: unknown, key: K): ParsedTran
 const getTranslatedValue = <T extends TranslationLike>(
   translations: T[] | undefined,
   key: Exclude<keyof T, 'locale'>,
-  fallback: string
+  fallback: string,
+  locale: string,
+  locales: LocaleDefinition[],
+  fallbackLocale: string
 ) => {
   if (!translations?.length) {
     return fallback
   }
 
   const normalizedKey = String(key)
-  const preferredTranslation =
-    translations.find((translation) => translation.locale === DEFAULT_LOCALE_CODE) ??
-    translations[0]
+  const preferredTranslation = pickLocalizedEntry(translations, locale, locales, fallbackLocale)
   const preferredValue = preferredTranslation?.[normalizedKey]
 
   if (typeof preferredValue === 'string' && preferredValue.trim()) {
@@ -135,8 +208,8 @@ const getTranslatedValue = <T extends TranslationLike>(
   return fallback
 }
 
-const formatNewsletterMonth = (monthKey: string) => {
-  const label = new Intl.DateTimeFormat('es-ES', {
+const formatNewsletterMonth = (monthKey: string, languageTag: string) => {
+  const label = new Intl.DateTimeFormat(languageTag, {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
@@ -581,7 +654,16 @@ async function getAdminDashboardData() {
   return Promise.all([getAdminDashboardMetrics(), getAdminDashboardLatestData()])
 }
 
-export async function getAdminDashboardSummary() {
+export async function getAdminDashboardSummary(event: H3Event) {
+  const { locale, locales, fallbackLocale, languageTag } = getRequestLocaleContext(event)
+  const summaryLocale = resolveSummaryLocale(locale)
+  const t = (key: string) => SUMMARY_LABELS[summaryLocale][key] ?? key
+  const getActivityTitle = <T extends TranslationLike>(
+    translations: T[] | undefined,
+    key: Exclude<keyof T, 'locale'>,
+    fallback: string
+  ) => getTranslatedValue(translations, key, fallback, locale, locales, fallbackLocale)
+
   const [metrics, latestData] = await getAdminDashboardData()
 
   const {
@@ -603,12 +685,12 @@ export async function getAdminDashboardSummary() {
     aboutItem?.updatedAt
       ? {
           sectionKey: 'about',
-          title: 'Banner “Qué es CREUP”',
+          title: t('aboutBannerTitle'),
           description: !aboutItem.heroImage
-            ? 'Sin banner configurado'
+            ? t('aboutNoBanner')
             : aboutItem.heroVisible
-              ? 'Visible en la web pública'
-              : 'Guardado, pero oculto',
+              ? t('aboutVisible')
+              : t('aboutSavedHidden'),
           to: ADMIN_ROUTES.about,
           updatedAt: aboutItem.updatedAt,
         }
@@ -616,8 +698,8 @@ export async function getAdminDashboardSummary() {
     latestCarouselItem?.updatedAt
       ? {
           sectionKey: 'carousel',
-          title: getTranslatedValue(latestCarouselItem.translations, 'title', 'Slide sin título'),
-          description: `${latestCarouselItem.active ? 'Activo' : 'Inactivo'} · ${latestCarouselItem.href}`,
+          title: getActivityTitle(latestCarouselItem.translations, 'title', t('carouselUntitled')),
+          description: `${latestCarouselItem.active ? t('statusActive') : t('statusInactive')} · ${latestCarouselItem.href}`,
           to: ADMIN_ROUTES.carousel,
           updatedAt: latestCarouselItem.updatedAt,
         }
@@ -625,12 +707,12 @@ export async function getAdminDashboardSummary() {
     latestEqualityDocument?.updatedAt
       ? {
           sectionKey: 'equality',
-          title: getTranslatedValue(
+          title: getActivityTitle(
             latestEqualityDocument.translations,
             'title',
-            'Documento de igualdad'
+            t('equalityFallback')
           ),
-          description: latestEqualityDocument.active ? 'Documento activo' : 'Documento inactivo',
+          description: latestEqualityDocument.active ? t('equalityActive') : t('equalityInactive'),
           to: ADMIN_ROUTES.equality,
           updatedAt: latestEqualityDocument.updatedAt,
         }
@@ -638,12 +720,12 @@ export async function getAdminDashboardSummary() {
     latestNewsletter?.updatedAt
       ? {
           sectionKey: 'newsletter',
-          title: `Newsletter ${formatNewsletterMonth(latestNewsletter.monthKey)}`,
+          title: `${t('newsletterPrefix')} ${formatNewsletterMonth(latestNewsletter.monthKey, languageTag)}`,
           description: latestNewsletter.lastDeliveryWorkerToken
-            ? `Enviándose ahora · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`
+            ? `${t('newsletterSendingNow')} · ${latestNewsletter.publicVisible ? t('newsletterVisibleWeb') : t('newsletterHiddenWeb')}`
             : latestNewsletter.sentAt
-              ? `Ya enviada · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`
-              : `Pendiente de envío · ${latestNewsletter.publicVisible ? 'visible en web' : 'oculta en web'}`,
+              ? `${t('newsletterSent')} · ${latestNewsletter.publicVisible ? t('newsletterVisibleWeb') : t('newsletterHiddenWeb')}`
+              : `${t('newsletterPending')} · ${latestNewsletter.publicVisible ? t('newsletterVisibleWeb') : t('newsletterHiddenWeb')}`,
           to: ADMIN_ROUTES.newsletter,
           updatedAt: latestNewsletter.updatedAt,
         }
@@ -651,8 +733,8 @@ export async function getAdminDashboardSummary() {
     latestPressArticle?.updatedAt
       ? {
           sectionKey: 'press',
-          title: getTranslatedValue(latestPressArticle.translations, 'title', 'Artículo de prensa'),
-          description: `${pressTypeLabelsByKey[latestPressArticle.type] ?? 'Prensa'} · ${latestPressArticle.active ? 'Activo' : 'Inactivo'}`,
+          title: getActivityTitle(latestPressArticle.translations, 'title', t('pressFallback')),
+          description: `${pressTypeLabelsByKey[latestPressArticle.type] ?? t('pressTypeFallback')} · ${latestPressArticle.active ? t('statusActive') : t('statusInactive')}`,
           to: ADMIN_ROUTES.press,
           updatedAt: latestPressArticle.updatedAt,
         }
@@ -660,12 +742,12 @@ export async function getAdminDashboardSummary() {
     pressDossierItem?.updatedAt
       ? {
           sectionKey: 'pressDossier',
-          title: 'Dossier de prensa',
+          title: t('pressDossierTitle'),
           description: !pressDossierItem.pdfUrl
-            ? 'Sin PDF configurado'
+            ? t('pressDossierNoPdf')
             : pressDossierItem.active
-              ? 'PDF activo'
-              : 'PDF guardado pero inactivo',
+              ? t('pressDossierActive')
+              : t('pressDossierInactive'),
           to: ADMIN_ROUTES.pressDossier,
           updatedAt: pressDossierItem.updatedAt,
         }
@@ -673,8 +755,8 @@ export async function getAdminDashboardSummary() {
     latestFeaturedLink?.updatedAt
       ? {
           sectionKey: 'links',
-          title: getTranslatedValue(latestFeaturedLink.translations, 'title', 'Enlace destacado'),
-          description: latestFeaturedLink.active ? 'Bloque activo' : 'Bloque inactivo',
+          title: getActivityTitle(latestFeaturedLink.translations, 'title', t('linksFallback')),
+          description: latestFeaturedLink.active ? t('linksActive') : t('linksInactive'),
           to: ADMIN_ROUTES.links,
           updatedAt: latestFeaturedLink.updatedAt,
         }
@@ -682,8 +764,8 @@ export async function getAdminDashboardSummary() {
     latestTag?.updatedAt
       ? {
           sectionKey: 'tags',
-          title: getTranslatedValue(latestTag.translations, 'name', latestTag.slug),
-          description: `Etiqueta · ${latestTag.slug}`,
+          title: getActivityTitle(latestTag.translations, 'name', latestTag.slug),
+          description: `${t('tagPrefix')} · ${latestTag.slug}`,
           to: ADMIN_ROUTES.tags,
           updatedAt: latestTag.updatedAt,
         }
@@ -700,12 +782,12 @@ export async function getAdminDashboardSummary() {
     latestFinancialReport?.updatedAt
       ? {
           sectionKey: 'financialReports',
-          title: getTranslatedValue(
+          title: getActivityTitle(
             latestFinancialReport.translations,
             'title',
-            'Informe económico'
+            t('financialFallback')
           ),
-          description: latestFinancialReport.active ? 'Informe activo' : 'Informe inactivo',
+          description: latestFinancialReport.active ? t('financialActive') : t('financialInactive'),
           to: ADMIN_ROUTES.financialReports,
           updatedAt: latestFinancialReport.updatedAt,
         }

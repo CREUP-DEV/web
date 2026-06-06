@@ -11,6 +11,10 @@ import {
 } from './adminAssetPublication'
 import { runAdminCrudTransaction } from './adminCrud'
 import { throwAdminMutationError } from './adminErrors'
+import {
+  type AdminApiErrorMessageKey,
+  getAdminApiErrorMessage,
+} from '../locale/adminApiErrorMessages'
 import { finalizeAdminImage } from './adminImageUpload'
 import { assertOptimisticLock, buildOptimisticLockCondition } from './optimisticLock'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../validation'
@@ -43,7 +47,7 @@ export interface AssetBackedTranslatableCrudConfig<
    * Optional resource-specific assertion run after schema validation and before any asset
    * work. Throw `createError(...)` to reject. Use for checks Zod cannot express in isolation.
    */
-  validate?: (validated: TCreate | TUpdate) => void
+  validate?: (validated: TCreate | TUpdate, event: H3Event) => void
   /**
    * Asset finalization. `getSource` returns the incoming temporary storage path from the
    * validated payload (or null when no asset is attached). `finalize` defaults to image
@@ -80,11 +84,12 @@ export interface AssetBackedTranslatableCrudConfig<
     buildRows: (validated: TCreate | TUpdate, parentId: string) => ColumnValues[]
   }
   invalidate: () => Promise<void> | void
+  /** i18n keys resolved per-request via `getAdminApiErrorMessage`. */
   messages: {
-    notFound: string
-    optimisticLock: string
-    createFailed: string
-    updateFailed: string
+    notFound: AdminApiErrorMessageKey
+    optimisticLock: AdminApiErrorMessageKey
+    createFailed: AdminApiErrorMessageKey
+    updateFailed: AdminApiErrorMessageKey
   }
   /** Logging scope prefixes, e.g. `admin.carousel.create` / `admin.carousel.update`. */
   scope: {
@@ -147,25 +152,28 @@ export function defineAssetBackedTranslatableCrud<
     const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
     try {
-      const validated = validateBody(config.schema.create, body)
-      config.validate?.(validated)
+      const validated = validateBody(event, config.schema.create, body)
+      config.validate?.(validated, event)
       const { source, assetPath } = await finalizeIncomingAsset(validated, cleanupTargets)
 
-      const row = await runAdminCrudTransaction(async (tx) => {
-        const [item] = await tx
-          .insert(main.table)
-          .values(main.buildValues(validated, { assetPath, event }) as never)
-          .returning()
+      const row = await runAdminCrudTransaction(
+        async (tx) => {
+          const [item] = await tx
+            .insert(main.table)
+            .values(main.buildValues(validated, { assetPath, event }) as never)
+            .returning()
 
-        if (!item) {
-          return null
-        }
+          if (!item) {
+            return null
+          }
 
-        const itemId = (item as { id: string }).id
-        await insertTranslations(tx, validated, itemId)
+          const itemId = (item as { id: string }).id
+          await insertTranslations(tx, validated, itemId)
 
-        return main.refetch(tx, itemId)
-      }, messages.createFailed)
+          return main.refetch(tx, itemId)
+        },
+        () => getAdminApiErrorMessage(event, messages.createFailed)
+      )
 
       if (source && assetPath && source !== assetPath) {
         await cleanupUnusedAdminAssetSafely(
@@ -196,12 +204,19 @@ export function defineAssetBackedTranslatableCrud<
     try {
       const existing = await main.loadExisting(id)
       if (!existing) {
-        throw createError({ statusCode: 404, message: messages.notFound })
+        throw createError({
+          statusCode: 404,
+          message: getAdminApiErrorMessage(event, messages.notFound),
+        })
       }
 
-      const validated = validateBody(config.schema.update, body)
-      config.validate?.(validated)
-      assertOptimisticLock(validated.updatedAt, existing.updatedAt, messages.optimisticLock)
+      const validated = validateBody(event, config.schema.update, body)
+      config.validate?.(validated, event)
+      assertOptimisticLock(
+        validated.updatedAt,
+        existing.updatedAt,
+        getAdminApiErrorMessage(event, messages.optimisticLock)
+      )
 
       previousAsset = existing.asset
 
@@ -217,32 +232,38 @@ export function defineAssetBackedTranslatableCrud<
         assetPath = null
       }
 
-      const row = await runAdminCrudTransaction(async (tx) => {
-        if (translations) {
-          await tx.delete(translations.table).where(eq(translations.fkColumn, id))
-        }
+      const row = await runAdminCrudTransaction(
+        async (tx) => {
+          if (translations) {
+            await tx.delete(translations.table).where(eq(translations.fkColumn, id))
+          }
 
-        const whereCondition = validated.updatedAt
-          ? and(
-              eq(main.idColumn, id),
-              buildOptimisticLockCondition(main.updatedAtColumn, validated.updatedAt)
-            )
-          : eq(main.idColumn, id)
+          const whereCondition = validated.updatedAt
+            ? and(
+                eq(main.idColumn, id),
+                buildOptimisticLockCondition(main.updatedAtColumn, validated.updatedAt)
+              )
+            : eq(main.idColumn, id)
 
-        const updatedRows = await tx
-          .update(main.table)
-          .set(main.buildValues(validated, { assetPath, event }) as never)
-          .where(whereCondition)
-          .returning({ id: main.idColumn })
+          const updatedRows = await tx
+            .update(main.table)
+            .set(main.buildValues(validated, { assetPath, event }) as never)
+            .where(whereCondition)
+            .returning({ id: main.idColumn })
 
-        if (updatedRows.length === 0) {
-          throw createError({ statusCode: 409, message: messages.optimisticLock })
-        }
+          if (updatedRows.length === 0) {
+            throw createError({
+              statusCode: 409,
+              message: getAdminApiErrorMessage(event, messages.optimisticLock),
+            })
+          }
 
-        await insertTranslations(tx, validated, id)
+          await insertTranslations(tx, validated, id)
 
-        return main.refetch(tx, id)
-      }, messages.updateFailed)
+          return main.refetch(tx, id)
+        },
+        () => getAdminApiErrorMessage(event, messages.updateFailed)
+      )
       dbUpdated = true
 
       if (previousAsset !== assetPath) {

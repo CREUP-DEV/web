@@ -14,6 +14,7 @@ import {
   assertUploadRequestSize,
 } from '../../../utils/core/uploadRequestLimit'
 import { getMultipartFileBuffer, validateMultipartFile } from '../../../utils/validation'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import {
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_DOCUMENT_PUBLIC_PATH,
@@ -32,10 +33,14 @@ const PDF_UPLOAD_DIR = 'public/prensa/newsletter/documentos'
 const UPLOAD_MAX_REQUEST_BYTES = 22 * 1024 * 1024 // 22 MB hard ceiling (above PDF limit)
 
 export default defineEventHandler(async (event) => {
-  await assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
+  await assertUploadRequestSize(
+    event,
+    UPLOAD_MAX_REQUEST_BYTES,
+    getAdminApiErrorMessage(event, 'requestTooLarge')
+  )
 
   const formData = await readMultipartFormData(event)
-  const file = validateMultipartFile(formData)
+  const file = validateMultipartFile(event, formData)
   const fileData = getMultipartFileBuffer(file.data)
 
   const ext = extname(file.filename).toLowerCase()
@@ -55,7 +60,7 @@ export default defineEventHandler(async (event) => {
   assertUploadedFileSize(
     fileData.length,
     maxSize,
-    `El archivo supera el tamaño máximo (${isPdf ? '20MB' : '5MB'})`
+    getAdminApiErrorMessage(event, 'fileTooLargeMb').replace('{mb}', isPdf ? '20' : '5')
   )
 
   let storagePath: string
@@ -63,6 +68,7 @@ export default defineEventHandler(async (event) => {
   if (isPdf) {
     storagePath = (
       await saveAdminDocument({
+        event,
         data: fileData,
         filename: file.filename,
         uploadDir: PDF_UPLOAD_DIR,
@@ -74,6 +80,7 @@ export default defineEventHandler(async (event) => {
   } else {
     storagePath = (
       await saveAdminImage({
+        event,
         data: fileData,
         filename: file.filename,
         uploadDir: IMAGE_UPLOAD_DIR,

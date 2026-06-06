@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { createError, defineEventHandler, readBody } from 'h3'
 import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
@@ -13,6 +12,7 @@ import { invalidateNewsletterArchiveCache } from '../../../utils/admin/adminCach
 import { finalizeAdminDocument } from '../../../utils/admin/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import {
   assertOptimisticLock,
   buildOptimisticLockCondition,
@@ -31,9 +31,6 @@ import { updateNewsletterSchema } from '~~/shared/utils/adminSchemas'
 
 const COVER_IMAGE_UPLOAD_DIR = 'public/prensa/newsletter/portadas'
 const DOCUMENT_UPLOAD_DIR = 'public/prensa/newsletter/documentos'
-
-const OPTIMISTIC_LOCK_MESSAGE =
-  'La newsletter fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.'
 
 const buildNewsletterCoverSlug = (monthKey: string) => `newsletter-${monthKey}-portada`
 const buildNewsletterDocumentSlug = (monthKey: string) => `newsletter-${monthKey}`
@@ -55,11 +52,12 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingItem) {
-      throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
     }
 
-    const validated = validateBody(updateNewsletterSchema, body)
-    assertOptimisticLock(validated.updatedAt, existingItem.updatedAt, OPTIMISTIC_LOCK_MESSAGE)
+    const validated = validateBody(event, updateNewsletterSchema, body)
+    const optimisticLockMessage = getAdminApiErrorMessage(event, 'newsletterOptimisticLock')
+    assertOptimisticLock(validated.updatedAt, existingItem.updatedAt, optimisticLockMessage)
 
     const { monthDate, monthKey } = normalizeNewsletterMonthInput(validated.month)
 
@@ -123,7 +121,7 @@ export default defineEventHandler(async (event) => {
         .returning({ id: newsletters.id })
 
       if (updatedRows.length === 0) {
-        throw createError({ statusCode: 409, message: OPTIMISTIC_LOCK_MESSAGE })
+        throw createError({ statusCode: 409, message: optimisticLockMessage })
       }
 
       return tx.query.newsletters.findFirst({

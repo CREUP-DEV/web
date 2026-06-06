@@ -63,3 +63,13 @@ public/fonts/
 
 # Generated build artifacts
 ops/seed.mjs
+
+# Ruflo / claude-flow tooling (generated, not part of the app)
+.claude/
+.claude-flow/
+.swarm/
+.hive-mind/
+.mcp.json
+ruvector.db
+ruvector.db-*
+CLAUDE.md

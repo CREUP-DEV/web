@@ -1,7 +1,9 @@
 import { createError } from 'h3'
+import type { H3Event } from 'h3'
 import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import { db } from '../../db'
 import { accounts, adminAccess, sessions, users } from '../../db/schema'
+import { getAdminApiErrorMessage } from '../locale/adminApiErrorMessages'
 
 export interface AdminAccessListItem {
   id: string
@@ -129,14 +131,15 @@ export async function getAdminAccessForUpdate(tx: AdminAccessTx, id: string) {
 
 export async function assertAdminAccessCanBeRevoked(
   tx: AdminAccessTx,
-  entry: { email: string; active: boolean }
+  entry: { email: string; active: boolean },
+  event: H3Event
 ) {
   const normalizedEmail = normalizeAdminEmail(entry.email)
 
   if (isEnvAdminEmail(normalizedEmail)) {
     throw createError({
       statusCode: 400,
-      message: 'No puedes modificar un acceso definido en el archivo de entorno.',
+      message: getAdminApiErrorMessage(event, 'accessEnvImmutable'),
     })
   }
 
@@ -152,7 +155,7 @@ export async function assertAdminAccessCanBeRevoked(
   if (activeDbAdminCount <= 1) {
     throw createError({
       statusCode: 400,
-      message: 'No puedes dejar el panel sin administradores activos.',
+      message: getAdminApiErrorMessage(event, 'accessNoActiveAdmins'),
     })
   }
 }

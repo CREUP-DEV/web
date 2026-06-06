@@ -61,7 +61,24 @@ drizzle/            Migrations and seed scripts
 ### Code vs UI Text
 
 - **All code and code comments MUST be written in English**.
-- **Admin UI text MUST be Spanish** — admin pages, layouts, components, admin-facing API error messages.
+- **Admin UI is bilingual** (`es` default + `en`), like the public site. New admin pages, layouts,
+  components, and admin-facing API error messages MUST be locale-aware — no new hardcoded Spanish.
+  (Migration in progress: some admin pages still hold Spanish literals pending the page-by-page
+  rollout; convert them as you touch them.)
+
+### Admin i18n (URL-prefix mechanism)
+
+- Admin uses the **same `prefix_except_default` URL mechanism as the public site**: `/admin/...`
+  for `es`, `/en/admin/...` for `en`. Locale persists via the URL — no cookie. Do **not** add
+  `defineI18nRoute(false)` to admin pages.
+- The switcher in `app/layouts/admin.vue` uses `useSwitchLocalePath()` + `navigateTo` (mirrors the
+  public header). Admin nav links go through `useLocalePath()` so they keep the active prefix.
+- `app/middleware/admin-auth.global.ts` strips the locale prefix before its `/admin` guard so both
+  `/admin/...` and `/en/admin/...` are protected; the login redirect goes through `localePath`.
+  Both prefixes are excluded from indexing (`routeRules` + robots disallow).
+- UI strings live under the `admin.*` i18n namespace (`admin.common.*` for shared actions,
+  `admin.<page>.*` per page). The `x-request-locale` header is attached to `/api/admin/*` requests
+  by `app/plugins/admin-fetch.client.ts` so the server resolves locale-aware error messages.
 
 ### Public Site i18n
 
@@ -121,7 +138,20 @@ All locale-aware public error messages live here. Never inline Spanish/English s
 getPublicApiErrorMessage(event, 'articleNotFound')
 ```
 
-Admin-facing error messages may be hardcoded Spanish strings (not locale-switched).
+### Admin API Error Messages (`server/utils/locale/adminApiErrorMessages.ts`)
+
+Admin server error messages are locale-aware (mirrors the public helper). Add a key and use:
+
+```typescript
+// Returns the right-locale admin message for the request:
+getAdminApiErrorMessage(event, 'duplicateRecord')
+```
+
+`throwAdminMutationError(scope, error, event)` already resolves its messages through this helper —
+pass `event` so the 409/500 envelopes localize. CRUD configs, handlers, `adminReorder`, the upload
+handlers (`assertUploadedFileSize`/`assertUploadRequestSize` messages) and the asset/image pipelines
+all resolve their copy through this map; thread `event` to any new throw site. Admin emails,
+background-job/delivery error reasons, and deep raster-metadata edge messages stay Spanish-only.
 
 ### Client-side API Error Messages (`shared/utils/apiError.ts`)
 
@@ -149,16 +179,25 @@ Redis is required. Limits survive restarts and apply across all Nitro instances 
 
 ### Validation (`server/utils/validation/`)
 
-**All untrusted input MUST be validated with Zod.** Use existing helpers:
+**All untrusted input MUST be validated with Zod.** Use existing helpers (the admin body/input family
+takes `event` first so the rejection message is locale-aware):
 
 ```typescript
-validateBody(schema, await readBody(event))
+validateBody(event, schema, await readBody(event))
 validateQuery(event, schema)
 validateRouteParams(event, schema)
-validateMultipartFile(formData)
+validateMultipartFile(event, formData)
 ```
 
 Reuse existing schemas. Add new schemas to the appropriate file under `server/utils/validation/`. **All admin zod schemas have a single definition in `shared/utils/adminSchemas.ts`** — import them directly from there (server handlers get the `validate*` helpers separately from the `server/utils/validation` barrel). Do not redefine an admin schema elsewhere.
+
+**Validation messages are i18n keys (message-as-key).** Zod `message`s in `adminSchemas.ts` (and the
+press client validator) are `admin.validation.*` keys, not literals — e.g.
+`z.string().min(1, 'admin.validation.nameRequired')`. The client (`useFormValidation`) translates each
+`issue.message` via `te(msg) ? t(msg) : msg` (known keys translate; stray literals pass through, never
+hitting the vue-i18n compiler). The server `validateAdmin*` backstop does **not** echo per-field keys —
+it returns a generic locale-aware `getAdminApiErrorMessage(event, 'invalidInput')`. So: add a new
+`admin.validation.<key>` to **both** `es.json` and `en.json`, then reference it from the schema.
 
 Admin forms import these same zod schemas client-side and validate against them via `useFormValidation` (zod is shipped in the admin bundle, which is acceptable for the non-public panel). The one exception is the press article form: the server press schema validates rich text through a server-only sanitization helper, so it can't be single-sourced — its client validator lives co-located at `app/components/admin/pressArticleFormSchema.ts` (UX only; the server remains authoritative).
 
@@ -377,7 +416,9 @@ const { validate, getFieldError, clearErrors } = useFormValidation()
 if (!validate(mySchema, payload)) return
 ```
 
-Use this pattern for admin forms and internal tooling flows — pass the shared zod schema from `shared/utils/adminSchemas.ts` directly (its `safeParse` plugs into `validate`). For **public** pages under strict CSP, keep Zod at the server boundary and use CSP-safe manual client checks for UX feedback instead of importing Zod into the public bundle.
+Use this pattern for admin forms and internal tooling flows — pass the shared zod schema from `shared/utils/adminSchemas.ts` directly (its `safeParse` plugs into `validate`). `validate` translates each issue message through `te()?t():literal`, so schema messages must be `admin.validation.*` i18n keys (see Validation). For **public** pages under strict CSP, keep Zod at the server boundary and use CSP-safe manual client checks for UX feedback instead of importing Zod into the public bundle.
+
+Admin toasts: use `useAdminToast()` (not `useToast()`) — its `add()` auto-assigns a colored icon from the toast `color`. Wrap admin navigation targets in `useLocalePath()` so links keep the active `/en` prefix.
 
 ### Locale Composables (`app/composables/useLocales.ts`)
 

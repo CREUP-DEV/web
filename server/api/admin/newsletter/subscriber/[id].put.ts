@@ -1,9 +1,9 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { defineEventHandler, readBody, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../../db'
 import { newsletterSubscribers } from '../../../../db/schema'
 import { throwAdminMutationError } from '../../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../../utils/locale/adminApiErrorMessages'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../../utils/validation'
 import { updateSubscriberSchema } from '~~/shared/utils/adminSchemas'
 import {
@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   try {
-    const validated = validateBody(updateSubscriberSchema, body)
+    const validated = validateBody(event, updateSubscriberSchema, body)
     const email = validated.email.trim().toLowerCase()
 
     const [item] = await db.transaction(async (tx) => {
@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
       })
 
       if (!existing) {
-        throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+        throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
       }
 
       const emailInUse = await tx.query.newsletterSubscribers.findFirst({
@@ -83,7 +83,7 @@ export default defineEventHandler(async (event) => {
       if (emailInUse && emailInUse.id !== id) {
         throw createError({
           statusCode: 409,
-          message: 'Este correo ya está registrado',
+          message: getAdminApiErrorMessage(event, 'subscriberEmailRegistered'),
         })
       }
 
@@ -96,7 +96,7 @@ export default defineEventHandler(async (event) => {
       if (!updated) {
         throw createError({
           statusCode: 500,
-          message: 'No se pudo actualizar el suscriptor',
+          message: getAdminApiErrorMessage(event, 'subscriberUpdateFailed'),
         })
       }
 

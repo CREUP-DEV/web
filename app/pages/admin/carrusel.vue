@@ -24,13 +24,15 @@ interface CarouselItem {
   translations: Translation[]
 }
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshHomeData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const { data: siteDefaultImagesData } = await useFetch<{
   data: { carouselSlideImage: string | null }
-}>('/api/admin/site-default-images', { lazy: true })
+}>('/api/admin/site-default-images', { headers: localeApiHeaders, lazy: true })
 
 const siteDefaultSlide = computed(
   () => siteDefaultImagesData.value?.data?.carouselSlideImage ?? null
@@ -44,6 +46,7 @@ const {
 } = await useFetch<{
   data: CarouselItem[]
 }>('/api/admin/carousel', {
+  headers: localeApiHeaders,
   lazy: true,
 })
 
@@ -110,8 +113,8 @@ const {
   extraFields: {
     kind: 'carousel',
   },
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.carousel.imageUploaded'),
+  errorMessage: t('admin.carousel.imageUploadFailed'),
   onUploaded: (storagePath) => {
     form.image = storagePath
   },
@@ -175,12 +178,12 @@ const saveOrder = async () => {
     await persistOrder()
     await refreshHomeData()
     toast.add({
-      title: 'Orden del carrusel guardado',
+      title: t('admin.carousel.orderSavedToast'),
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo guardar el orden del carrusel'),
+      title: getApiErrorMessage(e, t('admin.carousel.orderErrorToast')),
       color: 'error',
     })
   }
@@ -215,7 +218,7 @@ const handleSubmit = async () => {
       replaceItem(response.data)
       await refreshHomeData()
       toast.add({
-        title: 'Elemento del carrusel actualizado',
+        title: t('admin.carousel.updatedToast'),
         color: 'success',
       })
     } else {
@@ -226,7 +229,7 @@ const handleSubmit = async () => {
       replaceItem(response.data)
       await refreshHomeData()
       toast.add({
-        title: 'Elemento del carrusel creado',
+        title: t('admin.carousel.createdToast'),
         color: 'success',
       })
     }
@@ -234,7 +237,7 @@ const handleSubmit = async () => {
     clearErrors()
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo guardar el elemento del carrusel'),
+      title: getApiErrorMessage(e, t('admin.carousel.saveErrorToast')),
       color: 'error',
     })
   } finally {
@@ -251,12 +254,12 @@ const handleDelete = async () => {
     closeDeleteModal()
     await refreshHomeData()
     toast.add({
-      title: 'Elemento del carrusel eliminado',
+      title: t('admin.carousel.deletedToast'),
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo eliminar el elemento del carrusel'),
+      title: getApiErrorMessage(e, t('admin.carousel.deleteErrorToast')),
       color: 'error',
     })
   } finally {
@@ -268,13 +271,19 @@ const handleDelete = async () => {
 <template>
   <div>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Carrusel</h1>
+      <h1 class="text-2xl font-bold">{{ t('admin.carousel.title') }}</h1>
       <div class="flex gap-2">
         <template v-if="hasOrderChanges">
-          <UButton variant="outline" @click="cancelOrderChanges">Cancelar</UButton>
-          <UButton :loading="isSavingOrder" @click="saveOrder">Guardar orden</UButton>
+          <UButton variant="outline" @click="cancelOrderChanges">{{
+            t('admin.common.cancel')
+          }}</UButton>
+          <UButton :loading="isSavingOrder" @click="saveOrder">{{
+            t('admin.common.saveOrder')
+          }}</UButton>
         </template>
-        <UButton v-else icon="i-tabler-plus" @click="openCreate">Añadir</UButton>
+        <UButton v-else icon="i-tabler-plus" @click="openCreate">{{
+          t('admin.common.add')
+        }}</UButton>
       </div>
     </div>
 
@@ -288,11 +297,11 @@ const handleDelete = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los elementos del carrusel"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.carousel.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -325,7 +334,7 @@ const handleDelete = async () => {
                 :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
                 class="rounded-full px-2 py-0.5 text-xs"
               >
-                {{ item.active ? 'Activo' : 'Inactivo' }}
+                {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
               </span>
             </div>
           </div>
@@ -334,7 +343,7 @@ const handleDelete = async () => {
               icon="i-tabler-pencil"
               variant="ghost"
               size="sm"
-              aria-label="Editar elemento del carrusel"
+              :aria-label="t('admin.carousel.editAria')"
               @click="openEdit(item)"
             />
             <UButton
@@ -342,7 +351,7 @@ const handleDelete = async () => {
               variant="ghost"
               color="error"
               size="sm"
-              aria-label="Eliminar elemento del carrusel"
+              :aria-label="t('admin.carousel.deleteAria')"
               @click="confirmDelete(item)"
             />
           </div>
@@ -372,14 +381,14 @@ const handleDelete = async () => {
               :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
               class="rounded-full px-2 py-0.5 text-xs"
             >
-              {{ item.active ? 'Activo' : 'Inactivo' }}
+              {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
             </span>
             <div class="flex gap-2">
               <UButton
                 icon="i-tabler-pencil"
                 variant="ghost"
                 size="sm"
-                aria-label="Editar elemento del carrusel"
+                :aria-label="t('admin.carousel.editAria')"
                 @click="openEdit(item)"
               />
               <UButton
@@ -387,7 +396,7 @@ const handleDelete = async () => {
                 variant="ghost"
                 color="error"
                 size="sm"
-                aria-label="Eliminar elemento del carrusel"
+                :aria-label="t('admin.carousel.deleteAria')"
                 @click="confirmDelete(item)"
               />
             </div>
@@ -396,9 +405,9 @@ const handleDelete = async () => {
       </div>
 
       <div v-if="!localItems.length" class="py-12 text-center">
-        <p class="text-muted">No hay elementos en el carrusel todavía.</p>
+        <p class="text-muted">{{ t('admin.carousel.empty') }}</p>
         <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
-          Añadir elemento
+          {{ t('admin.carousel.addItem') }}
         </UButton>
       </div>
     </div>
@@ -408,24 +417,24 @@ const handleDelete = async () => {
         <div class="flex max-h-[80vh] flex-col">
           <div class="overflow-y-auto p-6">
             <h2 class="mb-4 text-lg font-bold">
-              {{ editingItem ? 'Editar elemento' : 'Nuevo elemento' }}
+              {{ editingItem ? t('admin.carousel.editTitle') : t('admin.carousel.newTitle') }}
             </h2>
 
             <form id="carousel-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Imagen (opcional)" :error="getFieldError('image')">
+              <UFormField :label="t('admin.carousel.imageLabel')" :error="getFieldError('image')">
                 <div class="space-y-3">
                   <div class="bg-muted aspect-1925/550 overflow-hidden rounded-xl border">
                     <img
                       v-if="currentImagePreview"
                       :src="currentImagePreview"
-                      alt="Vista previa del banner"
+                      :alt="t('admin.carousel.imagePreviewAlt')"
                       class="size-full object-cover"
                     />
                     <div
                       v-else
                       class="text-muted flex size-full min-h-32 items-center justify-center text-sm"
                     >
-                      Sin imagen (se usará la predeterminada si está configurada)
+                      {{ t('admin.carousel.noImage') }}
                     </div>
                   </div>
 
@@ -445,22 +454,32 @@ const handleDelete = async () => {
                       :loading="isUploadingImage"
                       @click="triggerImageUpload"
                     >
-                      {{ form.image ? 'Cambiar imagen' : 'Subir imagen' }}
+                      {{
+                        form.image
+                          ? t('admin.carousel.changeImage')
+                          : t('admin.carousel.uploadImage')
+                      }}
                     </UButton>
                   </div>
 
-                  <p class="text-muted text-xs">Tamaño recomendado: 1925 × 550 px.</p>
+                  <p class="text-muted text-xs">{{ t('admin.carousel.recommendedSize') }}</p>
                 </div>
               </UFormField>
 
-              <UFormField label="Enlace" :error="getFieldError('href')">
-                <UInput v-model="form.href" placeholder="/pagina" class="w-full" />
+              <UFormField :label="t('admin.carousel.linkLabel')" :error="getFieldError('href')">
+                <UInput
+                  v-model="form.href"
+                  :placeholder="t('admin.carousel.linkPlaceholder')"
+                  class="w-full"
+                />
               </UFormField>
 
-              <UFormField label="Estado">
+              <UFormField :label="t('admin.carousel.statusLabel')">
                 <div class="flex items-center gap-2">
                   <USwitch v-model="form.active" />
-                  <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+                  <span class="text-sm">{{
+                    form.active ? t('admin.common.active') : t('admin.common.inactive')
+                  }}</span>
                 </div>
               </UFormField>
 
@@ -473,12 +492,16 @@ const handleDelete = async () => {
                   <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
                   {{ getLocaleName(trans.locale) }}
                   <span v-if="!isDefaultLocale(trans.locale)" class="text-muted text-xs">
-                    (opcional)
+                    {{ t('admin.common.optional') }}
                   </span>
                 </h4>
                 <div class="space-y-3">
                   <UFormField
-                    :label="isDefaultLocale(trans.locale) ? 'Título *' : 'Título'"
+                    :label="
+                      isDefaultLocale(trans.locale)
+                        ? `${t('admin.carousel.titleLabel')} *`
+                        : t('admin.carousel.titleLabel')
+                    "
                     :error="getFieldError(`translations.${index}.title`)"
                   >
                     <UTextarea
@@ -489,7 +512,11 @@ const handleDelete = async () => {
                     />
                   </UFormField>
                   <UFormField
-                    :label="isDefaultLocale(trans.locale) ? 'Texto del botón *' : 'Texto del botón'"
+                    :label="
+                      isDefaultLocale(trans.locale)
+                        ? `${t('admin.carousel.buttonTextLabel')} *`
+                        : t('admin.carousel.buttonTextLabel')
+                    "
                   >
                     <UInput
                       v-model="trans.buttonText"
@@ -497,7 +524,7 @@ const handleDelete = async () => {
                       :required="isDefaultLocale(trans.locale)"
                     />
                   </UFormField>
-                  <UFormField label="Texto alternativo (descripción de la imagen)">
+                  <UFormField :label="t('admin.carousel.altLabel')">
                     <UInput v-model="trans.alt" class="w-full" />
                   </UFormField>
                 </div>
@@ -505,14 +532,16 @@ const handleDelete = async () => {
             </form>
           </div>
           <div class="flex justify-end gap-2 border-t p-4">
-            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="button" variant="ghost" @click="showModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
             <UButton
               type="submit"
               form="carousel-form"
               :loading="isSubmitting"
               :disabled="Boolean(editingItem) && !hasFormChanges"
             >
-              {{ editingItem ? 'Guardar' : 'Crear' }}
+              {{ editingItem ? t('admin.common.save') : t('admin.common.create') }}
             </UButton>
           </div>
         </div>
@@ -526,15 +555,22 @@ const handleDelete = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Confirmar eliminación</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.common.confirmDeleteTitle') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Estás seguro de que deseas eliminar "{{ itemToDelete?.translations[0]?.title }}"? Esta
-            acción no se puede deshacer.
+            {{
+              t('admin.common.deleteConfirm', {
+                name: itemToDelete?.translations[0]?.title,
+              })
+            }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
+              {{ t('admin.common.delete') }}
+            </UButton>
           </div>
         </div>
       </template>

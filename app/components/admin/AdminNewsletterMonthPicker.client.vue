@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const props = defineProps<{
   modelValue: string
   disabledMonths?: Set<string>
@@ -23,20 +25,20 @@ watch(
   }
 )
 
-const monthNames = [
-  'Ene',
-  'Feb',
-  'Mar',
-  'Abr',
-  'May',
-  'Jun',
-  'Jul',
-  'Ago',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dic',
-]
+const monthNames = computed(() => [
+  t('admin.newsletter.monthPicker.jan'),
+  t('admin.newsletter.monthPicker.feb'),
+  t('admin.newsletter.monthPicker.mar'),
+  t('admin.newsletter.monthPicker.apr'),
+  t('admin.newsletter.monthPicker.may'),
+  t('admin.newsletter.monthPicker.jun'),
+  t('admin.newsletter.monthPicker.jul'),
+  t('admin.newsletter.monthPicker.aug'),
+  t('admin.newsletter.monthPicker.sep'),
+  t('admin.newsletter.monthPicker.oct'),
+  t('admin.newsletter.monthPicker.nov'),
+  t('admin.newsletter.monthPicker.dec'),
+])
 
 const selectedMonth = computed(() =>
   props.modelValue ? Number(props.modelValue.slice(5, 7)) - 1 : -1
@@ -64,13 +66,17 @@ function pickMonth(monthIndex: number) {
 
 <template>
   <div>
-    <div class="rounded-lg border p-3" role="group" aria-label="Selector de mes y año">
+    <div
+      class="rounded-lg border p-3"
+      role="group"
+      :aria-label="t('admin.newsletter.monthPicker.groupAria')"
+    >
       <div class="mb-2 flex items-center justify-between">
         <UButton
           icon="i-tabler-chevron-left"
           variant="ghost"
           size="sm"
-          aria-label="Año anterior"
+          :aria-label="t('admin.newsletter.monthPicker.prevYearAria')"
           @click="pickerYear--"
         />
         <span class="text-sm font-semibold">{{ pickerYear }}</span>
@@ -79,7 +85,7 @@ function pickMonth(monthIndex: number) {
           variant="ghost"
           size="sm"
           :disabled="pickerYear >= new Date().getFullYear()"
-          aria-label="Año siguiente"
+          :aria-label="t('admin.newsletter.monthPicker.nextYearAria')"
           @click="pickerYear++"
         />
       </div>
@@ -103,9 +109,7 @@ function pickMonth(monthIndex: number) {
       </div>
     </div>
     <span class="mt-1 block text-xs" :class="taken ? 'text-error' : 'text-dimmed'">
-      {{
-        taken ? 'Ya existe una newsletter para ese mes.' : 'Solo se permite una newsletter por mes.'
-      }}
+      {{ taken ? t('admin.newsletter.monthPicker.taken') : t('admin.newsletter.monthPicker.hint') }}
     </span>
   </div>
 </template>

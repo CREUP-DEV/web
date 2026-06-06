@@ -11,7 +11,7 @@ import { updatePressArticle } from '../../../services/pressArticleService'
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
   const body = await readBody(event)
-  const validated = validateBody(updatePressArticleSchema, body)
+  const validated = validateBody(event, updatePressArticleSchema, body)
   const item = await updatePressArticle(id, validated, event)
   await invalidatePressRelatedCaches()
   return { data: item }

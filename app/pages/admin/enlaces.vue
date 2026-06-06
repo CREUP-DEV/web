@@ -15,7 +15,9 @@ const {
   createEmptyTranslations,
   mapTranslationsToForm,
 } = useLocales()
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshHomeData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
@@ -43,6 +45,7 @@ const {
 } = await useFetch<{
   data: FeaturedLink[]
 }>('/api/admin/links', {
+  headers: localeApiHeaders,
   lazy: true,
 })
 
@@ -104,8 +107,8 @@ const {
   extraFields: {
     kind: 'featured_link',
   },
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.links.imageUploadSuccess'),
+  errorMessage: t('admin.links.imageUploadError'),
   onUploaded: (storagePath) => {
     form.image = storagePath
   },
@@ -175,12 +178,12 @@ const saveOrder = async () => {
     await persistOrder()
     await refreshHomeData()
     toast.add({
-      title: 'Orden de enlaces guardado',
+      title: t('admin.links.orderSaved'),
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo guardar el orden de enlaces'),
+      title: getApiErrorMessage(e, t('admin.links.orderSaveError')),
       color: 'error',
     })
   }
@@ -215,7 +218,7 @@ const handleSubmit = async () => {
       replaceItem(response.data)
       await refreshHomeData()
       toast.add({
-        title: 'Enlace actualizado',
+        title: t('admin.links.updateSuccess'),
         color: 'success',
       })
     } else {
@@ -226,7 +229,7 @@ const handleSubmit = async () => {
       replaceItem(response.data)
       await refreshHomeData()
       toast.add({
-        title: 'Enlace creado',
+        title: t('admin.links.createSuccess'),
         color: 'success',
       })
     }
@@ -234,7 +237,7 @@ const handleSubmit = async () => {
     clearErrors()
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo guardar el enlace'),
+      title: getApiErrorMessage(e, t('admin.links.saveError')),
       color: 'error',
     })
   } finally {
@@ -251,12 +254,12 @@ const handleDelete = async () => {
     closeDeleteModal()
     await refreshHomeData()
     toast.add({
-      title: 'Enlace eliminado',
+      title: t('admin.links.deleteSuccess'),
       color: 'success',
     })
   } catch (e) {
     toast.add({
-      title: getApiErrorMessage(e, 'No se pudo eliminar el enlace'),
+      title: getApiErrorMessage(e, t('admin.links.deleteError')),
       color: 'error',
     })
   } finally {
@@ -268,13 +271,19 @@ const handleDelete = async () => {
 <template>
   <div>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Enlaces destacados</h1>
+      <h1 class="text-2xl font-bold">{{ t('admin.links.heading') }}</h1>
       <div class="flex gap-2">
         <template v-if="hasOrderChanges">
-          <UButton variant="outline" @click="cancelOrderChanges">Cancelar</UButton>
-          <UButton :loading="isSavingOrder" @click="saveOrder">Guardar orden</UButton>
+          <UButton variant="outline" @click="cancelOrderChanges">
+            {{ t('admin.common.cancel') }}
+          </UButton>
+          <UButton :loading="isSavingOrder" @click="saveOrder">
+            {{ t('admin.common.saveOrder') }}
+          </UButton>
         </template>
-        <UButton v-else icon="i-tabler-plus" @click="openCreate">Añadir</UButton>
+        <UButton v-else icon="i-tabler-plus" @click="openCreate">
+          {{ t('admin.common.add') }}
+        </UButton>
       </div>
     </div>
 
@@ -288,11 +297,11 @@ const handleDelete = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los enlaces"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.links.loadError')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -321,7 +330,7 @@ const handleDelete = async () => {
                 :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
                 class="rounded-full px-2 py-0.5 text-xs"
               >
-                {{ item.active ? 'Activo' : 'Inactivo' }}
+                {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
               </span>
             </div>
           </div>
@@ -330,7 +339,7 @@ const handleDelete = async () => {
               icon="i-tabler-pencil"
               variant="ghost"
               size="sm"
-              aria-label="Editar enlace destacado"
+              :aria-label="t('admin.links.editAriaLabel')"
               @click="openEdit(item)"
             />
             <UButton
@@ -338,7 +347,7 @@ const handleDelete = async () => {
               variant="ghost"
               color="error"
               size="sm"
-              aria-label="Eliminar enlace destacado"
+              :aria-label="t('admin.links.deleteAriaLabel')"
               @click="confirmDelete(item)"
             />
           </div>
@@ -364,14 +373,14 @@ const handleDelete = async () => {
               :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
               class="rounded-full px-2 py-0.5 text-xs"
             >
-              {{ item.active ? 'Activo' : 'Inactivo' }}
+              {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
             </span>
             <div class="flex gap-2">
               <UButton
                 icon="i-tabler-pencil"
                 variant="ghost"
                 size="sm"
-                aria-label="Editar enlace destacado"
+                :aria-label="t('admin.links.editAriaLabel')"
                 @click="openEdit(item)"
               />
               <UButton
@@ -379,7 +388,7 @@ const handleDelete = async () => {
                 variant="ghost"
                 color="error"
                 size="sm"
-                aria-label="Eliminar enlace destacado"
+                :aria-label="t('admin.links.deleteAriaLabel')"
                 @click="confirmDelete(item)"
               />
             </div>
@@ -388,9 +397,9 @@ const handleDelete = async () => {
       </div>
 
       <div v-if="!localItems.length" class="py-12 text-center">
-        <p class="text-muted">No hay enlaces destacados todavía.</p>
+        <p class="text-muted">{{ t('admin.links.emptyState') }}</p>
         <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
-          Añadir enlace
+          {{ t('admin.links.addLink') }}
         </UButton>
       </div>
     </div>
@@ -400,11 +409,11 @@ const handleDelete = async () => {
         <div class="flex max-h-[80vh] flex-col">
           <div class="overflow-y-auto p-6">
             <h2 class="mb-4 text-lg font-bold">
-              {{ editingItem ? 'Editar enlace' : 'Nuevo enlace' }}
+              {{ editingItem ? t('admin.links.editTitle') : t('admin.links.createTitle') }}
             </h2>
 
             <form id="links-form" class="space-y-4" @submit.prevent="handleSubmit">
-              <UFormField label="Imagen" :error="getFieldError('image')">
+              <UFormField :label="t('admin.links.imageLabel')" :error="getFieldError('image')">
                 <div class="space-y-3">
                   <div
                     class="bg-muted/30 flex min-h-44 items-center justify-center overflow-hidden rounded-xl border p-4"
@@ -412,11 +421,11 @@ const handleDelete = async () => {
                     <img
                       v-if="currentImagePreview"
                       :src="currentImagePreview"
-                      alt="Vista previa de la imagen del enlace"
+                      :alt="t('admin.links.imagePreviewAlt')"
                       class="max-h-24 max-w-full rounded-lg object-contain"
                     />
                     <p v-else class="text-muted px-4 text-center text-sm">
-                      Sube una imagen cuadrada para el enlace destacado.
+                      {{ t('admin.links.imagePlaceholder') }}
                     </p>
                   </div>
 
@@ -435,24 +444,25 @@ const handleDelete = async () => {
                     :loading="isUploadingImage"
                     @click="triggerImageUpload"
                   >
-                    {{ form.image ? 'Cambiar imagen' : 'Subir imagen' }}
+                    {{ form.image ? t('admin.links.changeImage') : t('admin.links.uploadImage') }}
                   </UButton>
 
                   <p class="text-muted text-xs">
-                    Formato recomendado: cuadrado. La vista previa se muestra reducida para evitar
-                    ampliaciones engañosas.
+                    {{ t('admin.links.imageHint') }}
                   </p>
                 </div>
               </UFormField>
 
-              <UFormField label="Enlace (URL)" :error="getFieldError('to')">
+              <UFormField :label="t('admin.links.urlLabel')" :error="getFieldError('to')">
                 <UInput v-model="form.to" placeholder="https://..." class="w-full" />
               </UFormField>
 
-              <UFormField label="Estado">
+              <UFormField :label="t('admin.links.statusLabel')">
                 <div class="flex items-center gap-2">
                   <USwitch v-model="form.active" />
-                  <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+                  <span class="text-sm">{{
+                    form.active ? t('admin.common.active') : t('admin.common.inactive')
+                  }}</span>
                 </div>
               </UFormField>
 
@@ -464,17 +474,22 @@ const handleDelete = async () => {
                 <h4 class="mb-3 flex items-center gap-2 font-medium">
                   <UIcon :name="getLocaleFlag(trans.locale)" class="size-5" />
                   {{ getLocaleName(trans.locale) }}
+                  <span v-if="!isDefaultLocale(trans.locale)" class="text-muted text-xs">
+                    {{ t('admin.common.optional') }}
+                  </span>
                 </h4>
                 <div class="space-y-3">
                   <UFormField
-                    :label="`Título ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
+                    :label="
+                      isDefaultLocale(trans.locale)
+                        ? `${t('admin.links.titleLabel')} *`
+                        : t('admin.links.titleLabel')
+                    "
                     :error="getFieldError(`translations.${index}.title`)"
                   >
                     <UInput v-model="trans.title" class="w-full" />
                   </UFormField>
-                  <UFormField
-                    :label="`Texto alternativo ${!isDefaultLocale(trans.locale) ? '(opcional)' : ''}`"
-                  >
+                  <UFormField :label="t('admin.links.altLabel')">
                     <UInput v-model="trans.alt" class="w-full" />
                   </UFormField>
                 </div>
@@ -482,14 +497,16 @@ const handleDelete = async () => {
             </form>
           </div>
           <div class="flex justify-end gap-2 border-t p-4">
-            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="button" variant="ghost" @click="showModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
             <UButton
               type="submit"
               form="links-form"
               :loading="isSubmitting"
               :disabled="Boolean(editingItem) && !hasFormChanges"
             >
-              {{ editingItem ? 'Guardar' : 'Crear' }}
+              {{ editingItem ? t('admin.common.save') : t('admin.common.create') }}
             </UButton>
           </div>
         </div>
@@ -503,15 +520,22 @@ const handleDelete = async () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Confirmar eliminación</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.common.confirmDeleteTitle') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Estás seguro de que deseas eliminar "{{ itemToDelete?.translations[0]?.title }}"? Esta
-            acción no se puede deshacer.
+            {{
+              t('admin.common.deleteConfirm', {
+                name: itemToDelete?.translations[0]?.title,
+              })
+            }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">
+              {{ t('admin.common.cancel') }}
+            </UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">
+              {{ t('admin.common.delete') }}
+            </UButton>
           </div>
         </div>
       </template>

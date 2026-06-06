@@ -8,6 +8,7 @@ import {
   type H3Event,
 } from 'h3'
 import { ADMIN_CSRF_COOKIE_NAME, ADMIN_CSRF_HEADER_NAME } from '~~/shared/constants/adminSecurity'
+import { resolveAdminApiMessage } from '../locale/adminApiErrorMessages'
 
 const UNSAFE_ADMIN_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
@@ -55,7 +56,7 @@ export function assertSameOriginAdminMutationRequest(event: H3Event) {
 
   throw createError({
     statusCode: 403,
-    message: 'Solicitud no permitida.',
+    message: resolveAdminApiMessage('requestNotAllowed', event),
   })
 }
 
@@ -85,6 +86,6 @@ export function assertAdminCsrfMutationRequest(event: H3Event) {
 
   throw createError({
     statusCode: 403,
-    message: 'Solicitud no permitida.',
+    message: resolveAdminApiMessage('requestNotAllowed', event),
   })
 }

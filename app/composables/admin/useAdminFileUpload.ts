@@ -15,21 +15,22 @@ interface UploadedAdminFileResponse {
   storagePath: string
 }
 
-function getUploadErrorMessage(error: unknown, fallback: string) {
+function getUploadErrorMessage(error: unknown, fallback: string, requestTooLargeMessage: string) {
   const message = getApiErrorMessage(error, fallback)
 
   if (
     getApiErrorStatusCode(error) === 413 &&
     (message === fallback || /payload|entity|large/i.test(message))
   ) {
-    return 'El archivo o la solicitud supera el tamaño máximo permitido'
+    return requestTooLargeMessage
   }
 
   return message
 }
 
 export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
-  const toast = useToast()
+  const { t } = useI18n()
+  const toast = useAdminToast()
   const inputRef = ref<HTMLInputElement | null>(null)
   const preview = ref<string | null>(null)
   const isUploading = ref(false)
@@ -78,7 +79,9 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
       toast.add({
         title:
           options.maxFileSizeMessage ??
-          `El archivo supera el tamaño máximo (${Math.round(options.maxFileSizeBytes / 1024 / 1024)}MB)`,
+          t('admin.common.fileTooLargeMb', {
+            mb: Math.round(options.maxFileSizeBytes / 1024 / 1024),
+          }),
         color: 'error',
       })
       return
@@ -145,7 +148,11 @@ export function useAdminFileUpload(options: UseAdminFileUploadOptions) {
       preview.value = options.getFallbackPreview?.() ?? null
 
       toast.add({
-        title: getUploadErrorMessage(error, options.errorMessage),
+        title: getUploadErrorMessage(
+          error,
+          options.errorMessage,
+          t('admin.common.uploadRequestTooLarge')
+        ),
         color: 'error',
       })
     } finally {
@@ -185,7 +192,8 @@ interface UseAdminDocumentUploadOptions {
 
 /** Manages PDF/document upload state: filename display and uploading flag. */
 export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
-  const toast = useToast()
+  const { t } = useI18n()
+  const toast = useAdminToast()
   const inputRef = ref<HTMLInputElement | null>(null)
   const fileName = ref<string | null>(null)
   const isUploading = ref(false)
@@ -236,7 +244,9 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
       toast.add({
         title:
           options.maxFileSizeMessage ??
-          `El archivo supera el tamaño máximo (${Math.round(options.maxFileSizeBytes / 1024 / 1024)}MB)`,
+          t('admin.common.fileTooLargeMb', {
+            mb: Math.round(options.maxFileSizeBytes / 1024 / 1024),
+          }),
         color: 'error',
       })
       return
@@ -259,7 +269,7 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
 
       options.onUploaded(result.storagePath)
       toast.add({
-        title: options.successMessage ?? 'Archivo subido correctamente',
+        title: options.successMessage ?? t('admin.common.fileUploaded'),
         color: 'success',
       })
     } catch (error) {
@@ -283,7 +293,11 @@ export function useAdminDocumentUpload(options: UseAdminDocumentUploadOptions) {
 
       fileName.value = null
       toast.add({
-        title: getUploadErrorMessage(error, options.errorMessage ?? 'No se pudo subir el archivo'),
+        title: getUploadErrorMessage(
+          error,
+          options.errorMessage ?? t('admin.common.fileUploadFailed'),
+          t('admin.common.uploadRequestTooLarge')
+        ),
         color: 'error',
       })
     } finally {

@@ -17,7 +17,9 @@ definePageMeta({
   title: 'Prensa',
 })
 
-const toast = useToast()
+const { t } = useI18n()
+const localePath = useLocalePath()
+const toast = useAdminToast()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const { getDefaultTranslationValue } = useLocales()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
@@ -38,9 +40,9 @@ const {
 } = useAdminPress(currentType, searchQuery)
 
 const typeLabels: Record<AdminPressArticleType, string> = {
-  press_release: 'Notas de prensa',
-  statement: 'Comunicados',
-  media_appearance: 'En los medios',
+  press_release: t('admin.press.types.pressRelease'),
+  statement: t('admin.press.types.statement'),
+  media_appearance: t('admin.press.types.mediaAppearance'),
 }
 
 const typeIcons: Record<AdminPressArticleType, string> = {
@@ -83,10 +85,10 @@ const handleDelete = async () => {
     await refreshAllClientAsyncData()
     showDeleteModal.value = false
     itemToDelete.value = null
-    toast.add({ title: 'Artículo eliminado', color: 'success' })
+    toast.add({ title: t('admin.press.toast.deleted'), color: 'success' })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo eliminar el artículo'),
+      title: getApiErrorMessage(error, t('admin.press.toast.deleteError')),
       color: 'error',
     })
   } finally {
@@ -95,7 +97,7 @@ const handleDelete = async () => {
 }
 
 const tabItems = computed(() => [
-  { key: 'all' as const, label: 'Todos', icon: 'i-tabler-list' },
+  { key: 'all' as const, label: t('admin.press.list.allTab'), icon: 'i-tabler-list' },
   ...PRESS_ARTICLE_TYPES.map((t) => ({
     key: t,
     label: typeLabels[t],
@@ -112,13 +114,17 @@ const activeTab = computed({
 const tabPanelId = 'admin-press-results'
 
 const emptyStateCreatePath = computed(() =>
-  currentType.value
-    ? PRESS_ARTICLE_ADMIN_CREATE_PATHS[currentType.value]
-    : PRESS_ARTICLE_ADMIN_CREATE_PATHS.press_release
+  localePath(
+    currentType.value
+      ? PRESS_ARTICLE_ADMIN_CREATE_PATHS[currentType.value]
+      : PRESS_ARTICLE_ADMIN_CREATE_PATHS.press_release
+  )
 )
 
 const emptyStateTypeLabel = computed(() =>
-  currentType.value ? typeLabels[currentType.value].toLowerCase() : 'artículos de prensa'
+  currentType.value
+    ? typeLabels[currentType.value].toLowerCase()
+    : t('admin.press.list.emptyTypeFallback')
 )
 </script>
 
@@ -126,36 +132,36 @@ const emptyStateTypeLabel = computed(() =>
   <div>
     <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Artículos de prensa</h1>
+        <h1 class="text-2xl font-bold">{{ t('admin.press.list.heading') }}</h1>
         <p class="text-muted mt-1 text-sm">
-          Crea nuevas piezas con el tipo ya preparado para reducir pasos en el flujo diario.
+          {{ t('admin.press.list.subheading') }}
         </p>
       </div>
 
       <div class="flex flex-wrap gap-2">
         <UButton
-          :to="`${ADMIN_ROUTES.pressCreate}?type=press_release`"
+          :to="`${localePath(ADMIN_ROUTES.pressCreate)}?type=press_release`"
           icon="i-tabler-writing-sign"
           variant="outline"
           color="neutral"
         >
-          Nueva nota de prensa
+          {{ t('admin.press.list.newPressRelease') }}
         </UButton>
         <UButton
-          :to="`${ADMIN_ROUTES.pressCreate}?type=statement`"
+          :to="`${localePath(ADMIN_ROUTES.pressCreate)}?type=statement`"
           icon="i-tabler-speakerphone"
           variant="outline"
           color="neutral"
         >
-          Nuevo comunicado
+          {{ t('admin.press.list.newStatement') }}
         </UButton>
         <UButton
-          :to="`${ADMIN_ROUTES.pressCreate}?type=media_appearance`"
+          :to="`${localePath(ADMIN_ROUTES.pressCreate)}?type=media_appearance`"
           icon="i-tabler-broadcast"
           variant="outline"
           color="neutral"
         >
-          Añadir aparición
+          {{ t('admin.press.list.newMediaAppearance') }}
         </UButton>
       </div>
     </div>
@@ -164,7 +170,7 @@ const emptyStateTypeLabel = computed(() =>
       <div
         class="flex gap-2 overflow-x-auto"
         role="tablist"
-        aria-label="Filtrar artículos por tipo"
+        :aria-label="t('admin.press.list.filterByTypeAria')"
       >
         <UButton
           v-for="tab in tabItems"
@@ -186,7 +192,7 @@ const emptyStateTypeLabel = computed(() =>
       <UInput
         v-model="searchQuery"
         icon="i-tabler-search"
-        placeholder="Buscar artículos..."
+        :placeholder="t('admin.press.list.searchPlaceholder')"
         class="max-w-sm"
       />
     </div>
@@ -195,11 +201,11 @@ const emptyStateTypeLabel = computed(() =>
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los artículos de prensa"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.press.list.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -230,7 +236,7 @@ const emptyStateTypeLabel = computed(() =>
           class="group rounded-xl border transition-shadow hover:shadow-md"
         >
           <NuxtLink
-            :to="`${ADMIN_ROUTES.press}/${item.id}`"
+            :to="localePath(`${ADMIN_ROUTES.press}/${item.id}`)"
             class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
           >
             <div class="shrink-0">
@@ -271,7 +277,7 @@ const emptyStateTypeLabel = computed(() =>
                 </UBadge>
 
                 <UBadge :color="item.active ? 'success' : 'neutral'" variant="subtle" size="sm">
-                  {{ item.active ? 'Activo' : 'Inactivo' }}
+                  {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
                 </UBadge>
 
                 <UBadge v-if="item.pdfUrl" variant="subtle" color="warning" size="sm">
@@ -300,29 +306,29 @@ const emptyStateTypeLabel = computed(() =>
               @click.prevent.stop
             >
               <UButton
-                :to="`${getPressArticlePublicListPath(item.type)}/${item.slug}`"
+                :to="localePath(`${getPressArticlePublicListPath(item.type)}/${item.slug}`)"
                 icon="i-tabler-external-link"
                 variant="ghost"
                 size="sm"
                 target="_blank"
-                title="Ver en la web"
-                aria-label="Ver artículo en la web"
+                :title="t('admin.press.list.viewOnWebTitle')"
+                :aria-label="t('admin.press.viewOnWebAria')"
               />
               <UButton
-                :to="`${ADMIN_ROUTES.press}/${item.id}`"
+                :to="localePath(`${ADMIN_ROUTES.press}/${item.id}`)"
                 icon="i-tabler-pencil"
                 variant="ghost"
                 size="sm"
-                title="Editar artículo"
-                aria-label="Editar artículo"
+                :title="t('admin.press.list.editTitle')"
+                :aria-label="t('admin.press.list.editAria')"
               />
               <UButton
                 icon="i-tabler-trash"
                 variant="ghost"
                 color="error"
                 size="sm"
-                title="Eliminar artículo"
-                aria-label="Eliminar artículo"
+                :title="t('admin.press.list.deleteTitle')"
+                :aria-label="t('admin.press.list.deleteAria')"
                 @click="confirmDelete(item)"
               />
             </div>
@@ -331,24 +337,28 @@ const emptyStateTypeLabel = computed(() =>
 
         <div v-if="!items.length && searchQuery.trim()" class="py-16 text-center">
           <UIcon name="i-tabler-search-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />
-          <p class="text-muted text-sm">No se encontraron artículos para "{{ searchQuery }}"</p>
+          <p class="text-muted text-sm">
+            {{ t('admin.press.list.noSearchResults', { query: searchQuery }) }}
+          </p>
           <UButton variant="link" size="sm" class="mt-2" @click="searchQuery = ''">
-            Limpiar búsqueda
+            {{ t('admin.press.list.clearSearch') }}
           </UButton>
         </div>
 
         <div v-else-if="!items.length" class="py-16 text-center">
           <UIcon name="i-tabler-news-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />
-          <p class="text-muted mb-4 text-sm">No hay {{ emptyStateTypeLabel }} todavía</p>
+          <p class="text-muted mb-4 text-sm">
+            {{ t('admin.press.list.emptyState', { type: emptyStateTypeLabel }) }}
+          </p>
           <UButton :to="emptyStateCreatePath" icon="i-tabler-plus" size="sm">
-            Crear primer artículo
+            {{ t('admin.press.list.createFirst') }}
           </UButton>
         </div>
 
         <nav
           v-if="pageCount > 1"
           class="flex justify-center pt-4"
-          aria-label="Paginación de artículos"
+          :aria-label="t('admin.press.list.paginationAria')"
         >
           <UPagination v-model:page="page" :total="total" :items-per-page="20" />
         </nav>
@@ -362,16 +372,22 @@ const emptyStateTypeLabel = computed(() =>
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Confirmar eliminación</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.common.confirmDeleteTitle') }}</h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Estás seguro de que deseas eliminar "{{
-              itemToDelete ? getItemTitle(itemToDelete) : ''
-            }}"? Esta acción no se puede deshacer.
+            {{
+              t('admin.common.deleteConfirm', {
+                name: itemToDelete ? getItemTitle(itemToDelete) : '',
+              })
+            }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">{{
+              t('admin.common.delete')
+            }}</UButton>
           </div>
         </div>
       </template>

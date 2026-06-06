@@ -7,11 +7,15 @@ definePageMeta({
   title: 'Acceso',
 })
 
+const { t } = useI18n()
+
 useHead({
+  title: () => t('admin.login.title'),
   titleTemplate: (titleChunk) => (titleChunk ? `${titleChunk} | Admin CREUP` : 'Admin CREUP'),
 })
 
 const { session, signInWithGoogle, signOut } = useAuth()
+const localePath = useLocalePath()
 const route = useRoute()
 const isLoading = ref(false)
 const error = ref<string | null>(null)
@@ -28,9 +32,9 @@ const verifyAdminAccess = async () => {
 
   try {
     await $fetch('/api/admin/session')
-    await navigateTo(ADMIN_ROUTES.dashboard)
+    await navigateTo(localePath(ADMIN_ROUTES.dashboard))
   } catch {
-    error.value = 'No tienes permiso para acceder a esta página'
+    error.value = t('admin.login.errorNoPermission')
   } finally {
     isCheckingAccess.value = false
   }
@@ -40,7 +44,7 @@ watch(
   () => route.query.error,
   (queryError) => {
     if (typeof queryError === 'string' && queryError.length > 0) {
-      error.value = 'No se pudo completar el inicio de sesión con la cuenta seleccionada'
+      error.value = t('admin.login.errorAccountSignIn')
     }
   },
   { immediate: true }
@@ -62,7 +66,7 @@ const handleLogin = async () => {
     error.value = null
     await signInWithGoogle()
   } catch {
-    error.value = 'No se ha podido iniciar sesión en este momento'
+    error.value = t('admin.login.errorSignInUnavailable')
   } finally {
     isLoading.value = false
   }
@@ -76,8 +80,8 @@ const handleLogin = async () => {
       class="bg-surface w-full max-w-sm space-y-6 rounded-2xl p-8 shadow-xl"
     >
       <header class="text-center">
-        <h1 id="admin-login-title" class="text-2xl font-bold">Administración</h1>
-        <p class="text-muted mt-2 text-sm">Inicia sesión para acceder al panel de administración</p>
+        <h1 id="admin-login-title" class="text-2xl font-bold">{{ t('admin.login.title') }}</h1>
+        <p class="text-muted mt-2 text-sm">{{ t('admin.login.subtitle') }}</p>
       </header>
 
       <UAlert v-if="error" color="error" :title="error" class="mt-4" />
@@ -90,11 +94,11 @@ const handleLogin = async () => {
         icon="i-tabler-brand-google"
         @click="handleLogin"
       >
-        Iniciar sesión con Google
+        {{ t('admin.login.signInWithGoogle') }}
       </UButton>
 
       <p v-if="isCheckingAccess" class="text-muted text-center text-sm">
-        Verificando acceso al panel...
+        {{ t('admin.login.checkingAccess') }}
       </p>
 
       <UButton
@@ -104,7 +108,7 @@ const handleLogin = async () => {
         icon="i-tabler-logout"
         @click="signOut"
       >
-        Cerrar sesión
+        {{ t('admin.login.signOut') }}
       </UButton>
     </section>
   </main>

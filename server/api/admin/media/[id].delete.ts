@@ -1,4 +1,3 @@
-import { ADMIN_NOT_FOUND_MESSAGE } from '~~/shared/constants/adminMessages'
 import { defineEventHandler, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
@@ -6,6 +5,7 @@ import { mediaOutlets, pressArticles } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/admin/adminAssetPublication'
 import { invalidatePressCache } from '../../../utils/admin/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!existingItem) {
-      throw createError({ statusCode: 404, message: ADMIN_NOT_FOUND_MESSAGE })
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
     }
 
     const linkedArticle = await db.query.pressArticles.findFirst({
@@ -29,8 +29,7 @@ export default defineEventHandler(async (event) => {
     if (linkedArticle) {
       throw createError({
         statusCode: 409,
-        message:
-          'No se puede eliminar este medio porque está asignado a una o más apariciones en los medios.',
+        message: getAdminApiErrorMessage(event, 'mediaDeleteBlocked'),
       })
     }
 

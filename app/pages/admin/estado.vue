@@ -7,9 +7,12 @@ definePageMeta({
 // The response shape is inferred from the /api/admin/metrics handler so the
 // template is type-checked against what the backend actually returns; there is
 // no hand-written interface to drift out of sync.
+const localeApiHeaders = useLocaleApiHeaders()
 const { data, error, pending, refresh } = await useFetch('/api/admin/metrics', {
+  headers: localeApiHeaders,
   lazy: true,
 })
+const { t } = useI18n()
 const { formatDateTime } = useLocaleFormatting()
 
 const stats = computed(() => data.value?.data ?? null)
@@ -42,7 +45,7 @@ const retryJob = async (queue: 'newsletter' | 'maintenance', jobId: string) => {
     })
     await refresh()
   } catch {
-    retryError.value = 'No se pudo reintentar el trabajo. Puede que ya no exista.'
+    retryError.value = t('admin.stats.retryJobError')
   } finally {
     retryingJobId.value = null
   }
@@ -51,9 +54,9 @@ const retryJob = async (queue: 'newsletter' | 'maintenance', jobId: string) => {
 const healthMeta = computed(() => {
   const status = stats.value?.health.status ?? 'ok'
   const map = {
-    ok: { color: 'success' as const, label: 'Operativo' },
-    degraded: { color: 'warning' as const, label: 'Degradado' },
-    down: { color: 'error' as const, label: 'Caído' },
+    ok: { color: 'success' as const, label: t('admin.stats.healthOk') },
+    degraded: { color: 'warning' as const, label: t('admin.stats.healthDegraded') },
+    down: { color: 'error' as const, label: t('admin.stats.healthDown') },
   }
   return map[status]
 })
@@ -70,7 +73,7 @@ const recentFailuresTotal = computed(
 
 const formatMetricDate = (value: string | null) => {
   if (!value) {
-    return 'Sin registro'
+    return t('admin.stats.noRecord')
   }
 
   return formatDateTime(value, {
@@ -124,16 +127,16 @@ const formatUptime = (seconds: number | null) => {
   <div class="space-y-6">
     <section class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold">Estado y métricas</h1>
+        <h1 class="text-2xl font-bold">{{ t('admin.stats.title') }}</h1>
         <p class="text-muted mt-1 text-sm">
-          Uso reciente, colas y señales básicas de salud para administración técnica.
+          {{ t('admin.stats.subtitle') }}
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <USwitch v-model="autoRefresh" label="Auto" :disabled="pending" />
+        <USwitch v-model="autoRefresh" :label="t('admin.stats.autoLabel')" :disabled="pending" />
         <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-          Actualizar
+          {{ t('admin.stats.refresh') }}
         </UButton>
       </div>
     </section>
@@ -153,11 +156,11 @@ const formatUptime = (seconds: number | null) => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar las métricas"
-        description="Solo está disponible para administradores definidos en el entorno."
+        :title="t('admin.stats.loadErrorTitle')"
+        :description="t('admin.stats.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -167,8 +170,8 @@ const formatUptime = (seconds: number | null) => {
         color="warning"
         variant="soft"
         icon="i-tabler-cloud-off"
-        title="Mostrando datos anteriores"
-        description="La última actualización falló; estas métricas pueden estar desactualizadas."
+        :title="t('admin.stats.staleTitle')"
+        :description="t('admin.stats.staleDescription')"
       />
 
       <UAlert
@@ -178,9 +181,9 @@ const formatUptime = (seconds: number | null) => {
       >
         <template #title>
           <span class="flex items-center gap-2">
-            Sistema: {{ healthMeta.label }}
+            {{ t('admin.stats.systemLabel', { status: healthMeta.label }) }}
             <span class="text-muted text-xs font-normal">
-              · Actualizado {{ formatMetricDate(stats.generatedAt) }}
+              {{ t('admin.stats.updatedAt', { date: formatMetricDate(stats.generatedAt) }) }}
             </span>
           </span>
         </template>
@@ -193,18 +196,22 @@ const formatUptime = (seconds: number | null) => {
 
       <div class="grid gap-4 xl:grid-cols-4">
         <UCard>
-          <p class="text-muted text-sm">Peticiones último minuto</p>
+          <p class="text-muted text-sm">{{ t('admin.stats.requestsLastMinute') }}</p>
           <p class="mt-3 text-3xl font-semibold">{{ stats.requestRate.lastMinute.total }}</p>
           <p class="text-muted mt-2 text-xs">
-            API {{ stats.requestRate.lastMinute.api }} · Admin
-            {{ stats.requestRate.lastMinute.admin }} · Pública
-            {{ stats.requestRate.lastMinute.public }}
+            {{
+              t('admin.stats.requestsBreakdown', {
+                api: stats.requestRate.lastMinute.api,
+                admin: stats.requestRate.lastMinute.admin,
+                public: stats.requestRate.lastMinute.public,
+              })
+            }}
           </p>
         </UCard>
 
         <UCard>
           <div class="flex items-center justify-between gap-2">
-            <p class="text-muted text-sm">Errores último minuto</p>
+            <p class="text-muted text-sm">{{ t('admin.stats.errorsLastMinute') }}</p>
             <UBadge
               :color="stats.requestRate.lastMinute.serverError > 0 ? 'error' : 'success'"
               variant="subtle"
@@ -219,30 +226,42 @@ const formatUptime = (seconds: number | null) => {
             {{ stats.requestRate.lastMinute.serverError }}
           </p>
           <p class="text-muted mt-2 text-xs">
-            {{ stats.requestRate.lastMinute.clientError }} respuestas 4xx · 5 min:
-            {{ stats.requestRate.last5Minutes.serverError }} ×5xx
+            {{
+              t('admin.stats.errorsBreakdown', {
+                clientError: stats.requestRate.lastMinute.clientError,
+                serverError5min: stats.requestRate.last5Minutes.serverError,
+              })
+            }}
           </p>
         </UCard>
 
         <UCard>
-          <p class="text-muted text-sm">Newsletter backlog</p>
+          <p class="text-muted text-sm">{{ t('admin.stats.newsletterBacklog') }}</p>
           <p class="mt-3 text-3xl font-semibold">{{ stats.queues.newsletter.waiting }}</p>
           <p class="text-muted mt-2 text-xs">
-            Activos {{ stats.queues.newsletter.active }} · Fallidos
-            {{ stats.queues.newsletter.failed }}
+            {{
+              t('admin.stats.newsletterBacklogBreakdown', {
+                active: stats.queues.newsletter.active,
+                failed: stats.queues.newsletter.failed,
+              })
+            }}
           </p>
         </UCard>
 
         <UCard>
           <div class="flex items-center justify-between gap-2">
-            <p class="text-muted text-sm">Trabajos fallidos</p>
+            <p class="text-muted text-sm">{{ t('admin.stats.failedJobs') }}</p>
             <UBadge :color="recentFailuresTotal > 0 ? 'warning' : 'neutral'" variant="subtle">
-              {{ recentFailuresTotal > 0 ? 'Recientes' : 'Estables' }}
+              {{
+                recentFailuresTotal > 0
+                  ? t('admin.stats.failedRecent')
+                  : t('admin.stats.failedStable')
+              }}
             </UBadge>
           </div>
           <p class="mt-3 text-3xl font-semibold">{{ failedJobsTotal }}</p>
           <p class="text-muted mt-2 text-xs">
-            Retenidos en cola · {{ recentFailuresTotal }} en los últimos 5 min
+            {{ t('admin.stats.failedJobsBreakdown', { recent: recentFailuresTotal }) }}
           </p>
         </UCard>
       </div>
@@ -251,16 +270,19 @@ const formatUptime = (seconds: number | null) => {
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 class="text-lg font-semibold">
-              Tráfico (últimos {{ stats.requestRate.windowMinutes }} min)
+              {{ t('admin.stats.trafficTitle', { minutes: stats.requestRate.windowMinutes }) }}
             </h2>
             <p class="text-muted mt-1 text-sm">
-              Media {{ stats.requestRate.last5Minutes.totalPerMinute }} pet./min en 5 min · puntos
-              rojos marcan minutos con 5xx.
+              {{
+                t('admin.stats.trafficSubtitle', {
+                  perMinute: stats.requestRate.last5Minutes.totalPerMinute,
+                })
+              }}
             </p>
           </div>
           <div class="text-right">
             <p class="text-2xl font-semibold">{{ stats.requestRate.last15Minutes.total }}</p>
-            <p class="text-muted text-xs">peticiones en ventana</p>
+            <p class="text-muted text-xs">{{ t('admin.stats.requestsInWindow') }}</p>
           </div>
         </div>
 
@@ -271,23 +293,27 @@ const formatUptime = (seconds: number | null) => {
 
       <div class="grid gap-4 xl:grid-cols-2">
         <UCard>
-          <h2 class="text-lg font-semibold">Infraestructura</h2>
-          <p class="text-muted mt-1 text-sm">Estado de base de datos, Redis y proceso.</p>
+          <h2 class="text-lg font-semibold">{{ t('admin.stats.infrastructureTitle') }}</h2>
+          <p class="text-muted mt-1 text-sm">{{ t('admin.stats.infrastructureSubtitle') }}</p>
 
           <div class="mt-5 grid gap-4 md:grid-cols-2">
             <div class="rounded-2xl border p-4">
               <div class="flex items-center justify-between gap-3">
-                <p class="font-medium">Base de datos</p>
+                <p class="font-medium">{{ t('admin.stats.database') }}</p>
                 <UBadge
                   :color="stats.infrastructure.database.status === 'ok' ? 'success' : 'error'"
                   variant="subtle"
                 >
-                  {{ stats.infrastructure.database.status === 'ok' ? 'ok' : 'Error' }}
+                  {{
+                    stats.infrastructure.database.status === 'ok'
+                      ? t('admin.stats.statusOk')
+                      : t('admin.stats.statusError')
+                  }}
                 </UBadge>
               </div>
               <dl class="text-muted mt-3 space-y-2 text-sm">
                 <div class="flex justify-between gap-4">
-                  <dt>Conexiones</dt>
+                  <dt>{{ t('admin.stats.connections') }}</dt>
                   <dd>
                     {{ stats.infrastructure.database.pool.totalCount }}/{{
                       stats.infrastructure.database.pool.maxConnections
@@ -295,19 +321,19 @@ const formatUptime = (seconds: number | null) => {
                   </dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Idle</dt>
+                  <dt>{{ t('admin.stats.idle') }}</dt>
                   <dd>{{ stats.infrastructure.database.pool.idleCount }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Esperando pool</dt>
+                  <dt>{{ t('admin.stats.waitingPool') }}</dt>
                   <dd>{{ stats.infrastructure.database.pool.waitingCount }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Errores pool (total)</dt>
+                  <dt>{{ t('admin.stats.poolErrorsTotal') }}</dt>
                   <dd>{{ stats.infrastructure.database.pool.errorCount }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Último error</dt>
+                  <dt>{{ t('admin.stats.lastError') }}</dt>
                   <dd>{{ formatMetricDate(stats.infrastructure.database.pool.lastErrorAt) }}</dd>
                 </div>
               </dl>
@@ -315,7 +341,7 @@ const formatUptime = (seconds: number | null) => {
 
             <div class="rounded-2xl border p-4">
               <div class="flex items-center justify-between gap-3">
-                <p class="font-medium">Redis</p>
+                <p class="font-medium">{{ t('admin.stats.redis') }}</p>
                 <UBadge
                   :color="
                     stats.infrastructure.redis.status === 'ok'
@@ -334,15 +360,15 @@ const formatUptime = (seconds: number | null) => {
                 class="text-muted mt-3 space-y-2 text-sm"
               >
                 <div class="flex justify-between gap-4">
-                  <dt>Clientes conectados</dt>
+                  <dt>{{ t('admin.stats.connectedClients') }}</dt>
                   <dd>{{ stats.infrastructure.redis.server.connectedClients ?? '—' }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Memoria usada</dt>
+                  <dt>{{ t('admin.stats.usedMemory') }}</dt>
                   <dd>{{ stats.infrastructure.redis.server.usedMemoryHuman ?? '—' }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Ratio aciertos</dt>
+                  <dt>{{ t('admin.stats.hitRate') }}</dt>
                   <dd>
                     {{
                       stats.infrastructure.redis.server.hitRate === null
@@ -352,36 +378,36 @@ const formatUptime = (seconds: number | null) => {
                   </dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Claves expulsadas</dt>
+                  <dt>{{ t('admin.stats.evictedKeys') }}</dt>
                   <dd>{{ stats.infrastructure.redis.server.evictedKeys ?? '—' }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Uptime</dt>
+                  <dt>{{ t('admin.stats.uptime') }}</dt>
                   <dd>{{ formatUptime(stats.infrastructure.redis.server.uptimeSeconds) }}</dd>
                 </div>
               </dl>
               <p v-else class="text-muted mt-3 text-sm">
                 {{
                   stats.infrastructure.redis.status === 'unconfigured'
-                    ? 'Redis no está configurado en este entorno.'
-                    : 'Sin datos de servidor disponibles.'
+                    ? t('admin.stats.redisUnconfigured')
+                    : t('admin.stats.redisNoServerData')
                 }}
               </p>
             </div>
 
             <div class="rounded-2xl border p-4">
-              <p class="font-medium">Proceso</p>
+              <p class="font-medium">{{ t('admin.stats.process') }}</p>
               <dl class="text-muted mt-3 space-y-2 text-sm">
                 <div class="flex justify-between gap-4">
-                  <dt>Uptime</dt>
+                  <dt>{{ t('admin.stats.uptime') }}</dt>
                   <dd>{{ formatUptime(stats.process.uptimeSeconds) }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Memoria RSS</dt>
+                  <dt>{{ t('admin.stats.memoryRss') }}</dt>
                   <dd>{{ formatBytes(stats.process.rssBytes) }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Heap usado</dt>
+                  <dt>{{ t('admin.stats.heapUsed') }}</dt>
                   <dd>
                     {{ formatBytes(stats.process.heapUsedBytes) }} /
                     {{ formatBytes(stats.process.heapTotalBytes) }}
@@ -395,31 +421,35 @@ const formatUptime = (seconds: number | null) => {
                 type="button"
                 class="flex w-full items-center justify-between gap-3 text-left"
               >
-                <span class="font-medium">Proxy de recursos</span>
+                <span class="font-medium">{{ t('admin.stats.resourceProxy') }}</span>
                 <UBadge color="neutral" variant="subtle">
-                  {{ stats.infrastructure.externalAssetProxy.agent.origins }} orígenes
+                  {{
+                    t('admin.stats.origins', {
+                      count: stats.infrastructure.externalAssetProxy.agent.origins,
+                    })
+                  }}
                 </UBadge>
               </button>
               <template #content>
                 <dl class="text-muted mt-3 space-y-2 text-sm">
                   <div class="flex justify-between gap-4">
-                    <dt>Conectadas</dt>
+                    <dt>{{ t('admin.stats.proxyConnected') }}</dt>
                     <dd>{{ stats.infrastructure.externalAssetProxy.agent.connected }}</dd>
                   </div>
                   <div class="flex justify-between gap-4">
-                    <dt>Libres</dt>
+                    <dt>{{ t('admin.stats.proxyFree') }}</dt>
                     <dd>{{ stats.infrastructure.externalAssetProxy.agent.free }}</dd>
                   </div>
                   <div class="flex justify-between gap-4">
-                    <dt>Pendientes</dt>
+                    <dt>{{ t('admin.stats.proxyPending') }}</dt>
                     <dd>{{ stats.infrastructure.externalAssetProxy.agent.pending }}</dd>
                   </div>
                   <div class="flex justify-between gap-4">
-                    <dt>En cola</dt>
+                    <dt>{{ t('admin.stats.proxyQueued') }}</dt>
                     <dd>{{ stats.infrastructure.externalAssetProxy.agent.queued }}</dd>
                   </div>
                   <div class="flex justify-between gap-4">
-                    <dt>Límite/origen</dt>
+                    <dt>{{ t('admin.stats.limitPerOrigin') }}</dt>
                     <dd>
                       {{
                         stats.infrastructure.externalAssetProxy.agent.configuredConnectionsPerOrigin
@@ -433,9 +463,9 @@ const formatUptime = (seconds: number | null) => {
         </UCard>
 
         <UCard>
-          <h2 class="text-lg font-semibold">Colas y worker</h2>
+          <h2 class="text-lg font-semibold">{{ t('admin.stats.queuesTitle') }}</h2>
           <p class="text-muted mt-1 text-sm">
-            Backlog BullMQ, fallos recientes y estado de ejecución.
+            {{ t('admin.stats.queuesSubtitle') }}
           </p>
 
           <UAlert
@@ -454,39 +484,39 @@ const formatUptime = (seconds: number | null) => {
             >
               <div class="flex items-center justify-between gap-3">
                 <p class="font-medium capitalize">{{ queue.name }}</p>
-                <UBadge color="neutral" variant="subtle"
-                  >{{ queue.waiting + queue.active + queue.delayed }} pendientes</UBadge
-                >
+                <UBadge color="neutral" variant="subtle">{{
+                  t('admin.stats.pending', { count: queue.waiting + queue.active + queue.delayed })
+                }}</UBadge>
               </div>
 
               <dl class="text-muted mt-3 grid gap-2 text-sm sm:grid-cols-2">
                 <div class="flex justify-between gap-4">
-                  <dt>Waiting</dt>
+                  <dt>{{ t('admin.stats.waiting') }}</dt>
                   <dd>{{ queue.waiting }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Active</dt>
+                  <dt>{{ t('admin.stats.active') }}</dt>
                   <dd>{{ queue.active }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Delayed</dt>
+                  <dt>{{ t('admin.stats.delayed') }}</dt>
                   <dd>{{ queue.delayed }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Failed</dt>
+                  <dt>{{ t('admin.stats.failed') }}</dt>
                   <dd :class="queue.failed > 0 ? 'text-error font-medium' : ''">
                     {{ queue.failed }}
                   </dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <dt>Completed</dt>
+                  <dt>{{ t('admin.stats.completed') }}</dt>
                   <dd>{{ queue.completed }}</dd>
                 </div>
               </dl>
 
               <div v-if="queue.recentFailures.length" class="mt-4 space-y-2">
                 <p class="text-muted text-xs font-medium tracking-wide uppercase">
-                  Fallos retenidos
+                  {{ t('admin.stats.retainedFailures') }}
                 </p>
                 <div
                   v-for="job in queue.recentFailures"
@@ -497,12 +527,12 @@ const formatUptime = (seconds: number | null) => {
                     <div class="min-w-0">
                       <p class="font-medium">
                         {{ job.name }}
-                        <span class="text-muted font-normal"
-                          >· {{ job.attemptsMade }} intentos</span
-                        >
+                        <span class="text-muted font-normal">{{
+                          t('admin.stats.attempts', { count: job.attemptsMade })
+                        }}</span>
                       </p>
                       <p class="text-muted mt-1 text-xs break-words">
-                        {{ job.failedReason ?? 'Sin motivo registrado' }}
+                        {{ job.failedReason ?? t('admin.stats.noReasonRecorded') }}
                       </p>
                       <p class="text-muted mt-1 text-xs">{{ formatMetricDate(job.failedAt) }}</p>
                     </div>
@@ -514,7 +544,7 @@ const formatUptime = (seconds: number | null) => {
                       :loading="retryingJobId === job.id"
                       @click="retryJob(queue.name, job.id)"
                     >
-                      Reintentar
+                      {{ t('admin.common.retry') }}
                     </UButton>
                   </div>
                 </div>
@@ -523,19 +553,23 @@ const formatUptime = (seconds: number | null) => {
 
             <div class="rounded-2xl border p-4">
               <div class="flex items-center justify-between gap-3">
-                <p class="font-medium">Worker de newsletter</p>
+                <p class="font-medium">{{ t('admin.stats.newsletterWorker') }}</p>
                 <UBadge
                   :color="stats.newsletterWorker.activeRunCount > 0 ? 'warning' : 'success'"
                   variant="subtle"
                 >
-                  {{ stats.newsletterWorker.activeRunCount > 0 ? 'Procesando' : 'En reposo' }}
+                  {{
+                    stats.newsletterWorker.activeRunCount > 0
+                      ? t('admin.stats.workerProcessing')
+                      : t('admin.stats.workerIdle')
+                  }}
                 </UBadge>
               </div>
               <p class="text-muted mt-3 text-sm">
                 {{
                   stats.newsletterWorker.shutdownRequested
-                    ? 'Hay una parada solicitada; los envíos terminarán o se reencolarán.'
-                    : 'No hay parada pendiente.'
+                    ? t('admin.stats.workerShutdownRequested')
+                    : t('admin.stats.workerNoShutdown')
                 }}
               </p>
               <ul
@@ -547,7 +581,7 @@ const formatUptime = (seconds: number | null) => {
                   :key="newsletterId"
                   class="rounded-xl border px-3 py-2"
                 >
-                  Newsletter activa: <code>{{ newsletterId }}</code>
+                  {{ t('admin.stats.activeNewsletter') }} <code>{{ newsletterId }}</code>
                 </li>
               </ul>
             </div>
@@ -557,10 +591,13 @@ const formatUptime = (seconds: number | null) => {
 
       <UCard>
         <div>
-          <h2 class="text-lg font-semibold">Endpoints lentos o con errores</h2>
+          <h2 class="text-lg font-semibold">{{ t('admin.stats.slowEndpointsTitle') }}</h2>
           <p class="text-muted mt-1 text-sm">
-            Se marca como lento desde {{ stats.requestRate.slowRequestThresholdMs }} ms; los 5xx se
-            listan aparte.
+            {{
+              t('admin.stats.slowEndpointsSubtitle', {
+                threshold: stats.requestRate.slowRequestThresholdMs,
+              })
+            }}
           </p>
         </div>
 
@@ -574,26 +611,30 @@ const formatUptime = (seconds: number | null) => {
               <div class="min-w-0">
                 <p class="font-medium">{{ endpoint.key }}</p>
                 <p class="text-muted mt-1 text-sm">
-                  Última vez: {{ formatMetricDate(endpoint.lastSeenAt) }} ·
-                  {{ endpoint.totalCount }} peticiones
+                  {{
+                    t('admin.stats.endpointMeta', {
+                      lastSeen: formatMetricDate(endpoint.lastSeenAt),
+                      count: endpoint.totalCount,
+                    })
+                  }}
                 </p>
               </div>
 
               <div class="grid gap-2 text-sm sm:grid-cols-4">
                 <div class="rounded-xl border px-3 py-2">
-                  <div class="text-muted">Media</div>
+                  <div class="text-muted">{{ t('admin.stats.average') }}</div>
                   <div class="font-medium">{{ formatDuration(endpoint.averageDurationMs) }}</div>
                 </div>
                 <div class="rounded-xl border px-3 py-2">
-                  <div class="text-muted">Máximo</div>
+                  <div class="text-muted">{{ t('admin.stats.maximum') }}</div>
                   <div class="font-medium">{{ formatDuration(endpoint.maxDurationMs) }}</div>
                 </div>
                 <div class="rounded-xl border px-3 py-2">
-                  <div class="text-muted">Lentas</div>
+                  <div class="text-muted">{{ t('admin.stats.slow') }}</div>
                   <div class="font-medium">{{ endpoint.slowCount }} ({{ endpoint.slowRate }}%)</div>
                 </div>
                 <div class="rounded-xl border px-3 py-2">
-                  <div class="text-muted">Errores 5xx</div>
+                  <div class="text-muted">{{ t('admin.stats.serverErrors') }}</div>
                   <div
                     class="font-medium"
                     :class="endpoint.serverErrorCount > 0 ? 'text-error' : ''"
@@ -607,7 +648,7 @@ const formatUptime = (seconds: number | null) => {
         </div>
 
         <div v-else class="mt-5 rounded-2xl border px-4 py-10 text-center">
-          <p class="text-muted">Todavía no hay endpoints lentos ni con errores registrados.</p>
+          <p class="text-muted">{{ t('admin.stats.slowEndpointsEmpty') }}</p>
         </div>
       </UCard>
     </template>

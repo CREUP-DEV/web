@@ -2,12 +2,13 @@ import { createError, defineEventHandler, readBody } from 'h3'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { validateBody } from '../../../utils/validation'
 import { createAdminAccessSchema } from '~~/shared/utils/adminSchemas'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const validated = validateBody(createAdminAccessSchema, body)
+  const validated = validateBody(event, createAdminAccessSchema, body)
 
   try {
     const [item] = await db
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
     if (!item) {
       throw createError({
         statusCode: 409,
-        message: 'Ese correo ya está registrado en la lista de accesos.',
+        message: getAdminApiErrorMessage(event, 'accessEmailRegistered'),
       })
     }
 

@@ -23,7 +23,13 @@ interface ClientValidatableSchema<TPayload> {
 }
 
 export function useFormValidation() {
+  const { t, te } = useI18n()
   const fieldErrors = ref<ValidationErrors>({})
+
+  // Validation messages are i18n keys (e.g. 'admin.validation.nameRequired'). Translate known keys;
+  // pass any non-key literal through untouched (te() guard keeps stray literals out of the
+  // vue-i18n message compiler, avoiding linked-format crashes on chars like @ / | / {).
+  const resolveMessage = (message: string) => (te(message) ? t(message) : message)
 
   const clearErrors = () => {
     fieldErrors.value = {}
@@ -51,7 +57,7 @@ export function useFormValidation() {
       const key = path || '_form'
 
       if (!nextErrors[key]) {
-        nextErrors[key] = issue.message
+        nextErrors[key] = resolveMessage(issue.message)
       }
     }
 

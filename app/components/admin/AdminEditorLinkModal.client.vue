@@ -27,6 +27,8 @@ const props = defineProps<{
   editor: LinkEditor
 }>()
 
+const { t } = useI18n()
+
 const open = ref(false)
 const url = ref('')
 const tooltipOpen = ref(false)
@@ -48,16 +50,16 @@ const urlError = computed(() => {
     const parsedUrl = new URL(normalizedUrl.value)
 
     if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-      return 'El enlace debe comenzar con http:// o https://'
+      return t('admin.editor.linkModal.errorProtocol')
     }
 
     if (!parsedUrl.hostname) {
-      return 'Introduce un dominio válido'
+      return t('admin.editor.linkModal.errorDomain')
     }
 
     return ''
   } catch {
-    return 'Introduce una URL válida (por ejemplo, https://ejemplo.com)'
+    return t('admin.editor.linkModal.errorInvalidUrl')
   }
 })
 
@@ -163,10 +165,10 @@ const handleEnter = () => {
 </script>
 
 <template>
-  <UModal :open="open" title="Gestionar enlace" @update:open="handleOpenChange">
+  <UModal :open="open" :title="t('admin.editor.linkModal.title')" @update:open="handleOpenChange">
     <UTooltip
       v-model:open="tooltipOpen"
-      text="Enlace"
+      :text="t('admin.editor.linkModal.tooltip')"
       :disabled="open"
       :ignore-non-keyboard-focus="true"
     >
@@ -186,11 +188,16 @@ const handleEnter = () => {
 
     <template #body>
       <div class="space-y-4">
-        <UFormField name="url" label="URL del enlace" :error="urlError || undefined" class="w-full">
+        <UFormField
+          name="url"
+          :label="t('admin.editor.linkModal.urlLabel')"
+          :error="urlError || undefined"
+          class="w-full"
+        >
           <UInput
             v-model="url"
             type="url"
-            placeholder="https://ejemplo.com"
+            :placeholder="t('admin.editor.linkModal.urlPlaceholder')"
             autofocus
             class="w-full"
             @keydown.enter.prevent="handleEnter"
@@ -198,8 +205,7 @@ const handleEnter = () => {
         </UFormField>
 
         <p class="text-muted text-xs">
-          Selecciona texto para enlazarlo. Si no hay selección, se insertará la URL como texto
-          enlazado.
+          {{ t('admin.editor.linkModal.help') }}
         </p>
       </div>
     </template>
@@ -213,7 +219,7 @@ const handleEnter = () => {
           :disabled="!active"
           @click="removeLink"
         >
-          Quitar enlace
+          {{ t('admin.editor.linkModal.removeLink') }}
         </UButton>
 
         <div class="flex items-center gap-2">
@@ -224,11 +230,11 @@ const handleEnter = () => {
             :disabled="!canOpenCurrentLink"
             @click="openCurrentLink"
           >
-            Abrir
+            {{ t('admin.editor.linkModal.open') }}
           </UButton>
 
           <UButton icon="i-tabler-check" color="primary" :disabled="!canApply" @click="handleApply">
-            Guardar enlace
+            {{ t('admin.editor.linkModal.saveLink') }}
           </UButton>
         </div>
       </div>

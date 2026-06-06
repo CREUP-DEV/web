@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
+import type { Locale } from 'vue-i18n'
 import { useMediaQuery } from '@vueuse/core'
 import { useAuth } from '@/composables/security/useAuth'
 import { getInitials } from '@/utils/initials'
@@ -7,10 +8,36 @@ import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
 
 const { session, signOut } = useAuth()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
+const switchLocalePath = useSwitchLocalePath()
+const { localeConfigs, getLocaleFlag, getLocaleName, getLanguageTag } = useLocales()
 const publicSitePath = computed(() => localePath('/'))
 
 const route = useRoute()
+
+const localeItems = computed(() =>
+  localeConfigs.value.map((config) => ({
+    value: config.code,
+    label: getLocaleName(config.code),
+    icon: config.flag,
+  }))
+)
+
+const selectedLocale = computed({
+  get: () => locale.value,
+  set: (newLocale: string) => {
+    if (!newLocale || newLocale === locale.value) {
+      return
+    }
+    // Admin routes are localized (prefix_except_default), so switching = navigating to the
+    // prefixed/unprefixed path. Persistence lives in the URL — no cookie needed.
+    const targetPath = switchLocalePath(newLocale as Locale)
+    if (targetPath && targetPath !== route.fullPath) {
+      void navigateTo(targetPath)
+    }
+  },
+})
 const isMobileSidebar = useMediaQuery('(max-width: 1023px)')
 const sidebarOpen = useState('admin-sidebar-open', () => false)
 const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
@@ -43,8 +70,9 @@ watch(
 )
 
 const isNavItemActive = (to: string) => {
-  if (to === ADMIN_ROUTES.dashboard) return route.path === ADMIN_ROUTES.dashboard
-  return route.path === to || route.path.startsWith(`${to}/`)
+  const target = localePath(to)
+  if (to === ADMIN_ROUTES.dashboard) return route.path === target
+  return route.path === target || route.path.startsWith(`${target}/`)
 }
 
 const visibleAdminSections = computed(() =>
@@ -52,8 +80,11 @@ const visibleAdminSections = computed(() =>
 )
 
 const allNavItems = computed(() => [
-  { label: 'Panel', to: ADMIN_ROUTES.dashboard },
-  ...visibleAdminSections.value.map((item) => ({ label: item.name, to: item.to })),
+  { label: t('admin.nav.dashboard.name'), to: ADMIN_ROUTES.dashboard },
+  ...visibleAdminSections.value.map((item) => ({
+    label: t(`admin.nav.${item.key}.name`),
+    to: item.to,
+  })),
 ])
 
 const currentPageLabel = computed(
@@ -63,8 +94,8 @@ const currentPageLabel = computed(
 const navigationItems = computed<NavigationMenuItem[][]>(() => [
   [
     {
-      label: 'Panel',
-      to: ADMIN_ROUTES.dashboard,
+      label: t('admin.nav.dashboard.name'),
+      to: localePath(ADMIN_ROUTES.dashboard),
       icon: 'i-tabler-home',
       active: isNavItemActive(ADMIN_ROUTES.dashboard),
       onSelect: () => {
@@ -74,8 +105,8 @@ const navigationItems = computed<NavigationMenuItem[][]>(() => [
       },
     },
     ...visibleAdminSections.value.map((item) => ({
-      label: item.name,
-      to: item.to,
+      label: t(`admin.nav.${item.key}.name`),
+      to: localePath(item.to),
       icon: item.icon,
       active: isNavItemActive(item.to),
       onSelect: () => {
@@ -90,7 +121,7 @@ const navigationItems = computed<NavigationMenuItem[][]>(() => [
 const userMenuItems = computed<DropdownMenuItem[][]>(() => [
   [
     {
-      label: 'Cerrar sesión',
+      label: t('admin.layout.signOut'),
       icon: 'i-tabler-logout',
       onSelect: signOut,
     },
@@ -98,13 +129,15 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
 ])
 
 const toggleSidebarLabel = computed(() =>
-  sidebarOpen.value ? 'Contraer menú lateral' : 'Expandir menú lateral'
+  sidebarOpen.value ? t('admin.layout.collapseSidebar') : t('admin.layout.expandSidebar')
 )
 
 useHead({
   htmlAttrs: {
-    lang: 'es',
+    lang: computed(() => getLanguageTag(locale.value)),
   },
+  // Document title follows the active section's localized nav label (re-renders on locale switch).
+  title: currentPageLabel,
   titleTemplate: (titleChunk) => (titleChunk ? `${titleChunk} | Admin CREUP` : 'Admin CREUP'),
 })
 </script>
@@ -115,13 +148,13 @@ useHead({
       href="#admin-main-navigation"
       class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
     >
-      Ir al menú principal
+      {{ t('admin.layout.skipToNav') }}
     </a>
     <a
       href="#admin-main-content"
       class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-48"
     >
-      Ir al contenido principal
+      {{ t('admin.layout.skipToContent') }}
     </a>
 
     <div class="flex min-h-screen">
@@ -162,7 +195,7 @@ useHead({
                 leave-to-class="opacity-0 -translate-x-1"
               >
                 <div v-if="state === 'expanded'" class="min-w-0">
-                  <p class="truncate text-sm font-semibold">Administración</p>
+                  <p class="truncate text-sm font-semibold">{{ t('admin.layout.adminTitle') }}</p>
                 </div>
               </Transition>
             </div>
@@ -171,14 +204,14 @@ useHead({
               icon="i-tabler-x"
               variant="ghost"
               class="absolute top-0 -right-1 shrink-0 lg:hidden"
-              aria-label="Cerrar menú lateral"
-              title="Cerrar menú lateral"
+              :aria-label="t('admin.layout.closeSidebar')"
+              :title="t('admin.layout.closeSidebar')"
               @click="close"
             />
           </div>
         </template>
 
-        <nav id="admin-main-navigation" tabindex="-1" aria-label="Navegación principal">
+        <nav id="admin-main-navigation" tabindex="-1" :aria-label="t('admin.layout.mainNavLabel')">
           <UNavigationMenu
             :items="navigationItems"
             orientation="vertical"
@@ -206,8 +239,8 @@ useHead({
                   :src="session.data.user.image"
                   :alt="
                     session.data.user.name
-                      ? `Avatar de ${session.data.user.name}`
-                      : 'Avatar de usuario'
+                      ? t('admin.layout.userAvatar', { name: session.data.user.name })
+                      : t('admin.layout.userAvatarFallback')
                   "
                   class="size-8 shrink-0 rounded-full text-xs"
                   loading="eager"
@@ -233,7 +266,7 @@ useHead({
                   <div v-if="state === 'expanded'" class="flex min-w-0 flex-1 items-center gap-1">
                     <div class="min-w-0 flex-1">
                       <p class="line-clamp-2 text-sm leading-tight font-medium">
-                        {{ session.data?.user?.name || 'Administración' }}
+                        {{ session.data?.user?.name || t('admin.layout.adminTitle') }}
                       </p>
                       <p class="text-muted truncate text-xs">{{ session.data?.user?.email }}</p>
                     </div>
@@ -243,8 +276,8 @@ useHead({
                       variant="ghost"
                       class="shrink-0"
                       size="sm"
-                      title="Cerrar sesión"
-                      aria-label="Cerrar sesión"
+                      :title="t('admin.layout.signOut')"
+                      :aria-label="t('admin.layout.signOut')"
                       @click="signOut"
                     />
                   </div>
@@ -256,8 +289,8 @@ useHead({
                   variant="ghost"
                   color="neutral"
                   class="rounded-full p-0"
-                  aria-label="Menú de usuario"
-                  title="Menú de usuario"
+                  :aria-label="t('admin.layout.userMenu')"
+                  :title="t('admin.layout.userMenu')"
                 >
                   <img
                     v-if="session.data?.user?.image && !avatarLoadFailed"
@@ -300,8 +333,10 @@ useHead({
                   leave-to-class="opacity-0 -translate-x-1"
                 >
                   <div v-if="state === 'expanded'" class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-medium">Administración</p>
-                    <p class="text-muted truncate text-xs">Cargando sesión...</p>
+                    <p class="truncate text-sm font-medium">{{ t('admin.layout.adminTitle') }}</p>
+                    <p class="text-muted truncate text-xs">
+                      {{ t('admin.layout.loadingSession') }}
+                    </p>
                   </div>
                 </Transition>
               </div>
@@ -344,6 +379,18 @@ useHead({
 
           <div class="flex-1" />
 
+          <USelect
+            v-model="selectedLocale"
+            :items="localeItems"
+            value-key="value"
+            class="w-36"
+            :aria-label="t('language.toggle')"
+          >
+            <template #leading="{ modelValue }">
+              <UIcon v-if="modelValue" :name="getLocaleFlag(modelValue)" class="size-5" />
+            </template>
+          </USelect>
+
           <UColorModeButton />
 
           <UButton
@@ -352,7 +399,7 @@ useHead({
             variant="ghost"
             color="neutral"
           >
-            Ver sitio
+            {{ t('admin.layout.viewSite') }}
           </UButton>
         </header>
 

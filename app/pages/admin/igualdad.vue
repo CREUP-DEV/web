@@ -24,7 +24,9 @@ interface EqualityDocument {
   translations: EqualityDocumentTranslation[]
 }
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 const {
@@ -44,6 +46,7 @@ const {
 } = await useFetch<{
   data: EqualityDocument[]
 }>('/api/admin/equality', {
+  headers: localeApiHeaders,
   lazy: true,
 })
 const sortEqualityDocuments = (left: EqualityDocument, right: EqualityDocument) => {
@@ -169,16 +172,21 @@ function getAdditionalTranslationCount(item: EqualityDocument) {
 function getAdditionalTranslationLabel(item: EqualityDocument) {
   const count = getAdditionalTranslationCount(item)
   if (count === 0) return ''
-  return `${count} idioma adicional${count > 1 ? 'es' : ''}`
+  return count > 1
+    ? t('admin.equality.additionalLanguagesPlural', { count })
+    : t('admin.equality.additionalLanguage', { count })
 }
 
 const saveOrder = async () => {
   try {
     await persistOrder()
     await refreshAllClientAsyncData()
-    toast.add({ title: 'Orden guardado', color: 'success' })
+    toast.add({ title: t('admin.equality.orderSavedToast'), color: 'success' })
   } catch (error) {
-    toast.add({ title: getApiErrorMessage(error, 'No se pudo guardar el orden'), color: 'error' })
+    toast.add({
+      title: getApiErrorMessage(error, t('admin.equality.orderErrorToast')),
+      color: 'error',
+    })
   }
 }
 
@@ -210,7 +218,7 @@ const handleSubmit = async () => {
       )
       replaceItem(response.data)
       await refreshAllClientAsyncData()
-      toast.add({ title: 'Documento actualizado', color: 'success' })
+      toast.add({ title: t('admin.equality.updatedToast'), color: 'success' })
     } else {
       const response = await $fetch<{ data: EqualityDocument }>('/api/admin/equality', {
         method: 'POST',
@@ -218,14 +226,14 @@ const handleSubmit = async () => {
       })
       replaceItem(response.data)
       await refreshAllClientAsyncData()
-      toast.add({ title: 'Documento creado', color: 'success' })
+      toast.add({ title: t('admin.equality.createdToast'), color: 'success' })
     }
 
     closeModal()
     clearErrors()
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo guardar el documento'),
+      title: getApiErrorMessage(error, t('admin.equality.saveErrorToast')),
       color: 'error',
     })
   } finally {
@@ -243,10 +251,10 @@ const handleDelete = async () => {
     })
     removeItem(itemToDelete.value.id)
     await refreshAllClientAsyncData()
-    toast.add({ title: 'Documento eliminado', color: 'success' })
+    toast.add({ title: t('admin.equality.deletedToast'), color: 'success' })
     closeDeleteModal()
   } catch {
-    toast.add({ title: 'No se pudo eliminar el documento', color: 'error' })
+    toast.add({ title: t('admin.equality.deleteErrorToast'), color: 'error' })
   } finally {
     isDeleting.value = false
   }
@@ -276,10 +284,10 @@ const handlePdfSelect = async (event: Event) => {
     )
 
     form.pdfUrl = result.storagePath
-    toast.add({ title: 'PDF subido correctamente', color: 'success' })
+    toast.add({ title: t('admin.equality.pdfUploadedToast'), color: 'success' })
   } catch {
     pdfName.value = null
-    toast.add({ title: 'No se pudo subir el PDF', color: 'error' })
+    toast.add({ title: t('admin.equality.pdfUploadFailedToast'), color: 'error' })
   } finally {
     isUploadingPdf.value = false
     target.value = ''
@@ -291,17 +299,23 @@ const handlePdfSelect = async (event: Event) => {
   <div>
     <div class="mb-6 flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Igualdad</h1>
+        <h1 class="text-2xl font-bold">{{ t('admin.equality.title') }}</h1>
         <p class="text-muted mt-1 text-sm">
-          Gestiona los documentos públicos y el contenido de sus tarjetas.
+          {{ t('admin.equality.subtitle') }}
         </p>
       </div>
       <div class="flex gap-2">
         <template v-if="hasOrderChanges">
-          <UButton variant="outline" @click="cancelOrderChanges">Cancelar</UButton>
-          <UButton :loading="isSavingOrder" @click="saveOrder">Guardar orden</UButton>
+          <UButton variant="outline" @click="cancelOrderChanges">{{
+            t('admin.common.cancel')
+          }}</UButton>
+          <UButton :loading="isSavingOrder" @click="saveOrder">{{
+            t('admin.common.saveOrder')
+          }}</UButton>
         </template>
-        <UButton v-else icon="i-tabler-plus" @click="openCreate">Nuevo documento</UButton>
+        <UButton v-else icon="i-tabler-plus" @click="openCreate">{{
+          t('admin.equality.newDocument')
+        }}</UButton>
       </div>
     </div>
 
@@ -315,20 +329,20 @@ const handlePdfSelect = async (event: Event) => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar los documentos"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.equality.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
     <UCard v-else-if="items.length === 0" class="text-center">
       <div class="flex flex-col items-center gap-3 py-8">
         <UIcon name="i-tabler-files-off" class="text-muted size-10" />
-        <p class="text-muted">No hay documentos de igualdad todavía.</p>
+        <p class="text-muted">{{ t('admin.equality.empty') }}</p>
         <UButton variant="soft" icon="i-tabler-plus" @click="openCreate">
-          Añadir primer documento
+          {{ t('admin.equality.addFirst') }}
         </UButton>
       </div>
     </UCard>
@@ -350,7 +364,7 @@ const handlePdfSelect = async (event: Event) => {
                 {{ getDocumentTitle(item) }}
               </p>
               <UBadge :color="item.active ? 'success' : 'neutral'" variant="subtle" size="sm">
-                {{ item.active ? 'Activo' : 'Inactivo' }}
+                {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
               </UBadge>
             </div>
 
@@ -374,10 +388,10 @@ const handlePdfSelect = async (event: Event) => {
               variant="outline"
               icon="i-tabler-external-link"
             >
-              Ver PDF
+              {{ t('admin.equality.viewPdf') }}
             </UButton>
             <UButton icon="i-tabler-pencil" variant="ghost" @click="openEdit(item)">
-              Editar
+              {{ t('admin.equality.edit') }}
             </UButton>
             <UButton
               icon="i-tabler-trash"
@@ -385,7 +399,7 @@ const handlePdfSelect = async (event: Event) => {
               color="error"
               @click="confirmDelete(item)"
             >
-              Eliminar
+              {{ t('admin.common.delete') }}
             </UButton>
           </div>
         </div>
@@ -403,7 +417,7 @@ const handlePdfSelect = async (event: Event) => {
                 {{ getDocumentTitle(item) }}
               </p>
               <UBadge :color="item.active ? 'success' : 'neutral'" variant="subtle" size="sm">
-                {{ item.active ? 'Activo' : 'Inactivo' }}
+                {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
               </UBadge>
             </div>
 
@@ -427,10 +441,10 @@ const handlePdfSelect = async (event: Event) => {
               variant="outline"
               icon="i-tabler-external-link"
             >
-              Ver PDF
+              {{ t('admin.equality.viewPdf') }}
             </UButton>
             <UButton icon="i-tabler-pencil" variant="ghost" @click="openEdit(item)">
-              Editar
+              {{ t('admin.equality.edit') }}
             </UButton>
             <UButton
               icon="i-tabler-trash"
@@ -438,7 +452,7 @@ const handlePdfSelect = async (event: Event) => {
               color="error"
               @click="confirmDelete(item)"
             >
-              Eliminar
+              {{ t('admin.common.delete') }}
             </UButton>
           </div>
         </div>
@@ -450,20 +464,22 @@ const handlePdfSelect = async (event: Event) => {
         <div class="flex max-h-[85vh] flex-col">
           <div class="overflow-y-auto p-6">
             <h2 class="mb-4 text-lg font-bold">
-              {{ editingItem ? 'Editar documento' : 'Nuevo documento' }}
+              {{ editingItem ? t('admin.equality.editTitle') : t('admin.equality.newTitle') }}
             </h2>
 
             <form id="equality-form" class="space-y-4" @submit.prevent="handleSubmit">
               <div>
-                <UFormField label="Estado">
+                <UFormField :label="t('admin.equality.statusLabel')">
                   <div class="flex items-center gap-2">
                     <USwitch v-model="form.active" />
-                    <span class="text-sm">{{ form.active ? 'Activo' : 'Inactivo' }}</span>
+                    <span class="text-sm">{{
+                      form.active ? t('admin.common.active') : t('admin.common.inactive')
+                    }}</span>
                   </div>
                 </UFormField>
               </div>
 
-              <UFormField label="PDF" :error="getFieldError('pdfUrl')">
+              <UFormField :label="t('admin.equality.pdfLabel')" :error="getFieldError('pdfUrl')">
                 <div class="space-y-3">
                   <input
                     ref="pdfInputRef"
@@ -477,9 +493,9 @@ const handlePdfSelect = async (event: Event) => {
                     class="bg-muted/30 flex min-h-24 items-center justify-between gap-3 rounded-xl border p-4"
                   >
                     <div class="min-w-0">
-                      <p class="font-medium">Archivo actual</p>
+                      <p class="font-medium">{{ t('admin.equality.currentFile') }}</p>
                       <p class="text-muted mt-1 text-sm break-all">
-                        {{ pdfName || 'Todavía no has subido ningún PDF.' }}
+                        {{ pdfName || t('admin.equality.noPdfUploaded') }}
                       </p>
                     </div>
 
@@ -490,7 +506,9 @@ const handlePdfSelect = async (event: Event) => {
                       :loading="isUploadingPdf"
                       @click="triggerPdfInput"
                     >
-                      {{ form.pdfUrl ? 'Cambiar PDF' : 'Subir PDF' }}
+                      {{
+                        form.pdfUrl ? t('admin.equality.changePdf') : t('admin.equality.uploadPdf')
+                      }}
                     </UButton>
                   </div>
                 </div>
@@ -505,26 +523,34 @@ const handlePdfSelect = async (event: Event) => {
                   <UIcon :name="getLocaleFlag(translation.locale)" class="size-5" />
                   {{ getLocaleName(translation.locale) }}
                   <span v-if="!isDefaultLocale(translation.locale)" class="text-muted text-xs">
-                    (opcional)
+                    {{ t('admin.common.optional') }}
                   </span>
                 </h3>
 
                 <div class="space-y-3">
                   <UFormField
-                    :label="isDefaultLocale(translation.locale) ? 'Título *' : 'Título'"
+                    :label="
+                      isDefaultLocale(translation.locale)
+                        ? `${t('admin.equality.titleLabel')} *`
+                        : t('admin.equality.titleLabel')
+                    "
                     :error="getFieldError(`translations.${index}.title`)"
                   >
                     <UInput v-model="translation.title" class="w-full" />
                   </UFormField>
 
                   <UFormField
-                    :label="isDefaultLocale(translation.locale) ? 'Descripción *' : 'Descripción'"
+                    :label="
+                      isDefaultLocale(translation.locale)
+                        ? `${t('admin.equality.descriptionLabel')} *`
+                        : t('admin.equality.descriptionLabel')
+                    "
                     :error="getFieldError(`translations.${index}.description`)"
                   >
                     <UTextarea v-model="translation.description" :rows="4" class="w-full" />
                   </UFormField>
 
-                  <UFormField label="Meta">
+                  <UFormField :label="t('admin.equality.metaLabel')">
                     <UInput v-model="translation.meta" class="w-full" />
                   </UFormField>
                 </div>
@@ -533,14 +559,16 @@ const handlePdfSelect = async (event: Event) => {
           </div>
 
           <div class="flex justify-end gap-2 border-t p-4">
-            <UButton type="button" variant="ghost" @click="showModal = false">Cancelar</UButton>
+            <UButton type="button" variant="ghost" @click="showModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
             <UButton
               type="submit"
               form="equality-form"
               :loading="isSubmitting"
               :disabled="Boolean(editingItem) && !hasFormChanges"
             >
-              {{ editingItem ? 'Guardar' : 'Crear' }}
+              {{ editingItem ? t('admin.common.save') : t('admin.common.create') }}
             </UButton>
           </div>
         </div>
@@ -554,17 +582,24 @@ const handlePdfSelect = async (event: Event) => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Confirmar eliminación</h2>
+            <h2 class="text-lg font-bold">{{ t('admin.common.confirmDeleteTitle') }}</h2>
           </div>
 
           <p class="text-muted mb-6">
-            ¿Estás seguro de que deseas eliminar "{{ getDocumentTitle(itemToDelete) }}"? Esta acción
-            no se puede deshacer.
+            {{
+              t('admin.common.deleteConfirm', {
+                name: getDocumentTitle(itemToDelete),
+              })
+            }}
           </p>
 
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">{{
+              t('admin.common.delete')
+            }}</UButton>
           </div>
         </div>
       </template>

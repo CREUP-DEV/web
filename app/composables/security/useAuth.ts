@@ -4,12 +4,15 @@ export const authClient = createAuthClient()
 
 export const useAuth = () => {
   const session = authClient.useSession()
+  const localePath = useLocalePath()
 
   const signInWithGoogle = async () => {
+    // Localized so the OAuth round-trip returns to the active-locale panel (e.g. /en/admin),
+    // not the default-locale one.
     return authClient.signIn.social({
       provider: 'google',
-      callbackURL: '/admin',
-      errorCallbackURL: '/admin/login',
+      callbackURL: localePath('/admin'),
+      errorCallbackURL: localePath('/admin/login'),
     })
   }
 
@@ -17,7 +20,7 @@ export const useAuth = () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          navigateTo('/')
+          navigateTo(localePath('/'))
         },
       },
     })

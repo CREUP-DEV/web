@@ -15,22 +15,20 @@ import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { assertTagSlugAvailable } from '../../../utils/admin/tagMutations'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { updateTagSchema } from '~~/shared/utils/adminSchemas'
-
-const OPTIMISTIC_LOCK_MESSAGE =
-  'La etiqueta fue modificada por otro usuario. Recarga la página y reintenta.'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)
   const body = await readBody(event)
 
   try {
-    const validated = validateBody(updateTagSchema, body)
+    const validated = validateBody(event, updateTagSchema, body)
     await assertTagSlugAvailable(validated.slug, id)
 
     if (!getRequiredTranslationValue(validated.translations, 'name')) {
       throw createError({
         statusCode: 400,
-        message: 'El nombre en español es requerido',
+        message: getAdminApiErrorMessage(event, 'requiredNameEs'),
       })
     }
 
@@ -47,11 +45,15 @@ export default defineEventHandler(async (event) => {
       if (!existingItem) {
         throw createError({
           statusCode: 404,
-          message: 'Etiqueta no encontrada',
+          message: getAdminApiErrorMessage(event, 'tagNotFound'),
         })
       }
 
-      assertOptimisticLock(validated.updatedAt, existingItem.updatedAt, OPTIMISTIC_LOCK_MESSAGE)
+      assertOptimisticLock(
+        validated.updatedAt,
+        existingItem.updatedAt,
+        getAdminApiErrorMessage(event, 'tagOptimisticLock')
+      )
 
       const updatedRows = await tx
         .update(tags)
@@ -70,7 +72,10 @@ export default defineEventHandler(async (event) => {
         .returning({ id: tags.id })
 
       if (updatedRows.length === 0) {
-        throw createError({ statusCode: 409, message: OPTIMISTIC_LOCK_MESSAGE })
+        throw createError({
+          statusCode: 409,
+          message: getAdminApiErrorMessage(event, 'tagOptimisticLock'),
+        })
       }
 
       await tx.delete(tagTranslations).where(eq(tagTranslations.tagId, id))

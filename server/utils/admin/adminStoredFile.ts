@@ -5,6 +5,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { hasAdminStoredFileReference } from './adminAssetReferences'
 import { slugify } from '../core/slug'
 import { logWarn } from '../core/logger'
+import { getDefaultAdminApiErrorMessage } from '../locale/adminApiErrorMessages'
 
 export const ADMIN_ASSET_ROUTE_BASE = '/api/admin/assets'
 export const TEMP_ADMIN_ASSET_BASE_PATH = `${ADMIN_ASSET_ROUTE_BASE}/tmp`
@@ -111,7 +112,10 @@ function resolveInternalAbsolutePath(storagePath: string) {
     : ''
 
   if (!relativeStoragePath) {
-    throw createError({ statusCode: 400, message: 'La ruta del archivo no es válida' })
+    throw createError({
+      statusCode: 400,
+      message: getDefaultAdminApiErrorMessage('assetInvalidPath'),
+    })
   }
 
   const absolutePath = resolve(ADMIN_ASSET_STORAGE_ROOT, relativeStoragePath)
@@ -120,7 +124,10 @@ function resolveInternalAbsolutePath(storagePath: string) {
     absolutePath !== ADMIN_ASSET_STORAGE_ROOT &&
     !absolutePath.startsWith(`${ADMIN_ASSET_STORAGE_ROOT}${sep}`)
   ) {
-    throw createError({ statusCode: 400, message: 'La ruta del archivo no es válida' })
+    throw createError({
+      statusCode: 400,
+      message: getDefaultAdminApiErrorMessage('assetInvalidPath'),
+    })
   }
 
   return absolutePath
@@ -132,7 +139,10 @@ function resolvePublicAbsolutePath(storagePath: string) {
   const absolutePath = resolve(publicRoot, `.${normalizedStoragePath}`)
 
   if (absolutePath !== publicRoot && !absolutePath.startsWith(`${publicRoot}${sep}`)) {
-    throw createError({ statusCode: 400, message: 'La ruta del archivo no es válida' })
+    throw createError({
+      statusCode: 400,
+      message: getDefaultAdminApiErrorMessage('assetInvalidPath'),
+    })
   }
 
   return absolutePath
@@ -259,7 +269,7 @@ function resolveAdminFileSource(storagePath: string, publicPath: string) {
   if (!relativeFilename || relativeFilename.includes('/')) {
     throw createError({
       statusCode: 400,
-      message: 'La ruta del archivo no es válida',
+      message: getDefaultAdminApiErrorMessage('assetInvalidPath'),
     })
   }
 
@@ -351,7 +361,7 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
   if (!(await fileExists(sourceFile.absolutePath))) {
     throw createError({
       statusCode: 400,
-      message: 'El archivo ya no está disponible',
+      message: getDefaultAdminApiErrorMessage('assetUnavailable'),
     })
   }
 
@@ -386,7 +396,7 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
     if (attempts > MAX_FILENAME_COLLISION_ATTEMPTS) {
       throw createError({
         statusCode: 500,
-        message: 'No se ha podido generar un nombre de archivo disponible',
+        message: getDefaultAdminApiErrorMessage('filenameUnavailable'),
       })
     }
 

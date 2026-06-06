@@ -1,6 +1,7 @@
-import { createError } from 'h3'
+import { createError, type H3Event } from 'h3'
 import { extname } from 'node:path'
 import { finalizeAdminFile, saveTemporaryAdminFile } from './adminStoredFile'
+import { resolveAdminApiMessage } from '../locale/adminApiErrorMessages'
 
 const DEFAULT_MAX_FILE_SIZE = 20 * 1024 * 1024
 const PDF_MAGIC_BYTES = '%PDF-'
@@ -26,6 +27,8 @@ interface SaveAdminDocumentOptions {
   publicPath: string
   allowedExtensions?: string[]
   maxFileSizeBytes?: number
+  /** Request event for locale-aware error messages; falls back to es when omitted. */
+  event?: H3Event
 }
 
 interface FinalizeAdminDocumentOptions {
@@ -46,7 +49,10 @@ export async function saveAdminDocument(options: SaveAdminDocumentOptions) {
   if (options.data.length > maxFileSizeBytes) {
     throw createError({
       statusCode: 400,
-      message: `El archivo supera el tamaño máximo (${Math.round(maxFileSizeBytes / 1024 / 1024)}MB)`,
+      message: resolveAdminApiMessage('fileTooLargeMb', options.event).replace(
+        '{mb}',
+        String(Math.round(maxFileSizeBytes / 1024 / 1024))
+      ),
     })
   }
 
@@ -54,14 +60,17 @@ export async function saveAdminDocument(options: SaveAdminDocumentOptions) {
   if (!allowedExtensions.includes(extension)) {
     throw createError({
       statusCode: 400,
-      message: `Formato no permitido. Formatos admitidos: ${allowedExtensions.join(', ')}`,
+      message: resolveAdminApiMessage('formatNotAllowed', options.event).replace(
+        '{formats}',
+        allowedExtensions.join(', ')
+      ),
     })
   }
 
   if (extension === '.pdf' && !isProbablyPdf(options.data)) {
     throw createError({
       statusCode: 400,
-      message: 'El PDF subido no es válido',
+      message: resolveAdminApiMessage('pdfInvalid', options.event),
     })
   }
 

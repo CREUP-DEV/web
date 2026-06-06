@@ -15,7 +15,10 @@ interface Subscriber {
   unsubscribedAt: string | null
 }
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
+const localePath = useLocalePath()
 const LIMIT = 20
 const page = ref(1)
 const offset = computed(() => (page.value - 1) * LIMIT)
@@ -32,6 +35,7 @@ const {
     total: number
   }
 }>('/api/admin/newsletter/subscribers', {
+  headers: localeApiHeaders,
   lazy: true,
   query: computed(() => ({
     limit: LIMIT,
@@ -100,12 +104,12 @@ async function handleAdd() {
       activeTotal: (meta?.activeTotal ?? 0) + (response.data.active ? 1 : 0),
       total: (meta?.total ?? 0) + 1,
     }))
-    toast.add({ title: 'Suscriptor añadido', color: 'success' })
+    toast.add({ title: t('admin.newsletter.subscribers.addedToast'), color: 'success' })
     showAddModal.value = false
     newEmail.value = ''
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo añadir el suscriptor'),
+      title: getApiErrorMessage(error, t('admin.newsletter.subscribers.addErrorToast')),
       color: 'error',
     })
   } finally {
@@ -130,12 +134,14 @@ async function toggleActive(item: Subscriber) {
       total: meta?.total ?? 0,
     }))
     toast.add({
-      title: item.active ? 'Suscriptor desactivado' : 'Suscriptor reactivado',
+      title: item.active
+        ? t('admin.newsletter.subscribers.deactivatedToast')
+        : t('admin.newsletter.subscribers.reactivatedToast'),
       color: 'success',
     })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo actualizar el suscriptor'),
+      title: getApiErrorMessage(error, t('admin.newsletter.subscribers.updateErrorToast')),
       color: 'error',
     })
   }
@@ -166,10 +172,10 @@ async function handleDelete() {
     }))
     showDeleteModal.value = false
     itemToDelete.value = null
-    toast.add({ title: 'Suscriptor eliminado', color: 'success' })
+    toast.add({ title: t('admin.newsletter.subscribers.deletedToast'), color: 'success' })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudo eliminar el suscriptor'),
+      title: getApiErrorMessage(error, t('admin.newsletter.subscribers.deleteErrorToast')),
       color: 'error',
     })
   } finally {
@@ -200,26 +206,33 @@ watch(page, () => {
       <div>
         <div class="flex items-center gap-2">
           <UButton
-            :to="ADMIN_ROUTES.newsletter"
+            :to="localePath(ADMIN_ROUTES.newsletter)"
             icon="i-tabler-arrow-left"
             variant="ghost"
             size="sm"
           />
-          <h1 class="text-2xl font-bold">Suscriptores</h1>
+          <h1 class="text-2xl font-bold">{{ t('admin.newsletter.subscribers.title') }}</h1>
         </div>
         <p class="text-muted mt-1 text-sm">
-          {{ activeCount }} activos de {{ totalCount }} en total
+          {{
+            t('admin.newsletter.subscribers.activeOfTotal', {
+              active: activeCount,
+              total: totalCount,
+            })
+          }}
         </p>
       </div>
-      <UButton icon="i-tabler-plus" @click="showAddModal = true">Añadir</UButton>
+      <UButton icon="i-tabler-plus" @click="showAddModal = true">{{
+        t('admin.common.add')
+      }}</UButton>
     </div>
 
     <div class="mb-4 flex flex-wrap items-center gap-3">
       <UInput
         v-model="search"
         icon="i-tabler-search"
-        placeholder="Buscar por correo…"
-        aria-label="Buscar suscriptores por correo electrónico"
+        :placeholder="t('admin.newsletter.subscribers.searchPlaceholder')"
+        :aria-label="t('admin.newsletter.subscribers.searchAria')"
         class="w-full max-w-xs"
       />
       <UButton
@@ -228,7 +241,7 @@ watch(page, () => {
         :aria-pressed="showActiveOnly"
         @click="showActiveOnly = !showActiveOnly"
       >
-        Solo activos
+        {{ t('admin.newsletter.subscribers.activeOnly') }}
       </UButton>
     </div>
 
@@ -243,17 +256,21 @@ watch(page, () => {
         <UAlert
           color="error"
           variant="soft"
-          title="No se pudieron cargar los suscriptores"
-          description="Revisa la conexión y vuelve a intentarlo."
+          :title="t('admin.newsletter.subscribers.loadErrorTitle')"
+          :description="t('admin.common.loadErrorDescription')"
         />
         <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-          Reintentar
+          {{ t('admin.common.retry') }}
         </UButton>
       </div>
 
       <div v-else-if="filteredItems.length === 0" class="py-12 text-center">
         <p class="text-muted">
-          No hay suscriptores{{ search ? ' que coincidan con la búsqueda' : '' }}.
+          {{
+            search
+              ? t('admin.newsletter.subscribers.emptySearch')
+              : t('admin.newsletter.subscribers.empty')
+          }}
         </p>
         <UButton
           v-if="!search"
@@ -262,7 +279,7 @@ watch(page, () => {
           icon="i-tabler-plus"
           @click="showAddModal = true"
         >
-          Añadir suscriptor
+          {{ t('admin.newsletter.subscribers.addSubscriber') }}
         </UButton>
       </div>
 
@@ -279,9 +296,18 @@ watch(page, () => {
           <div class="flex-1 overflow-hidden">
             <p class="truncate font-medium">{{ item.email }}</p>
             <p class="text-muted text-xs">
-              Suscrito {{ formatDate(item.subscribedAt) }}
+              {{
+                t('admin.newsletter.subscribers.subscribedOn', {
+                  date: formatDate(item.subscribedAt),
+                })
+              }}
               <template v-if="item.unsubscribedAt">
-                · Baja {{ formatDate(item.unsubscribedAt) }}
+                ·
+                {{
+                  t('admin.newsletter.subscribers.unsubscribedOn', {
+                    date: formatDate(item.unsubscribedAt),
+                  })
+                }}
               </template>
             </p>
           </div>
@@ -289,10 +315,16 @@ watch(page, () => {
             :class="item.active ? 'bg-success/10 text-success' : 'bg-muted text-muted'"
             class="shrink-0 rounded-full px-2 py-0.5 text-xs"
           >
-            {{ item.active ? 'Activo' : 'Inactivo' }}
+            {{ item.active ? t('admin.common.active') : t('admin.common.inactive') }}
           </span>
           <div class="flex gap-1">
-            <UTooltip :text="item.active ? 'Desactivar' : 'Reactivar'">
+            <UTooltip
+              :text="
+                item.active
+                  ? t('admin.newsletter.subscribers.deactivate')
+                  : t('admin.newsletter.subscribers.reactivate')
+              "
+            >
               <UButton
                 :icon="item.active ? 'i-tabler-user-minus' : 'i-tabler-user-plus'"
                 variant="ghost"
@@ -300,7 +332,7 @@ watch(page, () => {
                 @click="toggleActive(item)"
               />
             </UTooltip>
-            <UTooltip text="Eliminar">
+            <UTooltip :text="t('admin.common.delete')">
               <UButton
                 icon="i-tabler-trash"
                 variant="ghost"
@@ -316,7 +348,7 @@ watch(page, () => {
       <nav
         v-if="totalCount > LIMIT"
         class="flex justify-center pt-4"
-        aria-label="Paginación de suscriptores"
+        :aria-label="t('admin.newsletter.subscribers.paginationAria')"
       >
         <UPagination v-model:page="page" :total="totalCount" :items-per-page="LIMIT" />
       </nav>
@@ -324,27 +356,28 @@ watch(page, () => {
 
     <UModal v-model:open="showAddModal">
       <template #header>
-        <h2 class="text-lg font-semibold">Añadir suscriptor</h2>
+        <h2 class="text-lg font-semibold">{{ t('admin.newsletter.subscribers.addSubscriber') }}</h2>
       </template>
       <template #body>
         <form class="space-y-4" @submit.prevent="handleAdd">
           <p class="text-dimmed text-sm">
-            Añade suscriptores manualmente solo si ya dispones de una base legítima y puedes
-            acreditar el consentimiento.
+            {{ t('admin.newsletter.subscribers.addConsentNote') }}
           </p>
-          <UFormField label="Correo electrónico *">
+          <UFormField :label="`${t('admin.newsletter.subscribers.emailLabel')} *`">
             <UInput
               v-model="newEmail"
               type="email"
-              placeholder="correo@ejemplo.com"
+              :placeholder="t('admin.newsletter.subscribers.emailPlaceholder')"
               required
               class="w-full"
             />
           </UFormField>
           <div class="flex justify-end gap-2">
-            <UButton variant="outline" @click="showAddModal = false">Cancelar</UButton>
+            <UButton variant="outline" @click="showAddModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
             <UButton type="submit" :loading="isAdding" :disabled="!newEmail.trim()">
-              Añadir
+              {{ t('admin.common.add') }}
             </UButton>
           </div>
         </form>
@@ -358,16 +391,22 @@ watch(page, () => {
             <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
               <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
             </div>
-            <h2 class="text-lg font-bold">Eliminar suscriptor</h2>
+            <h2 class="text-lg font-bold">
+              {{ t('admin.newsletter.subscribers.deleteModalTitle') }}
+            </h2>
           </div>
           <p class="text-muted mb-6">
-            ¿Seguro que quieres eliminar permanentemente a
+            {{ t('admin.newsletter.subscribers.deleteConfirmPrefix') }}
             <strong>{{ itemToDelete?.email }}</strong
-            >?
+            >{{ t('admin.newsletter.subscribers.deleteConfirmSuffix') }}
           </p>
           <div class="flex justify-end gap-2">
-            <UButton variant="ghost" @click="showDeleteModal = false">Cancelar</UButton>
-            <UButton color="error" :loading="isDeleting" @click="handleDelete">Eliminar</UButton>
+            <UButton variant="ghost" @click="showDeleteModal = false">{{
+              t('admin.common.cancel')
+            }}</UButton>
+            <UButton color="error" :loading="isDeleting" @click="handleDelete">{{
+              t('admin.common.delete')
+            }}</UButton>
           </div>
         </div>
       </template>

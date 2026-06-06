@@ -14,14 +14,16 @@ withDefaults(
 )
 
 const { session } = useAuth()
+const localePath = useLocalePath()
 
 const isAdminUser = computed(() => Boolean(session.value?.data?.user?.id))
+const adminPath = computed(() => localePath('/admin'))
 </script>
 
 <template>
   <UTooltip v-if="isAdminUser && tooltip" :text="tooltip">
     <UButton
-      to="/admin"
+      :to="adminPath"
       icon="i-tabler-settings-2"
       color="neutral"
       variant="ghost"

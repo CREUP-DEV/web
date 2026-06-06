@@ -1,6 +1,7 @@
 import { createError } from 'h3'
 import type { H3Event } from 'h3'
 import { logError } from '../core/logger'
+import { resolveAdminApiMessage } from '../locale/adminApiErrorMessages'
 
 export function isUniqueConstraintViolation(error: unknown): boolean {
   return (
@@ -19,7 +20,7 @@ export function throwAdminMutationError(scope: string, error: unknown, event?: H
   if (isUniqueConstraintViolation(error)) {
     throw createError({
       statusCode: 409,
-      message: 'Ya existe un registro con esos datos',
+      message: resolveAdminApiMessage('duplicateRecord', event),
     })
   }
 
@@ -27,6 +28,6 @@ export function throwAdminMutationError(scope: string, error: unknown, event?: H
 
   throw createError({
     statusCode: 500,
-    message: 'Error al procesar la solicitud',
+    message: resolveAdminApiMessage('mutationFailed', event),
   })
 }

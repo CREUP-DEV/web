@@ -8,6 +8,7 @@ import {
   validateInput,
   validateMultipartFile,
 } from '../../../utils/validation'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { adminUploadKindSchema } from '~~/shared/utils/adminSchemas'
 import {
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
@@ -39,17 +40,22 @@ const uploadTargets = {
 const UPLOAD_MAX_REQUEST_BYTES = 6 * 1024 * 1024 // 6 MB hard ceiling (above image limit)
 
 export default defineEventHandler(async (event) => {
-  await assertUploadRequestSize(event, UPLOAD_MAX_REQUEST_BYTES, 'Solicitud demasiado grande')
+  await assertUploadRequestSize(
+    event,
+    UPLOAD_MAX_REQUEST_BYTES,
+    getAdminApiErrorMessage(event, 'requestTooLarge')
+  )
 
   const formData = await readMultipartFormData(event)
-  const file = validateMultipartFile(formData)
+  const file = validateMultipartFile(event, formData)
 
-  const { kind } = validateInput(adminUploadKindSchema, {
+  const { kind } = validateInput(event, adminUploadKindSchema, {
     kind: getMultipartTextField(formData, 'kind'),
   })
 
   const target = uploadTargets[kind]
   const { storagePath } = await saveAdminImage({
+    event,
     data: getMultipartFileBuffer(file.data),
     filename: file.filename,
     uploadDir: target.uploadDir,

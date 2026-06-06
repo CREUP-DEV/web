@@ -12,6 +12,7 @@ import { enqueueNewsletterSendJob } from '../../../utils/core/backgroundJobs'
 import { finalizeAdminDocument } from '../../../utils/admin/adminDocumentUpload'
 import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { ensureSmtpTransporterVerified } from '../../../utils/email/smtpTransporter'
 import { validateBody } from '../../../utils/validation'
 import {
@@ -40,18 +41,15 @@ export default defineEventHandler(async (event) => {
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
   try {
-    const validated = validateBody(createNewsletterRequestSchema, body)
+    const validated = validateBody(event, createNewsletterRequestSchema, body)
 
     if (validated.sendEmail) {
       try {
-        await ensureSmtpTransporterVerified(
-          'La configuración SMTP es incompleta. Configura el servidor SMTP antes de enviar newsletters.'
-        )
+        await ensureSmtpTransporterVerified(getAdminApiErrorMessage(event, 'smtpIncomplete'))
       } catch {
         throw createError({
           statusCode: 503,
-          message:
-            'No se puede conectar al servidor de correo. Verifica la configuración SMTP antes de enviar.',
+          message: getAdminApiErrorMessage(event, 'smtpConnectionFailed'),
         })
       }
     }
@@ -105,14 +103,20 @@ export default defineEventHandler(async (event) => {
         .returning()
 
       if (!inserted) {
-        throw createError({ statusCode: 500, message: 'Error al crear la newsletter' })
+        throw createError({
+          statusCode: 500,
+          message: getAdminApiErrorMessage(event, 'newsletterCreateFailed'),
+        })
       }
 
       return inserted
     })
 
     if (!item) {
-      throw createError({ statusCode: 500, message: 'Error al crear la newsletter' })
+      throw createError({
+        statusCode: 500,
+        message: getAdminApiErrorMessage(event, 'newsletterCreateFailed'),
+      })
     }
     createdNewsletterId = item.id
 
@@ -138,7 +142,7 @@ export default defineEventHandler(async (event) => {
       )
     }
 
-    const queuedItem = sendEmail ? await claimNewsletterForSending(item.id) : item
+    const queuedItem = sendEmail ? await claimNewsletterForSending(item.id, event) : item
 
     if (sendEmail) {
       await enqueueNewsletterSendJob({

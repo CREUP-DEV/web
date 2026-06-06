@@ -35,8 +35,12 @@ const {
   pending: summaryPending,
   error: summaryError,
   refresh: refreshSummary,
-} = await useFetch<AdminSummaryResponse>('/api/admin/summary')
+} = await useFetch<AdminSummaryResponse>('/api/admin/summary', {
+  headers: useLocaleApiHeaders(),
+})
 const { formatDateTime } = useLocaleFormatting()
+const { t } = useI18n()
+const localePath = useLocalePath()
 
 const sectionByKey = Object.fromEntries(
   ADMIN_SECTION_DEFINITIONS.map((section) => [section.key, section] as const)
@@ -47,18 +51,18 @@ const subscribers = computed(() => summaryData.value?.subscribers ?? { total: 0,
 
 const primaryActions: DashboardAction[] = [
   {
-    title: 'Nueva nota de prensa',
-    to: `${ADMIN_ROUTES.pressCreate}?type=press_release`,
+    title: t('admin.dashboard.newPressRelease'),
+    to: `${localePath(ADMIN_ROUTES.pressCreate)}?type=press_release`,
     icon: 'i-tabler-writing-sign',
   },
   {
-    title: 'Nuevo comunicado',
-    to: `${ADMIN_ROUTES.pressCreate}?type=statement`,
+    title: t('admin.dashboard.newStatement'),
+    to: `${localePath(ADMIN_ROUTES.pressCreate)}?type=statement`,
     icon: 'i-tabler-speakerphone',
   },
   {
-    title: 'Añadir aparición en medios',
-    to: `${ADMIN_ROUTES.pressCreate}?type=media_appearance`,
+    title: t('admin.dashboard.newMediaAppearance'),
+    to: `${localePath(ADMIN_ROUTES.pressCreate)}?type=media_appearance`,
     icon: 'i-tabler-broadcast',
   },
 ]
@@ -103,11 +107,11 @@ const formatActivityDate = (value: string) =>
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudo cargar el resumen del panel"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.dashboard.loadError')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshSummary()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
@@ -116,27 +120,29 @@ const formatActivityDate = (value: string) =>
         class="from-primary/10 to-warning/10 overflow-hidden rounded-3xl border bg-linear-to-br via-transparent"
       >
         <div class="space-y-4 p-5 sm:p-6">
-          <h1 class="text-2xl font-semibold sm:text-3xl">Acciones rápidas</h1>
+          <h1 class="text-2xl font-semibold sm:text-3xl">
+            {{ t('admin.dashboard.quickActions') }}
+          </h1>
 
           <div class="grid gap-3 lg:grid-cols-2 xl:grid-cols-[17rem_repeat(3,minmax(0,1fr))]">
             <div class="bg-background/80 flex h-full flex-col rounded-2xl border p-4 shadow-sm">
-              <p class="text-muted text-sm">Newsletter</p>
+              <p class="text-muted text-sm">{{ t('admin.dashboard.newsletter') }}</p>
               <div class="mt-3">
                 <p class="text-2xl font-semibold sm:text-3xl">{{ subscribers.total }}</p>
-                <p class="text-muted text-sm">suscriptores</p>
+                <p class="text-muted text-sm">{{ t('admin.dashboard.subscribers') }}</p>
               </div>
 
               <div class="mt-4 flex flex-wrap gap-2">
-                <UButton :to="`${ADMIN_ROUTES.newsletter}?open=create`" size="sm">
-                  Nueva newsletter
+                <UButton :to="`${localePath(ADMIN_ROUTES.newsletter)}?open=create`" size="sm">
+                  {{ t('admin.dashboard.newNewsletter') }}
                 </UButton>
                 <UButton
-                  :to="ADMIN_ROUTES.newsletterSubscribers"
+                  :to="localePath(ADMIN_ROUTES.newsletterSubscribers)"
                   variant="outline"
                   color="neutral"
                   size="sm"
                 >
-                  Ver suscriptores
+                  {{ t('admin.dashboard.viewSubscribers') }}
                 </UButton>
               </div>
             </div>
@@ -163,15 +169,15 @@ const formatActivityDate = (value: string) =>
       <UCard>
         <div class="space-y-4">
           <div>
-            <h2 class="text-lg font-semibold">Actividad reciente</h2>
-            <p class="text-muted mt-1 text-sm">Lo último que se ha tocado en el panel.</p>
+            <h2 class="text-lg font-semibold">{{ t('admin.dashboard.recentActivity') }}</h2>
+            <p class="text-muted mt-1 text-sm">{{ t('admin.dashboard.recentActivityHint') }}</p>
           </div>
 
           <div v-if="recentActivity.length" class="space-y-3">
             <NuxtLink
               v-for="item in recentActivity"
               :key="`${item.sectionKey}-${item.updatedAt}-${item.title}`"
-              :to="item.to"
+              :to="localePath(item.to)"
               class="group hover:border-primary/40 hover:bg-primary/5 block rounded-2xl border p-4 transition"
             >
               <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -186,7 +192,7 @@ const formatActivityDate = (value: string) =>
                     <div class="flex flex-wrap items-center gap-2">
                       <h3 class="truncate font-medium">{{ item.title }}</h3>
                       <UBadge color="neutral" variant="subtle" size="sm">
-                        {{ getSectionMeta(item.sectionKey).name }}
+                        {{ t('admin.nav.' + item.sectionKey + '.name') }}
                       </UBadge>
                     </div>
                     <p class="text-muted mt-1 text-sm leading-5">{{ item.description }}</p>
@@ -207,7 +213,7 @@ const formatActivityDate = (value: string) =>
           </div>
 
           <div v-else class="rounded-2xl border px-4 py-10 text-center text-sm">
-            <p class="text-muted">Todavía no hay actividad reciente que mostrar.</p>
+            <p class="text-muted">{{ t('admin.dashboard.noRecentActivity') }}</p>
           </div>
         </div>
       </UCard>

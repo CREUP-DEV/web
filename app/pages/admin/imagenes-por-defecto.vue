@@ -17,7 +17,9 @@ interface SiteDefaultImagesPayload {
   updatedAt: string | null
 }
 
-const toast = useToast()
+const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
+const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
@@ -26,7 +28,9 @@ const {
   error: defaultsError,
   pending: defaultsPending,
   refresh: refreshDefaults,
-} = await useFetch<{ data: SiteDefaultImagesPayload }>('/api/admin/site-default-images')
+} = await useFetch<{ data: SiteDefaultImagesPayload }>('/api/admin/site-default-images', {
+  headers: localeApiHeaders,
+})
 
 const serverItem = computed(() => defaultsData.value?.data ?? null)
 
@@ -41,8 +45,8 @@ const form = reactive({
 
 const releaseUpload = useAdminFileUpload({
   endpoint: '/api/admin/press/upload',
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.pressReleaseImage = storagePath
@@ -52,8 +56,8 @@ const releaseUpload = useAdminFileUpload({
 
 const statementUpload = useAdminFileUpload({
   endpoint: '/api/admin/press/upload',
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.statementImage = storagePath
@@ -63,8 +67,8 @@ const statementUpload = useAdminFileUpload({
 
 const mediaUpload = useAdminFileUpload({
   endpoint: '/api/admin/press/upload',
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.mediaAppearanceImage = storagePath
@@ -74,8 +78,8 @@ const mediaUpload = useAdminFileUpload({
 
 const newsletterUpload = useAdminFileUpload({
   endpoint: '/api/admin/newsletter/upload',
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.newsletterCoverImage = storagePath
@@ -86,8 +90,8 @@ const newsletterUpload = useAdminFileUpload({
 const carouselUpload = useAdminFileUpload({
   endpoint: '/api/admin/home/upload',
   extraFields: { kind: 'carousel_default' },
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.carouselSlideImage = storagePath
@@ -98,8 +102,8 @@ const carouselUpload = useAdminFileUpload({
 const ogUpload = useAdminFileUpload({
   endpoint: '/api/admin/home/upload',
   extraFields: { kind: 'site_og' },
-  successMessage: 'Imagen subida correctamente',
-  errorMessage: 'No se pudo subir la imagen',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
   onUploaded: (storagePath) => {
     clearErrors()
     form.ogImage = storagePath
@@ -171,10 +175,10 @@ const save = async () => {
     defaultsData.value = { data: response.data }
     clearErrors()
     await refreshAllClientAsyncData()
-    toast.add({ title: 'Imágenes por defecto guardadas', color: 'success' })
+    toast.add({ title: t('admin.siteDefaultImages.savedToast'), color: 'success' })
   } catch (error) {
     toast.add({
-      title: getApiErrorMessage(error, 'No se pudieron guardar las imágenes'),
+      title: getApiErrorMessage(error, t('admin.siteDefaultImages.saveErrorToast')),
       color: 'error',
     })
   } finally {
@@ -187,10 +191,9 @@ const save = async () => {
   <div class="space-y-10">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <section>
-        <h1 class="text-2xl font-bold">Imágenes por defecto</h1>
+        <h1 class="text-2xl font-bold">{{ t('admin.siteDefaultImages.title') }}</h1>
         <p class="text-muted mt-1 max-w-3xl text-sm">
-          Configura las imágenes que se muestran cuando no hay una portada propia en prensa,
-          newsletter o carrusel de inicio.
+          {{ t('admin.siteDefaultImages.intro') }}
         </p>
       </section>
       <UButton
@@ -202,7 +205,7 @@ const save = async () => {
         :disabled="!hasFormChanges"
         @click="save"
       >
-        Guardar cambios
+        {{ t('admin.siteDefaultImages.saveChanges') }}
       </UButton>
     </div>
 
@@ -215,19 +218,19 @@ const save = async () => {
       <UAlert
         color="error"
         variant="soft"
-        title="No se pudieron cargar las imágenes por defecto"
-        description="Revisa la conexión y vuelve a intentarlo."
+        :title="t('admin.siteDefaultImages.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
       />
       <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshDefaults()">
-        Reintentar
+        {{ t('admin.common.retry') }}
       </UButton>
     </div>
 
     <div v-else class="space-y-10">
       <section class="space-y-4">
-        <h2 class="text-lg font-semibold">Prensa</h2>
+        <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.pressHeading') }}</h2>
         <p class="text-muted max-w-3xl text-sm">
-          Se usan en el listado y fichas cuando el artículo no tiene imagen de portada.
+          {{ t('admin.siteDefaultImages.pressIntro') }}
         </p>
 
         <div class="grid gap-6 lg:grid-cols-3">
@@ -235,7 +238,7 @@ const save = async () => {
             <div class="space-y-4">
               <div class="flex items-center gap-2 font-semibold">
                 <UIcon name="i-tabler-file-text" class="text-muted size-5" />
-                Notas de prensa
+                {{ t('admin.siteDefaultImages.pressReleaseLabel') }}
               </div>
               <div v-if="releaseUpload.preview.value" class="overflow-hidden rounded-lg border">
                 <img
@@ -248,7 +251,7 @@ const save = async () => {
                 v-else
                 class="bg-muted/10 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed"
               >
-                <p class="text-muted text-sm">Sin imagen por defecto</p>
+                <p class="text-muted text-sm">{{ t('admin.siteDefaultImages.noImage') }}</p>
               </div>
               <input
                 :ref="releaseUpload.inputRef"
@@ -268,7 +271,11 @@ const save = async () => {
                   :loading="releaseUpload.isUploading.value"
                   @click="releaseUpload.triggerFileDialog()"
                 >
-                  {{ releaseUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+                  {{
+                    releaseUpload.preview.value
+                      ? t('admin.siteDefaultImages.changeImage')
+                      : t('admin.siteDefaultImages.uploadImage')
+                  }}
                 </UButton>
                 <UButton
                   v-if="form.pressReleaseImage"
@@ -284,7 +291,7 @@ const save = async () => {
                     }
                   "
                 >
-                  Quitar
+                  {{ t('admin.siteDefaultImages.remove') }}
                 </UButton>
               </div>
               <p v-if="getFieldError('pressReleaseImage')" class="text-error text-xs" role="alert">
@@ -297,7 +304,7 @@ const save = async () => {
             <div class="space-y-4">
               <div class="flex items-center gap-2 font-semibold">
                 <UIcon name="i-tabler-speakerphone" class="text-muted size-5" />
-                Comunicados
+                {{ t('admin.siteDefaultImages.statementLabel') }}
               </div>
               <div v-if="statementUpload.preview.value" class="overflow-hidden rounded-lg border">
                 <img
@@ -310,7 +317,7 @@ const save = async () => {
                 v-else
                 class="bg-muted/10 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed"
               >
-                <p class="text-muted text-sm">Sin imagen por defecto</p>
+                <p class="text-muted text-sm">{{ t('admin.siteDefaultImages.noImage') }}</p>
               </div>
               <input
                 :ref="statementUpload.inputRef"
@@ -330,7 +337,11 @@ const save = async () => {
                   :loading="statementUpload.isUploading.value"
                   @click="statementUpload.triggerFileDialog()"
                 >
-                  {{ statementUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+                  {{
+                    statementUpload.preview.value
+                      ? t('admin.siteDefaultImages.changeImage')
+                      : t('admin.siteDefaultImages.uploadImage')
+                  }}
                 </UButton>
                 <UButton
                   v-if="form.statementImage"
@@ -346,7 +357,7 @@ const save = async () => {
                     }
                   "
                 >
-                  Quitar
+                  {{ t('admin.siteDefaultImages.remove') }}
                 </UButton>
               </div>
               <p v-if="getFieldError('statementImage')" class="text-error text-xs" role="alert">
@@ -359,7 +370,7 @@ const save = async () => {
             <div class="space-y-4">
               <div class="flex items-center gap-2 font-semibold">
                 <UIcon name="i-tabler-broadcast" class="text-muted size-5" />
-                Apariciones en medios
+                {{ t('admin.siteDefaultImages.mediaAppearanceLabel') }}
               </div>
               <div v-if="mediaUpload.preview.value" class="overflow-hidden rounded-lg border">
                 <img
@@ -372,7 +383,7 @@ const save = async () => {
                 v-else
                 class="bg-muted/10 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed"
               >
-                <p class="text-muted text-sm">Sin imagen por defecto</p>
+                <p class="text-muted text-sm">{{ t('admin.siteDefaultImages.noImage') }}</p>
               </div>
               <input
                 :ref="mediaUpload.inputRef"
@@ -392,7 +403,11 @@ const save = async () => {
                   :loading="mediaUpload.isUploading.value"
                   @click="mediaUpload.triggerFileDialog()"
                 >
-                  {{ mediaUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+                  {{
+                    mediaUpload.preview.value
+                      ? t('admin.siteDefaultImages.changeImage')
+                      : t('admin.siteDefaultImages.uploadImage')
+                  }}
                 </UButton>
                 <UButton
                   v-if="form.mediaAppearanceImage"
@@ -408,7 +423,7 @@ const save = async () => {
                     }
                   "
                 >
-                  Quitar
+                  {{ t('admin.siteDefaultImages.remove') }}
                 </UButton>
               </div>
               <p
@@ -424,19 +439,18 @@ const save = async () => {
       </section>
 
       <section class="space-y-4">
-        <h2 class="text-lg font-semibold">Newsletter</h2>
+        <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.newsletterHeading') }}</h2>
         <p class="text-muted max-w-3xl text-sm">
-          Portada por defecto del archivo público y del correo cuando una edición no tiene imagen
-          propia. En la web se muestra cuadrada (hasta 240px de lado).
+          {{ t('admin.siteDefaultImages.newsletterIntro') }}
         </p>
         <UCard class="max-w-xl">
           <div class="space-y-4">
             <div class="flex items-center gap-2 font-semibold">
               <UIcon name="i-tabler-mail" class="text-muted size-5" />
-              Portada newsletter
+              {{ t('admin.siteDefaultImages.newsletterCoverLabel') }}
             </div>
             <p class="text-muted text-xs">
-              Vista previa 1∶1, ancho máximo 240px (igual que las tarjetas del archivo).
+              {{ t('admin.siteDefaultImages.newsletterPreviewHint') }}
             </p>
             <div class="mx-auto w-full max-w-60">
               <div
@@ -449,7 +463,9 @@ const save = async () => {
                 v-else
                 class="bg-muted/10 flex aspect-square w-full items-center justify-center rounded-lg border-2 border-dashed"
               >
-                <p class="text-muted px-2 text-center text-sm">Sin imagen por defecto</p>
+                <p class="text-muted px-2 text-center text-sm">
+                  {{ t('admin.siteDefaultImages.noImage') }}
+                </p>
               </div>
             </div>
             <input
@@ -470,7 +486,11 @@ const save = async () => {
                 :loading="newsletterUpload.isUploading.value"
                 @click="newsletterUpload.triggerFileDialog()"
               >
-                {{ newsletterUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+                {{
+                  newsletterUpload.preview.value
+                    ? t('admin.siteDefaultImages.changeImage')
+                    : t('admin.siteDefaultImages.uploadImage')
+                }}
               </UButton>
               <UButton
                 v-if="form.newsletterCoverImage"
@@ -486,7 +506,7 @@ const save = async () => {
                   }
                 "
               >
-                Quitar
+                {{ t('admin.siteDefaultImages.remove') }}
               </UButton>
             </div>
             <p v-if="getFieldError('newsletterCoverImage')" class="text-error text-xs" role="alert">
@@ -497,16 +517,17 @@ const save = async () => {
       </section>
 
       <section class="space-y-4">
-        <h2 class="text-lg font-semibold">Carrusel (inicio)</h2>
+        <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.carouselHeading') }}</h2>
         <p class="text-muted max-w-3xl text-sm">
-          Imagen mostrada cuando un slide activo no tiene archivo propio. Misma proporción que el
-          bloque de inicio: <span class="text-foreground/90">1925×550 px</span> (≈ 3,5∶1).
+          {{ t('admin.siteDefaultImages.carouselIntroBefore') }}
+          <span class="text-foreground/90">1925×550 px</span>
+          {{ t('admin.siteDefaultImages.carouselIntroAfter') }}
         </p>
         <UCard>
           <div class="space-y-4">
             <div class="flex items-center gap-2 font-semibold">
               <UIcon name="i-tabler-photo" class="text-muted size-5" />
-              Slide por defecto
+              {{ t('admin.siteDefaultImages.carouselSlideLabel') }}
             </div>
             <div
               v-if="carouselUpload.preview.value"
@@ -518,7 +539,9 @@ const save = async () => {
               v-else
               class="bg-muted/10 flex aspect-1925/550 w-full items-center justify-center rounded-lg border-2 border-dashed"
             >
-              <p class="text-muted px-4 text-center text-sm">Sin imagen por defecto</p>
+              <p class="text-muted px-4 text-center text-sm">
+                {{ t('admin.siteDefaultImages.noImage') }}
+              </p>
             </div>
             <input
               :ref="carouselUpload.inputRef"
@@ -538,7 +561,11 @@ const save = async () => {
                 :loading="carouselUpload.isUploading.value"
                 @click="carouselUpload.triggerFileDialog()"
               >
-                {{ carouselUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+                {{
+                  carouselUpload.preview.value
+                    ? t('admin.siteDefaultImages.changeImage')
+                    : t('admin.siteDefaultImages.uploadImage')
+                }}
               </UButton>
               <UButton
                 v-if="form.carouselSlideImage"
@@ -554,7 +581,7 @@ const save = async () => {
                   }
                 "
               >
-                Quitar
+                {{ t('admin.siteDefaultImages.remove') }}
               </UButton>
             </div>
             <p v-if="getFieldError('carouselSlideImage')" class="text-error text-xs" role="alert">
@@ -565,16 +592,17 @@ const save = async () => {
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-base font-semibold">SEO y redes sociales</h2>
+        <h2 class="text-base font-semibold">{{ t('admin.siteDefaultImages.seoHeading') }}</h2>
         <p class="text-muted max-w-xl text-xs">
-          ogImage por defecto para páginas sin imagen propia. Sube un JPG de
-          <span class="text-foreground/90">1200×630 px</span>.
+          {{ t('admin.siteDefaultImages.seoIntroBefore') }}
+          <span class="text-foreground/90">1200×630 px</span>
+          {{ t('admin.siteDefaultImages.seoIntroAfter') }}
         </p>
         <UCard class="max-w-md">
           <div class="space-y-3">
             <div class="flex items-center gap-2 text-sm font-semibold">
               <UIcon name="i-tabler-share-3" class="text-muted size-4" />
-              ogImage por defecto
+              {{ t('admin.siteDefaultImages.ogImageLabel') }}
             </div>
             <div
               v-if="ogUpload.preview.value"
@@ -586,7 +614,9 @@ const save = async () => {
               v-else
               class="bg-muted/10 flex aspect-1200/630 w-full items-center justify-center rounded-lg border-2 border-dashed"
             >
-              <p class="text-muted px-3 text-center text-xs">Sin ogImage por defecto</p>
+              <p class="text-muted px-3 text-center text-xs">
+                {{ t('admin.siteDefaultImages.noOgImage') }}
+              </p>
             </div>
             <input
               :ref="ogUpload.inputRef"
@@ -606,7 +636,11 @@ const save = async () => {
                 :loading="ogUpload.isUploading.value"
                 @click="ogUpload.triggerFileDialog()"
               >
-                {{ ogUpload.preview.value ? 'Cambiar imagen' : 'Subir imagen' }}
+                {{
+                  ogUpload.preview.value
+                    ? t('admin.siteDefaultImages.changeImage')
+                    : t('admin.siteDefaultImages.uploadImage')
+                }}
               </UButton>
               <UButton
                 v-if="form.ogImage"
@@ -622,7 +656,7 @@ const save = async () => {
                   }
                 "
               >
-                Quitar
+                {{ t('admin.siteDefaultImages.remove') }}
               </UButton>
             </div>
             <p v-if="getFieldError('ogImage')" class="text-error text-xs" role="alert">
