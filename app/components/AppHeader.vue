@@ -16,6 +16,10 @@ const {
 } = usePublicHeaderNavigation(toRef(props, 'pressDossierLink'))
 
 const { t } = useI18n()
+const socials = useSocials()
+const instagramSocial = computed(() =>
+  socials.value.find((social) => social.icon === 'i-tabler-brand-instagram')
+)
 const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ?? 'none'}`)
 const menuOpen = ref(false)
 const mobileOpenSections = ref<string[]>([])
@@ -81,6 +85,19 @@ watch(menuOpen, (isOpen) => {
 
     <template #right>
       <LazyAdminNavShortcut :label="t('nav.admin')" :tooltip="t('nav.admin')" class="shrink-0" />
+
+      <UTooltip v-if="instagramSocial" :text="t('social.followInstagram')">
+        <UButton
+          :icon="instagramSocial.icon"
+          color="neutral"
+          variant="ghost"
+          :to="instagramSocial.to"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="instagramSocial.label"
+          :ui="{ leadingIcon: 'size-5.5' }"
+        />
+      </UTooltip>
 
       <UTooltip :text="t('theme.toggle')">
         <UColorModeButton />
