@@ -23,12 +23,9 @@ const DEFAULT_LANGUAGE_TAG = 'es-ES'
 const DEFAULT_LOCALE_NAME = 'Español'
 
 const flagFallbackByLanguage: Record<string, string> = {
-  de: 'de',
+  ca: 'es-ct',
   en: 'gb',
   es: 'es',
-  fr: 'fr',
-  it: 'it',
-  pt: 'pt',
 }
 
 export const getBaseLanguage = (value?: string | null) => {
@@ -52,6 +49,10 @@ const inferLanguageTag = (code: string) => {
 
   if (baseLanguage === 'es') {
     return DEFAULT_LANGUAGE_TAG
+  }
+
+  if (baseLanguage === 'ca') {
+    return 'ca-ES'
   }
 
   return code

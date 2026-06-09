@@ -1,5 +1,5 @@
 export function useDatePresets() {
-  const { formatDate: formatLocaleDate } = useLocaleFormatting()
+  const { formatDate: formatLocaleDate, currentLanguageTag } = useLocaleFormatting()
 
   const toStartOfDay = (dateStr: string) => new Date(`${dateStr}T00:00:00`)
 
@@ -8,12 +8,27 @@ export function useDatePresets() {
     options: {
       includeYear?: boolean
     } = {}
-  ) =>
-    formatLocaleDate(`${dateStr}T00:00:00`, {
+  ) => {
+    const date = new Date(`${dateStr}T00:00:00`)
+    const formatOptions: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'short',
       ...(options.includeYear ? { year: 'numeric' } : {}),
-    })
+    }
+
+    // Reassemble using the standalone short month so locales whose combined
+    // day+month format injects a connector (Catalan renders "9 de juny") fall
+    // back to the compact "9 juny", matching the "9 jun" / "9 Jun" of es/en.
+    // Spanish and English are unaffected (their standalone short month is identical).
+    const parts = new Intl.DateTimeFormat(currentLanguageTag.value, formatOptions).formatToParts(
+      date
+    )
+    const standaloneMonth = new Intl.DateTimeFormat(currentLanguageTag.value, {
+      month: 'short',
+    }).format(date)
+
+    return parts.map((part) => (part.type === 'month' ? standaloneMonth : part.value)).join('')
+  }
 
   const formatLongDate = (dateStr: string) =>
     formatLocaleDate(`${dateStr}T00:00:00`, {

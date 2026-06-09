@@ -3,6 +3,7 @@ import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtSecurityRouteRules } from 'nuxt-security'
 import { getOptionalConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
+import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from './shared/constants/locales'
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -72,18 +73,28 @@ const productionFastChangingPageRouteRules = isDev
   ? {}
   : buildSWRRouteRules(productionFastChangingPagePaths, 300)
 
+const adminNoIndexHeaders = {
+  headers: {
+    'X-Robots-Tag': 'noindex, nofollow, noarchive',
+  },
+}
+const localizedAdminRouteRules = Object.fromEntries(
+  SUPPORTED_LOCALE_CODES.filter((code) => code !== DEFAULT_LOCALE_CODE).map((code) => [
+    `/${code}/admin/**`,
+    adminNoIndexHeaders,
+  ])
+)
+const adminRobotsDisallow = [
+  '/admin/',
+  ...SUPPORTED_LOCALE_CODES.filter((code) => code !== DEFAULT_LOCALE_CODE).map(
+    (code) => `/${code}/admin/`
+  ),
+]
+
 const routeRules = {
-  '/admin/**': {
-    headers: {
-      'X-Robots-Tag': 'noindex, nofollow, noarchive',
-    },
-  },
+  '/admin/**': adminNoIndexHeaders,
   // Localized admin routes (prefix_except_default) must be excluded from indexing too.
-  '/en/admin/**': {
-    headers: {
-      'X-Robots-Tag': 'noindex, nofollow, noarchive',
-    },
-  },
+  ...localizedAdminRouteRules,
   '/api/**': {
     headers: {
       'X-Robots-Tag': 'noindex, nofollow, noarchive',
@@ -318,7 +329,7 @@ export default defineNuxtConfig({
   // Robots configuration
   robots: {
     allow: ['/'],
-    disallow: ['/admin/', '/en/admin/', '/api/', '/_ipx/'],
+    disallow: [...adminRobotsDisallow, '/api/', '/_ipx/'],
   },
 
   routeRules,
@@ -347,6 +358,13 @@ export default defineNuxtConfig({
         file: 'en.json',
         name: 'English',
         flag: 'i-circle-flags-gb',
+      },
+      {
+        code: 'ca',
+        language: 'ca-ES',
+        file: 'ca.json',
+        name: 'Català',
+        flag: 'i-circle-flags-es-ct',
       },
     ],
     defaultLocale: 'es',

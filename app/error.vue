@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
-import { en, es } from '@nuxt/ui/locale'
+import { ca, en, es } from '@nuxt/ui/locale'
+import { getBaseLanguage } from '~~/shared/utils/locale'
 
 const { error } = defineProps<{
   error: NuxtError
@@ -8,13 +9,17 @@ const { error } = defineProps<{
 
 const { locale, t } = useI18n({ useScope: 'global' })
 const localePath = useLocalePath()
+const { getLanguageTag } = useLocales()
 
-const nuxtUiLocales = { es, en } as const
+const nuxtUiLocales = { ca, en, es } as const
 const currentLocale = computed(
-  () => nuxtUiLocales[locale.value as keyof typeof nuxtUiLocales] ?? nuxtUiLocales.es
+  () =>
+    nuxtUiLocales[getBaseLanguage(getLanguageTag(locale.value)) as keyof typeof nuxtUiLocales] ??
+    nuxtUiLocales[getBaseLanguage(getLanguageTag()) as keyof typeof nuxtUiLocales] ??
+    nuxtUiLocales.es
 )
 
-const lang = computed(() => currentLocale.value.code)
+const lang = computed(() => getLanguageTag(locale.value))
 const dir = computed(() => currentLocale.value.dir)
 
 useHead({

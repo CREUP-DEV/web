@@ -12,7 +12,10 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const LOCALES_DIR = resolve(__dirname, '../i18n/locales')
 const BASE_LOCALE = 'es.json'
-const TARGET_LOCALE = 'en.json'
+// Target locale is overridable: `tsx scripts/check-i18n-identical-values.ts ca.json`.
+// Defaults to en.json. The allowlist below is tuned for es/en; for other locales the
+// report is advisory (cognates such as "total" or proper nouns produce expected matches).
+const TARGET_LOCALE = process.argv[2] ?? 'en.json'
 
 type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue }
 

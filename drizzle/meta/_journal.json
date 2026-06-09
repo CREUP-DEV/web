@@ -15,6 +15,20 @@
       "when": 1778778261819,
       "tag": "0001_moaning_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781008279606,
+      "tag": "0002_shiny_yellow_claw",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781012532850,
+      "tag": "0003_catalan_seed_translations",
+      "breakpoints": true
     }
   ]
 }

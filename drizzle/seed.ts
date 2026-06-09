@@ -186,6 +186,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Todas' },
         { locale: 'en', name: 'All' },
+        { locale: 'ca', name: 'Totes' },
       ],
     },
     {
@@ -193,6 +194,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Política universitaria' },
         { locale: 'en', name: 'University policy' },
+        { locale: 'ca', name: 'Política universitària' },
       ],
     },
     {
@@ -200,6 +202,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Becas y financiación' },
         { locale: 'en', name: 'Scholarships and funding' },
+        { locale: 'ca', name: 'Beques i finançament' },
       ],
     },
     {
@@ -207,6 +210,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Economía estudiantil' },
         { locale: 'en', name: 'Student economy' },
+        { locale: 'ca', name: 'Economia estudiantil' },
       ],
     },
     {
@@ -214,6 +218,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Prácticas y empleabilidad' },
         { locale: 'en', name: 'Internships and employability' },
+        { locale: 'ca', name: 'Pràctiques i ocupabilitat' },
       ],
     },
     {
@@ -221,6 +226,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Derechos, convivencia e igualdad' },
         { locale: 'en', name: 'Rights, coexistence and equality' },
+        { locale: 'ca', name: 'Drets, convivència i igualtat' },
       ],
     },
     {
@@ -228,6 +234,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Calidad universitaria' },
         { locale: 'en', name: 'University quality' },
+        { locale: 'ca', name: 'Qualitat universitària' },
       ],
     },
     {
@@ -235,6 +242,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Vida universitaria y bienestar' },
         { locale: 'en', name: 'University life and wellbeing' },
+        { locale: 'ca', name: 'Vida universitària i benestar' },
       ],
     },
     {
@@ -242,6 +250,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Acceso a la universidad' },
         { locale: 'en', name: 'Access to university' },
+        { locale: 'ca', name: 'Accés a la universitat' },
       ],
     },
     {
@@ -249,6 +258,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Internacional y movilidad' },
         { locale: 'en', name: 'Internationalisation and mobility' },
+        { locale: 'ca', name: 'Internacional i mobilitat' },
       ],
     },
     {
@@ -256,6 +266,7 @@ async function main() {
       translations: [
         { locale: 'es', name: 'Representación estudiantil' },
         { locale: 'en', name: 'Student representation' },
+        { locale: 'ca', name: 'Representació estudiantil' },
       ],
     },
   ]
@@ -297,6 +308,11 @@ async function main() {
           locale: 'en',
           title: 'Meet the association that represents more than 1,000,000 students.',
           buttonText: 'What is CREUP?',
+        },
+        {
+          locale: 'ca',
+          title: "Coneix l'associació que representa més d'1.000.000 d'estudiants.",
+          buttonText: 'Què és CREUP?',
         },
       ],
     },
@@ -10346,6 +10362,7 @@ async function main() {
       translations: [
         { locale: 'es', title: 'Manual de Identidad Corporativa' },
         { locale: 'en', title: 'Corporate Identity Manual' },
+        { locale: 'ca', title: "Manual d'Identitat Corporativa" },
       ],
     },
     {
@@ -10357,6 +10374,7 @@ async function main() {
       translations: [
         { locale: 'es', title: 'Suscríbete a nuestra Newsletter' },
         { locale: 'en', title: 'Subscribe to our Newsletter' },
+        { locale: 'ca', title: 'Subscriu-te a la nostra Newsletter' },
       ],
     },
     {
@@ -10368,6 +10386,7 @@ async function main() {
       translations: [
         { locale: 'es', title: 'Igualdad y prevención del acoso' },
         { locale: 'en', title: 'Equality and Harassment Prevention' },
+        { locale: 'ca', title: "Igualtat i prevenció de l'assetjament" },
       ],
     },
     {
@@ -10379,6 +10398,7 @@ async function main() {
       translations: [
         { locale: 'es', title: 'Estatuto del Estudiante Universitario' },
         { locale: 'en', title: 'University Student Statute' },
+        { locale: 'ca', title: "Estatut de l'Estudiant Universitari" },
       ],
     },
     {
@@ -10390,6 +10410,7 @@ async function main() {
       translations: [
         { locale: 'es', title: 'Becas y ayudas para el estudiantado' },
         { locale: 'en', title: 'Scholarships and Student Aid' },
+        { locale: 'ca', title: "Beques i ajudes per a l'estudiantat" },
       ],
     },
     {
@@ -10401,6 +10422,7 @@ async function main() {
       translations: [
         { locale: 'es', title: "European Students' Union (ESU)" },
         { locale: 'en', title: "European Students' Union (ESU)" },
+        { locale: 'ca', title: "European Students' Union (ESU)" },
       ],
     },
   ]
@@ -10444,6 +10466,13 @@ async function main() {
             'Our core document on equality, diversity, discrimination in universities, and the measures we call for from public institutions.',
           meta: 'Policy document · Equality and diversity',
         },
+        {
+          locale: 'ca',
+          title: "Posicionament polític en matèria d'Igualtat i Diversitat",
+          description:
+            'El nostre document marc sobre igualtat, diversitat, discriminacions a la universitat i mesures que reclamem a les institucions públiques.',
+          meta: 'Document polític · Igualtat i diversitat',
+        },
       ],
     },
     {
@@ -10462,6 +10491,13 @@ async function main() {
           description:
             'Approved at the 77th Ordinary General Assembly, it sets out preventive measures, confidentiality principles, how the Safe Point works, and the response procedure for conduct against sexual freedom.',
           meta: '77th Ordinary General Assembly · April 4, 2025',
+        },
+        {
+          locale: 'ca',
+          title: "Protocol de prevenció i actuació davant casos d'assetjament sexual",
+          description:
+            "Aprovat a la 77a Assemblea General Ordinària, recull mesures preventives, principis de confidencialitat, el funcionament del Punt Segur i el procediment d'actuació davant conductes contràries a la llibertat sexual.",
+          meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
         },
       ],
     },
@@ -10482,6 +10518,13 @@ async function main() {
             'Approved at the 77th Ordinary General Assembly, it defines situations of discrimination, safeguards, the Safe Point, and response levels for violence or harassment linked to diversity.',
           meta: '77th Ordinary General Assembly · April 4, 2025',
         },
+        {
+          locale: 'ca',
+          title: 'Protocol de prevenció i actuació davant casos de discriminació',
+          description:
+            "Aprovat a la 77a Assemblea General Ordinària, defineix supòsits de discriminació, garanties, Punt Segur i nivells d'intervenció davant violència o assetjament per diversitat.",
+          meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
+        },
       ],
     },
     {
@@ -10500,6 +10543,13 @@ async function main() {
           description:
             'Practical recommendations on language, visual resources, and accessibility for more inclusive communication.',
           meta: 'Practical guide · Language, visuals, and accessibility',
+        },
+        {
+          locale: 'ca',
+          title: 'Guia de Comunicació Inclusiva',
+          description:
+            "Recull recomanacions pràctiques sobre llenguatge, recursos visuals i criteris d'accessibilitat per a una comunicació més inclusiva.",
+          meta: 'Guia pràctica · Llenguatge, visualitat i accessibilitat',
         },
       ],
     },

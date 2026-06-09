@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { en, es } from '@nuxt/ui/locale'
+import { ca, en, es } from '@nuxt/ui/locale'
 import { getBaseLanguage } from '~~/shared/utils/locale'
 
 const { locale, t } = useI18n()
@@ -8,7 +8,7 @@ const localeHead = useLocaleHead({ seo: true })
 const siteConfig = useSiteConfig()
 const siteUrl = useRuntimeSiteUrl()
 
-const nuxtUiLocales = { en, es } as const
+const nuxtUiLocales = { ca, en, es } as const
 const currentUiLocale = computed(
   () =>
     nuxtUiLocales[getBaseLanguage(getLanguageTag(locale.value)) as keyof typeof nuxtUiLocales] ??
