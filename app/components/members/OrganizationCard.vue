@@ -62,7 +62,7 @@ const emit = defineEmits<{
         <p v-if="subtitle" class="text-muted mt-2 text-sm leading-snug">{{ subtitle }}</p>
         <div
           v-if="initials || communityLabel"
-          class="mt-3 flex flex-wrap items-center justify-start gap-2"
+          class="mt-3 flex flex-wrap items-center justify-center gap-2"
         >
           <UBadge
             v-if="initials"
