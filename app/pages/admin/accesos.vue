@@ -51,6 +51,7 @@ const {
   pending,
 } = await useFetch<AdminAccessResponse>('/api/admin/access', {
   headers: localeApiHeaders,
+  deep: true,
 })
 
 const items = computed(() => data.value?.data ?? [])
