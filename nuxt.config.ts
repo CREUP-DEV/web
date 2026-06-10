@@ -73,6 +73,35 @@ const productionFastChangingPageRouteRules = isDev
   ? {}
   : buildSWRRouteRules(productionFastChangingPagePaths, 300)
 
+// firu.es may embed only the CAS page and its localized variants; the global CSP
+// blocks framing everywhere else (including /admin). nuxt-security merges per-route
+// CSP substitutively, so listing only frame-ancestors replaces that single directive
+// for these routes while preserving the rest of the global policy. The array is
+// replaced (not appended), so 'self' must be repeated here. Spread any existing rule
+// for the path first so the unprefixed CAS page keeps its SWR caching.
+const CAS_FRAME_ANCESTORS = ["'self'", 'https://firu.es', 'https://www.firu.es']
+const casFramePaths = [
+  '/comision-de-asuntos-sectoriales',
+  ...SUPPORTED_LOCALE_CODES.filter((code) => code !== DEFAULT_LOCALE_CODE).map(
+    (code) => `/${code}/comision-de-asuntos-sectoriales`
+  ),
+]
+const casFrameRouteRules = Object.fromEntries(
+  casFramePaths.map((path) => [
+    path,
+    {
+      ...(productionFastChangingPageRouteRules as Record<string, NitroRouteConfig>)[path],
+      security: {
+        headers: {
+          contentSecurityPolicy: {
+            'frame-ancestors': CAS_FRAME_ANCESTORS,
+          },
+        },
+      },
+    },
+  ])
+)
+
 const adminNoIndexHeaders = {
   headers: {
     'X-Robots-Tag': 'noindex, nofollow, noarchive',
@@ -109,6 +138,7 @@ const routeRules = {
   ...buildNoRateLimitRouteRules(INTERNAL_IMAGE_PROXY_PATH_BASES),
   ...productionPublicSWRRouteRules,
   ...productionFastChangingPageRouteRules,
+  ...casFrameRouteRules,
   '/_nuxt/**': {
     headers: {
       'Cache-Control': 'public, max-age=31536000, immutable',
@@ -224,7 +254,7 @@ export default defineNuxtConfig({
           ...(isDev ? ["'self'", 'http://localhost:*', 'http://127.0.0.1:*'] : []),
           'https://challenges.cloudflare.com',
         ],
-        'frame-ancestors': ['https://firu.es', 'https://www.firu.es'],
+        'frame-ancestors': ["'self'"],
         'object-src': ["'none'"],
         'base-uri': ["'self'"],
         'form-action': ["'self'"],
