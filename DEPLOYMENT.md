@@ -311,6 +311,11 @@ NUXT_EXTERNAL_API_CACHE_STALE_SECONDS=300
 # ── Cloudflare Turnstile (anti-spam on public forms) ──
 NUXT_TURNSTILE_SECRET_KEY=<secret key>
 NUXT_PUBLIC_TURNSTILE_SITE_KEY=<site key>
+# Public forms (contact, newsletter) require a valid Turnstile token in EVERY
+# environment. ALLOW_INSECURE_FORMS=true skips that check, for local development or
+# automated tests only. Never set it in staging or production: combined with real SMTP
+# it turns the public forms into an open spam relay.
+# ALLOW_INSECURE_FORMS=true
 
 # ── Analytics ──
 NUXT_UMAMI_HOST=https://umami.creup.es

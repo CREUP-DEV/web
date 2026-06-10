@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { createError } from 'h3'
 import { getClientIp } from '../core/urlBuilder'
-import { logError, logWarn } from '../core/logger'
+import { logError } from '../core/logger'
 import { buildRedisKey, getRedisClient } from '../cache/redis'
 
 interface RateLimitOptions {
@@ -24,7 +24,16 @@ export async function enforceRateLimit(event: H3Event, options: RateLimitOptions
   const clientIp = getClientIp(event)
 
   if (!clientIp) {
-    logWarn('rate-limit.missing-ip', { namespace: options.namespace }, event)
+    // Fail open so the site stays up, but alert: without a client IP we cannot
+    // rate-limit at all. This helper is generic — each endpoint keeps its own gate
+    // (Turnstile on the email forms, signed tokens on confirm/unsubscribe). Set
+    // NUXT_TRUSTED_PROXY_CIDRS in production so getClientIp resolves a real IP.
+    logError(
+      'rate-limit.missing-ip',
+      new Error('Rate limiting skipped: no client IP resolved'),
+      { namespace: options.namespace },
+      event
+    )
     return
   }
 
@@ -38,7 +47,10 @@ export async function enforceRateLimit(event: H3Event, options: RateLimitOptions
       number | string,
     ]
   } catch (error) {
-    // Rate limiting is defense-in-depth; allow request when Redis is unavailable.
+    // Fail open on a Redis outage so the site stays up, but alert. This helper is
+    // generic; the email-sending endpoints (contact, newsletter-subscribe) still run
+    // Turnstile independently as the abuse backstop, and token-based callers gate on
+    // their own signed tokens.
     logError('rate-limit.redis-eval-failed', error, { namespace: options.namespace }, event)
     return
   }
