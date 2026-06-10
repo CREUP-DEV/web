@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const localePath = useLocalePath()
 const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
 const route = useRoute()
 const token = computed(() => {
   const raw = route.query.token
@@ -25,6 +26,7 @@ async function confirm() {
     const result = await $fetch<{ data: { redirectTo: string } }>('/api/newsletter-confirm', {
       method: 'POST',
       body: { token: token.value },
+      headers: localeApiHeaders.value,
     })
 
     await navigateTo(localePath(result.data.redirectTo))

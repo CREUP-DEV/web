@@ -18,6 +18,9 @@ const DEFAULT_PUBLIC_API_SHARED_MAX_AGE_SECONDS = 5
 const DEFAULT_PUBLIC_API_STALE_WHILE_REVALIDATE_SECONDS = 5
 
 export function setPublicRouteVaryHeaders(event: H3Event) {
+  // x-request-locale is the only locale source for API requests (see
+  // server/middleware/locale.ts), so it is the only header the shared cache must
+  // vary on. Adding cookie/accept-language here would fragment the cache instead.
   setHeader(event, 'vary', 'x-request-locale')
 }
 

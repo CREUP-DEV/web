@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const localePath = useLocalePath()
 const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
 const route = useRoute()
 
 const token = computed(() => {
@@ -26,6 +27,7 @@ async function unsubscribe() {
       {
         method: 'POST',
         body: { token: token.value },
+        headers: localeApiHeaders.value,
       }
     )
     state.value = 'done'

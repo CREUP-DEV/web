@@ -8,6 +8,7 @@ import { useTurnstileAvailability } from '@/composables/security/useTurnstileAva
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const localeApiHeaders = useLocaleApiHeaders()
 const route = useRoute()
 const toast = useToast()
 const privacyPolicyPath = computed(() => `${localePath('/legal')}#privacidad`)
@@ -183,6 +184,7 @@ async function handleSubscribe() {
     await $fetch('/api/newsletter-subscribe', {
       method: 'POST',
       body: newsletterPayload.value,
+      headers: localeApiHeaders.value,
     })
     toast.add({
       title: t('newsletterPage.form.pendingConfirmation'),

@@ -8,6 +8,7 @@ import { useTurnstileAvailability } from '@/composables/security/useTurnstileAva
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const localeApiHeaders = useLocaleApiHeaders()
 const toast = useToast()
 
 type ValidatedField =
@@ -313,6 +314,7 @@ async function handleSubmit() {
     await $fetch('/api/contact', {
       method: 'POST',
       body: contactPayload.value,
+      headers: localeApiHeaders.value,
     })
 
     toast.add({
