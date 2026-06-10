@@ -33,6 +33,14 @@ import {
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
 
+/**
+ * Executor accepted by the seeders: either the top-level connection or a
+ * transaction handle. `seedDatabase` runs inside `db.transaction`, where the
+ * passed-in handle intentionally shadows the module-level `db` so every
+ * `db.delete`/`db.insert` in the body is routed through the transaction.
+ */
+type DbExecutor = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
 const buildHomeImagePath = (publicPath: string, title: string) =>
   `${publicPath}/${slugify(title) || 'imagen'}.webp`
 
@@ -136,14 +144,44 @@ type FinancialReportSeed = {
   pdfUrl?: string
 }
 
+/**
+ * Hosts considered safe to wipe. The destructive seed must never run against a
+ * production database just because NODE_ENV happens to be unset, so the target
+ * host is checked explicitly rather than relying on NODE_ENV.
+ */
+const SEED_TARGET_HOST_ALLOWLIST = new Set(['localhost', '127.0.0.1', '::1', 'postgres'])
+
+function assertSeedTargetIsAllowed() {
+  if (process.env.ALLOW_SEED_WIPE === 'true') {
+    return
+  }
+
+  let host: string
+  try {
+    host = new URL(connectionString).hostname
+  } catch {
+    throw new Error(
+      'Refusing to seed: DATABASE_URL host could not be parsed to verify it is a dev target.'
+    )
+  }
+
+  // URL() wraps IPv6 hosts in brackets ("[::1]"); strip them for comparison.
+  const normalizedHost = host.replace(/^\[|\]$/g, '').toLowerCase()
+  if (!SEED_TARGET_HOST_ALLOWLIST.has(normalizedHost)) {
+    throw new Error(
+      `Refusing to run destructive seed against non-dev DATABASE_URL host "${normalizedHost}". ` +
+        'Set ALLOW_SEED_WIPE=true to override for an intentional non-local wipe.'
+    )
+  }
+}
+
 async function main() {
   const cliArgs = new Set(process.argv.slice(2))
   const hasConfirmFlag = cliArgs.has('--confirm')
   const isProduction = process.env.NODE_ENV === 'production'
   const allowProductionSeed = process.env.ALLOW_PRODUCTION_SEED === 'true'
-  const requiresConfirm = isProduction
 
-  if (requiresConfirm && !hasConfirmFlag) {
+  if (!hasConfirmFlag) {
     throw new Error('Refusing to run destructive seed without --confirm.')
   }
 
@@ -151,12 +189,34 @@ async function main() {
     throw new Error('Refusing to run seed in production unless ALLOW_PRODUCTION_SEED=true.')
   }
 
+  assertSeedTargetIsAllowed()
+
   console.log('🌱 Starting database seeding...')
 
-  if (!requiresConfirm) {
-    console.log('ℹ️ Development mode detected. Skipping --confirm requirement.')
+  // Wipe + reseed atomically: any thrown error (e.g. a missing public/ asset)
+  // rolls the whole thing back instead of leaving the DB empty or half-seeded.
+  await db.transaction((tx) => seedDatabase(tx))
+
+  // Cache purge must run only after the seed transaction has committed.
+  const redisUrl = process.env.NUXT_REDIS_URL?.trim() || process.env.REDIS_URL?.trim()
+  if (redisUrl) {
+    console.log('🧹 Clearing Nitro cache for press dossier API...')
+    const { purgeNitroHandlerCacheByPrefixes } =
+      await import('../server/utils/cache/nitroRedisCachePurge')
+    await purgeNitroHandlerCacheByPrefixes(redisUrl, [
+      'nitro/handlers/press-dossier',
+      'nitro/handlers/public-press-dossier',
+    ])
+  } else {
+    console.log(
+      'ℹ️ NUXT_REDIS_URL not set: if the dossier link is missing in the header, restart the dev server (Nitro in-memory cache).'
+    )
   }
 
+  console.log('✅ Database seeding completed!')
+}
+
+async function seedDatabase(db: DbExecutor) {
   // Clear existing data (in correct order for foreign keys)
   console.log('🗑️ Clearing existing data...')
   await db.delete(schema.aboutPageContent)
@@ -165,8 +225,9 @@ async function main() {
   await db.delete(schema.equalityDocumentTranslations)
   await db.delete(schema.equalityDocuments)
   await db.delete(schema.newsletterDeliveries)
-  await db.delete(schema.newsletterSubscriptionEvents)
-  await db.delete(schema.newsletterSubscribers)
+  // newsletter_subscribers / newsletter_subscription_events are intentionally
+  // NOT wiped: they hold GDPR consent evidence the seed never recreates, and
+  // the seed inserts no subscribers, so deleting them serves no purpose.
   await db.delete(schema.newsletters)
   await db.delete(schema.carouselItemTranslations)
   await db.delete(schema.carouselItems)
@@ -367,21 +428,6 @@ async function main() {
     pdfUrl: PRESS_DOSSIER_PUBLIC_PATH,
     active: true,
   })
-
-  const redisUrl = process.env.NUXT_REDIS_URL?.trim() || process.env.REDIS_URL?.trim()
-  if (redisUrl) {
-    console.log('🧹 Clearing Nitro cache for press dossier API...')
-    const { purgeNitroHandlerCacheByPrefixes } =
-      await import('../server/utils/cache/nitroRedisCachePurge')
-    await purgeNitroHandlerCacheByPrefixes(redisUrl, [
-      'nitro/handlers/press-dossier',
-      'nitro/handlers/public-press-dossier',
-    ])
-  } else {
-    console.log(
-      'ℹ️ NUXT_REDIS_URL not set: if the dossier link is missing in the header, restart the dev server (Nitro in-memory cache).'
-    )
-  }
 
   console.log('🖼️ Creating site default image slots...')
   await db.insert(schema.siteDefaultImages).values([
@@ -10715,8 +10761,6 @@ async function main() {
       publicVisible: true,
     })
   }
-
-  console.log('✅ Database seeding completed!')
 }
 
 main()

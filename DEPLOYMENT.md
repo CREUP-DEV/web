@@ -436,6 +436,8 @@ docker compose run --rm \
   app /app/ops/seed.mjs --confirm
 ```
 
+El seed se ejecuta dentro de una única transacción (si falla, revierte por completo) y solo corre si el host de `DATABASE_URL` es local o el servicio Docker `postgres`. Si la base de datos de producción usa otro host (p. ej. un Postgres gestionado externo), añade `-e ALLOW_SEED_WIPE=true` al comando. El seed conserva `newsletter_subscribers` y `newsletter_subscription_events` (evidencia de consentimiento RGPD).
+
 ### 8e. Verificar el despliegue
 
 ```bash

@@ -63,7 +63,7 @@ pnpm db:seed
 
 `pnpm db:migrate` carga `.env`, muestra progreso, adquiere el advisory lock de PostgreSQL y garantiza las extensiones necesarias antes de aplicar migraciones.
 
-`pnpm db:seed` no pide confirmación en desarrollo. En producción exige `--confirm` y `ALLOW_PRODUCTION_SEED=true`.
+`pnpm db:seed` es destructivo: vacía y recarga las tablas de contenido dentro de una única transacción (si algo falla, revierte sin dejar la base a medias). El script ya incluye `--confirm` y solo se ejecuta si el host de `DATABASE_URL` es local (`localhost`, `127.0.0.1`, `::1` o el servicio Docker `postgres`); para un wipe intencionado contra otro host define `ALLOW_SEED_WIPE=true`. En producción exige además `ALLOW_PRODUCTION_SEED=true`. No borra las tablas de suscriptores de la newsletter (`newsletter_subscribers` / `newsletter_subscription_events`): conservan la evidencia de consentimiento RGPD.
 
 En desarrollo local, `NUXT_SITE_URL` puede quedarse en `http://localhost:3000`. Si la imagen de producción debe compilarse incrustando otro origen público (por ejemplo al ejecutar `deploy.sh` desde una máquina cuyo `.env` sigue apuntando a localhost), define `NUXT_DEPLOY_SITE_URL`: `deploy.sh` y `deploy-local.sh` usarán esa variable solo como `--build-arg` del build; el runtime del contenedor sigue configurándose con `NUXT_SITE_URL` en el entorno donde arranca Compose (p. ej. el `.env` del VPS).
 
