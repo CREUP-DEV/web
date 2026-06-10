@@ -1,4 +1,4 @@
-import { createError, setHeader } from 'h3'
+import { createError, getQuery, setHeader } from 'h3'
 import { eq, desc, and, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTranslations, tags, pressArticleTags } from '../db/schema'
@@ -211,9 +211,16 @@ export default defineCachedEventHandler(
   },
   {
     ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    // Free-text search has unbounded cardinality, so never cache search responses
+    // (and never mint a Redis key for them). Non-search lists stay cached as before.
+    shouldBypassCache: (event) => {
+      const raw = getQuery(event).q
+      const q = Array.isArray(raw) ? raw[0] : raw
+      return typeof q === 'string' && q.trim().length > 0
+    },
     getKey: (event) =>
       buildPublicRouteCacheKey(event, 'public-press', {
-        queryKeys: ['type', 'types', 'tag', 'q', 'limit', 'offset'],
+        queryKeys: ['type', 'types', 'tag', 'limit', 'offset'],
       }),
   }
 )

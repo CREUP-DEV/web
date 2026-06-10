@@ -132,7 +132,7 @@ export const pressListQuerySchema = z.object({
   ),
   q: toOptionalSingleStringSchema(z.string().trim().max(200)),
   limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(50).default(12)),
-  offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
+  offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).max(10000).default(0)),
 })
 
 export const tagsListQuerySchema = z.object({
