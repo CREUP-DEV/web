@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, typecheck & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Must run before setup-node so its `cache: pnpm` can resolve the store.
+      # Version is read from package.json#packageManager (pnpm@11.5.1).
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Runs the postinstall `nuxt prepare`, generating .nuxt types for typecheck.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Check i18n parity
+        run: pnpm i18n:check
+
+      # No env required: nuxt build evaluates config with fallbacks and never
+      # touches the DB/Redis (the sitemap's DB-backed sources resolve at runtime,
+      # and the startup config assertion is a Nitro runtime plugin, not build).
+      - name: Build
+        run: pnpm build
