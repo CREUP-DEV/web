@@ -13,13 +13,15 @@ import { getExternalApiCacheOptions, withExternalApiSWRCache } from '../cache/ex
 import { logError } from '../core/logger'
 import { getRequestLocaleContext } from '../locale/requestLocale'
 import { getRequiredExternalApiBaseUrl } from '../core/runtimeConfig'
-import {
+import type {
   externalAssociatedMemberSchema,
-  externalAssociatedMembersResponseSchema,
   externalOrganigramaAreaSchema,
   externalOrganigramaMemberSchema,
-  externalOrganigramaResponseSchema,
   externalSectorialMemberSchema,
+} from '../validation'
+import {
+  externalAssociatedMembersResponseSchema,
+  externalOrganigramaResponseSchema,
   externalSectorialMembersResponseSchema,
 } from '../validation'
 
