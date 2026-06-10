@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const rootRef = ref<HTMLElement | null>(null)
 let previousFocus: HTMLElement | null = null
 
 const { t } = useI18n()
@@ -7,82 +6,18 @@ const localePath = useLocalePath()
 const cookiesPath = computed(() => `${localePath('/legal')}#cookies`)
 const { showBanner, dismissBanner } = useCookieConsent()
 
-const getFocusableElements = () => {
-  const root = rootRef.value
-  if (!root) {
-    return []
-  }
-
-  return Array.from(
-    root.querySelectorAll<HTMLElement>(
-      [
-        'a[href]',
-        'button:not([disabled])',
-        'input:not([disabled])',
-        'select:not([disabled])',
-        'textarea:not([disabled])',
-        '[tabindex]:not([tabindex="-1"])',
-      ].join(', ')
-    )
-  ).filter((element) => !element.hasAttribute('disabled') && !element.hasAttribute('aria-hidden'))
-}
-
-const focusPrimaryAction = () => {
-  rootRef.value?.querySelector<HTMLElement>('[data-cookie-consent-dismiss]')?.focus()
-}
-
-const onDocumentKeydown = (event: KeyboardEvent) => {
-  if (showBanner.value) {
-    handleKeydown(event)
-  }
-}
-
-const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key !== 'Tab') {
-    return
-  }
-
-  const focusables = getFocusableElements()
-  if (!focusables.length) {
-    return
-  }
-
-  const firstFocusable = focusables[0]
-  const lastFocusable = focusables[focusables.length - 1]
-  const activeElement = document.activeElement
-  const isInsideBanner =
-    activeElement instanceof HTMLElement && rootRef.value?.contains(activeElement)
-
-  if (!isInsideBanner) {
-    event.preventDefault()
-    const target = (event.shiftKey ? lastFocusable : firstFocusable)!
-    target.focus()
-    return
-  }
-
-  if (event.shiftKey && activeElement === firstFocusable) {
-    event.preventDefault()
-    lastFocusable!.focus()
-    return
-  }
-
-  if (!event.shiftKey && activeElement === lastFocusable) {
-    event.preventDefault()
-    firstFocusable!.focus()
-  }
-}
-
+// The banner is the last element in layouts/default.vue, so it is reachable in
+// natural tab order without a focus trap. We only remember where focus was when
+// the banner appeared so it can be restored once the banner is dismissed.
 watch(
   showBanner,
-  async (visible) => {
+  (visible) => {
     if (!import.meta.client) {
       return
     }
 
     if (visible) {
       previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
-      await nextTick()
-      focusPrimaryAction()
       return
     }
 
@@ -91,22 +26,6 @@ watch(
   },
   { immediate: true }
 )
-
-onMounted(() => {
-  if (!import.meta.client) {
-    return
-  }
-
-  document.addEventListener('keydown', onDocumentKeydown, true)
-})
-
-onBeforeUnmount(() => {
-  if (!import.meta.client) {
-    return
-  }
-
-  document.removeEventListener('keydown', onDocumentKeydown, true)
-})
 </script>
 
 <template>
@@ -120,9 +39,7 @@ onBeforeUnmount(() => {
   >
     <div
       v-if="showBanner"
-      ref="rootRef"
-      role="alertdialog"
-      aria-modal="true"
+      role="region"
       aria-labelledby="cookie-consent-title"
       aria-describedby="cookie-consent-description"
       class="fixed inset-x-0 bottom-0 z-50 p-4"
