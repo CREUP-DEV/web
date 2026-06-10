@@ -366,6 +366,13 @@ export default defineNuxtConfig({
         name: 'Català',
         flag: 'i-circle-flags-es-ct',
       },
+      {
+        code: 'eu',
+        language: 'eu-ES',
+        file: 'eu.json',
+        name: 'Euskara',
+        flag: 'i-circle-flags-es-pv',
+      },
     ],
     defaultLocale: 'es',
     baseUrl: canonicalSiteUrl,

@@ -37,7 +37,7 @@ function extractPlaceholders(value: string): string[] {
 }
 
 const BASE = 'es.json'
-const localeFiles = ['en.json', 'ca.json']
+const localeFiles = ['en.json', 'ca.json', 'eu.json']
 
 const baseKeys = loadLocale(BASE)
 let hasErrors = false

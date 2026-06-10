@@ -2,6 +2,7 @@
 import LegalCa from '@/components/legal/LegalCa.vue'
 import LegalEn from '@/components/legal/LegalEn.vue'
 import LegalEs from '@/components/legal/LegalEs.vue'
+import LegalEu from '@/components/legal/LegalEu.vue'
 
 const { t, locale } = useI18n()
 const { defaultLocale } = useLocales()
@@ -10,6 +11,7 @@ const legalComponents = {
   ca: LegalCa,
   en: LegalEn,
   es: LegalEs,
+  eu: LegalEu,
 } as const
 
 const legalComponent = computed(

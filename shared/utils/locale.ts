@@ -26,6 +26,7 @@ const flagFallbackByLanguage: Record<string, string> = {
   ca: 'es-ct',
   en: 'gb',
   es: 'es',
+  eu: 'es-pv',
 }
 
 export const getBaseLanguage = (value?: string | null) => {
@@ -53,6 +54,10 @@ const inferLanguageTag = (code: string) => {
 
   if (baseLanguage === 'ca') {
     return 'ca-ES'
+  }
+
+  if (baseLanguage === 'eu') {
+    return 'eu-ES'
   }
 
   return code

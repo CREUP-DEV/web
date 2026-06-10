@@ -187,6 +187,7 @@ async function main() {
         { locale: 'es', name: 'Todas' },
         { locale: 'en', name: 'All' },
         { locale: 'ca', name: 'Totes' },
+        { locale: 'eu', name: 'Guztiak' },
       ],
     },
     {
@@ -195,6 +196,7 @@ async function main() {
         { locale: 'es', name: 'Política universitaria' },
         { locale: 'en', name: 'University policy' },
         { locale: 'ca', name: 'Política universitària' },
+        { locale: 'eu', name: 'Unibertsitate politika' },
       ],
     },
     {
@@ -203,6 +205,7 @@ async function main() {
         { locale: 'es', name: 'Becas y financiación' },
         { locale: 'en', name: 'Scholarships and funding' },
         { locale: 'ca', name: 'Beques i finançament' },
+        { locale: 'eu', name: 'Bekak eta finantzaketa' },
       ],
     },
     {
@@ -211,6 +214,7 @@ async function main() {
         { locale: 'es', name: 'Economía estudiantil' },
         { locale: 'en', name: 'Student economy' },
         { locale: 'ca', name: 'Economia estudiantil' },
+        { locale: 'eu', name: 'Ikasleen ekonomia' },
       ],
     },
     {
@@ -219,6 +223,7 @@ async function main() {
         { locale: 'es', name: 'Prácticas y empleabilidad' },
         { locale: 'en', name: 'Internships and employability' },
         { locale: 'ca', name: 'Pràctiques i ocupabilitat' },
+        { locale: 'eu', name: 'Praktikak eta enplegagarritasuna' },
       ],
     },
     {
@@ -227,6 +232,7 @@ async function main() {
         { locale: 'es', name: 'Derechos, convivencia e igualdad' },
         { locale: 'en', name: 'Rights, coexistence and equality' },
         { locale: 'ca', name: 'Drets, convivència i igualtat' },
+        { locale: 'eu', name: 'Eskubideak, bizikidetza eta berdintasuna' },
       ],
     },
     {
@@ -235,6 +241,7 @@ async function main() {
         { locale: 'es', name: 'Calidad universitaria' },
         { locale: 'en', name: 'University quality' },
         { locale: 'ca', name: 'Qualitat universitària' },
+        { locale: 'eu', name: 'Unibertsitate kalitatea' },
       ],
     },
     {
@@ -243,6 +250,7 @@ async function main() {
         { locale: 'es', name: 'Vida universitaria y bienestar' },
         { locale: 'en', name: 'University life and wellbeing' },
         { locale: 'ca', name: 'Vida universitària i benestar' },
+        { locale: 'eu', name: 'Unibertsitate bizitza eta ongizatea' },
       ],
     },
     {
@@ -251,6 +259,7 @@ async function main() {
         { locale: 'es', name: 'Acceso a la universidad' },
         { locale: 'en', name: 'Access to university' },
         { locale: 'ca', name: 'Accés a la universitat' },
+        { locale: 'eu', name: 'Unibertsitaterako sarbidea' },
       ],
     },
     {
@@ -259,6 +268,7 @@ async function main() {
         { locale: 'es', name: 'Internacional y movilidad' },
         { locale: 'en', name: 'Internationalisation and mobility' },
         { locale: 'ca', name: 'Internacional i mobilitat' },
+        { locale: 'eu', name: 'Nazioartekoa eta mugikortasuna' },
       ],
     },
     {
@@ -267,6 +277,7 @@ async function main() {
         { locale: 'es', name: 'Representación estudiantil' },
         { locale: 'en', name: 'Student representation' },
         { locale: 'ca', name: 'Representació estudiantil' },
+        { locale: 'eu', name: 'Ikasleen ordezkaritza' },
       ],
     },
   ]
@@ -313,6 +324,11 @@ async function main() {
           locale: 'ca',
           title: "Coneix l'associació que representa més d'1.000.000 d'estudiants.",
           buttonText: 'Què és CREUP?',
+        },
+        {
+          locale: 'eu',
+          title: 'Ezagutu 1.000.000 ikasle baino gehiago ordezkatzen dituen elkartea.',
+          buttonText: 'Zer da CREUP?',
         },
       ],
     },
@@ -10363,6 +10379,7 @@ async function main() {
         { locale: 'es', title: 'Manual de Identidad Corporativa' },
         { locale: 'en', title: 'Corporate Identity Manual' },
         { locale: 'ca', title: "Manual d'Identitat Corporativa" },
+        { locale: 'eu', title: 'Identitate Korporatiboaren Eskuliburua' },
       ],
     },
     {
@@ -10375,6 +10392,7 @@ async function main() {
         { locale: 'es', title: 'Suscríbete a nuestra Newsletter' },
         { locale: 'en', title: 'Subscribe to our Newsletter' },
         { locale: 'ca', title: 'Subscriu-te a la nostra Newsletter' },
+        { locale: 'eu', title: 'Harpidetu gure Newsletterera' },
       ],
     },
     {
@@ -10387,6 +10405,7 @@ async function main() {
         { locale: 'es', title: 'Igualdad y prevención del acoso' },
         { locale: 'en', title: 'Equality and Harassment Prevention' },
         { locale: 'ca', title: "Igualtat i prevenció de l'assetjament" },
+        { locale: 'eu', title: 'Berdintasuna eta jazarpenaren prebentzioa' },
       ],
     },
     {
@@ -10399,6 +10418,7 @@ async function main() {
         { locale: 'es', title: 'Estatuto del Estudiante Universitario' },
         { locale: 'en', title: 'University Student Statute' },
         { locale: 'ca', title: "Estatut de l'Estudiant Universitari" },
+        { locale: 'eu', title: 'Unibertsitateko Ikaslearen Estatutua' },
       ],
     },
     {
@@ -10411,6 +10431,7 @@ async function main() {
         { locale: 'es', title: 'Becas y ayudas para el estudiantado' },
         { locale: 'en', title: 'Scholarships and Student Aid' },
         { locale: 'ca', title: "Beques i ajudes per a l'estudiantat" },
+        { locale: 'eu', title: 'Bekak eta laguntzak ikasleentzat' },
       ],
     },
     {
@@ -10423,6 +10444,7 @@ async function main() {
         { locale: 'es', title: "European Students' Union (ESU)" },
         { locale: 'en', title: "European Students' Union (ESU)" },
         { locale: 'ca', title: "European Students' Union (ESU)" },
+        { locale: 'eu', title: "European Students' Union (ESU)" },
       ],
     },
   ]
@@ -10473,6 +10495,13 @@ async function main() {
             'El nostre document marc sobre igualtat, diversitat, discriminacions a la universitat i mesures que reclamem a les institucions públiques.',
           meta: 'Document polític · Igualtat i diversitat',
         },
+        {
+          locale: 'eu',
+          title: 'Berdintasun eta Aniztasunari buruzko posizionamendu politikoa',
+          description:
+            'Berdintasunari, aniztasunari, unibertsitateko diskriminazioei eta erakunde publikoei eskatzen dizkiegun neurriei buruzko gure esparru-dokumentua.',
+          meta: 'Dokumentu politikoa · Berdintasuna eta aniztasuna',
+        },
       ],
     },
     {
@@ -10498,6 +10527,13 @@ async function main() {
           description:
             "Aprovat a la 77a Assemblea General Ordinària, recull mesures preventives, principis de confidencialitat, el funcionament del Punt Segur i el procediment d'actuació davant conductes contràries a la llibertat sexual.",
           meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
+        },
+        {
+          locale: 'eu',
+          title: 'Sexu-jazarpen kasuen prebentzio eta jarduketa protokoloa',
+          description:
+            '77. Ohiko Batzar Nagusian onartua, neurri prebentiboak, konfidentzialtasun printzipioak, Puntu Seguruaren funtzionamendua eta sexu-askatasunaren aurkako jokabideen aurrean jarduteko prozedura jasotzen ditu.',
+          meta: '77. Ohiko Batzar Nagusia · 2025eko apirilaren 4a',
         },
       ],
     },
@@ -10525,6 +10561,13 @@ async function main() {
             "Aprovat a la 77a Assemblea General Ordinària, defineix supòsits de discriminació, garanties, Punt Segur i nivells d'intervenció davant violència o assetjament per diversitat.",
           meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
         },
+        {
+          locale: 'eu',
+          title: 'Diskriminazio kasuen prebentzio eta jarduketa protokoloa',
+          description:
+            '77. Ohiko Batzar Nagusian onartua, diskriminazio kasuak, bermeak, Puntu Segurua eta aniztasunagatiko indarkeria edo jazarpenaren aurrean esku hartzeko mailak definitzen ditu.',
+          meta: '77. Ohiko Batzar Nagusia · 2025eko apirilaren 4a',
+        },
       ],
     },
     {
@@ -10550,6 +10593,13 @@ async function main() {
           description:
             "Recull recomanacions pràctiques sobre llenguatge, recursos visuals i criteris d'accessibilitat per a una comunicació més inclusiva.",
           meta: 'Guia pràctica · Llenguatge, visualitat i accessibilitat',
+        },
+        {
+          locale: 'eu',
+          title: 'Komunikazio Inklusiboaren Gida',
+          description:
+            'Komunikazio inklusiboagoa lortzeko hizkuntzari, baliabide bisualei eta irisgarritasun irizpideei buruzko gomendio praktikoak biltzen ditu.',
+          meta: 'Gida praktikoa · Hizkuntza, ikusgarritasuna eta irisgarritasuna',
         },
       ],
     },
