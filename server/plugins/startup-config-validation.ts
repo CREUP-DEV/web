@@ -6,6 +6,7 @@ import {
   requireConfigString,
   requireConfigUrl,
 } from '~~/shared/utils/config'
+import { getEnvAdminEmails } from '../utils/admin/adminAccess'
 import { logError } from '../utils/core/logger'
 
 function requireAuthBaseUrl() {
@@ -29,6 +30,14 @@ function collectConfigValidationErrors(): string[] {
   const checks: Array<() => void> = [
     () => requireConfigString(process.env.APP_SECRET, 'APP_SECRET'),
     () => requireAuthBaseUrl(),
+    () => {
+      if (getEnvAdminEmails().length === 0) {
+        throw new ConfigError(
+          'ADMIN_EMAILS',
+          'must list at least one owner email so env-admin actions and roster management are never locked out'
+        )
+      }
+    },
     () => requireConfigUrl(runtimeConfig.redisUrl, 'REDIS_URL'),
     () => requireConfigUrl(runtimeConfig.externalApiBaseUrl, 'EXTERNAL_API_BASE_URL'),
     () => requireConfigString(runtimeConfig.googleCalendarApiKey, 'GOOGLE_CALENDAR_API_KEY'),

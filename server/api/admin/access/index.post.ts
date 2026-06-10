@@ -1,12 +1,15 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
+import { requireEnvAdmin } from '../../../utils/auth/requireAuth'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { validateBody } from '../../../utils/validation'
 import { createAdminAccessSchema } from '~~/shared/utils/adminSchemas'
 
 export default defineEventHandler(async (event) => {
+  await requireEnvAdmin(event)
+
   const body = await readBody(event)
   const validated = validateBody(event, createAdminAccessSchema, body)
 

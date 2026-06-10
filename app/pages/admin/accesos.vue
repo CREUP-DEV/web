@@ -12,6 +12,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { clearErrors, getFieldError, validate } = useFormValidation()
+const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
 
 interface AdminAccessItem {
   id: string
@@ -323,7 +324,9 @@ const handleDelete = async () => {
         </i18n-t>
       </div>
 
-      <UButton icon="i-tabler-plus" @click="openCreate">{{ t('admin.access.addEmail') }}</UButton>
+      <UButton v-if="adminIsEnvAdmin" icon="i-tabler-plus" @click="openCreate">{{
+        t('admin.access.addEmail')
+      }}</UButton>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
@@ -455,7 +458,7 @@ const handleDelete = async () => {
                 </template>
               </i18n-t>
 
-              <template v-else-if="item.databaseId">
+              <template v-else-if="item.databaseId && adminIsEnvAdmin">
                 <UButton
                   variant="outline"
                   :loading="isTogglingId === item.id"
@@ -474,13 +477,19 @@ const handleDelete = async () => {
 
       <div v-if="!items.length" class="py-12 text-center">
         <p class="text-muted">{{ t('admin.access.empty') }}</p>
-        <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
+        <UButton
+          v-if="adminIsEnvAdmin"
+          class="mt-4"
+          size="sm"
+          icon="i-tabler-plus"
+          @click="openCreate"
+        >
           {{ t('admin.access.addItem') }}
         </UButton>
       </div>
     </div>
 
-    <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-md' }">
+    <UModal v-if="adminIsEnvAdmin" v-model:open="showModal" :ui="{ content: 'sm:max-w-md' }">
       <template #content>
         <div class="p-6">
           <h2 class="text-lg font-bold">{{ t('admin.access.addItem') }}</h2>
@@ -515,7 +524,7 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <UModal v-model:open="showDeleteModal">
+    <UModal v-if="adminIsEnvAdmin" v-model:open="showDeleteModal">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

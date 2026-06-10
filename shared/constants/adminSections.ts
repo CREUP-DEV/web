@@ -31,6 +31,7 @@ export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
     description: 'Personas autorizadas para entrar al panel.',
     to: ADMIN_ROUTES.access,
     icon: 'i-tabler-shield-lock',
+    envOnly: true,
   },
   {
     key: 'stats',

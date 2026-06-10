@@ -2,6 +2,7 @@ import { createError, defineEventHandler } from 'h3'
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { adminAccess } from '../../../db/schema'
+import { requireEnvAdmin } from '../../../utils/auth/requireAuth'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import {
   assertAdminAccessCanBeRevoked,
@@ -11,6 +12,8 @@ import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMess
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 
 export default defineEventHandler(async (event) => {
+  await requireEnvAdmin(event)
+
   try {
     const { id } = validateRouteParams(event, idRouteParamSchema)
 
