@@ -86,8 +86,8 @@ defineProps<{
       </p>
 
       <p class="text-sm leading-relaxed">
-        Erabiltzaileak Webgunearen erabilera zuzenaren ardura bere gain hartzen du. Erantzukizun hori
-        honako hauei zabalduko zaie:
+        Erabiltzaileak Webgunearen erabilera zuzenaren ardura bere gain hartzen du. Erantzukizun
+        hori honako hauei zabalduko zaie:
       </p>
 
       <ul class="list-disc space-y-1 pl-6 text-sm">
@@ -239,9 +239,9 @@ defineProps<{
         Datu pertsonalak eskaerei eta kontsultei erantzuteko, erabiltzaileekin harremana errazteko
         eta, adostasun espresua dagoenean, newsletterrerako harpidetza kudeatzeko eta haren
         komunikazioak bidaltzeko jasotzen eta kudeatzen dira. Halaber, CREUPek webgunearen
-        erabileraren informazio agregatua lortzen du helburu estatistiko, tekniko eta
-        zerbitzua hobetzekoetarako, cookierik ezta identifikatzaile iraunkorrik gabe konfiguratutako
-        Umamiren instantzia propio baten bidez.
+        erabileraren informazio agregatua lortzen du helburu estatistiko, tekniko eta zerbitzua
+        hobetzekoetarako, cookierik ezta identifikatzaile iraunkorrik gabe konfiguratutako Umamiren
+        instantzia propio baten bidez.
       </p>
 
       <h3 class="text-base font-semibold">Web-analitika cookierik gabe</h3>
@@ -250,9 +250,9 @@ defineProps<{
         Webgune honek CREUPek berak kudeatutako Umamiren auto-ostatatutako instantzia bat erabiltzen
         du, erabileraren estatistika agregatuak lortzeko, jarraipen-cookierik ezta identifikatzaile
         iraunkorrik erabili gabe. Umamiren dokumentazio ofizialaren arabera, neurketak honako datu
-        hauek izan ditzake: bisitatutako orriaren URLa eta titulua, jatorrizko orria, nabigatzailearen
-        hizkuntza, nabigatzailea, sistema eragilea, gailu-mota, pantailaren bereizmena eta
-        errendimendu-metrikak.
+        hauek izan ditzake: bisitatutako orriaren URLa eta titulua, jatorrizko orria,
+        nabigatzailearen hizkuntza, nabigatzailea, sistema eragilea, gailu-mota, pantailaren
+        bereizmena eta errendimendu-metrikak.
       </p>
 
       <p class="text-sm leading-relaxed">
@@ -260,8 +260,8 @@ defineProps<{
         helburuetarako. Gutxi gorabeherako kokapena geolokalizazio-goiburuetatik edo eskaerarako
         erabilitako IParen bitartez ondoriozta daiteke, baina IP helbidea ez da gordetzen, Umamiren
         dokumentazio ofizialaren arabera. Neurketa honek ez du erabiltzailea pertsonalki
-        identifikatzen, ezta guneen arteko jarraipenik egiten ere. Tresnaren funtzionamenduari buruzko
-        erreferentzia orokor gisa, Umamiren dokumentazio ofiziala kontsulta daiteke hemen:
+        identifikatzen, ezta guneen arteko jarraipenik egiten ere. Tresnaren funtzionamenduari
+        buruzko erreferentzia orokor gisa, Umamiren dokumentazio ofiziala kontsulta daiteke hemen:
         <a
           href="https://docs.umami.is/docs"
           target="_blank"
@@ -342,8 +342,8 @@ defineProps<{
 
       <p class="text-sm leading-relaxed">
         Webguneak CREUPek kudeatzen ez dituen hirugarrenen webguneetarako estekak izan ditzake.
-        Hirugarren horiek beren pribatutasun- eta cookie-politika propioak dituzte eta beren fitxategi
-        eta datu-praktiken erantzule dira.
+        Hirugarren horiek beren pribatutasun- eta cookie-politika propioak dituzte eta beren
+        fitxategi eta datu-praktiken erantzule dira.
       </p>
 
       <h3 class="text-base font-semibold">Kontrol-agintaritzaren aurreko erreklamazioak</h3>
@@ -382,7 +382,9 @@ defineProps<{
         dagoelako.
       </p>
 
-      <h3 class="text-base font-semibold">Webgune honetan erabiltzen diren cookieak eta teknologiak</h3>
+      <h3 class="text-base font-semibold">
+        Webgune honetan erabiltzen diren cookieak eta teknologiak
+      </h3>
 
       <UCard variant="subtle" class="motion-card-subtle">
         <template #header>
@@ -401,10 +403,12 @@ defineProps<{
 
           <div class="divide-default space-y-2 divide-y">
             <div class="pt-2 first:pt-0">
-              <p class="font-medium">Hizkuntza-cookiea (<code class="text-xs">user-locale</code>)</p>
+              <p class="font-medium">
+                Hizkuntza-cookiea (<code class="text-xs">user-locale</code>)
+              </p>
               <p class="text-muted text-xs">
-                Erabiltzaileak hautatutako hizkuntza gordetzen du hobespena saioen artean mantentzeko.
-                Iraupena: urtebete.
+                Erabiltzaileak hautatutako hizkuntza gordetzen du hobespena saioen artean
+                mantentzeko. Iraupena: urtebete.
               </p>
             </div>
             <div class="pt-2">
@@ -418,8 +422,8 @@ defineProps<{
             <div class="pt-2">
               <p class="font-medium">Interfaze-hobespenen tokiko biltegiratzea</p>
               <p class="text-muted text-xs">
-                Nabigatzailearen tokiko biltegiratzea (localStorage) interfaze-hobespenak gogoratzeko
-                erabiltzen da, hala nola kolore-modua (<code class="text-xs"
+                Nabigatzailearen tokiko biltegiratzea (localStorage) interfaze-hobespenak
+                gogoratzeko erabiltzen da, hala nola kolore-modua (<code class="text-xs"
                   >nuxt-color-mode</code
                 >) eta irisgarritasun-aukerak (<code class="text-xs">nuxt-a11y-*</code>). Informazio
                 hori ez da zerbitzarira transmititzen eta erabiltzailearen gailuan soilik geratzen
@@ -440,17 +444,18 @@ defineProps<{
 
         <div class="space-y-3 text-sm">
           <p class="text-muted">
-            Ezinbesteko teknologia teknikoez gain, webguneak erabileraren neurketa agregatu bat egiten
-            du bere funtzionamendua hobetzeko eta gorabeherak detektatzeko.
+            Ezinbesteko teknologia teknikoez gain, webguneak erabileraren neurketa agregatu bat
+            egiten du bere funtzionamendua hobetzeko eta gorabeherak detektatzeko.
           </p>
 
           <div>
             <p class="font-medium">Umami Analytics</p>
             <p class="text-muted text-xs">
               CREUPek kudeatutako Umamiren auto-ostatatutako instantzia bat erabiltzen dugu. Umamik
-              ez du cookierik erabiltzen, ez du identifikatzaile iraunkorrik erabiltzen, ez du guneen
-              arteko jarraipenik egiten eta informazioa modu agregatuan tratatzen du. Tresnari buruzko
-              informazio orokorra Umamiren dokumentazio ofizialean kontsulta daiteke.
+              ez du cookierik erabiltzen, ez du identifikatzaile iraunkorrik erabiltzen, ez du
+              guneen arteko jarraipenik egiten eta informazioa modu agregatuan tratatzen du.
+              Tresnari buruzko informazio orokorra Umamiren dokumentazio ofizialean kontsulta
+              daiteke.
             </p>
           </div>
         </div>
@@ -468,10 +473,10 @@ defineProps<{
 
       <p class="text-sm leading-relaxed">
         Erabiltzaileek cookieak desaktibatu, baztertu edo ezabatu ditzakete nabigatzailearen
-        konfigurazioaren bidez. Cookie teknikoak blokeatzen badira, baliteke webguneko funtzionalitate
-        batzuk eskuragarri ez egotea. Umamirekin egiten den neurketa agregatua cookierik ezta
-        identifikatzaile iraunkorrik gabe konfiguratuta dago; konfigurazio hori aldatuko balitz,
-        politika hau horren arabera eguneratuko litzateke.
+        konfigurazioaren bidez. Cookie teknikoak blokeatzen badira, baliteke webguneko
+        funtzionalitate batzuk eskuragarri ez egotea. Umamirekin egiten den neurketa agregatua
+        cookierik ezta identifikatzaile iraunkorrik gabe konfiguratuta dago; konfigurazio hori
+        aldatuko balitz, politika hau horren arabera eguneratuko litzateke.
       </p>
     </section>
 
@@ -481,21 +486,21 @@ defineProps<{
       <h2 class="text-xl font-bold">VI. Esteka-politika</h2>
 
       <p class="text-sm leading-relaxed">
-        CREUPek Erabiltzailearen eskura jar ditzake hirugarrenen webguneetarako sarbidea ahalbidetzen
-        duten estekak, direktorioak eta bilatzaileak. Helburua interneten eskuragarri dagoen
-        informaziorako sarbidea erraztea da.
+        CREUPek Erabiltzailearen eskura jar ditzake hirugarrenen webguneetarako sarbidea
+        ahalbidetzen duten estekak, direktorioak eta bilatzaileak. Helburua interneten eskuragarri
+        dagoen informaziorako sarbidea erraztea da.
       </p>
 
       <p class="text-sm leading-relaxed">
-        CREUPek ez ditu estekatutako webguneen produktuak/zerbitzuak merkaturatzen eta ez du bermatzen
-        haien eskuragarritasun teknikoa, zehaztasuna, egiazkotasuna, baliozkotasuna edo
+        CREUPek ez ditu estekatutako webguneen produktuak/zerbitzuak merkaturatzen eta ez du
+        bermatzen haien eskuragarritasun teknikoa, zehaztasuna, egiazkotasuna, baliozkotasuna edo
         legezkotasuna.
       </p>
 
       <p class="text-sm leading-relaxed">
-        CREUPek ez du inolako erantzukizunik hartzen CREUPek kudeatzen ez dituen webguneen edukiaren,
-        komunikazioen, iritzien, produktuen edo zerbitzuen sarbidetik, erabileratik, kalitatetik edo
-        legezkotasunetik eratorritako kalteengatik.
+        CREUPek ez du inolako erantzukizunik hartzen CREUPek kudeatzen ez dituen webguneen
+        edukiaren, komunikazioen, iritzien, produktuen edo zerbitzuen sarbidetik, erabileratik,
+        kalitatetik edo legezkotasunetik eratorritako kalteengatik.
       </p>
 
       <p class="text-sm leading-relaxed">
@@ -505,8 +510,8 @@ defineProps<{
 
       <ul class="list-disc space-y-1 pl-6 text-sm">
         <li>
-          Ez dela onartzen Webgunearen edukia/zerbitzuak osorik edo zati batean berregitea berariazko
-          baimenik gabe.
+          Ez dela onartzen Webgunearen edukia/zerbitzuak osorik edo zati batean berregitea
+          berariazko baimenik gabe.
         </li>
         <li>
           Ez direla onartzen CREUPi edo haren Webguneari buruzko adierazpen faltsu, zehaztugabe edo
@@ -526,8 +531,8 @@ defineProps<{
 
       <p class="text-sm leading-relaxed">
         CREUP, bere kabuz edo lagapen-hartzaile gisa, Webgunearen eta hura osatzen duten elementuen
-        (besteak beste, testuak, irudiak, logotipoak, diseinua eta softwarea) jabetza intelektual eta
-        industrialeko eskubide guztien titularra da. Eskubide guztiak erreserbatuta.
+        (besteak beste, testuak, irudiak, logotipoak, diseinua eta softwarea) jabetza intelektual
+        eta industrialeko eskubide guztien titularra da. Eskubide guztiak erreserbatuta.
       </p>
 
       <p class="text-sm leading-relaxed">
@@ -546,13 +551,12 @@ defineProps<{
     <USeparator />
 
     <section id="acciones-legales" class="space-y-4">
-      <h2 class="text-xl font-bold">
-        VIII. Lege-ekintzak, legeria aplikagarria eta jurisdikzioa
-      </h2>
+      <h2 class="text-xl font-bold">VIII. Lege-ekintzak, legeria aplikagarria eta jurisdikzioa</h2>
 
       <p class="text-sm leading-relaxed">
-        CREUPek Webgunearen eta haren edukien erabilera desegokiaren edo Baldintza hauen ez-betetzearen
-        aurrean egoki iritzitako ekintza zibil edo penalak aurkezteko ahalmena gordetzen du.
+        CREUPek Webgunearen eta haren edukien erabilera desegokiaren edo Baldintza hauen
+        ez-betetzearen aurrean egoki iritzitako ekintza zibil edo penalak aurkezteko ahalmena
+        gordetzen du.
       </p>
 
       <p class="text-sm leading-relaxed">

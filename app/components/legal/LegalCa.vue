@@ -187,9 +187,7 @@ defineProps<{
         >.
       </p>
 
-      <h3 class="text-base font-semibold">
-        Principis aplicables al tractament de dades personals
-      </h3>
+      <h3 class="text-base font-semibold">Principis aplicables al tractament de dades personals</h3>
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <UCard
@@ -329,9 +327,7 @@ defineProps<{
         <li>Dret a la limitació del tractament.</li>
         <li>Dret a la portabilitat de les dades.</li>
         <li>Dret d'oposició.</li>
-        <li>
-          Dret a no ser objecte de decisions basades únicament en tractaments automatitzats.
-        </li>
+        <li>Dret a no ser objecte de decisions basades únicament en tractaments automatitzats.</li>
       </ul>
 
       <p class="text-sm leading-relaxed">
@@ -543,9 +539,7 @@ defineProps<{
     <USeparator />
 
     <section id="acciones-legales" class="space-y-4">
-      <h2 class="text-xl font-bold">
-        VIII. Accions legals, legislació aplicable i jurisdicció
-      </h2>
+      <h2 class="text-xl font-bold">VIII. Accions legals, legislació aplicable i jurisdicció</h2>
 
       <p class="text-sm leading-relaxed">
         CREUP es reserva la facultat de presentar les accions civils o penals que consideri
