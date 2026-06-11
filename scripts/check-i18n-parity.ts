@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '../shared/constants/locales'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const LOCALES_DIR = resolve(__dirname, '../i18n/locales')
@@ -36,8 +37,11 @@ function extractPlaceholders(value: string): string[] {
   return [...new Set([...matches].map((match) => match[1]))].sort()
 }
 
-const BASE = 'es.json'
-const localeFiles = ['en.json', 'ca.json', 'eu.json']
+const BASE =
+  LOCALE_DEFINITIONS.find((locale) => locale.code === DEFAULT_LOCALE_CODE)?.file ?? 'es.json'
+const localeFiles = LOCALE_DEFINITIONS.filter((locale) => locale.file !== BASE).map(
+  (locale) => locale.file
+)
 
 const baseKeys = loadLocale(BASE)
 let hasErrors = false

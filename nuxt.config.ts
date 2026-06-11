@@ -3,7 +3,11 @@ import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtSecurityRouteRules } from 'nuxt-security'
 import { getOptionalConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
-import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from './shared/constants/locales'
+import {
+  DEFAULT_LOCALE_CODE,
+  LOCALE_DEFINITIONS,
+  SUPPORTED_LOCALE_CODES,
+} from './shared/constants/locales'
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -338,7 +342,7 @@ export default defineNuxtConfig({
     url: canonicalSiteUrl,
     name: siteName,
     description: siteDescription,
-    defaultLocale: 'es',
+    defaultLocale: DEFAULT_LOCALE_CODE,
     trailingSlash: false,
     env: isDev ? 'development' : 'production',
     indexable: !isDev,
@@ -383,37 +387,8 @@ export default defineNuxtConfig({
 
   i18n: {
     vueI18n: './i18n.config.ts',
-    locales: [
-      {
-        code: 'es',
-        language: 'es-ES',
-        file: 'es.json',
-        name: 'Español',
-        flag: 'i-circle-flags-es',
-      },
-      {
-        code: 'en',
-        language: 'en-GB',
-        file: 'en.json',
-        name: 'English',
-        flag: 'i-circle-flags-gb',
-      },
-      {
-        code: 'ca',
-        language: 'ca-ES',
-        file: 'ca.json',
-        name: 'Català',
-        flag: 'i-circle-flags-es-ct',
-      },
-      {
-        code: 'eu',
-        language: 'eu-ES',
-        file: 'eu.json',
-        name: 'Euskara',
-        flag: 'i-circle-flags-es-pv',
-      },
-    ],
-    defaultLocale: 'es',
+    locales: [...LOCALE_DEFINITIONS],
+    defaultLocale: DEFAULT_LOCALE_CODE,
     baseUrl: canonicalSiteUrl,
     strategy: 'prefix_except_default',
     detectBrowserLanguage: false,

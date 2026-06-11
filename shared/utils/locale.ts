@@ -1,6 +1,7 @@
-import { DEFAULT_LOCALE_CODE } from '../constants/locales'
+import { DEFAULT_LOCALE_CODE, LOCALE_DEFINITIONS } from '../constants/locales'
 export {
   DEFAULT_LOCALE_CODE,
+  LOCALE_DEFINITIONS,
   SUPPORTED_LOCALE_CODES,
   type SupportedLocaleCode,
 } from '../constants/locales'
@@ -18,9 +19,6 @@ interface RawLocaleDefinition {
   language?: unknown
   flag?: unknown
 }
-
-const DEFAULT_LANGUAGE_TAG = 'es-ES'
-const DEFAULT_LOCALE_NAME = 'Español'
 
 const flagFallbackByLanguage: Record<string, string> = {
   ca: 'es-ct',
@@ -43,24 +41,9 @@ export const getBaseLanguage = (value?: string | null) => {
 
 const inferLanguageTag = (code: string) => {
   const baseLanguage = getBaseLanguage(code)
+  const match = LOCALE_DEFINITIONS.find((locale) => getBaseLanguage(locale.code) === baseLanguage)
 
-  if (baseLanguage === 'en') {
-    return 'en-GB'
-  }
-
-  if (baseLanguage === 'es') {
-    return DEFAULT_LANGUAGE_TAG
-  }
-
-  if (baseLanguage === 'ca') {
-    return 'ca-ES'
-  }
-
-  if (baseLanguage === 'eu') {
-    return 'eu-ES'
-  }
-
-  return code
+  return match?.language ?? code
 }
 
 export const inferLocaleFlag = (code: string, language?: string) => {
@@ -83,12 +66,18 @@ export const inferLocaleFlag = (code: string, language?: string) => {
   return 'i-tabler-world'
 }
 
-const buildDefaultLocale = (): LocaleDefinition => ({
-  code: DEFAULT_LOCALE_CODE,
-  name: DEFAULT_LOCALE_NAME,
-  language: DEFAULT_LANGUAGE_TAG,
-  flag: inferLocaleFlag(DEFAULT_LOCALE_CODE, DEFAULT_LANGUAGE_TAG),
-})
+const buildDefaultLocale = (): LocaleDefinition => {
+  const fallback =
+    LOCALE_DEFINITIONS.find((locale) => locale.code === DEFAULT_LOCALE_CODE) ??
+    LOCALE_DEFINITIONS[0]
+
+  return {
+    code: fallback.code,
+    name: fallback.name,
+    language: fallback.language,
+    flag: fallback.flag,
+  }
+}
 
 export const normalizeLocaleDefinitions = (rawLocales: unknown): LocaleDefinition[] => {
   if (!Array.isArray(rawLocales)) {
