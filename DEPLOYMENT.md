@@ -296,6 +296,13 @@ NUXT_GOOGLE_CALENDAR_ID=<calendar id>
 # ── External API ──
 NUXT_EXTERNAL_API_BASE_URL=https://api.example.com
 NUXT_EXTERNAL_ASSET_BASE_URL=https://assets.example.com
+# Allowlist of origins the asset proxy may fetch — this is the SSRF boundary: only these
+# origins are ever requested, and redirects are re-validated against the same set. Internal
+# origins (e.g. http://intranet reaching the Docker network directly) are supported by
+# design; the proxy intentionally does NOT block private/RFC1918 resolved IPs, since that
+# would break those fetches. The proxy can relay ANY path on an allowed origin (subject to
+# content-type and size checks), so allowed origins must not expose sensitive assets at
+# guessable image/PDF paths.
 NUXT_EXTERNAL_ASSET_PROXY_ALLOWED_ORIGINS=https://assets.example.com,https://api.example.com
 NUXT_EXTERNAL_ASSET_PROXY_TIMEOUT_MS=10000
 NUXT_EXTERNAL_ASSET_PROXY_IMAGE_MAX_BYTES=15728640

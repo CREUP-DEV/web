@@ -255,6 +255,14 @@ export const proxyExternalAssetBySource = async (
     })
   }
 
+  // SSRF boundary: the upstream origin must be in the configured allowlist, and every
+  // redirect hop is re-validated against the same set (fetchExternalAssetWithSafeRedirects),
+  // so an attacker controls only the path, never the host. The allowlist is intentionally
+  // an internal/intranet host set (e.g. http://intranet on the Docker network), so its
+  // resolved IPs are private by design — IP-range blocking (RFC1918 / loopback / link-local)
+  // is deliberately NOT applied here, as it would break the intended fetch. The residual
+  // DNS-rebinding risk would require control over those internal hostnames' resolution,
+  // not a web-facing input.
   if (!allowedOrigins.has(sourceUrl.origin)) {
     throw createError({
       statusCode: 400,
