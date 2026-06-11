@@ -29,6 +29,13 @@ import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
 } from '../shared/constants/siteDefaultImages'
+import {
+  getRequiredSeedTranslations,
+  seedCarouselTranslations,
+  seedEqualityDocumentTranslations,
+  seedFeaturedLinkTranslations,
+  seedTagTranslations,
+} from './seed/data/seedContentTranslations'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
@@ -242,105 +249,17 @@ async function seedDatabase(db: DbExecutor) {
 
   console.log('📝 Creating tags...')
   const tagsData = [
-    {
-      slug: 'all',
-      translations: [
-        { locale: 'es', name: 'Todas' },
-        { locale: 'en', name: 'All' },
-        { locale: 'ca', name: 'Totes' },
-        { locale: 'eu', name: 'Guztiak' },
-      ],
-    },
-    {
-      slug: 'university-policy',
-      translations: [
-        { locale: 'es', name: 'Política universitaria' },
-        { locale: 'en', name: 'University policy' },
-        { locale: 'ca', name: 'Política universitària' },
-        { locale: 'eu', name: 'Unibertsitate politika' },
-      ],
-    },
-    {
-      slug: 'scholarships-funding',
-      translations: [
-        { locale: 'es', name: 'Becas y financiación' },
-        { locale: 'en', name: 'Scholarships and funding' },
-        { locale: 'ca', name: 'Beques i finançament' },
-        { locale: 'eu', name: 'Bekak eta finantzaketa' },
-      ],
-    },
-    {
-      slug: 'student-economy',
-      translations: [
-        { locale: 'es', name: 'Economía estudiantil' },
-        { locale: 'en', name: 'Student economy' },
-        { locale: 'ca', name: 'Economia estudiantil' },
-        { locale: 'eu', name: 'Ikasleen ekonomia' },
-      ],
-    },
-    {
-      slug: 'internships-employability',
-      translations: [
-        { locale: 'es', name: 'Prácticas y empleabilidad' },
-        { locale: 'en', name: 'Internships and employability' },
-        { locale: 'ca', name: 'Pràctiques i ocupabilitat' },
-        { locale: 'eu', name: 'Praktikak eta enplegagarritasuna' },
-      ],
-    },
-    {
-      slug: 'rights-coexistence-equality',
-      translations: [
-        { locale: 'es', name: 'Derechos, convivencia e igualdad' },
-        { locale: 'en', name: 'Rights, coexistence and equality' },
-        { locale: 'ca', name: 'Drets, convivència i igualtat' },
-        { locale: 'eu', name: 'Eskubideak, bizikidetza eta berdintasuna' },
-      ],
-    },
-    {
-      slug: 'university-quality',
-      translations: [
-        { locale: 'es', name: 'Calidad universitaria' },
-        { locale: 'en', name: 'University quality' },
-        { locale: 'ca', name: 'Qualitat universitària' },
-        { locale: 'eu', name: 'Unibertsitate kalitatea' },
-      ],
-    },
-    {
-      slug: 'university-life-wellbeing',
-      translations: [
-        { locale: 'es', name: 'Vida universitaria y bienestar' },
-        { locale: 'en', name: 'University life and wellbeing' },
-        { locale: 'ca', name: 'Vida universitària i benestar' },
-        { locale: 'eu', name: 'Unibertsitate bizitza eta ongizatea' },
-      ],
-    },
-    {
-      slug: 'access-to-university',
-      translations: [
-        { locale: 'es', name: 'Acceso a la universidad' },
-        { locale: 'en', name: 'Access to university' },
-        { locale: 'ca', name: 'Accés a la universitat' },
-        { locale: 'eu', name: 'Unibertsitaterako sarbidea' },
-      ],
-    },
-    {
-      slug: 'international-mobility',
-      translations: [
-        { locale: 'es', name: 'Internacional y movilidad' },
-        { locale: 'en', name: 'Internationalisation and mobility' },
-        { locale: 'ca', name: 'Internacional i mobilitat' },
-        { locale: 'eu', name: 'Nazioartekoa eta mugikortasuna' },
-      ],
-    },
-    {
-      slug: 'student-representation',
-      translations: [
-        { locale: 'es', name: 'Representación estudiantil' },
-        { locale: 'en', name: 'Student representation' },
-        { locale: 'ca', name: 'Representació estudiantil' },
-        { locale: 'eu', name: 'Ikasleen ordezkaritza' },
-      ],
-    },
+    { slug: 'all' },
+    { slug: 'university-policy' },
+    { slug: 'scholarships-funding' },
+    { slug: 'student-economy' },
+    { slug: 'internships-employability' },
+    { slug: 'rights-coexistence-equality' },
+    { slug: 'university-quality' },
+    { slug: 'university-life-wellbeing' },
+    { slug: 'access-to-university' },
+    { slug: 'international-mobility' },
+    { slug: 'student-representation' },
   ]
 
   const tags: Record<string, string> = {}
@@ -355,7 +274,7 @@ async function seedDatabase(db: DbExecutor) {
       .returning()
 
     await db.insert(schema.tagTranslations).values(
-      tagData.translations.map((t) => ({
+      getRequiredSeedTranslations(seedTagTranslations, tagData.slug, 'tag').map((t) => ({
         locale: t.locale,
         name: t.name,
         tagId: tag.id,
@@ -370,28 +289,6 @@ async function seedDatabase(db: DbExecutor) {
     {
       image: `${HOME_CAROUSEL_IMAGE_PUBLIC_PATH}/conoce-a-la-asociacion-que-representa-a-mas-de-1000000-de-es.webp`,
       href: '/conocenos/que-es',
-      translations: [
-        {
-          locale: 'es',
-          title: 'Conoce a la asociación que representa a más de 1.000.000 de estudiantes.',
-          buttonText: '¿Qué es CREUP?',
-        },
-        {
-          locale: 'en',
-          title: 'Meet the association that represents more than 1,000,000 students.',
-          buttonText: 'What is CREUP?',
-        },
-        {
-          locale: 'ca',
-          title: "Coneix l'associació que representa més d'1.000.000 d'estudiants.",
-          buttonText: 'Què és CREUP?',
-        },
-        {
-          locale: 'eu',
-          title: 'Ezagutu 1.000.000 ikasle baino gehiago ordezkatzen dituen elkartea.',
-          buttonText: 'Zer da CREUP?',
-        },
-      ],
     },
   ]
 
@@ -407,7 +304,7 @@ async function seedDatabase(db: DbExecutor) {
       .returning()
 
     await db.insert(schema.carouselItemTranslations).values(
-      item.translations.map((t) => ({
+      getRequiredSeedTranslations(seedCarouselTranslations, item.href, 'carousel').map((t) => ({
         locale: t.locale,
         title: t.title,
         buttonText: t.buttonText,
@@ -10421,12 +10318,6 @@ async function seedDatabase(db: DbExecutor) {
         'Manual de Identidad Corporativa'
       ),
       to: '/transparencia/mic/',
-      translations: [
-        { locale: 'es', title: 'Manual de Identidad Corporativa' },
-        { locale: 'en', title: 'Corporate Identity Manual' },
-        { locale: 'ca', title: "Manual d'Identitat Corporativa" },
-        { locale: 'eu', title: 'Identitate Korporatiboaren Eskuliburua' },
-      ],
     },
     {
       image: buildHomeImagePath(
@@ -10434,12 +10325,6 @@ async function seedDatabase(db: DbExecutor) {
         'Suscríbete a nuestra Newsletter'
       ),
       to: '/prensa/newsletter/',
-      translations: [
-        { locale: 'es', title: 'Suscríbete a nuestra Newsletter' },
-        { locale: 'en', title: 'Subscribe to our Newsletter' },
-        { locale: 'ca', title: 'Subscriu-te a la nostra Newsletter' },
-        { locale: 'eu', title: 'Harpidetu gure Newsletterera' },
-      ],
     },
     {
       image: buildHomeImagePath(
@@ -10447,12 +10332,6 @@ async function seedDatabase(db: DbExecutor) {
         'Igualdad y prevención del acoso'
       ),
       to: '/transparencia/igualdad',
-      translations: [
-        { locale: 'es', title: 'Igualdad y prevención del acoso' },
-        { locale: 'en', title: 'Equality and Harassment Prevention' },
-        { locale: 'ca', title: "Igualtat i prevenció de l'assetjament" },
-        { locale: 'eu', title: 'Berdintasuna eta jazarpenaren prebentzioa' },
-      ],
     },
     {
       image: buildHomeImagePath(
@@ -10460,12 +10339,6 @@ async function seedDatabase(db: DbExecutor) {
         'Estatuto del Estudiante Universitario'
       ),
       to: 'https://www.boe.es/buscar/doc.php?id=BOE-A-2010-20147',
-      translations: [
-        { locale: 'es', title: 'Estatuto del Estudiante Universitario' },
-        { locale: 'en', title: 'University Student Statute' },
-        { locale: 'ca', title: "Estatut de l'Estudiant Universitari" },
-        { locale: 'eu', title: 'Unibertsitateko Ikaslearen Estatutua' },
-      ],
     },
     {
       image: buildHomeImagePath(
@@ -10473,12 +10346,6 @@ async function seedDatabase(db: DbExecutor) {
         'Becas y ayudas para el estudiantado'
       ),
       to: 'https://www.becaseducacion.gob.es/',
-      translations: [
-        { locale: 'es', title: 'Becas y ayudas para el estudiantado' },
-        { locale: 'en', title: 'Scholarships and Student Aid' },
-        { locale: 'ca', title: "Beques i ajudes per a l'estudiantat" },
-        { locale: 'eu', title: 'Bekak eta laguntzak ikasleentzat' },
-      ],
     },
     {
       image: buildHomeImagePath(
@@ -10486,12 +10353,6 @@ async function seedDatabase(db: DbExecutor) {
         "European Students' Union (ESU)"
       ),
       to: 'https://www.esu-online.org/',
-      translations: [
-        { locale: 'es', title: "European Students' Union (ESU)" },
-        { locale: 'en', title: "European Students' Union (ESU)" },
-        { locale: 'ca', title: "European Students' Union (ESU)" },
-        { locale: 'eu', title: "European Students' Union (ESU)" },
-      ],
     },
   ]
 
@@ -10507,11 +10368,13 @@ async function seedDatabase(db: DbExecutor) {
       .returning()
 
     await db.insert(schema.featuredLinkTranslations).values(
-      item.translations.map((t) => ({
-        locale: t.locale,
-        title: t.title,
-        featuredLinkId: link.id,
-      }))
+      getRequiredSeedTranslations(seedFeaturedLinkTranslations, item.to, 'featured link').map(
+        (t) => ({
+          locale: t.locale,
+          title: t.title,
+          featuredLinkId: link.id,
+        })
+      )
     )
   }
 
@@ -10519,135 +10382,15 @@ async function seedDatabase(db: DbExecutor) {
   const equalityDocumentsData = [
     {
       pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/posicionamiento-igualdad-diversidad.pdf`,
-      translations: [
-        {
-          locale: 'es',
-          title: 'Posicionamiento político en materia de Igualdad y Diversidad',
-          description:
-            'Nuestro documento marco sobre igualdad, diversidad, discriminaciones en la universidad y medidas que reclamamos a las instituciones públicas.',
-          meta: 'Documento político · Igualdad y diversidad',
-        },
-        {
-          locale: 'en',
-          title: 'Policy position on Equality and Diversity',
-          description:
-            'Our core document on equality, diversity, discrimination in universities, and the measures we call for from public institutions.',
-          meta: 'Policy document · Equality and diversity',
-        },
-        {
-          locale: 'ca',
-          title: "Posicionament polític en matèria d'Igualtat i Diversitat",
-          description:
-            'El nostre document marc sobre igualtat, diversitat, discriminacions a la universitat i mesures que reclamem a les institucions públiques.',
-          meta: 'Document polític · Igualtat i diversitat',
-        },
-        {
-          locale: 'eu',
-          title: 'Berdintasun eta Aniztasunari buruzko posizionamendu politikoa',
-          description:
-            'Berdintasunari, aniztasunari, unibertsitateko diskriminazioei eta erakunde publikoei eskatzen dizkiegun neurriei buruzko gure esparru-dokumentua.',
-          meta: 'Dokumentu politikoa · Berdintasuna eta aniztasuna',
-        },
-      ],
     },
     {
       pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-de-prevencion-y-actuacion-frente-a-casos-de-acoso.pdf`,
-      translations: [
-        {
-          locale: 'es',
-          title: 'Protocolo de prevención y actuación frente a casos de acoso sexual',
-          description:
-            'Aprobado en la 77.ª Asamblea General Ordinaria, recoge medidas preventivas, principios de confidencialidad, el funcionamiento del Punto Seguro y el procedimiento de actuación ante conductas contrarias a la libertad sexual.',
-          meta: '77.ª Asamblea General Ordinaria · 4 de abril de 2025',
-        },
-        {
-          locale: 'en',
-          title: 'Protocol for prevention and response to sexual harassment cases',
-          description:
-            'Approved at the 77th Ordinary General Assembly, it sets out preventive measures, confidentiality principles, how the Safe Point works, and the response procedure for conduct against sexual freedom.',
-          meta: '77th Ordinary General Assembly · April 4, 2025',
-        },
-        {
-          locale: 'ca',
-          title: "Protocol de prevenció i actuació davant casos d'assetjament sexual",
-          description:
-            "Aprovat a la 77a Assemblea General Ordinària, recull mesures preventives, principis de confidencialitat, el funcionament del Punt Segur i el procediment d'actuació davant conductes contràries a la llibertat sexual.",
-          meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
-        },
-        {
-          locale: 'eu',
-          title: 'Sexu-jazarpen kasuen prebentzio eta jarduketa protokoloa',
-          description:
-            '77. Ohiko Batzar Nagusian onartua, neurri prebentiboak, konfidentzialtasun printzipioak, Puntu Seguruaren funtzionamendua eta sexu-askatasunaren aurkako jokabideen aurrean jarduteko prozedura jasotzen ditu.',
-          meta: '77. Ohiko Batzar Nagusia · 2025eko apirilaren 4a',
-        },
-      ],
     },
     {
       pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-discriminacion-creup.pdf`,
-      translations: [
-        {
-          locale: 'es',
-          title: 'Protocolo de prevención y actuación frente a casos de discriminación',
-          description:
-            'Aprobado en la 77.ª Asamblea General Ordinaria, define supuestos de discriminación, garantías, Punto Seguro y niveles de intervención ante violencia o acoso por diversidad.',
-          meta: '77.ª Asamblea General Ordinaria · 4 de abril de 2025',
-        },
-        {
-          locale: 'en',
-          title: 'Protocol for prevention and response to discrimination cases',
-          description:
-            'Approved at the 77th Ordinary General Assembly, it defines situations of discrimination, safeguards, the Safe Point, and response levels for violence or harassment linked to diversity.',
-          meta: '77th Ordinary General Assembly · April 4, 2025',
-        },
-        {
-          locale: 'ca',
-          title: 'Protocol de prevenció i actuació davant casos de discriminació',
-          description:
-            "Aprovat a la 77a Assemblea General Ordinària, defineix supòsits de discriminació, garanties, Punt Segur i nivells d'intervenció davant violència o assetjament per diversitat.",
-          meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
-        },
-        {
-          locale: 'eu',
-          title: 'Diskriminazio kasuen prebentzio eta jarduketa protokoloa',
-          description:
-            '77. Ohiko Batzar Nagusian onartua, diskriminazio kasuak, bermeak, Puntu Segurua eta aniztasunagatiko indarkeria edo jazarpenaren aurrean esku hartzeko mailak definitzen ditu.',
-          meta: '77. Ohiko Batzar Nagusia · 2025eko apirilaren 4a',
-        },
-      ],
     },
     {
       pdfUrl: `${EQUALITY_DOCUMENTS_PUBLIC_PATH}/guia-comunicacion-inclusiva.pdf`,
-      translations: [
-        {
-          locale: 'es',
-          title: 'Guía de Comunicación Inclusiva',
-          description:
-            'Recoge recomendaciones prácticas sobre lenguaje, recursos visuales y criterios de accesibilidad para una comunicación más inclusiva.',
-          meta: 'Guía práctica · Lenguaje, visualidad y accesibilidad',
-        },
-        {
-          locale: 'en',
-          title: 'Inclusive Communication Guide',
-          description:
-            'Practical recommendations on language, visual resources, and accessibility for more inclusive communication.',
-          meta: 'Practical guide · Language, visuals, and accessibility',
-        },
-        {
-          locale: 'ca',
-          title: 'Guia de Comunicació Inclusiva',
-          description:
-            "Recull recomanacions pràctiques sobre llenguatge, recursos visuals i criteris d'accessibilitat per a una comunicació més inclusiva.",
-          meta: 'Guia pràctica · Llenguatge, visualitat i accessibilitat',
-        },
-        {
-          locale: 'eu',
-          title: 'Komunikazio Inklusiboaren Gida',
-          description:
-            'Komunikazio inklusiboagoa lortzeko hizkuntzari, baliabide bisualei eta irisgarritasun irizpideei buruzko gomendio praktikoak biltzen ditu.',
-          meta: 'Gida praktikoa · Hizkuntza, ikusgarritasuna eta irisgarritasuna',
-        },
-      ],
     },
   ]
 
@@ -10663,7 +10406,11 @@ async function seedDatabase(db: DbExecutor) {
       .returning()
 
     await db.insert(schema.equalityDocumentTranslations).values(
-      item.translations.map((translation) => ({
+      getRequiredSeedTranslations(
+        seedEqualityDocumentTranslations,
+        item.pdfUrl,
+        'equality document'
+      ).map((translation) => ({
         locale: translation.locale,
         title: translation.title,
         description: translation.description,

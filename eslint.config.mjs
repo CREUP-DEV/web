@@ -4,7 +4,8 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 
 export default withNuxt([
   eslintPluginPrettierRecommended,
-  // @nuxt/eslint ignores the Nuxt public dir with an unanchored `public/**` glob,
-  // which also (wrongly) excludes server/utils/public from linting. Re-include it.
-  { ignores: ['!**/server/utils/public/**'] },
+  // @nuxt/eslint applies unanchored ignore globs (e.g. `public/**`, `data/**`) that also
+  // wrongly exclude server/utils/public and drizzle/seed (both linted, imported TS) from
+  // linting. Re-include them.
+  { ignores: ['!**/server/utils/public/**', '!**/drizzle/seed/**'] },
 ])
