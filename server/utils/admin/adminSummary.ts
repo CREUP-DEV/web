@@ -1,47 +1,51 @@
 import { sql } from 'drizzle-orm'
 import type { H3Event } from 'h3'
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
-import { PRESS_TYPE_LABELS } from '~~/shared/constants/pressTypes'
+import { PRESS_TYPE_LABELS, type PressArticleType } from '~~/shared/constants/pressTypes'
 import type { AdminSectionKey } from '~~/shared/constants/adminSections'
 import type { LocaleDefinition } from '~~/shared/utils/locale'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { db } from '../../db'
 import { getRequestLocaleContext } from '../locale/requestLocale'
 
-type SummaryLocale = 'es' | 'en'
+type SummaryLocale = 'es' | 'en' | 'ca' | 'eu'
+
+const summaryLabelsEs = {
+  aboutBannerTitle: 'Banner “Qué es CREUP”',
+  aboutNoBanner: 'Sin banner configurado',
+  aboutVisible: 'Visible en la web pública',
+  aboutSavedHidden: 'Guardado, pero oculto',
+  carouselUntitled: 'Slide sin título',
+  statusActive: 'Activo',
+  statusInactive: 'Inactivo',
+  equalityFallback: 'Documento de igualdad',
+  equalityActive: 'Documento activo',
+  equalityInactive: 'Documento inactivo',
+  newsletterPrefix: 'Newsletter',
+  newsletterSendingNow: 'Enviándose ahora',
+  newsletterSent: 'Ya enviada',
+  newsletterPending: 'Pendiente de envío',
+  newsletterVisibleWeb: 'visible en web',
+  newsletterHiddenWeb: 'oculta en web',
+  pressFallback: 'Artículo de prensa',
+  pressTypeFallback: 'Prensa',
+  pressDossierTitle: 'Dossier de prensa',
+  pressDossierNoPdf: 'Sin PDF configurado',
+  pressDossierActive: 'PDF activo',
+  pressDossierInactive: 'PDF guardado pero inactivo',
+  linksFallback: 'Enlace destacado',
+  linksActive: 'Bloque activo',
+  linksInactive: 'Bloque inactivo',
+  tagPrefix: 'Etiqueta',
+  financialFallback: 'Informe económico',
+  financialActive: 'Informe activo',
+  financialInactive: 'Informe inactivo',
+}
+
+type SummaryLabelKey = keyof typeof summaryLabelsEs
 
 const SUMMARY_LABELS: Record<SummaryLocale, Record<string, string>> = {
-  es: {
-    aboutBannerTitle: 'Banner “Qué es CREUP”',
-    aboutNoBanner: 'Sin banner configurado',
-    aboutVisible: 'Visible en la web pública',
-    aboutSavedHidden: 'Guardado, pero oculto',
-    carouselUntitled: 'Slide sin título',
-    statusActive: 'Activo',
-    statusInactive: 'Inactivo',
-    equalityFallback: 'Documento de igualdad',
-    equalityActive: 'Documento activo',
-    equalityInactive: 'Documento inactivo',
-    newsletterPrefix: 'Newsletter',
-    newsletterSendingNow: 'Enviándose ahora',
-    newsletterSent: 'Ya enviada',
-    newsletterPending: 'Pendiente de envío',
-    newsletterVisibleWeb: 'visible en web',
-    newsletterHiddenWeb: 'oculta en web',
-    pressFallback: 'Artículo de prensa',
-    pressTypeFallback: 'Prensa',
-    pressDossierTitle: 'Dossier de prensa',
-    pressDossierNoPdf: 'Sin PDF configurado',
-    pressDossierActive: 'PDF activo',
-    pressDossierInactive: 'PDF guardado pero inactivo',
-    linksFallback: 'Enlace destacado',
-    linksActive: 'Bloque activo',
-    linksInactive: 'Bloque inactivo',
-    tagPrefix: 'Etiqueta',
-    financialFallback: 'Informe económico',
-    financialActive: 'Informe activo',
-    financialInactive: 'Informe inactivo',
-  },
+  es: summaryLabelsEs,
   en: {
     aboutBannerTitle: '“What is CREUP” banner',
     aboutNoBanner: 'No banner configured',
@@ -72,10 +76,73 @@ const SUMMARY_LABELS: Record<SummaryLocale, Record<string, string>> = {
     financialFallback: 'Economic report',
     financialActive: 'Active report',
     financialInactive: 'Inactive report',
-  },
+  } satisfies Record<SummaryLabelKey, string>,
+  ca: {
+    aboutBannerTitle: 'Bàner “Què és CREUP”',
+    aboutNoBanner: 'Sense bàner configurat',
+    aboutVisible: 'Visible al web públic',
+    aboutSavedHidden: 'Desat, però ocult',
+    carouselUntitled: 'Diapositiva sense títol',
+    statusActive: 'Actiu',
+    statusInactive: 'Inactiu',
+    equalityFallback: "Document d'igualtat",
+    equalityActive: 'Document actiu',
+    equalityInactive: 'Document inactiu',
+    newsletterPrefix: 'Newsletter',
+    newsletterSendingNow: "S'està enviant ara",
+    newsletterSent: 'Ja enviat',
+    newsletterPending: "Pendent d'enviament",
+    newsletterVisibleWeb: 'visible al web',
+    newsletterHiddenWeb: 'ocult al web',
+    pressFallback: 'Article de premsa',
+    pressTypeFallback: 'Premsa',
+    pressDossierTitle: 'Dossier de premsa',
+    pressDossierNoPdf: 'Sense PDF configurat',
+    pressDossierActive: 'PDF actiu',
+    pressDossierInactive: 'PDF desat però inactiu',
+    linksFallback: 'Enllaç destacat',
+    linksActive: 'Bloc actiu',
+    linksInactive: 'Bloc inactiu',
+    tagPrefix: 'Etiqueta',
+    financialFallback: 'Informe econòmic',
+    financialActive: 'Informe actiu',
+    financialInactive: 'Informe inactiu',
+  } satisfies Record<SummaryLabelKey, string>,
+  eu: {
+    aboutBannerTitle: '“Zer da CREUP” banner-a',
+    aboutNoBanner: 'Banner-ik konfiguratu gabe',
+    aboutVisible: 'Web publikoan ikusgai',
+    aboutSavedHidden: 'Gordeta, baina ezkutatuta',
+    carouselUntitled: 'Izenbururik gabeko diapositiba',
+    statusActive: 'Aktibo',
+    statusInactive: 'Inaktibo',
+    equalityFallback: 'Berdintasun-dokumentua',
+    equalityActive: 'Dokumentu aktiboa',
+    equalityInactive: 'Dokumentu inaktiboa',
+    newsletterPrefix: 'Newsletter',
+    newsletterSendingNow: 'Orain bidaltzen',
+    newsletterSent: 'Dagoeneko bidalita',
+    newsletterPending: 'Bidaltzeke',
+    newsletterVisibleWeb: 'webean ikusgai',
+    newsletterHiddenWeb: 'webean ezkutatuta',
+    pressFallback: 'Prentsa-artikulua',
+    pressTypeFallback: 'Prentsa',
+    pressDossierTitle: 'Prentsa-dosierra',
+    pressDossierNoPdf: 'PDFrik konfiguratu gabe',
+    pressDossierActive: 'PDF aktiboa',
+    pressDossierInactive: 'PDFa gordeta baina inaktibo',
+    linksFallback: 'Esteka nabarmendua',
+    linksActive: 'Bloke aktiboa',
+    linksInactive: 'Bloke inaktiboa',
+    tagPrefix: 'Etiketa',
+    financialFallback: 'Txosten ekonomikoa',
+    financialActive: 'Txosten aktiboa',
+    financialInactive: 'Txosten inaktiboa',
+  } satisfies Record<SummaryLabelKey, string>,
 }
 
-const resolveSummaryLocale = (locale: string): SummaryLocale => (locale === 'en' ? 'en' : 'es')
+const resolveSummaryLocale = (locale: string): SummaryLocale =>
+  locale === 'en' || locale === 'ca' || locale === 'eu' ? locale : 'es'
 
 export interface DashboardRecentActivityItem {
   sectionKey: AdminSectionKey
@@ -96,7 +163,26 @@ interface TranslationLike {
 
 type ParsedTranslation<K extends string> = { locale: string } & Record<K, string | null>
 
-const pressTypeLabelsByKey = PRESS_TYPE_LABELS as Record<string, string>
+// Localized press-type labels for the activity feed (PRESS_TYPE_LABELS itself is es-only).
+// es reuses that constant; en/ca/eu mirror the i18n locale conventions.
+const PRESS_TYPE_LABELS_BY_LOCALE: Record<SummaryLocale, Record<PressArticleType, string>> = {
+  es: PRESS_TYPE_LABELS,
+  en: {
+    press_release: 'Press release',
+    statement: 'Statement',
+    media_appearance: 'Media appearance',
+  },
+  ca: {
+    press_release: 'Nota de premsa',
+    statement: 'Comunicat',
+    media_appearance: 'Aparició als mitjans',
+  },
+  eu: {
+    press_release: 'Prentsa-oharra',
+    statement: 'Adierazpena',
+    media_appearance: 'Hedabideetako agerpena',
+  },
+}
 
 const isDefined = <T>(value: T | null): value is T => value !== null
 const toNumber = (value: unknown) => Number(value ?? 0)
@@ -734,7 +820,7 @@ export async function getAdminDashboardSummary(event: H3Event) {
       ? {
           sectionKey: 'press',
           title: getActivityTitle(latestPressArticle.translations, 'title', t('pressFallback')),
-          description: `${pressTypeLabelsByKey[latestPressArticle.type] ?? t('pressTypeFallback')} · ${latestPressArticle.active ? t('statusActive') : t('statusInactive')}`,
+          description: `${(PRESS_TYPE_LABELS_BY_LOCALE[summaryLocale] as Record<string, string>)[latestPressArticle.type] ?? t('pressTypeFallback')} · ${latestPressArticle.active ? t('statusActive') : t('statusInactive')}`,
           to: ADMIN_ROUTES.press,
           updatedAt: latestPressArticle.updatedAt,
         }
