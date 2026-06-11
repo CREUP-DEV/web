@@ -47,6 +47,11 @@ const authSecondaryStorage = {
   },
 }
 
+// Runs only inside Better Auth's post-authentication databaseHooks (user/account/session
+// create), i.e. after the OAuth provider has proven the caller owns this email. A caller
+// can therefore only probe their own address, so the generic FORBIDDEN does not enable
+// admin-email enumeration of others; onAPIError.errorURL also funnels every auth failure
+// to the same /admin/login redirect.
 async function assertAdminEmailCanAuthenticate(email: string | null | undefined) {
   const normalizedEmail = email ? normalizeAdminEmail(email) : ''
   if (!normalizedEmail || !(await isAdminEmailAuthorized(normalizedEmail))) {

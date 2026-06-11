@@ -407,7 +407,7 @@ export const proxyExternalAssetBySource = async (
       throw error
     }
 
-    logError('external-asset.proxy', error, { source: normalizedSource, type }, event)
+    logError('external-asset.proxy', error, { source: normalizedSource.slice(0, 256), type }, event)
     throw createError({
       statusCode: 502,
       message: getPublicMessage('assetUnavailable', event),

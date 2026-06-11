@@ -5,12 +5,14 @@ import { enforceRateLimit } from '../utils/public/rateLimit'
 import { cspReportBodySchema, validatePublicBody } from '../utils/validation'
 
 const MAX_CSP_REPORT_BYTES = 64 * 1024
+const MAX_CSP_REPORT_FIELD_LENGTH = 512
+// `original-policy` is dropped: it is our own CSP echoed back (no diagnostic value, very
+// verbose). The rest are truncated and stripped of CR/LF before logging.
 const CSP_REPORT_FIELDS = [
   'blocked-uri',
   'document-uri',
   'effective-directive',
   'line-number',
-  'original-policy',
   'referrer',
   'source-file',
   'status-code',
@@ -24,6 +26,15 @@ function getContentLength(event: Parameters<typeof getRequestHeader>[0]) {
   return Number.isFinite(contentLength) ? contentLength : 0
 }
 
+function sanitizeReportValue(value: unknown) {
+  if (typeof value !== 'string') {
+    return value
+  }
+
+  // Strip CR/LF so a crafted report can't forge extra log lines, and cap length.
+  return value.replace(/[\r\n]+/g, ' ').slice(0, MAX_CSP_REPORT_FIELD_LENGTH)
+}
+
 function summarizeReport(report: Record<string, unknown>) {
   return Object.fromEntries(
     CSP_REPORT_FIELDS.flatMap((field) => {
@@ -33,7 +44,7 @@ function summarizeReport(report: Record<string, unknown>) {
         return []
       }
 
-      return [[field, value]]
+      return [[field, sanitizeReportValue(value)]]
     })
   )
 }

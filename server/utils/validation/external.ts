@@ -27,7 +27,7 @@ export const externalAssociatedMembersResponseSchema = z.object({
 export const externalAssociatedMembersCountResponseSchema = z.coerce.number().int().min(0)
 
 export const externalAssetQuerySchema = z.object({
-  src: z.string().trim().min(1),
+  src: z.string().trim().min(1).max(2048),
 })
 
 export const externalAssetPublicPathParamSchema = z.object({

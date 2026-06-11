@@ -96,6 +96,18 @@ export default defineEventHandler(async (event) => {
     setHeader(event, 'x-content-type-options', 'nosniff')
     setHeader(event, 'content-disposition', extension === '.pdf' ? 'attachment' : 'inline')
 
+    // An SVG opened directly (not via <img>) renders as a document and can execute
+    // embedded scripts / load external references. A strict per-asset CSP neutralizes that
+    // while still letting the image render; nosniff (above) stops other types being sniffed
+    // as SVG.
+    if (extension === '.svg') {
+      setHeader(
+        event,
+        'content-security-policy',
+        "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+      )
+    }
+
     if (method === 'HEAD') {
       return null
     }
