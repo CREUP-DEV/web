@@ -412,7 +412,11 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-2xl' }">
+    <UModal
+      v-model:open="showModal"
+      :title="editingItem ? t('admin.carousel.editTitle') : t('admin.carousel.newTitle')"
+      :ui="{ content: 'sm:max-w-2xl' }"
+    >
       <template #content>
         <div class="flex max-h-[80vh] flex-col">
           <div class="overflow-y-auto p-6">
@@ -548,7 +552,7 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <UModal v-model:open="showDeleteModal">
+    <UModal v-model:open="showDeleteModal" :title="t('admin.common.confirmDeleteTitle')">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

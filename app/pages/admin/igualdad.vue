@@ -459,7 +459,11 @@ const handlePdfSelect = async (event: Event) => {
       </div>
     </div>
 
-    <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-3xl' }">
+    <UModal
+      v-model:open="showModal"
+      :title="editingItem ? t('admin.equality.editTitle') : t('admin.equality.newTitle')"
+      :ui="{ content: 'sm:max-w-3xl' }"
+    >
       <template #content>
         <div class="flex max-h-[85vh] flex-col">
           <div class="overflow-y-auto p-6">
@@ -575,7 +579,7 @@ const handlePdfSelect = async (event: Event) => {
       </template>
     </UModal>
 
-    <UModal v-model:open="showDeleteModal">
+    <UModal v-model:open="showDeleteModal" :title="t('admin.common.confirmDeleteTitle')">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

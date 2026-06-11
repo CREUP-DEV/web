@@ -514,14 +514,12 @@ watch(
       </div>
     </div>
 
-    <UModal v-model:open="showModal">
-      <template #header>
-        <h2 class="text-lg font-semibold">
-          {{
-            editingItem ? t('admin.newsletter.list.editTitle') : t('admin.newsletter.list.newTitle')
-          }}
-        </h2>
-      </template>
+    <UModal
+      v-model:open="showModal"
+      :title="
+        editingItem ? t('admin.newsletter.list.editTitle') : t('admin.newsletter.list.newTitle')
+      "
+    >
       <template #body>
         <form class="space-y-5" @submit.prevent="handleSubmit">
           <UFormField
@@ -662,7 +660,7 @@ watch(
       </template>
     </UModal>
 
-    <UModal v-model:open="showManualSendModal">
+    <UModal v-model:open="showManualSendModal" :title="t('admin.newsletter.list.sendModalTitle')">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">
@@ -694,7 +692,7 @@ watch(
       </template>
     </UModal>
 
-    <UModal v-model:open="showCancelModal">
+    <UModal v-model:open="showCancelModal" :title="t('admin.newsletter.list.cancelSend')">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">
@@ -722,7 +720,7 @@ watch(
       </template>
     </UModal>
 
-    <UModal v-model:open="showDeleteModal">
+    <UModal v-model:open="showDeleteModal" :title="t('admin.newsletter.list.deleteModalTitle')">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

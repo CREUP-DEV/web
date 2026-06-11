@@ -701,7 +701,12 @@ const confirmCancel = () => {
       </aside>
     </div>
 
-    <UModal v-model:open="showCancelModal" :ui="{ content: 'sm:max-w-sm' }">
+    <UModal
+      v-model:open="showCancelModal"
+      :title="t('admin.press.form.cancelModalTitle')"
+      :description="t('admin.press.form.cancelModalBody')"
+      :ui="{ content: 'sm:max-w-sm' }"
+    >
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

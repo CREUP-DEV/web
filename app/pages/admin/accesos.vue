@@ -489,7 +489,13 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <UModal v-if="adminIsEnvAdmin" v-model:open="showModal" :ui="{ content: 'sm:max-w-md' }">
+    <UModal
+      v-if="adminIsEnvAdmin"
+      v-model:open="showModal"
+      :title="t('admin.access.addItem')"
+      :description="t('admin.access.modalDescription')"
+      :ui="{ content: 'sm:max-w-md' }"
+    >
       <template #content>
         <div class="p-6">
           <h2 class="text-lg font-bold">{{ t('admin.access.addItem') }}</h2>
@@ -524,7 +530,11 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <UModal v-if="adminIsEnvAdmin" v-model:open="showDeleteModal">
+    <UModal
+      v-if="adminIsEnvAdmin"
+      v-model:open="showDeleteModal"
+      :title="t('admin.access.deleteTitle')"
+    >
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

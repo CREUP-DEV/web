@@ -365,7 +365,7 @@ const emptyStateTypeLabel = computed(() =>
       </template>
     </div>
 
-    <UModal v-model:open="showDeleteModal">
+    <UModal v-model:open="showDeleteModal" :title="t('admin.common.confirmDeleteTitle')">
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

@@ -354,10 +354,7 @@ watch(page, () => {
       </nav>
     </div>
 
-    <UModal v-model:open="showAddModal">
-      <template #header>
-        <h2 class="text-lg font-semibold">{{ t('admin.newsletter.subscribers.addSubscriber') }}</h2>
-      </template>
+    <UModal v-model:open="showAddModal" :title="t('admin.newsletter.subscribers.addSubscriber')">
       <template #body>
         <form class="space-y-4" @submit.prevent="handleAdd">
           <p class="text-dimmed text-sm">
@@ -384,7 +381,10 @@ watch(page, () => {
       </template>
     </UModal>
 
-    <UModal v-model:open="showDeleteModal">
+    <UModal
+      v-model:open="showDeleteModal"
+      :title="t('admin.newsletter.subscribers.deleteModalTitle')"
+    >
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

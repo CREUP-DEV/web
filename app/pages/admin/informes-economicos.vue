@@ -377,7 +377,14 @@ const handleDelete = async () => {
       </UCard>
     </div>
 
-    <UModal v-model:open="showModal" :ui="{ content: 'sm:max-w-xl' }">
+    <UModal
+      v-model:open="showModal"
+      :title="
+        editingItem ? t('admin.financialReports.editTitle') : t('admin.financialReports.newTitle')
+      "
+      :description="t('admin.financialReports.formHint')"
+      :ui="{ content: 'sm:max-w-xl' }"
+    >
       <template #content>
         <div class="p-6">
           <h2 class="mb-2 text-lg font-bold">
@@ -505,7 +512,12 @@ const handleDelete = async () => {
       </template>
     </UModal>
 
-    <UModal v-model:open="showDeleteModal" :ui="{ content: 'sm:max-w-sm' }">
+    <UModal
+      v-model:open="showDeleteModal"
+      :title="t('admin.financialReports.deleteTitle')"
+      :description="t('admin.financialReports.deletePrompt')"
+      :ui="{ content: 'sm:max-w-sm' }"
+    >
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

@@ -300,7 +300,12 @@ const saveDossier = async () => {
       </div>
     </UCard>
 
-    <UModal v-model:open="showClearPdfModal" :ui="{ content: 'sm:max-w-sm' }">
+    <UModal
+      v-model:open="showClearPdfModal"
+      :title="t('admin.pressDossier.removePdf')"
+      :description="t('admin.pressDossier.removePdfConfirm')"
+      :ui="{ content: 'sm:max-w-sm' }"
+    >
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">

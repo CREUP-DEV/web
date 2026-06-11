@@ -322,7 +322,12 @@ const saveContent = async () => {
       </div>
     </UCard>
 
-    <UModal v-model:open="showClearHeroModal" :ui="{ content: 'sm:max-w-sm' }">
+    <UModal
+      v-model:open="showClearHeroModal"
+      :title="t('admin.about.removeBanner')"
+      :description="t('admin.about.removeBannerConfirm')"
+      :ui="{ content: 'sm:max-w-sm' }"
+    >
       <template #content>
         <div class="p-6">
           <div class="mb-4 flex items-center gap-3">
