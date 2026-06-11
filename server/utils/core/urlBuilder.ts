@@ -72,7 +72,7 @@ const TRUSTED_PROXY_CIDRS: ParsedCidr[] = TRUSTED_PROXY_CIDRS_RAW.split(',')
     return parsed ? [parsed] : []
   })
 
-function isIpTrusted(rawIp: string | null | undefined): boolean {
+export function isIpTrusted(rawIp: string | null | undefined): boolean {
   if (!rawIp) return false
   const ip = rawIp.replace(/^::ffff:/i, '').toLowerCase()
 

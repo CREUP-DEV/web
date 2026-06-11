@@ -6,6 +6,8 @@ import {
   getRequiredExternalAssetProxyTimeoutMs,
 } from '../core/runtimeConfig'
 import { logError } from '../core/logger'
+import { getClientIp, isIpTrusted } from '../core/urlBuilder'
+import { enforceRateLimit } from '../public/rateLimit'
 import { externalAssetQuerySchema } from '../validation'
 import {
   externalAssetProxyDispatcher,
@@ -22,6 +24,12 @@ import {
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
 const CACHE_CONTROL_FLOOR_SECONDS = 24 * 60 * 60
+
+// Generous per-client cap on direct external-asset proxy access so the upstream origin
+// cannot be driven for bandwidth amplification. Internal IPX source fetches (trusted /
+// loopback IP) are exempt — see the guard in proxyExternalAssetBySource.
+const EXTERNAL_ASSET_PROXY_RATE_LIMIT_MAX = 300
+const EXTERNAL_ASSET_PROXY_RATE_LIMIT_WINDOW_MS = 60_000
 
 const getAssetAcceptHeader = (type: ExternalAssetType) => {
   if (type === 'image') {
@@ -251,6 +259,21 @@ export const proxyExternalAssetBySource = async (
     throw createError({
       statusCode: 400,
       message: getPublicMessage('assetInvalidOrigin', event),
+    })
+  }
+
+  // Cap direct anonymous access to the outbound fetch so the upstream origin cannot be
+  // used for bandwidth amplification. Internal requests — IPX fetching image sources
+  // from loopback — resolve to a trusted (or absent) client IP and are exempt, so image
+  // optimization is never throttled. This covers direct proxy hits only; /_ipx-driven
+  // fetches are a separate concern.
+  const clientIp = getClientIp(event)
+  if (clientIp && !isIpTrusted(clientIp)) {
+    await enforceRateLimit(event, {
+      namespace: 'external-asset-proxy',
+      maxRequests: EXTERNAL_ASSET_PROXY_RATE_LIMIT_MAX,
+      windowMs: EXTERNAL_ASSET_PROXY_RATE_LIMIT_WINDOW_MS,
+      errorMessage: getPublicMessage('tooManyAttempts', event),
     })
   }
 
