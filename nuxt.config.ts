@@ -240,6 +240,15 @@ export default defineNuxtConfig({
           'https://challenges.cloudflare.com',
           "'sha256-wrGO/XlWuOftY7acUwy9OWAcCMeVCUtdtyCfbtKZTus='",
         ],
+        // 'unsafe-inline' for styles is kept deliberately (nuxt-security's recommended
+        // default for Nuxt apps). Nuxt SSR-inlines each Vue component's CSS as <style>
+        // blocks (features.inlineStyles default) and Vue dynamically modifies styles
+        // (transitions, v-show, :style → inline style="" attributes); 'strict-dynamic' does
+        // not apply to style-src and adding a nonce would cancel 'unsafe-inline', so
+        // dropping it would break styling. The XSS-relevant surface (script-src) is already
+        // locked down with nonce + strict-dynamic; CSS injection here is defense-in-depth
+        // only. To pursue it, disable features.inlineStyles (a perf trade) and switch
+        // style-src to ['self'] while keeping style-src-attr 'unsafe-inline'.
         'style-src': ["'self'", "'unsafe-inline'"],
         'style-src-attr': ["'unsafe-inline'"],
         'img-src': ["'self'", 'data:', 'blob:', 'https://lh3.googleusercontent.com'],
