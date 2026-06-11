@@ -187,8 +187,12 @@ html {
   }
 
   .equality-accent-button:focus-visible {
-    outline: none !important;
-    box-shadow: 0 0 0 2px rgb(81 50 105 / 0.4) !important;
+    outline: 2px solid var(--color-equality-purple-800) !important;
+    outline-offset: 2px !important;
+  }
+
+  .dark .equality-accent-button:focus-visible {
+    outline-color: var(--color-equality-purple-200) !important;
   }
 
   .dark .equality-accent-button {

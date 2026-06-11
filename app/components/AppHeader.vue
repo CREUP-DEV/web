@@ -16,6 +16,7 @@ const {
 } = usePublicHeaderNavigation(toRef(props, 'pressDossierLink'))
 
 const { t } = useI18n()
+const localePath = useLocalePath()
 const socials = useSocials()
 const instagramSocial = computed(() =>
   socials.value.find((social) => social.icon === 'i-tabler-brand-instagram')
@@ -36,11 +37,6 @@ watch(menuOpen, (isOpen) => {
   mobileOpenSections.value = mobileSections.value
     .filter((section) => section.active)
     .map((section) => section.value)
-
-  const activeElement = document.activeElement
-  if (activeElement instanceof HTMLElement || activeElement instanceof SVGElement) {
-    activeElement.blur()
-  }
 })
 </script>
 
@@ -49,6 +45,7 @@ watch(menuOpen, (isOpen) => {
     id="main-navigation"
     v-model:open="menuOpen"
     mode="slideover"
+    :to="localePath('/')"
     :toggle="{
       color: 'neutral',
       variant: 'ghost',
