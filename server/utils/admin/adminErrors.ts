@@ -12,6 +12,19 @@ export function isUniqueConstraintViolation(error: unknown): boolean {
   )
 }
 
+/**
+ * True for a deletion blocked by referential integrity: 23503 (foreign-key
+ * violation) or 23514 (check violation — e.g. ON DELETE SET NULL nulls a column
+ * that a CHECK still requires). Lets a delete race surface as 409, not 500.
+ */
+export function isConstraintBlockedDeletionError(error: unknown): boolean {
+  if (error === null || typeof error !== 'object' || !('code' in error)) {
+    return false
+  }
+  const code = (error as { code: unknown }).code
+  return code === '23503' || code === '23514'
+}
+
 export function throwAdminMutationError(scope: string, error: unknown, event?: H3Event): never {
   if (error && typeof error === 'object' && 'statusCode' in error) {
     throw error
