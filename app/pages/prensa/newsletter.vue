@@ -242,6 +242,19 @@ const {
   isLoading: archiveIsLoading,
   isRefreshing: archiveIsRefreshing,
 } = usePaginatedTransition(archivePendingPage, newsletters, archiveFetchError)
+
+// WCAG 4.1.3: concise polite status announced on result/page change, instead of
+// an aria-live region wrapping the whole grid (which re-reads or stays silent).
+const a11yArchiveStatus = computed(() => {
+  const totalPages = Math.max(1, Math.ceil(total.value / LIMIT))
+  return totalPages > 1
+    ? t(
+        'accessibility.resultsStatus',
+        { count: total.value, page: page.value, pages: totalPages },
+        total.value
+      )
+    : t('accessibility.resultsCount', { count: total.value }, total.value)
+})
 const privacyAccordionItems = computed<AccordionItem[]>(() => [
   {
     label: t('newsletterPage.form.privacyInfoTitle'),
@@ -514,11 +527,8 @@ function formatMonth(dateStr: string): string {
           :description="t('newsletterPage.form.errorGeneric')"
         />
 
-        <div
-          ref="archiveResultsRef"
-          aria-live="polite"
-          :aria-busy="archivePendingPage || undefined"
-        >
+        <p v-if="!archiveIsLoading" class="sr-only" role="status">{{ a11yArchiveStatus }}</p>
+        <div ref="archiveResultsRef" :aria-busy="archivePendingPage || undefined">
           <div
             v-if="archiveIsLoading"
             class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"

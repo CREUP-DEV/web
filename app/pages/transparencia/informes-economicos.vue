@@ -57,6 +57,19 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, items, error)
 
+// WCAG 4.1.3: concise polite status announced on result/page change, instead of
+// an aria-live region wrapping the whole grid (which re-reads or stays silent).
+const a11yResultsStatus = computed(() => {
+  const totalPages = Math.max(1, Math.ceil(total.value / LIMIT))
+  return totalPages > 1
+    ? t(
+        'accessibility.resultsStatus',
+        { count: total.value, page: page.value, pages: totalPages },
+        total.value
+      )
+    : t('accessibility.resultsCount', { count: total.value }, total.value)
+})
+
 watch(page, () => {
   nextTick(() => {
     if (resultsRef.value instanceof HTMLElement) {
@@ -86,7 +99,8 @@ function formatDate(dateStr: string): string {
         </p>
       </header>
 
-      <div ref="resultsRef" aria-live="polite" :aria-busy="pending || undefined">
+      <p v-if="!isLoading" class="sr-only" role="status">{{ a11yResultsStatus }}</p>
+      <div ref="resultsRef" :aria-busy="pending || undefined">
         <div v-if="isLoading" aria-hidden="true" class="space-y-3">
           <UCard v-for="n in 4" :key="n" class="motion-card">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

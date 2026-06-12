@@ -112,7 +112,9 @@
     "loading": "Loading...",
     "paginationNavigation": "Pagination navigation",
     "breadcrumb": "Breadcrumb",
-    "contentImage": "Content image"
+    "contentImage": "Content image",
+    "resultsCount": "{count} result | {count} results",
+    "resultsStatus": "{count} result · page {page} of {pages} | {count} results · page {page} of {pages}"
   },
   "common": {
     "all": "All",
@@ -514,7 +516,8 @@
     "galleryLoading": "Loading image…",
     "galleryZoomIn": "Zoom in",
     "galleryZoomOut": "Zoom out",
-    "galleryResetZoom": "Reset zoom"
+    "galleryResetZoom": "Reset zoom",
+    "galleryError": "The image could not be loaded."
   },
   "committees": {
     "title": "Committees",

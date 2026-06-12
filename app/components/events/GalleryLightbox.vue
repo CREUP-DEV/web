@@ -99,6 +99,11 @@ onMounted(async () => {
     pswpModule: () => import('photoswipe'),
     returnFocus: true,
     showHideAnimationType: prefersReducedMotion.value ? 'none' : 'zoom',
+    closeTitle: t('events.galleryClose'),
+    zoomTitle: t('events.galleryZoomIn'),
+    arrowPrevTitle: t('events.galleryPrevious'),
+    arrowNextTitle: t('events.galleryNext'),
+    errorMsg: t('events.galleryError'),
   })
 
   lightbox.on('change', () => {

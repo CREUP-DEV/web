@@ -112,7 +112,9 @@
     "loading": "Carregant...",
     "paginationNavigation": "Navegació de paginació",
     "breadcrumb": "Ruta de navegació",
-    "contentImage": "Imatge de contingut"
+    "contentImage": "Imatge de contingut",
+    "resultsCount": "{count} resultat | {count} resultats",
+    "resultsStatus": "{count} resultat · pàgina {page} de {pages} | {count} resultats · pàgina {page} de {pages}"
   },
   "common": {
     "all": "Tots",
@@ -514,7 +516,8 @@
     "galleryLoading": "Carregant imatge…",
     "galleryZoomIn": "Amplia",
     "galleryZoomOut": "Redueix",
-    "galleryResetZoom": "Restableix el zoom"
+    "galleryResetZoom": "Restableix el zoom",
+    "galleryError": "No s'ha pogut carregar la imatge."
   },
   "committees": {
     "title": "Comitès",

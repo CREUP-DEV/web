@@ -112,7 +112,9 @@
     "loading": "Cargando...",
     "paginationNavigation": "Navegacion de paginacion",
     "breadcrumb": "Ruta de navegación",
-    "contentImage": "Imagen de contenido"
+    "contentImage": "Imagen de contenido",
+    "resultsCount": "{count} resultado | {count} resultados",
+    "resultsStatus": "{count} resultado · página {page} de {pages} | {count} resultados · página {page} de {pages}"
   },
   "common": {
     "all": "Todos",
@@ -514,7 +516,8 @@
     "galleryLoading": "Cargando imagen…",
     "galleryZoomIn": "Ampliar",
     "galleryZoomOut": "Reducir",
-    "galleryResetZoom": "Restablecer zoom"
+    "galleryResetZoom": "Restablecer zoom",
+    "galleryError": "No se ha podido cargar la imagen."
   },
   "committees": {
     "title": "Comités",

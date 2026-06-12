@@ -112,7 +112,9 @@
     "loading": "Kargatzen...",
     "paginationNavigation": "Orrikatze-nabigazioa",
     "breadcrumb": "Nabigazio-ibilbidea",
-    "contentImage": "Edukiaren irudia"
+    "contentImage": "Edukiaren irudia",
+    "resultsCount": "{count} emaitza | {count} emaitza",
+    "resultsStatus": "{count} emaitza · {pages}(e)tik {page}. orria | {count} emaitza · {pages}(e)tik {page}. orria"
   },
   "common": {
     "all": "Guztiak",
@@ -514,7 +516,8 @@
     "galleryLoading": "Irudia kargatzen…",
     "galleryZoomIn": "Handitu",
     "galleryZoomOut": "Txikitu",
-    "galleryResetZoom": "Berrezarri zooma"
+    "galleryResetZoom": "Berrezarri zooma",
+    "galleryError": "Ezin izan da irudia kargatu."
   },
   "committees": {
     "title": "Batzordeak",
