@@ -128,6 +128,21 @@ En resumen:
 - `i18n/locales/` mensajes de traducción
 - `drizzle/` migraciones y seeds
 
+## Internacionalización (i18n)
+
+Idiomas: `es` (por defecto), `en`, `ca`, `eu`, con estrategia `prefix_except_default`
+(el español no lleva prefijo; el resto van bajo `/en/`, `/ca/`, `/eu/`).
+
+**Política de URLs: los slugs públicos se mantienen en español en todos los idiomas.**
+Solo cambia el prefijo de idioma; la ruta (`/conocenos/eventos/...`, `/prensa/...`) es la
+misma en las cuatro versiones. Es una decisión intencionada: simplifica enlaces, canónicas
+y el alta de un idioma nuevo.
+
+Si en el futuro se quisieran slugs traducidos, se haría con las rutas personalizadas de
+`@nuxtjs/i18n` (custom route paths) — pero eso multiplica el radio de impacto de añadir un
+idioma (hay que traducir y mantener cada ruta). No conviene caer en ello sin decidirlo
+explícitamente.
+
 ## Deploy en producción
 
 El build siempre ocurre en local o CI; el VPS solo hace pull de la imagen y la ejecuta.
