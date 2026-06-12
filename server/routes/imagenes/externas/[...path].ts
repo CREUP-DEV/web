@@ -1,6 +1,6 @@
-import { defineEventHandler } from 'h3'
-import { proxyExternalAssetByPublicPathBase } from '../../../utils/external/externalAssetProxy'
+import { createPublicAssetRouteHandler } from '../../../utils/public/publicAsset'
 
-export default defineEventHandler((event) =>
-  proxyExternalAssetByPublicPathBase(event, 'image', '/imagenes/externas')
-)
+export default createPublicAssetRouteHandler({
+  pathBase: '/imagenes/externas',
+  external: { kind: 'image', serveLocalFirst: false },
+})

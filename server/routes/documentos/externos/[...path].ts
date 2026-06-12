@@ -1,6 +1,6 @@
-import { defineEventHandler } from 'h3'
-import { proxyExternalAssetByPublicPathBase } from '../../../utils/external/externalAssetProxy'
+import { createPublicAssetRouteHandler } from '../../../utils/public/publicAsset'
 
-export default defineEventHandler((event) =>
-  proxyExternalAssetByPublicPathBase(event, 'pdf', '/documentos/externos')
-)
+export default createPublicAssetRouteHandler({
+  pathBase: '/documentos/externos',
+  external: { kind: 'pdf', serveLocalFirst: false },
+})

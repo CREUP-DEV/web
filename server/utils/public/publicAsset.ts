@@ -1,4 +1,4 @@
-import { createError, getMethod, getRequestURL, setHeader } from 'h3'
+import { createError, defineEventHandler, getMethod, getRequestURL, setHeader } from 'h3'
 import type { H3Event } from 'h3'
 import { readFile, stat } from 'node:fs/promises'
 import { extname, posix, resolve, sep } from 'node:path'
@@ -6,6 +6,8 @@ import { getPublicApiErrorMessage } from '../locale/apiErrorMessages'
 import { logError } from '../core/logger'
 import { throwMethodNotAllowed } from '../core/throwMethodNotAllowed'
 import { externalAssetPublicPathParamSchema } from '../validation/external'
+import { proxyExternalAssetByPublicPathBase } from '../external/externalAssetProxy'
+import type { ExternalAssetType } from '../external/externalAssetProxyConfig'
 
 const PUBLIC_ASSET_CACHE_CONTROL =
   'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800'
@@ -154,4 +156,61 @@ export async function tryServePublicAssetByPathBase(event: H3Event, publicPathBa
   const publicPath = parsedPath.data.path
 
   return tryServePublicAssetByPath(event, `${normalizedBase}/${publicPath}`)
+}
+
+interface PublicAssetRouteConfig {
+  /** Public path prefix this route serves, e.g. ABOUT_IMAGE_PUBLIC_PATH. */
+  pathBase: string
+  /**
+   * External-proxy behavior when the local file is absent:
+   * - omitted → local-only; a miss is a 404 (`throwPublicAssetNotFound`).
+   * - `{ kind }` → after a local miss, proxy the external asset (its own errors propagate).
+   * - `{ kind, serveLocalFirst: false }` → never look locally; always proxy.
+   * - `{ kind, notFoundOnExternal404: true }` → after a local miss, proxy but map an
+   *   external 404 to the local 404 helper.
+   */
+  external?: {
+    kind: ExternalAssetType
+    serveLocalFirst?: boolean
+    notFoundOnExternal404?: boolean
+  }
+}
+
+/**
+ * Build a Nitro route handler that serves a public asset prefix, collapsing the
+ * local-only / local-then-external / external-only / external-with-404-fallback
+ * copies that were duplicated across the `server/routes/**` asset routes.
+ */
+export function createPublicAssetRouteHandler(config: PublicAssetRouteConfig) {
+  const { pathBase, external } = config
+
+  return defineEventHandler(async (event) => {
+    if (external && external.serveLocalFirst === false) {
+      return proxyExternalAssetByPublicPathBase(event, external.kind, pathBase)
+    }
+
+    const localAsset = await tryServePublicAssetByPathBase(event, pathBase)
+
+    if (localAsset) {
+      return localAsset
+    }
+
+    if (!external) {
+      throwPublicAssetNotFound()
+    }
+
+    if (!external.notFoundOnExternal404) {
+      return proxyExternalAssetByPublicPathBase(event, external.kind, pathBase)
+    }
+
+    try {
+      return await proxyExternalAssetByPublicPathBase(event, external.kind, pathBase)
+    } catch (error) {
+      if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 404) {
+        throwPublicAssetNotFound()
+      }
+
+      throw error
+    }
+  })
 }
