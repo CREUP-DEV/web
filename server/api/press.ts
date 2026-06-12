@@ -1,14 +1,11 @@
-import { createError, getQuery, setHeader } from 'h3'
+import { getQuery } from 'h3'
 import { eq, desc, and, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTranslations, tags, pressArticleTags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
 import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
-import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
-import { logError } from '../utils/core/logger'
 import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
-import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
@@ -18,7 +15,7 @@ import {
 } from '../utils/cache/publicRouteCache'
 import { pressListQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
-import { throwSafePublicError } from '../utils/public/publicErrors'
+import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import {
   getPressDefaultCoverEntriesRow,
   resolvePressArticleListImageWithVersion,
@@ -199,16 +196,7 @@ export default defineCachedEventHandler(
         },
       }
     } catch (error) {
-      if (isDatabaseUnavailableError(error)) {
-        logError('public.press.database-unavailable', error, undefined, event)
-        setHeader(event, 'retry-after', 60)
-        throw createError({
-          statusCode: 503,
-          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
-        })
-      }
-
-      throwSafePublicError(event, 'public.press.unexpected-error', error)
+      throwPublicDatabaseAwareError(event, 'public.press', error)
     }
   },
   {

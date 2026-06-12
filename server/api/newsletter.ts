@@ -1,10 +1,6 @@
-import { createError, setHeader } from 'h3'
 import { desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletters } from '../db/schema'
-import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
-import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
-import { logError } from '../utils/core/logger'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
 import { monthKeyToDate } from '../utils/newsletter/newsletters'
 import {
@@ -21,7 +17,7 @@ import {
   setPublicRouteVaryHeaders,
 } from '../utils/cache/publicRouteCache'
 import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
-import { throwSafePublicError } from '../utils/public/publicErrors'
+import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
@@ -85,16 +81,7 @@ export default defineCachedEventHandler(
         },
       }
     } catch (error) {
-      if (isDatabaseUnavailableError(error)) {
-        logError('public.newsletter.database-unavailable', error, undefined, event)
-        setHeader(event, 'retry-after', 60)
-        throw createError({
-          statusCode: 503,
-          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
-        })
-      }
-
-      throwSafePublicError(event, 'public.newsletter.unexpected-error', error)
+      throwPublicDatabaseAwareError(event, 'public.newsletter', error)
     }
   },
   {

@@ -1,12 +1,8 @@
-import { createError, setHeader } from 'h3'
 import { and, asc, desc, eq, lte, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { carouselItems, featuredLinks, pressArticles } from '../db/schema'
 import { appendAssetVersion } from '../utils/core/assetVersion'
-import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
-import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
-import { logError } from '../utils/core/logger'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
@@ -21,7 +17,7 @@ import {
   resolveSiteDefaultImageUrlWithVersion,
 } from '../utils/admin/siteDefaultImages'
 import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
-import { throwSafePublicError } from '../utils/public/publicErrors'
+import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { HOME_IMAGE_PUBLIC_BASE, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
@@ -239,16 +235,7 @@ export default defineCachedEventHandler(
         },
       }
     } catch (error) {
-      if (isDatabaseUnavailableError(error)) {
-        logError('public.home.database-unavailable', error, undefined, event)
-        setHeader(event, 'retry-after', 60)
-        throw createError({
-          statusCode: 503,
-          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
-        })
-      }
-
-      throwSafePublicError(event, 'public.home.unexpected-error', error)
+      throwPublicDatabaseAwareError(event, 'public.home', error)
     }
   },
   {

@@ -1,12 +1,8 @@
-import { createError, setHeader } from 'h3'
 import { desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { financialReports } from '../db/schema'
-import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
 import { toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
-import { logError } from '../utils/core/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
-import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
   buildPublicRouteCacheKey,
@@ -15,7 +11,7 @@ import {
 } from '../utils/cache/publicRouteCache'
 import { publicPaginationQuerySchema, validatePublicQuery } from '../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
-import { throwSafePublicError } from '../utils/public/publicErrors'
+import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
@@ -66,16 +62,7 @@ export default defineCachedEventHandler(
         },
       }
     } catch (error) {
-      if (isDatabaseUnavailableError(error)) {
-        logError('public.financial-reports.database-unavailable', error, undefined, event)
-        setHeader(event, 'retry-after', 60)
-        throw createError({
-          statusCode: 503,
-          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
-        })
-      }
-
-      throwSafePublicError(event, 'public.financial-reports.unexpected-error', error)
+      throwPublicDatabaseAwareError(event, 'public.financial-reports', error)
     }
   },
   {

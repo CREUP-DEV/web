@@ -1,4 +1,4 @@
-import { createError, getRouterParam, setHeader } from 'h3'
+import { createError, getRouterParam } from 'h3'
 import { and, eq, lte, sql } from 'drizzle-orm'
 import { db } from '../../db'
 import { pressArticles } from '../../db/schema'
@@ -14,10 +14,8 @@ import {
   resolvePressArticleListImageWithVersion,
 } from '../../utils/admin/siteDefaultImages'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
-import { isDatabaseUnavailableError } from '../../utils/core/databaseErrors'
 import { getPublicApiErrorMessage } from '../../utils/locale/apiErrorMessages'
-import { throwSafePublicError } from '../../utils/public/publicErrors'
-import { logError } from '../../utils/core/logger'
+import { throwPublicDatabaseAwareError } from '../../utils/public/publicErrors'
 import { resolvePressTranslation } from '../../utils/press/pressTranslation'
 import { getRequestLocaleContext } from '../../utils/locale/requestLocale'
 import {
@@ -147,16 +145,7 @@ export default defineCachedEventHandler(
         },
       }
     } catch (error) {
-      if (isDatabaseUnavailableError(error)) {
-        logError('public.press-detail.database-unavailable', error, { slug }, event)
-        setHeader(event, 'retry-after', 60)
-        throw createError({
-          statusCode: 503,
-          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
-        })
-      }
-
-      throwSafePublicError(event, 'public.press-detail', error)
+      throwPublicDatabaseAwareError(event, 'public.press-detail', error, { slug })
     }
   },
   {

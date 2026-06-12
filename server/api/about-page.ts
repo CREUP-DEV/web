@@ -1,4 +1,4 @@
-import { createError, setHeader } from 'h3'
+import { createError } from 'h3'
 import { db } from '../db'
 import { externalAssociatedMembersCountResponseSchema } from '../utils/validation'
 import {
@@ -7,7 +7,6 @@ import {
   withExternalApiSWRCache,
 } from '../utils/cache/externalApiCache'
 import { toExternalImageProxyUrl } from '../utils/external/externalAssetUrl'
-import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
 import { getRequiredExternalApiBaseUrl } from '../utils/core/runtimeConfig'
 import { logError } from '../utils/core/logger'
 import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
@@ -16,7 +15,7 @@ import {
   buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
 } from '../utils/cache/publicRouteCache'
-import { throwSafePublicError } from '../utils/public/publicErrors'
+import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 
 export default defineCachedEventHandler(
@@ -28,16 +27,7 @@ export default defineCachedEventHandler(
 
     const [content, memberCount] = await Promise.all([
       db.query.aboutPageContent.findFirst().catch((error) => {
-        if (isDatabaseUnavailableError(error)) {
-          logError('public.about-page.database-unavailable', error, undefined, event)
-          setHeader(event, 'retry-after', 60)
-          throw createError({
-            statusCode: 503,
-            message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
-          })
-        }
-
-        throwSafePublicError(event, 'public.about-page.unexpected-error', error)
+        throwPublicDatabaseAwareError(event, 'public.about-page', error)
       }),
       withExternalApiSWRCache(
         `external-api:members-count:${configuredBaseUrl}`,

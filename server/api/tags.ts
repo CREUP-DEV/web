@@ -1,10 +1,6 @@
-import { createError, setHeader } from 'h3'
 import { and, asc, eq, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTags, tags } from '../db/schema'
-import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
-import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
-import { logError } from '../utils/core/logger'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
@@ -13,7 +9,7 @@ import {
   setPublicRouteVaryHeaders,
 } from '../utils/cache/publicRouteCache'
 import { tagsListQuerySchema, validatePublicQuery } from '../utils/validation'
-import { throwSafePublicError } from '../utils/public/publicErrors'
+import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -65,16 +61,7 @@ export default defineCachedEventHandler(
         }),
       }
     } catch (error) {
-      if (isDatabaseUnavailableError(error)) {
-        logError('public.tags.database-unavailable', error, undefined, event)
-        setHeader(event, 'retry-after', 60)
-        throw createError({
-          statusCode: 503,
-          message: getPublicApiErrorMessage(event, 'serviceTemporarilyUnavailable'),
-        })
-      }
-
-      throwSafePublicError(event, 'public.tags.unexpected-error', error)
+      throwPublicDatabaseAwareError(event, 'public.tags', error)
     }
   },
   {
