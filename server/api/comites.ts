@@ -1,18 +1,11 @@
-import { createError, type H3Event } from 'h3'
-import {
-  getExternalApiCacheOptions,
-  setExternalApiCacheHeaders,
-  withExternalApiSWRCache,
-} from '../utils/cache/externalApiCache'
+import type { H3Event } from 'h3'
 import {
   buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
 } from '../utils/cache/publicRouteCache'
 import { toExternalImageProxyUrlWithKindHint } from '../utils/external/externalAssetKind'
-import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
-import { logError } from '../utils/core/logger'
-import { getRequiredExternalApiBaseUrl } from '../utils/core/runtimeConfig'
 import { externalCommitteesResponseSchema } from '../utils/validation'
+import { fetchExternalDocumentCollection } from '../utils/external/externalDocumentCollection'
 import {
   collectSocialNetworks,
   normalizeSocialText,
@@ -47,6 +40,9 @@ interface CommitteeOutput {
 const normalizeText = normalizeSocialText
 const PUBLIC_COMMITTEES_CACHE_VERSION = 1
 
+// Local slugifier kept deliberately: it hyphenates every non-alphanumeric run and
+// has no length cap, unlike core/slug.ts's slugify (which strips them and truncates
+// to 60). These produce different stable member ids, so they are NOT interchangeable.
 const slugify = (value: string) =>
   value
     .normalize('NFD')
@@ -64,38 +60,16 @@ const buildStableCommitteeMemberId = (
 }
 
 async function buildCommitteesResponse(event: H3Event) {
-  const configuredBaseUrl = getRequiredExternalApiBaseUrl(event)
-  const cacheOptions = getExternalApiCacheOptions(event)
-
-  setExternalApiCacheHeaders(event, cacheOptions, 0)
-
-  return withExternalApiSWRCache(
-    `external-api:comites:v${PUBLIC_COMMITTEES_CACHE_VERSION}:${configuredBaseUrl}`,
-    async () => {
-      const endpoint = new URL('/api/comites', configuredBaseUrl).toString()
-
-      let payload: unknown
-      try {
-        payload = await $fetch(endpoint)
-      } catch (error) {
-        logError('external.committees.fetch', error, { endpoint }, event)
-        throw createError({
-          statusCode: 502,
-          message: getPublicApiErrorMessage(event, 'committeesUnavailable'),
-        })
-      }
-
-      const parsedPayload = externalCommitteesResponseSchema.safeParse(payload)
-      if (!parsedPayload.success) {
-        logError('external.committees.invalid-payload', parsedPayload.error, { endpoint }, event)
-        throw createError({
-          statusCode: 502,
-          message: getPublicApiErrorMessage(event, 'committeesUnavailable'),
-        })
-      }
-
+  return fetchExternalDocumentCollection(event, {
+    apiPath: '/api/comites',
+    cacheKey: `external-api:comites:v${PUBLIC_COMMITTEES_CACHE_VERSION}`,
+    errorMessageKey: 'committeesUnavailable',
+    fetchLogKey: 'external.committees.fetch',
+    invalidPayloadLogKey: 'external.committees.invalid-payload',
+    responseSchema: externalCommitteesResponseSchema,
+    transform: async (parsed) => {
       const committees: CommitteeOutput[] = await Promise.all(
-        parsedPayload.data.data
+        parsed.data
           .sort((a, b) => a.committee_order - b.committee_order)
           .map(async (committee) => {
             const members: CommitteeMemberOutput[] = await Promise.all(
@@ -194,12 +168,11 @@ async function buildCommitteesResponse(event: H3Event) {
       return {
         data: committees,
         meta: {
-          generatedAt: parsedPayload.data.generated_at ?? null,
+          generatedAt: parsed.generated_at ?? null,
         },
       }
     },
-    cacheOptions
-  )
+  })
 }
 
 export default defineCachedEventHandler((event) => buildCommitteesResponse(event), {
