@@ -219,18 +219,55 @@ const pickHtmlValue = (value?: string | null) => {
   return sanitizeRichTextHtml(value)
 }
 
+/**
+ * Base language a single rendered field resolves to: the localized row's
+ * language when that row supplies the value, otherwise the fallback row's.
+ * `null` when neither supplies content (the field is not rendered).
+ */
+const resolveFieldLocale = (
+  localizedValue: string | null,
+  fallbackValue: string | null,
+  localizedLocale: string,
+  fallbackLocale: string
+): string | null => {
+  if (localizedValue !== null) {
+    return localizedLocale || null
+  }
+  if (fallbackValue !== null) {
+    return fallbackLocale || null
+  }
+  return null
+}
+
 export const resolvePressTranslationSummary = <T extends PressTranslationLike>(
   translations: T[],
   locale: string | null | undefined,
   fallbackCode: string
 ) => {
   const { localized, fallback } = resolvePressTranslationEntries(translations, locale, fallbackCode)
+  const localizedLocale = getBaseLanguage(localized?.locale)
+  const fallbackLocale = getBaseLanguage(fallback?.locale)
+
+  const title = pickTextValue(localized?.title)
+  const titleFallback = pickTextValue(fallback?.title)
+  const description = pickTextValue(localized?.description)
+  const descriptionFallback = pickTextValue(fallback?.description)
 
   return {
-    title: pickTextValue(localized?.title) ?? pickTextValue(fallback?.title) ?? '',
-    description:
-      pickTextValue(localized?.description) ?? pickTextValue(fallback?.description) ?? '',
+    title: title ?? titleFallback ?? '',
+    description: description ?? descriptionFallback ?? '',
     alt: pickTextValue(localized?.alt) ?? pickTextValue(fallback?.alt) ?? '',
+    // Per-field source language. description/contentHtml are nullable, so a row
+    // can serve a native title while its prose falls back to Spanish; each
+    // rendered field must report the language it actually came from so the
+    // client only marks genuinely-foreign text with `lang` (WCAG 3.1.2).
+    titleLocale: resolveFieldLocale(title, titleFallback, localizedLocale, fallbackLocale),
+    descriptionLocale: resolveFieldLocale(
+      description,
+      descriptionFallback,
+      localizedLocale,
+      fallbackLocale
+    ),
   }
 }
 
@@ -240,9 +277,20 @@ export const resolvePressTranslation = <T extends PressTranslationLike>(
   fallbackCode: string
 ) => {
   const { localized, fallback } = resolvePressTranslationEntries(translations, locale, fallbackCode)
+  const localizedLocale = getBaseLanguage(localized?.locale)
+  const fallbackLocale = getBaseLanguage(fallback?.locale)
+
+  const contentHtml = pickHtmlValue(localized?.contentHtml)
+  const contentHtmlFallback = pickHtmlValue(fallback?.contentHtml)
 
   return {
     ...resolvePressTranslationSummary(translations, locale, fallbackCode),
-    contentHtml: pickHtmlValue(localized?.contentHtml) ?? pickHtmlValue(fallback?.contentHtml),
+    contentHtml: contentHtml ?? contentHtmlFallback,
+    contentLocale: resolveFieldLocale(
+      contentHtml,
+      contentHtmlFallback,
+      localizedLocale,
+      fallbackLocale
+    ),
   }
 }

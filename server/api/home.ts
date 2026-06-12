@@ -209,6 +209,7 @@ export default defineCachedEventHandler(
           title: trans?.title ?? '',
           description: trans?.description ?? '',
           alt: trans?.alt ?? '',
+          titleLocale: trans?.titleLocale ?? null,
           publishedAt: dateValueToDateOnly(item.publishedAt),
           tags: articleTags,
           mediaOutlet: item.mediaOutlet

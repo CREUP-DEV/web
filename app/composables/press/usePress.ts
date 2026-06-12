@@ -29,6 +29,12 @@ export interface PressArticle {
   updatedAt?: string | null
   /** Locale codes (e.g. 'es', 'en') for which a native translation exists in the database. */
   translatedLocales?: string[]
+  /** Base language of the rendered title (for WCAG 3.1.2 `lang` marking). */
+  titleLocale?: string | null
+  /** Base language of the rendered description (may fall back to es while the title is native). */
+  descriptionLocale?: string | null
+  /** Base language of the rendered rich-text body (detail only). */
+  contentLocale?: string | null
   tags: PressArticleTag[]
   mediaOutlet: PressArticleMediaOutlet | null
 }

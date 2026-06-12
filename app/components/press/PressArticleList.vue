@@ -11,9 +11,13 @@ const props = defineProps<{
   errorMessage: string
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
+
+// WCAG 3.1.2: mark prose served in a different language than the page.
+const contentLang = (fieldLocale?: string | null) =>
+  fieldLocale && fieldLocale !== locale.value ? fieldLocale : undefined
 const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
 const LIMIT = 12
@@ -249,13 +253,18 @@ watch(page, () => {
 
                 <UTooltip :text="article.title">
                   <h2
+                    :lang="contentLang(article.titleLocale)"
                     class="group-hover:text-primary line-clamp-2 leading-snug font-semibold transition-colors"
                   >
                     {{ article.title }}
                   </h2>
                 </UTooltip>
 
-                <p v-if="article.description" class="text-muted mt-1.5 line-clamp-2 text-sm">
+                <p
+                  v-if="article.description"
+                  :lang="contentLang(article.descriptionLocale)"
+                  class="text-muted mt-1.5 line-clamp-2 text-sm"
+                >
                   {{ article.description }}
                 </p>
 

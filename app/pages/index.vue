@@ -2,7 +2,7 @@
 import { useHome } from '@/composables/home/useHome'
 import { useGoogleCalendar } from '@/composables/events/useGoogleCalendar'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
 const { data: home, pending: homePending, error: homeError, refresh: refreshHome } = await useHome()
@@ -33,6 +33,8 @@ const featuredNewsItems = computed(() => {
     to: article.path,
     alt: article.alt || undefined,
     description: article.description || undefined,
+    lang:
+      article.titleLocale && article.titleLocale !== locale.value ? article.titleLocale : undefined,
     tags: article.tags,
     mediaOutletName: article.mediaOutlet?.name,
     mediaOutletLogo: article.mediaOutlet?.logo,

@@ -9,9 +9,18 @@ const props = defineProps<{
   backLabel: string
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
+
+// WCAG 3.1.2: mark each rendered field with `lang` when its source language
+// differs from the page. Fields fall back independently (es/en authored only),
+// so a native title can sit beside a Spanish description/body.
+const fieldLang = (fieldLocale?: string | null) =>
+  fieldLocale && fieldLocale !== locale.value ? fieldLocale : undefined
+const titleLang = computed(() => fieldLang(props.article.titleLocale))
+const descriptionLang = computed(() => fieldLang(props.article.descriptionLocale))
+const bodyLang = computed(() => fieldLang(props.article.contentLocale))
 const articleRef = toRef(props, 'article')
 const siteConfig = useSiteConfig()
 const siteUrl = useRuntimeSiteUrl()
@@ -167,7 +176,7 @@ usePageSeo(
           </template>
         </div>
 
-        <h1 class="text-3xl leading-tight font-bold sm:text-4xl">
+        <h1 :lang="titleLang" class="text-3xl leading-tight font-bold sm:text-4xl">
           {{ article.title }}
         </h1>
 
@@ -224,10 +233,12 @@ usePageSeo(
 
       <AnimateIn :index="3" :threshold="0.08">
         <div v-if="article.description" class="prose prose-lg dark:prose-invert mb-8 max-w-none">
-          <p class="text-lg leading-relaxed">{{ article.description }}</p>
+          <p :lang="descriptionLang" class="text-lg leading-relaxed">
+            {{ article.description }}
+          </p>
         </div>
 
-        <PressRichText :html="article.contentHtml" />
+        <PressRichText :lang="bodyLang" :html="article.contentHtml" />
       </AnimateIn>
 
       <AnimateIn :index="4" :threshold="0.08" class="no-print">

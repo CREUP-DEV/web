@@ -7,6 +7,8 @@ type NewsItem = {
   to: string
   alt?: string
   description?: string
+  /** Set when the title is served in a different language than the page (WCAG 3.1.2). */
+  lang?: string
   tags: Array<{
     slug: string
     name: string
@@ -272,6 +274,7 @@ onBeforeUnmount(() => {
               <div class="p-3">
                 <UTooltip :text="item.title">
                   <h3
+                    :lang="item.lang"
                     class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-2 sm:text-base"
                   >
                     {{ item.title }}
