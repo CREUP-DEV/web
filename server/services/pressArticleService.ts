@@ -1,8 +1,8 @@
 import { createError } from 'h3'
 import type { H3Event } from 'h3'
-import { and, eq, isNull, notInArray, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { pressArticles, pressArticleTranslations, pressArticleTags } from '../db/schema'
+import { pressArticles, pressArticleTranslations, pressArticleTags, tags } from '../db/schema'
 import { finalizeAdminDocument } from '../utils/admin/adminDocumentUpload'
 import { finalizeAdminImage } from '../utils/admin/adminImageUpload'
 import {
@@ -43,6 +43,22 @@ function isSlugUniqueConstraintViolation(error: unknown): boolean {
 
 const IMAGE_UPLOAD_DIR = 'public/prensa/imagenes'
 const PDF_UPLOAD_DIR = 'public/prensa/documentos'
+
+type PressServiceTx = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
+// A stale admin tab can submit tagIds that were deleted in the meantime. Without this
+// the FK insert raises 23503 → generic 500 + full rollback; pre-validate for a clean 409.
+async function assertTagsExist(tx: PressServiceTx, tagIds: string[], event: H3Event) {
+  if (tagIds.length === 0) return
+  const distinctIds = [...new Set(tagIds)]
+  const existing = await tx.select({ id: tags.id }).from(tags).where(inArray(tags.id, distinctIds))
+  if (existing.length !== distinctIds.length) {
+    throw createError({
+      statusCode: 409,
+      message: getAdminApiErrorMessage(event, 'pressArticleTagsMissing'),
+    })
+  }
+}
 
 type PressArticleData = z.infer<typeof createPressArticleSchema>
 type UpdatePressArticleData = z.infer<typeof updatePressArticleSchema>
@@ -177,6 +193,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
           .values(buildTranslationValues(data.translations, data.type, item.id))
       }
 
+      await assertTagsExist(tx, data.tagIds, event)
       if (data.tagIds.length > 0) {
         await tx
           .insert(pressArticleTags)
@@ -371,6 +388,7 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
 
       // Tags: insert new, remove dropped, ignore unchanged
       const newTagIds = data.tagIds ?? []
+      await assertTagsExist(tx, newTagIds, event)
       if (newTagIds.length > 0) {
         await tx
           .delete(pressArticleTags)

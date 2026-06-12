@@ -47,6 +47,8 @@ const es = {
   // Per-resource create/update failures
   pressArticleCreateFailed: 'Error al crear el artículo',
   pressArticleSlugFailed: 'No se pudo generar un slug único para el artículo',
+  pressArticleTagsMissing:
+    'Una o varias etiquetas seleccionadas ya no existen. Recarga la página e inténtalo de nuevo.',
   mediaCreateFailed: 'No se pudo crear el medio',
   mediaUpdateFailed: 'No se pudo actualizar el medio',
   linkCreateFailed: 'No se pudo crear el enlace',
@@ -147,6 +149,8 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   // Per-resource create/update failures
   pressArticleCreateFailed: 'Could not create the article',
   pressArticleSlugFailed: 'Could not generate a unique slug for the article',
+  pressArticleTagsMissing:
+    'One or more selected tags no longer exist. Reload the page and try again.',
   mediaCreateFailed: 'Could not create the media outlet',
   mediaUpdateFailed: 'Could not update the media outlet',
   linkCreateFailed: 'Could not create the link',
@@ -245,6 +249,8 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   // Per-resource create/update failures
   pressArticleCreateFailed: "Error en crear l'article",
   pressArticleSlugFailed: "No s'ha pogut generar un slug únic per a l'article",
+  pressArticleTagsMissing:
+    'Una o més etiquetes seleccionades ja no existeixen. Torna a carregar la pàgina i torna-ho a provar.',
   mediaCreateFailed: "No s'ha pogut crear el mitjà",
   mediaUpdateFailed: "No s'ha pogut actualitzar el mitjà",
   linkCreateFailed: "No s'ha pogut crear l'enllaç",
@@ -343,6 +349,8 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   // Per-resource create/update failures
   pressArticleCreateFailed: 'Errorea artikulua sortzean',
   pressArticleSlugFailed: 'Ezin izan da slug bakar bat sortu artikulurako',
+  pressArticleTagsMissing:
+    'Hautatutako etiketa bat edo gehiago jada ez daude erabilgarri. Kargatu orria berriro eta saiatu berriz.',
   mediaCreateFailed: 'Ezin izan da hedabidea sortu',
   mediaUpdateFailed: 'Ezin izan da hedabidea eguneratu',
   linkCreateFailed: 'Ezin izan da esteka sortu',
