@@ -446,6 +446,9 @@ function formatMonth(dateStr: string): string {
                     : t('newsletterPage.form.turnstileLoading')
                 }}
               </p>
+              <template #error="{ error }">
+                <p v-if="error" role="alert">{{ error }}</p>
+              </template>
             </UFormField>
 
             <UButton

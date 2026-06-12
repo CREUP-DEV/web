@@ -23,6 +23,12 @@ const instagramSocial = computed(() =>
 )
 const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ?? 'none'}`)
 const menuOpen = ref(false)
+const headerToggle = computed(() => ({
+  color: 'neutral' as const,
+  variant: 'ghost' as const,
+  size: 'lg' as const,
+  'aria-expanded': menuOpen.value,
+}))
 const mobileOpenSections = ref<string[]>([])
 const getMobilePrimaryIconClass = (isActive?: boolean) =>
   isActive ? 'bg-primary/12 text-primary' : 'bg-primary/10 text-primary'
@@ -46,11 +52,7 @@ watch(menuOpen, (isOpen) => {
     v-model:open="menuOpen"
     mode="slideover"
     :to="localePath('/')"
-    :toggle="{
-      color: 'neutral',
-      variant: 'ghost',
-      size: 'lg',
-    }"
+    :toggle="headerToggle"
     :ui="{
       center: 'hidden xl:flex!',
       toggle: 'xl:hidden',

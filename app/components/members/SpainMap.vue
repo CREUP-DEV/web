@@ -342,7 +342,8 @@ onBeforeUnmount(() => {
 }
 
 .map-region:focus-visible {
-  stroke-width: 2.5;
+  outline: 2.5px solid var(--ui-primary);
+  outline-offset: 1px;
 }
 
 .map-region--hovered,

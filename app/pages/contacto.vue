@@ -581,7 +581,11 @@ async function handleSubmit() {
               }}
             </p>
             <template #error>
-              <p v-if="getFieldError('turnstileToken')" :id="getFieldErrorId('turnstileToken')">
+              <p
+                v-if="getFieldError('turnstileToken')"
+                :id="getFieldErrorId('turnstileToken')"
+                role="alert"
+              >
                 {{ getFieldError('turnstileToken') }}
               </p>
             </template>
