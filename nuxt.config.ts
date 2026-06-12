@@ -332,6 +332,8 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    // Disabled: pre-compressing public assets broke PDF serving under public/.
+    // gzip is handled at the edge by NGINX (gzip on + configured types).
     compressPublicAssets: false,
   },
 
