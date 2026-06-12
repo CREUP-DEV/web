@@ -306,6 +306,43 @@ export const pickLocalizedEntry = <T extends { locale: string }>(
   )
 }
 
+/**
+ * Resolve the localized entry for `locale`, but fill any field it leaves empty
+ * (null or blank) from the default-locale entry. Mirrors the per-field fallback
+ * of resolvePressTranslationSummary so a partial non-default translation never
+ * renders blank prose while the default-locale value exists.
+ */
+export const pickLocalizedEntryWithFieldFallback = <T extends { locale: string }>(
+  entries: T[],
+  locale: string | null | undefined,
+  locales: LocaleDefinition[],
+  fallbackCode = DEFAULT_LOCALE_CODE
+): T | undefined => {
+  const localized = pickLocalizedEntry(entries, locale, locales, fallbackCode)
+  if (!localized) {
+    return undefined
+  }
+
+  const fallback = pickLocalizedEntry(entries, fallbackCode, locales, fallbackCode)
+  if (!fallback || fallback === localized) {
+    return localized
+  }
+
+  const isEmpty = (value: unknown) =>
+    value == null || (typeof value === 'string' && value.trim() === '')
+
+  let merged: T | undefined
+  for (const key of Object.keys(localized) as (keyof T)[]) {
+    if (key === 'locale' || !isEmpty(localized[key]) || isEmpty(fallback[key])) {
+      continue
+    }
+    merged = merged ?? { ...localized }
+    merged[key] = fallback[key]
+  }
+
+  return merged ?? localized
+}
+
 export const pickLocalizedValue = <T>(
   values: Partial<Record<string, T>>,
   locale: string | null | undefined,

@@ -5,7 +5,7 @@ import { equalityDocuments } from '../db/schema'
 import { isDatabaseUnavailableError } from '../utils/core/databaseErrors'
 import { toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
 import { logError } from '../utils/core/logger'
-import { pickLocalizedEntry } from '~~/shared/utils/locale'
+import { pickLocalizedEntryWithFieldFallback } from '~~/shared/utils/locale'
 import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
@@ -52,7 +52,12 @@ export default defineCachedEventHandler(
 
       return {
         data: items.map((item) => {
-          const translation = pickLocalizedEntry(item.translations, locale, locales, fallbackLocale)
+          const translation = pickLocalizedEntryWithFieldFallback(
+            item.translations,
+            locale,
+            locales,
+            fallbackLocale
+          )
 
           return {
             id: item.id,

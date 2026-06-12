@@ -30,7 +30,7 @@ import {
   SITE_DEFAULT_IMAGE_SLOT,
 } from '~~/shared/constants/siteDefaultImages'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
-import { pickLocalizedEntry } from '~~/shared/utils/locale'
+import { pickLocalizedEntry, pickLocalizedEntryWithFieldFallback } from '~~/shared/utils/locale'
 
 const HOME_FEATURED_PRESS_LIMIT = 4
 
@@ -125,7 +125,7 @@ export default defineCachedEventHandler(
       )
 
       const carousel = carouselItemsList.map((item) => {
-        const translation = pickLocalizedEntry(
+        const translation = pickLocalizedEntryWithFieldFallback(
           item.translations,
           locale,
           locales,
@@ -154,7 +154,7 @@ export default defineCachedEventHandler(
       })
 
       const featuredLinksList = linkItemsList.map((item) => {
-        const translation = pickLocalizedEntry(
+        const translation = pickLocalizedEntryWithFieldFallback(
           item.translations,
           locale,
           locales,
