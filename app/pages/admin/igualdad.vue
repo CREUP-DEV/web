@@ -63,10 +63,6 @@ const { items, removeItem, replaceItem, setItems } = useAdminMutableCollection(d
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
 
-const pdfInputRef = ref<HTMLInputElement | null>(null)
-const pdfName = ref<string | null>(null)
-const isUploadingPdf = ref(false)
-
 const createEmptyTranslationSet = () =>
   createEmptyTranslations<EqualityDocumentTranslation>({
     title: '',
@@ -79,6 +75,15 @@ const form = reactive({
   order: 0,
   active: true,
   translations: createEmptyTranslationSet(),
+})
+
+const pdfUpload = useAdminDocumentUpload({
+  endpoint: '/api/admin/equality/upload',
+  successMessage: t('admin.equality.pdfUploadedToast'),
+  errorMessage: t('admin.equality.pdfUploadFailedToast'),
+  onUploaded: (storagePath) => {
+    form.pdfUrl = storagePath
+  },
 })
 
 const buildPayload = () => ({
@@ -133,7 +138,7 @@ const {
     form.order = items.value.length
     form.active = true
     form.translations = createEmptyTranslationSet()
-    pdfName.value = null
+    pdfUpload.remove()
     resetFormSnapshot()
   },
   prepareEdit: (item) => {
@@ -146,7 +151,7 @@ const {
       description: '',
       meta: '',
     }) as EqualityDocumentTranslation[]
-    pdfName.value = item.pdfUrl.split('/').pop() ?? null
+    pdfUpload.setFile(item.pdfUrl)
     resetFormSnapshot()
   },
 })
@@ -257,40 +262,6 @@ const handleDelete = async () => {
     toast.add({ title: t('admin.equality.deleteErrorToast'), color: 'error' })
   } finally {
     isDeleting.value = false
-  }
-}
-
-const triggerPdfInput = () => {
-  pdfInputRef.value?.click()
-}
-
-const handlePdfSelect = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  pdfName.value = file.name
-  isUploadingPdf.value = true
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const result = await $fetch<{ path: string; storagePath: string }>(
-      '/api/admin/equality/upload',
-      {
-        method: 'POST',
-        body: formData,
-      }
-    )
-
-    form.pdfUrl = result.storagePath
-    toast.add({ title: t('admin.equality.pdfUploadedToast'), color: 'success' })
-  } catch {
-    pdfName.value = null
-    toast.add({ title: t('admin.equality.pdfUploadFailedToast'), color: 'error' })
-  } finally {
-    isUploadingPdf.value = false
-    target.value = ''
   }
 }
 </script>
@@ -486,11 +457,11 @@ const handlePdfSelect = async (event: Event) => {
               <UFormField :label="t('admin.equality.pdfLabel')" :error="getFieldError('pdfUrl')">
                 <div class="space-y-3">
                   <input
-                    ref="pdfInputRef"
+                    :ref="pdfUpload.inputRef"
                     type="file"
                     accept=".pdf"
                     class="hidden"
-                    @change="handlePdfSelect"
+                    @change="pdfUpload.handleFileSelect"
                   />
 
                   <div
@@ -499,7 +470,7 @@ const handlePdfSelect = async (event: Event) => {
                     <div class="min-w-0">
                       <p class="font-medium">{{ t('admin.equality.currentFile') }}</p>
                       <p class="text-muted mt-1 text-sm break-all">
-                        {{ pdfName || t('admin.equality.noPdfUploaded') }}
+                        {{ pdfUpload.fileName || t('admin.equality.noPdfUploaded') }}
                       </p>
                     </div>
 
@@ -507,8 +478,8 @@ const handlePdfSelect = async (event: Event) => {
                       type="button"
                       variant="outline"
                       icon="i-tabler-upload"
-                      :loading="isUploadingPdf"
-                      @click="triggerPdfInput"
+                      :loading="pdfUpload.isUploading.value"
+                      @click="pdfUpload.triggerFileDialog"
                     >
                       {{
                         form.pdfUrl ? t('admin.equality.changePdf') : t('admin.equality.uploadPdf')
