@@ -43,6 +43,13 @@
       "when": 1781027396640,
       "tag": "0005_basque_seed_translations",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781385997364,
+      "tag": "0006_sparkling_black_queen",
+      "breakpoints": true
     }
   ]
 }

@@ -8,11 +8,9 @@ import {
   financialReports,
   mediaOutlets,
   newsletters,
-  organizationMembers,
   pressArticles,
   pressDossier,
   siteDefaultImages,
-  teamMembers,
   users,
 } from '../../db/schema'
 
@@ -29,12 +27,10 @@ const ASSET_COLUMN_REGISTRY: Array<{ table: any; column: any }> = [
   { table: mediaOutlets, column: mediaOutlets.logo },
   { table: newsletters, column: newsletters.coverImage },
   { table: newsletters, column: newsletters.pdfUrl },
-  { table: organizationMembers, column: organizationMembers.logo },
   { table: pressArticles, column: pressArticles.image },
   { table: pressArticles, column: pressArticles.pdfUrl },
   { table: pressDossier, column: pressDossier.pdfUrl },
   { table: siteDefaultImages, column: siteDefaultImages.image },
-  { table: teamMembers, column: teamMembers.photo },
   { table: users, column: users.image },
 ]
 
