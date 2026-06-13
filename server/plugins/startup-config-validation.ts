@@ -31,7 +31,7 @@ function collectConfigValidationErrors(): string[] {
     () => {
       if (getEnvAdminEmails().length === 0) {
         throw new ConfigError(
-          'ADMIN_EMAILS',
+          'NUXT_ADMIN_EMAILS',
           'must list at least one owner email so env-admin actions and roster management are never locked out'
         )
       }

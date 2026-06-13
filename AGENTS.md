@@ -502,7 +502,7 @@ If handler exceeds ~50 lines of logic, extract to `server/utils/` or `server/ser
 - `requireAuth(event)` returns the verified session inside handlers — do not re-check auth per route.
 - Session cached on `event.context.adminSession`.
 - Better Auth cookie session cache is intentionally disabled for admin auth. Admin session checks must read from the DB so revoked sessions and allowlist changes take effect immediately.
-- **Authorization**: `ADMIN_EMAILS` env var (comma/whitespace separated) always grants access. `admin_access` DB table grants additional access at runtime.
+- **Authorization**: `NUXT_ADMIN_EMAILS` env var (comma/whitespace separated) always grants access. `admin_access` DB table grants additional access at runtime.
 - No email domain allowlist. Do not re-introduce domain-based checks.
 - **OAuth-time gate**: `betterAuth.databaseHooks.user.create.before`, `account.create.before`, and `session.create.before` enforce the same allowlist at OAuth callback time — non-authorized accounts are rejected before any user, account, or session row is persisted. Do not add a `callbacks: { signIn }` block; it is a NextAuth pattern silently ignored by better-auth.
 

@@ -325,6 +325,7 @@ export default defineNuxtConfig({
     googleCalendarApiKey: process.env.NUXT_GOOGLE_CALENDAR_API_KEY,
     googleCalendarId: process.env.NUXT_GOOGLE_CALENDAR_ID,
     turnstileSecretKey: process.env.NUXT_TURNSTILE_SECRET_KEY,
+    adminEmails: process.env.NUXT_ADMIN_EMAILS,
     public: {
       turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY,
       siteUrl: siteUrl,

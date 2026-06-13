@@ -254,7 +254,7 @@ NUXT_SITE_URL=https://creup.es
 APP_SECRET=<output of: openssl rand -base64 32>
 
 # ── Admin access ──
-ADMIN_EMAILS=yourname@gmail.com
+NUXT_ADMIN_EMAILS=yourname@gmail.com
 GOOGLE_CLIENT_ID=<from Google Cloud Console>
 GOOGLE_CLIENT_SECRET=<from Google Cloud Console>
 

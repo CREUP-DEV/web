@@ -32,9 +32,9 @@ export function normalizeAdminEmail(email: string) {
 }
 
 export function getEnvAdminEmails() {
-  const rawEmails = process.env.ADMIN_EMAILS
+  const rawEmails = useRuntimeConfig().adminEmails
 
-  if (rawEmails === undefined) {
+  if (!rawEmails) {
     return []
   }
 
