@@ -429,9 +429,10 @@ Qué hace paso a paso:
 5. `docker compose pull "$COMPOSE_APP_SERVICE"` — descarga la nueva imagen en el VPS.
 6. Arranca `postgres` si no está en marcha (necesario para las migraciones).
 7. Ejecuta `docker compose run --rm "$COMPOSE_APP_SERVICE" /app/ops/migrate.mjs` — aplica las migraciones Drizzle pendientes de forma atómica (el advisory lock evita ejecuciones concurrentes).
-8. `docker compose up -d "$COMPOSE_APP_SERVICE"` — recrea solo la app.
-9. Recarga NGINX si `COMPOSE_NGINX_SERVICE` existe en el Compose.
-10. Elimina en el VPS las imágenes antiguas de `IMAGE_NAME`, conservando las `DEPLOY_IMAGE_RETENTION` más recientes.
+8. Ejecuta `docker compose run --rm "$COMPOSE_APP_SERVICE" /app/ops/seed-content.mjs` — backfill idempotente de las traducciones de contenido del seed (etiquetas, carrusel, enlaces, documentos de igualdad) sobre las filas existentes (`onConflictDoNothing`). No es destructivo: así un idioma nuevo aparece sin recurrir al seed completo. Se ejecuta junto a las migraciones (`APPLY_MIGRATIONS_ON_DEPLOY`).
+9. `docker compose up -d "$COMPOSE_APP_SERVICE"` — recrea solo la app.
+10. Recarga NGINX si `COMPOSE_NGINX_SERVICE` existe en el Compose.
+11. Elimina en el VPS las imágenes antiguas de `IMAGE_NAME`, conservando las `DEPLOY_IMAGE_RETENTION` más recientes.
 
 ### 8d. Seed inicial (solo la primera vez)
 

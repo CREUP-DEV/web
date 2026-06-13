@@ -25,7 +25,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 
 COPY . .
 
-RUN pnpm run build && pnpm run build:seed && pnpm run build:cache-purge
+RUN pnpm run build && pnpm run build:seed && pnpm run build:seed:content && pnpm run build:cache-purge
 
 RUN pnpm prune --prod --ignore-scripts
 
@@ -46,6 +46,7 @@ COPY --from=builder --chown=1000:1000 /app/.output /app/.output
 COPY --from=builder --chown=1000:1000 /app/node_modules /app/node_modules
 COPY --from=builder --chown=1000:1000 /app/ops/migrate.mjs /app/ops/migrate.mjs
 COPY --from=builder --chown=1000:1000 /app/ops/seed.mjs /app/ops/seed.mjs
+COPY --from=builder --chown=1000:1000 /app/ops/seed-content.mjs /app/ops/seed-content.mjs
 COPY --from=builder --chown=1000:1000 /app/ops/cache-purge.mjs /app/ops/cache-purge.mjs
 COPY --from=builder --chown=1000:1000 /app/ops/start.mjs /app/ops/start.mjs
 COPY --from=builder --chown=1000:1000 /app/drizzle /app/drizzle
@@ -79,6 +80,7 @@ COPY --from=builder --chown=node:node /app/.output /app/.output
 COPY --from=builder --chown=node:node /app/node_modules /app/node_modules
 COPY --from=builder --chown=node:node /app/ops/migrate.mjs /app/ops/migrate.mjs
 COPY --from=builder --chown=node:node /app/ops/seed.mjs /app/ops/seed.mjs
+COPY --from=builder --chown=node:node /app/ops/seed-content.mjs /app/ops/seed-content.mjs
 COPY --from=builder --chown=node:node /app/ops/cache-purge.mjs /app/ops/cache-purge.mjs
 COPY --from=builder --chown=node:node /app/ops/start.mjs /app/ops/start.mjs
 COPY --from=builder --chown=node:node /app/drizzle /app/drizzle

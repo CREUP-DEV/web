@@ -215,6 +215,12 @@ if [ "${APPLY_MIGRATIONS_ON_DEPLOY}" = "true" ]; then
 
   echo "== Apply database migrations =="
   docker compose run -T --rm "${COMPOSE_APP_SERVICE}" /app/ops/migrate.mjs </dev/null
+
+  # Idempotent: backfills seed-content translations (tags, carousel, links, equality
+  # docs) onto existing rows via onConflictDoNothing. Non-destructive and safe every
+  # deploy, so new locales land without the destructive full seed (SEED_ON_DEPLOY).
+  echo "== Seed content translations (idempotent) =="
+  docker compose run -T --rm "${COMPOSE_APP_SERVICE}" /app/ops/seed-content.mjs </dev/null
 fi
 
 if [ "${SEED_ON_DEPLOY}" = "true" ]; then

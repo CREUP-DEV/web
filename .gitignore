@@ -6,6 +6,8 @@
 .cache
 dist
 data
+# Seed content translations live under a data/ dir but are tracked source, not build output.
+!drizzle/seed/data/
 
 # Node dependencies
 node_modules
@@ -63,6 +65,7 @@ public/fonts/
 
 # Generated build artifacts
 ops/seed.mjs
+ops/seed-content.mjs
 
 # Ruflo / claude-flow tooling (generated, not part of the app)
 .claude/
