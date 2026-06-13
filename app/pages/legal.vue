@@ -1,25 +1,7 @@
 <script setup lang="ts">
-import LegalCa from '@/components/legal/LegalCa.vue'
-import LegalEn from '@/components/legal/LegalEn.vue'
-import LegalEs from '@/components/legal/LegalEs.vue'
-import LegalEu from '@/components/legal/LegalEu.vue'
+import Legal from '@/components/legal/Legal.vue'
 
-const { t, locale } = useI18n()
-const { defaultLocale } = useLocales()
-
-const legalComponents = {
-  ca: LegalCa,
-  en: LegalEn,
-  es: LegalEs,
-  eu: LegalEu,
-} as const
-
-const legalComponent = computed(
-  () =>
-    legalComponents[locale.value as keyof typeof legalComponents] ??
-    legalComponents[defaultLocale as keyof typeof legalComponents] ??
-    LegalEs
-)
+const { t } = useI18n()
 
 usePageSeo(
   () => t('footer.legal'),
@@ -29,6 +11,6 @@ usePageSeo(
 
 <template>
   <UContainer class="py-8 sm:py-12">
-    <component :is="legalComponent" :title="t('footer.legal')" />
+    <Legal :title="t('footer.legal')" />
   </UContainer>
 </template>
