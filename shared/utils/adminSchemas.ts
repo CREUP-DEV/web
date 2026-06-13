@@ -54,6 +54,31 @@ const addNoDuplicateLocalesIssue = (
   }
 }
 
+type RequiredTranslationField = { field: string; message: string }
+
+/**
+ * Wraps a create-schema with the shared translation rules: no duplicate locales, and each listed
+ * field must be a non-empty string on the default-locale translation. Fields are checked in the
+ * given order, matching Zod's issue insertion order.
+ */
+const withTranslationRules = <T extends z.ZodType<{ translations: Array<{ locale: string }> }>>(
+  schema: T,
+  requiredFields: RequiredTranslationField[]
+) =>
+  schema.superRefine((data, ctx) => {
+    addNoDuplicateLocalesIssue(ctx, data.translations)
+
+    const requiredTranslation = data.translations.find(
+      (translation) => translation.locale === DEFAULT_LOCALE_CODE
+    ) as Record<string, string | undefined> | undefined
+
+    for (const { field, message } of requiredFields) {
+      if (!requiredTranslation?.[field]?.trim()) {
+        addRequiredTranslationIssue(ctx, data.translations, field, message)
+      }
+    }
+  })
+
 export const carouselTranslationSchema = z.object({
   locale: localeSchema,
   title: z.string().max(200),
@@ -61,8 +86,8 @@ export const carouselTranslationSchema = z.object({
   alt: z.string().max(200).nullish(),
 })
 
-export const createCarouselItemSchema = z
-  .object({
+export const createCarouselItemSchema = withTranslationRules(
+  z.object({
     /** Omit or null to use the site default carousel image. */
     image: z.preprocess(
       (value) => (value === undefined ? null : value),
@@ -72,23 +97,9 @@ export const createCarouselItemSchema = z
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
     translations: z.array(carouselTranslationSchema).min(1, 'admin.validation.translationRequired'),
-  })
-  .superRefine((data, ctx) => {
-    addNoDuplicateLocalesIssue(ctx, data.translations)
-
-    const requiredTranslation = data.translations.find(
-      (translation) => translation.locale === DEFAULT_LOCALE_CODE
-    )
-
-    if (!requiredTranslation?.title?.trim()) {
-      addRequiredTranslationIssue(
-        ctx,
-        data.translations,
-        'title',
-        'admin.validation.defaultTitleRequired'
-      )
-    }
-  })
+  }),
+  [{ field: 'title', message: 'admin.validation.defaultTitleRequired' }]
+)
 
 export const updateCarouselItemSchema = createCarouselItemSchema.safeExtend(optimisticLockFields)
 
@@ -98,8 +109,8 @@ export const featuredLinkTranslationSchema = z.object({
   alt: z.string().max(200).nullish(),
 })
 
-export const createFeaturedLinkSchema = z
-  .object({
+export const createFeaturedLinkSchema = withTranslationRules(
+  z.object({
     image: z.string().min(1, 'admin.validation.imageRequired').max(2048),
     to: safeHrefSchema,
     order: z.number().int().min(0).default(0),
@@ -107,23 +118,9 @@ export const createFeaturedLinkSchema = z
     translations: z
       .array(featuredLinkTranslationSchema)
       .min(1, 'admin.validation.translationRequired'),
-  })
-  .superRefine((data, ctx) => {
-    addNoDuplicateLocalesIssue(ctx, data.translations)
-
-    const requiredTranslation = data.translations.find(
-      (translation) => translation.locale === DEFAULT_LOCALE_CODE
-    )
-
-    if (!requiredTranslation?.title?.trim()) {
-      addRequiredTranslationIssue(
-        ctx,
-        data.translations,
-        'title',
-        'admin.validation.defaultTitleRequired'
-      )
-    }
-  })
+  }),
+  [{ field: 'title', message: 'admin.validation.defaultTitleRequired' }]
+)
 
 export const updateFeaturedLinkSchema = createFeaturedLinkSchema.safeExtend(optimisticLockFields)
 
@@ -141,8 +138,8 @@ export const tagTranslationSchema = z.object({
   name: z.string().max(100),
 })
 
-export const createTagSchema = z
-  .object({
+export const createTagSchema = withTranslationRules(
+  z.object({
     slug: z
       .string()
       .min(1, 'admin.validation.slugRequired')
@@ -151,23 +148,9 @@ export const createTagSchema = z
       .refine((value) => value !== 'all', 'admin.validation.slugReserved'),
     order: z.number().int().min(0).default(0),
     translations: z.array(tagTranslationSchema).min(1, 'admin.validation.translationRequired'),
-  })
-  .superRefine((data, ctx) => {
-    addNoDuplicateLocalesIssue(ctx, data.translations)
-
-    const requiredTranslation = data.translations.find(
-      (translation) => translation.locale === DEFAULT_LOCALE_CODE
-    )
-
-    if (!requiredTranslation?.name?.trim()) {
-      addRequiredTranslationIssue(
-        ctx,
-        data.translations,
-        'name',
-        'admin.validation.defaultNameRequired'
-      )
-    }
-  })
+  }),
+  [{ field: 'name', message: 'admin.validation.defaultNameRequired' }]
+)
 
 export const updateTagSchema = createTagSchema.safeExtend(optimisticLockFields)
 
@@ -178,40 +161,20 @@ export const equalityDocumentTranslationSchema = z.object({
   meta: z.string().max(500).optional().nullable(),
 })
 
-export const createEqualityDocumentSchema = z
-  .object({
+export const createEqualityDocumentSchema = withTranslationRules(
+  z.object({
     pdfUrl: z.string().min(1, 'admin.validation.pdfRequired'),
     order: z.number().int().min(0).default(0),
     active: z.boolean().default(true),
     translations: z
       .array(equalityDocumentTranslationSchema)
       .min(1, 'admin.validation.translationRequired'),
-  })
-  .superRefine((data, ctx) => {
-    addNoDuplicateLocalesIssue(ctx, data.translations)
-
-    const requiredTranslation = data.translations.find(
-      (translation) => translation.locale === DEFAULT_LOCALE_CODE
-    )
-
-    if (!requiredTranslation?.title?.trim()) {
-      addRequiredTranslationIssue(
-        ctx,
-        data.translations,
-        'title',
-        'admin.validation.defaultTitleRequired'
-      )
-    }
-
-    if (!requiredTranslation?.description?.trim()) {
-      addRequiredTranslationIssue(
-        ctx,
-        data.translations,
-        'description',
-        'admin.validation.defaultDescriptionRequired'
-      )
-    }
-  })
+  }),
+  [
+    { field: 'title', message: 'admin.validation.defaultTitleRequired' },
+    { field: 'description', message: 'admin.validation.defaultDescriptionRequired' },
+  ]
+)
 
 export const updateEqualityDocumentSchema =
   createEqualityDocumentSchema.safeExtend(optimisticLockFields)
@@ -225,8 +188,8 @@ const dateOnlySchema = z
   .string()
   .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'admin.validation.invalidDate')
 
-export const createFinancialReportSchema = z
-  .object({
+export const createFinancialReportSchema = withTranslationRules(
+  z.object({
     pdfUrl: z.string().min(1, 'admin.validation.pdfRequired'),
     approvedAt: dateOnlySchema,
     order: z.number().int().min(0).default(0),
@@ -234,23 +197,9 @@ export const createFinancialReportSchema = z
     translations: z
       .array(financialReportTranslationSchema)
       .min(1, 'admin.validation.translationRequired'),
-  })
-  .superRefine((data, ctx) => {
-    addNoDuplicateLocalesIssue(ctx, data.translations)
-
-    const requiredTranslation = data.translations.find(
-      (translation) => translation.locale === DEFAULT_LOCALE_CODE
-    )
-
-    if (!requiredTranslation?.title?.trim()) {
-      addRequiredTranslationIssue(
-        ctx,
-        data.translations,
-        'title',
-        'admin.validation.defaultTitleRequired'
-      )
-    }
-  })
+  }),
+  [{ field: 'title', message: 'admin.validation.defaultTitleRequired' }]
+)
 
 export const updateFinancialReportSchema =
   createFinancialReportSchema.safeExtend(optimisticLockFields)
