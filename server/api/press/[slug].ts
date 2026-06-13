@@ -8,7 +8,7 @@ import {
   toExternalImageProxyUrl,
   toExternalPdfProxyUrl,
 } from '../../utils/external/externalAssetUrl'
-import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
+import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import {
   getPressDefaultCoverEntriesRow,
   resolvePressArticleListImageWithVersion,
@@ -112,7 +112,7 @@ export default defineCachedEventHandler(
           ),
           pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(article.pdfUrl, {
-              publicPathBase: '/prensa/documentos',
+              publicPathBase: PRESS_DOCUMENT_PUBLIC_PATH,
             }) ?? article.pdfUrl,
             article.updatedAt
           ),

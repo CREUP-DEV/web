@@ -11,6 +11,7 @@ import {
   normalizeSocialText,
   type SocialNetworkEntry,
 } from '~~/shared/utils/social'
+import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 interface CommitteeMemberOutput {
   id: string
@@ -102,7 +103,7 @@ async function buildCommitteesResponse(event: H3Event) {
                       {
                         event,
                         forceProxyRelative: true,
-                        publicPathBase: '/conocenos/imagenes',
+                        publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
                       }
                     ),
                     email: normalizedEmail,

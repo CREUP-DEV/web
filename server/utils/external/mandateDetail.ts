@@ -15,6 +15,7 @@ import {
   externalMandateDetailResponseSchema,
   externalMandatesResponseSchema,
 } from '../validation'
+import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 type ExternalMandate = ReturnType<typeof externalMandateSchema.parse>
 type ExternalMandateAreaTerm = ReturnType<typeof externalMandateAreaTermSchema.parse>
@@ -383,7 +384,7 @@ export async function fetchMandateDetail(
                         {
                           event,
                           forceProxyRelative: true,
-                          publicPathBase: '/conocenos/imagenes',
+                          publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
                         }
                       ),
                       email: normalizeText(member.email) || '',

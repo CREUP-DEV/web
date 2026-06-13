@@ -18,7 +18,11 @@ import {
 } from '../utils/admin/siteDefaultImages'
 import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
 import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
-import { HOME_IMAGE_PUBLIC_BASE, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
+import {
+  HOME_IMAGE_PUBLIC_BASE,
+  PRESS_DOCUMENT_PUBLIC_PATH,
+  PRESS_IMAGE_PUBLIC_BASE,
+} from '~~/shared/constants/assetPaths'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import {
@@ -197,7 +201,7 @@ export default defineCachedEventHandler(
           ),
           pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(item.pdfUrl, {
-              publicPathBase: '/prensa/documentos',
+              publicPathBase: PRESS_DOCUMENT_PUBLIC_PATH,
             }) ?? item.pdfUrl,
             item.updatedAt
           ),

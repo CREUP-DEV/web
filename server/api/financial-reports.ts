@@ -6,6 +6,7 @@ import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 import { definePublicPaginatedListHandler } from '../utils/public/definePublicPaginatedListHandler'
+import { FINANCIAL_REPORTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 const activeWhere = eq(financialReports.active, true)
 
@@ -34,7 +35,7 @@ export default definePublicPaginatedListHandler({
     title: pickLocalizedEntry(item.translations, locale, locales, fallbackLocale)?.title ?? '',
     pdfUrl: appendAssetVersion(
       toExternalPdfProxyUrl(item.pdfUrl, {
-        publicPathBase: '/documentos/informes-economicos',
+        publicPathBase: FINANCIAL_REPORTS_PUBLIC_PATH,
       }) ?? item.pdfUrl,
       item.updatedAt
     ),

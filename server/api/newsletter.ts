@@ -8,6 +8,10 @@ import {
   SITE_DEFAULT_IMAGE_SLOT,
 } from '~~/shared/constants/siteDefaultImages'
 import {
+  NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
+  NEWSLETTER_DOCUMENT_PUBLIC_PATH,
+} from '~~/shared/constants/assetPaths'
+import {
   loadSiteDefaultImageEntriesMap,
   resolveSiteDefaultImageUrlWithVersion,
 } from '../utils/admin/siteDefaultImages'
@@ -61,7 +65,7 @@ export default defineCachedEventHandler(
           coverImage: item.coverImage
             ? appendAssetVersion(
                 toExternalImageProxyUrl(item.coverImage, {
-                  publicPathBase: '/prensa/newsletter/portadas',
+                  publicPathBase: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
                 }) ?? item.coverImage,
                 item.updatedAt
               )
@@ -70,7 +74,7 @@ export default defineCachedEventHandler(
           month: monthKeyToDate(item.monthKey),
           pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(item.pdfUrl, {
-              publicPathBase: '/prensa/newsletter/documentos',
+              publicPathBase: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
             }) ?? item.pdfUrl,
             item.updatedAt
           ),

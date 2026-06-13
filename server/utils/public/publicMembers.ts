@@ -19,6 +19,7 @@ import type {
   externalOrganigramaMemberSchema,
   externalSectorialMemberSchema,
 } from '../validation'
+import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import {
   externalAssociatedMembersResponseSchema,
   externalOrganigramaResponseSchema,
@@ -239,7 +240,7 @@ async function loadAssociatedMembers(event: H3Event) {
                 {
                   event,
                   forceProxyRelative: true,
-                  publicPathBase: '/conocenos/imagenes',
+                  publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
                 }
               ),
               logoDark: await toExternalImageProxyUrlWithKindHint(
@@ -247,7 +248,7 @@ async function loadAssociatedMembers(event: H3Event) {
                 {
                   event,
                   forceProxyRelative: true,
-                  publicPathBase: '/conocenos/imagenes',
+                  publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
                 }
               ),
               socialNetworks,
@@ -323,7 +324,7 @@ async function loadSectoriales(event: H3Event) {
                 {
                   event,
                   forceProxyRelative: true,
-                  publicPathBase: '/conocenos/imagenes',
+                  publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
                 }
               ),
               logoDark: await toExternalImageProxyUrlWithKindHint(
@@ -331,7 +332,7 @@ async function loadSectoriales(event: H3Event) {
                 {
                   event,
                   forceProxyRelative: true,
-                  publicPathBase: '/conocenos/imagenes',
+                  publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
                 }
               ),
               socialNetworks,
@@ -422,7 +423,7 @@ async function loadTeamAreas(event: H3Event) {
                         {
                           event,
                           forceProxyRelative: true,
-                          publicPathBase: '/conocenos/imagenes',
+                          publicPathBase: ABOUT_IMAGE_PUBLIC_PATH,
                         }
                       ),
                       email: normalizedEmail,

@@ -2,7 +2,11 @@ import type { H3Event } from 'h3'
 import { createError, getRequestURL } from 'h3'
 import { getRequiredSiteUrl } from '../core/runtimeConfig'
 import { externalAssetPublicPathParamSchema } from '../validation'
-import { INTERNAL_ASSET_PROXY_PATH_BASES } from '~~/shared/constants/assetPaths'
+import {
+  EXTERNAL_DOCUMENT_PUBLIC_BASE,
+  EXTERNAL_IMAGE_PUBLIC_BASE,
+  INTERNAL_ASSET_PROXY_PATH_BASES,
+} from '~~/shared/constants/assetPaths'
 import { setUrlSearchParam } from '~~/shared/utils/url'
 import {
   getExternalAssetProxyConfig,
@@ -87,7 +91,7 @@ export const isSpecialUrl = (value: string) =>
   value.startsWith('data:') || value.startsWith('blob:')
 
 const getDefaultAssetPathBase = (type: ExternalAssetType) =>
-  type === 'image' ? '/imagenes/externas' : '/documentos/externos'
+  type === 'image' ? EXTERNAL_IMAGE_PUBLIC_BASE : EXTERNAL_DOCUMENT_PUBLIC_BASE
 
 const getConfiguredBaseUrl = (event?: H3Event) => {
   return getExternalAssetProxyConfig(event).assetBaseUrl

@@ -4,7 +4,7 @@ import { db } from '../db'
 import { pressArticles, pressArticleTranslations, tags, pressArticleTags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
-import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
+import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
@@ -160,7 +160,7 @@ export default defineCachedEventHandler(
           ),
           pdfUrl: appendAssetVersion(
             toExternalPdfProxyUrl(item.pdfUrl, {
-              publicPathBase: '/prensa/documentos',
+              publicPathBase: PRESS_DOCUMENT_PUBLIC_PATH,
             }) ?? item.pdfUrl,
             item.updatedAt
           ),
