@@ -417,145 +417,98 @@ async function handleSubmit() {
             />
           </div>
 
-          <UFormField :label="`${t('contactPage.form.name')} *`" :error="getFieldError('name')">
-            <UInput
-              id="contact-name"
-              v-model="form.name"
-              type="text"
-              autocomplete="name"
-              :aria-describedby="getFieldAriaDescribedBy('name')"
-              :placeholder="t('contactPage.form.namePlaceholder')"
-              required
-              :disabled="isSubmitting"
-              :color="shouldShowError('name') ? 'error' : undefined"
-              class="w-full"
-              @blur="markFieldTouched('name')"
-            />
-            <template #error>
-              <p v-if="getFieldError('name')" :id="getFieldErrorId('name')">
-                {{ getFieldError('name') }}
-              </p>
-            </template>
-          </UFormField>
+          <ContactFormField
+            v-model="form.name"
+            input-id="contact-name"
+            :label="`${t('contactPage.form.name')} *`"
+            type="text"
+            autocomplete="name"
+            :placeholder="t('contactPage.form.namePlaceholder')"
+            required
+            :disabled="isSubmitting"
+            :error="getFieldError('name')"
+            :error-id="getFieldErrorId('name')"
+            :aria-describedby="getFieldAriaDescribedBy('name')"
+            :show-error="shouldShowError('name')"
+            @blur="markFieldTouched('name')"
+          />
 
-          <UFormField :label="`${t('contactPage.form.email')} *`" :error="getFieldError('email')">
-            <UInput
-              id="contact-email"
-              v-model="form.email"
-              type="email"
-              autocomplete="email"
-              :aria-describedby="getFieldAriaDescribedBy('email')"
-              :placeholder="t('contactPage.form.emailPlaceholder')"
-              required
-              :disabled="isSubmitting"
-              :color="shouldShowError('email') ? 'error' : undefined"
-              class="w-full"
-              @blur="markFieldTouched('email')"
-            />
-            <template #error>
-              <p v-if="getFieldError('email')" :id="getFieldErrorId('email')">
-                {{ getFieldError('email') }}
-              </p>
-            </template>
-          </UFormField>
+          <ContactFormField
+            v-model="form.email"
+            input-id="contact-email"
+            :label="`${t('contactPage.form.email')} *`"
+            type="email"
+            autocomplete="email"
+            :placeholder="t('contactPage.form.emailPlaceholder')"
+            required
+            :disabled="isSubmitting"
+            :error="getFieldError('email')"
+            :error-id="getFieldErrorId('email')"
+            :aria-describedby="getFieldAriaDescribedBy('email')"
+            :show-error="shouldShowError('email')"
+            @blur="markFieldTouched('email')"
+          />
 
           <Transition name="content-switch" mode="out-in">
             <div v-if="isPress" key="press-fields" class="space-y-6">
-              <UFormField :label="t('contactPage.form.phone')" :error="getFieldError('phone')">
-                <UInput
-                  id="contact-phone"
-                  v-model="form.phone"
-                  type="tel"
-                  autocomplete="tel"
-                  :aria-describedby="getFieldAriaDescribedBy('phone')"
-                  :placeholder="t('contactPage.form.phonePlaceholder')"
-                  :disabled="isSubmitting"
-                  :color="shouldShowError('phone') ? 'error' : undefined"
-                  class="w-full"
-                  @blur="markFieldTouched('phone')"
-                />
-                <template #error>
-                  <p v-if="getFieldError('phone')" :id="getFieldErrorId('phone')">
-                    {{ getFieldError('phone') }}
-                  </p>
-                </template>
-              </UFormField>
+              <ContactFormField
+                v-model="form.phone"
+                input-id="contact-phone"
+                :label="t('contactPage.form.phone')"
+                type="tel"
+                autocomplete="tel"
+                :placeholder="t('contactPage.form.phonePlaceholder')"
+                :disabled="isSubmitting"
+                :error="getFieldError('phone')"
+                :error-id="getFieldErrorId('phone')"
+                :aria-describedby="getFieldAriaDescribedBy('phone')"
+                :show-error="shouldShowError('phone')"
+                @blur="markFieldTouched('phone')"
+              />
 
-              <UFormField
+              <ContactFormField
+                v-model="form.mediaName"
+                input-id="contact-mediaName"
                 :label="`${t('contactPage.form.mediaName')} *`"
+                type="text"
+                :placeholder="t('contactPage.form.mediaNamePlaceholder')"
+                required
+                :disabled="isSubmitting"
                 :error="getFieldError('mediaName')"
-              >
-                <UInput
-                  id="contact-mediaName"
-                  v-model="form.mediaName"
-                  type="text"
-                  :aria-describedby="getFieldAriaDescribedBy('mediaName')"
-                  :placeholder="t('contactPage.form.mediaNamePlaceholder')"
-                  required
-                  :disabled="isSubmitting"
-                  :color="shouldShowError('mediaName') ? 'error' : undefined"
-                  class="w-full"
-                  @blur="markFieldTouched('mediaName')"
-                />
-                <template #error>
-                  <p v-if="getFieldError('mediaName')" :id="getFieldErrorId('mediaName')">
-                    {{ getFieldError('mediaName') }}
-                  </p>
-                </template>
-              </UFormField>
+                :error-id="getFieldErrorId('mediaName')"
+                :aria-describedby="getFieldAriaDescribedBy('mediaName')"
+                :show-error="shouldShowError('mediaName')"
+                @blur="markFieldTouched('mediaName')"
+              />
             </div>
           </Transition>
 
-          <UFormField
+          <ContactFormField
+            v-model="form.subject"
+            input-id="contact-subject"
             :label="`${t('contactPage.form.subject')} *`"
+            type="text"
+            :placeholder="t('contactPage.form.subjectPlaceholder')"
+            required
+            :disabled="isSubmitting"
             :error="getFieldError('subject')"
-          >
-            <UInput
-              id="contact-subject"
-              v-model="form.subject"
-              type="text"
-              :aria-describedby="getFieldAriaDescribedBy('subject')"
-              :placeholder="t('contactPage.form.subjectPlaceholder')"
-              required
-              :disabled="isSubmitting"
-              :color="shouldShowError('subject') ? 'error' : undefined"
-              class="w-full"
-              @blur="markFieldTouched('subject')"
-            />
-            <template #error>
-              <p v-if="getFieldError('subject')" :id="getFieldErrorId('subject')">
-                {{ getFieldError('subject') }}
-              </p>
-            </template>
-          </UFormField>
+            :error-id="getFieldErrorId('subject')"
+            :aria-describedby="getFieldAriaDescribedBy('subject')"
+            :show-error="shouldShowError('subject')"
+            @blur="markFieldTouched('subject')"
+          />
 
-          <UFormField
+          <ContactMessageField
+            v-model="form.message"
             :label="`${t('contactPage.form.message')} *`"
+            :placeholder="t('contactPage.form.messagePlaceholder')"
+            :disabled="isSubmitting"
             :error="getFieldError('message')"
-          >
-            <UTextarea
-              id="contact-message"
-              v-model="form.message"
-              :aria-describedby="getFieldAriaDescribedBy('message')"
-              :placeholder="t('contactPage.form.messagePlaceholder')"
-              :rows="5"
-              required
-              :disabled="isSubmitting"
-              :color="shouldShowError('message') ? 'error' : undefined"
-              class="w-full"
-              @blur="markFieldTouched('message')"
-            />
-            <template #error>
-              <p v-if="getFieldError('message')" :id="getFieldErrorId('message')">
-                {{ getFieldError('message') }}
-              </p>
-            </template>
-            <template #hint>
-              <span :class="form.message.trim().length < 10 ? 'text-error' : 'text-muted'">
-                {{ form.message.trim().length }}/5000
-              </span>
-            </template>
-          </UFormField>
+            :error-id="getFieldErrorId('message')"
+            :aria-describedby="getFieldAriaDescribedBy('message')"
+            :show-error="shouldShowError('message')"
+            @blur="markFieldTouched('message')"
+          />
 
           <UFormField
             v-if="turnstileEnabled"
@@ -602,32 +555,7 @@ async function handleSubmit() {
             {{ isSubmitting ? t('contactPage.form.sending') : t('contactPage.form.submit') }}
           </UButton>
 
-          <div
-            class="text-muted space-y-2 text-sm"
-            :aria-label="t('contactPage.form.privacyInfoTitle')"
-          >
-            <p class="font-medium">
-              {{ t('contactPage.form.privacyInfoTitle') }}
-            </p>
-            <ul class="list-disc space-y-1 pl-5">
-              <li>{{ t('contactPage.form.privacyInfoController') }}</li>
-              <li>{{ t('contactPage.form.privacyInfoPurpose') }}</li>
-              <li>{{ t('contactPage.form.privacyInfoLegalBasis') }}</li>
-              <li>{{ t('contactPage.form.privacyInfoRecipients') }}</li>
-              <li>{{ t('contactPage.form.privacyInfoRetention') }}</li>
-              <li>{{ t('contactPage.form.privacyInfoRights') }}</li>
-            </ul>
-            <p>
-              {{ t('contactPage.form.privacyInfoMorePrefix') }}
-              <NuxtLink
-                :to="privacyPolicyPath"
-                class="text-primary underline underline-offset-2 hover:no-underline"
-              >
-                {{ t('contactPage.form.privacyInfoMoreLink') }}
-              </NuxtLink>
-              .
-            </p>
-          </div>
+          <ContactPrivacyInfo :privacy-policy-path="privacyPolicyPath" />
         </form>
       </UCard>
     </section>
