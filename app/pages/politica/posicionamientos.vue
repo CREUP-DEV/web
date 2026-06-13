@@ -23,7 +23,7 @@ usePageSeo('policy.positions.title', 'policy.positions.description', {
 
 <template>
   <PuPolicyDocumentList
-    api-endpoint="/api/posicionamientos"
+    api-endpoint="/api/position-papers"
     title-key="policy.positions.title"
     description-key="policy.positions.description"
     error-key="policy.positions.loadError"

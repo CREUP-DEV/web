@@ -65,12 +65,12 @@ const [
     refresh: refreshSectoriales,
   },
 ] = await Promise.all([
-  useFetch<CommitteesResponse>('/api/comites', {
+  useFetch<CommitteesResponse>('/api/committees', {
     cache: 'no-store',
     headers: localeApiHeaders,
     lazy: true,
   }),
-  useFetch<SectorialesResponse>('/api/sectoriales', {
+  useFetch<SectorialesResponse>('/api/sectorials', {
     cache: 'no-store',
     headers: localeApiHeaders,
     lazy: true,

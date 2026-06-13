@@ -3,7 +3,7 @@ import type { OrgResponse } from '@/types/team'
 export const useTeamPageData = async () => {
   const localeApiHeaders = useLocaleApiHeaders()
 
-  const { data, error, pending, refresh } = await useFetch<OrgResponse>('/api/organigrama', {
+  const { data, error, pending, refresh } = await useFetch<OrgResponse>('/api/org-chart', {
     cache: 'no-store',
     headers: localeApiHeaders,
     lazy: true,

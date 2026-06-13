@@ -15,7 +15,7 @@ export const useMembersPageData = async () => {
     useFetch<MembersResponse>('/api/members', {
       headers: localeApiHeaders,
     }),
-    useFetch<SectorialesResponse>('/api/sectoriales', {
+    useFetch<SectorialesResponse>('/api/sectorials', {
       headers: localeApiHeaders,
     }),
   ])

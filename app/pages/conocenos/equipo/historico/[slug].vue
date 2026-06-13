@@ -73,7 +73,7 @@ type SlugResponse =
   | { data: { ambiguous: true; mandates: MandateInfo[] } }
 
 const { data, error, status } = await useFetch<SlugResponse>(
-  () => `/api/organigrama/mandatos/by-slug/${slug.value}`,
+  () => `/api/org-chart/mandatos/by-slug/${slug.value}`,
   {
     cache: 'no-store',
     headers: localeApiHeaders,

@@ -23,7 +23,7 @@ usePageSeo('policy.reports.title', 'policy.reports.description', {
 
 <template>
   <PuPolicyDocumentList
-    api-endpoint="/api/informes-ejecutivos"
+    api-endpoint="/api/executive-reports"
     title-key="policy.reports.title"
     description-key="policy.reports.description"
     error-key="policy.reports.loadError"

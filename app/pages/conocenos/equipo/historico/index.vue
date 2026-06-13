@@ -37,7 +37,7 @@ interface MandatesResponse {
 }
 
 const { data, error, status, refresh } = await useFetch<MandatesResponse>(
-  '/api/organigrama/mandatos',
+  '/api/org-chart/mandatos',
   {
     cache: 'no-store',
     headers: localeApiHeaders,

@@ -41,7 +41,7 @@ export interface CREUPEvent {
   order: number
 }
 
-/** Slim shape returned by the list endpoint (`/api/eventos`); detail keeps the full `CREUPEvent`. */
+/** Slim shape returned by the list endpoint (`/api/events`); detail keeps the full `CREUPEvent`. */
 export type CREUPEventListItem = Pick<
   CREUPEvent,
   'id' | 'name' | 'slug' | 'type' | 'location' | 'startDate' | 'endDate' | 'banner'
@@ -94,7 +94,7 @@ export function useEvents(options?: {
     return 0
   })
 
-  const { data, error, status, refresh } = useFetch<EventsResponse>('/api/eventos', {
+  const { data, error, status, refresh } = useFetch<EventsResponse>('/api/events', {
     headers: localeApiHeaders,
     query: computed(() => ({
       ...(typesValue.value && typesValue.value.length > 0
@@ -143,7 +143,7 @@ export function useEvent(slug: Ref<string> | string) {
   return useAsyncData<EventDetailResponse>(
     key,
     () =>
-      $fetch<EventDetailResponse>(`/api/eventos/${slugRef.value}`, {
+      $fetch<EventDetailResponse>(`/api/events/${slugRef.value}`, {
         headers: localeApiHeaders.value,
       }),
     {

@@ -60,7 +60,7 @@ usePageSeo('regulations.title', 'regulations.description', {
   ],
 })
 
-const { data, pending, error, refresh } = useFetch<NormativaResponse>('/api/normativa')
+const { data, pending, error, refresh } = useFetch<NormativaResponse>('/api/regulations')
 
 const categories = computed(() => data.value?.data ?? [])
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 90)
