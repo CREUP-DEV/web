@@ -1,0 +1,1842 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "admin": "Panel de administración",
+    "about": {
+      "label": "Coñécenos",
+      "whatIs": "Que é CREUP?",
+      "members": "Membros",
+      "team": "Equipo",
+      "committees": "Comités",
+      "events": "Eventos"
+    },
+    "policy": {
+      "label": "Política Universitaria",
+      "positions": "Posicionamentos",
+      "resolutions": "Resolucións",
+      "reports": "Informes Executivos"
+    },
+    "events": {
+      "generalAssemblies": "Asembleas Xerais",
+      "trainingStages": "Stages Formativos",
+      "meetingsCongresses": "Encontros e Congresos"
+    },
+    "press": {
+      "label": "Prensa",
+      "news": "Noticias",
+      "newsletter": "Newsletter",
+      "pressReleases": "Notas de prensa",
+      "statements": "Comunicados",
+      "inMedia": "Nos medios",
+      "pressKit": "Dossier de prensa"
+    },
+    "transparency": {
+      "label": "Transparencia",
+      "agreements": "Convenios",
+      "regulations": "Normativa",
+      "financialReports": "Informes económicos",
+      "corporateIdentity": "Identidade Corporativa",
+      "equality": "Igualdade"
+    },
+    "contact": "Contacto"
+  },
+  "footer": {
+    "tagline": "CREUP - Coordinadora de Representantes de Estudantes de Universidades Públicas",
+    "legal": "Aviso legal e condicións xerais",
+    "legalNav": "Legal e cookies"
+  },
+  "social": {
+    "instagram": "Instagram",
+    "followInstagram": "Séguenos en Instagram",
+    "tiktok": "TikTok",
+    "x": "X",
+    "linkedin": "LinkedIn",
+    "facebook": "Facebook",
+    "github": "GitHub",
+    "telegram": "Telegram"
+  },
+  "meta": {
+    "title": "Inicio",
+    "description": "A Coordinadora de Representantes de Estudantes de Universidades Públicas (CREUP) é a asociación estatal que representa a máis de 1.000.000 de estudantes de toda España.",
+    "legal": {
+      "description": "Aviso legal, condicións xerais, privacidade, cookies e política de ligazóns de CREUP.",
+      "ogDescription": "Consulta o aviso legal e as condicións xerais de uso do sitio web de CREUP."
+    }
+  },
+  "nuxtSiteConfig": {
+    "name": "CREUP",
+    "description": "A Coordinadora de Representantes de Estudantes de Universidades Públicas (CREUP) é a asociación estatal que representa a máis de 1.000.000 de estudantes de toda España."
+  },
+  "home": {
+    "newsAndEventsLabel": "Prensa e eventos",
+    "latestNews": "Últimas noticias",
+    "viewAllNews": "Ver todas",
+    "featuredLinks": "Ligazóns destacadas",
+    "publicAgenda": "Axenda pública",
+    "noNews": "Non hai noticias para esta etiqueta",
+    "retry": "Reintentar",
+    "newsLoadError": "Non se puideron cargar as noticias neste momento.",
+    "featuredLinksLoadError": "Non se puideron cargar as ligazóns destacadas neste momento.",
+    "carousel": {
+      "label": "Carrusel de anuncios destacados",
+      "previous": "Diapositiva anterior",
+      "next": "Seguinte diapositiva",
+      "defaultButtonText": "Máis información",
+      "goToSlide": "Ir á diapositiva {n}",
+      "loadError": "Non se puideron cargar os elementos destacados."
+    },
+    "calendar": {
+      "label": "Calendario de eventos",
+      "previousMonth": "Mes anterior",
+      "nextMonth": "Mes seguinte",
+      "hasEvents": "Hai eventos este día",
+      "dayWithEvents": "{day} {month}, {count} evento | {day} {month}, {count} eventos",
+      "noEvents": "Non hai eventos programados para este día.",
+      "selectDay": "Selecciona un día para ver os eventos programados.",
+      "upcomingEvents": "Próximos eventos",
+      "noUpcomingEvents": "Non hai eventos próximos programados.",
+      "loadError": "Non se puido cargar a axenda. Téntao máis tarde.",
+      "multiDay": "Varios días",
+      "allDay": "Todo o día"
+    }
+  },
+  "accessibility": {
+    "skipToNavigation": "Saltar á navegación",
+    "skipToMain": "Saltar ao contido principal",
+    "mainNavigation": "Navegación principal",
+    "mobileNavigation": "Navegación móbil",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Pechar menú",
+    "siteLogo": "Logotipo de CREUP",
+    "externalLink": "Ábrese nunha nova lapela",
+    "loading": "Cargando...",
+    "paginationNavigation": "Navegación de paxinación",
+    "breadcrumb": "Ruta de navegación",
+    "contentImage": "Imaxe de contido",
+    "resultsCount": "{count} resultado | {count} resultados",
+    "resultsStatus": "{count} resultado · páxina {page} de {pages} | {count} resultados · páxina {page} de {pages}"
+  },
+  "common": {
+    "all": "Todos",
+    "readMore": "Ler máis",
+    "viewAll": "Ver todo",
+    "visitWebsite": "Visitar web",
+    "back": "Volver",
+    "comingSoon": "Contido dispoñible proximamente.",
+    "close": "Pechar",
+    "unnamedPerson": "Nome non especificado",
+    "copyEmail": "Copiar correo",
+    "emailCopied": "Correo copiado ao portapapeis"
+  },
+  "language": {
+    "toggle": "Cambiar idioma",
+    "openMenu": "Abrir selector de idioma",
+    "locales": {
+      "es": "Español",
+      "en": "Inglés"
+    }
+  },
+  "theme": {
+    "toggle": "Cambiar tema",
+    "light": "Modo claro",
+    "dark": "Modo escuro"
+  },
+  "error": {
+    "notFound": "Páxina non atopada",
+    "forbidden": "Non tes acceso a esta páxina",
+    "server": "Produciuse un erro no noso servidor",
+    "unavailable": "Servizo temporalmente non dispoñible",
+    "generic": "Produciuse un erro",
+    "forbiddenMessage": "Comproba que iniciaches sesión cunha conta autorizada.",
+    "serverMessage": "Sentímolo, algo fallou pola nosa parte. Téntao de novo máis tarde.",
+    "unavailableMessage": "Estamos a realizar tarefas técnicas ou hai un servizo temporalmente caído. Téntao de novo nuns minutos.",
+    "message": "Sentímolo, algo saíu mal. Por favor, téntao de novo máis tarde.",
+    "backHome": "Volver ao inicio"
+  },
+  "team": {
+    "title": "Equipo",
+    "description": "Coñece as persoas que forman parte do equipo de CREUP.",
+    "viewProfile": "Ver perfil",
+    "email": "Correo electrónico",
+    "university": "Universidade",
+    "degree": "Titulación",
+    "period": "Período",
+    "duration": "Duración",
+    "publicAgenda": "Axenda pública",
+    "publicAgendaOf": "Axenda pública de {name}",
+    "memberModalTitle": "Perfil do equipo",
+    "memberModalDescription": "Detalles do perfil da persoa.",
+    "agendaModalDescription": "Próximos eventos da súa axenda pública.",
+    "noEvents": "Non hai eventos programados proximamente.",
+    "agendaLoadError": "Non se puido cargar a axenda. Téntao de novo.",
+    "about": "Sobre {name}",
+    "hierarchyView": "Por xerarquía",
+    "areaView": "Por área",
+    "executiveCommission": "Comisión Executiva",
+    "extendedCommission": "Comisión Executiva Ampliada",
+    "loadError": "Non se puido cargar o equipo neste momento.",
+    "viewHistory": "Histórico de cargos"
+  },
+  "mandates": {
+    "title": "Histórico de cargos",
+    "description": "Consulta os equipos anteriores de CREUP.",
+    "detailDescription": "Detalle dos cargos dun mandato de CREUP.",
+    "mandateOf": "Mandato de",
+    "backToTeam": "Volver ao equipo",
+    "backToMandates": "Volver a mandatos",
+    "current": "Actual",
+    "present": "Actualidade",
+    "ended": "Cesado",
+    "noMandates": "Non hai mandatos rexistrados.",
+    "noAreas": "Non hai áreas rexistradas para este mandato.",
+    "noAssignments": "Sen cargos asignados nesta área.",
+    "loadError": "Non se puido cargar a información de mandatos.",
+    "durationDays": "{count} día | {count} días",
+    "durationMonths": "{count} mes | {count} meses",
+    "disambiguateTitle": "Mandatos de {year}",
+    "disambiguateDescription": "Hai varios mandatos neste ano. Selecciona o que queiras consultar."
+  },
+  "aboutPage": {
+    "title": "Que é CREUP?",
+    "description": "Somos a principal plataforma de representación do estudantado das universidades públicas en España.",
+    "lead": "Somos unha asociación estatal que reúne os consellos de estudantes das universidades públicas, dándolle voz a máis dun millón de estudantes de toda España.",
+    "intro": "Coordinamos a representación estatal do estudantado e defendemos os nosos dereitos e participación na política universitaria.",
+    "dynamicContentLoadErrorTitle": "Non se puido actualizar o contido dinámico",
+    "dynamicContentLoadErrorDescription": "Móstranse valores de referencia mentres se recupera a conexión.",
+    "snapshotTitle": "CREUP en cifras",
+    "ctaIdentity": "Como traballamos",
+    "ctaMembers": "Ver membros",
+    "stats": {
+      "universities": {
+        "label": "universidades públicas membro"
+      },
+      "students": {
+        "label": "estudantes representados"
+      },
+      "years": {
+        "suffix": "anos",
+        "label": "traballando polo estudantado"
+      }
+    },
+    "identityTitle": "Somos a voz do estudantado",
+    "identityParagraph1": "Actuamos como interlocutores ante institucións e organismos clave para que a nosa perspectiva como estudantes forme parte das políticas universitarias.",
+    "identityParagraph2": "O noso obxectivo é garantir que a voz do estudantado sexa escoitada na construción e mellora do sistema universitario, promovendo un modelo de educación pública de calidade, inclusiva e accesible.",
+    "activityTitle": "Así traballamos",
+    "activityParagraph1": "Celebramos dúas Asembleas Xerais ao ano nas que acordamos prioridades, posicionamentos e liñas estratéxicas comúns.",
+    "activityParagraph2": "Impulsamos encontros formativos e espazos de intercambio de experiencias e opinións entre representantes estudantís e outros axentes sociais do sistema universitario.",
+    "purposeTitle": "O noso compromiso coa sociedade",
+    "purposeParagraph": "Dámoslle voz ao estudantado e traballamos, de forma constante, por unha educación superior máis xusta, participativa e de calidade. Cremos na universidade pública como ascensor social.",
+    "missionTitle": "Misión",
+    "missionText": "Darlle voz ao estudantado universitario para a construción e mellora do Sistema Universitario Español, promovendo unha educación superior de calidade, accesible e inclusiva. Buscamos que os nosos dereitos, necesidades e intereses sexan escoitados e tidos en conta na toma de decisións.",
+    "visionTitle": "Visión",
+    "visionText": "Consolidármonos como o principal axente de representación do estudantado a nivel estatal, servindo de enlace con asociacións, institucións e organismos públicos e privados, tanto nacionais como internacionais. Aspiramos a impulsar un sistema universitario máis xusto, innovador e adaptado ás necesidades da sociedade.",
+    "valuesTitle": "Valores que nos definen",
+    "valuesDescription": "A representación estudantil que impulsamos apóiase en principios claros e compartidos.",
+    "values": {
+      "independence": {
+        "title": "Independencia",
+        "description": "Actuamos con autonomía para representar o estudantado por enriba de intereses alleos ás nosas necesidades."
+      },
+      "cooperation": {
+        "title": "Cooperación",
+        "description": "Construímos posicións comúns desde o traballo compartido entre universidades e representantes de todo o Estado."
+      },
+      "nonDiscrimination": {
+        "title": "Non discriminación",
+        "description": "Defendemos unha universidade inclusiva, diversa e libre de barreiras para todas as persoas."
+      },
+      "socialCommitment": {
+        "title": "Compromiso social",
+        "description": "Entendemos a educación superior como unha ferramenta de equidade, progreso colectivo e transformación social."
+      },
+      "participation": {
+        "title": "Participación",
+        "description": "Promovemos que o estudantado forme parte activa das decisións que afectan o noso presente e o noso futuro."
+      }
+    },
+    "sectionsTitle": "Segue coñecéndonos",
+    "sectionsDescription": "Consulta as seccións onde se organiza o noso traballo:",
+    "sections": {
+      "members": {
+        "title": "Membros",
+        "description": "Consulta as organizacións estudantís que forman parte de CREUP.",
+        "cta": "Ir a Membros"
+      },
+      "team": {
+        "title": "Equipo",
+        "description": "Coñece as persoas que asumimos responsabilidades de representación e coordinación.",
+        "cta": "Ir a Equipo"
+      },
+      "committees": {
+        "title": "Comités",
+        "description": "Descobre os nosos comités de traballo e os seus integrantes.",
+        "cta": "Ir a Comités"
+      },
+      "events": {
+        "title": "Eventos",
+        "description": "Consulta as nosas asembleas, encontros e eventos formativos.",
+        "cta": "Ir a Eventos"
+      }
+    }
+  },
+  "equalityPage": {
+    "title": "Igualdade e prevención do acoso",
+    "description": "Espazo público con documentos e recursos sobre igualdade, diversidade, comunicación inclusiva e o Punto Seguro dos nosos eventos.",
+    "eyebrow": "Igualdade e Dimensión Social",
+    "lead": "Nesta páxina poderás consultar documentos e recursos relacionados coa igualdade, a diversidade, a prevención de discriminacións e a información básica sobre o Punto Seguro do que dispoñemos en asembleas, encontros e demais eventos.",
+    "ctaDocuments": "Ver documentos",
+    "ctaContact": "Escribir ao Punto Seguro",
+    "heroPoints": {
+      "centralize": "Recursos reunidos nun mesmo espazo",
+      "access": "Acceso claro desde a web pública",
+      "support": "Documentación para previr, actuar e acompañar"
+    },
+    "resourcesTitle": "Documentos para consultar",
+    "openDocument": "Abrir documento",
+    "loadError": "Non se puideron cargar os documentos de igualdade neste momento.",
+    "empty": "Non hai documentos de igualdade publicados por agora.",
+    "actionTitle": "Se pasa algo nun dos nosos eventos",
+    "actionSteps": {
+      "safety": {
+        "title": "Prioriza a seguranza",
+        "description": "Se hai un risco inmediato, afástate da situación, busca apoio dunha persoa de confianza e, se cómpre, chama ao 112 ou aos servizos de emerxencia."
+      },
+      "notify": {
+        "title": "Comunica o ocorrido",
+        "description": "Durante o evento podes acudir ao Punto Seguro, ás persoas de confianza designadas ou á persoa competente en igualdade da Comisión Executiva ampliada. Se necesitas contalo despois, podes facelo por este correo."
+      },
+      "details": {
+        "title": "Recolle a información relevante",
+        "description": "Anota datas, lugares, persoas implicadas e calquera evidencia dispoñible. Os protocolos lembran que só se debe pedir a información necesaria e que a confidencialidade é clave."
+      },
+      "support": {
+        "title": "Consulta o protocolo e pide apoio",
+        "description": "Os protocolos explican que garantías existen, que medidas de protección se poden activar e como pedir acompañamento se hai unha situación de acoso sexual ou discriminación."
+      }
+    },
+    "pointSafeTitle": "Que é o Punto Seguro",
+    "pointSafeDescription": "O Punto Seguro é o recurso do que dispoñemos nos nosos eventos para ofrecer información, escoita e acompañamento ante situacións de acoso sexual ou discriminación.",
+    "pointSafeCalloutTitle": "Como funciona",
+    "pointSafeCalloutDescription": "O Punto Seguro funciona sobre o terreo, en asembleas, encontros e demais actividades que organizamos. En cada evento cóntase con polo menos unha persoa de confianza cuxo contacto se pon a disposición de todos os asistentes.",
+    "pointSafePrimary": "Enviar correo ao Punto Seguro",
+    "pointSafeItems": {
+      "prevention": {
+        "title": "Antes de que pase nada",
+        "description": "Serve para lembrar que condutas non teñen cabida, compartir os protocolos e reforzar que queremos encontros seguros e respectuosos."
+      },
+      "guidance": {
+        "title": "Cando alguén necesita apoio",
+        "description": "Ofrece un punto de referencia próximo onde poder parar, contar o ocorrido, recibir orientación e valorar que pasos dar."
+      },
+      "followUp": {
+        "title": "Se cómpre seguir",
+        "description": "Axuda a deixar constancia do ocorrido, conectar coas persoas responsables e darlle continuidade ao acompañamento coa discreción que require cada caso."
+      }
+    },
+    "scopeTitle": "Que situacións se contemplan",
+    "scopeItems": {
+      "sexualViolence": "Acoso sexual e condutas contra a liberdade sexual",
+      "gender": "Sexismo, violencia de xénero e desigualdade estrutural",
+      "lgbtiq": "Orientación sexual, identidade e expresión de xénero",
+      "ethnicity": "Racismo, xenofobia e discriminación por orixe ou etnia",
+      "disability": "Capacitismo, accesibilidade e necesidade de apoios",
+      "otherDiscrimination": "Outras discriminacións por idade, condición social ou outras circunstancias persoais ou sociais"
+    },
+    "supportTitle": "Precisas falar co Punto Seguro?",
+    "supportDescription": "Se queres contarnos algo que pasase nun dos nosos eventos ou necesitas orientación, podes escribir directamente ao Punto Seguro. Aquí tes a información e os documentos; a atención e o acompañamento préstanse no contexto das actividades que organizamos. Se é urxente, recorre tamén aos servizos especializados da túa universidade, do teu territorio ou ao 112.",
+    "supportPrimary": "Enviar correo ao Punto Seguro",
+    "supportSecondary": "Ver os documentos"
+  },
+  "members": {
+    "title": "Membros",
+    "description": "Coñece as organizacións que participan activamente na CREUP.",
+    "introText": "Na CREUP participan activamente dous tipos de entidades:",
+    "introAssociated": "Consellos de Estudantes de universidades públicas, que actúan como membros asociados.",
+    "introSectoriales": "Asociacións sectoriais de ámbito estatal que representan o estudantado de áreas específicas do coñecemento, como entidades con convenio.",
+    "introAssociatedCta": "Ver membros asociados",
+    "introSectorialesCta": "Ver sectoriais con convenio",
+    "associatedTitle": "Membros asociados",
+    "associatedDescription": "Consellos de Estudantes de universidades públicas.",
+    "allMembers": "Todos os membros",
+    "showAll": "Amosar todos",
+    "loadError": "Non se puideron cargar os membros neste momento.",
+    "noMembers": "Non hai membros asociados nesta comunidade.",
+    "unknownUniversity": "Universidade non especificada",
+    "unknownDenomination": "Designación non especificada",
+    "viewDetails": "Ver detalles",
+    "memberModalTitle": "Detalles da organización",
+    "memberModalDescription": "Detalles da organización seleccionada.",
+    "descriptionLabel": "Descrición",
+    "initials": "Siglas",
+    "community": "Comunidade",
+    "info": "Información e contacto",
+    "socialNetworks": "Redes sociais",
+    "networks": {
+      "website": "Páxina web",
+      "email": "Correo de contacto",
+      "instagram": "Instagram",
+      "twitter": "Twitter / X",
+      "tiktok": "TikTok",
+      "bluesky": "Bluesky",
+      "linkedin": "LinkedIn",
+      "telegram": "Telegram",
+      "discord": "Discord",
+      "facebook": "Facebook",
+      "github": "GitHub"
+    },
+    "membersIn": "Membros en {community}",
+    "selectCommunity": "Selecciona unha comunidade autónoma no mapa para ver os seus membros.",
+    "mapAccessibleHelp": "Se non podes usar o mapa, podes usar o filtro de comunidades ou saltar directamente á listaxe de membros.",
+    "representedCommunities": "{count} comunidades con representación",
+    "mapSelectionSummary": "Amosando membros de {community}",
+    "mapSelectionAllSummary": "Amosando o conxunto de membros asociados",
+    "mapLegendLabel": "Lenda do mapa",
+    "mapLegendSelected": "Comunidade seleccionada",
+    "mapLegendActive": "Con representación activa",
+    "mapLegendInactive": "Sen membros rexistrados",
+    "mapFilterTitle": "Filtrar por comunidade sen usar o mapa",
+    "mapTooltipCount": "{count} membro | {count} membros",
+    "mapTooltipEmpty": "Sen membros rexistrados",
+    "mapSelectedState": "Seleccionada",
+    "mapAvailableState": "Con representación",
+    "mapUnavailableState": "Sen representación",
+    "skipMap": "Ir á listaxe",
+    "communities": {
+      "andalucia": "Andalucía",
+      "aragon": "Aragón",
+      "asturias": "Principado de Asturias",
+      "baleares": "Illes Balears",
+      "canarias": "Canarias",
+      "cantabria": "Cantabria",
+      "castilla-la-mancha": "Castela-A Mancha",
+      "castilla-y-leon": "Castela e León",
+      "cataluna": "Cataluña",
+      "ceuta": "Ceuta",
+      "extremadura": "Estremadura",
+      "galicia": "Galicia",
+      "la-rioja": "A Rioxa",
+      "madrid": "Comunidade de Madrid",
+      "melilla": "Melilla",
+      "murcia": "Rexión de Murcia",
+      "navarra": "Comunidade Foral de Navarra",
+      "pais-vasco": "País Vasco",
+      "valencia": "Comunitat Valenciana"
+    },
+    "sectoriales": {
+      "title": "Asociacións sectoriais",
+      "description": "Asociacións que representan o estudantado de ámbitos específicos do coñecemento.",
+      "allSectoriales": "Todas as sectoriais",
+      "noSectoriales": "Non hai asociacións sectoriais dispoñibles.",
+      "loadError": "Non se puideron cargar as sectoriais neste momento.",
+      "viewDetails": "Ver detalles"
+    }
+  },
+  "mic": {
+    "title": "Manual de Identidade Corporativa",
+    "description": "Elementos constitutivos da identidade visual da CREUP: imagotipos, cores corporativas e manual completo.",
+    "introTitle": "Introdución",
+    "introParagraph1": "O presente Manual de Identidade Visual recolle os elementos constitutivos da identidade visual da Coordinadora de Representantes de Estudantes de Universidades Públicas, de aquí en diante CREUP.",
+    "introParagraph2": "Como elementos constitutivos establecen as pautas de construción, o uso de tipografías e as aplicacións cromáticas da marca. A consolidación da imaxe de marca necesita unha atención especial ás recomendacións expostas neste manual, como documento que garante unha unidade de criterios na comunicación e difusión pública.",
+    "introParagraph3": "O manual debe ser por tanto unha ferramenta dinámica e presente en todas as aplicacións da imaxe corporativa. Non obstante, mantense aberto á creatividade da persoa que o utilice.",
+    "logosTitle": "Descarga do Imagotipo",
+    "logosDescription": "A continuación poderás ver e descargar todas as variantes do imagotipo da CREUP. A marca debe reproducirse sempre seguindo os estándares corporativos recollidos neste manual. Así, ",
+    "logosWarning": "nunca poderán alterarse as cores ou as proporcións explicadas.",
+    "logoAlt": "Logo CREUP - {version}",
+    "downloadSvg": "SVG",
+    "downloadPng": "PNG",
+    "logos": {
+      "horizontalFull": "Versión horizontal completa",
+      "horizontalShort": "Versión horizontal curta",
+      "vertical": "Versión vertical",
+      "downloadAllHorizontalFull": "Descargar todo, versión horizontal completa (zip)",
+      "downloadAllHorizontalShort": "Descargar todo, versión horizontal curta (zip)",
+      "downloadAllVertical": "Descargar todo, versión vertical (zip)"
+    },
+    "variants": {
+      "granate": "Granate",
+      "grisOscuro": "Gris Escuro",
+      "grisClaro": "Gris Claro",
+      "azul": "Azul",
+      "beige": "Beixe",
+      "blancoPuro": "Branco Puro"
+    },
+    "colorsTitle": "Cores corporativas",
+    "colorsDescription": "Ademais do branco, estas son as cores corporativas e os seus códigos.",
+    "colorsTable": {
+      "color": "Cor",
+      "preview": "Vista previa",
+      "hex": "HEX",
+      "rgb": "RGB",
+      "cmyk": "CMYK",
+      "pantone": "PANTONE"
+    },
+    "colors": {
+      "burgundy": "Bordeos corporativo",
+      "blue": "Azul corporativo",
+      "beige": "Beixe corporativo",
+      "darkGray": "Gris escuro",
+      "lightGray": "Gris claro"
+    },
+    "copied": "Copiado: {value}",
+    "copyError": "Non se puido copiar ao portapapeis",
+    "downloadTitle": "Descarga o Manual de Identidade Corporativa",
+    "downloadDescription": "Aquí podes descargar o manual completo en PDF.",
+    "downloadButton": "Descargar MIC"
+  },
+  "events": {
+    "title": "Eventos",
+    "description": "Consulta as asembleas, encontros e actividades formativas organizadas pola CREUP.",
+    "loadError": "Non se puideron cargar os eventos neste momento.",
+    "noEvents": "Non hai eventos dispoñibles.",
+    "allTypes": "Todos",
+    "filterByType": "Filtrar por tipo de evento",
+    "types": {
+      "asamblea": "Asemblea",
+      "congresoYEncuentro": "Congreso e Encontro",
+      "stageFormativo": "Stage Formativo",
+      "otro": "Outro"
+    },
+    "upcoming": "Próximo",
+    "ongoing": "En curso",
+    "backToEvents": "Volver a eventos",
+    "notFound": "Evento non atopado.",
+    "documents": "Documentos",
+    "document": "Documento",
+    "organizers": "Organizador | Organizadores",
+    "venues": "Sede | Sedes",
+    "collaborators": "Colaborador | Colaboradores",
+    "visitWebsite": "Visitar web",
+    "bannerAlt": "Banner de {event}",
+    "gallery": "Galería",
+    "galleryPhotoAlt": "Foto {number} de {event}",
+    "galleryPrevious": "Foto anterior",
+    "galleryNext": "Seguinte foto",
+    "galleryClose": "Pechar visor",
+    "galleryCounter": "{current} de {total}",
+    "galleryLoading": "Cargando imaxe…",
+    "galleryZoomIn": "Ampliar",
+    "galleryZoomOut": "Reducir",
+    "galleryResetZoom": "Restablecer zoom",
+    "galleryError": "Non se puido cargar a imaxe."
+  },
+  "committees": {
+    "title": "Comités",
+    "description": "Máis alá da Comisión Executiva Ampliada, a CREUP conta con comités especializados que centran o seu traballo en áreas específicas da representación estudantil ou do funcionamento interno da asociación.",
+    "email": "Correo electrónico",
+    "viewProfile": "Ver perfil",
+    "memberModalDescription": "Detalles do perfil da persoa.",
+    "noMembers": "Este comité non ten membros asignados actualmente.",
+    "loadError": "Non se puideron cargar os comités neste momento.",
+    "copyEmail": "Copiar correo",
+    "university": "Universidade",
+    "degree": "Titulación"
+  },
+  "sectorialCommitteePage": {
+    "title": "Comité de Asuntos Sectoriais",
+    "description": "Espazo técnico dedicado ao Comité de Asuntos Sectoriais.",
+    "intro": "Páxina específica do Comité de Asuntos Sectoriais coa listaxe de asociacións sectoriais e o equipo do comité.",
+    "loadError": "Non se puido cargar a información desta comisión neste momento.",
+    "committeeNotFound": "Non se atopou o Comité de Asuntos Sectoriais na fonte de comités.",
+    "teamDescription": "Persoas que forman parte de {committee}.",
+    "fallbackCommitteeTitle": "Comité de Asuntos Sectoriais"
+  },
+  "policy": {
+    "download": "Descargar",
+    "landing": {
+      "title": "Política Universitaria",
+      "description": "Accede aos documentos cos que CREUP fixa posición, aproba resolucións e analiza normativa universitaria.",
+      "viewDocuments": "Ver documentos"
+    },
+    "positions": {
+      "title": "Posicionamentos",
+      "description": "Os posicionamentos expresan a posición política da Asemblea Xeral fronte a temáticas relacionadas cos fins da Asociación.",
+      "loadError": "Non se puideron cargar os posicionamentos neste momento.",
+      "empty": "Non hai posicionamentos dispoñibles."
+    },
+    "resolutions": {
+      "title": "Resolucións",
+      "description": "As resolucións son documentos mediante os cales a Asemblea Xeral expresa o seu parecer fronte a calquera situación que expoñan os membros.",
+      "loadError": "Non se puideron cargar as resolucións neste momento.",
+      "empty": "Non hai resolucións dispoñibles."
+    },
+    "reports": {
+      "title": "Informes Executivos",
+      "description": "Os informes executivos realízanse en relación a unha normativa onde se indican os mínimos que debe conter, ou as modificacións que dende CREUP se queren realizar.",
+      "loadError": "Non se puideron cargar os informes executivos neste momento.",
+      "empty": "Non hai informes executivos dispoñibles."
+    }
+  },
+  "regulations": {
+    "title": "Normativa",
+    "description": "Normativa interna de CREUP aprobada pola Asemblea Xeral, con carácter xerárquico: os estatutos constitúen a norma fundacional e prevalecen sobre o resto; os regulamentos de réxime regulan a estrutura orgánica; e os regulamentos de funcionamento concretan o réxime operativo de cada órgano.",
+    "loadError": "Non se puido cargar a normativa neste momento.",
+    "empty": "Non hai normativa dispoñible.",
+    "categories": {
+      "estatutos": "Estatutos",
+      "reglamentos-de-regimen": "Regulamentos de Réxime",
+      "reglamentos-de-funcionamiento": "Regulamentos de Funcionamento"
+    }
+  },
+  "financialReports": {
+    "title": "Informes Económicos",
+    "description": "Informes económicos de CREUP aprobados pola Asemblea Xeral, que detallan a xestión financeira das actividades e eventos da organización.",
+    "loadError": "Non se puideron cargar os informes económicos neste momento.",
+    "empty": "Non hai informes económicos dispoñibles.",
+    "approvedOn": "Aprobado o {date}",
+    "download": "Descargar"
+  },
+  "press": {
+    "allTags": "Todas",
+    "downloadPdf": "Descargar PDF",
+    "pagination": "Paxinación",
+    "readOriginal": "Ler artigo orixinal",
+    "readFull": "Ler o artigo completo",
+    "share": "Compartir",
+    "shareActions": {
+      "copy": "Copiar ligazón",
+      "whatsapp": "Compartir en WhatsApp",
+      "native": "Compartir",
+      "x": "Compartir en X",
+      "linkedin": "Compartir en LinkedIn",
+      "facebook": "Compartir en Facebook",
+      "telegram": "Compartir en Telegram",
+      "email": "Compartir por correo",
+      "print": "Imprimir"
+    },
+    "copy": {
+      "success": "Ligazón copiada",
+      "error": "Non se puido copiar a ligazón"
+    },
+    "notFound": "Non se atopou o artigo solicitado.",
+    "releases": {
+      "title": "Notas de prensa",
+      "description": "Notas de prensa oficiais de CREUP dirixidas a medios de comunicación.",
+      "empty": "Non hai notas de prensa dispoñibles.",
+      "loadError": "Non se puideron cargar as notas de prensa neste momento.",
+      "backToList": "Volver a notas de prensa"
+    },
+    "statements": {
+      "title": "Comunicados de prensa",
+      "description": "Comunicados oficiais de CREUP sobre temas de actualidade.",
+      "empty": "Non hai comunicados dispoñibles.",
+      "loadError": "Non se puideron cargar os comunicados neste momento.",
+      "backToList": "Volver a comunicados"
+    },
+    "inMedia": {
+      "title": "Nos medios",
+      "description": "Aparicións e mencións de CREUP en medios de comunicación.",
+      "empty": "Non hai aparicións en medios dispoñibles.",
+      "loadError": "Non se puideron cargar as aparicións en medios neste momento.",
+      "backToList": "Volver a nos medios"
+    },
+    "news": {
+      "title": "Novas",
+      "description": "Notas de prensa, comunicados e aparicións en medios de CREUP.",
+      "empty": "Non hai novas dispoñibles cos filtros seleccionados.",
+      "emptySearch": "Non hai novas que coincidan coa busca.",
+      "loadError": "Non se puideron cargar as novas neste momento.",
+      "allTypes": "Todos os tipos",
+      "allTags": "Todas as etiquetas",
+      "filterByType": "Filtrar por tipo",
+      "filterByTag": "Filtrar por etiqueta",
+      "searchLabel": "Buscar novas",
+      "searchPlaceholder": "Buscar por título ou resumo",
+      "clearSearch": "Borrar busca",
+      "backToList": "Volver a novas"
+    }
+  },
+  "cookies": {
+    "banner": {
+      "title": "Respectamos a túa privacidade",
+      "description": "Este sitio usa só cookies e almacenamento técnico necesarios para idioma, accesibilidade e a sesión de administración. Ademais, CREUP utiliza unha instancia autoaloxada de Umami para medición agregada do uso sen cookies nin identificadores persistentes.",
+      "dismiss": "Entendido",
+      "learnMore": "Privacidade e cookies"
+    },
+    "footerLink": "Cookies e privacidade"
+  },
+  "contactPage": {
+    "seo": {
+      "title": "Contacto",
+      "description": "Ponte en contacto con CREUP. Envíanos unha mensaxe ou escríbenos a info{'@'}creup.es."
+    },
+    "title": "Contacto",
+    "subtitle": "Tes algunha pregunta ou proposta? Escríbenos e responderémosche o antes posible.",
+    "email": "Tamén podes escribirnos directamente a",
+    "contactType": {
+      "label": "Tipo de contacto",
+      "general": "Contacto xeral",
+      "generalDescription": "Preguntas, propostas ou calquera outra consulta.",
+      "press": "Contacto de prensa",
+      "pressDescription": "Solicitudes de medios de comunicación, entrevistas e notas de prensa."
+    },
+    "form": {
+      "name": "Nome",
+      "namePlaceholder": "O teu nome",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "o-teu{'@'}correo.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+34 600 000 000",
+      "mediaName": "Nome do medio",
+      "mediaNamePlaceholder": "Nome do medio de comunicación",
+      "subject": "Asunto",
+      "subjectPlaceholder": "Asunto da mensaxe",
+      "message": "Mensaxe",
+      "messagePlaceholder": "Escribe aquí a túa mensaxe...",
+      "honeypotLabel": "Segundo nome",
+      "turnstile": "Verificación anti-spam",
+      "turnstileHelp": "Completa a verificación para enviar o formulario.",
+      "turnstileLoading": "Cargando verificación anti-spam...",
+      "submit": "Enviar mensaxe",
+      "sending": "Enviando...",
+      "success": "Mensaxe enviada correctamente. Responderémosche o antes posible.",
+      "errorGeneric": "Non se puido enviar a mensaxe. Por favor, téntao de novo máis tarde.",
+      "privacyInfoTitle": "Información básica sobre protección de datos",
+      "privacyInfoController": "Titular do sitio (art. 10 LSSI-CE) e responsable do tratamento: Coordinadora de Representantes de Estudantes de Universidades Públicas (CREUP).",
+      "privacyInfoPurpose": "Finalidade: xestionar e responder as consultas enviadas mediante este formulario.",
+      "privacyInfoLegalBasis": "Base xurídica: atención da solicitude remitida pola persoa interesada e, no seu caso, aplicación de medidas precontractuais solicitadas por ela.",
+      "privacyInfoRecipients": "Destinatarios: non se cederán datos a terceiros, salvo obriga legal.",
+      "privacyInfoRetention": "Conservación: non se incorporan a unha base de datos do sitio web; consérvanse no correo corporativo só durante o tempo necesario para xestionar a consulta e, no seu caso, durante os prazos legalmente esixibles.",
+      "privacyInfoRights": "Dereitos: podes acceder, rectificar e suprimir os teus datos, ademais de exercer outros dereitos, escribindo a info{'@'}creup.es. Tamén podes presentar reclamación ante a AEPD (www.aepd.es).",
+      "privacyInfoMorePrefix": "Información adicional:",
+      "privacyInfoMoreLink": "Aviso legal e política de privacidade",
+      "errors": {
+        "nameRequired": "O nome é obrigatorio",
+        "nameMin": "O nome debe ter polo menos 2 caracteres",
+        "nameMax": "O nome non pode ter máis de 100 caracteres",
+        "emailRequired": "O correo electrónico é obrigatorio",
+        "emailInvalid": "Introduce un correo electrónico válido",
+        "phoneInvalid": "Introduce un número de teléfono válido",
+        "mediaNameRequired": "O nome do medio é obrigatorio",
+        "mediaNameMax": "O nome do medio non pode ter máis de 200 caracteres",
+        "subjectRequired": "O asunto é obrigatorio",
+        "subjectMin": "O asunto debe ter polo menos 3 caracteres",
+        "subjectMax": "O asunto non pode ter máis de 200 caracteres",
+        "messageRequired": "A mensaxe é obrigatoria",
+        "messageMin": "A mensaxe debe ter polo menos 10 caracteres",
+        "messageMax": "A mensaxe non pode ter máis de 5000 caracteres",
+        "turnstileRequired": "Completa a verificación anti-spam"
+      }
+    }
+  },
+  "newsletterPage": {
+    "seo": {
+      "title": "Newsletter",
+      "description": "Subscríbete á newsletter de CREUP e descarga os números anteriores."
+    },
+    "title": "Newsletter",
+    "subtitle": "Mantente ao día coas últimas novidades de CREUP. Recibe a nosa newsletter mensual directamente no teu correo.",
+    "dateLocale": "gl-ES",
+    "confirmed": {
+      "title": "Subscrición confirmada",
+      "description": "O teu enderezo quedou activado para recibir a newsletter de CREUP."
+    },
+    "alreadyConfirmed": {
+      "title": "A subscrición xa estaba confirmada",
+      "description": "Este enderezo xa estaba activo para recibir a newsletter de CREUP."
+    },
+    "confirmedExpired": {
+      "title": "A ligazón de confirmación caducou",
+      "description": "Volve enviar o formulario de subscrición para recibir unha ligazón nova."
+    },
+    "confirmedInvalid": {
+      "title": "A ligazón de confirmación non é válida",
+      "description": "Comproba o correo que recibiches ou volve subscribirte para xerar unha ligazón nova."
+    },
+    "unsubscribe": {
+      "title": "Décheste de baixa da newsletter",
+      "description": "Non recibirás máis correos da newsletter de CREUP con este enderezo."
+    },
+    "unsubscribeInvalid": {
+      "title": "Esta ligazón de baixa xa non é válida",
+      "description": "Utiliza a ligazón de baixa máis recente que teñas nun correo da newsletter para xestionar a túa subscrición."
+    },
+    "form": {
+      "ariaLabel": "Formulario de subscrición á newsletter",
+      "heading": "Subscríbete á newsletter",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "o-teu{'@'}correo.com",
+      "honeypotLabel": "Segundo nome",
+      "turnstile": "Verificación anti-spam",
+      "turnstileHelp": "Completa a verificación para finalizar a subscrición.",
+      "turnstileLoading": "Cargando verificación anti-spam...",
+      "submit": "Subscribirme",
+      "sending": "Subscribindo...",
+      "pendingConfirmation": "Enviámosche un correo para confirmar a subscrición.",
+      "errorGeneric": "Non se puido completar a subscrición. Por favor, téntao de novo máis tarde.",
+      "consentPrefix": "Acepto o tratamento dos meus datos para xestionar a subscrición á newsletter conforme ao ",
+      "consentLink": "aviso legal e política de privacidade",
+      "consentSuffix": ".",
+      "privacyInfoTitle": "Información básica sobre protección de datos",
+      "privacyInfoController": "Titular do sitio (art. 10 LSSI-CE) e responsable do tratamento: Coordinadora de Representantes de Estudantes de Universidades Públicas (CREUP).",
+      "privacyInfoPurpose": "Finalidade: xestionar a subscrición á newsletter e enviar comunicacións periódicas sobre as actividades de CREUP.",
+      "privacyInfoLegalBasis": "Base xurídica: consentimento da persoa interesada (art. 6.1.a do RGPD).",
+      "privacyInfoRecipients": "Destinatarios: non se cederán datos a terceiros, salvo obriga legal.",
+      "privacyInfoRetention": "Conservación: os datos conservaranse mentres se manteña a subscrición. Tras a baixa, manterase un rexistro mínimo de supresión para evitar novos envíos non desexados e atender posibles incidencias ou reclamacións.",
+      "privacyInfoRights": "Dereitos: podes acceder, rectificar e suprimir os teus datos, ademais de exercer outros dereitos, escribindo a info{'@'}creup.es. Tamén podes presentar reclamación ante a AEPD (www.aepd.es).",
+      "privacyInfoMorePrefix": "Información adicional:",
+      "privacyInfoMoreLink": "Aviso legal e política de privacidade",
+      "errors": {
+        "emailRequired": "O correo electrónico é obrigatorio",
+        "emailInvalid": "Introduce un correo electrónico válido",
+        "consentRequired": "Debes aceptar a política de privacidade para subscribirte",
+        "turnstileRequired": "Completa a verificación anti-spam"
+      }
+    },
+    "archive": {
+      "ariaLabel": "Arquivo de newsletters",
+      "title": "Números anteriores",
+      "empty": "Aínda non se publicou ningunha newsletter.",
+      "download": "Descargar PDF"
+    }
+  },
+  "admin": {
+    "errors": {
+      "slugExists": "Xa existe unha etiqueta con este slug",
+      "tagOrderSaveFailed": "Non se puido gardar a orde de etiquetas",
+      "tagSaveFailed": "Non se puido gardar a etiqueta",
+      "tagDeleteFailed": "Non se puido eliminar a etiqueta",
+      "saveFailed": "Erro ao gardar",
+      "deleteFailed": "Erro ao eliminar",
+      "loadFailed": "Erro ao cargar os datos"
+    },
+    "messages": {
+      "tagOrderSaved": "Orde de etiquetas gardada",
+      "tagUpdated": "Etiqueta actualizada",
+      "tagCreated": "Etiqueta creada",
+      "tagDeleted": "Etiqueta eliminada"
+    },
+    "success": {
+      "saved": "Gardado correctamente",
+      "deleted": "Eliminado correctamente",
+      "orderSaved": "Orde gardada correctamente"
+    },
+    "common": {
+      "add": "Engadir",
+      "cancel": "Cancelar",
+      "save": "Gardar",
+      "create": "Crear",
+      "delete": "Eliminar",
+      "retry": "Reintentar",
+      "saveOrder": "Gardar orde",
+      "confirmDeleteTitle": "Confirmar eliminación",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "optional": "(opcional)",
+      "loadErrorDescription": "Revisa a conexión e téntao de novo.",
+      "deleteConfirm": "Seguro que queres eliminar \"{name}\"? Esta acción non se pode desfacer.",
+      "fileTooLargeMb": "O ficheiro supera o tamaño máximo ({mb}MB)",
+      "uploadRequestTooLarge": "O ficheiro ou a solicitude supera o tamaño máximo permitido",
+      "fileUploaded": "Ficheiro subido correctamente",
+      "fileUploadFailed": "Non se puido subir o ficheiro"
+    },
+    "media": {
+      "title": "Medios de comunicación",
+      "addItem": "Engadir medio",
+      "empty": "Aínda non hai medios de comunicación.",
+      "loadErrorTitle": "Non se puideron cargar os medios",
+      "loadErrorDescription": "Revisa a conexión e téntao de novo.",
+      "newTitle": "Novo medio",
+      "editTitle": "Editar medio",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Nome do medio",
+      "websiteLabel": "Web",
+      "websitePlaceholder": "https://...",
+      "logoLabel": "Logo",
+      "uploadLogo": "Subir logo",
+      "changeLogo": "Cambiar logo",
+      "logoUploaded": "Logo subido correctamente",
+      "logoUploadFailed": "Non se puido subir o logo",
+      "logoAlt": "Logo de {name}",
+      "logoPreviewAlt": "Vista previa do logo",
+      "editAria": "Editar medio",
+      "deleteAria": "Eliminar medio",
+      "deleteConfirm": "Seguro que queres eliminar \"{name}\"? Esta acción non se pode desfacer.",
+      "createdToast": "Medio creado",
+      "updatedToast": "Medio actualizado",
+      "deletedToast": "Medio eliminado",
+      "orderSavedToast": "Orde gardada",
+      "saveErrorToast": "Non se puido gardar o medio",
+      "deleteErrorToast": "Non se puido eliminar o medio",
+      "orderErrorToast": "Non se puido gardar a orde"
+    },
+    "nav": {
+      "dashboard": {
+        "name": "Panel"
+      },
+      "access": {
+        "name": "Accesos",
+        "description": "Persoas autorizadas para entrar no panel."
+      },
+      "stats": {
+        "name": "Estado",
+        "description": "Métricas operativas e saúde básica do servizo."
+      },
+      "carousel": {
+        "name": "Carrusel",
+        "description": "Diapositivas destacadas da portada."
+      },
+      "about": {
+        "name": "Que é CREUP",
+        "description": "Banner principal da páxina."
+      },
+      "equality": {
+        "name": "Igualdade",
+        "description": "Documentos e tarxetas da páxina de igualdade."
+      },
+      "newsletter": {
+        "name": "Newsletter",
+        "description": "Edicións publicadas e listas para envío."
+      },
+      "press": {
+        "name": "Novas",
+        "description": "Artigos, comunicados e aparicións en medios."
+      },
+      "pressDossier": {
+        "name": "Dossier de prensa",
+        "description": "PDF ligado desde o menú de navegación."
+      },
+      "siteDefaultImages": {
+        "name": "Imaxes por defecto",
+        "description": "Portadas de prensa, newsletter e carrusel cando non hai imaxe propia."
+      },
+      "links": {
+        "name": "Ligazóns",
+        "description": "Bloques destacados e accesos rápidos."
+      },
+      "tags": {
+        "name": "Etiquetas",
+        "description": "Taxonomía usada para clasificar a prensa."
+      },
+      "media": {
+        "name": "Medios",
+        "description": "Medios asociados a aparicións en prensa."
+      },
+      "financialReports": {
+        "name": "Informes económicos",
+        "description": "Informes aprobados pola Asemblea Xeral."
+      }
+    },
+    "layout": {
+      "adminTitle": "Administración",
+      "signOut": "Pechar sesión",
+      "viewSite": "Ver sitio",
+      "collapseSidebar": "Contraer menú lateral",
+      "expandSidebar": "Expandir menú lateral",
+      "closeSidebar": "Pechar menú lateral",
+      "skipToNav": "Ir ao menú principal",
+      "skipToContent": "Ir ao contido principal",
+      "mainNavLabel": "Navegación principal",
+      "userMenu": "Menú de usuario",
+      "loadingSession": "Cargando sesión...",
+      "userAvatar": "Avatar de {name}",
+      "userAvatarFallback": "Avatar de usuario"
+    },
+    "carousel": {
+      "title": "Carrusel",
+      "imageUploaded": "Imaxe subida correctamente",
+      "imageUploadFailed": "Non se puido subir a imaxe",
+      "orderSavedToast": "Orde do carrusel gardada",
+      "orderErrorToast": "Non se puido gardar a orde do carrusel",
+      "createdToast": "Elemento do carrusel creado",
+      "updatedToast": "Elemento do carrusel actualizado",
+      "deletedToast": "Elemento do carrusel eliminado",
+      "saveErrorToast": "Non se puido gardar o elemento do carrusel",
+      "deleteErrorToast": "Non se puido eliminar o elemento do carrusel",
+      "loadErrorTitle": "Non se puideron cargar os elementos do carrusel",
+      "editAria": "Editar elemento do carrusel",
+      "deleteAria": "Eliminar elemento do carrusel",
+      "empty": "Aínda non hai elementos no carrusel.",
+      "addItem": "Engadir elemento",
+      "newTitle": "Novo elemento",
+      "editTitle": "Editar elemento",
+      "imageLabel": "Imaxe (opcional)",
+      "imagePreviewAlt": "Vista previa do banner",
+      "noImage": "Sen imaxe (usarase a predeterminada se está configurada)",
+      "uploadImage": "Subir imaxe",
+      "changeImage": "Cambiar imaxe",
+      "recommendedSize": "Tamaño recomendado: 1925 × 550 px.",
+      "linkLabel": "Ligazón",
+      "linkPlaceholder": "/pagina",
+      "statusLabel": "Estado",
+      "titleLabel": "Título",
+      "buttonTextLabel": "Texto do botón",
+      "altLabel": "Texto alternativo (descrición da imaxe)"
+    },
+    "links": {
+      "heading": "Ligazóns destacadas",
+      "loadError": "Non se puideron cargar as ligazóns",
+      "emptyState": "Aínda non hai ligazóns destacadas.",
+      "addLink": "Engadir ligazón",
+      "editAriaLabel": "Editar ligazón destacada",
+      "deleteAriaLabel": "Eliminar ligazón destacada",
+      "editTitle": "Editar ligazón",
+      "createTitle": "Nova ligazón",
+      "imageLabel": "Imaxe",
+      "imagePreviewAlt": "Vista previa da imaxe da ligazón",
+      "imagePlaceholder": "Sobe unha imaxe cadrada para a ligazón destacada.",
+      "changeImage": "Cambiar imaxe",
+      "uploadImage": "Subir imaxe",
+      "imageHint": "Formato recomendado: cadrado. A vista previa móstrase reducida para evitar ampliacións enganosas.",
+      "urlLabel": "Ligazón (URL)",
+      "statusLabel": "Estado",
+      "titleLabel": "Título",
+      "altLabel": "Texto alternativo",
+      "imageUploadSuccess": "Imaxe subida correctamente",
+      "imageUploadError": "Non se puido subir a imaxe",
+      "orderSaved": "Orde das ligazóns gardada",
+      "orderSaveError": "Non se puido gardar a orde das ligazóns",
+      "updateSuccess": "Ligazón actualizada",
+      "createSuccess": "Ligazón creada",
+      "saveError": "Non se puido gardar a ligazón",
+      "deleteSuccess": "Ligazón eliminada",
+      "deleteError": "Non se puido eliminar a ligazón"
+    },
+    "equality": {
+      "title": "Igualdade",
+      "subtitle": "Xestiona os documentos públicos e o contido das súas tarxetas.",
+      "newDocument": "Novo documento",
+      "loadErrorTitle": "Non se puideron cargar os documentos",
+      "empty": "Aínda non hai documentos de igualdade.",
+      "addFirst": "Engadir primeiro documento",
+      "viewPdf": "Ver PDF",
+      "edit": "Editar",
+      "editTitle": "Editar documento",
+      "newTitle": "Novo documento",
+      "statusLabel": "Estado",
+      "pdfLabel": "PDF",
+      "currentFile": "Ficheiro actual",
+      "noPdfUploaded": "Aínda non subiches ningún PDF.",
+      "changePdf": "Cambiar PDF",
+      "uploadPdf": "Subir PDF",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descrición",
+      "metaLabel": "Meta",
+      "additionalLanguage": "{count} idioma adicional",
+      "additionalLanguagesPlural": "{count} idiomas adicionais",
+      "orderSavedToast": "Orde gardada",
+      "orderErrorToast": "Non se puido gardar a orde",
+      "updatedToast": "Documento actualizado",
+      "createdToast": "Documento creado",
+      "saveErrorToast": "Non se puido gardar o documento",
+      "deletedToast": "Documento eliminado",
+      "deleteErrorToast": "Non se puido eliminar o documento",
+      "pdfUploadedToast": "PDF subido correctamente",
+      "pdfUploadFailedToast": "Non se puido subir o PDF"
+    },
+    "financialReports": {
+      "title": "Informes Económicos",
+      "subtitle": "Xestiona os informes económicos de CREUP aprobados pola Asemblea Xeral.",
+      "newReport": "Novo informe",
+      "loadErrorTitle": "Non se puideron cargar os informes",
+      "empty": "Aínda non hai informes económicos.",
+      "createFirst": "Crear primeiro informe",
+      "approvedOn": "Aprobado o {date}",
+      "additionalLanguage": "{count} idioma adicional",
+      "additionalLanguagesPlural": "{count} idiomas adicionais",
+      "viewPdf": "Ver PDF",
+      "editAria": "Editar informe",
+      "deleteAria": "Eliminar informe",
+      "editTitle": "Editar informe",
+      "newTitle": "Novo informe económico",
+      "formHint": "O título en español é obrigatorio. O resto de idiomas son opcionais.",
+      "required": "Obrigatorio",
+      "titleLabel": "Título",
+      "titlePlaceholderEs": "Informe Económico de...",
+      "titlePlaceholderOther": "Economic Report for...",
+      "approvedAtLabel": "Data de aprobación",
+      "pdfLabel": "Documento PDF",
+      "changePdf": "Cambiar PDF",
+      "uploadPdf": "Subir PDF",
+      "statusLabel": "Estado",
+      "saveChanges": "Gardar cambios",
+      "createReport": "Crear informe",
+      "deleteTitle": "Eliminar informe",
+      "deletePrompt": "Seguro que queres eliminar este informe?",
+      "pdfUploaded": "PDF subido correctamente",
+      "pdfUploadFailed": "Non se puido subir o PDF",
+      "pdfTooLarge": "O PDF supera o tamaño máximo (20MB)",
+      "updatedToast": "Informe actualizado",
+      "createdToast": "Informe creado",
+      "saveErrorToast": "Non se puido gardar o informe",
+      "deletedToast": "Informe eliminado",
+      "deleteErrorToast": "Non se puido eliminar o informe"
+    },
+    "tags": {
+      "title": "Etiquetas",
+      "loadErrorTitle": "Non se puideron cargar as etiquetas",
+      "empty": "Aínda non hai etiquetas.",
+      "addItem": "Engadir etiqueta",
+      "editAria": "Editar etiqueta",
+      "deleteAria": "Eliminar etiqueta",
+      "slugPrefix": "Slug: ",
+      "slugLabel": "Slug (identificador único)",
+      "slugPlaceholder": "mi-etiqueta",
+      "nameLabel": "Nome",
+      "editTitle": "Editar etiqueta",
+      "newTitle": "Nova etiqueta",
+      "orderSavedToast": "Orde gardada correctamente",
+      "orderErrorToast": "Non se puido gardar a orde",
+      "updatedToast": "Etiqueta actualizada",
+      "createdToast": "Etiqueta creada",
+      "slugExistsToast": "Xa existe unha etiqueta con ese slug",
+      "saveErrorToast": "Non se puido gardar a etiqueta",
+      "deletedToast": "Etiqueta eliminada",
+      "deleteErrorToast": "Non se puido eliminar a etiqueta"
+    },
+    "siteDefaultImages": {
+      "title": "Imaxes por defecto",
+      "intro": "Configura as imaxes que se mostran cando non hai unha portada propia en prensa, newsletter ou carrusel de inicio.",
+      "saveChanges": "Gardar cambios",
+      "loadErrorTitle": "Non se puideron cargar as imaxes por defecto",
+      "imageUploaded": "Imaxe subida correctamente",
+      "imageUploadFailed": "Non se puido subir a imaxe",
+      "savedToast": "Imaxes por defecto gardadas",
+      "saveErrorToast": "Non se puideron gardar as imaxes",
+      "noImage": "Sen imaxe por defecto",
+      "noOgImage": "Sen ogImage por defecto",
+      "changeImage": "Cambiar imaxe",
+      "uploadImage": "Subir imaxe",
+      "remove": "Quitar",
+      "pressHeading": "Prensa",
+      "pressIntro": "Úsanse na listaxe e fichas cando o artigo non ten imaxe de portada.",
+      "pressReleaseLabel": "Notas de prensa",
+      "statementLabel": "Comunicados",
+      "mediaAppearanceLabel": "Aparicións en medios",
+      "newsletterHeading": "Newsletter",
+      "newsletterIntro": "Portada por defecto do arquivo público e do correo cando unha edición non ten imaxe propia. Na web móstrase cadrada (ata 240px de lado).",
+      "newsletterCoverLabel": "Portada newsletter",
+      "newsletterPreviewHint": "Vista previa 1∶1, ancho máximo 240px (igual que as tarxetas do arquivo).",
+      "carouselHeading": "Carrusel (inicio)",
+      "carouselIntroBefore": "Imaxe mostrada cando unha diapositiva activa non ten ficheiro propio. Mesma proporción que o bloque de inicio:",
+      "carouselIntroAfter": "(≈ 3,5∶1).",
+      "carouselSlideLabel": "Diapositiva por defecto",
+      "seoHeading": "SEO e redes sociais",
+      "seoIntroBefore": "ogImage por defecto para páxinas sen imaxe propia. Sobe un JPG de",
+      "seoIntroAfter": ".",
+      "ogImageLabel": "ogImage por defecto"
+    },
+    "pressDossier": {
+      "title": "Dossier de prensa",
+      "intro": "Sobe o PDF que se ligará desde o menú de navegación cando estea activo.",
+      "loadErrorTitle": "Non se puido cargar o dossier de prensa",
+      "noDossier": "Non hai dossier subido",
+      "pdfReady": "PDF preparado para publicar.",
+      "pdfUploadHint": "Sobe un PDF para activalo.",
+      "changePdf": "Cambiar PDF",
+      "uploadPdf": "Subir PDF",
+      "viewCurrentPdf": "Ver PDF actual",
+      "removePdf": "Quitar PDF",
+      "statusLabel": "Estado",
+      "saveChanges": "Gardar cambios",
+      "removePdfConfirm": "Eliminarase o PDF seleccionado do dossier de prensa. Terás que volver subilo se queres recuperalo.",
+      "saveSuccess": "Dossier gardado",
+      "saveError": "Non se puido gardar o dossier"
+    },
+    "about": {
+      "title": "Que é CREUP",
+      "subtitle": "Xestiona o banner principal visible na páxina.",
+      "loadError": "Non se puido cargar o contido de Que é CREUP",
+      "uploadSuccess": "Imaxe subida correctamente",
+      "uploadError": "Non se puido subir a imaxe",
+      "saveSuccess": "Cambios gardados",
+      "saveError": "Non se puideron gardar os cambios",
+      "heroPreviewAlt": "Vista previa do banner principal",
+      "noBannerUploaded": "Non hai banner subido",
+      "noBanner": "Sen banner",
+      "visible": "Visible",
+      "hidden": "Oculto",
+      "pendingChanges": "Cambios pendentes",
+      "noBannerConfigured": "Non hai banner configurado",
+      "heroHelpWithImage": "Activa o interruptor para mostralo na web ou quítao se xa non se debe usar.",
+      "heroHelpNoImage": "Sobe unha imaxe para habilitar o banner na páxina pública.",
+      "changeImage": "Cambiar imaxe",
+      "uploadImage": "Subir imaxe",
+      "discardSelection": "Descartar selección",
+      "removeBanner": "Quitar banner",
+      "statusLabel": "Estado",
+      "statusHelpWithImage": "Controla se o banner se mostra na páxina.",
+      "statusHelpNoImage": "Precisas unha imaxe para poder activalo.",
+      "saveChanges": "Gardar cambios",
+      "recommendedRatio": "Proporción recomendada: 1925 x 550 px.",
+      "removeBannerConfirm": "Eliminarase a imaxe seleccionada do banner principal. Terás que gardala de novo se cambias de idea."
+    },
+    "access": {
+      "title": "Accesos ao panel",
+      "intro": "Autoriza correos concretos para iniciar sesión con Google. Os accesos definidos en {env} son permanentes desde o panel e deben eliminarse desde alí.",
+      "addEmail": "Engadir correo",
+      "totalAccesses": "Accesos totais",
+      "activeAccesses": "Activos",
+      "envProtected": "Protexidos por .env",
+      "loadErrorTitle": "Non se puideron cargar os accesos",
+      "neverLoggedIn": "Aínda non iniciou sesión",
+      "sourceBoth": "Base de datos e .env",
+      "sourceEnv": "Desde .env",
+      "sourcePanel": "Desde o panel",
+      "pendingFirstLogin": "Pendente de primeiro inicio de sesión",
+      "lastAccess": "Último acceso: {date}",
+      "managedByEnv": "Este acceso xestiónase desde {env}.",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "empty": "Aínda non hai accesos configurados.",
+      "addItem": "Engadir acceso",
+      "modalDescription": "O acceso concederase ao correo indicado cando inicie sesión con Google.",
+      "emailLabel": "Correo autorizado",
+      "emailPlaceholder": "nombre{'@'}dominio.es",
+      "deleteTitle": "Eliminar acceso",
+      "deleteDescription": "Eliminarase o acceso de {email} ao panel de administración.",
+      "addedToast": "Acceso engadido",
+      "addErrorToast": "Non se puido engadir o acceso",
+      "activatedToast": "Acceso activado",
+      "deactivatedToast": "Acceso desactivado",
+      "updateErrorToast": "Non se puido actualizar o acceso",
+      "deletedToast": "Acceso eliminado",
+      "deleteErrorToast": "Non se puido eliminar o acceso"
+    },
+    "press": {
+      "viewOnWebAria": "Ver artigo na web",
+      "unsavedChangesPrompt": "Hai cambios sen gardar. Se saes agora, perderanse.",
+      "types": {
+        "pressRelease": "Notas de prensa",
+        "statement": "Comunicados",
+        "mediaAppearance": "Nos medios"
+      },
+      "list": {
+        "heading": "Artigos de prensa",
+        "subheading": "Crea novas pezas co tipo xa preparado para reducir pasos no fluxo diario.",
+        "newPressRelease": "Nova nota de prensa",
+        "newStatement": "Novo comunicado",
+        "newMediaAppearance": "Engadir aparición",
+        "allTab": "Todos",
+        "filterByTypeAria": "Filtrar artigos por tipo",
+        "searchPlaceholder": "Buscar artigos...",
+        "loadErrorTitle": "Non se puideron cargar os artigos de prensa",
+        "viewOnWebTitle": "Ver na web",
+        "editTitle": "Editar artigo",
+        "editAria": "Editar artigo",
+        "deleteTitle": "Eliminar artigo",
+        "deleteAria": "Eliminar artigo",
+        "noSearchResults": "Non se atoparon artigos para \"{query}\"",
+        "clearSearch": "Limpar busca",
+        "emptyState": "Aínda non hai {type}",
+        "emptyTypeFallback": "artigos de prensa",
+        "createFirst": "Crear primeiro artigo",
+        "paginationAria": "Paxinación de artigos"
+      },
+      "toast": {
+        "deleted": "Artigo eliminado",
+        "deleteError": "Non se puido eliminar o artigo",
+        "created": "Artigo creado correctamente",
+        "createError": "Non se puido crear o artigo",
+        "notFound": "Non se atopou o artigo",
+        "updated": "Artigo actualizado correctamente",
+        "conflictTitle": "Conflito ao gardar",
+        "conflictDescription": "O artigo foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.",
+        "updateError": "Non se puido actualizar o artigo"
+      },
+      "form": {
+        "supportLoadErrorBoth": "Non se puideron cargar etiquetas nin medios",
+        "supportLoadErrorTags": "Non se puideron cargar as etiquetas",
+        "supportLoadErrorMedia": "Non se puideron cargar os medios",
+        "supportLoadErrorDescription": "Recarga a páxina para volver cargar os datos de apoio.",
+        "noPendingChanges": "Non hai cambios pendentes",
+        "imageUploaded": "Imaxe subida correctamente",
+        "imageUploadError": "Non se puido subir a imaxe",
+        "imageTooLarge": "A imaxe supera o tamaño máximo (5MB)",
+        "pdfUploaded": "PDF subido correctamente",
+        "pdfUploadError": "Non se puido subir o PDF",
+        "pdfTooLarge": "O PDF supera o tamaño máximo (20MB)",
+        "back": "Volver",
+        "editingLabel": "Editando",
+        "newLabel": "Novo",
+        "saveChanges": "Gardar cambios",
+        "createArticle": "Crear artigo",
+        "mediaAppearanceTitle": "Aparición nos medios",
+        "mediaAppearanceHint": "Indica a ligazón á noticia orixinal e o medio que a publicou.",
+        "externalUrlLabel": "Ligazón á noticia",
+        "mediaOutletLabel": "Medio",
+        "mediaOutletPlaceholder": "Selecciona un medio...",
+        "requiredBadge": "Obrigatorio",
+        "titleLabel": "Título",
+        "descriptionLabel": "Descrición breve",
+        "descriptionPlaceholder": "Breve resumo do artigo para SEO e listaxes",
+        "contentLabel": "Contido completo",
+        "contentPlaceholder": "Escribe aquí o contido completo da noticia...",
+        "contentHintDefault": "Obrigatorio se non subes PDF. Noutros idiomas podes deixalo baleiro e amosarase o contido en español.",
+        "contentHintOther": "Opcional. Se o deixas baleiro, amosarase o contido en español.",
+        "altLabel": "Texto alternativo da imaxe",
+        "altPlaceholder": "Descrición da imaxe de portada",
+        "configTitle": "Configuración",
+        "typeLabel": "Tipo de artigo",
+        "publishedAtLabel": "Data de publicación",
+        "selectDateAria": "Seleccionar data",
+        "statusLabel": "Estado",
+        "tagsLabel": "Etiquetas",
+        "tagsPlaceholder": "Selecciona etiquetas...",
+        "coverImageTitle": "Imaxe de portada",
+        "coverImageHintBefore": "Opcional. Se non subes imaxe, usarase a",
+        "coverImageHintLink": "portada por defecto",
+        "coverImageHintAfter": "do tipo de artigo (se está configurada).",
+        "imagePreviewAlt": "Vista previa da imaxe",
+        "noImage": "Sen imaxe",
+        "changeImage": "Cambiar imaxe",
+        "uploadImage": "Subir imaxe",
+        "removeImage": "Quitar imaxe",
+        "imageFormats": "JPG, PNG, WebP, SVG ou AVIF",
+        "pdfTitle": "Documento PDF",
+        "removePdfAria": "Quitar PDF",
+        "changePdf": "Cambiar PDF",
+        "uploadPdf": "Subir PDF",
+        "pdfHint": "Opcional. Se non subes PDF, engade o contido no editor.",
+        "cancelModalTitle": "Cambios sen gardar",
+        "cancelModalBody": "Se saes agora perderás os cambios realizados. Queres continuar?",
+        "keepEditing": "Seguir editando",
+        "discardChanges": "Saír sen gardar"
+      }
+    },
+    "newsletter": {
+      "list": {
+        "title": "Newsletter",
+        "subscribersButton": "Subscritores",
+        "loadErrorTitle": "Non se puideron cargar as newsletters",
+        "empty": "Non hai newsletters. Preme «Engadir» para crear a primeira.",
+        "createdOn": "Creada {date}",
+        "sentOn": "Enviada {date}",
+        "sendingProgress": "Enviando {sent} de {total}",
+        "sendingNow": "Enviándose agora",
+        "pendingSend": "Pendente de envío",
+        "visibleBadge": "Visible na web",
+        "hiddenBadge": "Oculta na web",
+        "sendingBadge": "Enviándose",
+        "sentBadge": "Xa enviada",
+        "pendingBadge": "Pendente",
+        "opensNewTab": "(ábrese nunha nova lapela)",
+        "sentCount": "enviados",
+        "failedCount": "{count} fallidos",
+        "failedTooltip": "Os envíos fallidos non se reintentan automaticamente (máx. {max} intentos por destinatario). Usa o botón de envío manual para volver intentalo.",
+        "failedAria": "Os envíos fallidos requiren reenvío manual",
+        "cancelSend": "Cancelar envío",
+        "cancelSendAria": "Cancelar envío de newsletter de {month}",
+        "sendRequiresVisible": "Debe estar visible na web para poder enviala",
+        "sendAria": "Enviar newsletter de {month}",
+        "editAria": "Editar newsletter de {month}",
+        "deleteAria": "Eliminar newsletter de {month}",
+        "editTitle": "Editar newsletter",
+        "newTitle": "Nova newsletter",
+        "monthLabel": "Mes",
+        "coverImageLabel": "Imaxe de portada",
+        "coverImageDescription": "Se a deixas baleira, usarase a portada por defecto do sitio.",
+        "selectCoverImageAria": "Seleccionar imaxe de portada",
+        "coverPreviewAlt": "Portada",
+        "changeImage": "Cambiar imaxe",
+        "uploadImage": "Subir imaxe",
+        "removeImage": "Quitar",
+        "pdfLabel": "PDF",
+        "changePdf": "Cambiar PDF",
+        "uploadPdf": "Subir PDF",
+        "visibleLabel": "Visible na web",
+        "visibleHint": "Necesario para que os subscritores poidan descargala.",
+        "sendEmailLabel": "Enviar correo aos subscritores",
+        "sendEmailHint": "Se non se envía agora, poderás facelo manualmente unha soa vez máis adiante.",
+        "creatingSending": "Creando e iniciando envío…",
+        "sendModalTitle": "Confirmar envío",
+        "sendConfirmPrefix": "Seguro que queres enviar a newsletter de",
+        "sendConfirmSuffix": "? Esta acción iniciará o envío a todos os subscritores activos.",
+        "sendNow": "Enviar agora",
+        "cancelConfirmPrefix": "Seguro que queres cancelar o envío da newsletter de",
+        "cancelConfirmSuffix": "? Os correos xa enviados non se revertirán.",
+        "back": "Volver",
+        "deleteModalTitle": "Eliminar newsletter",
+        "deleteConfirmPrefix": "Seguro que queres eliminar a newsletter de",
+        "deleteConfirmSuffix": "? Esta acción non se pode desfacer.",
+        "imageUploaded": "Imaxe subida correctamente",
+        "imageUploadFailed": "Non se puido subir a imaxe",
+        "imageTooLarge": "A imaxe supera o tamaño máximo (5MB)",
+        "pdfUploaded": "PDF subido correctamente",
+        "pdfUploadFailed": "Non se puido subir o PDF",
+        "pdfTooLarge": "O PDF supera o tamaño máximo (20MB)",
+        "updatedToast": "Newsletter actualizada",
+        "createdToast": "Newsletter creada",
+        "createdSendingToast": "Newsletter creada e envío iniciado",
+        "saveErrorToast": "Non se puido gardar a newsletter",
+        "deletedToast": "Newsletter eliminada",
+        "deleteErrorToast": "Non se puido eliminar a newsletter"
+      },
+      "subscribers": {
+        "title": "Subscritores",
+        "activeOfTotal": "{active} activos de {total} en total",
+        "searchPlaceholder": "Buscar por correo…",
+        "searchAria": "Buscar subscritores por correo electrónico",
+        "activeOnly": "Só activos",
+        "loadErrorTitle": "Non se puideron cargar os subscritores",
+        "empty": "Non hai subscritores.",
+        "emptySearch": "Non hai subscritores que coincidan coa busca.",
+        "addSubscriber": "Engadir subscritor",
+        "subscribedOn": "Subscrito {date}",
+        "unsubscribedOn": "Baixa {date}",
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar",
+        "paginationAria": "Paxinación de subscritores",
+        "addConsentNote": "Engade subscritores manualmente só se xa dispós dunha base lexítima e podes acreditar o consentimento.",
+        "emailLabel": "Correo electrónico",
+        "emailPlaceholder": "correo{'@'}exemplo.com",
+        "deleteModalTitle": "Eliminar subscritor",
+        "deleteConfirmPrefix": "Seguro que queres eliminar permanentemente a",
+        "deleteConfirmSuffix": "?",
+        "addedToast": "Subscritor engadido",
+        "addErrorToast": "Non se puido engadir o subscritor",
+        "deactivatedToast": "Subscritor desactivado",
+        "reactivatedToast": "Subscritor reactivado",
+        "updateErrorToast": "Non se puido actualizar o subscritor",
+        "deletedToast": "Subscritor eliminado",
+        "deleteErrorToast": "Non se puido eliminar o subscritor"
+      },
+      "monthPicker": {
+        "jan": "Xan",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Abr",
+        "may": "Mai",
+        "jun": "Xuñ",
+        "jul": "Xul",
+        "aug": "Ago",
+        "sep": "Set",
+        "oct": "Out",
+        "nov": "Nov",
+        "dec": "Dec",
+        "groupAria": "Selector de mes e ano",
+        "prevYearAria": "Ano anterior",
+        "nextYearAria": "Ano seguinte",
+        "taken": "Xa existe unha newsletter para ese mes.",
+        "hint": "Só se permite unha newsletter por mes."
+      }
+    },
+    "stats": {
+      "title": "Estado e métricas",
+      "subtitle": "Uso recente, colas e sinais básicos de saúde para administración técnica.",
+      "autoLabel": "Auto",
+      "refresh": "Actualizar",
+      "loadErrorTitle": "Non se puideron cargar as métricas",
+      "loadErrorDescription": "Só está dispoñible para administradores definidos no contorno.",
+      "staleTitle": "Amosando datos anteriores",
+      "staleDescription": "A última actualización fallou; estas métricas poden estar desactualizadas.",
+      "retryJobError": "Non se puido reintentar o traballo. Pode que xa non exista.",
+      "noRecord": "Sen rexistro",
+      "healthOk": "Operativo",
+      "healthDegraded": "Degradado",
+      "healthDown": "Caído",
+      "systemLabel": "Sistema: {status}",
+      "updatedAt": "· Actualizado {date}",
+      "requestsLastMinute": "Peticións último minuto",
+      "requestsBreakdown": "API {api} · Admin {admin} · Pública {public}",
+      "errorsLastMinute": "Erros último minuto",
+      "errorsBreakdown": "{clientError} respostas 4xx · 5 min: {serverError5min} ×5xx",
+      "newsletterBacklog": "Newsletter backlog",
+      "newsletterBacklogBreakdown": "Activos {active} · Fallidos {failed}",
+      "failedJobs": "Traballos fallidos",
+      "failedRecent": "Recentes",
+      "failedStable": "Estables",
+      "failedJobsBreakdown": "Retidos en cola · {recent} nos últimos 5 min",
+      "trafficTitle": "Tráfico (últimos {minutes} min)",
+      "trafficSubtitle": "Media {perMinute} pet./min en 5 min · os puntos vermellos marcan minutos con 5xx.",
+      "requestsInWindow": "peticións na ventá",
+      "infrastructureTitle": "Infraestrutura",
+      "infrastructureSubtitle": "Estado da base de datos, Redis e proceso.",
+      "database": "Base de datos",
+      "statusOk": "ok",
+      "statusError": "Error",
+      "connections": "Conexións",
+      "idle": "Idle",
+      "waitingPool": "Esperando pool",
+      "poolErrorsTotal": "Erros pool (total)",
+      "lastError": "Último erro",
+      "redis": "Redis",
+      "connectedClients": "Clientes conectados",
+      "usedMemory": "Memoria usada",
+      "hitRate": "Ratio de acertos",
+      "evictedKeys": "Claves expulsadas",
+      "uptime": "Uptime",
+      "redisUnconfigured": "Redis non está configurado neste contorno.",
+      "redisNoServerData": "Sen datos de servidor dispoñibles.",
+      "process": "Proceso",
+      "memoryRss": "Memoria RSS",
+      "heapUsed": "Heap usado",
+      "resourceProxy": "Proxy de recursos",
+      "origins": "{count} orixes",
+      "proxyConnected": "Conectadas",
+      "proxyFree": "Libres",
+      "proxyPending": "Pendentes",
+      "proxyQueued": "En cola",
+      "limitPerOrigin": "Límite/orixe",
+      "queuesTitle": "Colas e worker",
+      "queuesSubtitle": "Backlog BullMQ, fallos recentes e estado de execución.",
+      "pending": "{count} pendentes",
+      "waiting": "Waiting",
+      "active": "Active",
+      "delayed": "Delayed",
+      "failed": "Failed",
+      "completed": "Completed",
+      "retainedFailures": "Fallos retidos",
+      "attempts": "· {count} intentos",
+      "noReasonRecorded": "Sen motivo rexistrado",
+      "newsletterWorker": "Worker de newsletter",
+      "workerProcessing": "Procesando",
+      "workerIdle": "En repouso",
+      "workerShutdownRequested": "Hai unha parada solicitada; os envíos rematarán ou se reencolarán.",
+      "workerNoShutdown": "Non hai parada pendente.",
+      "activeNewsletter": "Newsletter activa:",
+      "slowEndpointsTitle": "Endpoints lentos ou con erros",
+      "slowEndpointsSubtitle": "Márcase como lento desde {threshold} ms; os 5xx lístanse á parte.",
+      "endpointMeta": "Última vez: {lastSeen} · {count} peticións",
+      "average": "Media",
+      "maximum": "Máximo",
+      "slow": "Lentas",
+      "serverErrors": "Erros 5xx",
+      "slowEndpointsEmpty": "Aínda non hai endpoints lentos nin con erros rexistrados."
+    },
+    "dashboard": {
+      "quickActions": "Accións rápidas",
+      "newPressRelease": "Nova nota de prensa",
+      "newStatement": "Novo comunicado",
+      "newMediaAppearance": "Engadir aparición en medios",
+      "newsletter": "Newsletter",
+      "subscribers": "subscritores",
+      "newNewsletter": "Nova newsletter",
+      "viewSubscribers": "Ver subscritores",
+      "recentActivity": "Actividade recente",
+      "recentActivityHint": "O último que se tocou no panel.",
+      "noRecentActivity": "Aínda non hai actividade recente que mostrar.",
+      "loadError": "Non se puido cargar o resumo do panel"
+    },
+    "login": {
+      "title": "Administración",
+      "subtitle": "Inicia sesión para acceder ao panel de administración",
+      "signInWithGoogle": "Iniciar sesión con Google",
+      "checkingAccess": "Verificando o acceso ao panel...",
+      "signOut": "Pechar sesión",
+      "errorNoPermission": "Non tes permiso para acceder a esta páxina",
+      "errorAccountSignIn": "Non se puido completar o inicio de sesión coa conta seleccionada",
+      "errorSignInUnavailable": "Non se puido iniciar sesión neste momento"
+    },
+    "editor": {
+      "contentPlaceholder": "Escribe aquí o contido...",
+      "visibleCharacters": "{count} caracteres visibles",
+      "words": "{count} palabras",
+      "linkModal": {
+        "title": "Xestionar ligazón",
+        "tooltip": "Ligazón",
+        "urlLabel": "URL da ligazón",
+        "urlPlaceholder": "https://ejemplo.com",
+        "help": "Selecciona texto para ligalo. Se non hai selección, inserirase a URL como texto ligado.",
+        "removeLink": "Quitar ligazón",
+        "open": "Abrir",
+        "saveLink": "Gardar ligazón",
+        "errorProtocol": "A ligazón debe comezar con http:// ou https://",
+        "errorDomain": "Introduce un dominio válido",
+        "errorInvalidUrl": "Introduce unha URL válida (por exemplo, https://ejemplo.com)"
+      }
+    },
+    "validation": {
+      "invalidLocale": "Invalid locale / O locale non é válido",
+      "hrefFormat": "A ligazón debe ser unha ruta relativa ou un URL http/https",
+      "duplicateLocale": "Non pode haber traducións duplicadas para o mesmo idioma",
+      "translationRequired": "Requírese polo menos unha tradución",
+      "defaultTitleRequired": "O título en español é obrigatorio",
+      "imageRequired": "A imaxe é requirida",
+      "nameRequired": "O nome é requirido",
+      "invalidUrl": "O URL non é válido",
+      "logoRequired": "O logo é requirido",
+      "slugRequired": "O slug é requirido",
+      "slugFormat": "O slug só pode conter letras minúsculas, números e guións",
+      "slugReserved": "O slug 'all' está reservado",
+      "defaultNameRequired": "O nome en español é obrigatorio",
+      "defaultDescriptionRequired": "A descrición en español é obrigatoria",
+      "pdfRequired": "O PDF é requirido",
+      "invalidDate": "A data non é válida",
+      "dossierPdfRequired": "Debes subir un PDF para activar o dossier",
+      "storagePathNotUrl": "A imaxe debe ser unha ruta de almacenamento, non un URL",
+      "invalidMonth": "O mes non é válido",
+      "invalidEmail": "O email non é válido",
+      "invalidMail": "O correo non é válido",
+      "invalidTranslation": "Tradución non válida",
+      "invalidInput": "Entrada non válida",
+      "invalidArticleType": "Tipo de artigo non válido",
+      "invalidCoverImage": "A imaxe de portada non é válida",
+      "invalidImage": "A imaxe non é válida",
+      "imageMustBeInternal": "A imaxe debe ser unha ruta interna, non un URL externo",
+      "invalidPdf": "O PDF non é válido",
+      "invalidExternalUrl": "O URL externo non é válido",
+      "invalidMediaOutlet": "O medio non é válido",
+      "invalidActive": "Estado non válido",
+      "invalidPublishedAt": "A data de publicación non é válida",
+      "invalidTags": "As etiquetas non son válidas",
+      "titleTooLong": "O título non pode superar os 200 caracteres",
+      "descriptionTooLong": "A descrición non pode superar os 2000 caracteres",
+      "invalidContent": "O contido non é válido",
+      "contentTooLong": "O contido é demasiado longo",
+      "altTooLong": "O texto alternativo non pode superar os 200 caracteres",
+      "contentOrPdfRequired": "Debes engadir contido ou subir un PDF para notas de prensa e comunicados",
+      "externalUrlRequired": "O URL externo é obrigatorio para aparicións nos medios",
+      "mediaOutletRequired": "O medio de comunicación é obrigatorio para aparicións nos medios"
+    }
+  },
+  "confirmSubscription": {
+    "seo": {
+      "title": "Confirmar subscrición á newsletter",
+      "description": "Confirma a túa subscrición á newsletter de CREUP."
+    },
+    "confirmedTitle": "Subscrición confirmada",
+    "confirmedDescription": "O teu enderezo xa quedou activado para recibir a newsletter de CREUP.",
+    "alreadyConfirmedTitle": "A subscrición xa estaba confirmada",
+    "alreadyConfirmedDescription": "Este enderezo xa estaba activo para recibir a newsletter de CREUP.",
+    "expiredTitle": "A ligazón de confirmación caducou",
+    "expiredDescription": "Volve enviar o formulario de subscrición para recibir unha ligazón nova.",
+    "processingTitle": "Confirmando a túa subscrición",
+    "processingDescription": "Estamos activando a túa subscrición á newsletter de CREUP.",
+    "invalidTitle": "Ligazón non válida",
+    "invalidDescription": "A ligazón de confirmación non é correcta. Comproba o correo que recibiches ou volve subscribirte.",
+    "errorTitle": "Produciuse un erro",
+    "errorDescription": "Non se puido confirmar a subscrición. Por favor, téntao de novo ou volve enviar o formulario.",
+    "backToNewsletter": "Volver á newsletter"
+  },
+  "unsubscribePage": {
+    "seo": {
+      "title": "Darse de baixa da newsletter",
+      "description": "Cancela a túa subscrición á newsletter de CREUP."
+    },
+    "processingTitle": "Procesando a túa baixa",
+    "processingDescription": "Estamos cancelando a túa subscrición á newsletter de CREUP.",
+    "invalidTitle": "Ligazón non válida",
+    "invalidDescription": "A ligazón de baixa non é correcta. Comproba o correo que recibiches.",
+    "errorTitle": "Produciuse un erro",
+    "errorDescription": "Non se puido procesar a baixa. Por favor, téntao de novo.",
+    "backToNewsletter": "Volver á newsletter"
+  },
+  "legal": {
+    "sections": {
+      "general": {
+        "id": "informacion-general"
+      },
+      "terms": {
+        "id": "terminos"
+      },
+      "warranties": {
+        "id": "garantias"
+      },
+      "privacy": {
+        "id": "privacidad"
+      },
+      "cookies": {
+        "id": "cookies"
+      },
+      "links": {
+        "id": "enlaces"
+      },
+      "ip": {
+        "id": "propiedad-intelectual"
+      },
+      "legalActions": {
+        "id": "acciones-legales"
+      }
+    },
+    "general": {
+      "heading": "I. Información xeral",
+      "p1": " En cumprimento do deber de información recollido na Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico (LSSI-CE), facilítanse a continuación os seguintes datos de información xeral deste sitio web: ",
+      "p2": " A titularidade deste sitio web, creup.es e os subdominios asociados (en diante, o Sitio Web), correspóndelle á COORDINADORA DE REPRESENTANTES DE ESTUDIANTES DE UNIVERSIDADES PÚBLICAS, provista de NIF G95324281 e inscrita no Registro Nacional de Asociaciones co número 171330, cos seguintes datos de contacto: ",
+      "address": "Edificio de Estudiantes, Avenida Complutense S/N, Moncloa - Aravaca, 28040, Madrid (Madrid), España"
+    },
+    "terms": {
+      "heading": "II. Condicións xerais de uso",
+      "purpose": {
+        "heading": "Obxecto das condicións: o Sitio Web",
+        "p1": " O obxecto das presentes Condicións Xerais de Uso (en diante, Condicións) é regular o acceso e a utilización do Sitio Web. Para os efectos das presentes Condicións, entenderase como Sitio Web a aparencia externa das interfaces de pantalla, tanto de forma estática como dinámica, a árbore de navegación, todos os elementos integrados (en diante, Contidos) e todos aqueles servizos ou recursos en liña que se ofrezan ás persoas usuarias (en diante, Servizos). ",
+        "p2": " CREUP resérvase a facultade de modificar, en calquera momento e sen aviso previo, a presentación e configuración do Sitio Web e dos Contidos e Servizos que nel se incorporan. A persoa usuaria recoñece e acepta que en calquera momento CREUP poida interromper, desactivar e/ou cancelar calquera destes elementos ou o acceso aos mesmos. ",
+        "p3": " O acceso ao Sitio Web é gratuíto con carácter xeral, salvo os custos de conexión a través da rede de telecomunicacións contratada pola persoa usuaria. O uso de certos Contidos ou Servizos pode requirir subscrición ou rexistro previo. "
+      },
+      "user": {
+        "heading": "A persoa usuaria",
+        "p1": " O acceso, a navegación e o uso do Sitio Web confire a condición de persoa usuaria e implica a aceptación, desde o inicio da navegación, de todas as Condicións aquí establecidas, así como das súas ulteriores modificacións, sen prexuízo da lexislación aplicable de obrigado cumprimento. ",
+        "p2": " A persoa usuaria asume a súa responsabilidade dun uso correcto do Sitio Web. Esta responsabilidade estenderase a: ",
+        "items": {
+          "0": " Facer uso adecuado da información, Contidos e/ou Servizos que CREUP ofrece conforme ás presentes Condicións, a lei, a moral e a orde pública. ",
+          "1": " A veracidade e licitude dos datos achegados pola persoa usuaria nos formularios facilitados por CREUP para o acceso a certos Contidos ou Servizos. "
+        },
+        "p3": " O mero acceso a este Sitio Web non supón entablar ningún tipo de relación de carácter comercial entre CREUP e a persoa usuaria. ",
+        "p4": " En cumprimento da lexislación vixente, este Sitio Web está dirixido a todas as persoas que poidan acceder a el e/ou navegar por el. O Sitio Web está dirixido principalmente a persoas usuarias residentes en España. Se unha persoa usuaria accede desde outro país, faino baixo a súa propia responsabilidade e deberá asegurarse de que dito acceso cumpre coa lexislación local. "
+      }
+    },
+    "warranties": {
+      "heading": " III. Acceso e navegación: exención de garantías e responsabilidade ",
+      "p1": " CREUP non garante a continuidade, dispoñibilidade e utilidade do Sitio Web nin dos Contidos ou Servizos. CREUP fará todo o posible polo bo funcionamento do Sitio Web, pero non garante un acceso sen interrupcións nin libre de erros. ",
+      "p2": " CREUP non garante que o contido ou software accesible a través deste Sitio Web estea libre de erros nin que cause danos nos sistemas da persoa usuaria (software e hardware). En ningún caso CREUP será responsable das perdas ou danos derivados do acceso, navegación ou uso do Sitio Web, incluídos, sen limitación, os danos aos sistemas informáticos ou os ocasionados por virus. ",
+      "p3": " CREUP tampouco será responsable dos danos que puidesen producirse por un uso inadecuado deste Sitio Web, incluíndo caídas, interrupcións ou fallos nas telecomunicacións. "
+    },
+    "privacy": {
+      "heading": "IV. Política de privacidade e protección de datos",
+      "intro": " CREUP comprométese a adoptar as medidas técnicas e organizativas necesarias, conforme ao nivel de seguridade adecuado ao risco dos datos recollidos. ",
+      "framework": {
+        "heading": "Marco legal aplicable",
+        "items": {
+          "0": "Reglamento (UE) 2016/679 (RGPD).",
+          "1": " Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales. ",
+          "2": "Real Decreto 1720/2007 y Ley 34/2002 (LSSI-CE), no que resulte aplicable."
+        }
+      },
+      "controller": {
+        "heading": "Identidade do responsable do tratamento",
+        "body": " O responsable do tratamento dos datos é a COORDINADORA DE REPRESENTANTES DE ESTUDIANTES DE UNIVERSIDADES PÚBLICAS, con NIF G95324281, inscrita no Registro Nacional de Asociaciones co número 171330. "
+      },
+      "record": {
+        "heading": "Rexistro de actividades de tratamento",
+        "a": " Os datos persoais recollidos por CREUP mediante os formularios do sitio web trátanse baixo a responsabilidade do responsable para atender consultas, xestionar subscricións á newsletter, manter a relación coas persoas usuarias e cumprir as obrigas aplicables. A información sobre a autoridade de control española está dispoñible en ",
+        "b": ". "
+      },
+      "principles": {
+        "heading": " Principios aplicables ao tratamento de datos persoais ",
+        "items": {
+          "0": "Licitude, lealdade e transparencia",
+          "1": "Limitación da finalidade",
+          "2": "Minimización de datos",
+          "3": "Exactitude",
+          "4": "Limitación do prazo de conservación",
+          "5": "Integridade e confidencialidade",
+          "6": "Responsabilidade proactiva"
+        }
+      },
+      "categories": {
+        "heading": "Categorías de datos persoais",
+        "body": " As categorías de datos que trata CREUP son unicamente datos identificativos. Non se tratan categorías especiais de datos no sentido do artigo 9 do RGPD. "
+      },
+      "legalBasis": {
+        "heading": "Base xurídica do tratamento",
+        "body": " A base xurídica depende da finalidade concreta. Na newsletter, a base xurídica é o consentimento da persoa interesada, recadado mediante unha acción afirmativa clara e confirmado mediante un procedemento de doble opt-in. No formulario de contacto, a base xurídica é a atención da solicitude remitida pola persoa interesada e, no seu caso, a aplicación de medidas precontractuais solicitadas por esta. Para a medición agregada do uso do sitio mediante a instancia autoaloxada de Umami, CREUP aplica o seu interese lexítimo en coñecer o uso básico, o rendemento e os erros do sitio sen utilizar cookies nin identificadores persistentes. "
+      },
+      "purposes": {
+        "heading": "Finalidades do tratamento",
+        "body": " Os datos persoais recóllense e xestiónanse para atender solicitudes e consultas, facilitar a relación coas persoas usuarias e, cando exista consentimento expreso, xestionar a subscrición á newsletter e remitir as súas comunicacións. Así mesmo, CREUP obtén información agregada de uso do sitio para fins estatísticos, técnicos e de mellora do servizo mediante unha instancia propia de Umami configurada sen cookies nin identificadores persistentes. "
+      },
+      "analytics": {
+        "heading": "Analítica web sen cookies",
+        "p1": " Este Sitio Web utiliza unha instancia autoaloxada de Umami, xestionada pola propia CREUP, para obter estatísticas agregadas de uso sen empregar cookies de seguimento nin identificadores persistentes. Segundo a documentación oficial de Umami, a medición pode incluír datos como a URL e o título da páxina visitada, a páxina de procedencia, o idioma do navegador, o navegador, o sistema operativo, o tipo de dispositivo, a resolución de pantalla e métricas de rendemento. ",
+        "p2": {
+          "a": " Cando existen parámetros de campaña na URL, estes tamén poden rexistrarse con fins de atribución agregada. A localización aproximada pode inferirse a partir de cabeceiras de xeolocalización ou da IP empregada para a solicitude, pero o enderezo IP non se almacena, conforme á documentación oficial de Umami. Esta medición non identifica persoalmente á persoa usuaria nin realiza seguimento entre sitios. Como referencia xeral sobre o funcionamento da ferramenta, pode consultarse a documentación oficial de Umami en ",
+          "b": " e o seu aviso de privacidade en ",
+          "c": ". "
+        }
+      },
+      "retention": {
+        "heading": "Prazos de conservación",
+        "body": " Os datos persoais conservaranse unicamente durante o tempo necesario para a finalidade correspondente. As mensaxes enviadas polo formulario de contacto conservaranse no correo corporativo durante o tempo necesario para xestionar a consulta e, no seu caso, durante os prazos legalmente esixibles. Os datos da newsletter conservaranse mentres a subscrición permaneza activa. Tras a baixa, CREUP conservará un rexistro mínimo de supresión para evitar novos envíos non desexados e atender posibles incidencias ou reclamacións. "
+      },
+      "recipients": {
+        "heading": "Destinatarios dos datos persoais",
+        "body": " Os datos persoais non se ceden a terceiros, salvo obriga legal. As métricas agregadas de uso do sitio procésanse en infraestrutura propia de CREUP mediante a súa instancia autoaloxada de Umami, polo que non implican a contratación dun provedor analítico externo por ese motivo. "
+      },
+      "minors": {
+        "heading": "Datos de menores",
+        "body": " De conformidade coa lexislación vixente, os menores de 14 anos necesitan o consentimento de pais ou titores legais para o tratamento lícito dos seus datos persoais. "
+      },
+      "security": {
+        "heading": "Confidencialidade e seguridade",
+        "body": " CREUP comprométese a adoptar as medidas técnicas e organizativas adecuadas para garantir a seguridade e confidencialidade dos datos persoais. O Sitio Web utiliza cifrado SSL/TLS para a transmisión de datos. "
+      },
+      "rights": {
+        "heading": "Dereitos das persoas interesadas",
+        "intro": " As persoas usuarias poden exercer os seguintes dereitos en virtude do RGPD: ",
+        "items": {
+          "0": "Dereito de acceso.",
+          "1": "Dereito de rectificación.",
+          "2": "Dereito de supresión (dereito ao esquecemento).",
+          "3": "Dereito á limitación do tratamento.",
+          "4": "Dereito á portabilidade dos datos.",
+          "5": "Dereito de oposición.",
+          "6": " Dereito a non ser obxecto de decisións baseadas unicamente en tratamentos automatizados. "
+        },
+        "exercise": " Os dereitos pódense exercer mediante comunicación escrita dirixida ao responsable, coa referencia «RGPD-creup.es», incluíndo datos identificativos, solicitude concreta, data e sinatura, e documentación acreditativa. "
+      },
+      "thirdParty": {
+        "heading": "Sitios web de terceiros",
+        "body": " O Sitio Web pode conter ligazóns a sitios web de terceiros non operados por CREUP. Ditos terceiros dispoñen das súas propias políticas de privacidade e cookies e son responsables dos seus propios ficheiros e prácticas de datos. "
+      },
+      "complaints": {
+        "heading": "Reclamacións ante a autoridade de control",
+        "a": " Se unha persoa usuaria considera que o tratamento de datos infrinxe a lexislación aplicable, pode presentar unha reclamación ante a Agencia Española de Protección de Datos: ",
+        "b": ". "
+      },
+      "acceptance": {
+        "heading": "Aceptación e cambios",
+        "body": " O uso do Sitio Web implica a aceptación desta Política de Privacidade. CREUP resérvase o dereito a modificar esta política por cambios lexislativos, xurisprudenciais ou organizativos. "
+      }
+    },
+    "cookies": {
+      "heading": "V. Política de cookies e almacenamento local",
+      "intro": " Neste sitio web utilízanse unicamente cookies e mecanismos de almacenamento local necesarios para lembrar o idioma, manter as sesións de administración e conservar determinadas preferencias técnicas de interface e accesibilidade. A medición agregada con Umami descríbese aquí e na Política de Privacidade porque está configurada sen cookies. ",
+      "used": {
+        "heading": "Cookies e tecnoloxías utilizadas neste sitio web"
+      },
+      "essential": {
+        "title": "Cookies e almacenamento técnico esenciais",
+        "badge": "Sempre activas",
+        "intro": " A continuación identifícanse as tecnoloxías técnicas necesarias para o funcionamento do sitio web. Non poden desactivarse desde o propio sitio porque son necesarias para prestar o servizo. ",
+        "lang": {
+          "label": {
+            "a": "Cookie de idioma (",
+            "b": ")"
+          },
+          "desc": " Almacena o idioma seleccionado pola persoa usuaria para manter a preferencia entre sesións. Duración: 1 ano. "
+        },
+        "auth": {
+          "label": "Cookies de autenticación e sesión (better-auth)",
+          "desc": " Utilízanse exclusivamente cando un administrador inicia sesión no panel de administración. Inclúen tokens de sesión e autenticación OAuth. Non se empregan para os visitantes públicos do sitio. "
+        },
+        "prefs": {
+          "label": "Almacenamento local de preferencias de interface",
+          "desc": {
+            "a": " O almacenamento local do navegador (localStorage) emprégase para lembrar preferencias de interface como o modo de cor (",
+            "b": ") e opcións de accesibilidade (",
+            "c": "). Esta información non se transmite ao servidor e permanece unicamente no dispositivo da persoa usuaria. "
+          }
+        }
+      },
+      "aggregate": {
+        "title": "Medición agregada sen cookies",
+        "badge": "Autoaloxada",
+        "intro": " Ademais das tecnoloxías técnicas imprescindibles, o sitio realiza unha medición agregada do uso para mellorar o seu funcionamento e detectar incidencias. ",
+        "umami": {
+          "label": "Umami Analytics",
+          "desc": " Utilizamos unha instancia autoaloxada de Umami xestionada por CREUP. Umami non emprega cookies, non utiliza identificadores persistentes, non realiza seguimento entre sitios e trata a información de forma agregada. A información xeral sobre a ferramenta pode consultarse na documentación oficial de Umami. "
+        }
+      },
+      "thirdParty": {
+        "heading": "Cookies de terceiros e redes sociais",
+        "body": " Este Sitio Web pode incluír ligazóns a servizos externos (por exemplo, redes sociais). Se a persoa usuaria accede a ditos servizos, os terceiros correspondentes son responsables das súas propias cookies e tratamento de datos. "
+      },
+      "disable": {
+        "heading": "Desactivación, rexeitamento e eliminación de cookies",
+        "body": " As persoas usuarias poden desactivar, rexeitar ou eliminar cookies a través da configuración do navegador. Se se bloquean as cookies técnicas, é posible que algunhas funcionalidades do sitio web non estean dispoñibles. A medición agregada con Umami está configurada sen cookies nin identificadores persistentes; se esta configuración cambiase, esta política actualizaríase en consecuencia. "
+      }
+    },
+    "links": {
+      "heading": "VI. Política de ligazóns",
+      "p1": " CREUP poderá pór a disposición da persoa usuaria ligazóns, directorios e motores de busca que permitan o acceso a sitios web de terceiros. O propósito é facilitar o acceso á información dispoñible en internet. ",
+      "p2": " CREUP non comercializa produtos/servizos dos sitios web ligados e non garante a súa dispoñibilidade técnica, exactitude, veracidade, validez ou legalidade. ",
+      "p3": " CREUP non asume ningunha responsabilidade polos danos derivados do acceso, uso, calidade ou legalidade do contido, comunicacións, opinións, produtos ou servizos de sitios web non xestionados por CREUP. ",
+      "p4": " Calquera persoa usuaria ou terceiro que cree un hipervínculo desde outro sitio web ao Sitio Web de CREUP debe saber que: ",
+      "items": {
+        "0": " Non se permite a reprodución total ou parcial do contido/servizos do Sitio Web sen autorización expresa. ",
+        "1": " Non se permiten declaracións falsas, inexactas ou incorrectas sobre CREUP ou o seu Sitio Web. ",
+        "2": " A creación dun hipervínculo non implica ningunha relación entre CREUP e o titular do sitio que o establece. "
+      }
+    },
+    "ip": {
+      "heading": "VII. Propiedade intelectual e industrial",
+      "p1": " CREUP, por si ou como cesionaria, é titular de todos os dereitos de propiedade intelectual e industrial do Sitio Web e dos elementos que o compoñen (incluíndo, entre outros, textos, imaxes, logotipos, deseño e software). Todos os dereitos reservados. ",
+      "p2": " Queda expresamente prohibida a reprodución, distribución e comunicación pública, incluída a posta a disposición do público, de todo ou parte dos contidos do sitio web con fins comerciais, sen a autorización de CREUP. ",
+      "p3": " Se unha persoa usuaria ou terceiro considera que algún contido do Sitio Web vulnera dereitos de propiedade intelectual, deberá notificalo de inmediato a CREUP utilizando os datos de contacto da sección INFORMACIÓN XERAL. "
+    },
+    "legalActions": {
+      "heading": " VIII. Accións legais, lexislación aplicable e xurisdición ",
+      "p1": " CREUP resérvase a facultade de presentar as accións civís ou penais que considere oportunas ante o uso indebido do Sitio Web e os seus contidos ou o incumprimento das presentes Condicións. ",
+      "p2": " A relación entre a persoa usuaria e CREUP réxese pola lexislación española. Calquera controversia relativa á interpretación e/ou aplicación das presentes Condicións será sometida á xurisdición ordinaria dos tribunais competentes. "
+    }
+  }
+}

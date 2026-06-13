@@ -101,12 +101,13 @@ En resumen:
 | `pnpm build`                  | Construir para producción                              |
 | `pnpm preview`                | Previsualizar build                                    |
 | `pnpm lint` / `pnpm lint:fix` | Lint                                                   |
-| `pnpm i18n:check`             | Verifica paridad de claves entre `es.json` y `en.json` |
-| `pnpm i18n:audit-identical`   | Detecta traducciones idénticas en ambos idiomas        |
+| `pnpm i18n:check`             | Verifica paridad de claves de cada idioma vs `es.json`  |
+| `pnpm i18n:audit-identical`   | Detecta valores idénticos a `es.json` (por defecto `en`)|
 | `pnpm db:generate`            | Genera migración tras cambios en el esquema            |
 | `pnpm db:migrate`             | Aplica migraciones pendientes                          |
 | `pnpm db:studio`              | Abre Drizzle Studio                                    |
-| `pnpm db:seed`                | Carga datos de prueba                                  |
+| `pnpm db:seed`                | Carga datos de prueba (destructivo)                    |
+| `pnpm db:seed:content`        | Backfill idempotente de traducciones de contenido      |
 
 ## Servicios locales
 
@@ -130,12 +131,12 @@ En resumen:
 
 ## Internacionalización (i18n)
 
-Idiomas: `es` (por defecto), `en`, `ca`, `eu`, con estrategia `prefix_except_default`
-(el español no lleva prefijo; el resto van bajo `/en/`, `/ca/`, `/eu/`).
+Idiomas: `es` (por defecto), `en`, `ca`, `eu`, `gl`, con estrategia `prefix_except_default`
+(el español no lleva prefijo; el resto van bajo `/en/`, `/ca/`, `/eu/`, `/gl/`).
 
 **Política de URLs: los slugs públicos se mantienen en español en todos los idiomas.**
 Solo cambia el prefijo de idioma; la ruta (`/conocenos/eventos/...`, `/prensa/...`) es la
-misma en las cuatro versiones. Es una decisión intencionada: simplifica enlaces, canónicas
+misma en todas las versiones. Es una decisión intencionada: simplifica enlaces, canónicas
 y el alta de un idioma nuevo.
 
 Si en el futuro se quisieran slugs traducidos, se haría con las rutas personalizadas de

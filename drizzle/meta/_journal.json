@@ -50,6 +50,13 @@
       "when": 1781385997364,
       "tag": "0006_sparkling_black_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781390055323,
+      "tag": "0007_add_galician_locale",
+      "breakpoints": true
     }
   ]
 }

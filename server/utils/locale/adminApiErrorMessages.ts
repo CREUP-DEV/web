@@ -409,7 +409,107 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   filenameUnavailable: 'Ezin izan da fitxategi-izen erabilgarri bat sortu',
 }
 
-const adminApiErrorMessagesByLocale = { es, en, ca, eu }
+const gl: Record<AdminApiErrorMessageKey, string> = {
+  // Generic
+  duplicateRecord: 'Xa existe un rexistro con eses datos',
+  mutationFailed: 'Erro ao procesar a solicitude',
+  invalidInput: 'Datos de entrada non válidos',
+  internalError: 'Erro interno do servidor',
+  notFound: 'Non atopado',
+  requestNotAllowed: 'Solicitude non permitida.',
+  // Per-resource optimistic lock
+  mediaOptimisticLock:
+    'O medio foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  linkOptimisticLock:
+    'A ligazón foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  carouselOptimisticLock:
+    'O elemento do carrusel foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  equalityOptimisticLock:
+    'O documento foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  financialReportOptimisticLock:
+    'O informe foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  pressArticleOptimisticLock:
+    'O artigo foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  aboutOptimisticLock:
+    'O contido de Que é CREUP foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  tagOptimisticLock:
+    'A etiqueta foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  pressDossierOptimisticLock:
+    'O dossier de prensa foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  siteDefaultImagesOptimisticLock:
+    'As imaxes por defecto foron modificadas por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  newsletterOptimisticLock:
+    'A newsletter foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  mediaDeleteBlocked:
+    'Non se pode eliminar este medio porque está asignado a unha ou máis aparicións nos medios.',
+  smtpIncomplete:
+    'A configuración SMTP é incompleta. Configura o servidor SMTP antes de enviar newsletters.',
+  smtpConnectionFailed:
+    'Non se pode conectar ao servidor de correo. Verifica a configuración SMTP antes de enviar.',
+  // Per-resource create/update failures
+  pressArticleCreateFailed: 'Erro ao crear o artigo',
+  pressArticleSlugFailed: 'Non se puido xerar un slug único para o artigo',
+  pressArticleTagsMissing:
+    'Unha ou varias etiquetas seleccionadas xa non existen. Recarga a páxina e téntao de novo.',
+  mediaCreateFailed: 'Non se puido crear o medio',
+  mediaUpdateFailed: 'Non se puido actualizar o medio',
+  linkCreateFailed: 'Non se puido crear a ligazón',
+  linkUpdateFailed: 'Non se puido actualizar a ligazón',
+  carouselCreateFailed: 'Non se puido crear o elemento do carrusel',
+  carouselUpdateFailed: 'Non se puido actualizar o elemento do carrusel',
+  equalityCreateFailed: 'Non se puido crear o documento de igualdade',
+  equalityUpdateFailed: 'Non se puido actualizar o documento de igualdade',
+  financialReportCreateFailed: 'Non se puido crear o informe económico',
+  financialReportUpdateFailed: 'Non se puido actualizar o informe económico',
+  // Access
+  accessNotFound: 'Acceso non atopado',
+  accessUpdateFailed: 'Non se puido actualizar o acceso',
+  accessEmailRegistered: 'Ese correo xa está rexistrado na lista de accesos.',
+  accessEnvImmutable: 'Non podes modificar un acceso definido no arquivo de contorno.',
+  accessNoActiveAdmins: 'Non podes deixar o panel sen administradores activos.',
+  // Newsletter + subscribers
+  newsletterCreateFailed: 'Erro ao crear a newsletter',
+  newsletterNotSending: 'A newsletter non se está enviando neste momento',
+  newsletterNotFound: 'Newsletter non atopada',
+  newsletterAlreadySent: 'A newsletter xa se enviou',
+  newsletterAlreadySending: 'A newsletter xa se está enviando',
+  newsletterCannotSend: 'Non se pode enviar a newsletter',
+  subscriberSaveFailed: 'Non se puido gardar o subscritor',
+  subscriberUpdateFailed: 'Non se puido actualizar o subscritor',
+  subscriberEmailRegistered: 'Este correo xa está rexistrado',
+  // Jobs
+  jobGone: 'O traballo xa non existe.',
+  jobNotFailed: 'O traballo xa non estaba en estado fallido.',
+  // About / press dossier / tags / images
+  aboutSaveFailed: 'Non se puido gardar o contido',
+  pressDossierSaveFailed: 'Non se puido gardar o dossier',
+  slotConfigInvalid: 'Configuración de slot non válida',
+  tagNotFound: 'Etiqueta non atopada',
+  requiredNameEs: 'O nome en español é requirido',
+  requiredTitleEs: 'O título en español é obrigatorio',
+  // Reorder
+  reorderInvalidState: 'O estado actual non é válido para reordenar',
+  reorderDuplicates: 'A lista contén elementos duplicados',
+  reorderMismatch:
+    'A lista enviada non coincide co estado actual. Recarga a páxina antes de reordenar.',
+  // Assets / uploads
+  assetFileNotFound: 'Arquivo non atopado',
+  assetInvalidPath: 'A ruta do arquivo non é válida',
+  assetUnavailable: 'O arquivo xa non está dispoñible',
+  fileMissing: 'Non se enviou ningún arquivo',
+  fileInvalid: 'Arquivo non válido',
+  fileTooLargeMb: 'O arquivo supera o tamaño máximo ({mb}MB)',
+  requestTooLarge: 'Solicitude demasiado grande',
+  pdfInvalid: 'O PDF subido non é válido',
+  svgForbidden: 'O SVG contén elementos non permitidos',
+  svgInvalid: 'O SVG subido non é válido',
+  rasterImageInvalid: 'A imaxe subida non é válida',
+  formatNotAllowed: 'Formato non permitido. Formatos admitidos: {formats}',
+  imageProcessFailed: 'A imaxe subida non se puido procesar',
+  filenameUnavailable: 'Non se puido xerar un nome de arquivo dispoñible',
+}
+
+const adminApiErrorMessagesByLocale = { es, en, ca, eu, gl }
 
 export const getDefaultAdminApiErrorMessage = (
   key: AdminApiErrorMessageKey,

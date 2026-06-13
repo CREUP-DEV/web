@@ -1,7 +1,7 @@
-import { ca, en, es, eu } from '@nuxt/ui/locale'
+import { ca, en, es, eu, gl } from '@nuxt/ui/locale'
 import { getBaseLanguage } from '~~/shared/utils/locale'
 
-const nuxtUiLocales = { ca, en, es, eu } as const
+const nuxtUiLocales = { ca, en, es, eu, gl } as const
 
 /**
  * Resolves the matching @nuxt/ui locale object for the current app locale.

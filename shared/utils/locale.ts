@@ -25,6 +25,7 @@ const flagFallbackByLanguage: Record<string, string> = {
   en: 'gb',
   es: 'es',
   eu: 'es-pv',
+  gl: 'es-ga',
 }
 
 export const getBaseLanguage = (value?: string | null) => {

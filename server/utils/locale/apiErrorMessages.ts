@@ -197,7 +197,55 @@ const eu: Record<PublicApiErrorMessageKey, string> = {
   turnstileValidationFailed: 'Spam-aren aurkako egiaztapena osatu behar duzu.',
 }
 
-const publicApiErrorMessagesByLocale = { es, en, ca, eu }
+const gl: Record<PublicApiErrorMessageKey, string> = {
+  assetInvalidCredentials: 'O URL do recurso non pode incluír credenciais.',
+  assetInvalidOrigin: 'A orixe do recurso non é válida.',
+  assetInvalidPath: 'A ruta do recurso non é válida.',
+  assetInvalidProtocol: 'O protocolo do recurso non é válido.',
+  assetInvalidRequest: 'A solicitude do recurso non é válida.',
+  assetNotFound: 'Recurso externo non atopado.',
+  assetPathRequired: 'A ruta do recurso é obrigatoria.',
+  assetProxyNotConfigured: 'O proxy de recursos externos non está configurado.',
+  assetTimedOut: 'A solicitude do recurso externo superou o tempo de espera.',
+  assetTooLarge: 'O recurso externo supera o tamaño máximo permitido.',
+  assetUnavailable: 'O recurso externo non está dispoñible temporalmente.',
+  assetUnsupportedType: 'O tipo de recurso externo non é compatible.',
+  articleNotFound: 'Artigo non atopado.',
+  committeesUnavailable: 'A información dos comités non está dispoñible temporalmente.',
+  contactEmailServiceUnavailable: 'O servizo de correo non está dispoñible neste momento.',
+  contactRateLimited: 'Enviaches demasiadas mensaxes. Téntao de novo máis tarde.',
+  contactSpamDetected: 'A mensaxe contén contido non permitido.',
+  antiSpamValidationFailed: 'Non se puido validar a solicitude. Téntao de novo.',
+  documentNotFound: 'Documento non atopado.',
+  eventNotFound: 'Evento non atopado.',
+  eventsUnavailable: 'A información dos eventos non está dispoñible temporalmente.',
+  googleCalendarUnavailable: 'Google Calendar non está dispoñible temporalmente.',
+  invalidInput: 'Datos de entrada non válidos.',
+  internalError: 'Erro interno do servidor.',
+  mandateDetailUnavailable: 'O detalle do mandato non está dispoñible temporalmente.',
+  methodNotAllowed: 'Método non permitido',
+  mandateNotFoundByDate: 'Non se atopou ningún mandato para esa data.',
+  mandatesUnavailable: 'A información dos mandatos non está dispoñible temporalmente.',
+  membersUnavailable: 'A información das asociacións membro non está dispoñible temporalmente.',
+  newsletterEmailDeliveryFailed:
+    'Non se puido enviar o correo de confirmación. Téntao de novo nuns minutos.',
+  newsletterInvalidData: 'Datos de subscrición non válidos',
+  newsletterRateLimited: 'Enviaches demasiadas solicitudes. Téntao de novo máis tarde.',
+  newsletterSubscriptionFailed: 'Non se puido completar a subscrición neste momento',
+  normativaUnavailable: 'A normativa non está dispoñible temporalmente.',
+  policyDocumentsUnavailable: 'A documentación solicitada non está dispoñible temporalmente.',
+  publicAgendaNotAvailable: 'A axenda pública non está dispoñible.',
+  publicAgendaUnavailable: 'A axenda pública non está dispoñible temporalmente.',
+  siteUrlNotConfigured: 'O URL público do sitio non está configurado.',
+  tooManyAttempts: 'Demasiados intentos. Téntao máis tarde.',
+  orgChartUnavailable: 'A información do organigrama non está dispoñible temporalmente.',
+  sectorialUnavailable: 'A información das sectoriais non está dispoñible temporalmente.',
+  serviceTemporarilyUnavailable: 'Servizo temporalmente non dispoñible',
+  turnstileUnavailable: 'O servizo de verificación non está dispoñible temporalmente.',
+  turnstileValidationFailed: 'Debes completar a verificación anti-spam.',
+}
+
+const publicApiErrorMessagesByLocale = { es, en, ca, eu, gl }
 
 export const getDefaultPublicApiErrorMessage = (
   key: PublicApiErrorMessageKey,
