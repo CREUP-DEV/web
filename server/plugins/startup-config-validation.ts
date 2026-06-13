@@ -1,21 +1,16 @@
 import {
   ConfigError,
-  getOptionalConfigUrl,
   requireConfigBoolean,
   requireConfigPositiveInt,
   requireConfigString,
   requireConfigUrl,
+  resolveAuthBaseUrl,
 } from '~~/shared/utils/config'
 import { getEnvAdminEmails } from '../utils/admin/adminAccess'
 import { logError } from '../utils/core/logger'
 
 function requireAuthBaseUrl() {
-  const authBaseUrl =
-    getOptionalConfigUrl(process.env.BETTER_AUTH_URL, 'BETTER_AUTH_URL') ||
-    getOptionalConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL') ||
-    getOptionalConfigUrl(process.env.SITE_URL, 'SITE_URL')
-
-  if (!authBaseUrl) {
+  if (!resolveAuthBaseUrl()) {
     throw new ConfigError(
       'BETTER_AUTH_URL',
       'is missing; set BETTER_AUTH_URL, NUXT_SITE_URL, or SITE_URL'
@@ -29,6 +24,9 @@ function collectConfigValidationErrors(): string[] {
 
   const checks: Array<() => void> = [
     () => requireConfigString(process.env.APP_SECRET, 'APP_SECRET'),
+    () => requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL'),
+    () => requireConfigString(process.env.GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_ID'),
+    () => requireConfigString(process.env.GOOGLE_CLIENT_SECRET, 'GOOGLE_CLIENT_SECRET'),
     () => requireAuthBaseUrl(),
     () => {
       if (getEnvAdminEmails().length === 0) {

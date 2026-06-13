@@ -2,19 +2,14 @@ import { betterAuth } from 'better-auth'
 import { APIError } from 'better-auth/api'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { eq } from 'drizzle-orm'
-import { getOptionalConfigUrl, requireConfigString } from '~~/shared/utils/config'
+import { requireConfigString, resolveAuthBaseUrl } from '~~/shared/utils/config'
 import { db } from '../../db'
 import { users, sessions, accounts, verifications } from '../../db/schema'
 import { isAdminEmailAuthorized, normalizeAdminEmail } from '../admin/adminAccess'
 import { buildRedisKey, getRedisClient } from '../cache/redis'
 
 function getAuthBaseUrl() {
-  return (
-    getOptionalConfigUrl(process.env.BETTER_AUTH_URL, 'BETTER_AUTH_URL') ||
-    getOptionalConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL') ||
-    getOptionalConfigUrl(process.env.SITE_URL, 'SITE_URL') ||
-    undefined
-  )
+  return resolveAuthBaseUrl() ?? undefined
 }
 
 function getTrustedOrigins(): string[] {

@@ -77,3 +77,14 @@ export function requireConfigBoolean(value: unknown, key: string) {
 
   return throwConfigError(key, 'must be "true" or "false"')
 }
+
+// Resolves the auth base URL from the BETTER_AUTH_URL / NUXT_SITE_URL / SITE_URL
+// fallback chain. Returns null when none is set; a present-but-invalid value still
+// throws via getOptionalConfigUrl. Callers decide how to handle the missing case.
+export function resolveAuthBaseUrl(): string | null {
+  return (
+    getOptionalConfigUrl(process.env.BETTER_AUTH_URL, 'BETTER_AUTH_URL') ||
+    getOptionalConfigUrl(process.env.NUXT_SITE_URL, 'NUXT_SITE_URL') ||
+    getOptionalConfigUrl(process.env.SITE_URL, 'SITE_URL')
+  )
+}
