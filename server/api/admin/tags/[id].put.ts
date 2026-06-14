@@ -1,5 +1,6 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { and, eq } from 'drizzle-orm'
+import { db } from '../../../db'
 import { tags, tagTranslations } from '../../../db/schema'
 import {
   filterTranslationsByContent,
@@ -12,7 +13,7 @@ import {
 import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
 import { invalidatePressRelatedCaches } from '../../../utils/admin/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
-import { assertTagSlugAvailable } from '../../../utils/admin/tagMutations'
+import { assertTagMutable, assertTagSlugAvailable } from '../../../utils/admin/tagMutations'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../../../utils/validation'
 import { updateTagSchema } from '~~/shared/utils/adminSchemas'
 import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
@@ -22,6 +23,18 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   try {
+    // Authorize the protected `all` meta-tag before validating the payload, so editing the
+    // reserved row returns a clear 403 (resource is protected) instead of the generic 400
+    // the slug refine would raise when the unchanged `all` slug is resubmitted. The
+    // in-transaction guard below stays as the race-safe authoritative check.
+    const reservedCheck = await db.query.tags.findFirst({
+      where: eq(tags.id, id),
+      columns: { slug: true },
+    })
+    if (reservedCheck) {
+      assertTagMutable(reservedCheck.slug, event)
+    }
+
     const validated = validateBody(event, updateTagSchema, body)
     await assertTagSlugAvailable(validated.slug, id)
 
@@ -48,6 +61,10 @@ export default defineEventHandler(async (event) => {
           message: getAdminApiErrorMessage(event, 'tagNotFound'),
         })
       }
+
+      // The built-in `all` meta-tag is protected — block edits even when the payload
+      // tries to rename its slug away from `all`.
+      assertTagMutable(existingItem.slug, event)
 
       assertOptimisticLock(
         validated.updatedAt,

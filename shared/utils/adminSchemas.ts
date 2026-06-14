@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { RESERVED_TAG_SLUG } from '~~/shared/constants/tags'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
 
 const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
@@ -145,7 +146,7 @@ export const createTagSchema = withTranslationRules(
       .min(1, 'admin.validation.slugRequired')
       .max(100)
       .regex(/^[a-z0-9-]+$/, 'admin.validation.slugFormat')
-      .refine((value) => value !== 'all', 'admin.validation.slugReserved'),
+      .refine((value) => value !== RESERVED_TAG_SLUG, 'admin.validation.slugReserved'),
     order: z.number().int().min(0).default(0),
     translations: z.array(tagTranslationSchema).min(1, 'admin.validation.translationRequired'),
   }),

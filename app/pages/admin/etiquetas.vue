@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 import { createTagSchema } from '~~/shared/utils/adminSchemas'
+import { RESERVED_TAG_SLUG } from '~~/shared/constants/tags'
 
 definePageMeta({
   layout: 'admin',
@@ -33,6 +34,9 @@ interface Tag {
   updatedAt: string
   translations: Translation[]
 }
+
+// The built-in `all` meta-tag is protected server-side; lock its row actions too.
+const isReservedTag = (tag: Tag) => tag.slug === RESERVED_TAG_SLUG
 
 const {
   data,
@@ -287,7 +291,7 @@ const handleDelete = async () => {
             {{ t('admin.tags.slugPrefix') }}{{ item.slug }}
           </p>
         </div>
-        <div class="flex shrink-0 gap-2">
+        <div v-if="!isReservedTag(item)" class="flex shrink-0 gap-2">
           <UButton
             icon="i-tabler-pencil"
             variant="ghost"
@@ -304,6 +308,12 @@ const handleDelete = async () => {
             @click="confirmDelete(item)"
           />
         </div>
+        <UIcon
+          v-else
+          name="i-tabler-lock"
+          class="text-muted size-5 shrink-0"
+          :aria-label="t('admin.tags.reservedAria')"
+        />
       </div>
 
       <div v-if="!localItems.length" class="py-12 text-center">

@@ -640,6 +640,10 @@ submit → call $fetch → on success: toast.add({ color: 'success' }) + closeMo
 
 Never redirect from a modal form. Use `closeModal()` + `refresh()` instead.
 
+### Protected Records
+
+The built-in `all` meta-tag (`RESERVED_TAG_SLUG` in `shared/constants/tags.ts`) is protected: it cannot be created with that slug, edited, or deleted. The guard is server-side and authoritative — `assertTagMutable` (`server/utils/admin/tagMutations.ts`) reads the stored slug in tags PUT/DELETE before mutating; the admin UI also hides its row actions. Don't remove the guard.
+
 ### Form Mutations (Full-page edit)
 
 Pattern used by press article edit:

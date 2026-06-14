@@ -83,6 +83,7 @@ const es = {
   pressDossierSaveFailed: 'No se pudo guardar el dossier',
   slotConfigInvalid: 'Configuración de slot no válida',
   tagNotFound: 'Etiqueta no encontrada',
+  tagReserved: 'La etiqueta «Todas» es del sistema y no se puede editar ni eliminar.',
   requiredNameEs: 'El nombre en español es requerido',
   requiredTitleEs: 'El título en español es obligatorio',
   // Reorder
@@ -185,6 +186,7 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   pressDossierSaveFailed: 'Could not save the press kit',
   slotConfigInvalid: 'Invalid slot configuration',
   tagNotFound: 'Tag not found',
+  tagReserved: 'The “All” tag is a system tag and cannot be edited or deleted.',
   requiredNameEs: 'The Spanish name is required',
   requiredTitleEs: 'The Spanish title is required',
   // Reorder
@@ -285,6 +287,7 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   pressDossierSaveFailed: "No s'ha pogut desar el dossier",
   slotConfigInvalid: 'Configuració de slot no vàlida',
   tagNotFound: 'Etiqueta no trobada',
+  tagReserved: "L'etiqueta «Totes» és del sistema i no es pot editar ni eliminar.",
   requiredNameEs: 'El nom en espanyol és obligatori',
   requiredTitleEs: 'El títol en espanyol és obligatori',
   // Reorder
@@ -385,6 +388,7 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   pressDossierSaveFailed: 'Ezin izan da dosierra gorde',
   slotConfigInvalid: 'Slot-konfigurazioa ez da baliozkoa',
   tagNotFound: 'Etiketa ez da aurkitu',
+  tagReserved: '«Guztiak» etiketa sistemakoa da, eta ezin da editatu edo ezabatu.',
   requiredNameEs: 'Gaztelaniazko izena beharrezkoa da',
   requiredTitleEs: 'Gaztelaniazko izenburua beharrezkoa da',
   // Reorder
@@ -485,6 +489,7 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   pressDossierSaveFailed: 'Non se puido gardar o dossier',
   slotConfigInvalid: 'Configuración de slot non válida',
   tagNotFound: 'Etiqueta non atopada',
+  tagReserved: 'A etiqueta «Todas» é do sistema e non se pode editar nin eliminar.',
   requiredNameEs: 'O nome en español é requirido',
   requiredTitleEs: 'O título en español é obrigatorio',
   // Reorder
@@ -585,6 +590,7 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   pressDossierSaveFailed: "No s'ha pogut guardar el dossier",
   slotConfigInvalid: 'Configuració de slot no vàlida',
   tagNotFound: 'Etiqueta no trobada',
+  tagReserved: "L'etiqueta «Totes» és del sistema i no es pot editar ni eliminar.",
   requiredNameEs: 'El nom en espanyol és obligatori',
   requiredTitleEs: 'El títol en espanyol és obligatori',
   // Reorder

@@ -1068,6 +1068,7 @@
       "addItem": "Engadir etiqueta",
       "editAria": "Editar etiqueta",
       "deleteAria": "Eliminar etiqueta",
+      "reservedAria": "Etiqueta do sistema (non editable)",
       "slugPrefix": "Slug: ",
       "slugLabel": "Slug (identificador único)",
       "slugPlaceholder": "mi-etiqueta",
