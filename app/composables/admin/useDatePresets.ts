@@ -16,10 +16,16 @@ export function useDatePresets() {
       ...(options.includeYear ? { year: 'numeric' } : {}),
     }
 
-    // Reassemble using the standalone short month so locales whose combined
-    // day+month format injects a connector (Catalan renders "9 de juny") fall
-    // back to the compact "9 juny", matching the "9 jun" / "9 Jun" of es/en.
-    // Spanish and English are unaffected (their standalone short month is identical).
+    // Reassemble into a compact "9 jun"-style date so locales that inject a
+    // connector around the month fall back to the bare "day month" of es/en.
+    // The connector shows up in one of two shapes depending on the locale:
+    //   - inside the month token — Catalan's short month is "de juny", so we
+    //     swap it for the standalone short month ("juny").
+    //   - as its own literal part — Galician renders "16 de xuño" with " de "
+    //     as a separate literal, so we collapse connector-word literals to a
+    //     single space.
+    // Spanish/English are unaffected (whitespace-only literals, identical
+    // standalone month).
     const parts = new Intl.DateTimeFormat(currentLanguageTag.value, formatOptions).formatToParts(
       date
     )
@@ -27,7 +33,15 @@ export function useDatePresets() {
       month: 'short',
     }).format(date)
 
-    return parts.map((part) => (part.type === 'month' ? standaloneMonth : part.value)).join('')
+    const isConnectorLiteral = (value: string) => /^\s*\p{L}+\s*$/u.test(value)
+
+    return parts
+      .map((part) => {
+        if (part.type === 'month') return standaloneMonth
+        if (part.type === 'literal' && isConnectorLiteral(part.value)) return ' '
+        return part.value
+      })
+      .join('')
   }
 
   const formatLongDate = (dateStr: string) =>
