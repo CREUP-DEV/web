@@ -213,7 +213,7 @@ const formatUptime = (seconds: number | null) => {
           <div class="flex items-center justify-between gap-2">
             <p class="text-muted text-sm">{{ t('admin.stats.errorsLastMinute') }}</p>
             <UBadge
-              :color="stats.requestRate.lastMinute.serverError > 0 ? 'error' : 'success'"
+              :color="stats.requestRate.last5Minutes.serverError > 0 ? 'error' : 'success'"
               variant="subtle"
             >
               5xx
@@ -221,15 +221,14 @@ const formatUptime = (seconds: number | null) => {
           </div>
           <p
             class="mt-3 text-3xl font-semibold"
-            :class="stats.requestRate.lastMinute.serverError > 0 ? 'text-error' : ''"
+            :class="stats.requestRate.last5Minutes.serverError > 0 ? 'text-error' : ''"
           >
-            {{ stats.requestRate.lastMinute.serverError }}
+            {{ stats.requestRate.last5Minutes.serverError }}
           </p>
           <p class="text-muted mt-2 text-xs">
             {{
               t('admin.stats.errorsBreakdown', {
-                clientError: stats.requestRate.lastMinute.clientError,
-                serverError5min: stats.requestRate.last5Minutes.serverError,
+                clientError: stats.requestRate.last5Minutes.clientError,
               })
             }}
           </p>
@@ -416,12 +415,9 @@ const formatUptime = (seconds: number | null) => {
               </dl>
             </div>
 
-            <UCollapsible class="rounded-2xl border p-4">
-              <button
-                type="button"
-                class="flex w-full items-center justify-between gap-3 text-left"
-              >
-                <span class="font-medium">{{ t('admin.stats.resourceProxy') }}</span>
+            <div class="rounded-2xl border p-4">
+              <div class="flex items-center justify-between gap-3">
+                <p class="font-medium">{{ t('admin.stats.resourceProxy') }}</p>
                 <UBadge color="neutral" variant="subtle">
                   {{
                     t('admin.stats.origins', {
@@ -429,36 +425,34 @@ const formatUptime = (seconds: number | null) => {
                     })
                   }}
                 </UBadge>
-              </button>
-              <template #content>
-                <dl class="text-muted mt-3 space-y-2 text-sm">
-                  <div class="flex justify-between gap-4">
-                    <dt>{{ t('admin.stats.proxyConnected') }}</dt>
-                    <dd>{{ stats.infrastructure.externalAssetProxy.agent.connected }}</dd>
-                  </div>
-                  <div class="flex justify-between gap-4">
-                    <dt>{{ t('admin.stats.proxyFree') }}</dt>
-                    <dd>{{ stats.infrastructure.externalAssetProxy.agent.free }}</dd>
-                  </div>
-                  <div class="flex justify-between gap-4">
-                    <dt>{{ t('admin.stats.proxyPending') }}</dt>
-                    <dd>{{ stats.infrastructure.externalAssetProxy.agent.pending }}</dd>
-                  </div>
-                  <div class="flex justify-between gap-4">
-                    <dt>{{ t('admin.stats.proxyQueued') }}</dt>
-                    <dd>{{ stats.infrastructure.externalAssetProxy.agent.queued }}</dd>
-                  </div>
-                  <div class="flex justify-between gap-4">
-                    <dt>{{ t('admin.stats.limitPerOrigin') }}</dt>
-                    <dd>
-                      {{
-                        stats.infrastructure.externalAssetProxy.agent.configuredConnectionsPerOrigin
-                      }}
-                    </dd>
-                  </div>
-                </dl>
-              </template>
-            </UCollapsible>
+              </div>
+              <dl class="text-muted mt-3 space-y-2 text-sm">
+                <div class="flex justify-between gap-4">
+                  <dt>{{ t('admin.stats.proxyConnected') }}</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.connected }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>{{ t('admin.stats.proxyFree') }}</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.free }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>{{ t('admin.stats.proxyPending') }}</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.pending }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>{{ t('admin.stats.proxyQueued') }}</dt>
+                  <dd>{{ stats.infrastructure.externalAssetProxy.agent.queued }}</dd>
+                </div>
+                <div class="flex justify-between gap-4">
+                  <dt>{{ t('admin.stats.limitPerOrigin') }}</dt>
+                  <dd>
+                    {{
+                      stats.infrastructure.externalAssetProxy.agent.configuredConnectionsPerOrigin
+                    }}
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </div>
         </UCard>
 
