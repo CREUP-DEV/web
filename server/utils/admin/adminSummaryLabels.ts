@@ -1,6 +1,6 @@
 import { PRESS_TYPE_LABELS, type PressArticleType } from '~~/shared/constants/pressTypes'
 
-export type SummaryLocale = 'es' | 'en' | 'ca' | 'eu' | 'gl'
+export type SummaryLocale = 'es' | 'en' | 'ca' | 'eu' | 'gl' | 'val'
 
 const summaryLabelsEs = {
   aboutBannerTitle: 'Banner “Qué es CREUP”',
@@ -162,13 +162,46 @@ export const SUMMARY_LABELS: Record<SummaryLocale, Record<string, string>> = {
     financialActive: 'Informe activo',
     financialInactive: 'Informe inactivo',
   } satisfies Record<SummaryLabelKey, string>,
+  val: {
+    aboutBannerTitle: 'Bàner “Què és CREUP”',
+    aboutNoBanner: 'Sense bàner configurat',
+    aboutVisible: 'Visible en el web públic',
+    aboutSavedHidden: 'Guardat, però ocult',
+    carouselUntitled: 'Diapositiva sense títol',
+    statusActive: 'Actiu',
+    statusInactive: 'Inactiu',
+    equalityFallback: "Document d'igualtat",
+    equalityActive: 'Document actiu',
+    equalityInactive: 'Document inactiu',
+    newsletterPrefix: 'Newsletter',
+    newsletterSendingNow: "S'està enviant ara",
+    newsletterSent: 'Ja enviat',
+    newsletterPending: "Pendent d'enviament",
+    newsletterVisibleWeb: 'visible en el web',
+    newsletterHiddenWeb: 'ocult en el web',
+    pressFallback: 'Article de premsa',
+    pressTypeFallback: 'Premsa',
+    pressDossierTitle: 'Dossier de premsa',
+    pressDossierNoPdf: 'Sense PDF configurat',
+    pressDossierActive: 'PDF actiu',
+    pressDossierInactive: 'PDF guardat però inactiu',
+    linksFallback: 'Enllaç destacat',
+    linksActive: 'Bloc actiu',
+    linksInactive: 'Bloc inactiu',
+    tagPrefix: 'Etiqueta',
+    financialFallback: 'Informe econòmic',
+    financialActive: 'Informe actiu',
+    financialInactive: 'Informe inactiu',
+  } satisfies Record<SummaryLabelKey, string>,
 }
 
 export const resolveSummaryLocale = (locale: string): SummaryLocale =>
-  locale === 'en' || locale === 'ca' || locale === 'eu' || locale === 'gl' ? locale : 'es'
+  locale === 'en' || locale === 'ca' || locale === 'eu' || locale === 'gl' || locale === 'val'
+    ? locale
+    : 'es'
 
 // Localized press-type labels for the activity feed (PRESS_TYPE_LABELS itself is es-only).
-// es reuses that constant; en/ca/eu/gl mirror the i18n locale conventions.
+// es reuses that constant; en/ca/eu/gl/val mirror the i18n locale conventions.
 export const PRESS_TYPE_LABELS_BY_LOCALE: Record<
   SummaryLocale,
   Record<PressArticleType, string>
@@ -193,5 +226,10 @@ export const PRESS_TYPE_LABELS_BY_LOCALE: Record<
     press_release: 'Nota de prensa',
     statement: 'Comunicado',
     media_appearance: 'Aparición nos medios',
+  },
+  val: {
+    press_release: 'Nota de premsa',
+    statement: 'Comunicat',
+    media_appearance: 'Aparició en els mitjans',
   },
 }

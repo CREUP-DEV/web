@@ -57,6 +57,13 @@
       "when": 1781390055323,
       "tag": "0007_add_galician_locale",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781439960598,
+      "tag": "0008_add_valencian_locale",
+      "breakpoints": true
     }
   ]
 }

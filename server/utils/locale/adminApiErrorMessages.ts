@@ -509,7 +509,107 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   filenameUnavailable: 'Non se puido xerar un nome de arquivo dispoñible',
 }
 
-const adminApiErrorMessagesByLocale = { es, en, ca, eu, gl }
+const val: Record<AdminApiErrorMessageKey, string> = {
+  // Generic
+  duplicateRecord: 'Ja existix un registre amb estes dades',
+  mutationFailed: 'Error en processar la sol·licitud',
+  invalidInput: "Dades d'entrada no vàlides",
+  internalError: 'Error intern del servidor',
+  notFound: "No s'ha trobat",
+  requestNotAllowed: 'Sol·licitud no permesa.',
+  // Per-resource optimistic lock
+  mediaOptimisticLock:
+    'El mitjà ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
+  linkOptimisticLock:
+    "L'enllaç ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  carouselOptimisticLock:
+    "L'element del carrusel ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  equalityOptimisticLock:
+    'El document ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
+  financialReportOptimisticLock:
+    "L'informe ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  pressArticleOptimisticLock:
+    "L'article ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  aboutOptimisticLock:
+    'El contingut de Què és CREUP ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
+  tagOptimisticLock:
+    "L'etiqueta ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  pressDossierOptimisticLock:
+    'El dossier de premsa ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
+  siteDefaultImagesOptimisticLock:
+    'Les imatges per defecte han sigut modificades per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
+  newsletterOptimisticLock:
+    'La newsletter ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
+  mediaDeleteBlocked:
+    'No es pot eliminar este mitjà perquè està assignat a una o més aparicions als mitjans.',
+  smtpIncomplete:
+    "La configuració SMTP és incompleta. Configura el servidor SMTP abans d'enviar newsletters.",
+  smtpConnectionFailed:
+    "No es pot connectar al servidor de correu. Comprova la configuració SMTP abans d'enviar.",
+  // Per-resource create/update failures
+  pressArticleCreateFailed: "Error en crear l'article",
+  pressArticleSlugFailed: "No s'ha pogut generar un slug únic per a l'article",
+  pressArticleTagsMissing:
+    'Una o més etiquetes seleccionades ja no existixen. Torna a carregar la pàgina i torna-ho a provar.',
+  mediaCreateFailed: "No s'ha pogut crear el mitjà",
+  mediaUpdateFailed: "No s'ha pogut actualitzar el mitjà",
+  linkCreateFailed: "No s'ha pogut crear l'enllaç",
+  linkUpdateFailed: "No s'ha pogut actualitzar l'enllaç",
+  carouselCreateFailed: "No s'ha pogut crear l'element del carrusel",
+  carouselUpdateFailed: "No s'ha pogut actualitzar l'element del carrusel",
+  equalityCreateFailed: "No s'ha pogut crear el document d'igualtat",
+  equalityUpdateFailed: "No s'ha pogut actualitzar el document d'igualtat",
+  financialReportCreateFailed: "No s'ha pogut crear l'informe econòmic",
+  financialReportUpdateFailed: "No s'ha pogut actualitzar l'informe econòmic",
+  // Access
+  accessNotFound: 'Accés no trobat',
+  accessUpdateFailed: "No s'ha pogut actualitzar l'accés",
+  accessEmailRegistered: "Este correu ja està registrat a la llista d'accessos.",
+  accessEnvImmutable: "No pots modificar un accés definit al fitxer d'entorn.",
+  accessNoActiveAdmins: 'No pots deixar el panell sense administradors actius.',
+  // Newsletter + subscribers
+  newsletterCreateFailed: 'Error en crear la newsletter',
+  newsletterNotSending: "La newsletter no s'està enviant en este moment",
+  newsletterNotFound: 'Newsletter no trobada',
+  newsletterAlreadySent: "La newsletter ja s'ha enviat",
+  newsletterAlreadySending: "La newsletter ja s'està enviant",
+  newsletterCannotSend: 'No es pot enviar la newsletter',
+  subscriberSaveFailed: "No s'ha pogut guardar el subscriptor",
+  subscriberUpdateFailed: "No s'ha pogut actualitzar el subscriptor",
+  subscriberEmailRegistered: 'Este correu ja està registrat',
+  // Jobs
+  jobGone: 'La tasca ja no existix.',
+  jobNotFailed: 'La tasca ja no estava en estat fallit.',
+  // About / press dossier / tags / images
+  aboutSaveFailed: "No s'ha pogut guardar el contingut",
+  pressDossierSaveFailed: "No s'ha pogut guardar el dossier",
+  slotConfigInvalid: 'Configuració de slot no vàlida',
+  tagNotFound: 'Etiqueta no trobada',
+  requiredNameEs: 'El nom en espanyol és obligatori',
+  requiredTitleEs: 'El títol en espanyol és obligatori',
+  // Reorder
+  reorderInvalidState: "L'estat actual no és vàlid per a reordenar",
+  reorderDuplicates: 'La llista conté elements duplicats',
+  reorderMismatch:
+    "La llista enviada no coincidix amb l'estat actual. Torna a carregar la pàgina abans de reordenar.",
+  // Assets / uploads
+  assetFileNotFound: 'Fitxer no trobat',
+  assetInvalidPath: 'La ruta del fitxer no és vàlida',
+  assetUnavailable: 'El fitxer ja no està disponible',
+  fileMissing: "No s'ha enviat cap fitxer",
+  fileInvalid: 'Fitxer no vàlid',
+  fileTooLargeMb: 'El fitxer supera la mida màxima ({mb}MB)',
+  requestTooLarge: 'Sol·licitud massa gran',
+  pdfInvalid: 'El PDF pujat no és vàlid',
+  svgForbidden: "L'SVG conté elements no permesos",
+  svgInvalid: "L'SVG pujat no és vàlid",
+  rasterImageInvalid: 'La imatge pujada no és vàlida',
+  formatNotAllowed: 'Format no permés. Formats admesos: {formats}',
+  imageProcessFailed: "La imatge pujada no s'ha pogut processar",
+  filenameUnavailable: "No s'ha pogut generar un nom de fitxer disponible",
+}
+
+const adminApiErrorMessagesByLocale = { es, en, ca, eu, gl, val }
 
 export const getDefaultAdminApiErrorMessage = (
   key: AdminApiErrorMessageKey,

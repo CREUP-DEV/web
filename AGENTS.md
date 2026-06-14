@@ -50,7 +50,7 @@ server/
 shared/
   utils/            locale.ts, date.ts, config.ts, apiError.ts, adminSchemas.ts
   constants/        assetPaths.ts, pressTypes.ts
-i18n/locales/       es.json, en.json, ca.json, eu.json, gl.json
+i18n/locales/       es.json, en.json, ca.json, eu.json, gl.json, val.json
 drizzle/            Migrations and seed scripts
 ```
 
@@ -83,7 +83,7 @@ drizzle/            Migrations and seed scripts
 ### Public Site i18n
 
 - All public user-facing text MUST go through Nuxt i18n or locale-aware content selection.
-- Supported locales: **`es`** (default, fallback) plus **`en`**, **`ca`**, **`eu`**, **`gl`**. Single-sourced in `LOCALE_DEFINITIONS` (`shared/constants/locales.ts`); adding one follows from that entry — never hard-code the locale list.
+- Supported locales: **`es`** (default, fallback) plus **`en`**, **`ca`**, **`eu`**, **`gl`**, **`val`** (Valencian; `code: 'val'`, hreflang `ca-ES-valencia`). Single-sourced in `LOCALE_DEFINITIONS` (`shared/constants/locales.ts`); adding one follows from that entry — never hard-code the locale list.
 - **Do not hard-code binary `es/en` branching** in business logic.
 - Resolve locales through shared helpers — see Locale Helpers section.
 - When locale-specific resource is missing, fall back to Spanish.
@@ -197,7 +197,7 @@ press client validator) are `admin.validation.*` keys, not literals — e.g.
 `issue.message` via `te(msg) ? t(msg) : msg` (known keys translate; stray literals pass through, never
 hitting the vue-i18n compiler). The server `validateAdmin*` backstop does **not** echo per-field keys —
 it returns a generic locale-aware `getAdminApiErrorMessage(event, 'invalidInput')`. So: add a new
-`admin.validation.<key>` to `es.json` **and every other locale file** (`en`, `ca`, `eu`, `gl` — `pnpm i18n:check` enforces parity), then reference it from the schema.
+`admin.validation.<key>` to `es.json` **and every other locale file** (`en`, `ca`, `eu`, `gl`, `val` — `pnpm i18n:check` enforces parity), then reference it from the schema.
 
 Admin forms import these same zod schemas client-side and validate against them via `useFormValidation` (zod is shipped in the admin bundle, which is acceptable for the non-public panel). The one exception is the press article form: the server press schema validates rich text through a server-only sanitization helper, so it can't be single-sourced — its client validator lives co-located at `app/components/admin/pressArticleFormSchema.ts` (UX only; the server remains authoritative).
 
@@ -585,7 +585,7 @@ Never edit existing migration files.
 
 ### i18n Key Parity
 
-Run `pnpm i18n:check` to verify that every non-base locale file (`en`, `ca`, `eu`, `gl`) has identical leaf keys and placeholders to the base `es.json`. The locale list derives from `LOCALE_DEFINITIONS`, so new locales are checked automatically. This script fails with a non-zero exit code if keys diverge; it runs in CI to catch parity regressions early.
+Run `pnpm i18n:check` to verify that every non-base locale file (`en`, `ca`, `eu`, `gl`, `val`) has identical leaf keys and placeholders to the base `es.json`. The locale list derives from `LOCALE_DEFINITIONS`, so new locales are checked automatically. This script fails with a non-zero exit code if keys diverge; it runs in CI to catch parity regressions early.
 
 ---
 

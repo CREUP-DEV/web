@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import { createResolver } from 'nuxt/kit'
 import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtSecurityRouteRules } from 'nuxt-security'
 import { getOptionalConfigUrl } from './shared/utils/config'
@@ -293,6 +294,11 @@ export default defineNuxtConfig({
     provider: 'server',
     fallbackToApi: false,
     collections: ['tabler', 'circle-flags', 'lucide'],
+    // Local SVG flags that Iconify's circle-flags lacks (e.g. the Valencian
+    // Community has no `es-vc`). Served as `i-flags-<file>` like any collection.
+    customCollections: [
+      { prefix: 'flags', dir: createResolver(import.meta.url).resolve('./app/assets/flags') },
+    ],
     serverBundle: {
       collections: ['tabler', 'circle-flags', 'lucide'],
     },

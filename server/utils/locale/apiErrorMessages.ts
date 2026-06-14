@@ -245,7 +245,55 @@ const gl: Record<PublicApiErrorMessageKey, string> = {
   turnstileValidationFailed: 'Debes completar a verificación anti-spam.',
 }
 
-const publicApiErrorMessagesByLocale = { es, en, ca, eu, gl }
+const val: Record<PublicApiErrorMessageKey, string> = {
+  assetInvalidCredentials: "L'URL del recurs no pot incloure credencials.",
+  assetInvalidOrigin: "L'origen del recurs no és vàlid.",
+  assetInvalidPath: 'La ruta del recurs no és vàlida.',
+  assetInvalidProtocol: 'El protocol del recurs no és vàlid.',
+  assetInvalidRequest: 'La sol·licitud del recurs no és vàlida.',
+  assetNotFound: 'Recurs extern no trobat.',
+  assetPathRequired: 'La ruta del recurs és obligatòria.',
+  assetProxyNotConfigured: 'El proxy de recursos externs no està configurat.',
+  assetTimedOut: "La sol·licitud del recurs extern ha superat el temps d'espera.",
+  assetTooLarge: 'El recurs extern supera la mida màxima permesa.',
+  assetUnavailable: 'El recurs extern no està disponible temporalment.',
+  assetUnsupportedType: 'El tipus de recurs extern no és compatible.',
+  articleNotFound: 'Article no trobat.',
+  committeesUnavailable: 'La informació dels comités no està disponible temporalment.',
+  contactEmailServiceUnavailable: 'El servici de correu no està disponible en este moment.',
+  contactRateLimited: 'Has enviat massa missatges. Torna-ho a provar més tard.',
+  contactSpamDetected: 'El missatge conté contingut no permés.',
+  antiSpamValidationFailed: "No s'ha pogut validar la sol·licitud. Torna-ho a provar.",
+  documentNotFound: 'Document no trobat.',
+  eventNotFound: 'Esdeveniment no trobat.',
+  eventsUnavailable: 'La informació dels esdeveniments no està disponible temporalment.',
+  googleCalendarUnavailable: 'Google Calendar no està disponible temporalment.',
+  invalidInput: "Dades d'entrada no vàlides.",
+  internalError: 'Error intern del servidor.',
+  mandateDetailUnavailable: 'El detall del mandat no està disponible temporalment.',
+  methodNotAllowed: 'Mètode no permés',
+  mandateNotFoundByDate: "No s'ha trobat cap mandat per a esta data.",
+  mandatesUnavailable: 'La informació dels mandats no està disponible temporalment.',
+  membersUnavailable: 'La informació de les associacions membre no està disponible temporalment.',
+  newsletterEmailDeliveryFailed:
+    "No s'ha pogut enviar el correu de confirmació. Torna-ho a provar d'ací a uns minuts.",
+  newsletterInvalidData: 'Dades de subscripció no vàlides',
+  newsletterRateLimited: 'Has enviat massa sol·licituds. Torna-ho a provar més tard.',
+  newsletterSubscriptionFailed: "No s'ha pogut completar la subscripció en este moment",
+  normativaUnavailable: 'La normativa no està disponible temporalment.',
+  policyDocumentsUnavailable: 'La documentació sol·licitada no està disponible temporalment.',
+  publicAgendaNotAvailable: "L'agenda pública no està disponible.",
+  publicAgendaUnavailable: "L'agenda pública no està disponible temporalment.",
+  siteUrlNotConfigured: "L'URL pública del lloc no està configurada.",
+  tooManyAttempts: 'Massa intents. Torna-ho a provar més tard.',
+  orgChartUnavailable: "La informació de l'organigrama no està disponible temporalment.",
+  sectorialUnavailable: 'La informació de les sectorials no està disponible temporalment.',
+  serviceTemporarilyUnavailable: 'Servici temporalment no disponible',
+  turnstileUnavailable: 'El servici de verificació no està disponible temporalment.',
+  turnstileValidationFailed: 'Has de completar la verificació contra el correu brossa.',
+}
+
+const publicApiErrorMessagesByLocale = { es, en, ca, eu, gl, val }
 
 export const getDefaultPublicApiErrorMessage = (
   key: PublicApiErrorMessageKey,

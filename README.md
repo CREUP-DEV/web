@@ -131,8 +131,9 @@ En resumen:
 
 ## Internacionalización (i18n)
 
-Idiomas: `es` (por defecto), `en`, `ca`, `eu`, `gl`, con estrategia `prefix_except_default`
-(el español no lleva prefijo; el resto van bajo `/en/`, `/ca/`, `/eu/`, `/gl/`).
+Idiomas: `es` (por defecto), `en`, `ca`, `eu`, `gl`, `val` (valenciano), con estrategia
+`prefix_except_default` (el español no lleva prefijo; el resto van bajo `/en/`, `/ca/`, `/eu/`,
+`/gl/`, `/val/`). El valenciano usa `code: 'val'` con hreflang `ca-ES-valencia`.
 
 **Política de URLs: los slugs públicos se mantienen en español en todos los idiomas.**
 Solo cambia el prefijo de idioma; la ruta (`/conocenos/eventos/...`, `/prensa/...`) es la

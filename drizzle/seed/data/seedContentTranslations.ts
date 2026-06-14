@@ -59,6 +59,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Totes' },
     { locale: 'eu', name: 'Guztiak' },
     { locale: 'gl', name: 'Todas' },
+    { locale: 'val', name: 'Totes' },
   ],
   'university-policy': [
     { locale: 'es', name: 'Política universitaria' },
@@ -66,6 +67,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Política universitària' },
     { locale: 'eu', name: 'Unibertsitate politika' },
     { locale: 'gl', name: 'Política universitaria' },
+    { locale: 'val', name: 'Política universitària' },
   ],
   'scholarships-funding': [
     { locale: 'es', name: 'Becas y financiación' },
@@ -73,6 +75,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Beques i finançament' },
     { locale: 'eu', name: 'Bekak eta finantzaketa' },
     { locale: 'gl', name: 'Bolsas e financiamento' },
+    { locale: 'val', name: 'Beques i finançament' },
   ],
   'student-economy': [
     { locale: 'es', name: 'Economía estudiantil' },
@@ -80,6 +83,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Economia estudiantil' },
     { locale: 'eu', name: 'Ikasleen ekonomia' },
     { locale: 'gl', name: 'Economía estudantil' },
+    { locale: 'val', name: 'Economia estudiantil' },
   ],
   'internships-employability': [
     { locale: 'es', name: 'Prácticas y empleabilidad' },
@@ -87,6 +91,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Pràctiques i ocupabilitat' },
     { locale: 'eu', name: 'Praktikak eta enplegagarritasuna' },
     { locale: 'gl', name: 'Prácticas e empregabilidade' },
+    { locale: 'val', name: 'Pràctiques i ocupabilitat' },
   ],
   'rights-coexistence-equality': [
     { locale: 'es', name: 'Derechos, convivencia e igualdad' },
@@ -94,6 +99,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Drets, convivència i igualtat' },
     { locale: 'eu', name: 'Eskubideak, bizikidetza eta berdintasuna' },
     { locale: 'gl', name: 'Dereitos, convivencia e igualdade' },
+    { locale: 'val', name: 'Drets, convivència i igualtat' },
   ],
   'university-quality': [
     { locale: 'es', name: 'Calidad universitaria' },
@@ -101,6 +107,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Qualitat universitària' },
     { locale: 'eu', name: 'Unibertsitate kalitatea' },
     { locale: 'gl', name: 'Calidade universitaria' },
+    { locale: 'val', name: 'Qualitat universitària' },
   ],
   'university-life-wellbeing': [
     { locale: 'es', name: 'Vida universitaria y bienestar' },
@@ -108,6 +115,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Vida universitària i benestar' },
     { locale: 'eu', name: 'Unibertsitate bizitza eta ongizatea' },
     { locale: 'gl', name: 'Vida universitaria e benestar' },
+    { locale: 'val', name: 'Vida universitària i benestar' },
   ],
   'access-to-university': [
     { locale: 'es', name: 'Acceso a la universidad' },
@@ -115,6 +123,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Accés a la universitat' },
     { locale: 'eu', name: 'Unibertsitaterako sarbidea' },
     { locale: 'gl', name: 'Acceso á universidade' },
+    { locale: 'val', name: 'Accés a la universitat' },
   ],
   'international-mobility': [
     { locale: 'es', name: 'Internacional y movilidad' },
@@ -122,6 +131,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Internacional i mobilitat' },
     { locale: 'eu', name: 'Nazioartekoa eta mugikortasuna' },
     { locale: 'gl', name: 'Internacional e mobilidade' },
+    { locale: 'val', name: 'Internacional i mobilitat' },
   ],
   'student-representation': [
     { locale: 'es', name: 'Representación estudiantil' },
@@ -129,6 +139,7 @@ export const seedTagTranslations: Record<string, SeedTagTranslation[]> = {
     { locale: 'ca', name: 'Representació estudiantil' },
     { locale: 'eu', name: 'Ikasleen ordezkaritza' },
     { locale: 'gl', name: 'Representación estudantil' },
+    { locale: 'val', name: 'Representació estudiantil' },
   ],
 }
 
@@ -160,6 +171,11 @@ export const seedCarouselTranslations: Record<string, SeedCarouselTranslation[]>
       title: 'Coñece a asociación que representa a máis de 1.000.000 de estudantes.',
       buttonText: 'Que é CREUP?',
     },
+    {
+      locale: 'val',
+      title: "Coneix l'associació que representa més d'1.000.000 d'estudiants.",
+      buttonText: 'Què és CREUP?',
+    },
   ],
 }
 
@@ -171,6 +187,7 @@ export const seedFeaturedLinkTranslations: Record<string, SeedFeaturedLinkTransl
     { locale: 'ca', title: "Manual d'Identitat Corporativa" },
     { locale: 'eu', title: 'Identitate Korporatiboaren Eskuliburua' },
     { locale: 'gl', title: 'Manual de Identidade Corporativa' },
+    { locale: 'val', title: "Manual d'Identitat Corporativa" },
   ],
   '/prensa/newsletter/': [
     { locale: 'es', title: 'Suscríbete a nuestra Newsletter' },
@@ -178,6 +195,7 @@ export const seedFeaturedLinkTranslations: Record<string, SeedFeaturedLinkTransl
     { locale: 'ca', title: 'Subscriu-te a la nostra Newsletter' },
     { locale: 'eu', title: 'Harpidetu gure Newsletterera' },
     { locale: 'gl', title: 'Subscríbete á nosa Newsletter' },
+    { locale: 'val', title: 'Subscriu-te a la nostra Newsletter' },
   ],
   '/transparencia/igualdad': [
     { locale: 'es', title: 'Igualdad y prevención del acoso' },
@@ -185,6 +203,7 @@ export const seedFeaturedLinkTranslations: Record<string, SeedFeaturedLinkTransl
     { locale: 'ca', title: "Igualtat i prevenció de l'assetjament" },
     { locale: 'eu', title: 'Berdintasuna eta jazarpenaren prebentzioa' },
     { locale: 'gl', title: 'Igualdade e prevención do acoso' },
+    { locale: 'val', title: "Igualtat i prevenció de l'assetjament" },
   ],
   'https://www.boe.es/buscar/doc.php?id=BOE-A-2010-20147': [
     { locale: 'es', title: 'Estatuto del Estudiante Universitario' },
@@ -192,6 +211,7 @@ export const seedFeaturedLinkTranslations: Record<string, SeedFeaturedLinkTransl
     { locale: 'ca', title: "Estatut de l'Estudiant Universitari" },
     { locale: 'eu', title: 'Unibertsitateko Ikaslearen Estatutua' },
     { locale: 'gl', title: 'Estatuto do Estudante Universitario' },
+    { locale: 'val', title: "Estatut de l'Estudiant Universitari" },
   ],
   'https://www.becaseducacion.gob.es/': [
     { locale: 'es', title: 'Becas y ayudas para el estudiantado' },
@@ -199,6 +219,7 @@ export const seedFeaturedLinkTranslations: Record<string, SeedFeaturedLinkTransl
     { locale: 'ca', title: "Beques i ajudes per a l'estudiantat" },
     { locale: 'eu', title: 'Bekak eta laguntzak ikasleentzat' },
     { locale: 'gl', title: 'Bolsas e axudas para o estudantado' },
+    { locale: 'val', title: "Beques i ajudes per a l'estudiantat" },
   ],
   'https://www.esu-online.org/': [
     { locale: 'es', title: "European Students' Union (ESU)" },
@@ -206,6 +227,7 @@ export const seedFeaturedLinkTranslations: Record<string, SeedFeaturedLinkTransl
     { locale: 'ca', title: "European Students' Union (ESU)" },
     { locale: 'eu', title: "European Students' Union (ESU)" },
     { locale: 'gl', title: "European Students' Union (ESU)" },
+    { locale: 'val', title: "European Students' Union (ESU)" },
   ],
 }
 
@@ -247,6 +269,13 @@ export const seedEqualityDocumentTranslations: Record<string, SeedEqualityDocume
         'O noso documento marco sobre igualdade, diversidade, discriminacións na universidade e medidas que reclamamos ás institucións públicas.',
       meta: 'Documento político · Igualdade e diversidade',
     },
+    {
+      locale: 'val',
+      title: "Posicionament polític en matèria d'Igualtat i Diversitat",
+      description:
+        'El nostre document marc sobre igualtat, diversitat, discriminacions a la universitat i mesures que reclamem a les institucions públiques.',
+      meta: 'Document polític · Igualtat i diversitat',
+    },
   ],
   [`${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-de-prevencion-y-actuacion-frente-a-casos-de-acoso.pdf`]:
     [
@@ -285,6 +314,13 @@ export const seedEqualityDocumentTranslations: Record<string, SeedEqualityDocume
           'Aprobado na 77.ª Asemblea Xeral Ordinaria, recolle medidas preventivas, principios de confidencialidade, o funcionamento do Punto Seguro e o procedemento de actuación ante condutas contrarias á liberdade sexual.',
         meta: '77.ª Asemblea Xeral Ordinaria · 4 de abril de 2025',
       },
+      {
+        locale: 'val',
+        title: "Protocol de prevenció i actuació davant casos d'assetjament sexual",
+        description:
+          "Aprovat en la 77a Assemblea General Ordinària, arreplega mesures preventives, principis de confidencialitat, el funcionament del Punt Segur i el procediment d'actuació davant conductes contràries a la llibertat sexual.",
+        meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
+      },
     ],
   [`${EQUALITY_DOCUMENTS_PUBLIC_PATH}/protocolo-discriminacion-creup.pdf`]: [
     {
@@ -322,6 +358,13 @@ export const seedEqualityDocumentTranslations: Record<string, SeedEqualityDocume
         'Aprobado na 77.ª Asemblea Xeral Ordinaria, define supostos de discriminación, garantías, Punto Seguro e niveis de intervención ante violencia ou acoso por diversidade.',
       meta: '77.ª Asemblea Xeral Ordinaria · 4 de abril de 2025',
     },
+    {
+      locale: 'val',
+      title: 'Protocol de prevenció i actuació davant casos de discriminació',
+      description:
+        "Aprovat en la 77a Assemblea General Ordinària, definix supòsits de discriminació, garanties, Punt Segur i nivells d'intervenció davant violència o assetjament per diversitat.",
+      meta: "77a Assemblea General Ordinària · 4 d'abril de 2025",
+    },
   ],
   [`${EQUALITY_DOCUMENTS_PUBLIC_PATH}/guia-comunicacion-inclusiva.pdf`]: [
     {
@@ -358,6 +401,13 @@ export const seedEqualityDocumentTranslations: Record<string, SeedEqualityDocume
       description:
         'Recolle recomendacións prácticas sobre linguaxe, recursos visuais e criterios de accesibilidade para unha comunicación máis inclusiva.',
       meta: 'Guía práctica · Linguaxe, visualidade e accesibilidade',
+    },
+    {
+      locale: 'val',
+      title: 'Guia de Comunicació Inclusiva',
+      description:
+        "Arreplega recomanacions pràctiques sobre llenguatge, recursos visuals i criteris d'accessibilitat per a una comunicació més inclusiva.",
+      meta: 'Guia pràctica · Llenguatge, visualitat i accessibilitat',
     },
   ],
 }
