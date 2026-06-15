@@ -34,8 +34,10 @@ import {
   seedCarouselTranslations,
   seedEqualityDocumentTranslations,
   seedFeaturedLinkTranslations,
+  seedFinancialReportTranslations,
   seedTagTranslations,
 } from './seed/data/seedContentTranslations'
+import { seedPressArticleTranslations } from './seed/data/seedPressTranslations'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
@@ -10287,8 +10289,13 @@ async function seedDatabase(db: DbExecutor) {
         })
         .returning()
 
+      const localizedTranslations = getRequiredSeedTranslations(
+        seedPressArticleTranslations,
+        slug,
+        'press article'
+      )
       await tx.insert(schema.pressArticleTranslations).values(
-        item.translations.map((t) => ({
+        [...item.translations, ...localizedTranslations].map((t) => ({
           locale: t.locale,
           title: t.title,
           description: t.description,
@@ -10466,11 +10473,22 @@ async function seedDatabase(db: DbExecutor) {
       })
       .returning()
 
-    await db.insert(schema.financialReportTranslations).values({
-      locale: 'es',
-      title: item.title,
-      financialReportId: report.id,
-    })
+    await db.insert(schema.financialReportTranslations).values([
+      {
+        locale: 'es',
+        title: item.title,
+        financialReportId: report.id,
+      },
+      ...getRequiredSeedTranslations(
+        seedFinancialReportTranslations,
+        item.title,
+        'financial report'
+      ).map((t) => ({
+        locale: t.locale,
+        title: t.title,
+        financialReportId: report.id,
+      })),
+    ])
   }
 
   console.log('📰 Creating newsletters...')

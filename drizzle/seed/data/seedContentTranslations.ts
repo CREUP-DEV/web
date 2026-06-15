@@ -34,6 +34,11 @@ export interface SeedEqualityDocumentTranslation {
   meta: string
 }
 
+export interface SeedFinancialReportTranslation {
+  locale: string
+  title: string
+}
+
 /**
  * Looks up the translations for a parent's natural key, throwing if absent so any future
  * drift between the seed parents and this single source fails loudly instead of silently
@@ -409,5 +414,72 @@ export const seedEqualityDocumentTranslations: Record<string, SeedEqualityDocume
         "Arreplega recomanacions pràctiques sobre llenguatge, recursos visuals i criteris d'accessibilitat per a una comunicació més inclusiva.",
       meta: 'Guia pràctica · Llenguatge, visualitat i accessibilitat',
     },
+  ],
+}
+
+/** Keyed by the financial report Spanish title (its natural key in the seed). */
+export const seedFinancialReportTranslations: Record<string, SeedFinancialReportTranslation[]> = {
+  ['Informe Económico del XI Stage Formativo']: [
+    { locale: 'en', title: 'Financial Report of the XI Stage Formativo' },
+    { locale: 'ca', title: "Informe Econòmic de l'XI Stage Formativo" },
+    { locale: 'eu', title: 'XI. Stage Formativo-ren Txosten Ekonomikoa' },
+    { locale: 'gl', title: 'Informe Económico do XI Stage Formativo' },
+    { locale: 'val', title: "Informe Econòmic de l'XI Stage Formativo" },
+  ],
+  ['Informe Económico de la 76.ª AGO']: [
+    { locale: 'en', title: 'Financial Report of the 76th AGO' },
+    { locale: 'ca', title: 'Informe Econòmic de la 76a AGO' },
+    { locale: 'eu', title: '76. AGO-ren Txosten Ekonomikoa' },
+    { locale: 'gl', title: 'Informe Económico da 76.ª AGO' },
+    { locale: 'val', title: 'Informe Econòmic de la 76a AGO' },
+  ],
+  ['Informe Económico del VI Congreso CREUP-CRUE y XIV Encuentro Estatal de Representantes de CREUP']:
+    [
+      {
+        locale: 'en',
+        title:
+          'Financial Report of the VI CREUP-CRUE Congress and XIV National Meeting of CREUP Representatives',
+      },
+      {
+        locale: 'ca',
+        title:
+          'Informe Econòmic del VI Congrés CREUP-CRUE i XIV Trobada Estatal de Representants de CREUP',
+      },
+      {
+        locale: 'eu',
+        title:
+          'CREUPen VI. CREUP-CRUE Biltzarraren eta XIV. Ordezkarien Estatuko Topaketaren Txosten Ekonomikoa',
+      },
+      {
+        locale: 'gl',
+        title:
+          'Informe Económico do VI Congreso CREUP-CRUE e XIV Encontro Estatal de Representantes de CREUP',
+      },
+      {
+        locale: 'val',
+        title:
+          'Informe Econòmic del VI Congrés CREUP-CRUE i XIV Trobada Estatal de Representants de CREUP',
+      },
+    ],
+  ["Informe Económico de la 46th European Students' Convention"]: [
+    { locale: 'en', title: "Financial Report of the 46th European Students' Convention" },
+    { locale: 'ca', title: "Informe Econòmic de la 46th European Students' Convention" },
+    { locale: 'eu', title: "46th European Students' Convention-en Txosten Ekonomikoa" },
+    { locale: 'gl', title: "Informe Económico da 46th European Students' Convention" },
+    { locale: 'val', title: "Informe Econòmic de la 46th European Students' Convention" },
+  ],
+  ['Informe Económico del Ejercicio de 2023']: [
+    { locale: 'en', title: 'Financial Report for the 2023 Financial Year' },
+    { locale: 'ca', title: "Informe Econòmic de l'Exercici de 2023" },
+    { locale: 'eu', title: '2023ko Ekitaldiaren Txosten Ekonomikoa' },
+    { locale: 'gl', title: 'Informe Económico do Exercicio de 2023' },
+    { locale: 'val', title: "Informe Econòmic de l'Exercici de 2023" },
+  ],
+  ['Informe Económico del X Stage Formativo']: [
+    { locale: 'en', title: 'Financial Report of the X Stage Formativo' },
+    { locale: 'ca', title: 'Informe Econòmic del X Stage Formativo' },
+    { locale: 'eu', title: 'X. Stage Formativo-ren Txosten Ekonomikoa' },
+    { locale: 'gl', title: 'Informe Económico do X Stage Formativo' },
+    { locale: 'val', title: 'Informe Econòmic del X Stage Formativo' },
   ],
 }
