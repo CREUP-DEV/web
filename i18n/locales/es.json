@@ -1577,7 +1577,8 @@
       "altTooLong": "El texto alternativo no puede superar los 200 caracteres",
       "contentOrPdfRequired": "Debes añadir contenido o subir un PDF para notas de prensa y comunicados",
       "externalUrlRequired": "La URL externa es obligatoria para apariciones en medios",
-      "mediaOutletRequired": "El medio de comunicación es obligatorio para apariciones en medios"
+      "mediaOutletRequired": "El medio de comunicación es obligatorio para apariciones en medios",
+      "summaryTitle": "Revisa los errores del formulario"
     }
   },
   "confirmSubscription": {

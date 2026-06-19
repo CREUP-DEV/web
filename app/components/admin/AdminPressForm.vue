@@ -34,7 +34,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const localePath = useLocalePath()
 const { getDefaultTranslationValue, createEmptyTranslations, mapTranslationsToForm } = useLocales()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 const isEditing = computed(() => !!props.article)
 
@@ -330,6 +330,8 @@ const confirmCancel = () => {
       "
       class="mb-6"
     />
+
+    <AdminFormErrorSummary :errors="formErrors" />
 
     <div
       class="bg-background/80 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"

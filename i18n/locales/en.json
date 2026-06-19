@@ -1577,7 +1577,8 @@
       "altTooLong": "The alternative text cannot exceed 200 characters",
       "contentOrPdfRequired": "You must add content or upload a PDF for press releases and statements",
       "externalUrlRequired": "The external URL is required for media appearances",
-      "mediaOutletRequired": "The media outlet is required for media appearances"
+      "mediaOutletRequired": "The media outlet is required for media appearances",
+      "summaryTitle": "Please review the form errors"
     }
   },
   "confirmSubscription": {

@@ -28,7 +28,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -443,6 +443,7 @@ const handleDelete = async () => {
             </h2>
 
             <form id="equality-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <AdminFormErrorSummary :errors="formErrors" />
               <div>
                 <UFormField :label="t('admin.equality.statusLabel')">
                   <div class="flex items-center gap-2">

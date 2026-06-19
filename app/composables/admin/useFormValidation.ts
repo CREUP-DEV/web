@@ -67,9 +67,15 @@ export function useFormValidation() {
 
   const getFieldError = (path: string) => fieldErrors.value[path]
 
+  // Flat, de-duplicated list of every active error message. Backs a catch-all summary so a
+  // validation failure on a path no field renders (e.g. `_form`, a bare `translations` root, or a
+  // field only shown for another form variant) can never fail silently.
+  const formErrors = computed(() => Array.from(new Set(Object.values(fieldErrors.value))))
+
   return {
     clearErrors,
     fieldErrors,
+    formErrors,
     getFieldError,
     validate,
   }

@@ -28,7 +28,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshHomeData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 const { data: siteDefaultImagesData } = await useFetch<{
   data: { carouselSlideImage: string | null }
@@ -425,6 +425,7 @@ const handleDelete = async () => {
             </h2>
 
             <form id="carousel-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <AdminFormErrorSummary :errors="formErrors" />
               <UFormField :label="t('admin.carousel.imageLabel')" :error="getFieldError('image')">
                 <div class="space-y-3">
                   <div class="bg-muted aspect-1925/550 overflow-hidden rounded-xl border">

@@ -1577,7 +1577,8 @@
       "altTooLong": "El text alternatiu no pot superar els 200 caràcters",
       "contentOrPdfRequired": "Has d'afegir contingut o pujar un PDF per a notes de premsa i comunicats",
       "externalUrlRequired": "La URL externa és obligatòria per a aparicions en mitjans",
-      "mediaOutletRequired": "El mitjà de comunicació és obligatori per a aparicions en mitjans"
+      "mediaOutletRequired": "El mitjà de comunicació és obligatori per a aparicions en mitjans",
+      "summaryTitle": "Revisa els errors del formulari"
     }
   },
   "confirmSubscription": {

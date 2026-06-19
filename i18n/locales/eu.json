@@ -1577,7 +1577,8 @@
       "altTooLong": "Testu alternatiboak ezin ditu 200 karaktere baino gehiago izan",
       "contentOrPdfRequired": "Edukia gehitu edo PDF bat igo behar duzu prentsa-oharretarako eta adierazpenetarako",
       "externalUrlRequired": "Kanpoko URLa nahitaezkoa da hedabideetako agerpenetarako",
-      "mediaOutletRequired": "Hedabidea nahitaezkoa da hedabideetako agerpenetarako"
+      "mediaOutletRequired": "Hedabidea nahitaezkoa da hedabideetako agerpenetarako",
+      "summaryTitle": "Berrikusi formularioaren erroreak"
     }
   },
   "confirmSubscription": {
