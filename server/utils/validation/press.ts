@@ -6,30 +6,48 @@ import {
   localeSchema,
   toOptionalSingleStringSchema,
 } from './helpers'
-import { ADMIN_RICH_TEXT_MAX_HTML_LENGTH } from '~~/shared/utils/richText'
+import {
+  ADMIN_RICH_TEXT_MAX_HTML_LENGTH,
+  isDescriptionRepeatedInContent,
+} from '~~/shared/utils/richText'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 
-export const pressArticleTranslationSchema = z.object({
-  locale: localeSchema,
-  title: z
-    .string('El título no es válido')
-    .max(200, 'El título no puede superar los 200 caracteres'),
-  description: z
-    .string()
-    .max(2000, 'La descripción no puede superar los 2000 caracteres')
-    .optional()
-    .nullable(),
-  contentHtml: z
-    .string()
-    .max(ADMIN_RICH_TEXT_MAX_HTML_LENGTH, 'El contenido es demasiado largo')
-    .optional()
-    .nullable(),
-  alt: z
-    .string()
-    .max(200, 'El texto alternativo no puede superar los 200 caracteres')
-    .optional()
-    .nullable(),
-})
+export const pressArticleTranslationSchema = z
+  .object({
+    locale: localeSchema,
+    title: z
+      .string('El título no es válido')
+      .max(200, 'El título no puede superar los 200 caracteres'),
+    description: z
+      .string()
+      .max(2000, 'La descripción no puede superar los 2000 caracteres')
+      .optional()
+      .nullable(),
+    contentHtml: z
+      .string()
+      .max(ADMIN_RICH_TEXT_MAX_HTML_LENGTH, 'El contenido es demasiado largo')
+      .optional()
+      .nullable(),
+    alt: z
+      .string()
+      .max(200, 'El texto alternativo no puede superar los 200 caracteres')
+      .optional()
+      .nullable(),
+  })
+  .superRefine((translation, ctx) => {
+    if (
+      typeof translation.description === 'string' &&
+      translation.description.trim() &&
+      isDescriptionRepeatedInContent(translation.description, translation.contentHtml)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'No repitas en la descripción breve un texto que ya aparece en el contenido; se muestra justo encima.',
+        path: ['description'],
+      })
+    }
+  })
 
 export const pressArticleTypeSchema = z.enum(PRESS_ARTICLE_TYPES)
 

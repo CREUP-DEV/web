@@ -1578,7 +1578,8 @@
       "contentOrPdfRequired": "Has d'afegir contingut o pujar un PDF per a notes de premsa i comunicats",
       "externalUrlRequired": "La URL externa és obligatòria per a aparicions en mitjans",
       "mediaOutletRequired": "El mitjà de comunicació és obligatori per a aparicions en mitjans",
-      "summaryTitle": "Revisa els errors del formulari"
+      "summaryTitle": "Revisa els errors del formulari",
+      "descriptionRepeatsContent": "No repeteixis a la descripció breu un text que ja apareix al contingut; es mostra just a sobre."
     }
   },
   "confirmSubscription": {

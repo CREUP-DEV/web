@@ -4,7 +4,11 @@
 // Emits the same issue-path shape as zod's safeParse so it plugs into useFormValidation.
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
-import { ADMIN_RICH_TEXT_MAX_HTML_LENGTH, hasMeaningfulHtml } from '~~/shared/utils/richText'
+import {
+  ADMIN_RICH_TEXT_MAX_HTML_LENGTH,
+  hasMeaningfulHtml,
+  isDescriptionRepeatedInContent,
+} from '~~/shared/utils/richText'
 
 type ValidationIssue = {
   message: string
@@ -238,6 +242,16 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
       if (asTrimmedString(translation.description).length > 2000) {
         nextIssues.push({
           message: 'admin.validation.descriptionTooLong',
+          path: ['translations', index, 'description'],
+        })
+      }
+
+      if (
+        asTrimmedString(translation.description) &&
+        isDescriptionRepeatedInContent(translation.description, translation.contentHtml)
+      ) {
+        nextIssues.push({
+          message: 'admin.validation.descriptionRepeatsContent',
           path: ['translations', index, 'description'],
         })
       }

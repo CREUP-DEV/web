@@ -1578,7 +1578,8 @@
       "contentOrPdfRequired": "Debes engadir contido ou subir un PDF para notas de prensa e comunicados",
       "externalUrlRequired": "O URL externo é obrigatorio para aparicións nos medios",
       "mediaOutletRequired": "O medio de comunicación é obrigatorio para aparicións nos medios",
-      "summaryTitle": "Revisa os erros do formulario"
+      "summaryTitle": "Revisa os erros do formulario",
+      "descriptionRepeatsContent": "Non repitas na descrición breve un texto que xa aparece no contido; móstrase xusto enriba."
     }
   },
   "confirmSubscription": {
