@@ -198,6 +198,9 @@ const handleSubmit = () => {
   const payload = {
     ...form,
     image: form.image?.trim() || null,
+    pdfUrl: form.pdfUrl?.trim() || null,
+    externalUrl: form.externalUrl?.trim() || null,
+    mediaOutletId: form.mediaOutletId?.trim() || null,
     publishedAt: calendarDateToDateOnly(publishedAt.value),
   }
 
