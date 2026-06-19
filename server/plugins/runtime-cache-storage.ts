@@ -42,8 +42,14 @@ export default defineNitroPlugin(async () => {
     })
   )
 
+  // Move the Nitro route cache (defineCachedEventHandler { base: 'cache' }) off its default
+  // in-process driver onto Redis, so cached responses — and the admin cache invalidations that
+  // delete them (useStorage('cache')) — are shared across instances. Without this, a purge only
+  // clears the instance that served the mutation and every other instance keeps serving stale
+  // content until its own maxAge lapses. unstorage refuses to mount over an existing base, and the
+  // mountpoint prefix is always 'cache:' regardless of driver, so unmount the default first.
   if (storage.getMount('cache').base === 'cache:') {
-    return
+    await storage.unmount('cache')
   }
 
   storage.mount(
