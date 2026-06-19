@@ -9,13 +9,14 @@ definePageMeta({
 })
 
 const { t } = useI18n()
+const localeApiHeaders = useLocaleApiHeaders()
 const localePath = useLocalePath()
 const toast = useAdminToast()
 const route = useRoute()
 const router = useRouter()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 const isSubmitting = ref(false)
-const pressFormRef = ref<{ hasUnsavedChanges?: boolean } | null>(null)
+const pressFormRef = ref<{ hasUnsavedChanges?: boolean; clearDraft?: () => void } | null>(null)
 const allowNavigationWithoutPrompt = ref(false)
 
 type PressArticleType = (typeof PRESS_ARTICLE_TYPES)[number]
@@ -59,9 +60,11 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
   try {
     await $fetch('/api/admin/press', {
       method: 'POST',
+      headers: localeApiHeaders.value,
       body: payload,
     })
     await refreshAllClientAsyncData()
+    pressFormRef.value?.clearDraft?.()
     allowNavigationWithoutPrompt.value = true
     toast.add({ title: t('admin.press.toast.created'), color: 'success' })
     router.push(localePath(ADMIN_ROUTES.press))
@@ -73,6 +76,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 }
 
 const handleCancel = () => {
+  pressFormRef.value?.clearDraft?.()
   allowNavigationWithoutPrompt.value = true
   router.push(localePath(ADMIN_ROUTES.press))
 }

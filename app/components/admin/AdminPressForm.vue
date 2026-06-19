@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
+import { watchDebounced } from '@vueuse/core'
 import type {
   PressArticleAdmin,
   PressMediaOutletAdmin,
@@ -39,8 +40,10 @@ const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 const isEditing = computed(() => !!props.article)
 
 const hasUnsavedChanges = ref(false)
-defineExpose({ hasUnsavedChanges })
 const isHydratingForm = ref(false)
+// Exposed before the top-level await below (Vue requires defineExpose to precede any await in
+// <script setup>). clearDraft is a hoisted function declaration so it's defined at this point.
+defineExpose({ hasUnsavedChanges, clearDraft })
 
 // Fetch supporting data
 const [{ data: tagsData, error: tagsError }, { data: mediaData, error: mediaError }] =
@@ -301,6 +304,81 @@ const handleRemovePdf = () => {
 watch(hasFormChanges, (value) => {
   if (isHydratingForm.value) return
   hasUnsavedChanges.value = value
+})
+
+// Persist the create-form draft to localStorage so an accidental browser reload doesn't wipe it.
+// Scoped to the create flow — when editing, the saved article is the source of truth. The parent
+// clears the draft via the exposed clearDraft() once the article is created or the edit is discarded.
+const DRAFT_STORAGE_KEY = 'admin-press-create-draft'
+
+function clearDraft() {
+  if (import.meta.client) {
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY)
+    } catch {
+      // ignore storage access errors (private mode, blocked cookies, quota)
+    }
+  }
+}
+
+const applyDraftSnapshot = (snapshot: Record<string, unknown>) => {
+  isHydratingForm.value = true
+  if (typeof snapshot.type === 'string') form.type = snapshot.type as PressArticleType
+  form.image = typeof snapshot.image === 'string' ? snapshot.image : ''
+  form.pdfUrl = typeof snapshot.pdfUrl === 'string' ? snapshot.pdfUrl : null
+  form.externalUrl = typeof snapshot.externalUrl === 'string' ? snapshot.externalUrl : null
+  form.mediaOutletId = typeof snapshot.mediaOutletId === 'string' ? snapshot.mediaOutletId : null
+  form.active = typeof snapshot.active === 'boolean' ? snapshot.active : true
+  form.tagIds = Array.isArray(snapshot.tagIds)
+    ? snapshot.tagIds.filter((id): id is string => typeof id === 'string')
+    : []
+  if (typeof snapshot.publishedAt === 'string') {
+    publishedAt.value = valueToCalendarDate(snapshot.publishedAt)
+  }
+  if (Array.isArray(snapshot.translations)) {
+    form.translations = mapTranslationsToForm(snapshot.translations as PressTranslationAdmin[], {
+      title: '',
+      description: '',
+      contentHtml: '',
+      alt: '',
+    }) as PressTranslationAdmin[]
+  }
+  imageUpload.setPreview(form.image || null)
+  pdfUpload.setFile(form.pdfUrl)
+  nextTick(() => {
+    isHydratingForm.value = false
+  })
+}
+
+onMounted(() => {
+  if (isEditing.value) return
+
+  try {
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY)
+    if (raw) {
+      applyDraftSnapshot(JSON.parse(raw))
+      // A restored draft is unsaved work: flag it so the reload/leave guard keeps protecting it
+      // (applyDraftSnapshot mutates the form under isHydratingForm, which suppresses that flag).
+      nextTick(() => {
+        hasUnsavedChanges.value = true
+      })
+    }
+  } catch {
+    // ignore a malformed or inaccessible draft — fall back to the empty form
+  }
+
+  watchDebounced(
+    () => buildFormSnapshot(),
+    (snapshot) => {
+      if (isHydratingForm.value) return
+      try {
+        localStorage.setItem(DRAFT_STORAGE_KEY, snapshot)
+      } catch {
+        // ignore storage write failures (quota, private mode)
+      }
+    },
+    { debounce: 500 }
+  )
 })
 
 const handleCancel = () => {

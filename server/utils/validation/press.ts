@@ -11,10 +11,24 @@ import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 
 export const pressArticleTranslationSchema = z.object({
   locale: localeSchema,
-  title: z.string().max(200),
-  description: z.string().max(2000).optional().nullable(),
-  contentHtml: z.string().max(ADMIN_RICH_TEXT_MAX_HTML_LENGTH).optional().nullable(),
-  alt: z.string().max(200).optional().nullable(),
+  title: z
+    .string('El título no es válido')
+    .max(200, 'El título no puede superar los 200 caracteres'),
+  description: z
+    .string()
+    .max(2000, 'La descripción no puede superar los 2000 caracteres')
+    .optional()
+    .nullable(),
+  contentHtml: z
+    .string()
+    .max(ADMIN_RICH_TEXT_MAX_HTML_LENGTH, 'El contenido es demasiado largo')
+    .optional()
+    .nullable(),
+  alt: z
+    .string()
+    .max(200, 'El texto alternativo no puede superar los 200 caracteres')
+    .optional()
+    .nullable(),
 })
 
 export const pressArticleTypeSchema = z.enum(PRESS_ARTICLE_TYPES)

@@ -32,11 +32,25 @@ export function validateAdminInput<T>(event: H3Event, schema: z.ZodSchema<T>, in
   const result = schema.safeParse(input)
 
   if (!result.success) {
-    // Per-field messages are localized client-side (useFormValidation). The server backstop —
-    // reached only when client validation is bypassed — returns a generic locale-aware message.
+    // Admin endpoints are authenticated, so it's safe to report which fields failed and why — far
+    // more useful than a flat "invalid input" when the client and server schemas drift. The issue
+    // list is also attached as structured `data` for any caller that wants per-field handling.
+    const issues = result.error.issues.map((issue) => ({
+      path: issue.path.map(String),
+      message: issue.message,
+    }))
+    const detail = issues
+      .map((issue) =>
+        issue.path.length > 0 ? `${issue.path.join('.')}: ${issue.message}` : issue.message
+      )
+      .join(' · ')
+
     throw createError({
       statusCode: 400,
-      message: getAdminApiErrorMessage(event, 'invalidInput'),
+      message: detail
+        ? `${getAdminApiErrorMessage(event, 'invalidInput')} (${detail})`
+        : getAdminApiErrorMessage(event, 'invalidInput'),
+      data: { issues },
     })
   }
 

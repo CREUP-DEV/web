@@ -70,6 +70,7 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
   try {
     await $fetch(`/api/admin/press/${articleId.value}`, {
       method: 'PUT',
+      headers: localeApiHeaders.value,
       body: { ...payload, updatedAt: article.value?.updatedAt },
     })
     await refreshAllClientAsyncData()

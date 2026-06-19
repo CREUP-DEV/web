@@ -41,6 +41,14 @@ type RichTextDocument = {
 const richTextSanitizerWindow = parseHTML('<!doctype html><html><body></body></html>')
 const richTextPurifier = createDOMPurify(richTextSanitizerWindow as unknown as WindowLike)
 
+// linkedom only populates `document.body` when given a full HTML document. A bare `<body>…</body>`
+// fragment parses to an empty body (textContent/innerHTML come back ''), which silently broke rich
+// text sanitization. Always wrap fragments in a complete document before reading the body.
+const parseRichTextDocument = (html: string) =>
+  parseHTML(`<!doctype html><html><body>${html}</body></html>`) as unknown as {
+    document: RichTextDocument
+  }
+
 const allowedRichTextTags = [
   'a',
   'blockquote',
@@ -64,9 +72,7 @@ const extractPlainText = (value?: string | null) => {
     return ''
   }
 
-  const { document } = parseHTML(`<body>${normalized}</body>`) as unknown as {
-    document: RichTextDocument
-  }
+  const { document } = parseRichTextDocument(normalized)
   const textContent = document.body.textContent ?? ''
 
   return textContent
@@ -163,9 +169,7 @@ export const sanitizeRichTextHtml = (value?: string | null) => {
     RETURN_TRUSTED_TYPE: false,
   }) as string
 
-  const { document } = parseHTML(`<body>${sanitizedSource}</body>`) as unknown as {
-    document: RichTextDocument
-  }
+  const { document } = parseRichTextDocument(sanitizedSource)
 
   for (const boldElement of Array.from(document.body.querySelectorAll('b')) as RichTextElement[]) {
     replaceElementTag(boldElement, 'strong')
