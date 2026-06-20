@@ -195,9 +195,12 @@ Reuse existing schemas. Add new schemas to the appropriate file under `server/ut
 press client validator) are `admin.validation.*` keys, not literals — e.g.
 `z.string().min(1, 'admin.validation.nameRequired')`. The client (`useFormValidation`) translates each
 `issue.message` via `te(msg) ? t(msg) : msg` (known keys translate; stray literals pass through, never
-hitting the vue-i18n compiler). The server `validateAdmin*` backstop does **not** echo per-field keys —
-it returns a generic locale-aware `getAdminApiErrorMessage(event, 'invalidInput')`. So: add a new
-`admin.validation.<key>` to `es.json` **and every other locale file** (`en`, `ca`, `eu`, `gl`, `val` — `pnpm i18n:check` enforces parity), then reference it from the schema.
+hitting the vue-i18n compiler). The server `validateAdmin*` family (admin endpoints are
+authenticated) appends the failing field path(s) + message to the locale-aware
+`getAdminApiErrorMessage(event, 'invalidInput')` and attaches a structured `{ data: { issues } }`,
+so client/server schema drift surfaces the offending field instead of a flat message. The
+`validatePublic*` family stays generic — never leak schema internals to anonymous callers. So: add a
+new `admin.validation.<key>` to `es.json` **and every other locale file** (`en`, `ca`, `eu`, `gl`, `val` — `pnpm i18n:check` enforces parity), then reference it from the schema.
 
 Admin forms import these same zod schemas client-side and validate against them via `useFormValidation` (zod is shipped in the admin bundle, which is acceptable for the non-public panel). The one exception is the press article form: the server press schema validates rich text through a server-only sanitization helper, so it can't be single-sourced — its client validator lives co-located at `app/components/admin/pressArticleFormSchema.ts` (UX only; the server remains authoritative).
 
@@ -320,6 +323,14 @@ await withExternalApiSWRCache(
 
 Cache is shared through Redis and coordinates refreshes with Redis locks so stale values can be served while one request refreshes upstream data.
 
+### Public Content Caching & Invalidation
+
+Public CMS content (press, home, tags, dossier, equality, financial reports, about, newsletter) is cached at three layers. When adding a public read or an admin mutation, wire **all** of them or content goes stale.
+
+1. **Server route cache.** Public GET handlers use `defineCachedEventHandler(handler, { ...PUBLIC_ROUTE_CACHE_OPTIONS, getKey: (e) => buildPublicRouteCacheKey(e, 'public-<scope>', { queryKeys }) })` (`server/utils/cache/publicRouteCache.ts`). The `cache` storage base is mounted to Redis by `server/plugins/runtime-cache-storage.ts`, so entries and purges are shared across all Nitro instances — never leave the route cache on the in-memory default.
+2. **Server invalidation.** Every admin create/update/delete/reorder that changes public output MUST call the matching `invalidate*` from `server/utils/admin/adminCacheInvalidation.ts` (e.g. `invalidatePressRelatedCaches`, `invalidateHomeDataCache`). The asset-backed CRUD + reorder factories already do this via their `invalidate` config; bespoke handlers must call it explicitly. The substring it matches must line up with the handler's `public-<scope>` cache key.
+3. **Client cache.** Public reads pass `getCachedData: publicCmsCachedData` (`app/utils/publicCmsCachedData.ts`) and a stable key whose prefix is in `PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES` (`shared/constants/publicAsyncDataKeys.ts`). This gives anonymous visitors a 60s TTL cache on SPA navigation (fast, no refetch storm) instead of the default `payloadExtraction` behaviour, which reuses `static.data` forever and is **not** cleared by `clearNuxtData`. On the admin success path, call a `usePublicCmsCacheRefresh()` function (`refreshAllClientAsyncData`, or the scoped `refreshHomeData` / `refreshAboutPage`) — it drops the cache timestamps so the editor's next navigation refetches immediately. Adding a new public read without `getCachedData: publicCmsCachedData` reintroduces the stale-after-edit bug.
+
 ### Newsletter Delivery (`server/services/newsletterDeliveryService.ts`)
 
 - Delivery state machine: `queued → sending → sent | failed`
@@ -405,16 +416,22 @@ const { inputRef, preview, isUploading, triggerFileDialog, handleFileSelect } = 
 })
 ```
 
-### Zod Form Validation (`app/composables/useFormValidation.ts`)
+### Zod Form Validation (`app/composables/admin/useFormValidation.ts`)
 
 Client-side Zod validation with per-field error display:
 
 ```typescript
-const { validate, getFieldError, clearErrors } = useFormValidation()
+const { validate, getFieldError, formErrors, clearErrors } = useFormValidation()
 
 // In submit handler:
 if (!validate(mySchema, payload)) return
 ```
+
+`getFieldError(path)` feeds a specific field's `:error`. `formErrors` is the flat, de-duplicated
+list of every active message — render it through `<AdminFormErrorSummary :errors="formErrors" />`
+so a validation failure on a path no field surfaces (e.g. `_form`, a bare `translations` root, or a
+field only shown for another form variant) can never dead-end the submit button silently. Add the
+summary to every admin form.
 
 Use this pattern for admin forms and internal tooling flows — pass the shared zod schema from `shared/utils/adminSchemas.ts` directly (its `safeParse` plugs into `validate`). `validate` translates each issue message through `te()?t():literal`, so schema messages must be `admin.validation.*` i18n keys (see Validation). For **public** pages under strict CSP, keep Zod at the server boundary and use CSP-safe manual client checks for UX feedback instead of importing Zod into the public bundle.
 

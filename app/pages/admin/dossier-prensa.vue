@@ -18,7 +18,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 const {
   data: dossierData,
@@ -200,6 +200,7 @@ const saveDossier = async () => {
 
     <UCard v-else>
       <div class="space-y-6">
+        <AdminFormErrorSummary :errors="formErrors" />
         <div class="rounded-2xl border p-4">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="min-w-0 space-y-2">

@@ -19,7 +19,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshHomeData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 interface Translation {
   locale: string
@@ -417,6 +417,7 @@ const handleDelete = async () => {
             </h2>
 
             <form id="links-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <AdminFormErrorSummary :errors="formErrors" />
               <UFormField :label="t('admin.links.imageLabel')" :error="getFieldError('image')">
                 <div class="space-y-3">
                   <div

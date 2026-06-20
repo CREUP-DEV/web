@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY } from '~~/shared/constants/publicAsyncDataKeys'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 type RelatedSectionKey = 'members' | 'team' | 'committees' | 'events'
 type StatKey = 'universities' | 'students' | 'years'
@@ -30,6 +31,7 @@ const { data, error, pending, refresh } = await useFetch<{
   }
 }>('/api/about-page', {
   key: PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY,
+  getCachedData: publicCmsCachedData,
 })
 
 const memberCount = computed(() => data.value?.data.memberCount ?? fallbackMemberCount)

@@ -2,9 +2,9 @@
 // press articles (the "news"). Spanish lives inline in drizzle/seed.ts (pressData); this
 // module adds en/ca/eu/gl/val, keyed by each article's stable slug.
 //
-// Only title + description are localized: the seed's press bodies (content_html) are stripped
-// to null by sanitizeRichTextHtml, so the Spanish rows store no body and the localized rows
-// mirror that (a non-null localized body would defeat the per-field Spanish fallback).
+// Only title + description are localized: the seed deliberately stores no press body (content_html
+// is null on every locale, Spanish included — the scraped bodies are low quality). Localized rows
+// therefore mirror the Spanish rows; non-Spanish locales fall back to the Spanish row at render.
 //
 // Consumed by the dev seed (drizzle/seed.ts) and the idempotent press-translation seed
 // (drizzle/seed/press.ts -> `pnpm db:seed:press`), the forward-only, non-destructive way

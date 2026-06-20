@@ -18,7 +18,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshAboutPage } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 const {
   data: contentData,
@@ -184,6 +184,7 @@ const saveContent = async () => {
 
     <UCard v-else>
       <div class="space-y-6">
+        <AdminFormErrorSummary :errors="formErrors" />
         <div class="bg-muted aspect-1925/550 overflow-hidden rounded-2xl border">
           <img
             v-if="heroPreview"

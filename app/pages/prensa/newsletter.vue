@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AccordionItem } from '@nuxt/ui'
 import { getPublicNewsletterArchiveAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { EMAIL_MAX_LENGTH, EMAIL_PATTERN } from '~~/shared/utils/emailValidation'
 import * as turnstileComposable from '@/composables/security/useTurnstile'
@@ -233,6 +234,7 @@ const {
 }>('/api/newsletter', {
   key: computed(() => getPublicNewsletterArchiveAsyncDataKey(offset.value)),
   query: computed(() => ({ limit: LIMIT, offset: offset.value })),
+  getCachedData: publicCmsCachedData,
 })
 const newsletters = computed(() => data.value?.data ?? [])
 const total = computed(() => data.value?.meta.total ?? 0)

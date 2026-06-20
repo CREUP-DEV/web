@@ -19,7 +19,7 @@ const route = useRoute()
 const router = useRouter()
 const localePath = useLocalePath()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 const {
   fetchError,
@@ -522,6 +522,7 @@ watch(
     >
       <template #body>
         <form class="space-y-5" @submit.prevent="handleSubmit">
+          <AdminFormErrorSummary :errors="formErrors" />
           <UFormField
             :label="`${t('admin.newsletter.list.monthLabel')} *`"
             :error="getFieldError('month')"

@@ -383,7 +383,8 @@ useHead({
             v-model="selectedLocale"
             :items="localeItems"
             value-key="value"
-            class="w-36"
+            class="w-auto shrink-0 sm:w-36"
+            :ui="{ value: 'hidden sm:block', trailingIcon: 'hidden sm:inline-block' }"
             :aria-label="t('language.toggle')"
           >
             <template #leading="{ modelValue }">
@@ -391,13 +392,14 @@ useHead({
             </template>
           </USelect>
 
-          <UColorModeButton />
+          <UColorModeButton class="shrink-0" />
 
           <UButton
             :to="publicSitePath"
             icon="i-tabler-external-link"
             variant="ghost"
             color="neutral"
+            class="shrink-0 whitespace-nowrap"
           >
             {{ t('admin.layout.viewSite') }}
           </UButton>

@@ -11,7 +11,7 @@ definePageMeta({
 const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
 
 interface AdminAccessItem {
@@ -504,6 +504,7 @@ const handleDelete = async () => {
           </p>
 
           <form id="admin-access-form" class="mt-6 space-y-4" @submit.prevent="handleCreate">
+            <AdminFormErrorSummary :errors="formErrors" />
             <UFormField :label="t('admin.access.emailLabel')" :error="getFieldError('email')">
               <UInput
                 v-model="form.email"

@@ -33,7 +33,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 const {
   getDefaultTranslationValue,
   getLocaleFlag,
@@ -399,6 +399,7 @@ const handleDelete = async () => {
           </p>
 
           <form class="space-y-5" @submit.prevent="handleSubmit">
+            <AdminFormErrorSummary :errors="formErrors" />
             <div class="space-y-4">
               <div
                 v-for="(translation, index) in form.translations"

@@ -1,4 +1,5 @@
 import type { OrgResponse } from '@/types/team'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 export const useTeamPageData = async () => {
   const localeApiHeaders = useLocaleApiHeaders()
@@ -7,6 +8,7 @@ export const useTeamPageData = async () => {
     cache: 'no-store',
     headers: localeApiHeaders,
     lazy: true,
+    getCachedData: publicCmsCachedData,
   })
 
   return {

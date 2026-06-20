@@ -1,4 +1,5 @@
 import { PUBLIC_PRESS_DOSSIER_ASYNC_DATA_KEY } from '~~/shared/constants/publicAsyncDataKeys'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 type PressDossierResponse = {
   data: {
@@ -15,6 +16,7 @@ export function usePressDossierLink() {
     },
     {
       default: () => null,
+      getCachedData: publicCmsCachedData,
     }
   )
 }

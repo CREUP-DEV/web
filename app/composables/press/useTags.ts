@@ -1,4 +1,5 @@
 import type { MaybeRefOrGetter } from 'vue'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 export interface Tag {
   slug: string
@@ -36,6 +37,7 @@ export function useTags(type?: MaybeRefOrGetter<string | null | undefined>) {
       default: () => ({
         data: [],
       }),
+      getCachedData: publicCmsCachedData,
       watch: [locale, typeValue],
     }
   )

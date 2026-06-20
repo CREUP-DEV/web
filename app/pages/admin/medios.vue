@@ -11,7 +11,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 interface MediaOutlet {
   id: string
@@ -349,6 +349,7 @@ const handleDelete = async () => {
             </h2>
 
             <form id="media-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <AdminFormErrorSummary :errors="formErrors" />
               <UFormField :label="t('admin.media.nameLabel')" :error="getFieldError('name')">
                 <UInput
                   v-model="form.name"

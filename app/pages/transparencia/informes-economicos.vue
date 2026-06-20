@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getPublicFinancialReportsAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 interface FinancialReport {
   id: string
@@ -48,6 +49,7 @@ const { data, pending, error, refresh } = await useFetch<FinancialReportsRespons
     key: computed(() => getPublicFinancialReportsAsyncDataKey(locale.value, offset.value)),
     headers: localeApiHeaders,
     query: computed(() => ({ limit: LIMIT, offset: offset.value })),
+    getCachedData: publicCmsCachedData,
   }
 )
 

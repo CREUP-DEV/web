@@ -1,5 +1,6 @@
 import type { MaybeRef } from 'vue'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 export type { PressArticleType }
 
@@ -139,6 +140,7 @@ export function usePress(
           total: 0,
         },
       }),
+      getCachedData: publicCmsCachedData,
       watch: [locale, typeValue, tagValue, searchValue, limitValue, offsetValue, enabledValue],
     }
   )
@@ -157,6 +159,7 @@ export function usePressArticle(slug: string) {
       }),
     {
       default: () => ({ data: null }),
+      getCachedData: publicCmsCachedData,
       watch: [locale],
     }
   )

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getPublicEqualityDocumentsAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 type ActionStepKey = 'safety' | 'notify' | 'details' | 'support'
 type PointSafeKey = 'prevention' | 'guidance' | 'followUp'
@@ -127,6 +128,7 @@ const {
   key: computed(() => getPublicEqualityDocumentsAsyncDataKey(locale.value, docsOffset.value)),
   headers: localeApiHeaders,
   query: computed(() => ({ limit: LIMIT, offset: docsOffset.value })),
+  getCachedData: publicCmsCachedData,
 })
 
 const resourceIcons = [

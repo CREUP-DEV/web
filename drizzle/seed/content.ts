@@ -170,8 +170,8 @@ async function main() {
 
   // Press articles ("news"): the seed ships Spanish inline (drizzle/seed.ts), this backfills
   // en/ca/eu/gl/val matched by the article's stable slug. content_html is intentionally left
-  // null to mirror the Spanish rows (whose scraped markup sanitizeRichTextHtml strips) so the
-  // per-field Spanish fallback is preserved.
+  // null to mirror the Spanish rows (which also store no body — the scraped markup is low quality)
+  // so the per-field Spanish fallback is preserved.
   let pressMatched = 0
   const pressUnmatched: string[] = []
   for (const [slug, translations] of Object.entries(seedPressArticleTranslations)) {

@@ -12,7 +12,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 const {
   getLocaleFlag,
   getLocaleName,
@@ -337,6 +337,7 @@ const handleDelete = async () => {
             </h2>
 
             <form id="tags-form" class="space-y-4" @submit.prevent="handleSubmit">
+              <AdminFormErrorSummary :errors="formErrors" />
               <UFormField :label="t('admin.tags.slugLabel')" :error="getFieldError('slug')">
                 <UInput
                   v-model="form.slug"

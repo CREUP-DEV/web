@@ -1,5 +1,6 @@
 import { getPublicHomeAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
 import type { PressArticle } from '@/composables/press/usePress'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 export interface CarouselItem {
   image: string | null
@@ -48,6 +49,7 @@ export function useHome() {
           },
         },
       }),
+      getCachedData: publicCmsCachedData,
       watch: [locale],
     }
   )

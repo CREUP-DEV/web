@@ -21,7 +21,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
-const { clearErrors, getFieldError, validate } = useFormValidation()
+const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
 const {
   data: defaultsData,
@@ -227,6 +227,7 @@ const save = async () => {
     </div>
 
     <div v-else class="space-y-10">
+      <AdminFormErrorSummary :errors="formErrors" />
       <section class="space-y-4">
         <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.pressHeading') }}</h2>
         <p class="text-muted max-w-3xl text-sm">

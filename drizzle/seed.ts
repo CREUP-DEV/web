@@ -24,7 +24,6 @@ import {
   PRESS_DOSSIER_PUBLIC_PATH,
 } from '../shared/constants/assetPaths'
 import { slugify } from '../server/utils/core/slug'
-import { sanitizeRichTextHtml } from '../server/utils/press/pressTranslation'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
@@ -10299,7 +10298,11 @@ async function seedDatabase(db: DbExecutor) {
           locale: t.locale,
           title: t.title,
           description: t.description,
-          contentHtml: 'contentHtml' in t ? sanitizeRichTextHtml(t.contentHtml) : null,
+          // Seed press bodies are low-quality scrapes (full-document wrappers, some duplicated), so
+          // no body is stored — admins author real content in the panel. The scraped `contentHtml`
+          // fields remain in the data only as provenance; non-Spanish locales fall back to the
+          // Spanish row at render time.
+          contentHtml: null,
           pressArticleId: article.id,
         }))
       )

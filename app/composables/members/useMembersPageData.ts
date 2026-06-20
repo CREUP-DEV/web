@@ -1,4 +1,5 @@
 import type { MembersResponse, SectorialesResponse } from '@/types/members'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 export const useMembersPageData = async () => {
   const localeApiHeaders = useLocaleApiHeaders()
@@ -14,9 +15,11 @@ export const useMembersPageData = async () => {
   ] = await Promise.all([
     useFetch<MembersResponse>('/api/members', {
       headers: localeApiHeaders,
+      getCachedData: publicCmsCachedData,
     }),
     useFetch<SectorialesResponse>('/api/sectorials', {
       headers: localeApiHeaders,
+      getCachedData: publicCmsCachedData,
     }),
   ])
 
