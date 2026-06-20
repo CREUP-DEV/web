@@ -47,34 +47,40 @@ const hasSocialButtons = computed(() => (props.socialButtons?.length ?? 0) > 0)
 </script>
 
 <template>
-  <div class="detail-modal-shell bg-default relative overflow-hidden px-5 py-6 sm:px-8 sm:py-8">
-    <UButton
-      :aria-label="t('common.close')"
-      icon="i-tabler-x"
-      color="neutral"
-      variant="ghost"
-      class="absolute top-4 right-4 z-10 rounded-full"
-      @click="emit('close')"
-    />
+  <div class="detail-modal-shell bg-default relative px-5 pb-6 sm:px-8 sm:pb-8">
+    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div
+        class="bg-primary/[0.14] dark:bg-primary/8 absolute top-0 right-0 h-44 w-44 rounded-full blur-3xl"
+      />
+      <div
+        class="bg-secondary/16 dark:bg-secondary/10 absolute bottom-0 left-0 h-36 w-36 rounded-full blur-3xl"
+      />
+    </div>
 
+    <!-- Sticky header band: keeps the source label and the close button reachable while the body
+         scrolls (the modal body is the scroll container, so the band must sit outside any
+         overflow-hidden ancestor — hence the blobs moved to the clip layer above). -->
     <div
-      class="bg-primary/[0.14] dark:bg-primary/8 pointer-events-none absolute top-0 right-0 h-44 w-44 rounded-full blur-3xl"
-      aria-hidden="true"
-    />
-    <div
-      class="bg-secondary/16 dark:bg-secondary/10 pointer-events-none absolute bottom-0 left-0 h-36 w-36 rounded-full blur-3xl"
-      aria-hidden="true"
-    />
+      class="bg-default/85 supports-[backdrop-filter]:bg-default/70 border-default/60 sticky top-0 z-20 -mx-5 mb-5 flex items-center justify-between gap-3 border-b px-5 py-3 backdrop-blur sm:-mx-8 sm:px-8"
+    >
+      <p class="text-primary min-w-0 truncate text-sm font-semibold sm:text-base">
+        {{ eyebrow }}
+      </p>
+      <UButton
+        :aria-label="t('common.close')"
+        icon="i-tabler-x"
+        color="neutral"
+        variant="ghost"
+        class="-mr-1 shrink-0 rounded-full"
+        @click="emit('close')"
+      />
+    </div>
 
     <div class="relative">
       <div class="relative grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_240px] lg:gap-8">
         <div class="space-y-6">
           <div class="space-y-4">
-            <p class="text-primary pr-12 text-lg leading-tight font-semibold sm:text-xl">
-              {{ eyebrow }}
-            </p>
-
-            <h3 class="max-w-3xl pr-12 text-3xl leading-tight font-semibold sm:text-4xl">
+            <h3 class="max-w-3xl text-3xl leading-tight font-semibold sm:text-4xl">
               {{ heading }}
             </h3>
 
