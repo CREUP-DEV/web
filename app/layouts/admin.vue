@@ -38,6 +38,24 @@ const selectedLocale = computed({
     }
   },
 })
+
+const currentLocale = computed(
+  () => localeItems.value.find((item) => item.value === locale.value) ?? localeItems.value[0]
+)
+
+// Mobile uses a flag-only dropdown (matching the public header) so the language control stays
+// compact instead of a full-width select.
+const mobileLocaleItems = computed<DropdownMenuItem[]>(() =>
+  localeItems.value.map((item) => ({
+    label: item.label,
+    icon: item.icon,
+    type: 'checkbox',
+    checked: item.value === locale.value,
+    onSelect: () => {
+      selectedLocale.value = item.value
+    },
+  }))
+)
 const isMobileSidebar = useMediaQuery('(max-width: 1023px)')
 const sidebarOpen = useState('admin-sidebar-open', () => false)
 const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
@@ -383,14 +401,22 @@ useHead({
             v-model="selectedLocale"
             :items="localeItems"
             value-key="value"
-            class="w-auto shrink-0 sm:w-36"
-            :ui="{ value: 'hidden sm:block', trailingIcon: 'hidden sm:inline-block' }"
+            class="hidden shrink-0 sm:block sm:w-36"
             :aria-label="t('language.toggle')"
           >
             <template #leading="{ modelValue }">
               <UIcon v-if="modelValue" :name="getLocaleFlag(modelValue)" class="size-5" />
             </template>
           </USelect>
+
+          <UDropdownMenu :items="mobileLocaleItems" class="shrink-0 sm:hidden">
+            <UButton
+              :icon="currentLocale?.icon"
+              color="neutral"
+              variant="ghost"
+              :aria-label="t('language.openMenu')"
+            />
+          </UDropdownMenu>
 
           <UColorModeButton class="shrink-0" />
 
