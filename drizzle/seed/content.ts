@@ -28,6 +28,7 @@ import {
   seedTagTranslations,
 } from './data/seedContentTranslations'
 import { seedPressArticleTranslations } from './data/seedPressTranslations'
+import { seedActivityEntries, seedAreaReportEditions, seedAreaReports } from './data/activity'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
@@ -209,6 +210,135 @@ async function main() {
     `   press articles matched ${pressMatched}/${
       Object.keys(seedPressArticleTranslations).length
     }${pressUnmatched.length ? ` (skipped ${pressUnmatched.length} unmatched slug(s))` : ''}`
+  )
+
+  // Activity entries (newsletter migration, all months). This also CREATES the parents (there is no
+  // prior seed for them): each entry is upserted by its stable slug and its Spanish translation by
+  // (locale, entry_id), both via onConflictDoNothing, so the whole block is idempotent. CREUP events
+  // carry no organiser; member-org events carry the frozen member_org_snapshot resolved in
+  // ./data/activity (logos null — added later from admin).
+  let activityTranslations = 0
+  for (const entry of seedActivityEntries) {
+    const [created] = await db
+      .insert(schema.activityEntries)
+      .values({
+        kind: entry.kind,
+        slug: entry.slug,
+        image: entry.image,
+        startDate: entry.startDate,
+        endDate: entry.endDate,
+        isOnline: entry.isOnline,
+        location: entry.location,
+        memberOrgSource: entry.memberOrgSource,
+        memberOrgId: entry.memberOrgId,
+        memberOrgSnapshot: entry.memberOrgSnapshot,
+        active: true,
+      })
+      .onConflictDoNothing({ target: schema.activityEntries.slug })
+      .returning({ id: schema.activityEntries.id })
+
+    let entryId = created?.id
+    if (!entryId) {
+      const [existing] = await db
+        .select({ id: schema.activityEntries.id })
+        .from(schema.activityEntries)
+        .where(eq(schema.activityEntries.slug, entry.slug))
+        .limit(1)
+      entryId = existing?.id
+    }
+    if (!entryId) continue
+
+    const rows = await db
+      .insert(schema.activityEntryTranslations)
+      .values({
+        locale: 'es',
+        title: entry.es.title,
+        excerpt: entry.es.excerpt ?? null,
+        // Store the author-controlled HTML as-is. The rich-text sanitizer needs the runtime DOM and
+        // returns null in this standalone seed process; the public read path sanitizes on render.
+        contentHtml: entry.es.contentHtml ?? null,
+        alt: entry.es.alt ?? null,
+        imageCaption: entry.es.imageCaption ?? null,
+        activityEntryId: entryId,
+      })
+      .onConflictDoNothing({
+        target: [
+          schema.activityEntryTranslations.locale,
+          schema.activityEntryTranslations.activityEntryId,
+        ],
+      })
+      .returning({ id: schema.activityEntryTranslations.id })
+    activityTranslations += rows.length
+  }
+  inserted += activityTranslations
+  console.log(
+    `   activity entries: ensured ${seedActivityEntries.length}, +${activityTranslations} es translation(s)`
+  )
+
+  // Area report editions — idempotent upsert by month_key (PK), one per migrated newsletter.
+  for (const edition of seedAreaReportEditions) {
+    await db
+      .insert(schema.areaReportEditions)
+      .values({ monthKey: edition.monthKey, coversFrom: edition.coversFrom })
+      .onConflictDoNothing({ target: schema.areaReportEditions.monthKey })
+  }
+
+  // Area reports — parent by (month_key, area_id), Spanish translation by (locale, report_id).
+  // areaNameSnapshot/areaOrderSnapshot are frozen here (the seed is the publish moment), so the
+  // eventless seed never needs the live org-chart resolver.
+  let areaReportTranslationsInserted = 0
+  for (const report of seedAreaReports) {
+    const [created] = await db
+      .insert(schema.areaReports)
+      .values({
+        monthKey: report.monthKey,
+        areaId: report.areaId,
+        areaNameSnapshot: report.areaNameSnapshot,
+        areaOrderSnapshot: report.areaOrderSnapshot,
+        image: report.image,
+        active: true,
+      })
+      .onConflictDoNothing({
+        target: [schema.areaReports.monthKey, schema.areaReports.areaId],
+      })
+      .returning({ id: schema.areaReports.id })
+
+    let reportId = created?.id
+    if (!reportId) {
+      const [existing] = await db
+        .select({ id: schema.areaReports.id })
+        .from(schema.areaReports)
+        .where(
+          and(
+            eq(schema.areaReports.monthKey, report.monthKey),
+            eq(schema.areaReports.areaId, report.areaId)
+          )
+        )
+        .limit(1)
+      reportId = existing?.id
+    }
+    if (!reportId) continue
+
+    const rows = await db
+      .insert(schema.areaReportTranslations)
+      .values({
+        locale: 'es',
+        // Author-controlled HTML stored as-is (the seed process has no DOM for the sanitizer, which
+        // would null it out); content_html is NOT NULL here and the public read path sanitizes.
+        contentHtml: report.es.contentHtml,
+        alt: report.es.alt ?? null,
+        imageCaption: report.es.imageCaption ?? null,
+        areaReportId: reportId,
+      })
+      .onConflictDoNothing({
+        target: [schema.areaReportTranslations.locale, schema.areaReportTranslations.areaReportId],
+      })
+      .returning({ id: schema.areaReportTranslations.id })
+    areaReportTranslationsInserted += rows.length
+  }
+  inserted += areaReportTranslationsInserted
+  console.log(
+    `   area reports: ensured ${seedAreaReports.length} across ${seedAreaReportEditions.length} edition(s), +${areaReportTranslationsInserted} es translation(s)`
   )
 
   console.log(`✅ Content translations seeded (inserted ${inserted} new row(s)).`)

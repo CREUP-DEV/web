@@ -30,6 +30,8 @@ type SlotPayloadKey =
   | 'newsletterCoverImage'
   | 'carouselSlideImage'
   | 'ogImage'
+  | 'activityEntryImage'
+  | 'areaReportImage'
 
 const SLOT_PAYLOAD_MAP: Record<SlotPayloadKey, { scope: string; slot: string }> = {
   pressReleaseImage: {
@@ -55,6 +57,14 @@ const SLOT_PAYLOAD_MAP: Record<SlotPayloadKey, { scope: string; slot: string }> 
   ogImage: {
     scope: SITE_DEFAULT_IMAGE_SCOPE.seo,
     slot: SITE_DEFAULT_IMAGE_SLOT.ogImage,
+  },
+  activityEntryImage: {
+    scope: SITE_DEFAULT_IMAGE_SCOPE.activity,
+    slot: SITE_DEFAULT_IMAGE_SLOT.activityEntry,
+  },
+  areaReportImage: {
+    scope: SITE_DEFAULT_IMAGE_SCOPE.areaReport,
+    slot: SITE_DEFAULT_IMAGE_SLOT.areaReport,
   },
 }
 
@@ -204,6 +214,20 @@ export default defineEventHandler(async (event) => {
       previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.seo, SITE_DEFAULT_IMAGE_SLOT.ogImage),
       cleanupTargets,
     })
+    const nextActivityEntry = await finalizeDefaultSlot({
+      event,
+      key: 'activityEntryImage',
+      incoming: validated.activityEntryImage,
+      previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.activity, SITE_DEFAULT_IMAGE_SLOT.activityEntry),
+      cleanupTargets,
+    })
+    const nextAreaReport = await finalizeDefaultSlot({
+      event,
+      key: 'areaReportImage',
+      incoming: validated.areaReportImage,
+      previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.areaReport, SITE_DEFAULT_IMAGE_SLOT.areaReport),
+      cleanupTargets,
+    })
 
     const nextByKey: Record<SlotPayloadKey, string | null> = {
       pressReleaseImage: nextPressRelease,
@@ -212,6 +236,8 @@ export default defineEventHandler(async (event) => {
       newsletterCoverImage: nextNewsletter,
       carouselSlideImage: nextCarousel,
       ogImage: nextOgImage,
+      activityEntryImage: nextActivityEntry,
+      areaReportImage: nextAreaReport,
     }
 
     await db.transaction(async (tx) => {
@@ -268,6 +294,8 @@ export default defineEventHandler(async (event) => {
         newsletterCoverImage: nextNewsletter,
         carouselSlideImage: nextCarousel,
         ogImage: nextOgImage,
+        activityEntryImage: nextActivityEntry,
+        areaReportImage: nextAreaReport,
         updatedAt,
       },
     }

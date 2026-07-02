@@ -14,6 +14,7 @@ export type AdminSectionKey =
   | 'tags'
   | 'media'
   | 'financialReports'
+  | 'activity'
 
 export interface AdminSectionDefinition {
   key: AdminSectionKey
@@ -117,5 +118,12 @@ export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
     description: 'Informes aprobados por la Asamblea General.',
     to: ADMIN_ROUTES.financialReports,
     icon: 'i-tabler-file-analytics',
+  },
+  {
+    key: 'activity',
+    name: 'Nuestra actividad',
+    description: 'Entradas de actividad e informes mensuales de áreas.',
+    to: ADMIN_ROUTES.activity,
+    icon: 'i-tabler-calendar-event',
   },
 ]

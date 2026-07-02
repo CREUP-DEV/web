@@ -36,7 +36,8 @@
       "regulations": "Araudia",
       "financialReports": "Txosten ekonomikoak",
       "corporateIdentity": "Identitate Korporatiboa",
-      "equality": "Berdintasuna"
+      "equality": "Berdintasuna",
+      "activity": "Gure jarduera"
     },
     "contact": "Harremana"
   },
@@ -914,6 +915,10 @@
       "financialReports": {
         "name": "Txosten ekonomikoak",
         "description": "Batzar Orokorrak onartutako txostenak."
+      },
+      "activity": {
+        "name": "Gure jarduera",
+        "description": "Jarduera-sarrerak eta arloen hileroko txostenak."
       }
     },
     "layout": {
@@ -1114,7 +1119,11 @@
       "seoHeading": "SEO eta sare sozialak",
       "seoIntroBefore": "Irudi propiorik gabeko orrietarako ogImage lehenetsia. Igo honako JPG bat:",
       "seoIntroAfter": ".",
-      "ogImageLabel": "Lehenetsitako ogImage"
+      "ogImageLabel": "Lehenetsitako ogImage",
+      "activityHeading": "Jarduera",
+      "activityIntro": "Jarduera-sarrera batek edo arlo-txosten batek irudi propiorik ez duenean erakusten diren irudiak.",
+      "activityEntryLabel": "Jarduera-sarrerak",
+      "areaReportLabel": "Arlo-txostenak"
     },
     "pressDossier": {
       "title": "Prentsa-dosierra",
@@ -1578,8 +1587,179 @@
       "contentOrPdfRequired": "Edukia gehitu edo PDF bat igo behar duzu prentsa-oharretarako eta adierazpenetarako",
       "externalUrlRequired": "Kanpoko URLa nahitaezkoa da hedabideetako agerpenetarako",
       "mediaOutletRequired": "Hedabidea nahitaezkoa da hedabideetako agerpenetarako",
+      "invalidActivityKind": "Jarduera mota ez da baliozkoa",
+      "invalidStartDate": "Hasiera data ez da baliozkoa",
+      "invalidEndDate": "Amaiera data ez da baliozkoa",
+      "endDateBeforeStart": "Amaiera data ezin da hasiera data baino lehenagokoa izan",
+      "memberOrgRequired": "Hautatu erakundea kideen ekitaldietarako",
+      "areaRequired": "Hautatu arlo bat",
+      "coversFromAfterMonth": "Aldiaren hasiera ezin da edizioaren hilabetea baino geroagokoa izan",
+      "defaultContentRequired": "Gaztelaniazko edukia derrigorrezkoa da",
+      "captionTooLong": "Argazki-oina luzeegia da",
       "summaryTitle": "Berrikusi formularioaren erroreak",
       "descriptionRepeatsContent": "Ez errepikatu deskribapen laburrean edukian dagoeneko agertzen den testua; edukiaren gainean erakusten da."
+    },
+    "activity": {
+      "unsavedChangesPrompt": "Gorde gabeko aldaketak daude. Orain irtetzen bazara, galdu egingo dira.",
+      "subnav": {
+        "aria": "Jardueraren azpiatalak",
+        "entries": "Sarrerak",
+        "reports": "Arloen txostenak"
+      },
+      "kinds": {
+        "creup": "CREUP",
+        "member": "Kidea"
+      },
+      "list": {
+        "heading": "Jarduera-sarrerak",
+        "subheading": "CREUPen eta kide diren erakundeen ekitaldiak, dataren arabera ordenatuta.",
+        "newCreup": "CREUP sarrera berria",
+        "newMember": "Kidearen ekitaldi berria",
+        "allTab": "Guztiak",
+        "filterByKindAria": "Iragazi sarrerak motaren arabera",
+        "searchPlaceholder": "Bilatu sarrerak...",
+        "loadErrorTitle": "Ezin izan dira jarduera-sarrerak kargatu",
+        "online": "Online",
+        "viewOnWebTitle": "Ikusi webgunean",
+        "editTitle": "Editatu sarrera",
+        "editAria": "Editatu sarrera",
+        "deleteTitle": "Ezabatu sarrera",
+        "deleteAria": "Ezabatu sarrera",
+        "noSearchResults": "Ez da sarrerarik aurkitu \"{query}\" bilaketarako",
+        "clearSearch": "Garbitu bilaketa",
+        "emptyState": "Oraindik ez dago jarduera-sarrerarik",
+        "createFirst": "Sortu lehen sarrera",
+        "paginationAria": "Sarreren orrikatzea"
+      },
+      "toast": {
+        "deleted": "Sarrera ezabatuta",
+        "deleteError": "Ezin izan da sarrera ezabatu",
+        "created": "Sarrera ondo sortu da",
+        "createError": "Ezin izan da sarrera sortu",
+        "notFound": "Ez da sarrera aurkitu",
+        "updated": "Sarrera ondo eguneratu da",
+        "updateError": "Ezin izan da sarrera eguneratu",
+        "conflictTitle": "Gatazka gordetzean",
+        "conflictDescription": "Beste erabiltzaile batek aldatu du sarrera. Kargatu orria berriz azken aldaketak ikusteko.",
+        "snapshotRefreshed": "Antolatzailearen datuak eguneratuta",
+        "snapshotRefreshError": "Ezin izan dira antolatzailearen datuak eguneratu"
+      },
+      "form": {
+        "back": "Itzuli",
+        "editingLabel": "Editatzen",
+        "newLabel": "Berria",
+        "saveChanges": "Gorde aldaketak",
+        "createEntry": "Sortu sarrera",
+        "viewOnWebAria": "Ikusi sarrera webgunean",
+        "refreshSnapshot": "Eguneratu datuak antolaketa-organigrametik",
+        "refreshSnapshotHint": "Antolatzailearen logoa eta siglak berriz izozten ditu organigramaren uneko datuekin.",
+        "requiredBadge": "Derrigorrezkoa",
+        "titleLabel": "Izenburua",
+        "excerptLabel": "Deskribapen laburra",
+        "excerptPlaceholder": "Laburpen laburra txartelerako eta zerrendetarako",
+        "contentLabel": "Eduki osoa",
+        "contentPlaceholder": "Idatzi hemen sarreraren eduki osoa...",
+        "contentHintDefault": "Beste hizkuntzetan hutsik utz dezakezu, eta gaztelaniazko edukia erakutsiko da.",
+        "contentHintOther": "Aukerakoa. Hutsik uzten baduzu, gaztelaniazko edukia erakutsiko da.",
+        "imageCaptionLabel": "Argazki-oina",
+        "imageCaptionPlaceholder": "Adib.: Erakundeak lagatako argazkia",
+        "altLabel": "Irudiaren testu alternatiboa",
+        "altPlaceholder": "Irudiaren deskribapena",
+        "configTitle": "Konfigurazioa",
+        "kindLabel": "Sarrera mota",
+        "startDateLabel": "Hasiera data",
+        "endDateLabel": "Amaiera data",
+        "endDateToggle": "Jarduerak hainbat egun irauten ditu",
+        "selectDateAria": "Hautatu data",
+        "onlineLabel": "Modalitatea",
+        "onlineOn": "Online",
+        "onlineOff": "Aurrez aurre",
+        "locationLabel": "Lekua",
+        "locationPlaceholder": "Hiria edo egoitza",
+        "statusLabel": "Egoera",
+        "organiserTitle": "Antolatzailea",
+        "organiserHint": "Hautatu ekitaldia antolatzen duen kide-erakundea.",
+        "organiserLabel": "Erakunde antolatzailea",
+        "organiserPlaceholder": "Hautatu erakunde bat...",
+        "organiserLoadError": "Ezin izan dira kide-erakundeak kargatu",
+        "organiserLoadErrorDescription": "Kargatu orria berriz erakundeen zerrenda berriz kargatzeko.",
+        "sourceAssociated": "Elkartua",
+        "sourceSectorial": "Sektoriala",
+        "imageTitle": "Irudia",
+        "imageHint": "Aukerakoa. Irudirik igotzen ez baduzu, sarrera motaren irudi lehenetsia erabiliko da (konfiguratuta badago).",
+        "imagePreviewAlt": "Irudiaren aurrebista",
+        "noImage": "Irudirik gabe",
+        "changeImage": "Aldatu irudia",
+        "uploadImage": "Igo irudia",
+        "removeImage": "Kendu irudia",
+        "imageFormats": "JPG, PNG, WebP, SVG edo AVIF",
+        "imageUploaded": "Irudia ondo igo da",
+        "imageUploadError": "Ezin izan da irudia igo",
+        "imageTooLarge": "Irudiak gehienezko tamaina gainditzen du (5MB)",
+        "cancelModalTitle": "Gorde gabeko aldaketak",
+        "cancelModalBody": "Orain irtetzen bazara, egindako aldaketak galduko dituzu. Jarraitu nahi duzu?",
+        "keepEditing": "Jarraitu editatzen",
+        "discardChanges": "Irten gorde gabe"
+      }
+    },
+    "areaReports": {
+      "unsavedChangesPrompt": "Gorde gabeko aldaketak daude. Orain irtetzen bazara, galdu egingo dira.",
+      "list": {
+        "heading": "Arloen txostenak",
+        "subheading": "Arlo bakoitzeko hileroko txostena. Edizio bakoitzak hilabete bat edo hilabete tarte bat hartzen du.",
+        "newReport": "Txosten berria",
+        "monthFilterLabel": "Iragazi hilabetearen arabera",
+        "clearFilter": "Garbitu iragazkia",
+        "loadErrorTitle": "Ezin izan dira arloen txostenak kargatu",
+        "editTitle": "Editatu txostena",
+        "editAria": "Editatu txostena",
+        "deleteTitle": "Ezabatu txostena",
+        "deleteAria": "Ezabatu txostena",
+        "noFilterResults": "Ez dago txostenik {month} hilabeterako",
+        "emptyState": "Oraindik ez dago arloen txostenik",
+        "createFirst": "Sortu lehen txostena",
+        "paginationAria": "Txostenen orrikatzea",
+        "unknownArea": "Izenik gabeko arloa"
+      },
+      "toast": {
+        "deleted": "Txostena ezabatuta",
+        "deleteError": "Ezin izan da txostena ezabatu",
+        "created": "Txostena ondo sortu da",
+        "createError": "Ezin izan da txostena sortu",
+        "notFound": "Ez da txostena aurkitu",
+        "updated": "Txostena ondo eguneratu da",
+        "updateError": "Ezin izan da txostena eguneratu",
+        "conflictFallback": "Gatazka bat dela eta ezin izan da txostena gorde. Egiaztatu hilabetea, arloa eta aldia."
+      },
+      "form": {
+        "back": "Itzuli",
+        "editingLabel": "Editatzen",
+        "newLabel": "Berria",
+        "saveChanges": "Gorde aldaketak",
+        "createReport": "Sortu txostena",
+        "requiredBadge": "Derrigorrezkoa",
+        "configTitle": "Konfigurazioa",
+        "areaLabel": "Arloa",
+        "areaPlaceholder": "Hautatu arlo bat...",
+        "areasLoadError": "Ezin izan dira arloak kargatu",
+        "areasLoadErrorDescription": "Kargatu orria berriz arloen zerrenda berriz kargatzeko.",
+        "monthLabel": "Edizioaren hilabetea",
+        "coversFromLabel": "Aldiaren hasiera",
+        "coversFromToggle": "Edizioak hilabete tarte bat hartzen du",
+        "coversFromHint": "Aktibatzen baduzu, edizioak hilabete honetatik edizioaren hilabetera bitartea hartzen du.",
+        "contentLabel": "Txostenaren edukia",
+        "contentPlaceholder": "Idatzi hemen arloaren txostena...",
+        "contentHintDefault": "Beste hizkuntzetan hutsik utz dezakezu, eta gaztelaniazko edukia erakutsiko da.",
+        "contentHintOther": "Aukerakoa. Hutsik uzten baduzu, gaztelaniazko edukia erakutsiko da.",
+        "imageCaptionLabel": "Argazki-oina",
+        "imageCaptionPlaceholder": "Adib.: Topaketaren argazkia",
+        "altLabel": "Irudiaren testu alternatiboa",
+        "altPlaceholder": "Irudiaren deskribapena",
+        "statusLabel": "Egoera",
+        "imageUploaded": "Irudia ondo igo da",
+        "imageUploadError": "Ezin izan da irudia igo",
+        "imageTooLarge": "Irudiak gehienezko tamaina gainditzen du (5MB)"
+      }
     }
   },
   "confirmSubscription": {
@@ -1841,5 +2021,46 @@
       "p1": " CREUPek Webgunearen eta haren edukien erabilera desegokiaren edo Baldintza hauen ez-betetzearen aurrean egoki iritzitako ekintza zibil edo penalak aurkezteko ahalmena gordetzen du. ",
       "p2": " Erabiltzailearen eta CREUPen arteko harremana Espainiako legeriaren arabera arautzen da. Baldintza hauen interpretazioari edota aplikazioari buruzko edozein auzi tribunal eskudunen jurisdikzio arruntaren mende egongo da. "
     }
+  },
+  "activity": {
+    "title": "Gure jarduera",
+    "description": "CREUPen eta bere kide diren erakundeen ekitaldiak, ordezkaritzak eta arloen txostenak.",
+    "tabs": {
+      "all": "Jarduera guztia",
+      "creup": "CREUP",
+      "member": "Kideen ekitaldiak"
+    },
+    "filters": {
+      "month": "Hilabetea",
+      "allMonths": "Hilabete guztiak",
+      "search": "Bilatu jarduera…",
+      "clearSearch": "Garbitu bilaketa",
+      "filterByType": "Iragazi motaren arabera"
+    },
+    "online": "Online",
+    "memberEvent": "Kide baten jarduera",
+    "emptyList": "Ez dago jarduerarik erakusteko.",
+    "viewAll": "Ikusi azken lan guztia",
+    "homeTitle": "Gure jarduera",
+    "detail": {
+      "breadcrumbCreup": "Gure jarduera",
+      "breadcrumbMember": "Kideen ekitaldiak",
+      "memberBanner": "CREUPeko kide baten jarduera",
+      "back": "Itzuli gure jarduerara"
+    },
+    "reports": {
+      "title": "Arloen txostena",
+      "heading": "Hileko txostena",
+      "areasCount": "{count} arlo | {count} arlo",
+      "monthLabel": "Hilabetea",
+      "prevMonth": "Aurreko hilabetea",
+      "nextMonth": "Hurrengo hilabetea",
+      "empty": "Ez dago txostenik hilabete honetarako.",
+      "bannerTitle": "Hileko arloen txostena",
+      "bannerCta": "Ikusi txostena",
+      "viewReport": "Ikusi txostena",
+      "breadcrumb": "Arloen txostena"
+    },
+    "loadError": "Ezin izan da jarduera kargatu."
   }
 }

@@ -29,6 +29,8 @@ services:
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/externos:/app/.output/public/documentos/externos
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/igualdad:/app/.output/public/documentos/igualdad
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/informes-economicos:/app/.output/public/documentos/informes-economicos
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/transparencia/actividad/imagenes:/app/.output/public/transparencia/actividad/imagenes
+      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/transparencia/informes-areas/imagenes:/app/.output/public/transparencia/informes-areas/imagenes
       - ${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}:/app/.output/.data/admin-assets
     depends_on:
       postgres:

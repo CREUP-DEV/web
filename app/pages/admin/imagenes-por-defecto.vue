@@ -14,6 +14,8 @@ interface SiteDefaultImagesPayload {
   newsletterCoverImage: string | null
   carouselSlideImage: string | null
   ogImage: string | null
+  activityEntryImage: string | null
+  areaReportImage: string | null
   updatedAt: string | null
 }
 
@@ -41,6 +43,8 @@ const form = reactive({
   newsletterCoverImage: null as string | null,
   carouselSlideImage: null as string | null,
   ogImage: null as string | null,
+  activityEntryImage: null as string | null,
+  areaReportImage: null as string | null,
 })
 
 const releaseUpload = useAdminFileUpload({
@@ -111,6 +115,28 @@ const ogUpload = useAdminFileUpload({
   getFallbackPreview: () => form.ogImage,
 })
 
+const activityUpload = useAdminFileUpload({
+  endpoint: '/api/admin/activity/upload',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
+  onUploaded: (storagePath) => {
+    clearErrors()
+    form.activityEntryImage = storagePath
+  },
+  getFallbackPreview: () => form.activityEntryImage,
+})
+
+const areaReportUpload = useAdminFileUpload({
+  endpoint: '/api/admin/area-reports/upload',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
+  onUploaded: (storagePath) => {
+    clearErrors()
+    form.areaReportImage = storagePath
+  },
+  getFallbackPreview: () => form.areaReportImage,
+})
+
 const isSaving = ref(false)
 
 const buildPayloadSnapshot = () =>
@@ -121,6 +147,8 @@ const buildPayloadSnapshot = () =>
     newsletterCoverImage: form.newsletterCoverImage,
     carouselSlideImage: form.carouselSlideImage,
     ogImage: form.ogImage,
+    activityEntryImage: form.activityEntryImage,
+    areaReportImage: form.areaReportImage,
   })
 
 const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
@@ -134,12 +162,16 @@ watch(
     form.newsletterCoverImage = item?.newsletterCoverImage ?? null
     form.carouselSlideImage = item?.carouselSlideImage ?? null
     form.ogImage = item?.ogImage ?? null
+    form.activityEntryImage = item?.activityEntryImage ?? null
+    form.areaReportImage = item?.areaReportImage ?? null
     releaseUpload.setPreview(item?.pressReleaseImage ?? null)
     statementUpload.setPreview(item?.statementImage ?? null)
     mediaUpload.setPreview(item?.mediaAppearanceImage ?? null)
     newsletterUpload.setPreview(item?.newsletterCoverImage ?? null)
     carouselUpload.setPreview(item?.carouselSlideImage ?? null)
     ogUpload.setPreview(item?.ogImage ?? null)
+    activityUpload.setPreview(item?.activityEntryImage ?? null)
+    areaReportUpload.setPreview(item?.areaReportImage ?? null)
     clearErrors()
     resetFormSnapshot()
   },
@@ -154,6 +186,8 @@ const save = async () => {
     newsletterCoverImage: form.newsletterCoverImage,
     carouselSlideImage: form.carouselSlideImage,
     ogImage: form.ogImage,
+    activityEntryImage: form.activityEntryImage,
+    areaReportImage: form.areaReportImage,
   }
 
   if (!validate(updateSiteDefaultImagesSchema, payload)) {
@@ -665,6 +699,147 @@ const save = async () => {
             </p>
           </div>
         </UCard>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.activityHeading') }}</h2>
+        <p class="text-muted max-w-3xl text-sm">
+          {{ t('admin.siteDefaultImages.activityIntro') }}
+        </p>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <UCard>
+            <div class="space-y-4">
+              <div class="flex items-center gap-2 font-semibold">
+                <UIcon name="i-tabler-calendar-event" class="text-muted size-5" />
+                {{ t('admin.siteDefaultImages.activityEntryLabel') }}
+              </div>
+              <div v-if="activityUpload.preview.value" class="overflow-hidden rounded-lg border">
+                <img
+                  :src="activityUpload.preview.value"
+                  alt=""
+                  class="aspect-video w-full object-cover"
+                />
+              </div>
+              <div
+                v-else
+                class="bg-muted/10 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed"
+              >
+                <p class="text-muted text-sm">{{ t('admin.siteDefaultImages.noImage') }}</p>
+              </div>
+              <input
+                :ref="activityUpload.inputRef"
+                type="file"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
+                class="sr-only"
+                tabindex="-1"
+                aria-hidden="true"
+                @change="activityUpload.handleFileSelect"
+              />
+              <div class="flex flex-wrap gap-2">
+                <UButton
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  icon="i-tabler-upload"
+                  :loading="activityUpload.isUploading.value"
+                  @click="activityUpload.triggerFileDialog()"
+                >
+                  {{
+                    activityUpload.preview.value
+                      ? t('admin.siteDefaultImages.changeImage')
+                      : t('admin.siteDefaultImages.uploadImage')
+                  }}
+                </UButton>
+                <UButton
+                  v-if="form.activityEntryImage"
+                  type="button"
+                  variant="ghost"
+                  color="error"
+                  size="sm"
+                  icon="i-tabler-trash"
+                  @click="
+                    () => {
+                      form.activityEntryImage = null
+                      activityUpload.setPreview(null)
+                    }
+                  "
+                >
+                  {{ t('admin.siteDefaultImages.remove') }}
+                </UButton>
+              </div>
+              <p v-if="getFieldError('activityEntryImage')" class="text-error text-xs" role="alert">
+                {{ getFieldError('activityEntryImage') }}
+              </p>
+            </div>
+          </UCard>
+
+          <UCard>
+            <div class="space-y-4">
+              <div class="flex items-center gap-2 font-semibold">
+                <UIcon name="i-tabler-report" class="text-muted size-5" />
+                {{ t('admin.siteDefaultImages.areaReportLabel') }}
+              </div>
+              <div v-if="areaReportUpload.preview.value" class="overflow-hidden rounded-lg border">
+                <img
+                  :src="areaReportUpload.preview.value"
+                  alt=""
+                  class="aspect-video w-full object-cover"
+                />
+              </div>
+              <div
+                v-else
+                class="bg-muted/10 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed"
+              >
+                <p class="text-muted text-sm">{{ t('admin.siteDefaultImages.noImage') }}</p>
+              </div>
+              <input
+                :ref="areaReportUpload.inputRef"
+                type="file"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
+                class="sr-only"
+                tabindex="-1"
+                aria-hidden="true"
+                @change="areaReportUpload.handleFileSelect"
+              />
+              <div class="flex flex-wrap gap-2">
+                <UButton
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  icon="i-tabler-upload"
+                  :loading="areaReportUpload.isUploading.value"
+                  @click="areaReportUpload.triggerFileDialog()"
+                >
+                  {{
+                    areaReportUpload.preview.value
+                      ? t('admin.siteDefaultImages.changeImage')
+                      : t('admin.siteDefaultImages.uploadImage')
+                  }}
+                </UButton>
+                <UButton
+                  v-if="form.areaReportImage"
+                  type="button"
+                  variant="ghost"
+                  color="error"
+                  size="sm"
+                  icon="i-tabler-trash"
+                  @click="
+                    () => {
+                      form.areaReportImage = null
+                      areaReportUpload.setPreview(null)
+                    }
+                  "
+                >
+                  {{ t('admin.siteDefaultImages.remove') }}
+                </UButton>
+              </div>
+              <p v-if="getFieldError('areaReportImage')" class="text-error text-xs" role="alert">
+                {{ getFieldError('areaReportImage') }}
+              </p>
+            </div>
+          </UCard>
+        </div>
       </section>
     </div>
   </div>

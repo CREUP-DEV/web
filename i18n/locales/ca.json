@@ -36,7 +36,8 @@
       "regulations": "Normativa",
       "financialReports": "Informes econòmics",
       "corporateIdentity": "Identitat Corporativa",
-      "equality": "Igualtat"
+      "equality": "Igualtat",
+      "activity": "La nostra activitat"
     },
     "contact": "Contacte"
   },
@@ -914,6 +915,10 @@
       "financialReports": {
         "name": "Informes econòmics",
         "description": "Informes aprovats per l'Assemblea General."
+      },
+      "activity": {
+        "name": "La nostra activitat",
+        "description": "Entrades d’activitat i informes mensuals d’àrees."
       }
     },
     "layout": {
@@ -1114,7 +1119,11 @@
       "seoHeading": "SEO i xarxes socials",
       "seoIntroBefore": "ogImage per defecte per a pàgines sense imatge pròpia. Puja un JPG de",
       "seoIntroAfter": ".",
-      "ogImageLabel": "ogImage per defecte"
+      "ogImageLabel": "ogImage per defecte",
+      "activityHeading": "Activitat",
+      "activityIntro": "Imatges que es mostren quan una entrada d'activitat o un informe d'àrea no té imatge pròpia.",
+      "activityEntryLabel": "Entrades d'activitat",
+      "areaReportLabel": "Informes d'àrea"
     },
     "pressDossier": {
       "title": "Dossier de premsa",
@@ -1578,8 +1587,179 @@
       "contentOrPdfRequired": "Has d'afegir contingut o pujar un PDF per a notes de premsa i comunicats",
       "externalUrlRequired": "La URL externa és obligatòria per a aparicions en mitjans",
       "mediaOutletRequired": "El mitjà de comunicació és obligatori per a aparicions en mitjans",
+      "invalidActivityKind": "El tipus d’activitat no és vàlid",
+      "invalidStartDate": "La data d’inici no és vàlida",
+      "invalidEndDate": "La data de fi no és vàlida",
+      "endDateBeforeStart": "La data de fi no pot ser anterior a la d’inici",
+      "memberOrgRequired": "Selecciona l’organització per a esdeveniments de membres",
+      "areaRequired": "Selecciona una àrea",
+      "coversFromAfterMonth": "L’inici del període no pot ser posterior al mes de l’edició",
+      "defaultContentRequired": "El contingut en espanyol és obligatori",
+      "captionTooLong": "El peu de foto és massa llarg",
       "summaryTitle": "Revisa els errors del formulari",
       "descriptionRepeatsContent": "No repeteixis a la descripció breu un text que ja apareix al contingut; es mostra just a sobre."
+    },
+    "activity": {
+      "unsavedChangesPrompt": "Hi ha canvis sense desar. Si surts ara, es perdran.",
+      "subnav": {
+        "aria": "Subseccions d’Activitat",
+        "entries": "Entrades",
+        "reports": "Informes d’àrees"
+      },
+      "kinds": {
+        "creup": "CREUP",
+        "member": "Membre"
+      },
+      "list": {
+        "heading": "Entrades d’activitat",
+        "subheading": "Esdeveniments de CREUP i d’entitats membre, ordenats per data.",
+        "newCreup": "Nova entrada CREUP",
+        "newMember": "Nou esdeveniment de membre",
+        "allTab": "Totes",
+        "filterByKindAria": "Filtra les entrades per tipus",
+        "searchPlaceholder": "Cerca entrades...",
+        "loadErrorTitle": "No s’han pogut carregar les entrades d’activitat",
+        "online": "En línia",
+        "viewOnWebTitle": "Veure al web",
+        "editTitle": "Edita l’entrada",
+        "editAria": "Edita l’entrada",
+        "deleteTitle": "Elimina l’entrada",
+        "deleteAria": "Elimina l’entrada",
+        "noSearchResults": "No s’han trobat entrades per a \"{query}\"",
+        "clearSearch": "Neteja la cerca",
+        "emptyState": "Encara no hi ha entrades d’activitat",
+        "createFirst": "Crea la primera entrada",
+        "paginationAria": "Paginació d’entrades"
+      },
+      "toast": {
+        "deleted": "Entrada eliminada",
+        "deleteError": "No s’ha pogut eliminar l’entrada",
+        "created": "Entrada creada correctament",
+        "createError": "No s’ha pogut crear l’entrada",
+        "notFound": "No s’ha trobat l’entrada",
+        "updated": "Entrada actualitzada correctament",
+        "updateError": "No s’ha pogut actualitzar l’entrada",
+        "conflictTitle": "Conflicte en desar",
+        "conflictDescription": "L’entrada ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
+        "snapshotRefreshed": "Dades de l’organitzador actualitzades",
+        "snapshotRefreshError": "No s’han pogut actualitzar les dades de l’organitzador"
+      },
+      "form": {
+        "back": "Torna",
+        "editingLabel": "Editant",
+        "newLabel": "Nova",
+        "saveChanges": "Desa els canvis",
+        "createEntry": "Crea l’entrada",
+        "viewOnWebAria": "Veure l’entrada al web",
+        "refreshSnapshot": "Actualitza les dades de l’organigrama",
+        "refreshSnapshotHint": "Torna a congelar el logo i les sigles de l’organitzador amb les dades actuals de l’organigrama.",
+        "requiredBadge": "Obligatori",
+        "titleLabel": "Títol",
+        "excerptLabel": "Descripció breu",
+        "excerptPlaceholder": "Resum breu per a la targeta i els llistats",
+        "contentLabel": "Contingut complet",
+        "contentPlaceholder": "Escriu aquí el contingut complet de l’entrada...",
+        "contentHintDefault": "En altres idiomes pots deixar-ho buit i es mostrarà el contingut en espanyol.",
+        "contentHintOther": "Opcional. Si ho deixes buit, es mostrarà el contingut en espanyol.",
+        "imageCaptionLabel": "Peu de foto",
+        "imageCaptionPlaceholder": "Ex.: Foto cedida per l’entitat",
+        "altLabel": "Text alternatiu de la imatge",
+        "altPlaceholder": "Descripció de la imatge",
+        "configTitle": "Configuració",
+        "kindLabel": "Tipus d’entrada",
+        "startDateLabel": "Data d’inici",
+        "endDateLabel": "Data de fi",
+        "endDateToggle": "L’activitat dura diversos dies",
+        "selectDateAria": "Selecciona la data",
+        "onlineLabel": "Modalitat",
+        "onlineOn": "En línia",
+        "onlineOff": "Presencial",
+        "locationLabel": "Lloc",
+        "locationPlaceholder": "Ciutat o seu",
+        "statusLabel": "Estat",
+        "organiserTitle": "Organitzador",
+        "organiserHint": "Selecciona l’entitat membre que organitza l’esdeveniment.",
+        "organiserLabel": "Entitat organitzadora",
+        "organiserPlaceholder": "Selecciona una entitat...",
+        "organiserLoadError": "No s’han pogut carregar les entitats membre",
+        "organiserLoadErrorDescription": "Torna a carregar la pàgina per recarregar el llistat d’entitats.",
+        "sourceAssociated": "Associat",
+        "sourceSectorial": "Sectorial",
+        "imageTitle": "Imatge",
+        "imageHint": "Opcional. Si no puges cap imatge, s’usarà la imatge per defecte del tipus d’entrada (si està configurada).",
+        "imagePreviewAlt": "Vista prèvia de la imatge",
+        "noImage": "Sense imatge",
+        "changeImage": "Canvia la imatge",
+        "uploadImage": "Puja una imatge",
+        "removeImage": "Treu la imatge",
+        "imageFormats": "JPG, PNG, WebP, SVG o AVIF",
+        "imageUploaded": "Imatge pujada correctament",
+        "imageUploadError": "No s’ha pogut pujar la imatge",
+        "imageTooLarge": "La imatge supera la mida màxima (5MB)",
+        "cancelModalTitle": "Canvis sense desar",
+        "cancelModalBody": "Si surts ara perdràs els canvis fets. Vols continuar?",
+        "keepEditing": "Continua editant",
+        "discardChanges": "Surt sense desar"
+      }
+    },
+    "areaReports": {
+      "unsavedChangesPrompt": "Hi ha canvis sense desar. Si surts ara, es perdran.",
+      "list": {
+        "heading": "Informes d’àrees",
+        "subheading": "Informe mensual per àrea. Cada edició cobreix un mes o un rang de mesos.",
+        "newReport": "Nou informe",
+        "monthFilterLabel": "Filtra per mes",
+        "clearFilter": "Neteja el filtre",
+        "loadErrorTitle": "No s’han pogut carregar els informes d’àrees",
+        "editTitle": "Edita l’informe",
+        "editAria": "Edita l’informe",
+        "deleteTitle": "Elimina l’informe",
+        "deleteAria": "Elimina l’informe",
+        "noFilterResults": "No hi ha informes per al mes {month}",
+        "emptyState": "Encara no hi ha informes d’àrees",
+        "createFirst": "Crea el primer informe",
+        "paginationAria": "Paginació d’informes",
+        "unknownArea": "Àrea sense nom"
+      },
+      "toast": {
+        "deleted": "Informe eliminat",
+        "deleteError": "No s’ha pogut eliminar l’informe",
+        "created": "Informe creat correctament",
+        "createError": "No s’ha pogut crear l’informe",
+        "notFound": "No s’ha trobat l’informe",
+        "updated": "Informe actualitzat correctament",
+        "updateError": "No s’ha pogut actualitzar l’informe",
+        "conflictFallback": "No s’ha pogut desar l’informe per un conflicte. Revisa el mes, l’àrea i el període."
+      },
+      "form": {
+        "back": "Torna",
+        "editingLabel": "Editant",
+        "newLabel": "Nou",
+        "saveChanges": "Desa els canvis",
+        "createReport": "Crea l’informe",
+        "requiredBadge": "Obligatori",
+        "configTitle": "Configuració",
+        "areaLabel": "Àrea",
+        "areaPlaceholder": "Selecciona una àrea...",
+        "areasLoadError": "No s’han pogut carregar les àrees",
+        "areasLoadErrorDescription": "Torna a carregar la pàgina per recarregar el llistat d’àrees.",
+        "monthLabel": "Mes de l’edició",
+        "coversFromLabel": "Inici del període",
+        "coversFromToggle": "L’edició cobreix un rang de mesos",
+        "coversFromHint": "Si l’actives, l’edició cobreix des d’aquest mes fins al mes de l’edició.",
+        "contentLabel": "Contingut de l’informe",
+        "contentPlaceholder": "Escriu ací l’informe de l’àrea...",
+        "contentHintDefault": "En altres idiomes pots deixar-ho buit i es mostrarà el contingut en espanyol.",
+        "contentHintOther": "Opcional. Si ho deixes buit, es mostrarà el contingut en espanyol.",
+        "imageCaptionLabel": "Peu de foto",
+        "imageCaptionPlaceholder": "Ex.: Foto de la trobada",
+        "altLabel": "Text alternatiu de la imatge",
+        "altPlaceholder": "Descripció de la imatge",
+        "statusLabel": "Estat",
+        "imageUploaded": "Imatge pujada correctament",
+        "imageUploadError": "No s’ha pogut pujar la imatge",
+        "imageTooLarge": "La imatge supera la mida màxima (5MB)"
+      }
     }
   },
   "confirmSubscription": {
@@ -1841,5 +2021,46 @@
       "p1": " CREUP es reserva la facultat de presentar les accions civils o penals que consideri oportunes davant l'ús indegut del Lloc Web i els seus continguts o l'incompliment d'aquestes Condicions. ",
       "p2": " La relació entre l'Usuari i CREUP es regeix per la legislació espanyola. Qualsevol controvèrsia relativa a la interpretació i/o aplicació d'aquestes Condicions se sotmetrà a la jurisdicció ordinària dels tribunals competents. "
     }
+  },
+  "activity": {
+    "title": "La nostra activitat",
+    "description": "Esdeveniments, representacions i informes d'àrees de CREUP i de les seves entitats membres.",
+    "tabs": {
+      "all": "Tota l'activitat",
+      "creup": "CREUP",
+      "member": "Esdeveniments de membres"
+    },
+    "filters": {
+      "month": "Mes",
+      "allMonths": "Tots els mesos",
+      "search": "Cerca activitat…",
+      "clearSearch": "Esborra la cerca",
+      "filterByType": "Filtra per tipus"
+    },
+    "online": "Online",
+    "memberEvent": "Activitat d'un membre",
+    "emptyList": "No hi ha activitat per mostrar.",
+    "viewAll": "Mostra tot el treball recent",
+    "homeTitle": "La nostra activitat",
+    "detail": {
+      "breadcrumbCreup": "La nostra activitat",
+      "breadcrumbMember": "Esdeveniments de membres",
+      "memberBanner": "Activitat d'un membre de CREUP",
+      "back": "Torna a la nostra activitat"
+    },
+    "reports": {
+      "title": "Informe d'àrees",
+      "heading": "Informe mensual",
+      "areasCount": "{count} àrea | {count} àrees",
+      "monthLabel": "Mes",
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes següent",
+      "empty": "No hi ha informe disponible per a aquest mes.",
+      "bannerTitle": "Informe mensual d'àrees",
+      "bannerCta": "Veure informe",
+      "viewReport": "Veure informe",
+      "breadcrumb": "Informe d'àrees"
+    },
+    "loadError": "No s'ha pogut carregar l'activitat."
   }
 }

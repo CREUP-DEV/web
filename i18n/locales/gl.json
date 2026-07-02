@@ -36,7 +36,8 @@
       "regulations": "Normativa",
       "financialReports": "Informes económicos",
       "corporateIdentity": "Identidade Corporativa",
-      "equality": "Igualdade"
+      "equality": "Igualdade",
+      "activity": "A nosa actividade"
     },
     "contact": "Contacto"
   },
@@ -914,6 +915,10 @@
       "financialReports": {
         "name": "Informes económicos",
         "description": "Informes aprobados pola Asemblea Xeral."
+      },
+      "activity": {
+        "name": "A nosa actividade",
+        "description": "Entradas de actividade e informes mensuais de áreas."
       }
     },
     "layout": {
@@ -1114,7 +1119,11 @@
       "seoHeading": "SEO e redes sociais",
       "seoIntroBefore": "ogImage por defecto para páxinas sen imaxe propia. Sobe un JPG de",
       "seoIntroAfter": ".",
-      "ogImageLabel": "ogImage por defecto"
+      "ogImageLabel": "ogImage por defecto",
+      "activityHeading": "Actividade",
+      "activityIntro": "Imaxes que se mostran cando unha entrada de actividade ou un informe de área non ten imaxe propia.",
+      "activityEntryLabel": "Entradas de actividade",
+      "areaReportLabel": "Informes de área"
     },
     "pressDossier": {
       "title": "Dossier de prensa",
@@ -1578,8 +1587,179 @@
       "contentOrPdfRequired": "Debes engadir contido ou subir un PDF para notas de prensa e comunicados",
       "externalUrlRequired": "O URL externo é obrigatorio para aparicións nos medios",
       "mediaOutletRequired": "O medio de comunicación é obrigatorio para aparicións nos medios",
+      "invalidActivityKind": "O tipo de actividade non é válido",
+      "invalidStartDate": "A data de inicio non é válida",
+      "invalidEndDate": "A data de fin non é válida",
+      "endDateBeforeStart": "A data de fin non pode ser anterior á de inicio",
+      "memberOrgRequired": "Selecciona a organización para eventos de membros",
+      "areaRequired": "Selecciona unha área",
+      "coversFromAfterMonth": "O inicio do período non pode ser posterior ao mes da edición",
+      "defaultContentRequired": "O contido en español é obrigatorio",
+      "captionTooLong": "O pé de foto é demasiado longo",
       "summaryTitle": "Revisa os erros do formulario",
       "descriptionRepeatsContent": "Non repitas na descrición breve un texto que xa aparece no contido; móstrase xusto enriba."
+    },
+    "activity": {
+      "unsavedChangesPrompt": "Hai cambios sen gardar. Se saes agora, perderanse.",
+      "subnav": {
+        "aria": "Subseccións de Actividade",
+        "entries": "Entradas",
+        "reports": "Informes de áreas"
+      },
+      "kinds": {
+        "creup": "CREUP",
+        "member": "Membro"
+      },
+      "list": {
+        "heading": "Entradas de actividade",
+        "subheading": "Eventos de CREUP e de entidades membro, ordenados por data.",
+        "newCreup": "Nova entrada CREUP",
+        "newMember": "Novo evento de membro",
+        "allTab": "Todas",
+        "filterByKindAria": "Filtrar entradas por tipo",
+        "searchPlaceholder": "Buscar entradas...",
+        "loadErrorTitle": "Non se puideron cargar as entradas de actividade",
+        "online": "En liña",
+        "viewOnWebTitle": "Ver na web",
+        "editTitle": "Editar entrada",
+        "editAria": "Editar entrada",
+        "deleteTitle": "Eliminar entrada",
+        "deleteAria": "Eliminar entrada",
+        "noSearchResults": "Non se atoparon entradas para \"{query}\"",
+        "clearSearch": "Limpar busca",
+        "emptyState": "Aínda non hai entradas de actividade",
+        "createFirst": "Crear primeira entrada",
+        "paginationAria": "Paxinación de entradas"
+      },
+      "toast": {
+        "deleted": "Entrada eliminada",
+        "deleteError": "Non se puido eliminar a entrada",
+        "created": "Entrada creada correctamente",
+        "createError": "Non se puido crear a entrada",
+        "notFound": "Non se atopou a entrada",
+        "updated": "Entrada actualizada correctamente",
+        "updateError": "Non se puido actualizar a entrada",
+        "conflictTitle": "Conflito ao gardar",
+        "conflictDescription": "A entrada foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.",
+        "snapshotRefreshed": "Datos do organizador actualizados",
+        "snapshotRefreshError": "Non se puideron actualizar os datos do organizador"
+      },
+      "form": {
+        "back": "Volver",
+        "editingLabel": "Editando",
+        "newLabel": "Nova",
+        "saveChanges": "Gardar cambios",
+        "createEntry": "Crear entrada",
+        "viewOnWebAria": "Ver entrada na web",
+        "refreshSnapshot": "Actualizar datos desde o organigrama",
+        "refreshSnapshotHint": "Volve conxelar o logo e as siglas do organizador cos datos actuais do organigrama.",
+        "requiredBadge": "Obrigatorio",
+        "titleLabel": "Título",
+        "excerptLabel": "Descrición breve",
+        "excerptPlaceholder": "Breve resumo para a tarxeta e os listados",
+        "contentLabel": "Contido completo",
+        "contentPlaceholder": "Escribe aquí o contido completo da entrada...",
+        "contentHintDefault": "Noutros idiomas podes deixalo baleiro e mostrarase o contido en español.",
+        "contentHintOther": "Opcional. Se o deixas baleiro, mostrarase o contido en español.",
+        "imageCaptionLabel": "Pé de foto",
+        "imageCaptionPlaceholder": "Ex.: Foto cedida pola entidade",
+        "altLabel": "Texto alternativo da imaxe",
+        "altPlaceholder": "Descrición da imaxe",
+        "configTitle": "Configuración",
+        "kindLabel": "Tipo de entrada",
+        "startDateLabel": "Data de inicio",
+        "endDateLabel": "Data de fin",
+        "endDateToggle": "A actividade dura varios días",
+        "selectDateAria": "Seleccionar data",
+        "onlineLabel": "Modalidade",
+        "onlineOn": "En liña",
+        "onlineOff": "Presencial",
+        "locationLabel": "Lugar",
+        "locationPlaceholder": "Cidade ou sede",
+        "statusLabel": "Estado",
+        "organiserTitle": "Organizador",
+        "organiserHint": "Selecciona a entidade membro que organiza o evento.",
+        "organiserLabel": "Entidade organizadora",
+        "organiserPlaceholder": "Selecciona unha entidade...",
+        "organiserLoadError": "Non se puideron cargar as entidades membro",
+        "organiserLoadErrorDescription": "Recarga a páxina para volver cargar o listado de entidades.",
+        "sourceAssociated": "Asociado",
+        "sourceSectorial": "Sectorial",
+        "imageTitle": "Imaxe",
+        "imageHint": "Opcional. Se non subes imaxe, usarase a imaxe por defecto do tipo de entrada (se está configurada).",
+        "imagePreviewAlt": "Vista previa da imaxe",
+        "noImage": "Sen imaxe",
+        "changeImage": "Cambiar imaxe",
+        "uploadImage": "Subir imaxe",
+        "removeImage": "Quitar imaxe",
+        "imageFormats": "JPG, PNG, WebP, SVG ou AVIF",
+        "imageUploaded": "Imaxe subida correctamente",
+        "imageUploadError": "Non se puido subir a imaxe",
+        "imageTooLarge": "A imaxe supera o tamaño máximo (5MB)",
+        "cancelModalTitle": "Cambios sen gardar",
+        "cancelModalBody": "Se saes agora perderás os cambios feitos. Queres continuar?",
+        "keepEditing": "Seguir editando",
+        "discardChanges": "Saír sen gardar"
+      }
+    },
+    "areaReports": {
+      "unsavedChangesPrompt": "Hai cambios sen gardar. Se saes agora, perderanse.",
+      "list": {
+        "heading": "Informes de áreas",
+        "subheading": "Informe mensual por área. Cada edición cobre un mes ou un rango de meses.",
+        "newReport": "Novo informe",
+        "monthFilterLabel": "Filtrar por mes",
+        "clearFilter": "Limpar filtro",
+        "loadErrorTitle": "Non se puideron cargar os informes de áreas",
+        "editTitle": "Editar informe",
+        "editAria": "Editar informe",
+        "deleteTitle": "Eliminar informe",
+        "deleteAria": "Eliminar informe",
+        "noFilterResults": "Non hai informes para o mes {month}",
+        "emptyState": "Aínda non hai informes de áreas",
+        "createFirst": "Crear primeiro informe",
+        "paginationAria": "Paxinación de informes",
+        "unknownArea": "Área sen nome"
+      },
+      "toast": {
+        "deleted": "Informe eliminado",
+        "deleteError": "Non se puido eliminar o informe",
+        "created": "Informe creado correctamente",
+        "createError": "Non se puido crear o informe",
+        "notFound": "Non se atopou o informe",
+        "updated": "Informe actualizado correctamente",
+        "updateError": "Non se puido actualizar o informe",
+        "conflictFallback": "Non se puido gardar o informe por un conflito. Revisa o mes, a área e o período."
+      },
+      "form": {
+        "back": "Volver",
+        "editingLabel": "Editando",
+        "newLabel": "Novo",
+        "saveChanges": "Gardar cambios",
+        "createReport": "Crear informe",
+        "requiredBadge": "Obrigatorio",
+        "configTitle": "Configuración",
+        "areaLabel": "Área",
+        "areaPlaceholder": "Selecciona unha área...",
+        "areasLoadError": "Non se puideron cargar as áreas",
+        "areasLoadErrorDescription": "Recarga a páxina para volver cargar o listado de áreas.",
+        "monthLabel": "Mes da edición",
+        "coversFromLabel": "Inicio do período",
+        "coversFromToggle": "A edición cobre un rango de meses",
+        "coversFromHint": "Se o activas, a edición cobre desde este mes ata o mes da edición.",
+        "contentLabel": "Contido do informe",
+        "contentPlaceholder": "Escribe aquí o informe da área...",
+        "contentHintDefault": "Noutros idiomas podes deixalo baleiro e mostrarase o contido en español.",
+        "contentHintOther": "Opcional. Se o deixas baleiro, mostrarase o contido en español.",
+        "imageCaptionLabel": "Pé de foto",
+        "imageCaptionPlaceholder": "Ex.: Foto do encontro",
+        "altLabel": "Texto alternativo da imaxe",
+        "altPlaceholder": "Descrición da imaxe",
+        "statusLabel": "Estado",
+        "imageUploaded": "Imaxe subida correctamente",
+        "imageUploadError": "Non se puido subir a imaxe",
+        "imageTooLarge": "A imaxe supera o tamaño máximo (5MB)"
+      }
     }
   },
   "confirmSubscription": {
@@ -1841,5 +2021,46 @@
       "p1": " CREUP resérvase a facultade de presentar as accións civís ou penais que considere oportunas ante o uso indebido do Sitio Web e os seus contidos ou o incumprimento das presentes Condicións. ",
       "p2": " A relación entre a persoa usuaria e CREUP réxese pola lexislación española. Calquera controversia relativa á interpretación e/ou aplicación das presentes Condicións será sometida á xurisdición ordinaria dos tribunais competentes. "
     }
+  },
+  "activity": {
+    "title": "A nosa actividade",
+    "description": "Eventos, representacións e informes de áreas de CREUP e das súas entidades membro.",
+    "tabs": {
+      "all": "Toda a actividade",
+      "creup": "CREUP",
+      "member": "Eventos de membros"
+    },
+    "filters": {
+      "month": "Mes",
+      "allMonths": "Todos os meses",
+      "search": "Buscar actividade…",
+      "clearSearch": "Limpar busca",
+      "filterByType": "Filtrar por tipo"
+    },
+    "online": "Online",
+    "memberEvent": "Actividade dun membro",
+    "emptyList": "Non hai actividade que amosar.",
+    "viewAll": "Ver todo o traballo recente",
+    "homeTitle": "A nosa actividade",
+    "detail": {
+      "breadcrumbCreup": "A nosa actividade",
+      "breadcrumbMember": "Eventos de membros",
+      "memberBanner": "Actividade dun membro de CREUP",
+      "back": "Volver á nosa actividade"
+    },
+    "reports": {
+      "title": "Informe de áreas",
+      "heading": "Informe mensual",
+      "areasCount": "{count} área | {count} áreas",
+      "monthLabel": "Mes",
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes seguinte",
+      "empty": "Non hai informe dispoñible para este mes.",
+      "bannerTitle": "Informe mensual de áreas",
+      "bannerCta": "Ver informe",
+      "viewReport": "Ver informe",
+      "breadcrumb": "Informe de áreas"
+    },
+    "loadError": "Non se puido cargar a actividade."
   }
 }

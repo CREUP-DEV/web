@@ -28,6 +28,17 @@ export const NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH = '/prensa/newsletter/ima
 export const NEWSLETTER_DOCUMENT_PUBLIC_PATH = '/prensa/newsletter/documentos'
 export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.png'
 
+// Activity section ("Actividad"). One parent folder with sub-folders keeps the number of
+// per-folder serve handlers + docker volume mounts low (plan §9.1).
+export const ACTIVITY_IMAGE_PUBLIC_BASE = '/transparencia/actividad/imagenes'
+/** Admin-uploaded fallbacks (per kind) when an activity entry has no `image`. */
+export const ACTIVITY_DEFAULT_IMAGES_SEGMENT = 'imagenes-por-defecto'
+export const ACTIVITY_DEFAULT_IMAGES_PUBLIC_PATH = `${ACTIVITY_IMAGE_PUBLIC_BASE}/${ACTIVITY_DEFAULT_IMAGES_SEGMENT}`
+export const AREA_REPORTS_IMAGE_PUBLIC_BASE = '/transparencia/informes-areas/imagenes'
+/** Admin-uploaded fallback when an area report has no `image`. */
+export const AREA_REPORTS_DEFAULT_IMAGES_SEGMENT = 'imagenes-por-defecto'
+export const AREA_REPORTS_DEFAULT_IMAGES_PUBLIC_PATH = `${AREA_REPORTS_IMAGE_PUBLIC_BASE}/${AREA_REPORTS_DEFAULT_IMAGES_SEGMENT}`
+
 export const INTERNAL_IMAGE_PROXY_PATH_BASES = [
   EXTERNAL_IMAGE_PUBLIC_BASE,
   HOME_IMAGE_PUBLIC_BASE,
@@ -37,6 +48,8 @@ export const INTERNAL_IMAGE_PROXY_PATH_BASES = [
   PRESS_IMAGE_PUBLIC_BASE,
   NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
   NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
+  ACTIVITY_IMAGE_PUBLIC_BASE,
+  AREA_REPORTS_IMAGE_PUBLIC_BASE,
 ] as const
 
 export const INTERNAL_DOCUMENT_PROXY_PATH_BASES = [

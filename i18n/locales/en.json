@@ -36,7 +36,8 @@
       "regulations": "Regulations",
       "financialReports": "Financial reports",
       "corporateIdentity": "Corporate Identity",
-      "equality": "Equality"
+      "equality": "Equality",
+      "activity": "Our activity"
     },
     "contact": "Contact"
   },
@@ -914,6 +915,10 @@
       "financialReports": {
         "name": "Financial reports",
         "description": "Reports approved by the General Assembly."
+      },
+      "activity": {
+        "name": "Our activity",
+        "description": "Activity entries and monthly area reports."
       }
     },
     "layout": {
@@ -1114,7 +1119,11 @@
       "seoHeading": "SEO and social networks",
       "seoIntroBefore": "Default ogImage for pages without an image of their own. Upload a JPG of",
       "seoIntroAfter": ".",
-      "ogImageLabel": "Default ogImage"
+      "ogImageLabel": "Default ogImage",
+      "activityHeading": "Activity",
+      "activityIntro": "Images shown when an activity entry or an area report has no image of its own.",
+      "activityEntryLabel": "Activity entries",
+      "areaReportLabel": "Area reports"
     },
     "pressDossier": {
       "title": "Press kit",
@@ -1578,8 +1587,179 @@
       "contentOrPdfRequired": "You must add content or upload a PDF for press releases and statements",
       "externalUrlRequired": "The external URL is required for media appearances",
       "mediaOutletRequired": "The media outlet is required for media appearances",
+      "invalidActivityKind": "The activity type is not valid",
+      "invalidStartDate": "The start date is not valid",
+      "invalidEndDate": "The end date is not valid",
+      "endDateBeforeStart": "The end date cannot be earlier than the start date",
+      "memberOrgRequired": "Select the organisation for member events",
+      "areaRequired": "Select an area",
+      "coversFromAfterMonth": "The period start cannot be later than the edition month",
+      "defaultContentRequired": "Spanish content is required",
+      "captionTooLong": "The image caption is too long",
       "summaryTitle": "Please review the form errors",
       "descriptionRepeatsContent": "Don't repeat text in the short description that already appears in the content; it is shown right above it."
+    },
+    "activity": {
+      "unsavedChangesPrompt": "You have unsaved changes. If you leave now, they will be lost.",
+      "subnav": {
+        "aria": "Activity subsections",
+        "entries": "Entries",
+        "reports": "Area reports"
+      },
+      "kinds": {
+        "creup": "CREUP",
+        "member": "Member"
+      },
+      "list": {
+        "heading": "Activity entries",
+        "subheading": "CREUP and member-organisation events, sorted by date.",
+        "newCreup": "New CREUP entry",
+        "newMember": "New member event",
+        "allTab": "All",
+        "filterByKindAria": "Filter entries by type",
+        "searchPlaceholder": "Search entries...",
+        "loadErrorTitle": "Could not load activity entries",
+        "online": "Online",
+        "viewOnWebTitle": "View on website",
+        "editTitle": "Edit entry",
+        "editAria": "Edit entry",
+        "deleteTitle": "Delete entry",
+        "deleteAria": "Delete entry",
+        "noSearchResults": "No entries found for \"{query}\"",
+        "clearSearch": "Clear search",
+        "emptyState": "No activity entries yet",
+        "createFirst": "Create first entry",
+        "paginationAria": "Entries pagination"
+      },
+      "toast": {
+        "deleted": "Entry deleted",
+        "deleteError": "Could not delete the entry",
+        "created": "Entry created successfully",
+        "createError": "Could not create the entry",
+        "notFound": "Entry not found",
+        "updated": "Entry updated successfully",
+        "updateError": "Could not update the entry",
+        "conflictTitle": "Save conflict",
+        "conflictDescription": "The entry was modified by another user. Reload the page to see the latest changes.",
+        "snapshotRefreshed": "Organiser data updated",
+        "snapshotRefreshError": "Could not update the organiser data"
+      },
+      "form": {
+        "back": "Back",
+        "editingLabel": "Editing",
+        "newLabel": "New",
+        "saveChanges": "Save changes",
+        "createEntry": "Create entry",
+        "viewOnWebAria": "View entry on website",
+        "refreshSnapshot": "Refresh data from the org chart",
+        "refreshSnapshotHint": "Re-freezes the organiser logo and initials with the current org-chart data.",
+        "requiredBadge": "Required",
+        "titleLabel": "Title",
+        "excerptLabel": "Short description",
+        "excerptPlaceholder": "Brief summary for the card and listings",
+        "contentLabel": "Full content",
+        "contentPlaceholder": "Write the full content of the entry here...",
+        "contentHintDefault": "In other languages you can leave it empty and the Spanish content will be shown.",
+        "contentHintOther": "Optional. If left empty, the Spanish content will be shown.",
+        "imageCaptionLabel": "Image caption",
+        "imageCaptionPlaceholder": "E.g.: Photo provided by the organisation",
+        "altLabel": "Image alt text",
+        "altPlaceholder": "Image description",
+        "configTitle": "Settings",
+        "kindLabel": "Entry type",
+        "startDateLabel": "Start date",
+        "endDateLabel": "End date",
+        "endDateToggle": "The activity spans several days",
+        "selectDateAria": "Select date",
+        "onlineLabel": "Format",
+        "onlineOn": "Online",
+        "onlineOff": "In person",
+        "locationLabel": "Location",
+        "locationPlaceholder": "City or venue",
+        "statusLabel": "Status",
+        "organiserTitle": "Organiser",
+        "organiserHint": "Select the member organisation that runs the event.",
+        "organiserLabel": "Organising entity",
+        "organiserPlaceholder": "Select an entity...",
+        "organiserLoadError": "Could not load member organisations",
+        "organiserLoadErrorDescription": "Reload the page to load the list of entities again.",
+        "sourceAssociated": "Associate",
+        "sourceSectorial": "Sectorial",
+        "imageTitle": "Image",
+        "imageHint": "Optional. If you do not upload an image, the default image for the entry type will be used (if configured).",
+        "imagePreviewAlt": "Image preview",
+        "noImage": "No image",
+        "changeImage": "Change image",
+        "uploadImage": "Upload image",
+        "removeImage": "Remove image",
+        "imageFormats": "JPG, PNG, WebP, SVG or AVIF",
+        "imageUploaded": "Image uploaded successfully",
+        "imageUploadError": "Could not upload the image",
+        "imageTooLarge": "The image exceeds the maximum size (5MB)",
+        "cancelModalTitle": "Unsaved changes",
+        "cancelModalBody": "If you leave now you will lose your changes. Do you want to continue?",
+        "keepEditing": "Keep editing",
+        "discardChanges": "Leave without saving"
+      }
+    },
+    "areaReports": {
+      "unsavedChangesPrompt": "You have unsaved changes. If you leave now, they will be lost.",
+      "list": {
+        "heading": "Area reports",
+        "subheading": "Monthly report per area. Each edition covers one month or a range of months.",
+        "newReport": "New report",
+        "monthFilterLabel": "Filter by month",
+        "clearFilter": "Clear filter",
+        "loadErrorTitle": "Could not load area reports",
+        "editTitle": "Edit report",
+        "editAria": "Edit report",
+        "deleteTitle": "Delete report",
+        "deleteAria": "Delete report",
+        "noFilterResults": "No reports for month {month}",
+        "emptyState": "No area reports yet",
+        "createFirst": "Create first report",
+        "paginationAria": "Reports pagination",
+        "unknownArea": "Unnamed area"
+      },
+      "toast": {
+        "deleted": "Report deleted",
+        "deleteError": "Could not delete the report",
+        "created": "Report created successfully",
+        "createError": "Could not create the report",
+        "notFound": "Report not found",
+        "updated": "Report updated successfully",
+        "updateError": "Could not update the report",
+        "conflictFallback": "Could not save the report due to a conflict. Check the month, area and period."
+      },
+      "form": {
+        "back": "Back",
+        "editingLabel": "Editing",
+        "newLabel": "New",
+        "saveChanges": "Save changes",
+        "createReport": "Create report",
+        "requiredBadge": "Required",
+        "configTitle": "Settings",
+        "areaLabel": "Area",
+        "areaPlaceholder": "Select an area...",
+        "areasLoadError": "Could not load areas",
+        "areasLoadErrorDescription": "Reload the page to load the list of areas again.",
+        "monthLabel": "Edition month",
+        "coversFromLabel": "Period start",
+        "coversFromToggle": "The edition covers a range of months",
+        "coversFromHint": "If enabled, the edition covers from this month up to the edition month.",
+        "contentLabel": "Report content",
+        "contentPlaceholder": "Write the area report here...",
+        "contentHintDefault": "In other languages you can leave it empty and the Spanish content will be shown.",
+        "contentHintOther": "Optional. If left empty, the Spanish content will be shown.",
+        "imageCaptionLabel": "Image caption",
+        "imageCaptionPlaceholder": "E.g.: Photo of the meeting",
+        "altLabel": "Image alt text",
+        "altPlaceholder": "Image description",
+        "statusLabel": "Status",
+        "imageUploaded": "Image uploaded successfully",
+        "imageUploadError": "Could not upload the image",
+        "imageTooLarge": "The image exceeds the maximum size (5MB)"
+      }
     }
   },
   "confirmSubscription": {
@@ -1841,5 +2021,46 @@
       "p1": " CREUP reserves the right to bring civil or criminal actions it deems appropriate in cases of misuse of the Website and its content or breach of these Terms. ",
       "p2": " The relationship between the User and CREUP is governed by Spanish law. Any dispute regarding interpretation and/or application of these Terms shall be submitted to the ordinary jurisdiction of the competent courts. "
     }
+  },
+  "activity": {
+    "title": "Our activity",
+    "description": "CREUP events, representation and area reports, together with its member organisations' events.",
+    "tabs": {
+      "all": "All activity",
+      "creup": "CREUP",
+      "member": "Member events"
+    },
+    "filters": {
+      "month": "Month",
+      "allMonths": "All months",
+      "search": "Search activity…",
+      "clearSearch": "Clear search",
+      "filterByType": "Filter by type"
+    },
+    "online": "Online",
+    "memberEvent": "Member activity",
+    "emptyList": "There is no activity to show.",
+    "viewAll": "See all recent work",
+    "homeTitle": "Our activity",
+    "detail": {
+      "breadcrumbCreup": "Our activity",
+      "breadcrumbMember": "Member events",
+      "memberBanner": "Activity by a CREUP member",
+      "back": "Back to our activity"
+    },
+    "reports": {
+      "title": "Area reports",
+      "heading": "Monthly report",
+      "areasCount": "{count} area | {count} areas",
+      "monthLabel": "Month",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "empty": "There is no report for this month.",
+      "bannerTitle": "Monthly area report",
+      "bannerCta": "View report",
+      "viewReport": "View report",
+      "breadcrumb": "Area reports"
+    },
+    "loadError": "The activity could not be loaded."
   }
 }

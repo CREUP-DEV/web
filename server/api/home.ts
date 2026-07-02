@@ -1,8 +1,16 @@
 import { and, asc, desc, eq, lte, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { carouselItems, featuredLinks, pressArticles } from '../db/schema'
+import { activityEntries, carouselItems, featuredLinks, pressArticles } from '../db/schema'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 import { toExternalImageProxyUrl, toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
+import { resolveActivityTranslationSummary } from '../utils/activity/activityTranslation'
+import {
+  ACTIVITY_IMAGE_PUBLIC_BASE,
+  HOME_IMAGE_PUBLIC_BASE,
+  PRESS_DOCUMENT_PUBLIC_PATH,
+  PRESS_IMAGE_PUBLIC_BASE,
+} from '~~/shared/constants/assetPaths'
+import { ACTIVITY_PUBLIC_BASE_PATH } from '~~/shared/constants/activity'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
@@ -18,11 +26,6 @@ import {
 } from '../utils/admin/siteDefaultImages'
 import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
 import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
-import {
-  HOME_IMAGE_PUBLIC_BASE,
-  PRESS_DOCUMENT_PUBLIC_PATH,
-  PRESS_IMAGE_PUBLIC_BASE,
-} from '~~/shared/constants/assetPaths'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import {
@@ -33,6 +36,7 @@ import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { pickLocalizedEntry, pickLocalizedEntryWithFieldFallback } from '~~/shared/utils/locale'
 
 const HOME_FEATURED_PRESS_LIMIT = 4
+const HOME_RECENT_ACTIVITY_LIMIT = 4
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -51,6 +55,7 @@ export default defineCachedEventHandler(
         pressItemsList,
         siteDefaultImageEntries,
         pressDefaultCovers,
+        recentActivityList,
       ] = await Promise.all([
         db.query.carouselItems.findMany({
           where: eq(carouselItems.active, true),
@@ -116,12 +121,40 @@ export default defineCachedEventHandler(
         }),
         loadSiteDefaultImageEntriesMap(),
         getPressDefaultCoverEntriesRow(),
+        db.query.activityEntries.findMany({
+          where: eq(activityEntries.active, true),
+          orderBy: [desc(activityEntries.startDate), desc(activityEntries.createdAt)],
+          limit: HOME_RECENT_ACTIVITY_LIMIT,
+          columns: {
+            id: true,
+            kind: true,
+            slug: true,
+            image: true,
+            startDate: true,
+            endDate: true,
+            isOnline: true,
+            location: true,
+            memberOrgSnapshot: true,
+            updatedAt: true,
+          },
+          with: {
+            translations: {
+              columns: { locale: true, title: true, excerpt: true, alt: true, imageCaption: true },
+            },
+          },
+        }),
       ])
 
       const defaultCarouselImage = resolveSiteDefaultImageUrlWithVersion(
         siteDefaultImageEntries,
         SITE_DEFAULT_IMAGE_SCOPE.carousel,
         SITE_DEFAULT_IMAGE_SLOT.carouselSlide
+      )
+
+      const defaultActivityImage = resolveSiteDefaultImageUrlWithVersion(
+        siteDefaultImageEntries,
+        SITE_DEFAULT_IMAGE_SCOPE.activity,
+        SITE_DEFAULT_IMAGE_SLOT.activityEntry
       )
 
       const carousel = carouselItemsList.map((item) => {
@@ -229,12 +262,51 @@ export default defineCachedEventHandler(
         }
       })
 
+      const recentActivityItems = recentActivityList.map((item) => {
+        const trans = resolveActivityTranslationSummary(item.translations, locale, fallbackLocale)
+        return {
+          id: item.id,
+          kind: item.kind,
+          slug: item.slug,
+          path: `${ACTIVITY_PUBLIC_BASE_PATH}/${item.slug}`,
+          image: item.image
+            ? appendAssetVersion(
+                toExternalImageProxyUrl(item.image, {
+                  publicPathBase: ACTIVITY_IMAGE_PUBLIC_BASE,
+                }) ?? item.image,
+                item.updatedAt
+              )
+            : defaultActivityImage,
+          startDate: item.startDate,
+          endDate: item.endDate,
+          isOnline: item.isOnline,
+          location: item.location,
+          title: trans.title,
+          excerpt: trans.excerpt,
+          alt: trans.alt,
+          titleLocale: trans.titleLocale,
+          excerptLocale: trans.excerptLocale,
+          memberOrg:
+            item.kind === 'member' && item.memberOrgSnapshot
+              ? {
+                  denomination: item.memberOrgSnapshot.denomination,
+                  initials: item.memberOrgSnapshot.initials,
+                  logoLight: item.memberOrgSnapshot.logoLight,
+                  logoDark: item.memberOrgSnapshot.logoDark,
+                }
+              : null,
+        }
+      })
+
       return {
         data: {
           carousel,
           featuredLinks: featuredLinksList,
           featuredPress: {
             items: featuredPressItems,
+          },
+          recentActivity: {
+            items: recentActivityItems,
           },
         },
       }

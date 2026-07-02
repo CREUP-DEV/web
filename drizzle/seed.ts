@@ -359,6 +359,16 @@ async function seedDatabase(db: DbExecutor) {
       slot: SITE_DEFAULT_IMAGE_SLOT.ogImage,
       image: '/og/default.jpg',
     },
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.activity,
+      slot: SITE_DEFAULT_IMAGE_SLOT.activityEntry,
+      image: null,
+    },
+    {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.areaReport,
+      slot: SITE_DEFAULT_IMAGE_SLOT.areaReport,
+      image: null,
+    },
   ])
 
   console.log('🗞️ Creating media outlets...')

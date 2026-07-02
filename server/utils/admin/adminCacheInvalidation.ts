@@ -60,16 +60,43 @@ export async function invalidateFinancialReportsCache() {
   await invalidateCachedHandlersMatching('public-financial-reports')
 }
 
+export async function invalidateActivityListCache() {
+  await invalidateCachedHandlersMatching('public-activity')
+}
+
+export async function invalidateActivityDetailCaches() {
+  await invalidateCachedHandlersMatching('public-activity-detail')
+}
+
+/** Activity list + detail + home (the home payload carries recent activity). */
+export async function invalidateActivityRelatedCaches() {
+  await Promise.all([
+    invalidateActivityListCache(),
+    invalidateActivityDetailCaches(),
+    invalidateHomeDataCache(),
+  ])
+}
+
+export async function invalidateAreaReportsCache() {
+  await invalidateCachedHandlersMatching('public-area-reports')
+}
+
 export async function invalidateNewsletterArchiveCache() {
   // Match any Nitro cached-handler key for this route (prefix-only clears can miss flattened keys).
   await invalidateCachedHandlersMatching('public-newsletter-archive')
 }
 
-/** Home carousel, newsletter archive, and press lists depend on site default images. */
+/**
+ * Home carousel, newsletter archive, press lists, activity (list + detail) and area reports all
+ * bake the configured site default image URL into their cached payloads, so changing a default in
+ * admin must clear them. `invalidateActivityRelatedCaches` already covers the home payload.
+ */
 export async function invalidateSiteDefaultImagesCaches() {
   await Promise.all([
     invalidateHomeDataCache(),
     invalidateNewsletterArchiveCache(),
     invalidatePressRelatedCaches(),
+    invalidateActivityRelatedCaches(),
+    invalidateAreaReportsCache(),
   ])
 }

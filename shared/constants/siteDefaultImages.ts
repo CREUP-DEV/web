@@ -1,4 +1,8 @@
 import {
+  ACTIVITY_DEFAULT_IMAGES_PUBLIC_PATH,
+  ACTIVITY_IMAGE_PUBLIC_BASE,
+  AREA_REPORTS_DEFAULT_IMAGES_PUBLIC_PATH,
+  AREA_REPORTS_IMAGE_PUBLIC_BASE,
   HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
   HOME_IMAGE_PUBLIC_BASE,
   NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
@@ -13,6 +17,8 @@ export const SITE_DEFAULT_IMAGE_SCOPE = {
   newsletter: 'newsletter',
   carousel: 'carousel',
   seo: 'seo',
+  activity: 'activity',
+  areaReport: 'area_report',
 } as const
 
 export type SiteDefaultImageScope =
@@ -26,6 +32,8 @@ export const SITE_DEFAULT_IMAGE_SLOT = {
   newsletterCover: 'cover',
   carouselSlide: 'slide',
   ogImage: 'og_image',
+  activityEntry: 'entry',
+  areaReport: 'report',
 } as const
 
 export type SiteDefaultImageSlot =
@@ -93,6 +101,22 @@ export const SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS: readonly SiteDefaultImageSlotD
     publicPath: SITE_OG_IMAGE_PUBLIC_PATH,
     proxyPublicBase: SITE_OG_IMAGE_PUBLIC_PATH,
     uniqueFilename: true,
+  },
+  {
+    scope: SITE_DEFAULT_IMAGE_SCOPE.activity,
+    slot: SITE_DEFAULT_IMAGE_SLOT.activityEntry,
+    finalizeSlug: 'imagen-actividad-defecto',
+    uploadDir: 'public/transparencia/actividad/imagenes/imagenes-por-defecto',
+    publicPath: ACTIVITY_DEFAULT_IMAGES_PUBLIC_PATH,
+    proxyPublicBase: ACTIVITY_IMAGE_PUBLIC_BASE,
+  },
+  {
+    scope: SITE_DEFAULT_IMAGE_SCOPE.areaReport,
+    slot: SITE_DEFAULT_IMAGE_SLOT.areaReport,
+    finalizeSlug: 'imagen-informe-area-defecto',
+    uploadDir: 'public/transparencia/informes-areas/imagenes/imagenes-por-defecto',
+    publicPath: AREA_REPORTS_DEFAULT_IMAGES_PUBLIC_PATH,
+    proxyPublicBase: AREA_REPORTS_IMAGE_PUBLIC_BASE,
   },
 ] as const
 

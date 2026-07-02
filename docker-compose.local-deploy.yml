@@ -42,6 +42,8 @@ services:
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/externos:/app/.output/public/documentos/externos
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/igualdad:/app/.output/public/documentos/igualdad
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/informes-economicos:/app/.output/public/documentos/informes-economicos
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/transparencia/actividad/imagenes:/app/.output/public/transparencia/actividad/imagenes
+      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/transparencia/informes-areas/imagenes:/app/.output/public/transparencia/informes-areas/imagenes
       - ${LOCAL_DEPLOY_ADMIN_ASSETS_DIR:-./data/local-deploy/admin-assets}:/app/.output/.data/admin-assets
     depends_on:
       postgres:

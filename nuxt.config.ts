@@ -56,6 +56,8 @@ const adminUploadRoutePaths = [
   '/api/admin/newsletter/upload',
   '/api/admin/press/upload',
   '/api/admin/press-dossier/upload',
+  '/api/admin/activity/upload',
+  '/api/admin/area-reports/upload',
 ] as const
 const adminUploadRouteRules = Object.fromEntries(
   adminUploadRoutePaths.map((path) => [
@@ -372,6 +374,10 @@ export default defineNuxtConfig({
       },
       press: {
         sources: ['/api/__sitemap__/press-articles'],
+        chunks: 1000,
+      },
+      activity: {
+        sources: ['/api/__sitemap__/activity'],
         chunks: 1000,
       },
     },

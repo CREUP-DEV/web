@@ -118,6 +118,8 @@ ensure_host_data_dirs() {
     "\$public_uploads_dir/documentos/externos" \
     "\$public_uploads_dir/documentos/igualdad" \
     "\$public_uploads_dir/documentos/informes-economicos" \
+    "\$public_uploads_dir/transparencia/actividad/imagenes" \
+    "\$public_uploads_dir/transparencia/informes-areas/imagenes" \
     "\$admin_assets_dir"
 }
 

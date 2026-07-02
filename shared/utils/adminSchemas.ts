@@ -239,6 +239,8 @@ export const updateSiteDefaultImagesSchema = z
     newsletterCoverImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     carouselSlideImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     ogImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    activityEntryImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    areaReportImage: z.union([z.null(), pressDefaultCoverStoragePath]),
   })
   .safeExtend(optimisticLockFields)
 

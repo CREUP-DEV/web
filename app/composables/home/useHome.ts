@@ -17,12 +17,40 @@ export interface FeaturedLinkItem {
   alt?: string
 }
 
+export interface RecentActivityMemberOrg {
+  denomination: string
+  initials: string
+  logoLight: string | null
+  logoDark: string | null
+}
+
+export interface RecentActivityItem {
+  id: string
+  kind: 'creup' | 'member'
+  slug: string
+  path: string
+  image: string | null
+  startDate: string
+  endDate: string | null
+  isOnline: boolean
+  location: string | null
+  title: string
+  excerpt: string
+  alt: string
+  titleLocale: string | null
+  excerptLocale: string | null
+  memberOrg: RecentActivityMemberOrg | null
+}
+
 export interface HomeResponse {
   data: {
     carousel: CarouselItem[]
     featuredLinks: FeaturedLinkItem[]
     featuredPress: {
       items: Array<PressArticle & { path: string }>
+    }
+    recentActivity: {
+      items: RecentActivityItem[]
     }
   }
 }
@@ -45,6 +73,9 @@ export function useHome() {
           carousel: [],
           featuredLinks: [],
           featuredPress: {
+            items: [],
+          },
+          recentActivity: {
             items: [],
           },
         },

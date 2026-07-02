@@ -1,6 +1,6 @@
 import { and, eq, ne, sql } from 'drizzle-orm'
 import type { db } from '../../db'
-import { pressArticles } from '../../db/schema'
+import { activityEntries, pressArticles } from '../../db/schema'
 
 export function slugify(text: string): string {
   return text
@@ -112,6 +112,65 @@ export async function generatePressSlug(
     suffix++
 
     // Safety limit to prevent infinite loops
+    if (suffix > 100) {
+      throw new Error('No se pudo generar un slug único')
+    }
+  }
+}
+
+type ActivitySlugExecutor = Pick<typeof db, 'execute' | 'query'>
+
+interface GenerateActivitySlugOptions {
+  excludeId?: string
+  executor?: ActivitySlugExecutor
+  /** When provided, skip the uniqueness check and append this suffix directly. */
+  forcedSuffix?: string
+}
+
+/**
+ * Activity-entry slug generator — same date-anchored, advisory-lock-serialized strategy as
+ * {@link generatePressSlug}, but checks uniqueness against `activity_entries`.
+ */
+export async function generateActivitySlug(
+  title: string,
+  startDate: Date,
+  options: GenerateActivitySlugOptions = {}
+): Promise<string> {
+  const year = startDate.getUTCFullYear()
+  const month = String(startDate.getUTCMonth() + 1).padStart(2, '0')
+  const base = slugify(title) || 'actividad'
+  const baseSlug = `${base}-${year}-${month}`
+  const executor = options.executor
+
+  if (!executor) {
+    throw new Error(
+      'generateActivitySlug requires a transaction executor. Call this function inside db.transaction(...) and pass the tx as options.executor.'
+    )
+  }
+
+  if (options.forcedSuffix) {
+    return `${baseSlug}-${options.forcedSuffix}`.slice(0, 100)
+  }
+
+  await executor.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${baseSlug}))`)
+
+  let candidate = baseSlug
+  let suffix = 2
+
+  while (true) {
+    const whereClause = options.excludeId
+      ? and(eq(activityEntries.slug, candidate), ne(activityEntries.id, options.excludeId))
+      : eq(activityEntries.slug, candidate)
+
+    const existing = await executor.query.activityEntries.findFirst({ where: whereClause })
+
+    if (!existing) {
+      return candidate
+    }
+
+    candidate = `${baseSlug}-${suffix}`
+    suffix++
+
     if (suffix > 100) {
       throw new Error('No se pudo generar un slug único')
     }

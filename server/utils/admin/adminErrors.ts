@@ -12,6 +12,16 @@ export function isUniqueConstraintViolation(error: unknown): boolean {
   )
 }
 
+/** True for an exclusion-constraint violation (23P01) — e.g. an overlapping edition range. */
+export function isExclusionConstraintViolation(error: unknown): boolean {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code: unknown }).code === '23P01'
+  )
+}
+
 /**
  * True for a deletion blocked by referential integrity: 23503 (foreign-key
  * violation) or 23514 (check violation — e.g. ON DELETE SET NULL nulls a column

@@ -58,6 +58,13 @@ public/og/**/*.webp
 public/og/**/*.avif
 public/og/**/*.svg
 !public/og/default.jpg
+public/transparencia/**/*.jpg
+public/transparencia/**/*.jpeg
+public/transparencia/**/*.png
+public/transparencia/**/*.gif
+public/transparencia/**/*.webp
+public/transparencia/**/*.avif
+public/transparencia/**/*.svg
 public/**/_tmp/**
 public/marca/*
 !public/marca/manifest.json

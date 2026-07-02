@@ -97,6 +97,8 @@ mkdir -p \
   data/public-uploads/documentos/externos \
   data/public-uploads/documentos/igualdad \
   data/public-uploads/documentos/informes-economicos \
+  data/public-uploads/transparencia/actividad/imagenes \
+  data/public-uploads/transparencia/informes-areas/imagenes \
   data/admin-assets
 ```
 

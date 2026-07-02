@@ -206,6 +206,10 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       active: isSectionActive('/transparencia'),
       children: [
         {
+          label: t('nav.transparency.activity'),
+          to: localizedPath('/transparencia/actividad/'),
+        },
+        {
           label: t('nav.transparency.regulations'),
           to: localizedPath('/transparencia/normativa/'),
         },
@@ -338,6 +342,11 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       icon: 'i-tabler-building-bank',
       active: isSectionActive('/transparencia'),
       links: [
+        createMobileNavLink({
+          label: t('nav.transparency.activity'),
+          to: localizedPath('/transparencia/actividad/'),
+          icon: 'i-tabler-activity',
+        }),
         createMobileNavLink({
           label: t('nav.transparency.regulations'),
           to: localizedPath('/transparencia/normativa/'),

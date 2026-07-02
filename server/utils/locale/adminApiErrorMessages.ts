@@ -59,6 +59,20 @@ const es = {
   equalityUpdateFailed: 'No se pudo actualizar el documento de igualdad',
   financialReportCreateFailed: 'No se pudo crear el informe económico',
   financialReportUpdateFailed: 'No se pudo actualizar el informe económico',
+  activityCreateFailed: 'No se pudo crear la actividad',
+  activityUpdateFailed: 'No se pudo actualizar la actividad',
+  activitySlugFailed: 'No se pudo generar un slug único para la actividad',
+  activityOptimisticLock:
+    'La actividad fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
+  activityMemberOrgMissing:
+    'La organización seleccionada ya no existe. Recarga la página e inténtalo de nuevo.',
+  areaReportOverlap:
+    'El periodo de la edición se solapa con el de otra. Ajusta el rango antes de guardar.',
+  areaReportOptimisticLock:
+    'El informe de área fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
+  areaReportSaveFailed: 'No se pudo guardar el informe de área',
+  areaReportAreaMissing:
+    'El área seleccionada ya no existe en el organigrama. Recarga la página e inténtalo de nuevo.',
   // Access
   accessNotFound: 'Acceso no encontrado',
   accessUpdateFailed: 'No se pudo actualizar el acceso',
@@ -162,6 +176,20 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   equalityUpdateFailed: 'Could not update the equality document',
   financialReportCreateFailed: 'Could not create the financial report',
   financialReportUpdateFailed: 'Could not update the financial report',
+  activityCreateFailed: 'Could not create the activity',
+  activityUpdateFailed: 'Could not update the activity',
+  activitySlugFailed: 'Could not generate a unique slug for the activity',
+  activityOptimisticLock:
+    'The activity was modified by another user. Reload the page to see the most recent changes.',
+  activityMemberOrgMissing:
+    'The selected organisation no longer exists. Reload the page and try again.',
+  areaReportOverlap:
+    "The edition's period overlaps another edition. Adjust the range before saving.",
+  areaReportOptimisticLock:
+    'The area report was modified by another user. Reload the page to see the most recent changes.',
+  areaReportSaveFailed: 'Could not save the area report',
+  areaReportAreaMissing:
+    'The selected area no longer exists in the org chart. Reload the page and try again.',
   // Access
   accessNotFound: 'Access not found',
   accessUpdateFailed: 'Could not update the access',
@@ -263,6 +291,20 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   equalityUpdateFailed: "No s'ha pogut actualitzar el document d'igualtat",
   financialReportCreateFailed: "No s'ha pogut crear l'informe econòmic",
   financialReportUpdateFailed: "No s'ha pogut actualitzar l'informe econòmic",
+  activityCreateFailed: "No s'ha pogut crear l'activitat",
+  activityUpdateFailed: "No s'ha pogut actualitzar l'activitat",
+  activitySlugFailed: "No s'ha pogut generar un slug únic per a l'activitat",
+  activityOptimisticLock:
+    "L'activitat ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
+  activityMemberOrgMissing:
+    "L'organització seleccionada ja no existeix. Torna a carregar la pàgina i torna-ho a provar.",
+  areaReportOverlap:
+    "El període de l'edició se solapa amb el d'una altra. Ajusta el rang abans de desar.",
+  areaReportOptimisticLock:
+    "L'informe d'àrea ha estat modificat per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
+  areaReportSaveFailed: "No s'ha pogut desar l'informe d'àrea",
+  areaReportAreaMissing:
+    "L'àrea seleccionada ja no existeix a l'organigrama. Torna a carregar la pàgina i torna-ho a provar.",
   // Access
   accessNotFound: 'Accés no trobat',
   accessUpdateFailed: "No s'ha pogut actualitzar l'accés",
@@ -364,6 +406,20 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   equalityUpdateFailed: 'Ezin izan da berdintasun-dokumentua eguneratu',
   financialReportCreateFailed: 'Ezin izan da txosten ekonomikoa sortu',
   financialReportUpdateFailed: 'Ezin izan da txosten ekonomikoa eguneratu',
+  activityCreateFailed: 'Ezin izan da jarduera sortu',
+  activityUpdateFailed: 'Ezin izan da jarduera eguneratu',
+  activitySlugFailed: 'Ezin izan da slug bakar bat sortu jarduerarako',
+  activityOptimisticLock:
+    'Beste erabiltzaile batek aldatu du jarduera. Birkargatu orria azken aldaketak ikusteko.',
+  activityMemberOrgMissing:
+    'Hautatutako erakundea jada ez dago erabilgarri. Kargatu orria berriro eta saiatu berriz.',
+  areaReportOverlap:
+    'Edizioaren epea beste edizio batekin gainjartzen da. Doitu tartea gorde aurretik.',
+  areaReportOptimisticLock:
+    'Beste erabiltzaile batek aldatu du arloaren txostena. Birkargatu orria azken aldaketak ikusteko.',
+  areaReportSaveFailed: 'Ezin izan da arloaren txostena gorde',
+  areaReportAreaMissing:
+    'Hautatutako arloa jada ez dago organigraman. Kargatu orria berriro eta saiatu berriz.',
   // Access
   accessNotFound: 'Sarbidea ez da aurkitu',
   accessUpdateFailed: 'Ezin izan da sarbidea eguneratu',
@@ -465,6 +521,20 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   equalityUpdateFailed: 'Non se puido actualizar o documento de igualdade',
   financialReportCreateFailed: 'Non se puido crear o informe económico',
   financialReportUpdateFailed: 'Non se puido actualizar o informe económico',
+  activityCreateFailed: 'Non se puido crear a actividade',
+  activityUpdateFailed: 'Non se puido actualizar a actividade',
+  activitySlugFailed: 'Non se puido xerar un slug único para a actividade',
+  activityOptimisticLock:
+    'A actividade foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  activityMemberOrgMissing:
+    'A organización seleccionada xa non existe. Recarga a páxina e téntao de novo.',
+  areaReportOverlap:
+    'O período da edición sobreponse co doutra edición. Axusta o rango antes de gardar.',
+  areaReportOptimisticLock:
+    'O informe de área foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  areaReportSaveFailed: 'Non se puido gardar o informe de área',
+  areaReportAreaMissing:
+    'A área seleccionada xa non existe no organigrama. Recarga a páxina e téntao de novo.',
   // Access
   accessNotFound: 'Acceso non atopado',
   accessUpdateFailed: 'Non se puido actualizar o acceso',
@@ -566,6 +636,20 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   equalityUpdateFailed: "No s'ha pogut actualitzar el document d'igualtat",
   financialReportCreateFailed: "No s'ha pogut crear l'informe econòmic",
   financialReportUpdateFailed: "No s'ha pogut actualitzar l'informe econòmic",
+  activityCreateFailed: "No s'ha pogut crear l'activitat",
+  activityUpdateFailed: "No s'ha pogut actualitzar l'activitat",
+  activitySlugFailed: "No s'ha pogut generar un slug únic per a l'activitat",
+  activityOptimisticLock:
+    "L'activitat ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  activityMemberOrgMissing:
+    "L'organització seleccionada ja no existix. Torna a carregar la pàgina i torna-ho a provar.",
+  areaReportOverlap:
+    "El període de l'edició se solapa amb el d'una altra. Ajusta el rang abans de guardar.",
+  areaReportOptimisticLock:
+    "L'informe d'àrea ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  areaReportSaveFailed: "No s'ha pogut guardar l'informe d'àrea",
+  areaReportAreaMissing:
+    "L'àrea seleccionada ja no existix a l'organigrama. Torna a carregar la pàgina i torna-ho a provar.",
   // Access
   accessNotFound: 'Accés no trobat',
   accessUpdateFailed: "No s'ha pogut actualitzar l'accés",

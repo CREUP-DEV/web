@@ -36,7 +36,8 @@
       "regulations": "Normativa",
       "financialReports": "Informes económicos",
       "corporateIdentity": "Identidad Corporativa",
-      "equality": "Igualdad"
+      "equality": "Igualdad",
+      "activity": "Nuestra actividad"
     },
     "contact": "Contacto"
   },
@@ -914,6 +915,10 @@
       "financialReports": {
         "name": "Informes económicos",
         "description": "Informes aprobados por la Asamblea General."
+      },
+      "activity": {
+        "name": "Nuestra actividad",
+        "description": "Entradas de actividad e informes mensuales de áreas."
       }
     },
     "layout": {
@@ -1114,7 +1119,11 @@
       "seoHeading": "SEO y redes sociales",
       "seoIntroBefore": "ogImage por defecto para páginas sin imagen propia. Sube un JPG de",
       "seoIntroAfter": ".",
-      "ogImageLabel": "ogImage por defecto"
+      "ogImageLabel": "ogImage por defecto",
+      "activityHeading": "Actividad",
+      "activityIntro": "Imágenes que se muestran cuando una entrada de actividad o un informe de área no tiene imagen propia.",
+      "activityEntryLabel": "Entradas de actividad",
+      "areaReportLabel": "Informes de área"
     },
     "pressDossier": {
       "title": "Dossier de prensa",
@@ -1578,8 +1587,179 @@
       "contentOrPdfRequired": "Debes añadir contenido o subir un PDF para notas de prensa y comunicados",
       "externalUrlRequired": "La URL externa es obligatoria para apariciones en medios",
       "mediaOutletRequired": "El medio de comunicación es obligatorio para apariciones en medios",
+      "invalidActivityKind": "El tipo de actividad no es válido",
+      "invalidStartDate": "La fecha de inicio no es válida",
+      "invalidEndDate": "La fecha de fin no es válida",
+      "endDateBeforeStart": "La fecha de fin no puede ser anterior a la de inicio",
+      "memberOrgRequired": "Selecciona la organización para eventos de miembros",
+      "areaRequired": "Selecciona un área",
+      "coversFromAfterMonth": "El inicio del periodo no puede ser posterior al mes de la edición",
+      "defaultContentRequired": "El contenido en español es obligatorio",
+      "captionTooLong": "El pie de foto es demasiado largo",
       "summaryTitle": "Revisa los errores del formulario",
       "descriptionRepeatsContent": "No repitas en la descripción breve un texto que ya aparece en el contenido; se muestra justo encima."
+    },
+    "activity": {
+      "unsavedChangesPrompt": "Hay cambios sin guardar. Si sales ahora, se perderán.",
+      "subnav": {
+        "aria": "Subsecciones de Actividad",
+        "entries": "Entradas",
+        "reports": "Informes de áreas"
+      },
+      "kinds": {
+        "creup": "CREUP",
+        "member": "Miembro"
+      },
+      "list": {
+        "heading": "Entradas de actividad",
+        "subheading": "Eventos de CREUP y de entidades miembro, ordenados por fecha.",
+        "newCreup": "Nueva entrada CREUP",
+        "newMember": "Nuevo evento de miembro",
+        "allTab": "Todas",
+        "filterByKindAria": "Filtrar entradas por tipo",
+        "searchPlaceholder": "Buscar entradas...",
+        "loadErrorTitle": "No se pudieron cargar las entradas de actividad",
+        "online": "Online",
+        "viewOnWebTitle": "Ver en la web",
+        "editTitle": "Editar entrada",
+        "editAria": "Editar entrada",
+        "deleteTitle": "Eliminar entrada",
+        "deleteAria": "Eliminar entrada",
+        "noSearchResults": "No se encontraron entradas para \"{query}\"",
+        "clearSearch": "Limpiar búsqueda",
+        "emptyState": "No hay entradas de actividad todavía",
+        "createFirst": "Crear primera entrada",
+        "paginationAria": "Paginación de entradas"
+      },
+      "toast": {
+        "deleted": "Entrada eliminada",
+        "deleteError": "No se pudo eliminar la entrada",
+        "created": "Entrada creada correctamente",
+        "createError": "No se pudo crear la entrada",
+        "notFound": "No se encontró la entrada",
+        "updated": "Entrada actualizada correctamente",
+        "updateError": "No se pudo actualizar la entrada",
+        "conflictTitle": "Conflicto al guardar",
+        "conflictDescription": "La entrada fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.",
+        "snapshotRefreshed": "Datos del organizador actualizados",
+        "snapshotRefreshError": "No se pudieron actualizar los datos del organizador"
+      },
+      "form": {
+        "back": "Volver",
+        "editingLabel": "Editando",
+        "newLabel": "Nueva",
+        "saveChanges": "Guardar cambios",
+        "createEntry": "Crear entrada",
+        "viewOnWebAria": "Ver entrada en la web",
+        "refreshSnapshot": "Actualizar datos desde el organigrama",
+        "refreshSnapshotHint": "Vuelve a congelar el logo y las siglas del organizador con los datos actuales del organigrama.",
+        "requiredBadge": "Obligatorio",
+        "titleLabel": "Título",
+        "excerptLabel": "Descripción breve",
+        "excerptPlaceholder": "Breve resumen para la tarjeta y los listados",
+        "contentLabel": "Contenido completo",
+        "contentPlaceholder": "Escribe aquí el contenido completo de la entrada...",
+        "contentHintDefault": "En otros idiomas puedes dejarlo vacío y se mostrará el contenido en español.",
+        "contentHintOther": "Opcional. Si lo dejas vacío, se mostrará el contenido en español.",
+        "imageCaptionLabel": "Pie de foto",
+        "imageCaptionPlaceholder": "Ej.: Foto cedida por la entidad",
+        "altLabel": "Texto alternativo de la imagen",
+        "altPlaceholder": "Descripción de la imagen",
+        "configTitle": "Configuración",
+        "kindLabel": "Tipo de entrada",
+        "startDateLabel": "Fecha de inicio",
+        "endDateLabel": "Fecha de fin",
+        "endDateToggle": "La actividad dura varios días",
+        "selectDateAria": "Seleccionar fecha",
+        "onlineLabel": "Modalidad",
+        "onlineOn": "Online",
+        "onlineOff": "Presencial",
+        "locationLabel": "Lugar",
+        "locationPlaceholder": "Ciudad o sede",
+        "statusLabel": "Estado",
+        "organiserTitle": "Organizador",
+        "organiserHint": "Selecciona la entidad miembro que organiza el evento.",
+        "organiserLabel": "Entidad organizadora",
+        "organiserPlaceholder": "Selecciona una entidad...",
+        "organiserLoadError": "No se pudieron cargar las entidades miembro",
+        "organiserLoadErrorDescription": "Recarga la página para volver a cargar el listado de entidades.",
+        "sourceAssociated": "Asociado",
+        "sourceSectorial": "Sectorial",
+        "imageTitle": "Imagen",
+        "imageHint": "Opcional. Si no subes imagen, se usará la imagen por defecto del tipo de entrada (si está configurada).",
+        "imagePreviewAlt": "Vista previa de la imagen",
+        "noImage": "Sin imagen",
+        "changeImage": "Cambiar imagen",
+        "uploadImage": "Subir imagen",
+        "removeImage": "Quitar imagen",
+        "imageFormats": "JPG, PNG, WebP, SVG o AVIF",
+        "imageUploaded": "Imagen subida correctamente",
+        "imageUploadError": "No se pudo subir la imagen",
+        "imageTooLarge": "La imagen supera el tamaño máximo (5MB)",
+        "cancelModalTitle": "Cambios sin guardar",
+        "cancelModalBody": "Si sales ahora perderás los cambios realizados. ¿Quieres continuar?",
+        "keepEditing": "Seguir editando",
+        "discardChanges": "Salir sin guardar"
+      }
+    },
+    "areaReports": {
+      "unsavedChangesPrompt": "Hay cambios sin guardar. Si sales ahora, se perderán.",
+      "list": {
+        "heading": "Informes de áreas",
+        "subheading": "Informe mensual por área. Cada edición cubre un mes o un rango de meses.",
+        "newReport": "Nuevo informe",
+        "monthFilterLabel": "Filtrar por mes",
+        "clearFilter": "Limpiar filtro",
+        "loadErrorTitle": "No se pudieron cargar los informes de áreas",
+        "editTitle": "Editar informe",
+        "editAria": "Editar informe",
+        "deleteTitle": "Eliminar informe",
+        "deleteAria": "Eliminar informe",
+        "noFilterResults": "No hay informes para el mes {month}",
+        "emptyState": "No hay informes de áreas todavía",
+        "createFirst": "Crear primer informe",
+        "paginationAria": "Paginación de informes",
+        "unknownArea": "Área sin nombre"
+      },
+      "toast": {
+        "deleted": "Informe eliminado",
+        "deleteError": "No se pudo eliminar el informe",
+        "created": "Informe creado correctamente",
+        "createError": "No se pudo crear el informe",
+        "notFound": "No se encontró el informe",
+        "updated": "Informe actualizado correctamente",
+        "updateError": "No se pudo actualizar el informe",
+        "conflictFallback": "No se pudo guardar el informe por un conflicto. Revisa el mes, el área y el periodo."
+      },
+      "form": {
+        "back": "Volver",
+        "editingLabel": "Editando",
+        "newLabel": "Nuevo",
+        "saveChanges": "Guardar cambios",
+        "createReport": "Crear informe",
+        "requiredBadge": "Obligatorio",
+        "configTitle": "Configuración",
+        "areaLabel": "Área",
+        "areaPlaceholder": "Selecciona un área...",
+        "areasLoadError": "No se pudieron cargar las áreas",
+        "areasLoadErrorDescription": "Recarga la página para volver a cargar el listado de áreas.",
+        "monthLabel": "Mes de la edición",
+        "coversFromLabel": "Inicio del periodo",
+        "coversFromToggle": "La edición cubre un rango de meses",
+        "coversFromHint": "Si lo activas, la edición cubre desde este mes hasta el mes de la edición.",
+        "contentLabel": "Contenido del informe",
+        "contentPlaceholder": "Escribe aquí el informe del área...",
+        "contentHintDefault": "En otros idiomas puedes dejarlo vacío y se mostrará el contenido en español.",
+        "contentHintOther": "Opcional. Si lo dejas vacío, se mostrará el contenido en español.",
+        "imageCaptionLabel": "Pie de foto",
+        "imageCaptionPlaceholder": "Ej.: Foto del encuentro",
+        "altLabel": "Texto alternativo de la imagen",
+        "altPlaceholder": "Descripción de la imagen",
+        "statusLabel": "Estado",
+        "imageUploaded": "Imagen subida correctamente",
+        "imageUploadError": "No se pudo subir la imagen",
+        "imageTooLarge": "La imagen supera el tamaño máximo (5MB)"
+      }
     }
   },
   "confirmSubscription": {
@@ -1841,5 +2021,46 @@
       "p1": " CREUP se reserva la facultad de presentar las acciones civiles o penales que considere oportunas ante el uso indebido del Sitio Web y sus contenidos o el incumplimiento de las presentes Condiciones. ",
       "p2": " La relación entre el Usuario y CREUP se rige por la legislación española. Cualquier controversia relativa a la interpretación y/o aplicación de las presentes Condiciones será sometida a la jurisdicción ordinaria de los tribunales competentes. "
     }
+  },
+  "activity": {
+    "title": "Nuestra actividad",
+    "description": "Eventos, representaciones e informes de áreas de CREUP y de sus entidades miembro.",
+    "tabs": {
+      "all": "Toda la actividad",
+      "creup": "CREUP",
+      "member": "Eventos de miembros"
+    },
+    "filters": {
+      "month": "Mes",
+      "allMonths": "Todos los meses",
+      "search": "Buscar actividad…",
+      "clearSearch": "Borrar búsqueda",
+      "filterByType": "Filtrar por tipo"
+    },
+    "online": "Online",
+    "memberEvent": "Actividad de un miembro",
+    "emptyList": "No hay actividad que mostrar.",
+    "viewAll": "Ver todo el trabajo reciente",
+    "homeTitle": "Nuestra actividad",
+    "detail": {
+      "breadcrumbCreup": "Nuestra actividad",
+      "breadcrumbMember": "Eventos de miembros",
+      "memberBanner": "Actividad de un miembro de CREUP",
+      "back": "Volver a nuestra actividad"
+    },
+    "reports": {
+      "title": "Informe de áreas",
+      "heading": "Informe mensual",
+      "areasCount": "{count} área | {count} áreas",
+      "monthLabel": "Mes",
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "empty": "No hay informe disponible para este mes.",
+      "bannerTitle": "Informe mensual de áreas",
+      "bannerCta": "Ver informe",
+      "viewReport": "Ver informe",
+      "breadcrumb": "Informe de áreas"
+    },
+    "loadError": "No se pudo cargar la actividad."
   }
 }

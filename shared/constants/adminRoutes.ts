@@ -15,5 +15,9 @@ export const ADMIN_ROUTES = {
   tags: '/admin/etiquetas',
   media: '/admin/medios',
   financialReports: '/admin/informes-economicos',
+  activity: '/admin/actividad',
+  activityCreate: '/admin/actividad/crear',
+  activityReports: '/admin/actividad/informes',
+  activityReportsCreate: '/admin/actividad/informes/crear',
   login: '/admin/login',
 } as const

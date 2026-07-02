@@ -80,7 +80,9 @@ export const siteDefaultImages = pgTable(
         ('press', 'media_appearance'),
         ('newsletter', 'cover'),
         ('carousel', 'slide'),
-        ('seo', 'og_image')
+        ('seo', 'og_image'),
+        ('activity', 'entry'),
+        ('area_report', 'report')
       )`
     ),
   ]

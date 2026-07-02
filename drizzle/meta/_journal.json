@@ -64,6 +64,20 @@
       "when": 1781439960598,
       "tag": "0008_add_valencian_locale",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1781573962244,
+      "tag": "0009_nifty_silk_fever",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1781608631138,
+      "tag": "0010_add_activity_area_report_default_image_slots",
+      "breakpoints": true
     }
   ]
 }

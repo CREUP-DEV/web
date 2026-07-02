@@ -14,6 +14,7 @@ const {
 } = useGoogleCalendar()
 const carouselItems = computed(() => home.value?.data.carousel ?? [])
 const links = computed(() => home.value?.data.featuredLinks ?? [])
+const recentActivityItems = computed(() => home.value?.data.recentActivity?.items ?? [])
 const hasHomeError = computed(() => Boolean(homeError.value))
 const hasCarouselSection = computed(
   () => homePending.value || !!homeError.value || carouselItems.value.length > 0
@@ -27,7 +28,7 @@ const newsAndEventsSectionClass = computed(() => ({
   'py-4 sm:py-0': hasCarouselSection.value && hasFeaturedLinksSection.value,
 }))
 const featuredNewsItems = computed(() => {
-  return (home.value?.data.featuredPress.items ?? []).map((article) => ({
+  return (home.value?.data.featuredPress?.items ?? []).map((article) => ({
     title: article.title,
     image: article.image,
     to: article.path,
@@ -84,6 +85,13 @@ usePageSeo('meta.title', 'meta.description', {
         </div>
       </UContainer>
     </section>
+
+    <HomeRecentActivity
+      :items="recentActivityItems"
+      :pending="homePending"
+      :error="hasHomeError"
+      @retry="refreshHome()"
+    />
 
     <HomeFeaturedLinks
       :items="links"
