@@ -41,24 +41,24 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
 Usage:
   bash ./rollback.sh
   IMAGE_TAG=<tag> bash ./rollback.sh
-  IMAGE=<image-ref> bash ./rollback.sh
+  WEB_IMAGE=<image-ref> bash ./rollback.sh
 
-Without IMAGE or IMAGE_TAG, the script uses the image saved by the last deploy.
+Without WEB_IMAGE or IMAGE_TAG, the script uses the image saved by the last deploy.
 EOF
   exit 0
 fi
 
 if [ -n "${1:-}" ]; then
-  if [ -n "${IMAGE:-}" ] || [ -n "${IMAGE_TAG:-}" ]; then
-    printf 'ERROR: pass either an argument, IMAGE, or IMAGE_TAG; not multiple image selectors\n' >&2
+  if [ -n "${WEB_IMAGE:-}" ] || [ -n "${IMAGE_TAG:-}" ]; then
+    printf 'ERROR: pass either an argument, WEB_IMAGE, or IMAGE_TAG; not multiple image selectors\n' >&2
     exit 1
   fi
 
   IMAGE_TAG="$1"
 fi
 
-if [ -n "${IMAGE:-}" ]; then
-  ROLLBACK_IMAGE="$IMAGE"
+if [ -n "${WEB_IMAGE:-}" ]; then
+  ROLLBACK_IMAGE="$WEB_IMAGE"
 elif [ -n "${IMAGE_TAG:-}" ]; then
   ROLLBACK_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 else
@@ -86,7 +86,7 @@ if [ -f .env ]; then
   set +a
 fi
 
-export IMAGE="${ROLLBACK_IMAGE}"
+export WEB_IMAGE="${ROLLBACK_IMAGE}"
 
 echo "== Pull rollback image if needed =="
 docker compose pull "${COMPOSE_APP_SERVICE}" || true

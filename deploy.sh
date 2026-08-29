@@ -198,7 +198,8 @@ if [ -f .env ]; then
   set +a
 fi
 
-export IMAGE="${IMAGE}"
+# Per-project var (compose reads ${WEB_IMAGE:-...}), never a bare IMAGE.
+export WEB_IMAGE="${IMAGE}"
 
 echo "== Ensure host data directories =="
 ensure_host_data_dirs

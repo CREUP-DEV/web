@@ -1,6 +1,7 @@
 services:
   app:
-    image: ${IMAGE:-ghcr.io/creup-dev/web:latest}
+    # Per-project image var, never a bare ${IMAGE} (avoids collisions in a shared .env).
+    image: ${WEB_IMAGE:-ghcr.io/creup-dev/web:latest}
     container_name: web-app
     restart: unless-stopped
     env_file:

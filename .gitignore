@@ -6,6 +6,9 @@
 .cache
 dist
 data
+
+# Local + production database dumps written by clone-prod-db.sh (contain personal data)
+backups/
 # Seed content translations live under a data/ dir but are tracked source, not build output.
 !drizzle/seed/data/
 

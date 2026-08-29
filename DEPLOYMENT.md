@@ -376,7 +376,8 @@ En ese caso:
 - `COMPOSE_APP_SERVICE` debe ser el nombre real del servicio web.
 - `COMPOSE_POSTGRES_SERVICE` debe ser el servicio PostgreSQL compartido si las migraciones dependen de él.
 - `COMPOSE_NGINX_SERVICE` debe ser el servicio NGINX si vive en el mismo Compose.
-- `deploy.sh` debe recrear solo `COMPOSE_APP_SERVICE`; no ejecutes `docker compose up -d` global con `IMAGE` exportado, porque otros servicios que usen `${IMAGE}` podrían arrancar con la imagen equivocada.
+- `deploy.sh` recrea solo `COMPOSE_APP_SERVICE`; no ejecutes un `docker compose up -d` global.
+- La imagen se referencia como `${WEB_IMAGE:-…}`, nunca como un `${IMAGE}` genérico, para que no colisione en un `.env` compartido. `deploy.sh` / `rollback.sh` ya exportan `WEB_IMAGE`.
 
 ---
 
@@ -502,7 +503,7 @@ O ejecutar el rollback manual en el VPS:
 ```bash
 # En el VPS
 cd /opt/creup-web
-IMAGE=ghcr.io/CREUP-DEV/web:<etiqueta-anterior> docker compose up -d "$COMPOSE_APP_SERVICE"
+WEB_IMAGE=ghcr.io/CREUP-DEV/web:<etiqueta-anterior> docker compose up -d "$COMPOSE_APP_SERVICE"
 ```
 
 Las migraciones son **unidireccionales** (nunca edites archivos de migración existentes). Si una migración debe revertirse, escribe una nueva migración que deshaga el cambio.
@@ -550,6 +551,8 @@ Restaurar desde backup:
 gunzip -c backup.sql.gz \
   | docker exec -i web-postgres psql -U creup -d creup
 ```
+
+Para el sentido inverso —traer producción a un entorno de desarrollo— usa `clone-prod-db.sh` (ver README, "Clonar producción en local"), que envuelve este mismo `pg_dump` sobre SSH, el `rsync` de `data/` de más abajo y un `pnpm db:migrate`.
 
 ### Archivos subidos
 

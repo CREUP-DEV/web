@@ -67,6 +67,45 @@ pnpm db:seed
 
 En desarrollo local, `NUXT_SITE_URL` puede quedarse en `http://localhost:3000`. Si la imagen de producción debe compilarse incrustando otro origen público (por ejemplo al ejecutar `deploy.sh` desde una máquina cuyo `.env` sigue apuntando a localhost), define `NUXT_DEPLOY_SITE_URL`: `deploy.sh` y `deploy-local.sh` usarán esa variable solo como `--build-arg` del build; el runtime del contenedor sigue configurándose con `NUXT_SITE_URL` en el entorno donde arranca Compose (p. ej. el `.env` del VPS).
 
+### Clonar producción en local
+
+Para reproducir un fallo con datos reales (o mantener los datos de desarrollo al día), `clone-prod-db.sh` reemplaza la base de datos local y los archivos subidos desde administración por una copia de producción. Usa el mismo VPS que `deploy.sh`.
+
+```sh
+bash ./clone-prod-db.sh                 # base de datos + archivos + flush de Redis + migraciones
+bash ./clone-prod-db.sh --skip-files    # solo la base de datos
+bash ./clone-prod-db.sh --skip-db       # solo los archivos
+bash ./clone-prod-db.sh --skip-migrate  # no ejecuta `pnpm db:migrate` al final
+bash ./clone-prod-db.sh --skip-redis    # no vacía el Redis local
+```
+
+Qué hace, en orden:
+
+1. Vuelca la base de datos local a `backups/local-<fecha>.sql.gz` (una ejecución accidental siempre es recuperable).
+2. Vuelca la base de datos de producción por SSH a `backups/prod-<fecha>.sql.gz`. Aborta si el volcado parece vacío o truncado.
+3. Borra todos los esquemas no del sistema (incluido `drizzle`, donde vive el registro de migraciones) y restaura el volcado en **una sola transacción**: si algo falla —por ejemplo un bloqueo de `pnpm dev`—, la base de datos local se queda intacta. Para en 5 s si no consigue el lock; cierra `pnpm dev` / Drizzle Studio y reintenta.
+4. Sincroniza los archivos de producción: `public/` de forma aditiva (no se borra nada: ahí también viven assets versionados) y `.data/admin-assets/` en modo espejo (`--delete`, ese árbol lo gestiona la app y no se versiona).
+5. Vacía el Redis local (caché SSR/API, sesiones de Better Auth, colas BullMQ) para que nada sirva contenido que ya no cuadra con la nueva base de datos. Tendrás que volver a iniciar sesión en el panel.
+6. Ejecuta `pnpm db:migrate` en local, así las migraciones creadas en local pero aún no desplegadas se reaplican sobre el esquema de producción.
+
+Configuración (en `.env`, compartida con `deploy.sh`): `VPS_HOST`, `REMOTE_DIR`, `COMPOSE_DIR`, `COMPOSE_POSTGRES_SERVICE`. Opcionales solo para este script:
+
+- `SSH_PORT` — si el VPS no usa el 22 ni un alias de `~/.ssh/config`.
+- `BACKUP_DIR` — dónde van los `.sql.gz` (por defecto `backups/`).
+- `PROD_ENV_FILE` — archivo del VPS (relativo a `COMPOSE_DIR` o absoluto) con el `DATABASE_URL` y los `APP_*_DIR` de la app. Por defecto `web/.env`.
+- `PROD_PUBLIC_UPLOADS_DIR` / `PROD_ADMIN_ASSETS_DIR` — fuerzan las rutas de archivos subidos si no están en `PROD_ENV_FILE`.
+
+Del `DATABASE_URL` de `PROD_ENV_FILE` solo se lee el **nombre de la base** (el parseo corre en el shell remoto). El volcado lo hace `pg_dump` como el superusuario `postgres` del contenedor (`$POSTGRES_USER` por el socket, `trust`), así ve todas las tablas sea cual sea el rol propietario en la instancia compartida. Ninguna contraseña —ni de producción ni local— se usa: ambos extremos corren dentro de su contenedor por el socket.
+
+En el VPS de CREUP (Compose raíz compartido) hace falta:
+
+```dotenv
+COMPOSE_POSTGRES_SERVICE=postgresql
+PROD_ENV_FILE=web/.env
+```
+
+**Aviso:** los volcados de `backups/` contienen datos personales de producción (suscriptores de la newsletter con evidencia de consentimiento RGPD, correos de administración). No los dejes en carpetas sincronizadas ni en copias de seguridad; mueve la ruta con `BACKUP_DIR`. Los datos firmados con el `APP_SECRET` de producción (enlaces de baja de la newsletter y otros tokens HMAC) no se validarán en local si tu `APP_SECRET` es distinto.
+
 ## Variables de entorno
 
 Casi toda la configuración es runtime; la imagen no lleva secretos ni URLs baked por defecto y las variables se leen al arrancar el contenedor.

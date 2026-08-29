@@ -518,7 +518,8 @@ IMAGE="${IMAGE:-${IMAGE_NAME}:${IMAGE_TAG}}"
 APPLY_MIGRATIONS_ON_DEPLOY="${APPLY_MIGRATIONS_ON_DEPLOY:-true}"
 
 export DEPLOY_ENV_FILE
-export IMAGE
+# Compose reads ${WEB_IMAGE:-...} (per-project var, never a bare IMAGE).
+export WEB_IMAGE="$IMAGE"
 export LOCAL_DEPLOY_SITE_URL
 
 case "$ACTION" in
