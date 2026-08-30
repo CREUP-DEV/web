@@ -2,7 +2,7 @@
 const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
-const { formatEditionLabel, formatMonthLabel } = useActivityDates()
+const { formatEditionLabel } = useActivityDates()
 
 const MONTH_KEY_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
 
@@ -32,17 +32,6 @@ const mostRecentPath = computed(() =>
     ? localePath(`/transparencia/actividad/informes/${mostRecentAnchorKey.value}`)
     : null
 )
-
-const headingLabel = computed(() => {
-  if (edition.value) {
-    return `${t('activity.reports.heading')} · ${formatEditionLabel(edition.value)}`
-  }
-  // No edition: only show a month label when the route param is a valid 'YYYY-MM' key.
-  if (isValidMonthKey.value) {
-    return `${t('activity.reports.heading')} · ${formatMonthLabel(monthKey.value)}`
-  }
-  return t('activity.reports.heading')
-})
 
 // Anchor navigation: anchors are sorted desc, so index-1 is the next (newer) month.
 const currentAnchorIndex = computed(() =>
@@ -97,44 +86,78 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 <template>
   <section class="py-8 sm:py-12" :aria-label="t('activity.reports.title')">
     <UContainer>
-      <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 class="text-3xl font-bold sm:text-4xl">{{ t('activity.reports.title') }}</h1>
-          <p class="text-muted mt-2 text-lg">
-            {{ headingLabel }}
-            <template v-if="!showEmptyState">
-              · {{ t('activity.reports.areasCount', { count: reports.length }, reports.length) }}
-            </template>
-          </p>
-        </div>
+      <nav class="mb-6">
+        <NuxtLink
+          :to="localePath('/transparencia/actividad')"
+          class="text-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
+        >
+          <UIcon name="i-tabler-arrow-left" class="size-4" />
+          {{ t('activity.detail.back') }}
+        </NuxtLink>
+      </nav>
 
-        <div v-if="anchors.length" class="flex items-center gap-2">
+      <header class="mb-8">
+        <h1 class="text-3xl font-bold sm:text-4xl">{{ t('activity.reports.title') }}</h1>
+
+        <div
+          v-if="anchors.length"
+          class="mt-4 flex items-center justify-center gap-1.5 sm:justify-start sm:gap-2"
+        >
           <UButton
             type="button"
             color="neutral"
             variant="outline"
             icon="i-tabler-chevron-left"
+            class="shrink-0"
             :disabled="!prevAnchorKey"
             :aria-label="t('activity.reports.prevMonth')"
             @click="goToMonth(prevAnchorKey ?? undefined)"
           />
 
-          <USelectMenu
-            :model-value="monthKey"
-            :items="monthSelectItems"
-            value-key="value"
-            icon="i-tabler-calendar"
-            class="min-w-44"
-            :aria-label="t('activity.reports.monthLabel')"
-            :ui="{ itemLabel: 'truncate' }"
-            @update:model-value="goToMonth"
-          />
+          <!--
+            The trigger is sized by the widest option rather than by the current one, so the arrows
+            keep their position across editions. An invisible grid stacks every label in a single
+            cell, making the wrapper as wide as the longest one; its padding mirrors the trigger's
+            so the measurement includes the same chrome.
+          -->
+          <div class="relative min-w-0">
+            <div
+              aria-hidden="true"
+              class="invisible grid overflow-hidden py-1.5 ps-2.5 pe-9 text-sm sm:ps-9"
+            >
+              <span
+                v-for="item in monthSelectItems"
+                :key="item.value"
+                class="col-start-1 row-start-1 whitespace-nowrap"
+              >
+                {{ item.label }}
+              </span>
+            </div>
+
+            <USelectMenu
+              :model-value="monthKey"
+              :items="monthSelectItems"
+              value-key="value"
+              icon="i-tabler-calendar"
+              class="absolute inset-0 w-full"
+              :aria-label="t('activity.reports.monthLabel')"
+              :ui="{
+                base: 'ps-2.5 sm:ps-9',
+                leading: 'hidden sm:flex',
+                value: 'text-start',
+                content: 'w-auto min-w-(--reka-combobox-trigger-width) max-w-[calc(100vw-2rem)]',
+                itemLabel: 'whitespace-nowrap',
+              }"
+              @update:model-value="goToMonth"
+            />
+          </div>
 
           <UButton
             type="button"
             color="neutral"
             variant="outline"
             icon="i-tabler-chevron-right"
+            class="shrink-0"
             :disabled="!nextAnchorKey"
             :aria-label="t('activity.reports.nextMonth')"
             @click="goToMonth(nextAnchorKey ?? undefined)"

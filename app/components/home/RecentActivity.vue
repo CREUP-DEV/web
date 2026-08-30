@@ -26,9 +26,6 @@ const fieldLang = (fieldLocale?: string | null) =>
 
 const memberLogo = (item: RecentActivityItem) =>
   item.memberOrg?.logoLight ?? item.memberOrg?.logoDark ?? null
-
-const placeLabel = (item: RecentActivityItem) =>
-  item.isOnline ? t('activity.online') : item.location
 </script>
 
 <template>
@@ -112,17 +109,9 @@ const placeLabel = (item: RecentActivityItem) =>
               </div>
 
               <div class="p-3">
-                <div
-                  class="text-muted mb-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs"
-                >
-                  <time :datetime="item.startDate">
-                    {{ formatDateRange(item.startDate, item.endDate) }}
-                  </time>
-                  <template v-if="placeLabel(item)">
-                    <span aria-hidden="true">&middot;</span>
-                    <span class="truncate">{{ placeLabel(item) }}</span>
-                  </template>
-                </div>
+                <time :datetime="item.startDate" class="text-muted mb-1 block text-xs">
+                  {{ formatDateRange(item.startDate, item.endDate) }}
+                </time>
                 <UTooltip :text="item.title">
                   <p
                     :lang="fieldLang(item.titleLocale)"

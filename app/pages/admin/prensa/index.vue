@@ -39,6 +39,10 @@ const {
   removeItem,
 } = useAdminPress(currentType, searchQuery)
 
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
+
 const typeLabels: Record<AdminPressArticleType, string> = {
   press_release: t('admin.press.types.pressRelease'),
   statement: t('admin.press.types.statement'),
@@ -357,6 +361,7 @@ const emptyStateTypeLabel = computed(() =>
 
         <nav
           v-if="pageCount > 1"
+          ref="paginationRef"
           class="flex justify-center pt-4"
           :aria-label="t('admin.press.list.paginationAria')"
         >

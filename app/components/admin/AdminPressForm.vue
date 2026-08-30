@@ -37,6 +37,13 @@ const localePath = useLocalePath()
 const { getDefaultTranslationValue, createEmptyTranslations, mapTranslationsToForm } = useLocales()
 const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
+const { activeLocale, activeIndex, status, invalidLocales, revealFirstInvalidLocale } =
+  useAdminLocaleTabs(
+    computed(() => form.translations),
+    ['title', 'description', 'contentHtml'],
+    getFieldError
+  )
+
 const isEditing = computed(() => !!props.article)
 
 const hasUnsavedChanges = ref(false)
@@ -208,6 +215,7 @@ const handleSubmit = () => {
   }
 
   if (!validate(pressArticleClientSchema, payload)) {
+    revealFirstInvalidLocale()
     return
   }
 
@@ -465,8 +473,15 @@ const confirmCancel = () => {
           :external-url-error="getFieldError('externalUrl')"
           :media-outlet-error="getFieldError('mediaOutletId')"
         />
+        <AdminLocaleTabs
+          v-model="activeLocale"
+          :status="status"
+          :invalid-locales="invalidLocales"
+        />
+
         <AdminPressTranslationCard
           v-for="(trans, index) in form.translations"
+          v-show="index === activeIndex"
           :key="trans.locale"
           v-model:title="trans.title"
           v-model:description="trans.description"

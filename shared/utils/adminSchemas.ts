@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { RESERVED_TAG_SLUG } from '~~/shared/constants/tags'
+import { MEMBER_ORG_SOURCES } from '~~/shared/constants/activity'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
 
 const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
@@ -310,3 +311,22 @@ export const updateOrderSchema = z.object({
     })
   ),
 })
+
+// Member-org catalog (manual entries only — synced fields come from the sync helper, never from
+// the client). The area catalog has no write schema: the org chart owns it outright.
+
+export const createMemberOrgCatalogEntrySchema = z.object({
+  source: z.enum(MEMBER_ORG_SOURCES, { message: 'admin.validation.invalidMemberOrgSource' }),
+  denomination: z.string().min(1, 'admin.validation.nameRequired').max(200),
+  initials: z.string().min(1, 'admin.validation.nameRequired').max(20),
+  logoLight: z.string().max(2048).nullish(),
+  logoDark: z.string().max(2048).nullish(),
+  order: z.number().int().min(0).default(0),
+  active: z.boolean().default(true),
+})
+
+export const updateMemberOrgCatalogEntrySchema = createMemberOrgCatalogEntrySchema
+  .safeExtend(optimisticLockFields)
+  .safeExtend({
+    supersededByEntryId: z.string().min(1).nullish(),
+  })

@@ -1,5 +1,9 @@
-import type { PressArticle } from '@/composables/press/usePress'
 import { toAbsoluteUrl } from '~~/shared/utils/url'
+
+/** Anything shareable: only the title is used, for the share text and the mail subject. */
+type ShareableContent = {
+  title: string
+}
 
 export type PressShareAction = {
   key: string
@@ -10,7 +14,7 @@ export type PressShareAction = {
   onClick?: () => void | Promise<void>
 }
 
-export function usePressShareActions(article: MaybeRef<PressArticle>) {
+export function usePressShareActions(content: MaybeRef<ShareableContent>) {
   const { t } = useI18n()
   const toast = useToast()
   const route = useRoute()
@@ -21,10 +25,9 @@ export function usePressShareActions(article: MaybeRef<PressArticle>) {
     canNativeShare.value = typeof navigator.share === 'function'
   })
 
-  const articleValue = computed(() => unref(article))
   const canonicalUrl = computed(() => toAbsoluteUrl(route.path, siteUrl.value) ?? route.path)
 
-  const shareText = computed(() => articleValue.value.title)
+  const shareText = computed(() => unref(content).title)
   const twitterShareUrl = computed(
     () =>
       `https://twitter.com/intent/tweet?url=${encodeURIComponent(canonicalUrl.value)}&text=${encodeURIComponent(shareText.value)}`

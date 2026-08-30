@@ -312,10 +312,13 @@ NUXT_EXTERNAL_ASSET_PROXY_PDF_MAX_BYTES=41943040
 NUXT_EXTERNAL_API_CACHE_MAX_AGE_SECONDS=60
 NUXT_EXTERNAL_API_CACHE_STALE_SECONDS=300
 
-# ── Trusted proxy CIDRs (optional, default: 127.0.0.1/32,::1/128) ──
-# Only connections from these ranges will have X-Forwarded-For honored.
-# Add Docker bridge or private network ranges if NGINX runs on a different host.
-# NUXT_TRUSTED_PROXY_CIDRS=127.0.0.1/32,::1/128
+# ── Trusted proxy CIDRs ──
+# Only connections from these ranges have X-Forwarded-For / X-Real-IP honored.
+# When NGINX is a Docker service on the same stack, add that network's subnet or
+# the app discards the header and the rate limiter buckets EVERY visitor under
+# the NGINX container's IP. Check the real subnet, it is not always 172.17:
+#   docker network inspect <project>_default --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}'
+NUXT_TRUSTED_PROXY_CIDRS=127.0.0.1/32,::1/128,172.18.0.0/16
 
 # ── Cloudflare Turnstile (anti-spam on public forms) ──
 NUXT_TURNSTILE_SECRET_KEY=<secret key>

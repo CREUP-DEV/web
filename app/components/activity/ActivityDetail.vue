@@ -26,6 +26,9 @@ const placeLabel = computed(() =>
   props.entry.isOnline ? t('activity.online') : props.entry.location
 )
 
+const entryRef = toRef(props, 'entry')
+const { canonicalUrl, shareActions } = usePressShareActions(entryRef)
+
 usePageSeo(
   () => props.entry.title,
   () => props.entry.excerpt,
@@ -39,9 +42,9 @@ usePageSeo(
 </script>
 
 <template>
-  <article class="py-8 sm:py-12">
+  <article class="printable-article py-8 sm:py-12">
     <UContainer class="max-w-4xl">
-      <AnimateIn tag="nav" :index="0" :threshold="0.12" class="mb-6">
+      <AnimateIn tag="nav" :index="0" :threshold="0.12" class="no-print mb-6">
         <NuxtLink
           :to="backTo"
           class="text-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
@@ -99,6 +102,10 @@ usePageSeo(
         <h1 :lang="titleLang" class="text-3xl leading-tight font-bold sm:text-4xl">
           {{ entry.title }}
         </h1>
+
+        <p class="print-only mt-2 text-sm break-all">
+          {{ canonicalUrl }}
+        </p>
       </AnimateIn>
 
       <AnimateIn v-if="entry.image" tag="figure" :index="3" :threshold="0.12" class="mb-8">
@@ -132,6 +139,27 @@ usePageSeo(
         </div>
 
         <PressRichText :lang="bodyLang" :html="entry.contentHtml" />
+      </AnimateIn>
+
+      <AnimateIn :index="5" :threshold="0.08" class="no-print">
+        <div class="mt-8 border-t pt-6">
+          <p class="text-muted mb-3 text-sm font-medium">{{ t('press.share') }}</p>
+          <div class="flex flex-wrap gap-2">
+            <UTooltip v-for="action in shareActions" :key="action.key" :text="action.label">
+              <UButton
+                :to="action.to"
+                :icon="action.icon"
+                variant="outline"
+                size="sm"
+                :class="action.class"
+                :target="action.to ? '_blank' : undefined"
+                :rel="action.to ? 'noopener noreferrer' : undefined"
+                :aria-label="action.label"
+                @click="action.onClick?.()"
+              />
+            </UTooltip>
+          </div>
+        </div>
       </AnimateIn>
     </UContainer>
   </article>

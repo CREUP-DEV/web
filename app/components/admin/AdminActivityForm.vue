@@ -44,6 +44,13 @@ const localePath = useLocalePath()
 const { createEmptyTranslations } = useLocales()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
+const { activeLocale, activeIndex, status, invalidLocales, revealFirstInvalidLocale } =
+  useAdminLocaleTabs(
+    computed(() => form.translations),
+    ['title', 'excerpt', 'contentHtml'],
+    getFieldError
+  )
+
 const isEditing = computed(() => !!props.entry)
 
 const hasUnsavedChanges = ref(false)
@@ -192,7 +199,10 @@ const handleSubmit = () => {
   if (isEditing.value && !hasUnsavedChanges.value) return
 
   const payload = buildPayload()
-  if (!validate(activityEntryClientSchema, payload)) return
+  if (!validate(activityEntryClientSchema, payload)) {
+    revealFirstInvalidLocale()
+    return
+  }
 
   emit('submit', payload)
 }
@@ -349,8 +359,15 @@ const confirmCancel = () => {
 
     <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
       <div class="min-w-0 space-y-6">
+        <AdminLocaleTabs
+          v-model="activeLocale"
+          :status="status"
+          :invalid-locales="invalidLocales"
+        />
+
         <AdminActivityTranslationCard
           v-for="(trans, index) in form.translations"
+          v-show="index === activeIndex"
           :key="trans.locale"
           v-model:title="trans.title"
           v-model:excerpt="trans.excerpt"
@@ -386,6 +403,7 @@ const confirmCancel = () => {
           :organisations="organisations"
           :has-error="Boolean(orgsError)"
           :organiser-error="getFieldError('memberOrgId')"
+          :frozen-snapshot="entry?.memberOrgSnapshot ?? null"
         />
 
         <AdminActivityImagePanel

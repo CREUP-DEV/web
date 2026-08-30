@@ -58,6 +58,10 @@ const { events, eventTypes, total, pageCount, error, status, refresh } = useEven
 const eventsPending = computed(() => status.value === 'pending')
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(eventsPending, events, error)
 
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
+
 watch(selectedTypes, () => {
   page.value = 1
 })
@@ -81,14 +85,6 @@ watch(
   },
   { immediate: true }
 )
-
-watch(page, () => {
-  nextTick(() => {
-    if (resultsRef.value instanceof HTMLElement) {
-      resultsRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  })
-})
 
 const toggleEventType = (eventType: string) => {
   const idx = selectedTypes.value.indexOf(eventType)
@@ -282,6 +278,7 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
         <nav
           v-if="pageCount > 1"
+          ref="paginationRef"
           class="flex justify-center pt-4"
           :aria-label="`${t('events.title')} - ${t('accessibility.paginationNavigation')}`"
         >

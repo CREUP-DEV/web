@@ -94,6 +94,21 @@ docker compose pull "${COMPOSE_APP_SERVICE}" || true
 echo "== Recreate app container =="
 docker compose up -d "${COMPOSE_APP_SERVICE}"
 
+echo "== Persist WEB_IMAGE in .env =="
+# Same reasoning as deploy.sh: without this a later bare \`docker compose up -d\`
+# would fall back to ':latest' and undo the rollback. Anchored on ^WEB_IMAGE=
+# so sibling projects' keys in the shared .env are untouched.
+WEB_IMAGE_ENV_LINE="WEB_IMAGE=${ROLLBACK_IMAGE}"
+if [ -f .env ] && grep -q '^WEB_IMAGE=' .env; then
+  TMP_ENV="\$(mktemp)"
+  sed "s|^WEB_IMAGE=.*|\$WEB_IMAGE_ENV_LINE|" .env > "\$TMP_ENV"
+  cat "\$TMP_ENV" > .env
+  rm -f "\$TMP_ENV"
+else
+  printf '%s\n' "\$WEB_IMAGE_ENV_LINE" >> .env
+fi
+echo "    \$WEB_IMAGE_ENV_LINE"
+
 if docker compose config --services | grep -qx "${COMPOSE_NGINX_SERVICE}"; then
   echo "== Reload NGINX =="
   docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload

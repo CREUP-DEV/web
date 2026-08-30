@@ -32,6 +32,10 @@ const {
   removeItem,
 } = useAdminActivity(currentKind, searchQuery)
 
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
+
 const kindLabels: Record<AdminActivityKind, string> = {
   creup: t('admin.activity.kinds.creup'),
   member: t('admin.activity.kinds.member'),
@@ -109,6 +113,13 @@ const tabPanelId = 'admin-activity-results'
       </div>
 
       <div class="flex flex-wrap gap-2">
+        <UButton
+          :to="localePath(ADMIN_ROUTES.memberOrgCatalog)"
+          icon="i-tabler-building-community"
+          variant="outline"
+        >
+          {{ t('admin.activity.list.manageOrganisers') }}
+        </UButton>
         <UButton
           :to="`${localePath(ADMIN_ROUTES.activityCreate)}?kind=creup`"
           icon="i-tabler-building-bank"
@@ -312,6 +323,7 @@ const tabPanelId = 'admin-activity-results'
 
         <nav
           v-if="pageCount > 1"
+          ref="paginationRef"
           class="flex justify-center pt-4"
           :aria-label="t('admin.activity.list.paginationAria')"
         >

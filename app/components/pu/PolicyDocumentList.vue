@@ -47,13 +47,9 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, documents, error)
 
-watch(page, () => {
-  nextTick(() => {
-    if (resultsRef.value instanceof HTMLElement) {
-      resultsRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  })
-})
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
 
 function formatDate(dateStr: string): string {
   try {
@@ -152,6 +148,7 @@ function formatDate(dateStr: string): string {
 
         <nav
           v-if="total > PAGE_SIZE"
+          ref="paginationRef"
           class="flex justify-center pt-4"
           :aria-label="`${t(titleKey)} - ${t('accessibility.paginationNavigation')}`"
         >

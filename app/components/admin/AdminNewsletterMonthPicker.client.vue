@@ -5,7 +5,15 @@ const props = defineProps<{
   modelValue: string
   disabledMonths?: Set<string>
   taken?: boolean
+  /** Copy shown under the grid; defaults to the newsletter wording. Pass '' to hide it. */
+  hint?: string
+  /** Copy shown under the grid when `taken` is set; defaults to the newsletter wording. */
+  takenLabel?: string
 }>()
+
+const hintText = computed(() => props.hint ?? t('admin.newsletter.monthPicker.hint'))
+const takenText = computed(() => props.takenLabel ?? t('admin.newsletter.monthPicker.taken'))
+const footnote = computed(() => (props.taken ? takenText.value : hintText.value))
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
@@ -108,8 +116,8 @@ function pickMonth(monthIndex: number) {
         </button>
       </div>
     </div>
-    <span class="mt-1 block text-xs" :class="taken ? 'text-error' : 'text-dimmed'">
-      {{ taken ? t('admin.newsletter.monthPicker.taken') : t('admin.newsletter.monthPicker.hint') }}
+    <span v-if="footnote" class="mt-1 block text-xs" :class="taken ? 'text-error' : 'text-dimmed'">
+      {{ footnote }}
     </span>
   </div>
 </template>

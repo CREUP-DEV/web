@@ -19,5 +19,7 @@ export const ADMIN_ROUTES = {
   activityCreate: '/admin/actividad/crear',
   activityReports: '/admin/actividad/informes',
   activityReportsCreate: '/admin/actividad/informes/crear',
+  areaCatalog: '/admin/actividad/areas',
+  memberOrgCatalog: '/admin/actividad/organizaciones',
   login: '/admin/login',
 } as const

@@ -247,8 +247,13 @@ export function useActivityDates() {
     return `${formatDay(startDate)} – ${formatDay(endDate)}`
   }
 
-  const formatMonthLabel = (monthKey: string) =>
-    formatDate(`${monthKey}-01`, { year: 'numeric', month: 'long' })
+  // Month labels stand alone as headings and select options, so they lead with a capital. Intl
+  // lowercases month names in the Romance locales; English already capitalizes them and Basque
+  // leads with the year, so uppercasing the first character is a no-op there.
+  const formatMonthLabel = (monthKey: string) => {
+    const label = formatDate(`${monthKey}-01`, { year: 'numeric', month: 'long' })
+    return label.charAt(0).toUpperCase() + label.slice(1)
+  }
 
   const formatEditionLabel = (edition: AreaReportEdition) => {
     if (!edition.coversFrom || edition.coversFrom === edition.monthKey) {

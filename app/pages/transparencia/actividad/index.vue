@@ -77,6 +77,10 @@ const showErrorState = computed(() => Boolean(error.value) && items.value.length
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, items, error)
 
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
+
 // Month options: there is no activity-months endpoint, so enumerate a descending static range
 // (current month back ~24 months). Labels are localized via the active locale's BCP-47 tag.
 const monthOptions = computed(() => {
@@ -239,7 +243,7 @@ const getAnimationStyle = (index: number) => ({
               :items="monthSelectItems"
               value-key="value"
               icon="i-tabler-calendar"
-              class="w-full sm:w-56"
+              class="w-full sm:w-64 sm:shrink-0"
               :aria-label="t('activity.filters.month')"
               :ui="{ itemLabel: 'truncate' }"
               @update:model-value="updateMonthSelection"
@@ -317,7 +321,12 @@ const getAnimationStyle = (index: number) => ({
         </TransitionGroup>
       </div>
 
-      <nav v-if="pageCount > 1" class="mt-8 flex justify-center" :aria-label="t('activity.title')">
+      <nav
+        v-if="pageCount > 1"
+        ref="paginationRef"
+        class="mt-8 flex justify-center"
+        :aria-label="t('activity.title')"
+      >
         <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
       </nav>
     </UContainer>

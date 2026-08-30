@@ -61,13 +61,6 @@ const placeLabel = computed(() =>
             {{ placeLabel }}
           </span>
         </template>
-        <template v-if="item.kind === 'member'">
-          <span aria-hidden="true">&middot;</span>
-          <span class="flex items-center gap-1">
-            <UIcon name="i-tabler-users-group" class="size-3.5" />
-            {{ t('activity.memberEvent') }}
-          </span>
-        </template>
       </div>
 
       <UTooltip :text="item.title">

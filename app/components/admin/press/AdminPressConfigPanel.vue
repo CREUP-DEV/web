@@ -29,6 +29,20 @@ const typeSelectItems = computed(() =>
 const inputDate = useTemplateRef<{
   inputsRef: Array<{ $el: HTMLElement | undefined } | undefined>
 }>('inputDate')
+
+const isCalendarOpen = ref(false)
+
+// Picking a day is the whole point of opening the calendar, so dismiss it right after. Going
+// through a setter keeps the popover from closing when the model changes from elsewhere.
+const calendarDate = computed<CalendarDate>({
+  get: () => publishedAt.value,
+  set: (value) => {
+    if (!value) return
+
+    publishedAt.value = value
+    isCalendarOpen.value = false
+  },
+})
 </script>
 
 <template>
@@ -49,7 +63,11 @@ const inputDate = useTemplateRef<{
     <UFormField :label="t('admin.press.form.publishedAtLabel')">
       <UInputDate ref="inputDate" v-model="publishedAt" class="w-full">
         <template #trailing>
-          <UPopover :reference="inputDate?.inputsRef[3]?.$el" :popper="{ strategy: 'fixed' }">
+          <UPopover
+            v-model:open="isCalendarOpen"
+            :reference="inputDate?.inputsRef[3]?.$el"
+            :popper="{ strategy: 'fixed' }"
+          >
             <UButton
               color="neutral"
               variant="link"
@@ -59,7 +77,7 @@ const inputDate = useTemplateRef<{
               class="px-0"
             />
             <template #content>
-              <UCalendar v-model="publishedAt" class="p-2" />
+              <UCalendar v-model="calendarDate" class="p-2" />
             </template>
           </UPopover>
         </template>

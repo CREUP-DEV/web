@@ -73,6 +73,20 @@ const es = {
   areaReportSaveFailed: 'No se pudo guardar el informe de área',
   areaReportAreaMissing:
     'El área seleccionada ya no existe en el organigrama. Recarga la página e inténtalo de nuevo.',
+  // Area / member-org catalogs
+  areaCatalogEntryOptimisticLock:
+    'El área fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
+  memberOrgCatalogEntryOptimisticLock:
+    'La organización fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
+  areaCatalogEntryDeleteBlocked:
+    'No se puede eliminar esta área porque está asignada a uno o más informes de área.',
+  memberOrgCatalogEntryDeleteBlocked:
+    'No se puede eliminar esta organización porque está asignada a una o más actividades.',
+  memberOrgCatalogSupersedeSourceMismatch:
+    'Solo puedes marcar una organización como sustituida por otra del mismo tipo (asociado o sectorial).',
+  memberOrgCatalogSupersedeSelfReference: 'Una organización no puede sustituirse a sí misma.',
+  memberOrgCatalogEntrySupersededByReference:
+    'No se puede eliminar esta organización porque otra organización la tiene marcada como sustituta. Quita esa referencia primero.',
   // Access
   accessNotFound: 'Acceso no encontrado',
   accessUpdateFailed: 'No se pudo actualizar el acceso',
@@ -190,6 +204,20 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   areaReportSaveFailed: 'Could not save the area report',
   areaReportAreaMissing:
     'The selected area no longer exists in the org chart. Reload the page and try again.',
+  // Area / member-org catalogs
+  areaCatalogEntryOptimisticLock:
+    'The area was modified by another user. Reload the page to see the most recent changes.',
+  memberOrgCatalogEntryOptimisticLock:
+    'The organisation was modified by another user. Reload the page to see the most recent changes.',
+  areaCatalogEntryDeleteBlocked:
+    'This area cannot be deleted because it is assigned to one or more area reports.',
+  memberOrgCatalogEntryDeleteBlocked:
+    'This organisation cannot be deleted because it is assigned to one or more activities.',
+  memberOrgCatalogSupersedeSourceMismatch:
+    'You can only mark an organisation as superseded by another of the same type (asociado or sectorial).',
+  memberOrgCatalogSupersedeSelfReference: 'An organisation cannot supersede itself.',
+  memberOrgCatalogEntrySupersededByReference:
+    'This organisation cannot be deleted because another organisation marks it as its replacement. Clear that reference first.',
   // Access
   accessNotFound: 'Access not found',
   accessUpdateFailed: 'Could not update the access',
@@ -305,6 +333,20 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   areaReportSaveFailed: "No s'ha pogut desar l'informe d'àrea",
   areaReportAreaMissing:
     "L'àrea seleccionada ja no existeix a l'organigrama. Torna a carregar la pàgina i torna-ho a provar.",
+  // Area / member-org catalogs
+  areaCatalogEntryOptimisticLock:
+    "L'àrea ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
+  memberOrgCatalogEntryOptimisticLock:
+    "L'organització ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
+  areaCatalogEntryDeleteBlocked:
+    "No es pot eliminar aquesta àrea perquè està assignada a un o més informes d'àrea.",
+  memberOrgCatalogEntryDeleteBlocked:
+    'No es pot eliminar aquesta organització perquè està assignada a una o més activitats.',
+  memberOrgCatalogSupersedeSourceMismatch:
+    'Només pots marcar una organització com a substituïda per una altra del mateix tipus (associat o sectorial).',
+  memberOrgCatalogSupersedeSelfReference: 'Una organització no es pot substituir a si mateixa.',
+  memberOrgCatalogEntrySupersededByReference:
+    'No es pot eliminar aquesta organització perquè una altra organització la té marcada com a substituta. Elimina primer aquesta referència.',
   // Access
   accessNotFound: 'Accés no trobat',
   accessUpdateFailed: "No s'ha pogut actualitzar l'accés",
@@ -420,6 +462,20 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   areaReportSaveFailed: 'Ezin izan da arloaren txostena gorde',
   areaReportAreaMissing:
     'Hautatutako arloa jada ez dago organigraman. Kargatu orria berriro eta saiatu berriz.',
+  // Area / member-org catalogs
+  areaCatalogEntryOptimisticLock:
+    'Beste erabiltzaile batek aldatu du arloa. Birkargatu orria azken aldaketak ikusteko.',
+  memberOrgCatalogEntryOptimisticLock:
+    'Beste erabiltzaile batek aldatu du erakundea. Birkargatu orria azken aldaketak ikusteko.',
+  areaCatalogEntryDeleteBlocked:
+    'Ezin da arlo hau ezabatu, arlo-txosten batekin edo gehiagorekin lotuta dagoelako.',
+  memberOrgCatalogEntryDeleteBlocked:
+    'Ezin da erakunde hau ezabatu, jarduera batekin edo gehiagorekin lotuta dagoelako.',
+  memberOrgCatalogSupersedeSourceMismatch:
+    'Erakunde bat mota bereko beste batek ordezkatu duela soilik markatu dezakezu (elkartea edo sektoriala).',
+  memberOrgCatalogSupersedeSelfReference: 'Erakunde batek ezin du bere burua ordezkatu.',
+  memberOrgCatalogEntrySupersededByReference:
+    'Ezin da erakunde hau ezabatu, beste erakunde batek ordezko gisa markatuta baitauka. Kendu erreferentzia hori lehenik.',
   // Access
   accessNotFound: 'Sarbidea ez da aurkitu',
   accessUpdateFailed: 'Ezin izan da sarbidea eguneratu',
@@ -535,6 +591,20 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   areaReportSaveFailed: 'Non se puido gardar o informe de área',
   areaReportAreaMissing:
     'A área seleccionada xa non existe no organigrama. Recarga a páxina e téntao de novo.',
+  // Area / member-org catalogs
+  areaCatalogEntryOptimisticLock:
+    'A área foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  memberOrgCatalogEntryOptimisticLock:
+    'A organización foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  areaCatalogEntryDeleteBlocked:
+    'Non se pode eliminar esta área porque está asignada a un ou máis informes de área.',
+  memberOrgCatalogEntryDeleteBlocked:
+    'Non se pode eliminar esta organización porque está asignada a unha ou máis actividades.',
+  memberOrgCatalogSupersedeSourceMismatch:
+    'Só podes marcar unha organización como substituída por outra do mesmo tipo (asociado ou sectorial).',
+  memberOrgCatalogSupersedeSelfReference: 'Unha organización non pode substituírse a si mesma.',
+  memberOrgCatalogEntrySupersededByReference:
+    'Non se pode eliminar esta organización porque outra organización a ten marcada como substituta. Elimina esa referencia primeiro.',
   // Access
   accessNotFound: 'Acceso non atopado',
   accessUpdateFailed: 'Non se puido actualizar o acceso',
@@ -650,6 +720,20 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   areaReportSaveFailed: "No s'ha pogut guardar l'informe d'àrea",
   areaReportAreaMissing:
     "L'àrea seleccionada ja no existix a l'organigrama. Torna a carregar la pàgina i torna-ho a provar.",
+  // Area / member-org catalogs
+  areaCatalogEntryOptimisticLock:
+    "L'àrea ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  memberOrgCatalogEntryOptimisticLock:
+    "L'organització ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
+  areaCatalogEntryDeleteBlocked:
+    "No es pot eliminar esta àrea perquè està assignada a un o més informes d'àrea.",
+  memberOrgCatalogEntryDeleteBlocked:
+    'No es pot eliminar esta organització perquè està assignada a una o més activitats.',
+  memberOrgCatalogSupersedeSourceMismatch:
+    'Només pots marcar una organització com a substituïda per una altra del mateix tipus (associat o sectorial).',
+  memberOrgCatalogSupersedeSelfReference: 'Una organització no es pot substituir a si mateixa.',
+  memberOrgCatalogEntrySupersededByReference:
+    'No es pot eliminar esta organització perquè una altra organització la té marcada com a substituta. Elimina primer eixa referència.',
   // Access
   accessNotFound: 'Accés no trobat',
   accessUpdateFailed: "No s'ha pogut actualitzar l'accés",

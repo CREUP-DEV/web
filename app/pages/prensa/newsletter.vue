@@ -220,6 +220,10 @@ interface Newsletter {
 
 const LIMIT = 12
 const page = ref(1)
+
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
 const {
@@ -264,15 +268,6 @@ const privacyAccordionItems = computed<AccordionItem[]>(() => [
     value: 'privacy-info',
   },
 ])
-
-// Scroll back to archive heading when page changes
-watch(page, () => {
-  nextTick(() => {
-    if (archiveRef.value instanceof HTMLElement) {
-      archiveRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  })
-})
 
 function formatMonth(dateStr: string): string {
   // Parse as date-only parts to avoid UTC-offset day-rollback issues.
@@ -609,6 +604,7 @@ function formatMonth(dateStr: string): string {
 
         <nav
           v-if="total > LIMIT"
+          ref="paginationRef"
           class="mt-8 flex justify-center"
           :aria-label="`${t('newsletterPage.archive.title')} - ${t('accessibility.paginationNavigation')}`"
         >

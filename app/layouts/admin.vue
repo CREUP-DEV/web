@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
-import { useMediaQuery } from '@vueuse/core'
+import { useMediaQuery, useMounted } from '@vueuse/core'
 import { useAuth } from '@/composables/security/useAuth'
 import { getInitials } from '@/utils/initials'
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
@@ -56,7 +56,12 @@ const mobileLocaleItems = computed<DropdownMenuItem[]>(() =>
     },
   }))
 )
-const isMobileSidebar = useMediaQuery('(max-width: 1023px)')
+const isMobileViewport = useMediaQuery('(max-width: 1023px)')
+const isMounted = useMounted()
+// There is no matchMedia while rendering on the server, so the query is always false there. Reading
+// it during the first client render would flip the sidebar between its collapsed and expanded
+// markup mid-hydration, so keep the server's answer until the app is mounted and only then react.
+const isMobileSidebar = computed(() => isMounted.value && isMobileViewport.value)
 const sidebarOpen = useState('admin-sidebar-open', () => false)
 const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
 

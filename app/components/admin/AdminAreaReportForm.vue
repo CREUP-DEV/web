@@ -17,6 +17,10 @@ export interface AdminArea {
   name: string
   nameTranslations: Record<string, string>
   order: number
+  active: boolean
+  mandateId: number
+  mandateStartDate: string
+  mandateEndDate: string | null
 }
 
 const props = defineProps<{
@@ -36,19 +40,18 @@ const localeApiHeaders = useLocaleApiHeaders()
 const { createEmptyTranslations, fallbackLocale } = useLocales()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
+const { activeLocale, activeIndex, status, invalidLocales, revealFirstInvalidLocale } =
+  useAdminLocaleTabs(
+    computed(() => form.translations),
+    ['contentHtml'],
+    getFieldError
+  )
+
 const isEditing = computed(() => !!props.report)
 
 const hasUnsavedChanges = ref(false)
 defineExpose({ hasUnsavedChanges })
 const isHydratingForm = ref(false)
-
-// Supporting data: org-chart areas for the area dropdown. Only needed when creating — the area is
-// fixed at creation and never re-resolved on edit, so skip the fetch entirely when editing.
-const { data: areasData, error: areasError } = await useFetch<{ data: AdminArea[] }>(
-  '/api/admin/areas',
-  { headers: localeApiHeaders, immediate: !props.report }
-)
-const areas = computed(() => areasData.value?.data ?? [])
 
 const MAX_AREA_REPORT_IMAGE_SIZE = 5 * 1024 * 1024
 
@@ -80,6 +83,32 @@ const form = reactive({
   }),
 })
 
+// Supporting data: org-chart areas for the area dropdown. Only needed when creating — the area is
+// fixed at creation and never re-resolved on edit, so skip the fetch entirely when editing.
+//
+// The month drives the query: a report is written against the areas that existed while it was
+// being reported on, not today's. A month the hand-over falls inside returns both mandates.
+const { data: areasData, error: areasError } = await useFetch<{ data: AdminArea[] }>(
+  '/api/admin/areas',
+  {
+    headers: localeApiHeaders,
+    immediate: !props.report,
+    query: computed(() => ({ month: form.monthKey || undefined })),
+  }
+)
+const areas = computed(() => areasData.value?.data ?? [])
+
+// Moving to a month from another mandate swaps the areas on offer. A selection that is not in the
+// new list has to go: left in place it no longer matches any option, so the select falls back to
+// rendering the raw id.
+watch(areas, (available) => {
+  if (isHydratingForm.value || available.length === 0 || form.areaId === null) return
+
+  if (!available.some((area) => area.id === form.areaId)) {
+    form.areaId = null
+  }
+})
+
 const hasCoversFrom = ref(false)
 
 // AdminNewsletterMonthPicker emits 'YYYY-MM-01'; monthKey/coversFrom are 'YYYY-MM'. Convert at boundary.
@@ -99,11 +128,37 @@ const coversFromPickerValue = computed({
   },
 })
 
-const areaSelectItems = computed(() =>
-  [...areas.value]
-    .sort((left, right) => left.order - right.order)
-    .map((area) => ({ value: area.id, label: area.name }))
-)
+const { formatDate } = useLocaleFormatting()
+
+const mandateLabel = (area: AdminArea) =>
+  area.mandateEndDate
+    ? t('admin.areaReports.form.mandateGroup', {
+        start: formatDate(area.mandateStartDate, { year: 'numeric', month: 'short' }),
+        end: formatDate(area.mandateEndDate, { year: 'numeric', month: 'short' }),
+      })
+    : t('admin.areaReports.form.mandateGroupCurrent', {
+        start: formatDate(area.mandateStartDate, { year: 'numeric', month: 'short' }),
+      })
+
+// Grouped by mandate rather than by an active/historical flag: when a month straddles the
+// hand-over both mandates come back, and the group heading is what tells them apart.
+type AreaSelectItem = { type?: 'label'; label: string; value?: number }
+
+const areaSelectItems = computed<AreaSelectItem[][]>(() => {
+  const byMandate = new Map<number, AdminArea[]>()
+  for (const area of areas.value) {
+    byMandate.set(area.mandateId, [...(byMandate.get(area.mandateId) ?? []), area])
+  }
+
+  return [...byMandate.values()]
+    .sort((left, right) => right[0]!.mandateStartDate.localeCompare(left[0]!.mandateStartDate))
+    .map((group) => [
+      { type: 'label', label: mandateLabel(group[0]!) },
+      ...group
+        .sort((left, right) => left.order - right.order)
+        .map((area) => ({ value: area.id, label: area.name })),
+    ])
+})
 
 const buildFormSnapshot = () =>
   JSON.stringify({
@@ -164,7 +219,10 @@ const handleSubmit = () => {
   if (isEditing.value && !hasUnsavedChanges.value) return
 
   const payload = buildPayload()
-  if (!validate(areaReportClientSchema, payload)) return
+  if (!validate(areaReportClientSchema, payload)) {
+    revealFirstInvalidLocale()
+    return
+  }
 
   emit('submit', payload)
 }
@@ -287,8 +345,15 @@ const confirmCancel = () => {
 
     <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
       <div class="min-w-0 space-y-6">
+        <AdminLocaleTabs
+          v-model="activeLocale"
+          :status="status"
+          :invalid-locales="invalidLocales"
+        />
+
         <AdminActivityAreaReportTranslationCard
           v-for="(trans, index) in form.translations"
+          v-show="index === activeIndex"
           :key="trans.locale"
           v-model:content-html="trans.contentHtml"
           v-model:image-caption="trans.imageCaption"
@@ -329,7 +394,11 @@ const confirmCancel = () => {
             :error="getFieldError('monthKey')"
           >
             <ClientOnly>
-              <AdminNewsletterMonthPicker v-model="monthPickerValue" />
+              <AdminNewsletterMonthPicker
+                v-model="monthPickerValue"
+                :hint="t('admin.areaReports.form.monthHint')"
+                :taken-label="t('admin.areaReports.form.monthTaken')"
+              />
               <template #fallback>
                 <UInput
                   :model-value="form.monthKey"
@@ -352,7 +421,7 @@ const confirmCancel = () => {
               }}</span>
             </div>
             <ClientOnly v-if="hasCoversFrom">
-              <AdminNewsletterMonthPicker v-model="coversFromPickerValue" />
+              <AdminNewsletterMonthPicker v-model="coversFromPickerValue" hint="" />
               <template #fallback>
                 <UInput
                   :model-value="form.coversFrom"

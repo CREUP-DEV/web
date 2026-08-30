@@ -1,5 +1,6 @@
 export * from './activity'
 export * from './auth'
+export * from './catalog'
 export * from './content'
 export * from './newsletter'
 export * from './press'

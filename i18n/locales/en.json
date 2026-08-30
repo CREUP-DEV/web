@@ -115,7 +115,8 @@
     "breadcrumb": "Breadcrumb",
     "contentImage": "Content image",
     "resultsCount": "{count} result | {count} results",
-    "resultsStatus": "{count} result · page {page} of {pages} | {count} results · page {page} of {pages}"
+    "resultsStatus": "{count} result · page {page} of {pages} | {count} results · page {page} of {pages}",
+    "scrollToTop": "Back to top"
   },
   "common": {
     "all": "All",
@@ -828,7 +829,8 @@
       "fileTooLargeMb": "The file exceeds the maximum size ({mb}MB)",
       "uploadRequestTooLarge": "The file or request exceeds the maximum allowed size",
       "fileUploaded": "File uploaded successfully",
-      "fileUploadFailed": "Could not upload the file"
+      "fileUploadFailed": "Could not upload the file",
+      "back": "Back"
     },
     "media": {
       "title": "Media outlets",
@@ -1547,6 +1549,7 @@
     },
     "validation": {
       "invalidLocale": "Invalid locale",
+      "invalidMemberOrgSource": "Invalid organisation type",
       "hrefFormat": "The link must be a relative path or an http/https URL",
       "duplicateLocale": "There cannot be duplicate translations for the same language",
       "translationRequired": "At least one translation is required",
@@ -1629,7 +1632,8 @@
         "clearSearch": "Clear search",
         "emptyState": "No activity entries yet",
         "createFirst": "Create first entry",
-        "paginationAria": "Entries pagination"
+        "paginationAria": "Entries pagination",
+        "manageOrganisers": "Manage organisations"
       },
       "toast": {
         "deleted": "Entry deleted",
@@ -1646,8 +1650,8 @@
       },
       "form": {
         "back": "Back",
-        "editingLabel": "Editing",
-        "newLabel": "New",
+        "editingLabel": "Editing activity",
+        "newLabel": "New activity",
         "saveChanges": "Save changes",
         "createEntry": "Create entry",
         "viewOnWebAria": "View entry on website",
@@ -1667,20 +1671,15 @@
         "altPlaceholder": "Image description",
         "configTitle": "Settings",
         "kindLabel": "Entry type",
-        "startDateLabel": "Start date",
-        "endDateLabel": "End date",
-        "endDateToggle": "The activity spans several days",
-        "selectDateAria": "Select date",
-        "onlineLabel": "Format",
-        "onlineOn": "Online",
-        "onlineOff": "In person",
         "locationLabel": "Location",
         "locationPlaceholder": "City or venue",
         "statusLabel": "Status",
-        "organiserTitle": "Organiser",
+        "organiserTitle": "Member",
         "organiserHint": "Select the member organisation that runs the event.",
-        "organiserLabel": "Organising entity",
+        "organiserLabel": "Member organisation",
         "organiserPlaceholder": "Select an entity...",
+        "organiserActiveGroup": "Active",
+        "organiserHistoricalGroup": "Historical",
         "organiserLoadError": "Could not load member organisations",
         "organiserLoadErrorDescription": "Reload the page to load the list of entities again.",
         "sourceAssociated": "Associate",
@@ -1699,7 +1698,10 @@
         "cancelModalTitle": "Unsaved changes",
         "cancelModalBody": "If you leave now you will lose your changes. Do you want to continue?",
         "keepEditing": "Keep editing",
-        "discardChanges": "Leave without saving"
+        "discardChanges": "Leave without saving",
+        "datesLabel": "Dates",
+        "selectRangeAria": "Select a date range",
+        "inPersonLabel": "In-person activity"
       }
     },
     "areaReports": {
@@ -1719,7 +1721,8 @@
         "emptyState": "No area reports yet",
         "createFirst": "Create first report",
         "paginationAria": "Reports pagination",
-        "unknownArea": "Unnamed area"
+        "unknownArea": "Unnamed area",
+        "manageAreas": "Manage areas"
       },
       "toast": {
         "deleted": "Report deleted",
@@ -1733,8 +1736,8 @@
       },
       "form": {
         "back": "Back",
-        "editingLabel": "Editing",
-        "newLabel": "New",
+        "editingLabel": "Editing report",
+        "newLabel": "New report",
         "saveChanges": "Save changes",
         "createReport": "Create report",
         "requiredBadge": "Required",
@@ -1758,8 +1761,86 @@
         "statusLabel": "Status",
         "imageUploaded": "Image uploaded successfully",
         "imageUploadError": "Could not upload the image",
-        "imageTooLarge": "The image exceeds the maximum size (5MB)"
+        "imageTooLarge": "The image exceeds the maximum size (5MB)",
+        "monthHint": "Only one report per month is allowed.",
+        "monthTaken": "There is already a report for that month.",
+        "mandateGroup": "Mandate {start} – {end}",
+        "mandateGroupCurrent": "Current mandate (since {start})"
       }
+    },
+    "areaCatalog": {
+      "title": "Report areas",
+      "subheading": "Org chart areas, mandate by mandate. Synced automatically and not edited here.",
+      "lastSyncedLabel": "Last synced",
+      "neverSynced": "Never synced",
+      "loadErrorTitle": "Could not load areas",
+      "syncFailedBanner": "Could not sync with the org chart. Showing locally saved data.",
+      "syncFailedSince": "Since: {date}",
+      "mandateOngoing": "Since {start} · ongoing",
+      "currentMandateBadge": "Current mandate"
+    },
+    "memberOrgCatalog": {
+      "title": "Member organisations",
+      "subheading": "Local catalog of entities selectable as an activity organiser. Syncs automatically with the associate and sectorial listings.",
+      "addManual": "Add manual organisation",
+      "sourceGroupAsociados": "Associates",
+      "sourceGroupSectoriales": "Sectorial groups",
+      "groupHistorical": "Historical / superseded",
+      "emptyActive": "No active organisations",
+      "editTitle": "Edit organisation",
+      "newTitle": "New manual organisation",
+      "sourceLabel": "Type",
+      "denominationLabel": "Denomination",
+      "initialsLabel": "Initials",
+      "logoLightLabel": "Logo (light background)",
+      "logoDarkLabel": "Logo (dark background)",
+      "activeLabel": "Active",
+      "manualBadge": "Manual",
+      "syncedBadge": "Synced",
+      "supersededBadge": "Superseded",
+      "lastSyncedLabel": "Last synced",
+      "neverSynced": "Never synced",
+      "refreshAction": "Refresh from source",
+      "refreshedToast": "Data refreshed from source",
+      "refreshErrorToast": "Could not refresh data from source",
+      "reactivateAction": "Reactivate",
+      "reactivatedToast": "Organisation reactivated",
+      "reactivateErrorToast": "Could not reactivate the organisation",
+      "supersedeAction": "Mark as superseded by…",
+      "supersedeModalTitle": "Mark as superseded",
+      "supersedeModalHint": "Select the active organisation that replaces this one.",
+      "supersedeTargetLabel": "Superseded by",
+      "supersedeNone": "(none)",
+      "supersedeSaved": "Supersession saved",
+      "supersedeError": "Could not save the supersession",
+      "clearSupersedeAction": "Clear supersession",
+      "editAria": "Edit organisation",
+      "deleteAria": "Delete organisation",
+      "createdToast": "Organisation created successfully",
+      "saveErrorToast": "Could not save the organisation",
+      "updatedToast": "Organisation updated successfully",
+      "deletedToast": "Organisation deleted",
+      "deleteErrorToast": "Could not delete the organisation",
+      "deleteBlockedToast": "Cannot delete: activities use this organisation",
+      "orderSavedToast": "Order saved",
+      "orderErrorToast": "Could not save the order",
+      "loadErrorTitle": "Could not load organisations",
+      "syncFailedBanner": "Could not sync with the source. Showing locally saved data.",
+      "syncFailedSince": "Since: {date}",
+      "sourceTabsAria": "Member organisation types",
+      "logoUploaded": "Logo uploaded",
+      "logoUploadError": "The logo could not be uploaded",
+      "uploadLogo": "Upload logo",
+      "changeLogo": "Change logo",
+      "removeLogo": "Remove logo",
+      "logoPreviewAlt": "Logo preview"
+    },
+    "i18nTabs": {
+      "label": "Translation language",
+      "noTranslation": "Not translated",
+      "partialTranslation": "Partially translated",
+      "hasTranslation": "Fully translated",
+      "hasErrors": "Contains errors"
     }
   },
   "confirmSubscription": {
@@ -2024,7 +2105,7 @@
   },
   "activity": {
     "title": "Our activity",
-    "description": "CREUP events, representation and area reports, together with its member organisations' events.",
+    "description": "Discover our activity and that of our members.",
     "tabs": {
       "all": "All activity",
       "creup": "CREUP",
@@ -2038,7 +2119,6 @@
       "filterByType": "Filter by type"
     },
     "online": "Online",
-    "memberEvent": "Member activity",
     "emptyList": "There is no activity to show.",
     "viewAll": "See all recent work",
     "homeTitle": "Our activity",
@@ -2050,14 +2130,12 @@
     },
     "reports": {
       "title": "Area reports",
-      "heading": "Monthly report",
-      "areasCount": "{count} area | {count} areas",
       "monthLabel": "Month",
       "prevMonth": "Previous month",
       "nextMonth": "Next month",
       "empty": "There is no report for this month.",
-      "bannerTitle": "Monthly area report",
-      "bannerCta": "View report",
+      "bannerTitle": "Monthly area reports",
+      "bannerCta": "View reports",
       "viewReport": "View report",
       "breadcrumb": "Area reports"
     },

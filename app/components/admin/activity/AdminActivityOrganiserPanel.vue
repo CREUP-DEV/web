@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { AdminMemberOrgSnapshot } from '@/composables/admin/useAdminActivity'
+
 export interface AdminMemberOrg {
   source: 'asociado' | 'sectorial'
   id: string
@@ -7,6 +9,7 @@ export interface AdminMemberOrg {
   logoLight: string | null
   logoDark: string | null
   order: number
+  active: boolean
 }
 
 const props = defineProps<{
@@ -16,6 +19,9 @@ const props = defineProps<{
   hasError: boolean
   /** Field error for the organiser select */
   organiserError?: string
+  /** The entry's own frozen snapshot — falls back to it for the preview card when the selected
+   * organiser predates the local catalog and isn't found in `organisations` at all. */
+  frozenSnapshot?: AdminMemberOrgSnapshot | null
 }>()
 
 const { t } = useI18n()
@@ -23,16 +29,68 @@ const { t } = useI18n()
 /** Composite "source:id" — the external id is a text-derived slug, not unique across sources. */
 const selectedKey = defineModel<string | null>('selectedKey', { required: true })
 
-const selectItems = computed(() =>
-  props.organisations.map((org) => ({
-    value: `${org.source}:${org.id}`,
-    label: org.denomination,
-  }))
-)
-
 const selectedOrg = computed(() =>
   props.organisations.find((org) => `${org.source}:${org.id}` === selectedKey.value)
 )
+
+const selectItems = computed(() => {
+  const toOption = (org: AdminMemberOrg) => ({
+    value: `${org.source}:${org.id}`,
+    label: org.denomination,
+  })
+  const active = props.organisations.filter((org) => org.active)
+  const historical = props.organisations.filter((org) => !org.active)
+  const groups: Array<Array<{ type?: 'label'; label: string; value?: string }>> = []
+  if (active.length) {
+    groups.push([
+      { type: 'label', label: t('admin.activity.form.organiserActiveGroup') },
+      ...active.map(toOption),
+    ])
+  }
+  if (historical.length) {
+    groups.push([
+      { type: 'label', label: t('admin.activity.form.organiserHistoricalGroup') },
+      ...historical.map(toOption),
+    ])
+  }
+  // The selected organiser predates the local catalog entirely (not present in `organisations` at
+  // all) — inject a synthetic, single-item group from the frozen snapshot so the select's own
+  // trigger displays the resolved name instead of falling back to the raw internal key.
+  if (!selectedOrg.value && selectedKey.value && props.frozenSnapshot) {
+    groups.push([
+      { type: 'label', label: t('admin.activity.form.organiserHistoricalGroup') },
+      { value: selectedKey.value, label: props.frozenSnapshot.denomination },
+    ])
+  }
+  return groups
+})
+
+/** Falls back to the entry's own frozen snapshot when the selected organiser isn't present in
+ * `organisations` at all — e.g. it predates the local catalog (created before this feature's
+ * migration ran, so it was never captured by a sync). Without this, the preview silently
+ * disappears even though the activity still has a valid, frozen organiser reference. */
+const displayOrg = computed(() => {
+  if (selectedOrg.value) return selectedOrg.value
+  if (!selectedKey.value || !props.frozenSnapshot) return null
+
+  const separatorIndex = selectedKey.value.indexOf(':')
+  const source =
+    separatorIndex === -1
+      ? 'asociado'
+      : (selectedKey.value.slice(0, separatorIndex) as 'asociado' | 'sectorial')
+  const id = separatorIndex === -1 ? selectedKey.value : selectedKey.value.slice(separatorIndex + 1)
+
+  return {
+    source,
+    id,
+    denomination: props.frozenSnapshot.denomination,
+    initials: props.frozenSnapshot.initials,
+    logoLight: props.frozenSnapshot.logoLight,
+    logoDark: props.frozenSnapshot.logoDark,
+    order: 0,
+    active: false,
+  }
+})
 </script>
 
 <template>
@@ -57,11 +115,11 @@ const selectedOrg = computed(() =>
       />
     </UFormField>
 
-    <div v-if="selectedOrg" class="bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
+    <div v-if="displayOrg" class="bg-muted/30 flex items-center gap-3 rounded-lg border p-3">
       <img
-        v-if="selectedOrg.logoLight || selectedOrg.logoDark"
-        :src="(selectedOrg.logoLight || selectedOrg.logoDark) as string"
-        :alt="selectedOrg.denomination"
+        v-if="displayOrg.logoLight || displayOrg.logoDark"
+        :src="(displayOrg.logoLight || displayOrg.logoDark) as string"
+        :alt="displayOrg.denomination"
         class="size-10 shrink-0 rounded object-contain"
         loading="lazy"
       />
@@ -70,13 +128,13 @@ const selectedOrg = computed(() =>
         class="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded text-xs font-semibold"
         aria-hidden="true"
       >
-        {{ selectedOrg.initials }}
+        {{ displayOrg.initials }}
       </div>
       <div class="min-w-0">
-        <p class="truncate text-sm font-medium">{{ selectedOrg.denomination }}</p>
+        <p class="truncate text-sm font-medium">{{ displayOrg.denomination }}</p>
         <p class="text-muted text-xs">
           {{
-            selectedOrg.source === 'asociado'
+            displayOrg.source === 'asociado'
               ? t('admin.activity.form.sourceAssociated')
               : t('admin.activity.form.sourceSectorial')
           }}

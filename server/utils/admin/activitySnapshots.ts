@@ -1,17 +1,17 @@
-import type { H3Event } from 'h3'
+import { and, eq } from 'drizzle-orm'
+import { db } from '../../db'
+import { areaCatalogEntries, memberOrgCatalogEntries } from '../../db/schema'
 import type { AreaNameSnapshot, MemberOrgSnapshot, MemberOrgSource } from '../../db/schema/activity'
-import {
-  getAssociatedMembersResponse,
-  getSectorialesResponse,
-  getTeamAreasResponse,
-} from '../public/publicMembers'
 
 /**
- * Snapshot resolvers (plan §3.2 / §5.4). The admin client only ever sends a *reference*
- * (an `areaId`, or a `memberOrgSource` + `id`). The server resolves it against the current
- * org-chart / member lists — through the same SWR-cached loaders the dropdowns use (plan §5.5,
- * no force-fresh) — and freezes the result into the row. Published rows always render from the
- * frozen snapshot, never re-resolved against the live chart.
+ * Snapshot resolvers. The admin client only ever sends a *reference* (an `areaId`, or a
+ * `memberOrgSource` + `id`) — both of which are `selectionKey` values in the local catalog
+ * tables (server/db/schema/catalog.ts), not a live lookup against the external org-chart/member
+ * APIs. The catalog is kept in sync by `catalogSync.ts` on every admin dropdown read, so this
+ * never calls the external API itself. Deliberately does NOT filter on `active` — the dropdown
+ * intentionally offers inactive/historical entries for selection, so a reference should only fail
+ * to resolve when the `selectionKey` doesn't exist in the catalog at all, never because the row
+ * is inactive. Published rows always render from the frozen snapshot, never re-resolved.
  *
  * Each resolver returns `null` when the reference no longer exists so callers can surface a 4xx.
  */
@@ -22,20 +22,18 @@ export interface AreaSnapshotResult {
   areaOrderSnapshot: number | null
 }
 
-export async function resolveAreaSnapshot(
-  event: H3Event,
-  areaId: number
-): Promise<AreaSnapshotResult | null> {
-  const { areas } = await getTeamAreasResponse(event)
-  const area = areas.find((candidate) => candidate.id === areaId)
-  if (!area) {
+export async function resolveAreaSnapshot(areaId: number): Promise<AreaSnapshotResult | null> {
+  const entry = await db.query.areaCatalogEntries.findFirst({
+    where: eq(areaCatalogEntries.selectionKey, areaId),
+  })
+  if (!entry) {
     return null
   }
 
   return {
-    areaId: area.id,
-    areaNameSnapshot: area.nameTranslations,
-    areaOrderSnapshot: area.order ?? null,
+    areaId: entry.selectionKey,
+    areaNameSnapshot: entry.nameTranslations,
+    areaOrderSnapshot: entry.order,
   }
 }
 
@@ -46,43 +44,27 @@ export interface MemberOrgSnapshotResult {
 }
 
 export async function resolveMemberOrgSnapshot(
-  event: H3Event,
   source: MemberOrgSource,
   id: string
 ): Promise<MemberOrgSnapshotResult | null> {
-  if (source === 'asociado') {
-    const { members } = await getAssociatedMembersResponse(event)
-    const member = members.find((candidate) => candidate.id === id)
-    if (!member) {
-      return null
-    }
-
-    return {
-      memberOrgSource: source,
-      memberOrgId: member.id,
-      memberOrgSnapshot: {
-        denomination: member.denomination,
-        initials: member.initials,
-        logoLight: member.logoLight,
-        logoDark: member.logoDark,
-      },
-    }
-  }
-
-  const { sectoriales } = await getSectorialesResponse(event)
-  const sectorial = sectoriales.find((candidate) => candidate.id === id)
-  if (!sectorial) {
+  const entry = await db.query.memberOrgCatalogEntries.findFirst({
+    where: and(
+      eq(memberOrgCatalogEntries.source, source),
+      eq(memberOrgCatalogEntries.selectionKey, id)
+    ),
+  })
+  if (!entry) {
     return null
   }
 
   return {
     memberOrgSource: source,
-    memberOrgId: sectorial.id,
+    memberOrgId: entry.selectionKey,
     memberOrgSnapshot: {
-      denomination: sectorial.denomination,
-      initials: sectorial.initials,
-      logoLight: sectorial.logoLight,
-      logoDark: sectorial.logoDark,
+      denomination: entry.denomination,
+      initials: entry.initials,
+      logoLight: entry.logoLight,
+      logoDark: entry.logoDark,
     },
   }
 }

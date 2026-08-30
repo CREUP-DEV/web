@@ -21,6 +21,10 @@ const toast = useAdminToast()
 const localePath = useLocalePath()
 const LIMIT = 20
 const page = ref(1)
+
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
 const offset = computed(() => (page.value - 1) * LIMIT)
 
 const {
@@ -190,14 +194,6 @@ function formatDate(iso: string) {
     day: 'numeric',
   })
 }
-
-watch(page, () => {
-  nextTick(() => {
-    if (resultsRef.value instanceof HTMLElement) {
-      resultsRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  })
-})
 </script>
 
 <template>
@@ -347,6 +343,7 @@ watch(page, () => {
 
       <nav
         v-if="totalCount > LIMIT"
+        ref="paginationRef"
         class="flex justify-center pt-4"
         :aria-label="t('admin.newsletter.subscribers.paginationAria')"
       >

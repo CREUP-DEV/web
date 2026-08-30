@@ -155,8 +155,8 @@ En resumen:
 | Aplicación   | `http://localhost:3000`               |
 | Health check | `http://localhost:3000/health`        |
 | Adminer      | `http://localhost:8088` (por defecto) |
-| Mailpit web  | `http://localhost:8025` (por defecto) |
-| Mailpit SMTP | `localhost:1025` (por defecto)        |
+| Mailpit web  | `http://localhost:8125` (por defecto) |
+| Mailpit SMTP | `localhost:1125` (por defecto)        |
 
 ## Estructura principal
 

@@ -234,6 +234,26 @@ fi
 echo "== Recreate containers =="
 docker compose up -d "${COMPOSE_APP_SERVICE}"
 
+echo "== Persist WEB_IMAGE in .env =="
+# Without this, WEB_IMAGE only exists in this SSH session. Any later bare
+# \`docker compose up -d\` (a reboot, a manual restart, bringing up another
+# service) would resolve \${WEB_IMAGE:-...} back to its ':latest' fallback and
+# silently revert this container to whatever ':latest' is cached locally --
+# which can be arbitrarily stale, since deploys pull the sha tag, never
+# ':latest'. Compose auto-loads .env from the project dir on every invocation.
+# The upsert is anchored on ^WEB_IMAGE= so sibling projects' keys
+# (INTRANET_IMAGE, RECUENTO_IMAGE) in the same shared .env are left untouched.
+WEB_IMAGE_ENV_LINE="WEB_IMAGE=${IMAGE}"
+if [ -f .env ] && grep -q '^WEB_IMAGE=' .env; then
+  TMP_ENV="\$(mktemp)"
+  sed "s|^WEB_IMAGE=.*|\$WEB_IMAGE_ENV_LINE|" .env > "\$TMP_ENV"
+  cat "\$TMP_ENV" > .env
+  rm -f "\$TMP_ENV"
+else
+  printf '%s\n' "\$WEB_IMAGE_ENV_LINE" >> .env
+fi
+echo "    \$WEB_IMAGE_ENV_LINE"
+
 if docker compose config --services | grep -qx "${COMPOSE_NGINX_SERVICE}"; then
   echo "== Reload NGINX =="
   docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload

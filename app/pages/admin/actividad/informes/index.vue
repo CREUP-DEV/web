@@ -36,6 +36,10 @@ const {
   removeItem,
 } = useAdminAreaReports(monthFilter)
 
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
+
 const showDeleteModal = ref(false)
 const itemToDelete = ref<AdminAreaReport | null>(null)
 const isDeleting = ref(false)
@@ -91,15 +95,25 @@ const formatPeriod = (item: AdminAreaReport) => {
         <p class="text-muted mt-1 text-sm">{{ t('admin.areaReports.list.subheading') }}</p>
       </div>
 
-      <UButton :to="localePath(ADMIN_ROUTES.activityReportsCreate)" icon="i-tabler-plus">
-        {{ t('admin.areaReports.list.newReport') }}
-      </UButton>
+      <div class="flex flex-wrap gap-2">
+        <UButton
+          :to="localePath(ADMIN_ROUTES.areaCatalog)"
+          icon="i-tabler-list-details"
+          variant="outline"
+          color="neutral"
+        >
+          {{ t('admin.areaReports.list.manageAreas') }}
+        </UButton>
+        <UButton :to="localePath(ADMIN_ROUTES.activityReportsCreate)" icon="i-tabler-plus">
+          {{ t('admin.areaReports.list.newReport') }}
+        </UButton>
+      </div>
     </div>
 
     <div class="mb-6 flex flex-wrap items-start gap-3">
       <UFormField :label="t('admin.areaReports.list.monthFilterLabel')">
         <ClientOnly>
-          <AdminNewsletterMonthPicker v-model="monthPickerValue" />
+          <AdminNewsletterMonthPicker v-model="monthPickerValue" hint="" />
           <template #fallback>
             <UInput
               :model-value="monthFilter"
@@ -224,6 +238,7 @@ const formatPeriod = (item: AdminAreaReport) => {
 
         <nav
           v-if="pageCount > 1"
+          ref="paginationRef"
           class="flex justify-center pt-4"
           :aria-label="t('admin.areaReports.list.paginationAria')"
         >

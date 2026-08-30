@@ -114,7 +114,7 @@ export async function createAreaReport(data: AreaReportData, event: H3Event) {
   let image: string | null = null
 
   try {
-    const areaSnapshot = await resolveAreaSnapshot(event, data.areaId)
+    const areaSnapshot = await resolveAreaSnapshot(data.areaId)
     if (!areaSnapshot) {
       throw createError({
         statusCode: 409,

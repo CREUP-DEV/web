@@ -99,7 +99,7 @@ async function resolveMemberFields(
     }
   }
 
-  const resolved = await resolveMemberOrgSnapshot(event, source, id)
+  const resolved = await resolveMemberOrgSnapshot(source, id)
   if (!resolved) {
     throw createError({
       statusCode: 409,

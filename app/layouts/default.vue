@@ -83,5 +83,7 @@ useHead(() => {
     <AppFooter />
 
     <CookieConsent />
+
+    <ScrollToTopButton />
   </div>
 </template>

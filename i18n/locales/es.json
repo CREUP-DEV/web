@@ -115,7 +115,8 @@
     "breadcrumb": "Ruta de navegación",
     "contentImage": "Imagen de contenido",
     "resultsCount": "{count} resultado | {count} resultados",
-    "resultsStatus": "{count} resultado · página {page} de {pages} | {count} resultados · página {page} de {pages}"
+    "resultsStatus": "{count} resultado · página {page} de {pages} | {count} resultados · página {page} de {pages}",
+    "scrollToTop": "Volver arriba"
   },
   "common": {
     "all": "Todos",
@@ -828,7 +829,8 @@
       "fileTooLargeMb": "El archivo supera el tamaño máximo ({mb}MB)",
       "uploadRequestTooLarge": "El archivo o la solicitud supera el tamaño máximo permitido",
       "fileUploaded": "Archivo subido correctamente",
-      "fileUploadFailed": "No se pudo subir el archivo"
+      "fileUploadFailed": "No se pudo subir el archivo",
+      "back": "Volver"
     },
     "media": {
       "title": "Medios de comunicación",
@@ -1547,6 +1549,7 @@
     },
     "validation": {
       "invalidLocale": "Invalid locale / El locale no es válido",
+      "invalidMemberOrgSource": "El tipo de organización no es válido",
       "hrefFormat": "El enlace debe ser una ruta relativa o una URL http/https",
       "duplicateLocale": "No puede haber traducciones duplicadas para el mismo idioma",
       "translationRequired": "Se requiere al menos una traducción",
@@ -1629,7 +1632,8 @@
         "clearSearch": "Limpiar búsqueda",
         "emptyState": "No hay entradas de actividad todavía",
         "createFirst": "Crear primera entrada",
-        "paginationAria": "Paginación de entradas"
+        "paginationAria": "Paginación de entradas",
+        "manageOrganisers": "Gestionar organizaciones"
       },
       "toast": {
         "deleted": "Entrada eliminada",
@@ -1646,8 +1650,8 @@
       },
       "form": {
         "back": "Volver",
-        "editingLabel": "Editando",
-        "newLabel": "Nueva",
+        "editingLabel": "Editando actividad",
+        "newLabel": "Nueva actividad",
         "saveChanges": "Guardar cambios",
         "createEntry": "Crear entrada",
         "viewOnWebAria": "Ver entrada en la web",
@@ -1667,20 +1671,15 @@
         "altPlaceholder": "Descripción de la imagen",
         "configTitle": "Configuración",
         "kindLabel": "Tipo de entrada",
-        "startDateLabel": "Fecha de inicio",
-        "endDateLabel": "Fecha de fin",
-        "endDateToggle": "La actividad dura varios días",
-        "selectDateAria": "Seleccionar fecha",
-        "onlineLabel": "Modalidad",
-        "onlineOn": "Online",
-        "onlineOff": "Presencial",
         "locationLabel": "Lugar",
         "locationPlaceholder": "Ciudad o sede",
         "statusLabel": "Estado",
-        "organiserTitle": "Organizador",
+        "organiserTitle": "Miembro",
         "organiserHint": "Selecciona la entidad miembro que organiza el evento.",
-        "organiserLabel": "Entidad organizadora",
+        "organiserLabel": "Entidad miembro",
         "organiserPlaceholder": "Selecciona una entidad...",
+        "organiserActiveGroup": "Activas",
+        "organiserHistoricalGroup": "Históricas",
         "organiserLoadError": "No se pudieron cargar las entidades miembro",
         "organiserLoadErrorDescription": "Recarga la página para volver a cargar el listado de entidades.",
         "sourceAssociated": "Asociado",
@@ -1699,7 +1698,10 @@
         "cancelModalTitle": "Cambios sin guardar",
         "cancelModalBody": "Si sales ahora perderás los cambios realizados. ¿Quieres continuar?",
         "keepEditing": "Seguir editando",
-        "discardChanges": "Salir sin guardar"
+        "discardChanges": "Salir sin guardar",
+        "datesLabel": "Fechas",
+        "selectRangeAria": "Seleccionar rango de fechas",
+        "inPersonLabel": "Actividad presencial"
       }
     },
     "areaReports": {
@@ -1719,7 +1721,8 @@
         "emptyState": "No hay informes de áreas todavía",
         "createFirst": "Crear primer informe",
         "paginationAria": "Paginación de informes",
-        "unknownArea": "Área sin nombre"
+        "unknownArea": "Área sin nombre",
+        "manageAreas": "Gestionar áreas"
       },
       "toast": {
         "deleted": "Informe eliminado",
@@ -1733,8 +1736,8 @@
       },
       "form": {
         "back": "Volver",
-        "editingLabel": "Editando",
-        "newLabel": "Nuevo",
+        "editingLabel": "Editando informe",
+        "newLabel": "Nuevo informe",
         "saveChanges": "Guardar cambios",
         "createReport": "Crear informe",
         "requiredBadge": "Obligatorio",
@@ -1758,8 +1761,86 @@
         "statusLabel": "Estado",
         "imageUploaded": "Imagen subida correctamente",
         "imageUploadError": "No se pudo subir la imagen",
-        "imageTooLarge": "La imagen supera el tamaño máximo (5MB)"
+        "imageTooLarge": "La imagen supera el tamaño máximo (5MB)",
+        "monthHint": "Solo se permite un informe por mes.",
+        "monthTaken": "Ya existe un informe para ese mes.",
+        "mandateGroup": "Mandato {start} – {end}",
+        "mandateGroupCurrent": "Mandato vigente (desde {start})"
       }
+    },
+    "areaCatalog": {
+      "title": "Áreas de informes",
+      "subheading": "Áreas del organigrama, mandato a mandato. Se sincroniza automáticamente y no se edita aquí.",
+      "lastSyncedLabel": "Última sincronización",
+      "neverSynced": "Nunca sincronizada",
+      "loadErrorTitle": "No se pudieron cargar las áreas",
+      "syncFailedBanner": "No se pudo sincronizar con el organigrama. Mostrando los datos guardados localmente.",
+      "syncFailedSince": "Desde: {date}",
+      "mandateOngoing": "Desde {start} · en curso",
+      "currentMandateBadge": "Mandato vigente"
+    },
+    "memberOrgCatalog": {
+      "title": "Organizaciones miembro",
+      "subheading": "Catálogo local de entidades seleccionables como organizadoras de una actividad. Se sincroniza automáticamente con los listados de asociados y sectoriales.",
+      "addManual": "Añadir organización manual",
+      "sourceGroupAsociados": "Asociados",
+      "sourceGroupSectoriales": "Sectoriales",
+      "groupHistorical": "Históricas / sustituidas",
+      "emptyActive": "No hay organizaciones activas",
+      "editTitle": "Editar organización",
+      "newTitle": "Nueva organización manual",
+      "sourceLabel": "Tipo",
+      "denominationLabel": "Denominación",
+      "initialsLabel": "Siglas",
+      "logoLightLabel": "Logo (fondo claro)",
+      "logoDarkLabel": "Logo (fondo oscuro)",
+      "activeLabel": "Activa",
+      "manualBadge": "Manual",
+      "syncedBadge": "Sincronizada",
+      "supersededBadge": "Sustituida",
+      "lastSyncedLabel": "Última sincronización",
+      "neverSynced": "Nunca sincronizada",
+      "refreshAction": "Actualizar desde el origen",
+      "refreshedToast": "Datos actualizados desde el origen",
+      "refreshErrorToast": "No se pudieron actualizar los datos desde el origen",
+      "reactivateAction": "Reactivar",
+      "reactivatedToast": "Organización reactivada",
+      "reactivateErrorToast": "No se pudo reactivar la organización",
+      "supersedeAction": "Marcar como sustituida por…",
+      "supersedeModalTitle": "Marcar como sustituida",
+      "supersedeModalHint": "Selecciona la organización activa que sustituye a esta.",
+      "supersedeTargetLabel": "Sustituida por",
+      "supersedeNone": "(ninguna)",
+      "supersedeSaved": "Sustitución guardada",
+      "supersedeError": "No se pudo guardar la sustitución",
+      "clearSupersedeAction": "Quitar sustitución",
+      "editAria": "Editar organización",
+      "deleteAria": "Eliminar organización",
+      "createdToast": "Organización creada correctamente",
+      "saveErrorToast": "No se pudo guardar la organización",
+      "updatedToast": "Organización actualizada correctamente",
+      "deletedToast": "Organización eliminada",
+      "deleteErrorToast": "No se pudo eliminar la organización",
+      "deleteBlockedToast": "No se puede eliminar: hay actividades que usan esta organización",
+      "orderSavedToast": "Orden guardado",
+      "orderErrorToast": "No se pudo guardar el orden",
+      "loadErrorTitle": "No se pudieron cargar las organizaciones",
+      "syncFailedBanner": "No se pudo sincronizar con el origen. Mostrando los datos guardados localmente.",
+      "syncFailedSince": "Desde: {date}",
+      "sourceTabsAria": "Tipos de organización miembro",
+      "logoUploaded": "Logo subido correctamente",
+      "logoUploadError": "No se pudo subir el logo",
+      "uploadLogo": "Subir logo",
+      "changeLogo": "Cambiar logo",
+      "removeLogo": "Quitar logo",
+      "logoPreviewAlt": "Vista previa del logo"
+    },
+    "i18nTabs": {
+      "label": "Idioma de la traducción",
+      "noTranslation": "Sin traducir",
+      "partialTranslation": "Traducción incompleta",
+      "hasTranslation": "Traducción completa",
+      "hasErrors": "Contiene errores"
     }
   },
   "confirmSubscription": {
@@ -2024,7 +2105,7 @@
   },
   "activity": {
     "title": "Nuestra actividad",
-    "description": "Eventos, representaciones e informes de áreas de CREUP y de sus entidades miembro.",
+    "description": "Conoce nuestra actividad y la de nuestros miembros.",
     "tabs": {
       "all": "Toda la actividad",
       "creup": "CREUP",
@@ -2038,7 +2119,6 @@
       "filterByType": "Filtrar por tipo"
     },
     "online": "Online",
-    "memberEvent": "Actividad de un miembro",
     "emptyList": "No hay actividad que mostrar.",
     "viewAll": "Ver todo el trabajo reciente",
     "homeTitle": "Nuestra actividad",
@@ -2050,14 +2130,12 @@
     },
     "reports": {
       "title": "Informe de áreas",
-      "heading": "Informe mensual",
-      "areasCount": "{count} área | {count} áreas",
       "monthLabel": "Mes",
       "prevMonth": "Mes anterior",
       "nextMonth": "Mes siguiente",
       "empty": "No hay informe disponible para este mes.",
-      "bannerTitle": "Informe mensual de áreas",
-      "bannerCta": "Ver informe",
+      "bannerTitle": "Informes mensuales de áreas",
+      "bannerCta": "Ver informes",
       "viewReport": "Ver informe",
       "breadcrumb": "Informe de áreas"
     },

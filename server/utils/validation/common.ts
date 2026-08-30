@@ -230,3 +230,14 @@ export const publicPaginationQuerySchema = z.object({
   limit: toOptionalSingleStringSchema(z.coerce.number().int().min(1).max(50).default(12)),
   offset: toOptionalSingleStringSchema(z.coerce.number().int().min(0).default(0)),
 })
+
+/** `?includeInactive=true` toggle for the catalog list endpoints. Deliberately not
+ * `z.coerce.boolean()` — that treats any non-empty string (including `"false"`) as `true`. */
+export const includeInactiveQuerySchema = z.object({
+  includeInactive: toOptionalSingleStringSchema(
+    z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true')
+  ),
+})

@@ -19,8 +19,8 @@ const open = defineModel<boolean>('open', { required: true })
     <template #content>
       <div class="p-6">
         <div class="mb-4 flex items-center gap-3">
-          <div class="bg-warning/10 flex size-10 shrink-0 items-center justify-center rounded-full">
-            <UIcon name="i-tabler-alert-triangle" class="text-warning size-6" />
+          <div class="bg-error/10 flex size-10 shrink-0 items-center justify-center rounded-full">
+            <UIcon name="i-tabler-alert-triangle" class="text-error size-6" />
           </div>
           <h2 class="text-base font-bold">{{ t('admin.press.form.cancelModalTitle') }}</h2>
         </div>
@@ -31,7 +31,7 @@ const open = defineModel<boolean>('open', { required: true })
           <UButton variant="ghost" @click="open = false">{{
             t('admin.press.form.keepEditing')
           }}</UButton>
-          <UButton color="warning" @click="emit('confirm')">{{
+          <UButton color="error" @click="emit('confirm')">{{
             t('admin.press.form.discardChanges')
           }}</UButton>
         </div>

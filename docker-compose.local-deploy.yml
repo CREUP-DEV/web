@@ -109,7 +109,7 @@ services:
     expose:
       - 1025
     ports:
-      - "${LOCAL_DEPLOY_MAILPIT_WEB_PORT:-8025}:8025"
+      - "${LOCAL_DEPLOY_MAILPIT_WEB_PORT:-8125}:8025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: "1"
       MP_SMTP_AUTH_ALLOW_INSECURE: "1"

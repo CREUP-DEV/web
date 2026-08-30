@@ -119,6 +119,10 @@ const docsPage = ref(1)
 const docsOffset = computed(() => (docsPage.value - 1) * LIMIT)
 const documentsSectionRef = ref<HTMLElement | null>(null)
 
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(docsPage, paginationRef)
+
 const {
   data: documentsData,
   pending: documentsLoading,
@@ -182,14 +186,6 @@ const {
   isPending: supportPending,
   shouldAnimate: supportShouldAnimate,
 } = useEntranceObserver(0.1)
-
-watch(docsPage, () => {
-  nextTick(() => {
-    if (documentsSectionRef.value instanceof HTMLElement) {
-      documentsSectionRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  })
-})
 </script>
 
 <template>
@@ -341,6 +337,7 @@ watch(docsPage, () => {
 
         <nav
           v-if="docsTotal > LIMIT"
+          ref="paginationRef"
           class="mt-6 flex justify-center"
           :aria-label="`${t('equalityPage.resourcesTitle')} - ${t('accessibility.paginationNavigation')}`"
         >

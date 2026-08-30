@@ -86,3 +86,7 @@ ops/seed-content.mjs
 ruvector.db
 ruvector.db-*
 CLAUDE.md
+
+# Local agent CLI configs (Codex, etc.) — machine-local, not part of the app
+.agents/
+.codex/

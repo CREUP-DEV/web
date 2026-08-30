@@ -1,12 +1,10 @@
 /**
  * Frozen area-identity snapshots for the two mandates the migrated newsletters span.
  *
- * `areaId` is a soft reference (not an FK) and is only unique within a mandate; the frozen
- * `areaNameSnapshot` is what the public area-report renders, so reusing previous-mandate ids in
- * old editions is safe and mandate-proof. Captured from the org chart supplied by the user:
- *  - Current mandate (org chart in force from the January 2026 newsletter onward): real area ids.
- *  - Previous mandate (2024-05-12 → 2025-11-22): the org chart's `area_term_id` values (8–14),
- *    used as the soft `areaId` because the live `area_id` was null at capture time.
+ * `areaId` is a soft reference (not an FK) holding the org chart's `area_term_id`, which is unique
+ * across the whole mandate history — unlike `area_id`, which comes back as 0 for past mandates.
+ * The frozen `areaNameSnapshot` is what the public area-report renders, so these ids only ever
+ * matter for matching the entry back to the catalog when a report is edited.
  */
 import type { SeedAreaSnapshot } from './types'
 
@@ -25,15 +23,15 @@ export const CURRENT_AREAS = {
     },
     areaOrderSnapshot: 2,
   },
-  COMUNICACION: {
-    areaId: 3,
-    areaNameSnapshot: { es: 'Comunicación', en: 'Communications' },
-    areaOrderSnapshot: 4,
-  },
   TESORERIA: {
-    areaId: 4,
+    areaId: 3,
     areaNameSnapshot: { es: 'Tesorería', en: 'Treasury' },
     areaOrderSnapshot: 3,
+  },
+  COMUNICACION: {
+    areaId: 4,
+    areaNameSnapshot: { es: 'Comunicación', en: 'Communications' },
+    areaOrderSnapshot: 4,
   },
   POLITICA: {
     areaId: 5,

@@ -140,6 +140,10 @@ const getOrganizationLogo = (organization: EventOrganization): string => {
 
 const photosPerPage = 12
 const currentGalleryPage = ref(1)
+
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(currentGalleryPage, paginationRef)
 const loadedGalleryImages = reactive(new Set<string>())
 
 const totalGalleryImages = computed(() => galleryImages.value.length)
@@ -440,6 +444,7 @@ function getPhotoAlt(index: number): string {
 
             <nav
               v-if="totalGalleryPages > 1"
+              ref="paginationRef"
               class="mt-6 flex justify-center"
               :aria-label="`${t('events.gallery')} - ${t('accessibility.paginationNavigation')}`"
             >

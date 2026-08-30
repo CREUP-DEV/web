@@ -498,3 +498,85 @@ html {
     transform: none !important;
   }
 }
+
+/*
+ * Print layout for long-form article pages (press articles, activity entries).
+ *
+ * Global rather than component-scoped because both detail components render the same structure
+ * and the rules were drifting as duplicated `<style scoped>` blocks. Opt in by putting
+ * `printable-article` on the page's root `<article>`; mark chrome that should not be printed
+ * (back links, share buttons) with `no-print`, and print-only content with `print-only`.
+ *
+ * Kept outside `@layer components` so it outranks the Tailwind utility layers, the same way the
+ * reduced-motion block above does.
+ */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .printable-article {
+    padding: 0 !important;
+    color: #000 !important;
+  }
+
+  .printable-article h1 {
+    font-size: 22pt !important;
+    line-height: 1.2 !important;
+  }
+
+  .printable-article img {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    max-height: 160mm;
+    object-fit: contain;
+  }
+
+  .printable-article figure,
+  .printable-article header {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .printable-article .article-body {
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  .printable-article .article-body h2,
+  .printable-article .article-body h3,
+  .printable-article .article-body h4 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .printable-article .article-body p,
+  .printable-article .article-body ul,
+  .printable-article .article-body ol,
+  .printable-article .article-body blockquote {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .printable-article .article-body a {
+    color: inherit !important;
+    text-decoration: underline !important;
+  }
+
+  .printable-article * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

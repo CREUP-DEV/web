@@ -1,5 +1,5 @@
 import { createError, readBody, type H3Event } from 'h3'
-import { inArray, sql, type AnyColumn } from 'drizzle-orm'
+import { inArray, sql, type AnyColumn, type SQL } from 'drizzle-orm'
 import type { PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { db } from '../../db'
 import { throwAdminMutationError } from './adminErrors'
@@ -74,6 +74,13 @@ interface ReorderCollectionConfig {
   orderColumn: PgColumn
   invalidate: () => Promise<void> | void
   scope: string
+  /**
+   * Restricts both the "current set" completeness check and the update to a subset of rows
+   * (e.g. one `source` group, or `active = true` only) — for a collection where the client only
+   * ever sees/reorders part of the table. Omit for the whole-table behavior every existing caller
+   * relies on.
+   */
+  where?: SQL
 }
 
 /**
@@ -83,7 +90,7 @@ interface ReorderCollectionConfig {
  * instead of leaking a raw 500.
  */
 export async function reorderCollection(event: H3Event, config: ReorderCollectionConfig) {
-  const { table, idColumn, orderColumn, invalidate, scope } = config
+  const { table, idColumn, orderColumn, invalidate, scope, where } = config
 
   try {
     const body = await readBody(event)
@@ -92,7 +99,10 @@ export async function reorderCollection(event: H3Event, config: ReorderCollectio
     const reorderedOrder = buildReorderOrderExpression(idColumn, orderColumn, validated.items)
 
     await db.transaction(async (tx) => {
-      const existingItems = await tx.select({ id: idColumn }).from(table).for('update')
+      const existingItemsQuery = tx.select({ id: idColumn }).from(table).$dynamic()
+      const existingItems = await (
+        where ? existingItemsQuery.where(where) : existingItemsQuery
+      ).for('update')
 
       assertCompleteReorderSet(
         event,

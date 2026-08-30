@@ -275,7 +275,7 @@ onBeforeUnmount(() => {
                 <UTooltip :text="item.title">
                   <h3
                     :lang="item.lang"
-                    class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-2 sm:text-base"
+                    class="group-hover:text-primary text-sm leading-snug font-medium transition-colors sm:line-clamp-3 sm:text-base"
                   >
                     {{ item.title }}
                   </h3>

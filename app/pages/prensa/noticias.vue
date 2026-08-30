@@ -377,7 +377,7 @@ const getArticleAnimationStyle = (index: number) => ({
 
                 <UTooltip :text="article.title">
                   <h2
-                    class="group-hover:text-primary line-clamp-2 leading-snug font-semibold transition-colors"
+                    class="group-hover:text-primary line-clamp-3 leading-snug font-semibold transition-colors"
                   >
                     {{ article.title }}
                   </h2>

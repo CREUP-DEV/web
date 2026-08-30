@@ -115,7 +115,8 @@
     "breadcrumb": "Nabigazio-ibilbidea",
     "contentImage": "Edukiaren irudia",
     "resultsCount": "{count} emaitza | {count} emaitza",
-    "resultsStatus": "{count} emaitza · {pages}(e)tik {page}. orria | {count} emaitza · {pages}(e)tik {page}. orria"
+    "resultsStatus": "{count} emaitza · {pages}(e)tik {page}. orria | {count} emaitza · {pages}(e)tik {page}. orria",
+    "scrollToTop": "Itzuli gora"
   },
   "common": {
     "all": "Guztiak",
@@ -828,7 +829,8 @@
       "fileTooLargeMb": "Fitxategiak gehienezko tamaina gainditzen du ({mb}MB)",
       "uploadRequestTooLarge": "Fitxategiak edo eskaerak gehienezko tamaina baimendua gainditzen du",
       "fileUploaded": "Fitxategia behar bezala igo da",
-      "fileUploadFailed": "Ezin izan da fitxategia igo"
+      "fileUploadFailed": "Ezin izan da fitxategia igo",
+      "back": "Itzuli"
     },
     "media": {
       "title": "Hedabideak",
@@ -1547,6 +1549,7 @@
     },
     "validation": {
       "invalidLocale": "Invalid locale / Locale-a ez da baliozkoa",
+      "invalidMemberOrgSource": "Erakunde mota ez da baliozkoa",
       "hrefFormat": "Estekak bide erlatibo bat edo http/https URL bat izan behar du",
       "duplicateLocale": "Ezin da hizkuntza bererako itzulpen bikoizturik egon",
       "translationRequired": "Gutxienez itzulpen bat behar da",
@@ -1629,7 +1632,8 @@
         "clearSearch": "Garbitu bilaketa",
         "emptyState": "Oraindik ez dago jarduera-sarrerarik",
         "createFirst": "Sortu lehen sarrera",
-        "paginationAria": "Sarreren orrikatzea"
+        "paginationAria": "Sarreren orrikatzea",
+        "manageOrganisers": "Kudeatu erakundeak"
       },
       "toast": {
         "deleted": "Sarrera ezabatuta",
@@ -1646,8 +1650,8 @@
       },
       "form": {
         "back": "Itzuli",
-        "editingLabel": "Editatzen",
-        "newLabel": "Berria",
+        "editingLabel": "Jarduera editatzen",
+        "newLabel": "Jarduera berria",
         "saveChanges": "Gorde aldaketak",
         "createEntry": "Sortu sarrera",
         "viewOnWebAria": "Ikusi sarrera webgunean",
@@ -1667,20 +1671,15 @@
         "altPlaceholder": "Irudiaren deskribapena",
         "configTitle": "Konfigurazioa",
         "kindLabel": "Sarrera mota",
-        "startDateLabel": "Hasiera data",
-        "endDateLabel": "Amaiera data",
-        "endDateToggle": "Jarduerak hainbat egun irauten ditu",
-        "selectDateAria": "Hautatu data",
-        "onlineLabel": "Modalitatea",
-        "onlineOn": "Online",
-        "onlineOff": "Aurrez aurre",
         "locationLabel": "Lekua",
         "locationPlaceholder": "Hiria edo egoitza",
         "statusLabel": "Egoera",
-        "organiserTitle": "Antolatzailea",
+        "organiserTitle": "Kidea",
         "organiserHint": "Hautatu ekitaldia antolatzen duen kide-erakundea.",
-        "organiserLabel": "Erakunde antolatzailea",
+        "organiserLabel": "Kide den erakundea",
         "organiserPlaceholder": "Hautatu erakunde bat...",
+        "organiserActiveGroup": "Aktiboak",
+        "organiserHistoricalGroup": "Historikoak",
         "organiserLoadError": "Ezin izan dira kide-erakundeak kargatu",
         "organiserLoadErrorDescription": "Kargatu orria berriz erakundeen zerrenda berriz kargatzeko.",
         "sourceAssociated": "Elkartua",
@@ -1699,7 +1698,10 @@
         "cancelModalTitle": "Gorde gabeko aldaketak",
         "cancelModalBody": "Orain irtetzen bazara, egindako aldaketak galduko dituzu. Jarraitu nahi duzu?",
         "keepEditing": "Jarraitu editatzen",
-        "discardChanges": "Irten gorde gabe"
+        "discardChanges": "Irten gorde gabe",
+        "datesLabel": "Datak",
+        "selectRangeAria": "Hautatu data tartea",
+        "inPersonLabel": "Aurrez aurreko jarduera"
       }
     },
     "areaReports": {
@@ -1719,7 +1721,8 @@
         "emptyState": "Oraindik ez dago arloen txostenik",
         "createFirst": "Sortu lehen txostena",
         "paginationAria": "Txostenen orrikatzea",
-        "unknownArea": "Izenik gabeko arloa"
+        "unknownArea": "Izenik gabeko arloa",
+        "manageAreas": "Kudeatu arloak"
       },
       "toast": {
         "deleted": "Txostena ezabatuta",
@@ -1733,8 +1736,8 @@
       },
       "form": {
         "back": "Itzuli",
-        "editingLabel": "Editatzen",
-        "newLabel": "Berria",
+        "editingLabel": "Txostena editatzen",
+        "newLabel": "Txosten berria",
         "saveChanges": "Gorde aldaketak",
         "createReport": "Sortu txostena",
         "requiredBadge": "Derrigorrezkoa",
@@ -1758,8 +1761,86 @@
         "statusLabel": "Egoera",
         "imageUploaded": "Irudia ondo igo da",
         "imageUploadError": "Ezin izan da irudia igo",
-        "imageTooLarge": "Irudiak gehienezko tamaina gainditzen du (5MB)"
+        "imageTooLarge": "Irudiak gehienezko tamaina gainditzen du (5MB)",
+        "monthHint": "Hilabeteko txosten bakarra onartzen da.",
+        "monthTaken": "Hilabete horretarako txostena badago.",
+        "mandateGroup": "{start} – {end} agintaldia",
+        "mandateGroupCurrent": "Egungo agintaldia ({start}etik)"
       }
+    },
+    "areaCatalog": {
+      "title": "Txostenen arloak",
+      "subheading": "Antolaketa-organigramaren arloak, agintaldiz agintaldi. Automatikoki sinkronizatzen da eta ez da hemen editatzen.",
+      "lastSyncedLabel": "Azken sinkronizazioa",
+      "neverSynced": "Inoiz ez sinkronizatua",
+      "loadErrorTitle": "Ezin izan dira arloak kargatu",
+      "syncFailedBanner": "Ezin izan da organigramarekin sinkronizatu. Lokalki gordetako datuak erakusten.",
+      "syncFailedSince": "Noiztik: {date}",
+      "mandateOngoing": "{start}etik · indarrean",
+      "currentMandateBadge": "Egungo agintaldia"
+    },
+    "memberOrgCatalog": {
+      "title": "Kide-erakundeak",
+      "subheading": "Ekitaldi baten antolatzaile gisa hauta daitezkeen erakundeen katalogo lokala. Elkartuen eta sektorialen zerrendekin automatikoki sinkronizatzen da.",
+      "addManual": "Gehitu eskuzko erakundea",
+      "sourceGroupAsociados": "Elkartuak",
+      "sourceGroupSectoriales": "Sektorialak",
+      "groupHistorical": "Historikoak / ordezkatuak",
+      "emptyActive": "Ez dago erakunde aktiborik",
+      "editTitle": "Editatu erakundea",
+      "newTitle": "Eskuzko erakunde berria",
+      "sourceLabel": "Mota",
+      "denominationLabel": "Izendapena",
+      "initialsLabel": "Sigla",
+      "logoLightLabel": "Logotipoa (atzeko plano argia)",
+      "logoDarkLabel": "Logotipoa (atzeko plano iluna)",
+      "activeLabel": "Aktiboa",
+      "manualBadge": "Eskuzkoa",
+      "syncedBadge": "Sinkronizatua",
+      "supersededBadge": "Ordezkatua",
+      "lastSyncedLabel": "Azken sinkronizazioa",
+      "neverSynced": "Inoiz ez sinkronizatua",
+      "refreshAction": "Eguneratu jatorritik",
+      "refreshedToast": "Datuak jatorritik eguneratu dira",
+      "refreshErrorToast": "Ezin izan dira datuak jatorritik eguneratu",
+      "reactivateAction": "Berraktibatu",
+      "reactivatedToast": "Erakundea berraktibatu da",
+      "reactivateErrorToast": "Ezin izan da erakundea berraktibatu",
+      "supersedeAction": "Markatu honek ordezkatuta…",
+      "supersedeModalTitle": "Markatu ordezkatuta",
+      "supersedeModalHint": "Hautatu hau ordezkatzen duen erakunde aktiboa.",
+      "supersedeTargetLabel": "Honek ordezkatuta",
+      "supersedeNone": "(bat ere ez)",
+      "supersedeSaved": "Ordezkapena gordeta",
+      "supersedeError": "Ezin izan da ordezkapena gorde",
+      "clearSupersedeAction": "Kendu ordezkapena",
+      "editAria": "Editatu erakundea",
+      "deleteAria": "Ezabatu erakundea",
+      "createdToast": "Erakundea ondo sortu da",
+      "saveErrorToast": "Ezin izan da erakundea gorde",
+      "updatedToast": "Erakundea ondo eguneratu da",
+      "deletedToast": "Erakundea ezabatuta",
+      "deleteErrorToast": "Ezin izan da erakundea ezabatu",
+      "deleteBlockedToast": "Ezin da ezabatu: erakunde hau erabiltzen duten ekitaldiak daude",
+      "orderSavedToast": "Ordena gordeta",
+      "orderErrorToast": "Ezin izan da ordena gorde",
+      "loadErrorTitle": "Ezin izan dira erakundeak kargatu",
+      "syncFailedBanner": "Ezin izan da jatorriarekin sinkronizatu. Lokalki gordetako datuak erakusten.",
+      "syncFailedSince": "Noiztik: {date}",
+      "sourceTabsAria": "Kide erakunde motak",
+      "logoUploaded": "Logoa igo da",
+      "logoUploadError": "Ezin izan da logoa igo",
+      "uploadLogo": "Igo logoa",
+      "changeLogo": "Aldatu logoa",
+      "removeLogo": "Kendu logoa",
+      "logoPreviewAlt": "Logoaren aurrebista"
+    },
+    "i18nTabs": {
+      "label": "Itzulpenaren hizkuntza",
+      "noTranslation": "Itzuli gabe",
+      "partialTranslation": "Itzulpen osatugabea",
+      "hasTranslation": "Itzulpen osoa",
+      "hasErrors": "Erroreak ditu"
     }
   },
   "confirmSubscription": {
@@ -2024,7 +2105,7 @@
   },
   "activity": {
     "title": "Gure jarduera",
-    "description": "CREUPen eta bere kide diren erakundeen ekitaldiak, ordezkaritzak eta arloen txostenak.",
+    "description": "Ezagutu gure jarduera eta gure kideena.",
     "tabs": {
       "all": "Jarduera guztia",
       "creup": "CREUP",
@@ -2038,7 +2119,6 @@
       "filterByType": "Iragazi motaren arabera"
     },
     "online": "Online",
-    "memberEvent": "Kide baten jarduera",
     "emptyList": "Ez dago jarduerarik erakusteko.",
     "viewAll": "Ikusi azken lan guztia",
     "homeTitle": "Gure jarduera",
@@ -2050,14 +2130,12 @@
     },
     "reports": {
       "title": "Arloen txostena",
-      "heading": "Hileko txostena",
-      "areasCount": "{count} arlo | {count} arlo",
       "monthLabel": "Hilabetea",
       "prevMonth": "Aurreko hilabetea",
       "nextMonth": "Hurrengo hilabetea",
       "empty": "Ez dago txostenik hilabete honetarako.",
-      "bannerTitle": "Hileko arloen txostena",
-      "bannerCta": "Ikusi txostena",
+      "bannerTitle": "Hileko arloen txostenak",
+      "bannerCta": "Ikusi txostenak",
       "viewReport": "Ikusi txostena",
       "breadcrumb": "Arloen txostena"
     },

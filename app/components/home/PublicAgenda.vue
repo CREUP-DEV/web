@@ -395,9 +395,13 @@ useSwipe(calendarEl, {
               </span>
             </div>
             <div class="min-h-10 min-w-0 flex-1">
-              <p class="text-foreground line-clamp-2 text-sm leading-snug font-medium">
-                {{ event.title }}
-              </p>
+              <UTooltip :text="event.title">
+                <p
+                  class="text-foreground line-clamp-1 w-fit max-w-full text-sm leading-snug font-medium"
+                >
+                  {{ event.title }}
+                </p>
+              </UTooltip>
               <p class="text-muted mt-0.5 flex items-center gap-1 text-xs">
                 <UIcon name="i-tabler-clock" class="size-3.5 shrink-0" aria-hidden="true" />
                 <span>{{ formatUpcomingTime(event) }}</span>

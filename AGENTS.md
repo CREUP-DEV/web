@@ -727,6 +727,14 @@ For processing arrays of async tasks (email sends, file moves): use `Promise.all
 
 ---
 
+## Deployment
+
+- The image build runs **locally or in CI**, never on the VPS. `deploy.sh` builds, pushes to GHCR, then over SSH pulls + migrates + recreates only the app service. `rollback.sh` swaps the container image back (never DB migrations). `DEPLOYMENT.md` is the full guide.
+- **Image variable: `WEB_IMAGE`, never a bare `IMAGE`.** Every compose file uses `${WEB_IMAGE:-ghcr.io/creup-dev/web:latest}` and the deploy scripts `export WEB_IMAGE`, so it can't collide with another project's image variable in a shared `.env`. Any new compose file or deploy entry point must use `${WEB_IMAGE:-…}`.
+- When this repo's compose is `include:`d in a shared root compose, `deploy.sh` must scope every `docker compose` call to `COMPOSE_APP_SERVICE`; never a bare project-wide `docker compose up -d`.
+
+---
+
 ## Commit Guidelines
 
 Follow Conventional Commits:

@@ -115,7 +115,8 @@
     "breadcrumb": "Ruta de navegació",
     "contentImage": "Imatge de contingut",
     "resultsCount": "{count} resultat | {count} resultats",
-    "resultsStatus": "{count} resultat · pàgina {page} de {pages} | {count} resultats · pàgina {page} de {pages}"
+    "resultsStatus": "{count} resultat · pàgina {page} de {pages} | {count} resultats · pàgina {page} de {pages}",
+    "scrollToTop": "Torna amunt"
   },
   "common": {
     "all": "Tots",
@@ -828,7 +829,8 @@
       "fileTooLargeMb": "El fitxer supera la mida màxima ({mb}MB)",
       "uploadRequestTooLarge": "El fitxer o la sol·licitud supera la mida màxima permesa",
       "fileUploaded": "Fitxer pujat correctament",
-      "fileUploadFailed": "No s'ha pogut pujar el fitxer"
+      "fileUploadFailed": "No s'ha pogut pujar el fitxer",
+      "back": "Torna"
     },
     "media": {
       "title": "Mitjans de comunicació",
@@ -1547,6 +1549,7 @@
     },
     "validation": {
       "invalidLocale": "Invalid locale / El locale no és vàlid",
+      "invalidMemberOrgSource": "El tipus d'organització no és vàlid",
       "hrefFormat": "L'enllaç ha de ser una ruta relativa o una URL http/https",
       "duplicateLocale": "No pot haver-hi traduccions duplicades per al mateix idioma",
       "translationRequired": "Es requerix almenys una traducció",
@@ -1629,7 +1632,8 @@
         "clearSearch": "Neteja la cerca",
         "emptyState": "Encara no hi ha entrades d’activitat",
         "createFirst": "Crea la primera entrada",
-        "paginationAria": "Paginació d’entrades"
+        "paginationAria": "Paginació d’entrades",
+        "manageOrganisers": "Gestiona les organitzacions"
       },
       "toast": {
         "deleted": "Entrada eliminada",
@@ -1646,8 +1650,8 @@
       },
       "form": {
         "back": "Torna",
-        "editingLabel": "Editant",
-        "newLabel": "Nova",
+        "editingLabel": "Editant activitat",
+        "newLabel": "Nova activitat",
         "saveChanges": "Guarda els canvis",
         "createEntry": "Crea l’entrada",
         "viewOnWebAria": "Veure l’entrada al web",
@@ -1667,20 +1671,15 @@
         "altPlaceholder": "Descripció de la imatge",
         "configTitle": "Configuració",
         "kindLabel": "Tipus d’entrada",
-        "startDateLabel": "Data d’inici",
-        "endDateLabel": "Data de fi",
-        "endDateToggle": "L’activitat dura diversos dies",
-        "selectDateAria": "Selecciona la data",
-        "onlineLabel": "Modalitat",
-        "onlineOn": "En línia",
-        "onlineOff": "Presencial",
         "locationLabel": "Lloc",
         "locationPlaceholder": "Ciutat o seu",
         "statusLabel": "Estat",
-        "organiserTitle": "Organitzador",
+        "organiserTitle": "Membre",
         "organiserHint": "Selecciona l’entitat membre que organitza l’esdeveniment.",
-        "organiserLabel": "Entitat organitzadora",
+        "organiserLabel": "Entitat membre",
         "organiserPlaceholder": "Selecciona una entitat...",
+        "organiserActiveGroup": "Actives",
+        "organiserHistoricalGroup": "Històriques",
         "organiserLoadError": "No s’han pogut carregar les entitats membre",
         "organiserLoadErrorDescription": "Torna a carregar la pàgina per recarregar el llistat d’entitats.",
         "sourceAssociated": "Associat",
@@ -1699,7 +1698,10 @@
         "cancelModalTitle": "Canvis sense guardar",
         "cancelModalBody": "Si ixes ara perdràs els canvis fets. Vols continuar?",
         "keepEditing": "Continua editant",
-        "discardChanges": "Ix sense guardar"
+        "discardChanges": "Ix sense guardar",
+        "datesLabel": "Dates",
+        "selectRangeAria": "Selecciona un interval de dates",
+        "inPersonLabel": "Activitat presencial"
       }
     },
     "areaReports": {
@@ -1719,7 +1721,8 @@
         "emptyState": "Encara no hi ha informes d’àrees",
         "createFirst": "Crea el primer informe",
         "paginationAria": "Paginació d’informes",
-        "unknownArea": "Àrea sense nom"
+        "unknownArea": "Àrea sense nom",
+        "manageAreas": "Gestiona les àrees"
       },
       "toast": {
         "deleted": "Informe eliminat",
@@ -1733,8 +1736,8 @@
       },
       "form": {
         "back": "Torna",
-        "editingLabel": "Editant",
-        "newLabel": "Nou",
+        "editingLabel": "Editant informe",
+        "newLabel": "Nou informe",
         "saveChanges": "Guarda els canvis",
         "createReport": "Crea l’informe",
         "requiredBadge": "Obligatori",
@@ -1758,8 +1761,86 @@
         "statusLabel": "Estat",
         "imageUploaded": "Imatge pujada correctament",
         "imageUploadError": "No s’ha pogut pujar la imatge",
-        "imageTooLarge": "La imatge supera la mida màxima (5MB)"
+        "imageTooLarge": "La imatge supera la mida màxima (5MB)",
+        "monthHint": "Només es permet un informe per mes.",
+        "monthTaken": "Ja existix un informe per a eixe mes.",
+        "mandateGroup": "Mandat {start} – {end}",
+        "mandateGroupCurrent": "Mandat vigent (des del {start})"
       }
+    },
+    "areaCatalog": {
+      "title": "Àrees d’informes",
+      "subheading": "Àrees de l’organigrama, mandat a mandat. Se sincronitza automàticament i no s’edita ací.",
+      "lastSyncedLabel": "Última sincronització",
+      "neverSynced": "Mai sincronitzada",
+      "loadErrorTitle": "No s’han pogut carregar les àrees",
+      "syncFailedBanner": "No s’ha pogut sincronitzar amb l’organigrama. Es mostren les dades guardades localment.",
+      "syncFailedSince": "Des de: {date}",
+      "mandateOngoing": "Des del {start} · en curs",
+      "currentMandateBadge": "Mandat vigent"
+    },
+    "memberOrgCatalog": {
+      "title": "Organitzacions membres",
+      "subheading": "Catàleg local d’entitats seleccionables com a organitzadores d’una activitat. Se sincronitza automàticament amb els llistats d’associats i sectorials.",
+      "addManual": "Afig organització manual",
+      "sourceGroupAsociados": "Associats",
+      "sourceGroupSectoriales": "Sectorials",
+      "groupHistorical": "Històriques / substituïdes",
+      "emptyActive": "No hi ha organitzacions actives",
+      "editTitle": "Edita l’organització",
+      "newTitle": "Nova organització manual",
+      "sourceLabel": "Tipus",
+      "denominationLabel": "Denominació",
+      "initialsLabel": "Sigles",
+      "logoLightLabel": "Logo (fons clar)",
+      "logoDarkLabel": "Logo (fons fosc)",
+      "activeLabel": "Activa",
+      "manualBadge": "Manual",
+      "syncedBadge": "Sincronitzada",
+      "supersededBadge": "Substituïda",
+      "lastSyncedLabel": "Última sincronització",
+      "neverSynced": "Mai sincronitzada",
+      "refreshAction": "Actualitza des de l’origen",
+      "refreshedToast": "Dades actualitzades des de l’origen",
+      "refreshErrorToast": "No s’han pogut actualitzar les dades des de l’origen",
+      "reactivateAction": "Reactiva",
+      "reactivatedToast": "Organització reactivada",
+      "reactivateErrorToast": "No s’ha pogut reactivar l’organització",
+      "supersedeAction": "Marca com a substituïda per…",
+      "supersedeModalTitle": "Marca com a substituïda",
+      "supersedeModalHint": "Selecciona l’organització activa que substituïx esta.",
+      "supersedeTargetLabel": "Substituïda per",
+      "supersedeNone": "(cap)",
+      "supersedeSaved": "Substitució guardada",
+      "supersedeError": "No s’ha pogut guardar la substitució",
+      "clearSupersedeAction": "Lleva la substitució",
+      "editAria": "Edita l’organització",
+      "deleteAria": "Elimina l’organització",
+      "createdToast": "Organització creada correctament",
+      "saveErrorToast": "No s’ha pogut guardar l’organització",
+      "updatedToast": "Organització actualitzada correctament",
+      "deletedToast": "Organització eliminada",
+      "deleteErrorToast": "No s’ha pogut eliminar l’organització",
+      "deleteBlockedToast": "No es pot eliminar: hi ha activitats que utilitzen esta organització",
+      "orderSavedToast": "Orde guardat",
+      "orderErrorToast": "No s’ha pogut guardar l’orde",
+      "loadErrorTitle": "No s’han pogut carregar les organitzacions",
+      "syncFailedBanner": "No s’ha pogut sincronitzar amb l’origen. Es mostren les dades guardades localment.",
+      "syncFailedSince": "Des de: {date}",
+      "sourceTabsAria": "Tipus d’organització membre",
+      "logoUploaded": "Logo pujat correctament",
+      "logoUploadError": "No s’ha pogut pujar el logo",
+      "uploadLogo": "Puja el logo",
+      "changeLogo": "Canvia el logo",
+      "removeLogo": "Lleva el logo",
+      "logoPreviewAlt": "Vista prèvia del logo"
+    },
+    "i18nTabs": {
+      "label": "Idioma de la traducció",
+      "noTranslation": "Sense traduir",
+      "partialTranslation": "Traducció incompleta",
+      "hasTranslation": "Traducció completa",
+      "hasErrors": "Conté errors"
     }
   },
   "confirmSubscription": {
@@ -2024,7 +2105,7 @@
   },
   "activity": {
     "title": "La nostra activitat",
-    "description": "Esdeveniments, representacions i informes d'àrees de CREUP i de les seues entitats membres.",
+    "description": "Coneix la nostra activitat i la dels nostres membres.",
     "tabs": {
       "all": "Tota l'activitat",
       "creup": "CREUP",
@@ -2038,7 +2119,6 @@
       "filterByType": "Filtra per tipus"
     },
     "online": "Online",
-    "memberEvent": "Activitat d'un membre",
     "emptyList": "No hi ha activitat per mostrar.",
     "viewAll": "Mostra tot el treball recent",
     "homeTitle": "La nostra activitat",
@@ -2050,14 +2130,12 @@
     },
     "reports": {
       "title": "Informe d'àrees",
-      "heading": "Informe mensual",
-      "areasCount": "{count} àrea | {count} àrees",
       "monthLabel": "Mes",
       "prevMonth": "Mes anterior",
       "nextMonth": "Mes següent",
       "empty": "No hi ha informe disponible per a este mes.",
-      "bannerTitle": "Informe mensual d'àrees",
-      "bannerCta": "Veure informe",
+      "bannerTitle": "Informes mensuals d'àrees",
+      "bannerCta": "Veure informes",
       "viewReport": "Veure informe",
       "breadcrumb": "Informe d'àrees"
     },

@@ -59,6 +59,10 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
 
 const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, items, error)
 
+// Keep the pagination controls under the cursor when the page changes.
+const paginationRef = ref<HTMLElement | null>(null)
+usePaginationAnchor(page, paginationRef)
+
 // WCAG 4.1.3: concise polite status announced on result/page change, instead of
 // an aria-live region wrapping the whole grid (which re-reads or stays silent).
 const a11yResultsStatus = computed(() => {
@@ -70,14 +74,6 @@ const a11yResultsStatus = computed(() => {
         total.value
       )
     : t('accessibility.resultsCount', { count: total.value }, total.value)
-})
-
-watch(page, () => {
-  nextTick(() => {
-    if (resultsRef.value instanceof HTMLElement) {
-      resultsRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  })
 })
 
 function formatDate(dateStr: string): string {
@@ -181,6 +177,7 @@ function formatDate(dateStr: string): string {
 
       <nav
         v-if="total > LIMIT"
+        ref="paginationRef"
         class="flex justify-center"
         :aria-label="`${t('financialReports.title')} - ${t('accessibility.paginationNavigation')}`"
       >

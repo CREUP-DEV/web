@@ -133,7 +133,7 @@ usePageSeo(
 </script>
 
 <template>
-  <article class="press-print py-8 sm:py-12">
+  <article class="printable-article py-8 sm:py-12">
     <UContainer class="max-w-4xl">
       <AnimateIn tag="nav" :index="0" :threshold="0.12" class="no-print mb-6">
         <NuxtLink
@@ -288,76 +288,3 @@ usePageSeo(
     </UContainer>
   </article>
 </template>
-
-<style scoped>
-@media print {
-  @page {
-    margin: 16mm;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .print-only {
-    display: block !important;
-  }
-
-  .press-print {
-    padding: 0 !important;
-    color: #000 !important;
-  }
-
-  .press-print :deep(h1) {
-    font-size: 22pt !important;
-    line-height: 1.2 !important;
-  }
-
-  .press-print :deep(img) {
-    page-break-inside: avoid;
-    break-inside: avoid;
-    max-height: 160mm;
-    object-fit: contain;
-  }
-
-  .press-print :deep(figure),
-  .press-print :deep(header) {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  .press-print :deep(.article-body) {
-    font-size: 11pt;
-    line-height: 1.6;
-  }
-
-  .press-print :deep(.article-body h2),
-  .press-print :deep(.article-body h3),
-  .press-print :deep(.article-body h4) {
-    page-break-after: avoid;
-    break-after: avoid;
-  }
-
-  .press-print :deep(.article-body p),
-  .press-print :deep(.article-body ul),
-  .press-print :deep(.article-body ol),
-  .press-print :deep(.article-body blockquote) {
-    orphans: 3;
-    widows: 3;
-  }
-
-  .press-print :deep(.article-body a) {
-    color: inherit !important;
-    text-decoration: underline !important;
-  }
-
-  .press-print :deep(*) {
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-}
-
-.print-only {
-  display: none;
-}
-</style>

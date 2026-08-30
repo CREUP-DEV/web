@@ -134,6 +134,17 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
     active: link.external ? false : isSectionActive(link.to),
   })
 
+  // Nuxt UI derives a link's active state from Vue Router's record matching, which only marks
+  // ancestors of the current route. Detail routes (`/prensa/noticias/[slug]`,
+  // `/transparencia/actividad/informes/[monthKey]`, ...) are flat siblings of their section index,
+  // so the parent entry would never highlight. Resolve `active` from the path prefix instead, the
+  // same way the mobile menu already does.
+  const createNavigationChild = (label: string, path: string): NavigationMenuItem => ({
+    label,
+    to: localizedPath(path),
+    active: isSectionActive(path),
+  })
+
   const items = computed<NavigationMenuItem[]>(() => [
     {
       label: t('nav.home'),
@@ -144,58 +155,28 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       label: t('nav.about.label'),
       active: isSectionActive('/conocenos'),
       children: [
-        {
-          label: t('nav.about.whatIs'),
-          to: localizedPath('/conocenos/que-es'),
-        },
-        {
-          label: t('nav.about.members'),
-          to: localizedPath('/conocenos/miembros'),
-        },
-        {
-          label: t('nav.about.team'),
-          to: localizedPath('/conocenos/equipo'),
-        },
-        {
-          label: t('nav.about.committees'),
-          to: localizedPath('/conocenos/comites'),
-        },
-        {
-          label: t('nav.about.events'),
-          to: localizedPath('/conocenos/eventos'),
-        },
+        createNavigationChild(t('nav.about.whatIs'), '/conocenos/que-es'),
+        createNavigationChild(t('nav.about.members'), '/conocenos/miembros'),
+        createNavigationChild(t('nav.about.team'), '/conocenos/equipo'),
+        createNavigationChild(t('nav.about.committees'), '/conocenos/comites'),
+        createNavigationChild(t('nav.about.events'), '/conocenos/eventos'),
       ],
     },
     {
       label: t('nav.policy.label'),
       active: isSectionActive('/politica'),
       children: [
-        {
-          label: t('nav.policy.positions'),
-          to: localizedPath('/politica/posicionamientos/'),
-        },
-        {
-          label: t('nav.policy.resolutions'),
-          to: localizedPath('/politica/resoluciones/'),
-        },
-        {
-          label: t('nav.policy.reports'),
-          to: localizedPath('/politica/informes-ejecutivos/'),
-        },
+        createNavigationChild(t('nav.policy.positions'), '/politica/posicionamientos/'),
+        createNavigationChild(t('nav.policy.resolutions'), '/politica/resoluciones/'),
+        createNavigationChild(t('nav.policy.reports'), '/politica/informes-ejecutivos/'),
       ],
     },
     {
       label: t('nav.press.label'),
       active: isSectionActive('/prensa'),
       children: [
-        {
-          label: t('nav.press.news'),
-          to: localizedPath('/prensa/noticias/'),
-        },
-        {
-          label: t('nav.press.newsletter'),
-          to: localizedPath('/prensa/newsletter/'),
-        },
+        createNavigationChild(t('nav.press.news'), '/prensa/noticias/'),
+        createNavigationChild(t('nav.press.newsletter'), '/prensa/newsletter/'),
         ...(resolvedPressDossierLink.value
           ? [createExternalNavigationItem(t('nav.press.pressKit'), resolvedPressDossierLink.value)]
           : []),
@@ -205,26 +186,14 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       label: t('nav.transparency.label'),
       active: isSectionActive('/transparencia'),
       children: [
-        {
-          label: t('nav.transparency.activity'),
-          to: localizedPath('/transparencia/actividad/'),
-        },
-        {
-          label: t('nav.transparency.regulations'),
-          to: localizedPath('/transparencia/normativa/'),
-        },
-        {
-          label: t('nav.transparency.financialReports'),
-          to: localizedPath('/transparencia/informes-economicos/'),
-        },
-        {
-          label: t('nav.transparency.corporateIdentity'),
-          to: localizedPath('/transparencia/mic/'),
-        },
-        {
-          label: t('nav.transparency.equality'),
-          to: localizedPath('/transparencia/igualdad/'),
-        },
+        createNavigationChild(t('nav.transparency.activity'), '/transparencia/actividad/'),
+        createNavigationChild(t('nav.transparency.regulations'), '/transparencia/normativa/'),
+        createNavigationChild(
+          t('nav.transparency.financialReports'),
+          '/transparencia/informes-economicos/'
+        ),
+        createNavigationChild(t('nav.transparency.corporateIdentity'), '/transparencia/mic/'),
+        createNavigationChild(t('nav.transparency.equality'), '/transparencia/igualdad/'),
       ],
     },
     {
