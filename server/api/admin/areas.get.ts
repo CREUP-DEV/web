@@ -1,4 +1,4 @@
-import { defineEventHandler, getQuery } from 'h3'
+import { defineEventHandler } from 'h3'
 import { asc } from 'drizzle-orm'
 import { z } from 'zod'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
@@ -6,6 +6,7 @@ import { db } from '../../db'
 import { areaCatalogEntries } from '../../db/schema'
 import { syncAreaCatalog } from '../../utils/admin/catalogSync'
 import { getRequestLocaleContext } from '../../utils/locale/requestLocale'
+import { validateQuery } from '../../utils/validation'
 
 /**
  * Admin area dropdown for area-reports. Backed by the local area catalog
@@ -34,7 +35,7 @@ const endOfMonth = (month: string) => {
 }
 
 export default defineEventHandler(async (event) => {
-  const { month } = monthQuerySchema.parse(getQuery(event))
+  const { month } = validateQuery(event, monthQuerySchema)
   await syncAreaCatalog(event)
 
   const { locale, fallbackLocale } = getRequestLocaleContext(event)

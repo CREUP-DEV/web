@@ -21,7 +21,8 @@
     "cache:purge": "tsx scripts/purge-cache.ts",
     "build:cache-purge": "esbuild scripts/purge-cache.ts --bundle --platform=node --format=esm --outfile=ops/cache-purge.mjs --packages=external",
     "i18n:check": "tsx scripts/check-i18n-parity.ts",
-    "i18n:audit-identical": "tsx scripts/check-i18n-identical-values.ts"
+    "i18n:audit-identical": "tsx scripts/check-i18n-identical-values.ts",
+    "check:admin-auth": "node scripts/check-admin-auth.mjs"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",

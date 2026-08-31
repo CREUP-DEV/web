@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { localeTabId, localeTabPanelId } from '@/composables/admin/useAdminLocaleTabs'
+
 export type AdminLocaleFillStatus = 'empty' | 'partial' | 'complete'
 
 const props = defineProps<{
+  /** Shared with the panel each tab reveals, so `aria-controls` resolves. */
+  idPrefix: string
   /** Translation completeness per non-default locale, driving the status dot. */
   status?: Record<string, AdminLocaleFillStatus>
   /** Locales with a validation error, so a hidden tab still announces it. */
@@ -38,14 +42,40 @@ const tabs = computed(() =>
   })
 )
 
-// Roving arrow-key navigation across the tablist.
+const tabRefs = ref<HTMLElement[]>([])
+const setTabRef = (el: Element | ComponentPublicInstance | null, index: number) => {
+  if (el instanceof HTMLElement) tabRefs.value[index] = el
+}
+
+// Roving tabindex: only the selected tab is reachable with Tab, so arrow keys have to carry the
+// focus along with the selection or it would be stranded on a tab that just became untabbable.
+const selectTab = async (index: number) => {
+  const tab = tabs.value[index]
+  if (!tab) return
+
+  model.value = tab.code
+  await nextTick()
+  tabRefs.value[index]?.focus()
+}
+
 const onKeydown = (event: KeyboardEvent, index: number) => {
-  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return
+  const count = tabs.value.length
+
+  const target =
+    event.key === 'ArrowRight'
+      ? (index + 1) % count
+      : event.key === 'ArrowLeft'
+        ? (index - 1 + count) % count
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? count - 1
+            : null
+
+  if (target === null) return
 
   event.preventDefault()
-  const delta = event.key === 'ArrowRight' ? 1 : -1
-  const next = (index + delta + tabs.value.length) % tabs.value.length
-  model.value = tabs.value[next]!.code
+  void selectTab(target)
 }
 </script>
 
@@ -57,10 +87,13 @@ const onKeydown = (event: KeyboardEvent, index: number) => {
   >
     <button
       v-for="(tab, index) in tabs"
+      :id="localeTabId(props.idPrefix, tab.code)"
+      :ref="(el) => setTabRef(el, index)"
       :key="tab.code"
       type="button"
       role="tab"
       :aria-selected="model === tab.code"
+      :aria-controls="localeTabPanelId(props.idPrefix, tab.code)"
       :tabindex="model === tab.code ? 0 : -1"
       class="focus-visible:ring-primary/60 relative flex items-center gap-1.5 rounded px-2.5 py-1 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
       :class="

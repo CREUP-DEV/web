@@ -6,6 +6,10 @@ import {
   isConstraintBlockedDeletionError,
   throwAdminMutationError,
 } from '../../../utils/admin/adminErrors'
+import {
+  getAssociatedMembersResponse,
+  getSectorialesResponse,
+} from '../../../utils/public/publicMembers'
 import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
 import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/admin/adminAssetPublication'
@@ -27,6 +31,7 @@ export default defineEventHandler(async (event) => {
           id: memberOrgCatalogEntries.id,
           source: memberOrgCatalogEntries.source,
           selectionKey: memberOrgCatalogEntries.selectionKey,
+          sourceKey: memberOrgCatalogEntries.sourceKey,
           logoLight: memberOrgCatalogEntries.logoLight,
           logoDark: memberOrgCatalogEntries.logoDark,
         })
@@ -36,6 +41,27 @@ export default defineEventHandler(async (event) => {
 
       if (!existingItem) {
         throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
+      }
+
+      // Deleting a row the members feed still lists achieves nothing: the next admin read syncs the
+      // catalog and the upsert puts it straight back. Deactivating or superseding is what actually
+      // takes it out of the dropdown, so say so instead of pretending the delete worked.
+      if (existingItem.sourceKey !== null) {
+        const liveItem =
+          existingItem.source === 'asociado'
+            ? (await getAssociatedMembersResponse(event)).members.find(
+                (member) => member.id === existingItem.sourceKey
+              )
+            : (await getSectorialesResponse(event)).sectoriales.find(
+                (sectorial) => sectorial.id === existingItem.sourceKey
+              )
+
+        if (liveItem) {
+          throw createError({
+            statusCode: 409,
+            message: getAdminApiErrorMessage(event, 'memberOrgCatalogEntryDeleteSynced'),
+          })
+        }
       }
 
       const referencingActivity = await tx.query.activityEntries.findFirst({

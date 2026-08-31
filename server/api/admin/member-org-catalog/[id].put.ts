@@ -108,7 +108,11 @@ export default defineEventHandler(async (event) => {
         currentPath: string | null,
         variant: string
       ) => {
-        if (!nextPath) return null
+        // Clearing the logo still replaces a file: record the old one so it is cleaned up too.
+        if (!nextPath) {
+          if (currentPath) replacedLogos.push(currentPath)
+          return null
+        }
         if (nextPath === currentPath) return currentPath
 
         const published = await finalizeAdminImage({

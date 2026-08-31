@@ -74,14 +74,12 @@ const es = {
   areaReportAreaMissing:
     'El área seleccionada ya no existe en el organigrama. Recarga la página e inténtalo de nuevo.',
   // Area / member-org catalogs
-  areaCatalogEntryOptimisticLock:
-    'El área fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
   memberOrgCatalogEntryOptimisticLock:
     'La organización fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
-  areaCatalogEntryDeleteBlocked:
-    'No se puede eliminar esta área porque está asignada a uno o más informes de área.',
   memberOrgCatalogEntryDeleteBlocked:
     'No se puede eliminar esta organización porque está asignada a una o más actividades.',
+  memberOrgCatalogEntryDeleteSynced:
+    'El listado de origen sigue incluyendo esta organización, así que volvería a aparecer en la siguiente sincronización. Desactívala o márcala como sustituida.',
   memberOrgCatalogSupersedeSourceMismatch:
     'Solo puedes marcar una organización como sustituida por otra del mismo tipo (asociado o sectorial).',
   memberOrgCatalogSupersedeSelfReference: 'Una organización no puede sustituirse a sí misma.',
@@ -205,14 +203,12 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   areaReportAreaMissing:
     'The selected area no longer exists in the org chart. Reload the page and try again.',
   // Area / member-org catalogs
-  areaCatalogEntryOptimisticLock:
-    'The area was modified by another user. Reload the page to see the most recent changes.',
   memberOrgCatalogEntryOptimisticLock:
     'The organisation was modified by another user. Reload the page to see the most recent changes.',
-  areaCatalogEntryDeleteBlocked:
-    'This area cannot be deleted because it is assigned to one or more area reports.',
   memberOrgCatalogEntryDeleteBlocked:
     'This organisation cannot be deleted because it is assigned to one or more activities.',
+  memberOrgCatalogEntryDeleteSynced:
+    'The source listing still includes this organisation, so it would come back on the next sync. Deactivate it or mark it as superseded instead.',
   memberOrgCatalogSupersedeSourceMismatch:
     'You can only mark an organisation as superseded by another of the same type (asociado or sectorial).',
   memberOrgCatalogSupersedeSelfReference: 'An organisation cannot supersede itself.',
@@ -334,14 +330,12 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   areaReportAreaMissing:
     "L'àrea seleccionada ja no existeix a l'organigrama. Torna a carregar la pàgina i torna-ho a provar.",
   // Area / member-org catalogs
-  areaCatalogEntryOptimisticLock:
-    "L'àrea ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
   memberOrgCatalogEntryOptimisticLock:
     "L'organització ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
-  areaCatalogEntryDeleteBlocked:
-    "No es pot eliminar aquesta àrea perquè està assignada a un o més informes d'àrea.",
   memberOrgCatalogEntryDeleteBlocked:
     'No es pot eliminar aquesta organització perquè està assignada a una o més activitats.',
+  memberOrgCatalogEntryDeleteSynced:
+    'El llistat d’origen encara inclou aquesta organització, així que tornaria a aparèixer en la sincronització següent. Desactiva-la o marca-la com a substituïda.',
   memberOrgCatalogSupersedeSourceMismatch:
     'Només pots marcar una organització com a substituïda per una altra del mateix tipus (associat o sectorial).',
   memberOrgCatalogSupersedeSelfReference: 'Una organització no es pot substituir a si mateixa.',
@@ -463,14 +457,12 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   areaReportAreaMissing:
     'Hautatutako arloa jada ez dago organigraman. Kargatu orria berriro eta saiatu berriz.',
   // Area / member-org catalogs
-  areaCatalogEntryOptimisticLock:
-    'Beste erabiltzaile batek aldatu du arloa. Birkargatu orria azken aldaketak ikusteko.',
   memberOrgCatalogEntryOptimisticLock:
     'Beste erabiltzaile batek aldatu du erakundea. Birkargatu orria azken aldaketak ikusteko.',
-  areaCatalogEntryDeleteBlocked:
-    'Ezin da arlo hau ezabatu, arlo-txosten batekin edo gehiagorekin lotuta dagoelako.',
   memberOrgCatalogEntryDeleteBlocked:
     'Ezin da erakunde hau ezabatu, jarduera batekin edo gehiagorekin lotuta dagoelako.',
+  memberOrgCatalogEntryDeleteSynced:
+    'Jatorriko zerrendak erakunde hau oraindik jasotzen du, beraz hurrengo sinkronizazioan berriro agertuko litzateke. Desaktibatu edo ordezkatutzat markatu.',
   memberOrgCatalogSupersedeSourceMismatch:
     'Erakunde bat mota bereko beste batek ordezkatu duela soilik markatu dezakezu (elkartea edo sektoriala).',
   memberOrgCatalogSupersedeSelfReference: 'Erakunde batek ezin du bere burua ordezkatu.',
@@ -592,14 +584,12 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   areaReportAreaMissing:
     'A área seleccionada xa non existe no organigrama. Recarga a páxina e téntao de novo.',
   // Area / member-org catalogs
-  areaCatalogEntryOptimisticLock:
-    'A área foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
   memberOrgCatalogEntryOptimisticLock:
     'A organización foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
-  areaCatalogEntryDeleteBlocked:
-    'Non se pode eliminar esta área porque está asignada a un ou máis informes de área.',
   memberOrgCatalogEntryDeleteBlocked:
     'Non se pode eliminar esta organización porque está asignada a unha ou máis actividades.',
+  memberOrgCatalogEntryDeleteSynced:
+    'A listaxe de orixe aínda inclúe esta organización, así que volvería aparecer na seguinte sincronización. Desactívaa ou márcaa como substituída.',
   memberOrgCatalogSupersedeSourceMismatch:
     'Só podes marcar unha organización como substituída por outra do mesmo tipo (asociado ou sectorial).',
   memberOrgCatalogSupersedeSelfReference: 'Unha organización non pode substituírse a si mesma.',
@@ -721,14 +711,12 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   areaReportAreaMissing:
     "L'àrea seleccionada ja no existix a l'organigrama. Torna a carregar la pàgina i torna-ho a provar.",
   // Area / member-org catalogs
-  areaCatalogEntryOptimisticLock:
-    "L'àrea ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
   memberOrgCatalogEntryOptimisticLock:
     "L'organització ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
-  areaCatalogEntryDeleteBlocked:
-    "No es pot eliminar esta àrea perquè està assignada a un o més informes d'àrea.",
   memberOrgCatalogEntryDeleteBlocked:
     'No es pot eliminar esta organització perquè està assignada a una o més activitats.',
+  memberOrgCatalogEntryDeleteSynced:
+    'El llistat d’origen encara inclou esta organització, així que tornaria a aparéixer en la sincronització següent. Desactiva-la o marca-la com a substituïda.',
   memberOrgCatalogSupersedeSourceMismatch:
     'Només pots marcar una organització com a substituïda per una altra del mateix tipus (associat o sectorial).',
   memberOrgCatalogSupersedeSelfReference: 'Una organització no es pot substituir a si mateixa.',

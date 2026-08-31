@@ -164,7 +164,6 @@ const internalImageAlias = Object.fromEntries(
 const siteName = 'CREUP'
 const siteDescription =
   'Coordinadora de Representantes de Estudiantes de Universidades Públicas - Representando a más de 1.000.000 de estudiantes en toda España.'
-const adminAuthHandler = './server/handlers/admin-auth.ts'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -391,14 +390,6 @@ export default defineNuxtConfig({
   },
 
   routeRules,
-
-  serverHandlers: [
-    {
-      route: '/api/admin/**',
-      middleware: true,
-      handler: adminAuthHandler,
-    },
-  ],
 
   i18n: {
     vueI18n: './i18n.config.ts',

@@ -4,6 +4,10 @@ import { DEFAULT_LOCALE_CODE } from '~~/shared/constants/locales'
 
 const hasContent = (value: unknown) => typeof value === 'string' && value.trim().length > 0
 
+/** Shared by the tablist and by the card it reveals, so `aria-controls` always finds its panel. */
+export const localeTabId = (prefix: string, locale: string) => `${prefix}-tab-${locale}`
+export const localeTabPanelId = (prefix: string, locale: string) => `${prefix}-panel-${locale}`
+
 /**
  * Drives the admin translation tabs: which locale is on screen, how complete each translation is,
  * and which ones failed validation.
@@ -18,6 +22,7 @@ export function useAdminLocaleTabs<T extends { locale: string }>(
   getFieldError: (path: string) => string | undefined
 ) {
   const activeLocale = ref(DEFAULT_LOCALE_CODE)
+  const idPrefix = useId() ?? 'locale-tabs'
 
   const baseTranslation = computed(() =>
     translations.value.find((translation) => translation.locale === DEFAULT_LOCALE_CODE)
@@ -71,5 +76,14 @@ export function useAdminLocaleTabs<T extends { locale: string }>(
     if (first) activeLocale.value = first
   }
 
-  return { activeLocale, activeIndex, status, invalidLocales, revealFirstInvalidLocale }
+  return {
+    activeLocale,
+    activeIndex,
+    idPrefix,
+    status,
+    invalidLocales,
+    revealFirstInvalidLocale,
+    panelId: (locale: string) => localeTabPanelId(idPrefix, locale),
+    panelLabelledBy: (locale: string) => localeTabId(idPrefix, locale),
+  }
 }

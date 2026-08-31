@@ -40,12 +40,20 @@ const localeApiHeaders = useLocaleApiHeaders()
 const { createEmptyTranslations, fallbackLocale } = useLocales()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
-const { activeLocale, activeIndex, status, invalidLocales, revealFirstInvalidLocale } =
-  useAdminLocaleTabs(
-    computed(() => form.translations),
-    ['contentHtml'],
-    getFieldError
-  )
+const {
+  activeLocale,
+  activeIndex,
+  idPrefix,
+  status,
+  invalidLocales,
+  revealFirstInvalidLocale,
+  panelId,
+  panelLabelledBy,
+} = useAdminLocaleTabs(
+  computed(() => form.translations),
+  ['contentHtml'],
+  getFieldError
+)
 
 const isEditing = computed(() => !!props.report)
 
@@ -347,6 +355,7 @@ const confirmCancel = () => {
       <div class="min-w-0 space-y-6">
         <AdminLocaleTabs
           v-model="activeLocale"
+          :id-prefix="idPrefix"
           :status="status"
           :invalid-locales="invalidLocales"
         />
@@ -354,10 +363,13 @@ const confirmCancel = () => {
         <AdminActivityAreaReportTranslationCard
           v-for="(trans, index) in form.translations"
           v-show="index === activeIndex"
+          :id="panelId(trans.locale)"
           :key="trans.locale"
           v-model:content-html="trans.contentHtml"
           v-model:image-caption="trans.imageCaption"
           v-model:alt="trans.alt"
+          role="tabpanel"
+          :aria-labelledby="panelLabelledBy(trans.locale)"
           :translation="trans"
           :index="index"
           :content-error="getFieldError(`translations.${index}.contentHtml`)"
