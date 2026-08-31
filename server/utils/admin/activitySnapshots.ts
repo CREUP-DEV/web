@@ -31,8 +31,13 @@ import type { AreaNameSnapshot, MemberOrgSnapshot, MemberOrgSource } from '../..
  * Each resolver returns `null` when the reference no longer exists so callers can surface a 4xx.
  */
 
-/** The transaction handle the caller is already inside; a bare `db` would defeat the lock. */
-type SnapshotExecutor = Pick<typeof db, 'select'>
+/**
+ * The transaction handle the caller is already inside. Typed as the handle rather than as a
+ * structural `Pick<…, 'select'>` so that passing a bare `db` is a compile error: the lock would be
+ * taken in an implicit single-statement transaction and released before the row that depends on it
+ * is ever written.
+ */
+type SnapshotExecutor = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 export interface AreaSnapshotResult {
   areaNameSnapshot: AreaNameSnapshot
