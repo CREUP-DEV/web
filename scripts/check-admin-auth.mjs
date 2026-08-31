@@ -9,24 +9,37 @@
  * Usage: pnpm build && pnpm check:admin-auth
  */
 import { spawn } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { setTimeout as sleep } from 'node:timers/promises'
 
 /**
- * The built server reads its configuration from the real environment, unlike the dev server which
- * loads `.env` for you. Parsed here rather than pulled in as a dependency so the check stays a
- * plain script; values are only forwarded to the child process, never logged.
+ * Every value the built server needs in order to boot, and nothing more.
+ *
+ * Deliberately hermetic: the real environment is NOT forwarded and `.env` is NOT read. An earlier
+ * version loaded `.env`, which made the check pass locally while the same command was still unable
+ * to start the server in CI — the divergence hid a broken pipeline step behind a green local run.
+ * Everything here is a placeholder, so the check can only ever exercise the guard: nothing it sends
+ * reaches a database, Redis, OAuth or SMTP, because the request is refused before any of them.
+ *
+ * The `NUXT_*` entries override the values baked into the artefact at build time, which is what
+ * makes a build produced with a populated `.env` behave the same as CI's build produced without one.
  */
-const loadDotEnv = () => {
-  if (!existsSync('.env')) return {}
-
-  const parsed = {}
-  for (const line of readFileSync('.env', 'utf8').split('\n')) {
-    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/)
-    if (!match) continue
-    parsed[match[1]] = match[2].trim().replace(/^["']|["']$/g, '')
-  }
-  return parsed
+const SERVER_ENV = {
+  DATABASE_URL: 'postgresql://check:check@127.0.0.1:1/check',
+  APP_SECRET: 'admin-auth-check-placeholder-secret',
+  GOOGLE_CLIENT_ID: 'admin-auth-check-client-id',
+  GOOGLE_CLIENT_SECRET: 'admin-auth-check-client-secret',
+  NUXT_ADMIN_EMAILS: 'admin-auth-check@example.invalid',
+  NUXT_SITE_URL: 'http://127.0.0.1',
+  NUXT_REDIS_URL: 'redis://127.0.0.1:1',
+  NUXT_EXTERNAL_API_BASE_URL: 'http://127.0.0.1:1',
+  NUXT_GOOGLE_CALENDAR_API_KEY: 'admin-auth-check-calendar-key',
+  NUXT_GOOGLE_CALENDAR_ID: 'admin-auth-check@group.calendar.google.com',
+  NUXT_SMTP_HOST: '127.0.0.1',
+  NUXT_SMTP_PORT: '1025',
+  NUXT_SMTP_SECURE: 'false',
+  NUXT_SMTP_USER: 'admin-auth-check',
+  NUXT_SMTP_PASS: 'admin-auth-check',
 }
 
 const SERVER_ENTRY = '.output/server/index.mjs'
@@ -51,8 +64,9 @@ if (!existsSync(SERVER_ENTRY)) {
 
 const server = spawn(process.execPath, [SERVER_ENTRY], {
   env: {
-    ...loadDotEnv(),
-    ...process.env,
+    PATH: process.env.PATH,
+    HOME: process.env.HOME,
+    ...SERVER_ENV,
     PORT: String(PORT),
     NITRO_PORT: String(PORT),
     HOST: '127.0.0.1',

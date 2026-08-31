@@ -53,13 +53,8 @@ jobs:
 
       # Boots the artefact just built and asserts the admin API answers 401 without a session. The
       # guard used to be registered in a way Nitro silently ignored, and nothing caught it because
-      # the browser still redirected /admin to the login page. Placeholder secrets are enough: the
-      # rejection happens before any database or OAuth call, which the unreachable DATABASE_URL
-      # here also proves.
+      # the browser still redirected /admin to the login page. No env here on purpose: the script
+      # supplies its own placeholders and reads neither the environment nor `.env`, so this step
+      # behaves identically on a developer's machine and on a runner that has no secrets at all.
       - name: Check admin API rejects anonymous callers
         run: pnpm check:admin-auth
-        env:
-          DATABASE_URL: postgresql://ci:ci@127.0.0.1:1/ci
-          APP_SECRET: ci-placeholder-secret-value-32-chars
-          GOOGLE_CLIENT_ID: ci-placeholder-client-id
-          GOOGLE_CLIENT_SECRET: ci-placeholder-client-secret

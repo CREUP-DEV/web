@@ -14,10 +14,7 @@ import {
 } from '../utils/admin/adminAssetPublication'
 import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/admin/adminErrors'
 import { assertOptimisticLock, buildOptimisticLockCondition } from '../utils/admin/optimisticLock'
-import {
-  lockMemberOrgCatalogEntry,
-  resolveMemberOrgSnapshot,
-} from '../utils/admin/activitySnapshots'
+import { lockMemberOrgCatalogEntry } from '../utils/admin/activitySnapshots'
 import { getRequiredTranslationValue } from '../utils/locale/localizedContent'
 import { getAdminApiErrorMessage } from '../utils/locale/adminApiErrorMessages'
 import { sanitizeActivityTranslations } from '../utils/activity/activityTranslation'
@@ -64,23 +61,29 @@ interface ResolvedMemberFields {
   memberOrgSnapshot: MemberOrgSnapshot | null
 }
 
+interface MemberFieldsPlan extends Omit<ResolvedMemberFields, 'memberOrgSnapshot'> {
+  /** The snapshot to keep verbatim; `null` means "freeze a fresh one from the catalog row". */
+  keptSnapshot: MemberOrgSnapshot | null
+}
+
 /**
- * Resolve the organiser fields for the row (plan §3.2/§5.4):
+ * Decide the organiser fields for the row (plan §3.2/§5.4):
  * - CREUP entries carry no organiser.
  * - Member entries freeze a fresh snapshot on create, when the reference changes, or when the
  *   "Actualizar datos desde el organigrama" button sets `refreshSnapshot`; otherwise the stored
  *   snapshot is preserved so editing other fields never rewrites organiser history.
+ *
+ * Pure: reading the catalog is `resolveMemberFields`'s job, because it has to happen under a lock.
  */
-async function resolveMemberFields(
-  event: H3Event,
+function planMemberFields(
   data: ActivityEntryData | UpdateActivityEntryData,
   existing?: Pick<
     ActivityEntryQueryItem,
     'kind' | 'memberOrgSource' | 'memberOrgId' | 'memberOrgSnapshot'
   >
-): Promise<ResolvedMemberFields> {
+): MemberFieldsPlan {
   if (data.kind !== 'member') {
-    return { memberOrgSource: null, memberOrgId: null, memberOrgSnapshot: null }
+    return { memberOrgSource: null, memberOrgId: null, keptSnapshot: null }
   }
 
   // refine() guarantees these are present for member entries.
@@ -93,23 +96,45 @@ async function resolveMemberFields(
     existing.memberOrgSource !== source ||
     existing.memberOrgId !== id
   const forceRefresh = 'refreshSnapshot' in data && data.refreshSnapshot === true
+  const keepExisting = Boolean(existing && !referenceChanged && !forceRefresh)
 
-  if (existing && !referenceChanged && !forceRefresh && existing.memberOrgSnapshot) {
-    return {
-      memberOrgSource: source,
-      memberOrgId: id,
-      memberOrgSnapshot: existing.memberOrgSnapshot,
-    }
+  return {
+    memberOrgSource: source,
+    memberOrgId: id,
+    keptSnapshot: keepExisting ? (existing?.memberOrgSnapshot ?? null) : null,
+  }
+}
+
+/**
+ * Turn the plan into the values written to the row, holding the organiser's catalog entry for the
+ * rest of the caller's transaction.
+ *
+ * The lock is taken even when the stored snapshot is preserved: that path writes no new organiser
+ * data, but it still leaves a row referencing the catalog entry, so a delete running alongside must
+ * either wait for it or find it already there.
+ */
+async function resolveMemberFields(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  plan: MemberFieldsPlan,
+  event: H3Event
+): Promise<ResolvedMemberFields> {
+  if (!plan.memberOrgSource || !plan.memberOrgId) {
+    return { memberOrgSource: null, memberOrgId: null, memberOrgSnapshot: null }
   }
 
-  const resolved = await resolveMemberOrgSnapshot(source, id)
-  if (!resolved) {
+  const locked = await lockMemberOrgCatalogEntry(tx, plan.memberOrgSource, plan.memberOrgId)
+  if (!locked) {
     throw createError({
       statusCode: 409,
       message: getAdminApiErrorMessage(event, 'activityMemberOrgMissing'),
     })
   }
-  return resolved
+
+  return {
+    memberOrgSource: plan.memberOrgSource,
+    memberOrgId: plan.memberOrgId,
+    memberOrgSnapshot: plan.keptSnapshot ?? locked,
+  }
 }
 
 function buildTranslationValues(
@@ -148,7 +173,7 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
     defaultTitle: string,
     startDateValue: string,
     startDateAnchor: Date,
-    memberFields: ResolvedMemberFields,
+    memberPlan: MemberFieldsPlan,
     opts: { forcedSlugSuffix?: string; imageSource?: string | null }
   ) {
     return db.transaction(async (tx) => {
@@ -157,21 +182,7 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
         forcedSuffix: opts.forcedSlugSuffix,
       })
 
-      // Hold the organiser's catalog row for the rest of this transaction, so a delete running
-      // alongside either waits for this write to land or finds it already there.
-      if (memberFields.memberOrgSource && memberFields.memberOrgId) {
-        const stillPresent = await lockMemberOrgCatalogEntry(
-          tx,
-          memberFields.memberOrgSource,
-          memberFields.memberOrgId
-        )
-        if (!stillPresent) {
-          throw createError({
-            statusCode: 409,
-            message: getAdminApiErrorMessage(event, 'activityMemberOrgMissing'),
-          })
-        }
-      }
+      const memberFields = await resolveMemberFields(tx, memberPlan, event)
 
       const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
 
@@ -234,7 +245,7 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
 
     const startDateValue = data.startDate
     const startDateAnchor = dateOnlyToStorageDate(startDateValue)
-    const memberFields = await resolveMemberFields(event, data)
+    const memberPlan = planMemberFields(data)
 
     let completeItem: ActivityEntryQueryItem | null
     try {
@@ -242,7 +253,7 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
         defaultTitle,
         startDateValue,
         startDateAnchor,
-        memberFields,
+        memberPlan,
         {}
       )
     } catch (firstError) {
@@ -256,7 +267,7 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
         defaultTitle,
         startDateValue,
         startDateAnchor,
-        memberFields,
+        memberPlan,
         { forcedSlugSuffix: randomSlugSuffix(), imageSource: firstImage ?? undefined }
       ).catch(() => {
         throw createError({
@@ -299,7 +310,7 @@ export async function updateActivityEntry(
     defaultTitle: string,
     startDateValue: string,
     startDateAnchor: Date,
-    memberFields: ResolvedMemberFields,
+    memberPlan: MemberFieldsPlan,
     opts: { forcedSlugSuffix?: string; imageSource?: string | null }
   ) {
     return db.transaction(async (tx) => {
@@ -309,21 +320,7 @@ export async function updateActivityEntry(
         forcedSuffix: opts.forcedSlugSuffix,
       })
 
-      // Hold the organiser's catalog row for the rest of this transaction, so a delete running
-      // alongside either waits for this write to land or finds it already there.
-      if (memberFields.memberOrgSource && memberFields.memberOrgId) {
-        const stillPresent = await lockMemberOrgCatalogEntry(
-          tx,
-          memberFields.memberOrgSource,
-          memberFields.memberOrgId
-        )
-        if (!stillPresent) {
-          throw createError({
-            statusCode: 409,
-            message: getAdminApiErrorMessage(event, 'activityMemberOrgMissing'),
-          })
-        }
-      }
+      const memberFields = await resolveMemberFields(tx, memberPlan, event)
 
       const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
 
@@ -433,7 +430,7 @@ export async function updateActivityEntry(
 
     const startDateValue = data.startDate
     const startDateAnchor = dateOnlyToStorageDate(startDateValue)
-    const memberFields = await resolveMemberFields(event, data, existingItem)
+    const memberPlan = planMemberFields(data, existingItem)
     previousImage = existingItem.image
 
     let item: ActivityEntryQueryItem | null
@@ -443,7 +440,7 @@ export async function updateActivityEntry(
         defaultTitle,
         startDateValue,
         startDateAnchor,
-        memberFields,
+        memberPlan,
         {}
       )
     } catch (firstError) {
@@ -458,7 +455,7 @@ export async function updateActivityEntry(
         defaultTitle,
         startDateValue,
         startDateAnchor,
-        memberFields,
+        memberPlan,
         { forcedSlugSuffix: randomSlugSuffix(), imageSource: firstImage ?? undefined }
       ).catch(() => {
         throw createError({

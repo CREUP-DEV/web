@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { and, eq, notExists, notInArray, sql } from 'drizzle-orm'
+import { and, eq, inArray, notExists, notInArray, sql } from 'drizzle-orm'
 import { db } from '../../db'
 import {
   areaCatalogEntries,
@@ -129,19 +129,38 @@ export async function syncAreaCatalog(event: H3Event) {
     // published reports render from their own frozen snapshot, but the reference has to keep
     // resolving so the entry stays selectable when that report is edited.
     if (seenSelectionKeys.length > 0) {
-      await db
-        .delete(areaCatalogEntries)
-        .where(
+      await db.transaction(async (tx) => {
+        // Lock the candidates in a statement of their own, before testing them for reports. A
+        // report being written against one of these areas holds `FOR SHARE` on its row
+        // (activitySnapshots.ts), so this waits for it; the delete below then runs on a fresh
+        // statement snapshot and sees the report that just committed. Selecting and deleting in a
+        // single statement would instead test for reports against a snapshot taken before the lock
+        // was granted, which is exactly the race this pair exists to close.
+        const doomed = await tx
+          .select({ selectionKey: areaCatalogEntries.selectionKey })
+          .from(areaCatalogEntries)
+          .where(notInArray(areaCatalogEntries.selectionKey, seenSelectionKeys))
+          .for('update')
+
+        if (doomed.length === 0) {
+          return
+        }
+
+        await tx.delete(areaCatalogEntries).where(
           and(
-            notInArray(areaCatalogEntries.selectionKey, seenSelectionKeys),
+            inArray(
+              areaCatalogEntries.selectionKey,
+              doomed.map((row) => row.selectionKey)
+            ),
             notExists(
-              db
+              tx
                 .select({ id: areaReports.id })
                 .from(areaReports)
                 .where(eq(areaReports.areaId, areaCatalogEntries.selectionKey))
             )
           )
         )
+      })
     }
   })
 }

@@ -13,7 +13,7 @@ import {
 } from '../adminAssetPublication'
 import { isExclusionConstraintViolation, throwAdminMutationError } from '../adminErrors'
 import { assertOptimisticLock, buildOptimisticLockCondition } from '../optimisticLock'
-import { resolveAreaSnapshot } from '../activitySnapshots'
+import { lockAreaCatalogEntry } from '../activitySnapshots'
 import { getAdminApiErrorMessage } from '../../locale/adminApiErrorMessages'
 import { sanitizeRichTextHtml } from '../../press/pressTranslation'
 import { AREA_REPORTS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
@@ -114,15 +114,18 @@ export async function createAreaReport(data: AreaReportData, event: H3Event) {
   let image: string | null = null
 
   try {
-    const areaSnapshot = await resolveAreaSnapshot(data.areaId)
-    if (!areaSnapshot) {
-      throw createError({
-        statusCode: 409,
-        message: getAdminApiErrorMessage(event, 'areaReportAreaMissing'),
-      })
-    }
-
     const result = await db.transaction(async (tx) => {
+      // Reading the area under a shared lock is what keeps the frozen snapshot honest: the catalog
+      // sync deletes areas the org chart no longer lists, and takes `FOR UPDATE` to do it, so the
+      // two meet here instead of racing.
+      const areaSnapshot = await lockAreaCatalogEntry(tx, data.areaId)
+      if (!areaSnapshot) {
+        throw createError({
+          statusCode: 409,
+          message: getAdminApiErrorMessage(event, 'areaReportAreaMissing'),
+        })
+      }
+
       // Overlap check (EXCLUDE constraint → 23P01) happens here, before any asset is moved.
       // Create never clears a sibling's range (authoritative = false).
       await upsertEdition(tx, data.monthKey, data.coversFrom ?? null, false)
