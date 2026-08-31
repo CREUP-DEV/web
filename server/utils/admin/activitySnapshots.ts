@@ -43,6 +43,32 @@ export interface MemberOrgSnapshotResult {
   memberOrgSnapshot: MemberOrgSnapshot
 }
 
+/**
+ * Takes a shared lock on the catalog row backing an activity's organiser, inside the caller's
+ * transaction. It is what stops a delete from slipping between "the organiser resolves" and "the
+ * activity is inserted": there is no foreign key from `activity_entries` to the catalog (the
+ * catalog imports from the activity schema, so the reverse reference would be circular), so the
+ * two transactions have to meet on a lock instead. `FOR SHARE` is incompatible with the deleter's
+ * `FOR UPDATE`, so whichever commits first makes the other see reality.
+ *
+ * Returns false when the row is already gone, which is the deleter having won the race.
+ */
+export async function lockMemberOrgCatalogEntry(
+  tx: Pick<typeof db, 'select'>,
+  source: MemberOrgSource,
+  id: string
+): Promise<boolean> {
+  const rows = await tx
+    .select({ id: memberOrgCatalogEntries.id })
+    .from(memberOrgCatalogEntries)
+    .where(
+      and(eq(memberOrgCatalogEntries.source, source), eq(memberOrgCatalogEntries.selectionKey, id))
+    )
+    .for('share')
+
+  return rows.length > 0
+}
+
 export async function resolveMemberOrgSnapshot(
   source: MemberOrgSource,
   id: string

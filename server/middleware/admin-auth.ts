@@ -5,6 +5,7 @@ import {
   assertSameOriginAdminMutationRequest,
   ensureAdminCsrfCookie,
 } from '../utils/admin/adminRequestProtection'
+import { seedRequestLocale } from '../utils/locale/requestLocale'
 
 const ADMIN_API_PREFIX = '/api/admin'
 
@@ -27,6 +28,10 @@ export default defineEventHandler(async (event) => {
   if (event.method === 'OPTIONS') {
     return
   }
+
+  // Nitro orders middleware by filename, so this runs before the locale one. Seed the locale here
+  // or every security error below would answer in the fallback language, ignoring x-request-locale.
+  seedRequestLocale(event)
 
   assertSameOriginAdminMutationRequest(event)
   setHeader(event, 'cache-control', 'no-store')

@@ -19,6 +19,29 @@ export default defineEventHandler(async (event) => {
   try {
     const { id } = validateRouteParams(event, idRouteParamSchema)
 
+    // The members feed is consulted before opening the transaction: `$fetch` here has no global
+    // timeout, and a slow source would otherwise pin a pooled connection and hold the row lock for
+    // as long as it took to answer. The row is re-read under the lock below, so an edit landing
+    // between the two steps is caught rather than acted on stale.
+    const preliminary = await db.query.memberOrgCatalogEntries.findFirst({
+      where: eq(memberOrgCatalogEntries.id, id),
+      columns: { source: true, sourceKey: true },
+    })
+    if (!preliminary) {
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
+    }
+
+    const listedUpstream =
+      preliminary.sourceKey === null
+        ? false
+        : preliminary.source === 'asociado'
+          ? (await getAssociatedMembersResponse(event)).members.some(
+              (member) => member.id === preliminary.sourceKey
+            )
+          : (await getSectorialesResponse(event)).sectoriales.some(
+              (sectorial) => sectorial.id === preliminary.sourceKey
+            )
+
     // Run the referencing-activity / superseded-by checks and the delete in one transaction with
     // the row locked, so a concurrent activity-creation or supersede can't slip between them. The
     // self-referencing FK (supersededByEntryId) is the backstop for a race that still wins: map it
@@ -43,25 +66,25 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
       }
 
+      // The upstream lookup happened before the lock, so make sure it still describes this row.
+      if (
+        existingItem.source !== preliminary.source ||
+        existingItem.sourceKey !== preliminary.sourceKey
+      ) {
+        throw createError({
+          statusCode: 409,
+          message: getAdminApiErrorMessage(event, 'memberOrgCatalogEntryOptimisticLock'),
+        })
+      }
+
       // Deleting a row the members feed still lists achieves nothing: the next admin read syncs the
       // catalog and the upsert puts it straight back. Deactivating or superseding is what actually
       // takes it out of the dropdown, so say so instead of pretending the delete worked.
-      if (existingItem.sourceKey !== null) {
-        const liveItem =
-          existingItem.source === 'asociado'
-            ? (await getAssociatedMembersResponse(event)).members.find(
-                (member) => member.id === existingItem.sourceKey
-              )
-            : (await getSectorialesResponse(event)).sectoriales.find(
-                (sectorial) => sectorial.id === existingItem.sourceKey
-              )
-
-        if (liveItem) {
-          throw createError({
-            statusCode: 409,
-            message: getAdminApiErrorMessage(event, 'memberOrgCatalogEntryDeleteSynced'),
-          })
-        }
+      if (listedUpstream) {
+        throw createError({
+          statusCode: 409,
+          message: getAdminApiErrorMessage(event, 'memberOrgCatalogEntryDeleteSynced'),
+        })
       }
 
       const referencingActivity = await tx.query.activityEntries.findFirst({

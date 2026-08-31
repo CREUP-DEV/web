@@ -14,7 +14,10 @@ import {
 } from '../utils/admin/adminAssetPublication'
 import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/admin/adminErrors'
 import { assertOptimisticLock, buildOptimisticLockCondition } from '../utils/admin/optimisticLock'
-import { resolveMemberOrgSnapshot } from '../utils/admin/activitySnapshots'
+import {
+  lockMemberOrgCatalogEntry,
+  resolveMemberOrgSnapshot,
+} from '../utils/admin/activitySnapshots'
 import { getRequiredTranslationValue } from '../utils/locale/localizedContent'
 import { getAdminApiErrorMessage } from '../utils/locale/adminApiErrorMessages'
 import { sanitizeActivityTranslations } from '../utils/activity/activityTranslation'
@@ -154,6 +157,22 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
         forcedSuffix: opts.forcedSlugSuffix,
       })
 
+      // Hold the organiser's catalog row for the rest of this transaction, so a delete running
+      // alongside either waits for this write to land or finds it already there.
+      if (memberFields.memberOrgSource && memberFields.memberOrgId) {
+        const stillPresent = await lockMemberOrgCatalogEntry(
+          tx,
+          memberFields.memberOrgSource,
+          memberFields.memberOrgId
+        )
+        if (!stillPresent) {
+          throw createError({
+            statusCode: 409,
+            message: getAdminApiErrorMessage(event, 'activityMemberOrgMissing'),
+          })
+        }
+      }
+
       const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
 
       if (effectiveImageSource) {
@@ -289,6 +308,22 @@ export async function updateActivityEntry(
         executor: tx,
         forcedSuffix: opts.forcedSlugSuffix,
       })
+
+      // Hold the organiser's catalog row for the rest of this transaction, so a delete running
+      // alongside either waits for this write to land or finds it already there.
+      if (memberFields.memberOrgSource && memberFields.memberOrgId) {
+        const stillPresent = await lockMemberOrgCatalogEntry(
+          tx,
+          memberFields.memberOrgSource,
+          memberFields.memberOrgId
+        )
+        if (!stillPresent) {
+          throw createError({
+            statusCode: 409,
+            message: getAdminApiErrorMessage(event, 'activityMemberOrgMissing'),
+          })
+        }
+      }
 
       const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
 
