@@ -47,9 +47,17 @@ const PORT = Number(process.env.ADMIN_AUTH_CHECK_PORT ?? 3123)
 const ORIGIN = `http://127.0.0.1:${PORT}`
 const BOOT_TIMEOUT_MS = 60_000
 
+/**
+ * Readiness probe. Deliberately one of the guarded routes rather than `/health`, which probes
+ * PostgreSQL, Redis, the external API and SMTP — all of them placeholders here, so it only answered
+ * once every probe had timed out, and it made the check's own runtime depend on those clients.
+ * A guarded route answers as soon as the server listens, and its 401 is the signal itself.
+ */
+const READINESS_PATH = '/api/admin/summary'
+
 /** A read, a write and a nested route: the guard has to cover the whole prefix, not just the root. */
 const CASES = [
-  { method: 'GET', path: '/api/admin/summary' },
+  { method: 'GET', path: READINESS_PATH },
   { method: 'GET', path: '/api/admin/member-org-catalog' },
   { method: 'GET', path: '/api/admin/areas' },
   { method: 'GET', path: '/api/admin/area-catalog' },
@@ -90,7 +98,9 @@ const waitForServer = async () => {
       throw new Error(`server exited early (code ${server.exitCode})\n${serverLog}`)
     }
     try {
-      await fetch(`${ORIGIN}/health`, { redirect: 'manual' })
+      // Any answer means it is listening; whether that answer is the expected 401 is the loop
+      // below's job, so a missing guard shows up as a failure rather than as a boot timeout.
+      await fetch(`${ORIGIN}${READINESS_PATH}`, { redirect: 'manual' })
       return
     } catch {
       await sleep(500)
