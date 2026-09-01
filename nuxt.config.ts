@@ -4,6 +4,7 @@ import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtSecurityRouteRules } from 'nuxt-security'
 import { getOptionalConfigUrl } from './shared/utils/config'
 import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
+import { NEWSLETTER_CLICK_BASE_PATH } from './shared/constants/newsletterCampaigns'
 import {
   DEFAULT_LOCALE_CODE,
   LOCALE_DEFINITIONS,
@@ -127,6 +128,28 @@ const adminRobotsDisallow = [
   ),
 ]
 
+const NEWSLETTER_CAMPAIGN_ADMIN_PATH = '/admin/newsletter/campanas'
+const newsletterCampaignPreviewRouteRules = Object.fromEntries(
+  [
+    NEWSLETTER_CAMPAIGN_ADMIN_PATH,
+    ...SUPPORTED_LOCALE_CODES.filter((code) => code !== DEFAULT_LOCALE_CODE).map(
+      (code) => `/${code}${NEWSLETTER_CAMPAIGN_ADMIN_PATH}`
+    ),
+  ].map((path) => [
+    `${path}/**`,
+    {
+      ...adminNoIndexHeaders,
+      security: {
+        headers: {
+          contentSecurityPolicy: {
+            'frame-src': ["'self'", 'https://challenges.cloudflare.com'],
+          },
+        },
+      },
+    },
+  ])
+)
+
 const routeRules = {
   '/admin/**': adminNoIndexHeaders,
   // Localized admin routes (prefix_except_default) must be excluded from indexing too.
@@ -141,6 +164,20 @@ const routeRules = {
       rateLimiter: false,
     },
   },
+  // Newsletter click tracking. A send produces hundreds of legitimate clicks at once from
+  // different addresses, so the global per-IP limiter would 429 exactly when it matters. The
+  // handler applies its own limit keyed on IP *and* item instead.
+  [`${NEWSLETTER_CLICK_BASE_PATH}/**`]: {
+    security: {
+      rateLimiter: false,
+    },
+    headers: {
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
+    },
+  },
+  // The campaign editor previews the email in an iframe. Production `frame-src` only allows
+  // Turnstile, so 'self' is granted here rather than site-wide.
+  ...newsletterCampaignPreviewRouteRules,
   ...adminUploadRouteRules,
   ...buildNoRateLimitRouteRules(INTERNAL_IMAGE_PROXY_PATH_BASES),
   ...productionPublicSWRRouteRules,
