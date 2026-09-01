@@ -423,6 +423,24 @@ export const newsletterCampaignContentQuerySchema = z.object({
 
     return rawValue === 'true' || rawValue === '1'
   }, z.boolean().default(false)),
+  /**
+   * Resolve specific pieces by id instead of browsing, so a saved campaign can be rehydrated with
+   * one call per item type. Accepts a comma-separated list or repeated params. When present the
+   * browsing filters do not apply. Capped to the item-list limit, so one call always covers a whole
+   * campaign of a given type.
+   */
+  ids: z.preprocess(
+    (value) => {
+      const rawValues = Array.isArray(value) ? value : [value]
+      const ids = rawValues
+        .flatMap((entry) => (typeof entry === 'string' ? entry.split(',') : []))
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+
+      return ids.length > 0 ? Array.from(new Set(ids)) : undefined
+    },
+    z.array(z.string().min(1).max(64)).min(1).max(100).optional()
+  ),
   limit: z.coerce.number().int().min(1).max(50).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 })

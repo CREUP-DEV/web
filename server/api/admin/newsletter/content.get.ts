@@ -74,6 +74,12 @@ interface CampaignContentPage {
 }
 
 interface ContentQueryOptions {
+  /**
+   * Resolve these exact pieces instead of browsing. Set when the editor rehydrates a saved
+   * campaign, whose stored items hold only `itemType` + `itemId`. `active = true` still applies:
+   * an id that does not come back is a piece the send would refuse, and the editor must say so.
+   */
+  ids?: string[]
   search?: string
   cutoff: Date | null
   limit: number
@@ -93,12 +99,17 @@ async function countRows(
 }
 
 async function listPressArticles({
+  ids,
   search,
   cutoff,
   limit,
   offset,
 }: ContentQueryOptions): Promise<CampaignContentPage> {
   const conditions: SQL[] = [eq(pressArticles.active, true)]
+
+  if (ids) {
+    conditions.push(inArray(pressArticles.id, ids))
+  }
 
   if (cutoff) {
     conditions.push(sql`${pressArticles.publishedAt} >= ${cutoff}::date`)
@@ -180,12 +191,17 @@ async function listPressArticles({
 }
 
 async function listActivityEntries({
+  ids,
   search,
   cutoff,
   limit,
   offset,
 }: ContentQueryOptions): Promise<CampaignContentPage> {
   const conditions: SQL[] = [eq(activityEntries.active, true)]
+
+  if (ids) {
+    conditions.push(inArray(activityEntries.id, ids))
+  }
 
   if (cutoff) {
     conditions.push(sql`${activityEntries.createdAt} >= ${cutoff}`)
@@ -271,12 +287,17 @@ async function listActivityEntries({
  * per area per edition, which keeps it small.
  */
 async function listAreaReports({
+  ids,
   search,
   cutoff,
   limit,
   offset,
 }: ContentQueryOptions): Promise<CampaignContentPage> {
   const conditions: SQL[] = [eq(areaReports.active, true)]
+
+  if (ids) {
+    conditions.push(inArray(areaReports.id, ids))
+  }
 
   if (cutoff) {
     conditions.push(sql`${areaReports.createdAt} >= ${cutoff}`)
@@ -349,7 +370,10 @@ async function listAreaReports({
 }
 
 /**
- * Feeds the campaign editor's content picker. `sinceLastCampaign` offers only what was taken on
+ * Feeds the campaign editor's content picker, and — with `ids` — rehydrates the cards of a saved
+ * campaign, whose stored items keep only `itemType` + `itemId` until the send freezes a snapshot.
+ *
+ * `sinceLastCampaign` offers only what was taken on
  * after the last campaign that actually delivered something (see
  * `getLastDeliveredCampaignCutoff`); with no such campaign there is no cut-off and everything is
  * offered. The date it compares against differs per type: press has a publication date, while
@@ -362,13 +386,17 @@ async function listAreaReports({
 export default defineEventHandler(async (event) => {
   const query = validateQuery(event, newsletterCampaignContentQuerySchema)
 
-  const search = query.q?.trim() || undefined
-  const cutoff = query.sinceLastCampaign ? await getLastDeliveredCampaignCutoff() : null
+  // Resolving by id is a lookup, not a browse: the browsing filters and the paging window would
+  // only be able to hide pieces the caller already named.
+  const ids = query.ids
+  const search = ids ? undefined : query.q?.trim() || undefined
+  const cutoff = !ids && query.sinceLastCampaign ? await getLastDeliveredCampaignCutoff() : null
   const options: ContentQueryOptions = {
+    ids,
     search,
     cutoff,
-    limit: query.limit ?? DEFAULT_LIMIT,
-    offset: query.offset ?? 0,
+    limit: ids ? ids.length : (query.limit ?? DEFAULT_LIMIT),
+    offset: ids ? 0 : (query.offset ?? 0),
   }
 
   const page =
