@@ -6,6 +6,23 @@ import {
   getRichTextPlainText,
 } from '~~/shared/utils/richText'
 
+const props = withDefaults(
+  defineProps<{
+    /**
+     * `inline` trims the toolbar to paragraph, bold, italic and link — the only markup the
+     * newsletter sanitizer keeps, since headings, lists and quotes render inconsistently in mail
+     * clients and would be stripped server-side anyway.
+     */
+    variant?: 'full' | 'inline'
+    /** Character budget shown in the footer. Defaults to the site's rich-text limit. */
+    maxHtmlLength?: number
+  }>(),
+  {
+    variant: 'full',
+    maxHtmlLength: ADMIN_RICH_TEXT_MAX_HTML_LENGTH,
+  }
+)
+
 const { t } = useI18n()
 
 const model = defineModel<string>({ required: true })
@@ -14,15 +31,14 @@ const plainText = computed(() => getRichTextPlainText(model.value))
 const visibleCharacterCount = computed(() => plainText.value.length)
 const wordCount = computed(() => countRichTextWords(model.value))
 const htmlCharacterCount = computed(() => model.value.length)
-const remainingHtmlCharacters = computed(
-  () => ADMIN_RICH_TEXT_MAX_HTML_LENGTH - htmlCharacterCount.value
-)
+const remainingHtmlCharacters = computed(() => props.maxHtmlLength - htmlCharacterCount.value)
 const countStateClass = computed(() => {
   if (remainingHtmlCharacters.value < 0) {
     return 'text-error'
   }
 
-  if (remainingHtmlCharacters.value <= 10_000) {
+  // Warn over the last 5% of the budget, so the threshold scales with the limit in use.
+  if (remainingHtmlCharacters.value <= props.maxHtmlLength * 0.05) {
     return 'text-warning'
   }
 
@@ -30,7 +46,7 @@ const countStateClass = computed(() => {
 })
 const countFormatter = new Intl.NumberFormat('es-ES')
 
-const editorToolbarItems: EditorToolbarItem[][] = [
+const FULL_TOOLBAR_ITEMS: EditorToolbarItem[][] = [
   [
     { kind: 'mark', mark: 'bold', icon: 'i-tabler-bold' },
     { kind: 'mark', mark: 'italic', icon: 'i-tabler-italic' },
@@ -53,6 +69,38 @@ const editorToolbarItems: EditorToolbarItem[][] = [
     { kind: 'clearFormatting', icon: 'i-tabler-clear-formatting' },
   ],
 ]
+
+const INLINE_TOOLBAR_ITEMS: EditorToolbarItem[][] = [
+  [
+    { kind: 'mark', mark: 'bold', icon: 'i-tabler-bold' },
+    { kind: 'mark', mark: 'italic', icon: 'i-tabler-italic' },
+    { kind: 'link', slot: 'link', icon: 'i-tabler-link' },
+  ],
+  [{ kind: 'paragraph', icon: 'i-tabler-pilcrow' }],
+  [
+    { kind: 'undo', icon: 'i-tabler-arrow-back-up' },
+    { kind: 'redo', icon: 'i-tabler-arrow-forward-up' },
+    { kind: 'clearFormatting', icon: 'i-tabler-clear-formatting' },
+  ],
+]
+
+const editorToolbarItems = computed(() =>
+  props.variant === 'inline' ? INLINE_TOOLBAR_ITEMS : FULL_TOOLBAR_ITEMS
+)
+
+const editorUi = computed(() =>
+  props.variant === 'inline'
+    ? {
+        root: 'min-h-40',
+        content: 'min-h-32',
+        base: 'press-rich-text min-h-32 px-4 py-3 text-[15px] focus:outline-none',
+      }
+    : {
+        root: 'min-h-96',
+        content: 'min-h-80',
+        base: 'press-rich-text min-h-80 px-4 py-4 text-[15px] focus:outline-none',
+      }
+)
 </script>
 
 <template>
@@ -66,11 +114,7 @@ const editorToolbarItems: EditorToolbarItem[][] = [
       }"
       :image="false"
       :mention="false"
-      :ui="{
-        root: 'min-h-96',
-        content: 'min-h-80',
-        base: 'press-rich-text min-h-80 px-4 py-4 text-[15px] focus:outline-none',
-      }"
+      :ui="editorUi"
     >
       <template #default="{ editor }">
         <UEditorToolbar :editor="editor" :items="editorToolbarItems">
@@ -97,7 +141,7 @@ const editorToolbarItems: EditorToolbarItem[][] = [
       <span>
         HTML:
         {{ countFormatter.format(htmlCharacterCount) }} /
-        {{ countFormatter.format(ADMIN_RICH_TEXT_MAX_HTML_LENGTH) }}
+        {{ countFormatter.format(props.maxHtmlLength) }}
       </span>
     </div>
   </div>
