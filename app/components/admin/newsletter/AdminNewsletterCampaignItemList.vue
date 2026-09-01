@@ -117,7 +117,7 @@ const handleMove = (index: number, offset: number) => {
     </div>
 
     <ul v-else ref="listRef" class="space-y-2">
-      <AdminCampaignItemCard
+      <AdminNewsletterCampaignItemCard
         v-for="(item, index) in items"
         :key="item.key"
         :item="item"

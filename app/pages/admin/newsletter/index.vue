@@ -189,7 +189,7 @@ const deleteTargetSubject = computed(
     </div>
 
     <div v-else class="space-y-3">
-      <AdminCampaignListRow
+      <AdminNewsletterCampaignListRow
         v-for="campaign in items"
         :key="campaign.id"
         :campaign="campaign"

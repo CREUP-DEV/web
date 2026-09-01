@@ -328,7 +328,7 @@ const handleDuplicate = async () => {
           </p>
         </section>
 
-        <AdminCampaignPreview :campaign-id="campaign.id" />
+        <AdminNewsletterCampaignPreview :campaign-id="campaign.id" />
       </div>
 
       <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">

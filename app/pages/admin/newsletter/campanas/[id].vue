@@ -91,14 +91,14 @@ useCampaignSendPolling(
 <template>
   <div>
     <template v-if="campaign">
-      <AdminCampaignEditor
+      <AdminNewsletterCampaignEditor
         v-if="isDraft"
         ref="editorRef"
         :key="campaign.id"
         :campaign="campaign"
         @updated="handleUpdated"
       />
-      <AdminCampaignDetail v-else :campaign="campaign" @updated="handleUpdated" />
+      <AdminNewsletterCampaignDetail v-else :campaign="campaign" @updated="handleUpdated" />
     </template>
 
     <div v-else class="py-16 text-center">

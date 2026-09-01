@@ -250,7 +250,7 @@ const handleCancel = () => {
             :invalid-locales="invalidLocales"
           />
 
-          <AdminCampaignTranslationCard
+          <AdminNewsletterCampaignTranslationCard
             v-for="(translation, index) in translations"
             v-show="index === activeIndex"
             :id="panelId(translation.locale)"
@@ -268,7 +268,7 @@ const handleCancel = () => {
         </section>
 
         <section class="space-y-4">
-          <AdminCampaignBlockedAlert
+          <AdminNewsletterCampaignBlockedAlert
             :items="blockedItems"
             :editor-items="items"
             @remove="handleRemoveBlocked"
@@ -320,7 +320,7 @@ const handleCancel = () => {
             "
           />
 
-          <AdminCampaignItemList
+          <AdminNewsletterCampaignItemList
             :items="items"
             :unavailable-reasons="blockedReasonsByKey"
             :loading="isResolvingItems"
@@ -331,11 +331,11 @@ const handleCancel = () => {
           />
         </section>
 
-        <AdminCampaignPreview :campaign-id="campaign.id" :reload-token="previewToken" />
+        <AdminNewsletterCampaignPreview :campaign-id="campaign.id" :reload-token="previewToken" />
       </div>
 
       <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
-        <AdminCampaignSendPanel
+        <AdminNewsletterCampaignSendPanel
           :campaign-id="campaign.id"
           :item-count="items.length"
           :has-unsaved-changes="hasFormChanges"
@@ -346,7 +346,7 @@ const handleCancel = () => {
       </aside>
     </div>
 
-    <AdminCampaignContentPicker
+    <AdminNewsletterCampaignContentPicker
       v-model:open="showPicker"
       :existing-keys="existingKeys"
       @add="handleAddEntries"
