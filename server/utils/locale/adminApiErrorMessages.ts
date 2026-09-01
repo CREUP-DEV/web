@@ -110,6 +110,18 @@ const es = {
   campaignUpdateFailed: 'No se pudo actualizar la campaña',
   campaignItemsSaveFailed: 'No se pudo guardar el contenido de la campaña',
   campaignDuplicateFailed: 'No se pudo duplicar la campaña',
+  campaignCannotSend: 'No se puede enviar la campaña',
+  campaignNotSending: 'La campaña no se está enviando en este momento',
+  campaignNotResumable: 'Solo se pueden reanudar las campañas pausadas o enviadas con incidencias',
+  campaignNoItems: 'La campaña no tiene contenido que enviar',
+  campaignMissingDefaultTranslation: 'Falta el asunto en español',
+  campaignItemsUnavailable: 'Hay contenido que ya no está publicado. Revísalo antes de enviar.',
+  campaignEmailTooLarge:
+    'El correo supera el tamaño máximo en algún idioma. Quita contenido antes de enviar.',
+  campaignSendFailed: 'No se pudo iniciar el envío de la campaña',
+  campaignTestSendFailed: 'No se pudo enviar el correo de prueba',
+  campaignTestSendRateLimited:
+    'Demasiados envíos de prueba. Espera unos minutos antes de intentarlo de nuevo.',
   // Jobs
   jobGone: 'El trabajo ya no existe.',
   jobNotFailed: 'El trabajo ya no estaba en estado fallido.',
@@ -248,6 +260,17 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   campaignUpdateFailed: 'Could not update the campaign',
   campaignItemsSaveFailed: 'Could not save the campaign content',
   campaignDuplicateFailed: 'Could not duplicate the campaign',
+  campaignCannotSend: 'The campaign cannot be sent',
+  campaignNotSending: 'The campaign is not being sent right now',
+  campaignNotResumable: 'Only paused campaigns, or campaigns sent with incidents, can be resumed',
+  campaignNoItems: 'The campaign has no content to send',
+  campaignMissingDefaultTranslation: 'The Spanish subject is missing',
+  campaignItemsUnavailable: 'Some content is no longer published. Review it before sending.',
+  campaignEmailTooLarge:
+    'The email exceeds the maximum size in at least one language. Remove content before sending.',
+  campaignSendFailed: 'Could not start the campaign send',
+  campaignTestSendFailed: 'Could not send the test email',
+  campaignTestSendRateLimited: 'Too many test sends. Wait a few minutes before trying again.',
   // Jobs
   jobGone: 'The job no longer exists.',
   jobNotFailed: 'The job was no longer in a failed state.',
@@ -384,6 +407,19 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   campaignUpdateFailed: 'No s’ha pogut actualitzar la campanya',
   campaignItemsSaveFailed: 'No s’ha pogut desar el contingut de la campanya',
   campaignDuplicateFailed: 'No s’ha pogut duplicar la campanya',
+  campaignCannotSend: 'No es pot enviar la campanya',
+  campaignNotSending: "La campanya no s'està enviant en aquest moment",
+  campaignNotResumable:
+    'Només es poden reprendre les campanyes pausades o enviades amb incidències',
+  campaignNoItems: 'La campanya no té contingut per enviar',
+  campaignMissingDefaultTranslation: "Falta l'assumpte en castellà",
+  campaignItemsUnavailable: 'Hi ha contingut que ja no està publicat. Revisa-ho abans d’enviar.',
+  campaignEmailTooLarge:
+    'El correu supera la mida màxima en algun idioma. Elimina contingut abans d’enviar.',
+  campaignSendFailed: 'No s’ha pogut iniciar l’enviament de la campanya',
+  campaignTestSendFailed: 'No s’ha pogut enviar el correu de prova',
+  campaignTestSendRateLimited:
+    'Massa enviaments de prova. Espera uns minuts abans de tornar-ho a provar.',
   // Jobs
   jobGone: 'La tasca ja no existeix.',
   jobNotFailed: 'La tasca ja no estava en estat fallit.',
@@ -520,6 +556,19 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   campaignUpdateFailed: 'Ezin izan da kanpaina eguneratu',
   campaignItemsSaveFailed: 'Ezin izan da kanpainaren edukia gorde',
   campaignDuplicateFailed: 'Ezin izan da kanpaina bikoiztu',
+  campaignCannotSend: 'Ezin da kanpaina bidali',
+  campaignNotSending: 'Kanpaina ez da une honetan bidaltzen ari',
+  campaignNotResumable:
+    'Pausatutako edo intzidentziekin bidalitako kanpainak baino ezin dira berrekin',
+  campaignNoItems: 'Kanpainak ez du bidaltzeko edukirik',
+  campaignMissingDefaultTranslation: 'Gaztelaniazko gaia falta da',
+  campaignItemsUnavailable: 'Eduki batzuk jada ez daude argitaratuta. Berrikusi bidali aurretik.',
+  campaignEmailTooLarge:
+    'Mezuak gehienezko tamaina gainditzen du hizkuntzaren batean. Kendu edukia bidali aurretik.',
+  campaignSendFailed: 'Ezin izan da kanpainaren bidalketa hasi',
+  campaignTestSendFailed: 'Ezin izan da proba-mezua bidali',
+  campaignTestSendRateLimited:
+    'Proba-bidalketa gehiegi. Itxaron minutu batzuk berriro saiatu aurretik.',
   // Jobs
   jobGone: 'Lana jada ez da existitzen.',
   jobNotFailed: 'Lana jada ez zegoen huts egindako egoeran.',
@@ -656,6 +705,18 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   campaignUpdateFailed: 'Non se puido actualizar a campaña',
   campaignItemsSaveFailed: 'Non se puido gardar o contido da campaña',
   campaignDuplicateFailed: 'Non se puido duplicar a campaña',
+  campaignCannotSend: 'Non se pode enviar a campaña',
+  campaignNotSending: 'A campaña non se está enviando neste momento',
+  campaignNotResumable: 'Só se poden retomar as campañas pausadas ou enviadas con incidencias',
+  campaignNoItems: 'A campaña non ten contido que enviar',
+  campaignMissingDefaultTranslation: 'Falta o asunto en español',
+  campaignItemsUnavailable: 'Hai contido que xa non está publicado. Revísao antes de enviar.',
+  campaignEmailTooLarge:
+    'O correo supera o tamaño máximo nalgún idioma. Quita contido antes de enviar.',
+  campaignSendFailed: 'Non se puido iniciar o envío da campaña',
+  campaignTestSendFailed: 'Non se puido enviar o correo de proba',
+  campaignTestSendRateLimited:
+    'Demasiados envíos de proba. Agarda uns minutos antes de tentalo de novo.',
   // Jobs
   jobGone: 'O traballo xa non existe.',
   jobNotFailed: 'O traballo xa non estaba en estado fallido.',
@@ -792,6 +853,19 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   campaignUpdateFailed: 'No s’ha pogut actualitzar la campanya',
   campaignItemsSaveFailed: 'No s’ha pogut guardar el contingut de la campanya',
   campaignDuplicateFailed: 'No s’ha pogut duplicar la campanya',
+  campaignCannotSend: 'No es pot enviar la campanya',
+  campaignNotSending: "La campanya no s'està enviant en este moment",
+  campaignNotResumable:
+    'Només es poden reprendre les campanyes pausades o enviades amb incidències',
+  campaignNoItems: 'La campanya no té contingut per enviar',
+  campaignMissingDefaultTranslation: "Falta l'assumpte en castellà",
+  campaignItemsUnavailable: 'Hi ha contingut que ja no està publicat. Revisa-ho abans d’enviar.',
+  campaignEmailTooLarge:
+    'El correu supera la mida màxima en algun idioma. Lleva contingut abans d’enviar.',
+  campaignSendFailed: 'No s’ha pogut iniciar l’enviament de la campanya',
+  campaignTestSendFailed: 'No s’ha pogut enviar el correu de prova',
+  campaignTestSendRateLimited:
+    'Massa enviaments de prova. Espera uns minuts abans de tornar-ho a provar.',
   // Jobs
   jobGone: 'La tasca ja no existix.',
   jobNotFailed: 'La tasca ja no estava en estat fallit.',

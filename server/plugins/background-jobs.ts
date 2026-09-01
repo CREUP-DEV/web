@@ -6,6 +6,7 @@ import {
   closeBackgroundJobResources,
   enqueueStartupMaintenanceJobs,
   ensureBackgroundJobSchedulers,
+  isNewsletterCampaignSendJob,
   isNewsletterSendJob,
 } from '../utils/core/backgroundJobs'
 import { logError, logInfo } from '../utils/core/logger'
@@ -19,6 +20,13 @@ import {
   requestNewsletterDeliveryShutdown,
   waitForNewsletterDeliveryIdle,
 } from '../services/newsletterDeliveryService'
+import {
+  processClaimedNewsletterCampaignDelivery,
+  processPendingNewsletterCampaignDeliveries,
+  requeueActiveNewsletterCampaignDeliveriesForShutdown,
+  requestNewsletterCampaignDeliveryShutdown,
+  waitForNewsletterCampaignDeliveryIdle,
+} from '../services/newsletterCampaignDeliveryService'
 
 const DELIVERY_SHUTDOWN_TIMEOUT_MS = 10_000
 const SCHEDULER_INIT_MAX_RETRIES = 5
@@ -31,6 +39,11 @@ export default defineNitroPlugin((nitro) => {
   const newsletterWorker = new Worker(
     BACKGROUND_QUEUE_NAMES.newsletter,
     async (job) => {
+      if (isNewsletterCampaignSendJob(job)) {
+        await processClaimedNewsletterCampaignDelivery(job.data.campaignId, job.data.workerToken)
+        return
+      }
+
       if (!isNewsletterSendJob(job)) {
         return
       }
@@ -50,6 +63,9 @@ export default defineNitroPlugin((nitro) => {
       switch (job.name) {
         case BACKGROUND_JOB_NAMES.newsletterRecovery:
           await processPendingNewsletterDeliveries()
+          return
+        case BACKGROUND_JOB_NAMES.newsletterCampaignRecovery:
+          await processPendingNewsletterCampaignDeliveries()
           return
         case BACKGROUND_JOB_NAMES.newsletterConfirmTokenCleanup: {
           const deletedCount = await cleanupExpiredNewsletterConfirmTokens()
@@ -155,14 +171,25 @@ export default defineNitroPlugin((nitro) => {
 
   nitro.hooks.hookOnce('close', async () => {
     requestNewsletterDeliveryShutdown()
+    requestNewsletterCampaignDeliveryShutdown()
 
-    const completedGracefully = await waitForNewsletterDeliveryIdle(DELIVERY_SHUTDOWN_TIMEOUT_MS)
+    const [completedGracefully, campaignsCompletedGracefully] = await Promise.all([
+      waitForNewsletterDeliveryIdle(DELIVERY_SHUTDOWN_TIMEOUT_MS),
+      waitForNewsletterCampaignDeliveryIdle(DELIVERY_SHUTDOWN_TIMEOUT_MS),
+    ])
 
     if (!completedGracefully) {
       logInfo('newsletter.delivery.shutdown.timeout', {
         timeoutMs: DELIVERY_SHUTDOWN_TIMEOUT_MS,
       })
       await requeueActiveNewsletterDeliveriesForShutdown()
+    }
+
+    if (!campaignsCompletedGracefully) {
+      logInfo('newsletter.campaign.delivery.shutdown.timeout', {
+        timeoutMs: DELIVERY_SHUTDOWN_TIMEOUT_MS,
+      })
+      await requeueActiveNewsletterCampaignDeliveriesForShutdown()
     }
 
     await Promise.allSettled([newsletterWorker.close(), maintenanceWorker.close()])

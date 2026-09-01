@@ -278,6 +278,32 @@ export async function getLastDeliveredCampaignCutoff(): Promise<Date | null> {
   return row?.cutoff ?? null
 }
 
+/**
+ * The campaign as the editor reads it: the record, its content and the delivery counters. Every
+ * endpoint that changes the send state answers with this, so the client can reseat its optimistic
+ * lock without a second request.
+ */
+export async function buildNewsletterCampaignDetail(id: string) {
+  const campaign = await loadNewsletterCampaign(id)
+
+  if (!campaign) {
+    return null
+  }
+
+  const delivery = await getCampaignDeliveryStats(id)
+
+  return {
+    ...campaign,
+    isSending: Boolean(campaign.lastDeliveryWorkerToken),
+    stats: {
+      itemCount: campaign.items.length,
+      totalClicks: campaign.items.reduce((total, item) => total + item.clickCount, 0),
+      unsubscribeCount: campaign.unsubscribeCount,
+      delivery,
+    },
+  }
+}
+
 export interface NewsletterCampaignDeliveryStats {
   total: number
   queued: number

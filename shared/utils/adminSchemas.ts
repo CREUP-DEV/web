@@ -403,6 +403,15 @@ export const updateNewsletterCampaignItemsSchema = z
     })
   })
 
+/** Preview query. An absent or empty `locale` previews Spanish rather than failing. */
+export const newsletterCampaignPreviewQuerySchema = z.object({
+  locale: z.preprocess((value) => {
+    const rawValue = Array.isArray(value) ? value[0] : value
+
+    return rawValue === '' || rawValue == null ? DEFAULT_LOCALE_CODE : rawValue
+  }, localeSchema),
+})
+
 export const newsletterCampaignTestSendSchema = z.object({
   email: z.string().trim().email('admin.validation.invalidEmail'),
   locale: localeSchema,

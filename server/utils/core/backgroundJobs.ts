@@ -11,6 +11,8 @@ export const BACKGROUND_QUEUE_NAMES = {
 
 export const BACKGROUND_JOB_NAMES = {
   authHousekeeping: 'auth.housekeeping',
+  newsletterCampaignRecovery: 'newsletter.campaign-recovery',
+  newsletterCampaignSend: 'newsletter.campaign-send',
   newsletterConfirmTokenCleanup: 'newsletter.confirm-token-cleanup',
   newsletterRecovery: 'newsletter.recovery',
   newsletterSend: 'newsletter.send',
@@ -21,7 +23,18 @@ export interface NewsletterSendJobData {
   workerToken: string
 }
 
-let newsletterQueue: Queue<NewsletterSendJobData> | null = null
+export interface NewsletterCampaignSendJobData {
+  campaignId: string
+  workerToken: string
+}
+
+/**
+ * Both send flows share the queue during the expand phase: the PDF pipeline keeps running while
+ * campaigns are built, and the job name tells them apart.
+ */
+type NewsletterQueueJobData = NewsletterSendJobData | NewsletterCampaignSendJobData
+
+let newsletterQueue: Queue<NewsletterQueueJobData> | null = null
 let maintenanceQueue: Queue | null = null
 
 const DEFAULT_REMOVE_ON_COMPLETE = 100
@@ -35,6 +48,9 @@ const getDefaultJobOptions = (): JobsOptions => ({
 export const buildNewsletterSendJobId = (newsletterId: string, workerToken: string) =>
   `newsletter-send-${newsletterId}-${workerToken}`
 
+export const buildNewsletterCampaignSendJobId = (campaignId: string, workerToken: string) =>
+  `newsletter-campaign-send-${campaignId}-${workerToken}`
+
 const getQueueOptions = () => ({
   connection: createBullMqConnection(),
   defaultJobOptions: getDefaultJobOptions(),
@@ -42,7 +58,7 @@ const getQueueOptions = () => ({
 })
 
 export function getNewsletterQueue() {
-  newsletterQueue ??= new BullMqQueue<NewsletterSendJobData>(
+  newsletterQueue ??= new BullMqQueue<NewsletterQueueJobData>(
     BACKGROUND_QUEUE_NAMES.newsletter,
     getQueueOptions()
   )
@@ -69,8 +85,21 @@ export async function enqueueNewsletterSendJob(data: NewsletterSendJobData) {
   })
 }
 
-export async function removeNewsletterSendJob(newsletterId: string, workerToken: string) {
-  const job = await getNewsletterQueue().getJob(buildNewsletterSendJobId(newsletterId, workerToken))
+export async function enqueueNewsletterCampaignSendJob(data: NewsletterCampaignSendJobData) {
+  await getNewsletterQueue().add(BACKGROUND_JOB_NAMES.newsletterCampaignSend, data, {
+    attempts: 5,
+    backoff: {
+      delay: 5_000,
+      type: 'exponential',
+    },
+    jobId: buildNewsletterCampaignSendJobId(data.campaignId, data.workerToken),
+    removeOnComplete: DEFAULT_REMOVE_ON_COMPLETE,
+    removeOnFail: DEFAULT_REMOVE_ON_FAIL,
+  })
+}
+
+async function removeQueuedJob(jobId: string) {
+  const job = await getNewsletterQueue().getJob(jobId)
 
   if (!job) {
     return
@@ -83,6 +112,14 @@ export async function removeNewsletterSendJob(newsletterId: string, workerToken:
   }
 }
 
+export async function removeNewsletterSendJob(newsletterId: string, workerToken: string) {
+  await removeQueuedJob(buildNewsletterSendJobId(newsletterId, workerToken))
+}
+
+export async function removeNewsletterCampaignSendJob(campaignId: string, workerToken: string) {
+  await removeQueuedJob(buildNewsletterCampaignSendJobId(campaignId, workerToken))
+}
+
 export async function ensureBackgroundJobSchedulers() {
   const queue = getMaintenanceQueue()
 
@@ -93,6 +130,18 @@ export async function ensureBackgroundJobSchedulers() {
       {
         data: {},
         name: BACKGROUND_JOB_NAMES.newsletterRecovery,
+        opts: getDefaultJobOptions(),
+      }
+    ),
+    // Periodic, not just at startup: the send commits to PostgreSQL and only then enqueues to
+    // Redis, so a campaign left `queued` with its token by a failed enqueue needs a sweep that
+    // comes round on its own.
+    queue.upsertJobScheduler(
+      BACKGROUND_JOB_NAMES.newsletterCampaignRecovery,
+      { every: 5 * 60 * 1000 },
+      {
+        data: {},
+        name: BACKGROUND_JOB_NAMES.newsletterCampaignRecovery,
         opts: getDefaultJobOptions(),
       }
     ),
@@ -130,6 +179,14 @@ export async function enqueueStartupMaintenanceJobs() {
       }
     ),
     queue.add(
+      BACKGROUND_JOB_NAMES.newsletterCampaignRecovery,
+      {},
+      {
+        ...getDefaultJobOptions(),
+        jobId: 'startup-newsletter-campaign-recovery',
+      }
+    ),
+    queue.add(
       BACKGROUND_JOB_NAMES.newsletterConfirmTokenCleanup,
       {},
       {
@@ -157,6 +214,10 @@ export async function closeBackgroundJobResources() {
 
 export function isNewsletterSendJob(job: Job): job is Job<NewsletterSendJobData> {
   return job.name === BACKGROUND_JOB_NAMES.newsletterSend
+}
+
+export function isNewsletterCampaignSendJob(job: Job): job is Job<NewsletterCampaignSendJobData> {
+  return job.name === BACKGROUND_JOB_NAMES.newsletterCampaignSend
 }
 
 export type BackgroundQueueName =

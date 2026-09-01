@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { db } from '../../db'
 import {
   aboutPageContent,
@@ -7,6 +7,7 @@ import {
   equalityDocuments,
   featuredLinks,
   financialReports,
+  newsletterCampaignItems,
   newsletters,
   pressArticles,
   pressDossier,
@@ -181,8 +182,38 @@ async function reconcileStoredDocument(options: {
   }
 }
 
+/**
+ * Every image path frozen into a campaign snapshot, across all campaigns and locales.
+ *
+ * Computed once, before anything is reconciled, and not as a branch inside the loops: the whole
+ * point is that the outcome cannot depend on the order entities are visited, so a file is never
+ * moved to inactive storage only to be published again two iterations later.
+ */
+async function loadSnapshotProtectedAssetPaths(): Promise<Set<string>> {
+  const result = await db.execute<{ path: string | null }>(
+    sql`SELECT DISTINCT jsonb_array_elements_text(${newsletterCampaignItems.snapshot} -> 'assetPaths') AS path
+        FROM ${newsletterCampaignItems}
+        WHERE ${newsletterCampaignItems.snapshot} IS NOT NULL`
+  )
+
+  return new Set(
+    result.rows.flatMap((row) => {
+      const path = row.path?.trim()
+      return path ? [path] : []
+    })
+  )
+}
+
 export async function reconcileAdminAssetPublication() {
   try {
+    // Preventing the deletion of these files is a different mechanism (`adminAssetReferences`) and
+    // it is not enough on its own: unpublishing the piece that owns an image would move the file to
+    // inactive storage, and the email already delivered would lose it. So a snapshotted path counts
+    // as published here regardless of what its own entity says.
+    const snapshotProtectedPaths = await loadSnapshotProtectedAssetPaths()
+    const isSnapshotProtected = (storagePath: string | null | undefined) =>
+      Boolean(storagePath && snapshotProtectedPaths.has(storagePath.trim()))
+
     const [
       carouselItemsList,
       featuredLinksList,
@@ -220,7 +251,7 @@ export async function reconcileAdminAssetPublication() {
 
       const nextImage = await reconcileStoredImage({
         storagePath: item.image,
-        publish: item.active,
+        publish: item.active || isSnapshotProtected(item.image),
         uploadDir: 'public/inicio/imagenes/carrusel',
         publicPath: HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
       })
@@ -240,7 +271,7 @@ export async function reconcileAdminAssetPublication() {
     for (const item of featuredLinksList) {
       const nextImage = await reconcileStoredImage({
         storagePath: item.image,
-        publish: item.active,
+        publish: item.active || isSnapshotProtected(item.image),
         uploadDir: 'public/inicio/imagenes/enlaces-destacados',
         publicPath: HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
       })
@@ -260,7 +291,7 @@ export async function reconcileAdminAssetPublication() {
     for (const item of pressArticlesList) {
       const nextImage = await reconcileStoredImage({
         storagePath: item.image,
-        publish: item.active,
+        publish: item.active || isSnapshotProtected(item.image),
         uploadDir: 'public/prensa/imagenes',
         publicPath: PRESS_IMAGE_PUBLIC_BASE,
       })
@@ -315,7 +346,7 @@ export async function reconcileAdminAssetPublication() {
     for (const item of newslettersList) {
       const nextCoverImage = await reconcileStoredImage({
         storagePath: item.coverImage,
-        publish: item.publicVisible,
+        publish: item.publicVisible || isSnapshotProtected(item.coverImage),
         uploadDir: 'public/prensa/newsletter/portadas',
         publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
       })
@@ -349,7 +380,7 @@ export async function reconcileAdminAssetPublication() {
     if (aboutContent?.id) {
       const nextHeroImage = await reconcileStoredImage({
         storagePath: aboutContent.heroImage,
-        publish: aboutContent.heroVisible,
+        publish: aboutContent.heroVisible || isSnapshotProtected(aboutContent.heroImage),
         uploadDir: 'public/conocenos/imagenes',
         publicPath: ABOUT_IMAGE_PUBLIC_PATH,
         protectedPublicPaths: [ABOUT_HERO_DEFAULT_IMAGE],
@@ -416,9 +447,11 @@ export async function reconcileAdminAssetPublication() {
       return
     }
 
-    if (isDatabaseMissingRelationError(error, 'newsletters')) {
-      logWarn('admin-assets.reconcile.missing-relation', { relation: 'newsletters' })
-      return
+    for (const relation of ['newsletters', 'newsletter_campaign_items']) {
+      if (isDatabaseMissingRelationError(error, relation)) {
+        logWarn('admin-assets.reconcile.missing-relation', { relation })
+        return
+      }
     }
 
     logError('admin-assets.reconcile', error)

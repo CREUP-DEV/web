@@ -10,6 +10,7 @@ import {
   financialReports,
   mediaOutlets,
   memberOrgCatalogEntries,
+  newsletterCampaignItems,
   newsletters,
   pressArticles,
   pressDossier,
@@ -50,6 +51,19 @@ const ASSET_JSON_REGISTRY: Array<{ table: any; column: any; key: string }> = [
   { table: activityEntries, column: activityEntries.memberOrgSnapshot, key: 'logoDark' },
 ]
 
+// Files referenced from inside a JSONB *array*, which `column->>key` cannot reach: a campaign
+// snapshot holds one image path per locale, flattened into `assetPaths` precisely so a containment
+// check can find them. Deleting a press article must not take with it the image of an email that
+// is already in people's inboxes.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ASSET_JSON_ARRAY_REGISTRY: Array<{ table: any; arrayExpression: ReturnType<typeof sql> }> = [
+  {
+    table: newsletterCampaignItems,
+    // Written to match the GIN index on `(snapshot -> 'assetPaths')`.
+    arrayExpression: sql`${newsletterCampaignItems.snapshot} -> 'assetPaths'`,
+  },
+]
+
 export async function hasAdminStoredFileReference(storagePath: string): Promise<boolean> {
   const normalizedStoragePath = storagePath.trim()
 
@@ -64,6 +78,10 @@ export async function hasAdminStoredFileReference(storagePath: string): Promise<
     ...ASSET_JSON_REGISTRY.map(
       ({ table, column, key }) =>
         sql`SELECT 1 FROM ${table} WHERE ${column}->>${key} = ${normalizedStoragePath}`
+    ),
+    ...ASSET_JSON_ARRAY_REGISTRY.map(
+      ({ table, arrayExpression }) =>
+        sql`SELECT 1 FROM ${table} WHERE ${arrayExpression} ? ${normalizedStoragePath}`
     ),
   ]
   const unionAll = unionParts

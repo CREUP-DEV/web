@@ -90,8 +90,12 @@ drizzle/            Migrations and seed scripts
 
 ### Emails
 
-- All transactional and admin emails remain **Spanish-only by design**.
-- Do not introduce locale branching for email copy unless explicitly required.
+- Transactional and admin emails (contact, subscription confirmation, admin notices) remain
+  **Spanish-only by design**. Do not introduce locale branching for their copy.
+- **Newsletter campaigns are the exception**: they render in the subscriber's locale, falling back
+  to Spanish per field. Their fixed copy lives in `server/utils/locale/newsletterEmailMessages.ts`,
+  following the `apiErrorMessages.ts` pattern — server-side copy does not belong in
+  `i18n/locales/*.json`.
 
 ### Database-localized Content
 
@@ -346,6 +350,34 @@ Public CMS content (press, home, tags, dossier, equality, financial reports, abo
 `server/plugins/background-jobs.ts` initializes schedulers with retry (`max 5` attempts, exponential backoff from `1s` up to `30s`) and re-triggers initialization on worker `ready` events when startup timing races occur.
 
 Never bypass the worker token system — use `sendNewsletterById` or `claimNewsletterForSending`.
+
+### Newsletter Campaign Delivery (`server/services/newsletterCampaignDelivery*.ts`)
+
+The campaign pipeline runs alongside the PDF one until the removal phase drops the latter. Same
+lease/batch/heartbeat shape, plus the rules `newsletter_campaigns` enforces with CHECK constraints:
+
+- `sent_at` means **finished with nothing pending**. The lease only claims campaigns with
+  `sent_at IS NULL`, so a run that ends with failed or still-queued deliveries finishes in `failed`,
+  never `sent` — that is what keeps "resend to the failures" possible.
+- The status and the worker token are bound by biconditionals
+  (`(status='sent') = (sent_at is not null)`, `(worker_token is not null) = (status in ('queued','sending'))`),
+  so **both move in the same UPDATE**. Claiming the lease and setting the status afterwards violates
+  the constraint mid-transaction.
+- Transitions: `draft → queued` (send: validate, freeze snapshot and claim, all in one transaction),
+  `queued → sending`, `sending → sent | failed`, `queued|sending → paused` (cancel),
+  `paused|failed → queued` (resume). `sent` is terminal. The release is always conditioned on the
+  token so a late finish cannot overwrite a cancellation.
+- Send commits to PostgreSQL first and enqueues to BullMQ after. An enqueue failure is logged and
+  left alone: the campaign stays `queued` with its token, and the periodic
+  `newsletter.campaign-recovery` job (`processPendingNewsletterCampaignDeliveries`) runs it in-process.
+- One render per locale, cached for the whole run (never per batch), with `{{UNSUBSCRIBE_URL}}`
+  substituted per recipient in HTML **and** plain text. Rendering lives in
+  `server/utils/email/newsletterCampaignRender.ts` and is shared by the mailer, the preview endpoint
+  and the test send, so a preview cannot drift from what is delivered.
+- Image paths frozen into `newsletter_campaign_items.snapshot` are protected twice:
+  `adminAssetReferences` blocks their deletion (`snapshot -> 'assetPaths' ? $1`), and
+  `adminAssetPublication` computes the whole protected set before reconciling anything and treats
+  those paths as published whatever the owning entity's `active` says.
 
 ### Optimistic Locking (Admin Mutations)
 
