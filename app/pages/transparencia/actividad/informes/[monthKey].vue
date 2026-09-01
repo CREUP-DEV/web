@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
+
 const { t } = useI18n()
 const route = useRoute()
 const localePath = useLocalePath()
@@ -81,6 +83,29 @@ const bodyLang = (fieldLocale?: string | null) =>
   fieldLocale && fieldLocale !== locale.value ? fieldLocale : undefined
 
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
+
+const AREA_ANCHOR_PATTERN = /^area-\d+$/
+const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
+
+// Nuxt restores the URL hash before the edition request resolves, when the target card is not in
+// the DOM yet, so the jump silently does nothing. Re-run it once the reports render.
+watch(
+  reports,
+  (list) => {
+    if (!import.meta.client || !list.length) return
+
+    const targetId = route.hash.slice(1)
+    if (!AREA_ANCHOR_PATTERN.test(targetId)) return
+
+    nextTick(() => {
+      document.getElementById(targetId)?.scrollIntoView({
+        behavior: prefersReducedMotion.value ? 'auto' : 'smooth',
+        block: 'start',
+      })
+    })
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -199,7 +224,9 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
       >
         <li v-for="(report, index) in reports" :key="report.id" :style="getEntranceDelay(index)">
           <article
-            class="motion-card bg-surface ring-default flex h-full flex-col overflow-hidden rounded-xl ring-1"
+            :id="`area-${report.areaId}`"
+            :aria-labelledby="`area-${report.areaId}-title`"
+            class="motion-card group bg-surface ring-default flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl ring-1"
           >
             <figure class="m-0">
               <div class="bg-muted relative aspect-video overflow-hidden">
@@ -230,7 +257,21 @@ const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
             </figure>
 
             <div class="flex flex-1 flex-col p-4">
-              <h2 class="text-lg leading-snug font-semibold">{{ report.areaName }}</h2>
+              <div class="flex items-start gap-1">
+                <h2
+                  :id="`area-${report.areaId}-title`"
+                  class="min-w-0 text-lg leading-snug font-semibold"
+                >
+                  {{ report.areaName }}
+                </h2>
+                <a
+                  :href="`#area-${report.areaId}`"
+                  :aria-label="t('activity.reports.areaPermalink', { area: report.areaName })"
+                  class="text-muted hover:text-primary focus-visible:ring-primary/60 inline-flex size-6 shrink-0 items-center justify-center rounded-sm opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:outline-none pointer-coarse:opacity-100"
+                >
+                  <UIcon name="i-tabler-link" class="size-4" aria-hidden="true" />
+                </a>
+              </div>
               <PressRichText
                 :lang="bodyLang(report.contentLocale)"
                 :html="report.contentHtml"
