@@ -881,7 +881,7 @@
       },
       "newsletter": {
         "name": "Newsletter",
-        "description": "Argitaratutako edizioak eta bidaltzeko prest daudenak."
+        "description": "Eduki kanpainak eta harpidedunak."
       },
       "press": {
         "name": "Albisteak",
@@ -1103,10 +1103,6 @@
       "pressReleaseLabel": "Prentsa-oharrak",
       "statementLabel": "Adierazpenak",
       "mediaAppearanceLabel": "Hedabideetako agerpenak",
-      "newsletterHeading": "Newsletter",
-      "newsletterIntro": "Artxibo publikoaren eta mezuaren azal lehenetsia, edizio batek irudi propiorik ez duenean. Webean karratu erakusten da (240px arte aldeko).",
-      "newsletterCoverLabel": "Newsletter-aren azala",
-      "newsletterPreviewHint": "1∶1 aurrebista, gehienezko zabalera 240px (artxiboaren txartelak bezala).",
       "carouselHeading": "Karrusela (hasiera)",
       "carouselIntroBefore": "Diapositiba aktibo batek fitxategi propiorik ez duenean erakusten den irudia. Hasierako blokearen proportzio bera:",
       "carouselIntroAfter": "(≈ 3,5∶1).",

@@ -881,7 +881,7 @@
       },
       "newsletter": {
         "name": "Newsletter",
-        "description": "Edicións publicadas e listas para envío."
+        "description": "Campañas de contido e subscritores."
       },
       "press": {
         "name": "Novas",
@@ -1103,10 +1103,6 @@
       "pressReleaseLabel": "Notas de prensa",
       "statementLabel": "Comunicados",
       "mediaAppearanceLabel": "Aparicións en medios",
-      "newsletterHeading": "Newsletter",
-      "newsletterIntro": "Portada por defecto do arquivo público e do correo cando unha edición non ten imaxe propia. Na web móstrase cadrada (ata 240px de lado).",
-      "newsletterCoverLabel": "Portada newsletter",
-      "newsletterPreviewHint": "Vista previa 1∶1, ancho máximo 240px (igual que as tarxetas do arquivo).",
       "carouselHeading": "Carrusel (inicio)",
       "carouselIntroBefore": "Imaxe mostrada cando unha diapositiva activa non ten ficheiro propio. Mesma proporción que o bloque de inicio:",
       "carouselIntroAfter": "(≈ 3,5∶1).",

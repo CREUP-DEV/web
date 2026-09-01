@@ -881,7 +881,7 @@
       },
       "newsletter": {
         "name": "Newsletter",
-        "description": "Edicions publicades i a punt per a l'enviament."
+        "description": "Campanyes de contingut i subscriptors."
       },
       "press": {
         "name": "Notícies",
@@ -1103,10 +1103,6 @@
       "pressReleaseLabel": "Notes de premsa",
       "statementLabel": "Comunicats",
       "mediaAppearanceLabel": "Aparicions en mitjans",
-      "newsletterHeading": "Newsletter",
-      "newsletterIntro": "Portada per defecte de l'arxiu públic i del correu quan una edició no té imatge pròpia. A la web es mostra quadrada (fins a 240px de costat).",
-      "newsletterCoverLabel": "Portada newsletter",
-      "newsletterPreviewHint": "Vista prèvia 1∶1, amplada màxima 240px (igual que les targetes de l'arxiu).",
       "carouselHeading": "Carrusel (inici)",
       "carouselIntroBefore": "Imatge mostrada quan un slide actiu no té fitxer propi. Mateixa proporció que el bloc d'inici:",
       "carouselIntroAfter": "(≈ 3,5∶1).",

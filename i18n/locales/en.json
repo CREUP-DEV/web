@@ -881,7 +881,7 @@
       },
       "newsletter": {
         "name": "Newsletter",
-        "description": "Published editions and ones ready to send."
+        "description": "Content campaigns and subscribers."
       },
       "press": {
         "name": "News",
@@ -1103,10 +1103,6 @@
       "pressReleaseLabel": "Press releases",
       "statementLabel": "Statements",
       "mediaAppearanceLabel": "Media appearances",
-      "newsletterHeading": "Newsletter",
-      "newsletterIntro": "Default cover for the public archive and the email when an edition has no image of its own. On the web it is shown square (up to 240px per side).",
-      "newsletterCoverLabel": "Newsletter cover",
-      "newsletterPreviewHint": "1∶1 preview, maximum width 240px (same as the archive cards).",
       "carouselHeading": "Carousel (home)",
       "carouselIntroBefore": "Image shown when an active slide has no file of its own. Same ratio as the home block:",
       "carouselIntroAfter": "(≈ 3.5∶1).",
