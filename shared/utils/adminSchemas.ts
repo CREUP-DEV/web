@@ -413,7 +413,16 @@ export const newsletterCampaignContentQuerySchema = z.object({
     message: 'admin.validation.invalidCampaignItemType',
   }),
   q: z.string().trim().max(200).optional(),
-  sinceLastCampaign: z.coerce.boolean().optional(),
+  /** Arrives as a query string, so `z.coerce.boolean()` would read `"false"` as `true`. */
+  sinceLastCampaign: z.preprocess((value) => {
+    const rawValue = Array.isArray(value) ? value[0] : value
+
+    if (typeof rawValue === 'boolean') {
+      return rawValue
+    }
+
+    return rawValue === 'true' || rawValue === '1'
+  }, z.boolean().default(false)),
   limit: z.coerce.number().int().min(1).max(50).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 })

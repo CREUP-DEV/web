@@ -101,6 +101,15 @@ const es = {
   subscriberSaveFailed: 'No se pudo guardar el suscriptor',
   subscriberUpdateFailed: 'No se pudo actualizar el suscriptor',
   subscriberEmailRegistered: 'Este correo ya está registrado',
+  // Newsletter campaigns
+  campaignNotFound: 'Campaña no encontrada',
+  campaignNotDraft: 'Solo se pueden modificar las campañas en borrador',
+  campaignOptimisticLock:
+    'La campaña fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
+  campaignCreateFailed: 'No se pudo crear la campaña',
+  campaignUpdateFailed: 'No se pudo actualizar la campaña',
+  campaignItemsSaveFailed: 'No se pudo guardar el contenido de la campaña',
+  campaignDuplicateFailed: 'No se pudo duplicar la campaña',
   // Jobs
   jobGone: 'El trabajo ya no existe.',
   jobNotFailed: 'El trabajo ya no estaba en estado fallido.',
@@ -230,6 +239,15 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   subscriberSaveFailed: 'Could not save the subscriber',
   subscriberUpdateFailed: 'Could not update the subscriber',
   subscriberEmailRegistered: 'This email is already registered',
+  // Newsletter campaigns
+  campaignNotFound: 'Campaign not found',
+  campaignNotDraft: 'Only draft campaigns can be modified',
+  campaignOptimisticLock:
+    'The campaign was modified by another user. Reload the page to see the most recent changes.',
+  campaignCreateFailed: 'Could not create the campaign',
+  campaignUpdateFailed: 'Could not update the campaign',
+  campaignItemsSaveFailed: 'Could not save the campaign content',
+  campaignDuplicateFailed: 'Could not duplicate the campaign',
   // Jobs
   jobGone: 'The job no longer exists.',
   jobNotFailed: 'The job was no longer in a failed state.',
@@ -357,6 +375,15 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   subscriberSaveFailed: "No s'ha pogut desar el subscriptor",
   subscriberUpdateFailed: "No s'ha pogut actualitzar el subscriptor",
   subscriberEmailRegistered: 'Aquest correu ja està registrat',
+  // Newsletter campaigns
+  campaignNotFound: 'Campanya no trobada',
+  campaignNotDraft: 'Només es poden modificar les campanyes en esborrany',
+  campaignOptimisticLock:
+    'La campanya ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.',
+  campaignCreateFailed: 'No s’ha pogut crear la campanya',
+  campaignUpdateFailed: 'No s’ha pogut actualitzar la campanya',
+  campaignItemsSaveFailed: 'No s’ha pogut desar el contingut de la campanya',
+  campaignDuplicateFailed: 'No s’ha pogut duplicar la campanya',
   // Jobs
   jobGone: 'La tasca ja no existeix.',
   jobNotFailed: 'La tasca ja no estava en estat fallit.',
@@ -484,6 +511,15 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   subscriberSaveFailed: 'Ezin izan da harpideduna gorde',
   subscriberUpdateFailed: 'Ezin izan da harpideduna eguneratu',
   subscriberEmailRegistered: 'Helbide elektroniko hau jada erregistratuta dago',
+  // Newsletter campaigns
+  campaignNotFound: 'Kanpaina ez da aurkitu',
+  campaignNotDraft: 'Zirriborro egoeran dauden kanpainak baino ezin dira aldatu',
+  campaignOptimisticLock:
+    'Beste erabiltzaile batek aldatu du kanpaina. Birkargatu orria azken aldaketak ikusteko.',
+  campaignCreateFailed: 'Ezin izan da kanpaina sortu',
+  campaignUpdateFailed: 'Ezin izan da kanpaina eguneratu',
+  campaignItemsSaveFailed: 'Ezin izan da kanpainaren edukia gorde',
+  campaignDuplicateFailed: 'Ezin izan da kanpaina bikoiztu',
   // Jobs
   jobGone: 'Lana jada ez da existitzen.',
   jobNotFailed: 'Lana jada ez zegoen huts egindako egoeran.',
@@ -611,6 +647,15 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   subscriberSaveFailed: 'Non se puido gardar o subscritor',
   subscriberUpdateFailed: 'Non se puido actualizar o subscritor',
   subscriberEmailRegistered: 'Este correo xa está rexistrado',
+  // Newsletter campaigns
+  campaignNotFound: 'Campaña non atopada',
+  campaignNotDraft: 'Só se poden modificar as campañas en borrador',
+  campaignOptimisticLock:
+    'A campaña foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
+  campaignCreateFailed: 'Non se puido crear a campaña',
+  campaignUpdateFailed: 'Non se puido actualizar a campaña',
+  campaignItemsSaveFailed: 'Non se puido gardar o contido da campaña',
+  campaignDuplicateFailed: 'Non se puido duplicar a campaña',
   // Jobs
   jobGone: 'O traballo xa non existe.',
   jobNotFailed: 'O traballo xa non estaba en estado fallido.',
@@ -738,6 +783,15 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   subscriberSaveFailed: "No s'ha pogut guardar el subscriptor",
   subscriberUpdateFailed: "No s'ha pogut actualitzar el subscriptor",
   subscriberEmailRegistered: 'Este correu ja està registrat',
+  // Newsletter campaigns
+  campaignNotFound: 'Campanya no trobada',
+  campaignNotDraft: 'Només es poden modificar les campanyes en esborrany',
+  campaignOptimisticLock:
+    'La campanya ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
+  campaignCreateFailed: 'No s’ha pogut crear la campanya',
+  campaignUpdateFailed: 'No s’ha pogut actualitzar la campanya',
+  campaignItemsSaveFailed: 'No s’ha pogut guardar el contingut de la campanya',
+  campaignDuplicateFailed: 'No s’ha pogut duplicar la campanya',
   // Jobs
   jobGone: 'La tasca ja no existix.',
   jobNotFailed: 'La tasca ja no estava en estat fallit.',
