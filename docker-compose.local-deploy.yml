@@ -37,9 +37,6 @@ services:
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/eventos/documentos:/app/.output/public/eventos/documentos
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/imagenes:/app/.output/public/prensa/imagenes
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/documentos:/app/.output/public/prensa/documentos
-      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/newsletter/portadas:/app/.output/public/prensa/newsletter/portadas
-      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/newsletter/documentos:/app/.output/public/prensa/newsletter/documentos
-      - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/prensa/newsletter/imagenes-por-defecto:/app/.output/public/prensa/newsletter/imagenes-por-defecto
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/externos:/app/.output/public/documentos/externos
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/igualdad:/app/.output/public/documentos/igualdad
       - ${LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR:-./data/local-deploy/public-uploads}/documentos/informes-economicos:/app/.output/public/documentos/informes-economicos

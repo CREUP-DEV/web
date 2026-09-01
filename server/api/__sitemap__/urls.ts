@@ -1,6 +1,3 @@
-import { desc, eq } from 'drizzle-orm'
-import { db } from '../../db'
-import { newsletters } from '../../db/schema'
 import {
   getExternalApiCacheOptions,
   setExternalApiCacheHeaders,
@@ -63,7 +60,7 @@ export default defineSitemapEventHandler(async (event) => {
   // shrink the sitemap (deindexing risk); on failure we serve the last-good snapshot.
   let externalSourcesHealthy = true
 
-  const [eventsPayload, mandates, latestNewsletter] = await Promise.all([
+  const [eventsPayload, mandates] = await Promise.all([
     getEventsPayload(event).catch((error) => {
       logError('sitemap.events', error, undefined, event)
       externalSourcesHealthy = false
@@ -79,13 +76,6 @@ export default defineSitemapEventHandler(async (event) => {
         return []
       }
     })(),
-    db
-      .select({ updatedAt: newsletters.updatedAt })
-      .from(newsletters)
-      .where(eq(newsletters.publicVisible, true))
-      .orderBy(desc(newsletters.updatedAt))
-      .limit(1)
-      .then((rows) => rows[0] ?? null),
   ])
 
   const eventRoutes = eventsPayload.events.map((entry) =>
@@ -102,15 +92,7 @@ export default defineSitemapEventHandler(async (event) => {
     )
   )
 
-  const newsletterRoute = latestNewsletter
-    ? [
-        buildI18nEntry('/prensa/newsletter', locales, defaultLocale, undefined, {
-          lastmod: latestNewsletter.updatedAt?.toISOString(),
-        }),
-      ]
-    : []
-
-  const urls = [...eventRoutes, ...mandateRoutes, ...newsletterRoute]
+  const urls = [...eventRoutes, ...mandateRoutes]
   const storage = useStorage('cache')
 
   if (externalSourcesHealthy) {

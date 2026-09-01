@@ -54,7 +54,6 @@ const adminUploadRoutePaths = [
   '/api/admin/financial-reports/upload',
   '/api/admin/home/upload',
   '/api/admin/media/upload',
-  '/api/admin/newsletter/upload',
   '/api/admin/press/upload',
   '/api/admin/press-dossier/upload',
   '/api/admin/activity/upload',

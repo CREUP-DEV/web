@@ -91,9 +91,6 @@ mkdir -p \
   data/public-uploads/eventos/documentos \
   data/public-uploads/prensa/imagenes \
   data/public-uploads/prensa/documentos \
-  data/public-uploads/prensa/newsletter/portadas \
-  data/public-uploads/prensa/newsletter/documentos \
-  data/public-uploads/prensa/newsletter/imagenes-por-defecto \
   data/public-uploads/documentos/externos \
   data/public-uploads/documentos/igualdad \
   data/public-uploads/documentos/informes-economicos \
@@ -455,7 +452,9 @@ docker compose run --rm \
   app /app/ops/seed.mjs --confirm
 ```
 
-El seed se ejecuta dentro de una única transacción (si falla, revierte por completo) y solo corre si el host de `DATABASE_URL` es local o el servicio Docker `postgres`. Si la base de datos de producción usa otro host (p. ej. un Postgres gestionado externo), añade `-e ALLOW_SEED_WIPE=true` al comando. El seed conserva `newsletter_subscribers` y `newsletter_subscription_events` (evidencia de consentimiento RGPD).
+El seed se ejecuta dentro de una única transacción (si falla, revierte por completo) y solo corre si el host de `DATABASE_URL` es local o el servicio Docker `postgres`. Si la base de datos de producción usa otro host (p. ej. un Postgres gestionado externo), añade `-e ALLOW_SEED_WIPE=true` al comando.
+
+El seed borra y regenera el contenido editorial, incluidas las campañas de newsletter y sus entregas. Lo único que respeta son `newsletter_subscribers` y `newsletter_subscription_events`: son la evidencia de consentimiento RGPD y la lista de suscripción, y no se pueden reconstruir. Ejecutar el seed no da de baja a nadie ni obliga a reconfirmar.
 
 ### 8e. Verificar el despliegue
 
@@ -707,11 +706,28 @@ Comprueba que:
 2. La URL de callback `https://creup.es/api/auth/callback/google` está en la lista de Authorized redirect URIs de Google.
 3. `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` son correctos.
 
-### Los emails de newsletter no se envían
+### Una campaña de newsletter no llega a los suscriptores
 
-1. Comprueba el health endpoint: `curl "http://127.0.0.1:${APP_PORT:-3000}/health"` — SMTP debe mostrar `ok`.
-2. Revisa los logs: `docker logs web-app | grep smtp`.
-3. Verifica las variables `NUXT_SMTP_*`. Puedes testear con:
+El envío de una campaña no es síncrono: la petición del panel encola un trabajo
+`newsletter.campaign-send` en la cola BullMQ `newsletter` (prefijo de claves
+`creup:web:bullmq`) y un worker del propio contenedor de la app lo procesa. Un fallo puede
+estar en la cola o en el SMTP, así que descarta primero la cola:
+
+1. Mira el panel `/admin/estado`: lista los trabajos fallidos recientes de las colas
+   `newsletter` y `maintenance`. Si la campaña aparece ahí, el error concreto está en el
+   propio trabajo.
+2. Comprueba que Redis responde — sin Redis no hay cola y la campaña se queda encolada sin
+   procesarse: `curl "http://127.0.0.1:${APP_PORT:-3000}/health"` debe mostrar `redis` en
+   `ok`. Para ver si quedan trabajos pendientes:
+
+   ```bash
+   docker compose exec redis sh -c 'redis-cli -a "$REDIS_PASSWORD" --scan --pattern "creup:web:bullmq:newsletter:*"'
+   ```
+
+3. Si la cola está limpia, el problema es de entrega. El mismo health endpoint debe mostrar
+   `smtp` en `ok`.
+4. Revisa los logs: `docker logs web-app | grep -i "smtp\|campaign"`.
+5. Verifica las variables `NUXT_SMTP_*`. Puedes testear con:
 
 ```bash
 docker compose exec app node -e "

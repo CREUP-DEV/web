@@ -22,10 +22,7 @@ export const PRESS_DEFAULT_COVERS_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/${PR
 export const PRESS_MEDIA_LOGO_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/medios`
 export const PRESS_DOCUMENT_PUBLIC_PATH = '/prensa/documentos'
 export const PRESS_DOSSIER_PUBLIC_PATH = '/prensa/dossier-prensa.pdf'
-export const NEWSLETTER_COVER_IMAGE_PUBLIC_PATH = '/prensa/newsletter/portadas'
 /** Site default newsletter cover (admin-managed; distinct from per-edition covers). */
-export const NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH = '/prensa/newsletter/imagenes-por-defecto'
-export const NEWSLETTER_DOCUMENT_PUBLIC_PATH = '/prensa/newsletter/documentos'
 export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.png'
 
 // Activity section ("Actividad"). One parent folder with sub-folders keeps the number of
@@ -50,8 +47,6 @@ export const INTERNAL_IMAGE_PROXY_PATH_BASES = [
   EVENT_IMAGE_PUBLIC_BASE,
   SITE_OG_IMAGE_PUBLIC_PATH,
   PRESS_IMAGE_PUBLIC_BASE,
-  NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-  NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
   ACTIVITY_IMAGE_PUBLIC_BASE,
   AREA_REPORTS_IMAGE_PUBLIC_BASE,
 ] as const
@@ -60,7 +55,6 @@ export const INTERNAL_DOCUMENT_PROXY_PATH_BASES = [
   EXTERNAL_DOCUMENT_PUBLIC_BASE,
   EVENT_DOCUMENT_PUBLIC_BASE,
   PRESS_DOCUMENT_PUBLIC_PATH,
-  NEWSLETTER_DOCUMENT_PUBLIC_PATH,
 ] as const
 
 export const INTERNAL_ASSET_PROXY_PATH_BASES = [

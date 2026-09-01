@@ -112,9 +112,6 @@ ensure_host_data_dirs() {
     "\$public_uploads_dir/eventos/documentos" \
     "\$public_uploads_dir/prensa/imagenes" \
     "\$public_uploads_dir/prensa/documentos" \
-    "\$public_uploads_dir/prensa/newsletter/portadas" \
-    "\$public_uploads_dir/prensa/newsletter/documentos" \
-    "\$public_uploads_dir/prensa/newsletter/imagenes-por-defecto" \
     "\$public_uploads_dir/documentos/externos" \
     "\$public_uploads_dir/documentos/igualdad" \
     "\$public_uploads_dir/documentos/informes-economicos" \

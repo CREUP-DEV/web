@@ -15,7 +15,6 @@ function maxUpdatedAtIso(rows: { updatedAt: Date }[]): string | null {
 export default defineEventHandler(async () => {
   const map = await loadSiteDefaultImagesMap()
   const press = map.get(SITE_DEFAULT_IMAGE_SCOPE.press)
-  const newsletter = map.get(SITE_DEFAULT_IMAGE_SCOPE.newsletter)
   const carousel = map.get(SITE_DEFAULT_IMAGE_SCOPE.carousel)
   const seo = map.get(SITE_DEFAULT_IMAGE_SCOPE.seo)
   const activity = map.get(SITE_DEFAULT_IMAGE_SCOPE.activity)
@@ -28,7 +27,6 @@ export default defineEventHandler(async () => {
       pressReleaseImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.pressRelease) ?? null,
       statementImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.statement) ?? null,
       mediaAppearanceImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.mediaAppearance) ?? null,
-      newsletterCoverImage: newsletter?.get(SITE_DEFAULT_IMAGE_SLOT.newsletterCover) ?? null,
       carouselSlideImage: carousel?.get(SITE_DEFAULT_IMAGE_SLOT.carouselSlide) ?? null,
       ogImage: seo?.get(SITE_DEFAULT_IMAGE_SLOT.ogImage) ?? null,
       activityEntryImage: activity?.get(SITE_DEFAULT_IMAGE_SLOT.activityEntry) ?? null,

@@ -567,15 +567,15 @@ const formatUptime = (seconds: number | null) => {
                 }}
               </p>
               <ul
-                v-if="stats.newsletterWorker.activeNewsletterIds.length"
+                v-if="stats.newsletterWorker.activeCampaignIds.length"
                 class="mt-3 space-y-2 text-sm"
               >
                 <li
-                  v-for="newsletterId in stats.newsletterWorker.activeNewsletterIds"
-                  :key="newsletterId"
+                  v-for="campaignId in stats.newsletterWorker.activeCampaignIds"
+                  :key="campaignId"
                   class="rounded-xl border px-3 py-2"
                 >
-                  {{ t('admin.stats.activeNewsletter') }} <code>{{ newsletterId }}</code>
+                  {{ t('admin.stats.activeNewsletter') }} <code>{{ campaignId }}</code>
                 </li>
               </ul>
             </div>

@@ -5,7 +5,6 @@ import {
   AREA_REPORTS_IMAGE_PUBLIC_BASE,
   HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
   HOME_IMAGE_PUBLIC_BASE,
-  NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
   PRESS_DEFAULT_COVERS_PUBLIC_PATH,
   PRESS_IMAGE_PUBLIC_BASE,
   SITE_OG_IMAGE_PUBLIC_PATH,
@@ -14,7 +13,6 @@ import {
 /** DB `site_default_images.scope` values. */
 export const SITE_DEFAULT_IMAGE_SCOPE = {
   press: 'press',
-  newsletter: 'newsletter',
   carousel: 'carousel',
   seo: 'seo',
   activity: 'activity',
@@ -29,7 +27,6 @@ export const SITE_DEFAULT_IMAGE_SLOT = {
   pressRelease: 'press_release',
   statement: 'statement',
   mediaAppearance: 'media_appearance',
-  newsletterCover: 'cover',
   carouselSlide: 'slide',
   ogImage: 'og_image',
   activityEntry: 'entry',
@@ -76,14 +73,6 @@ export const SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS: readonly SiteDefaultImageSlotD
     uploadDir: 'public/prensa/imagenes/portadas-por-defecto',
     publicPath: PRESS_DEFAULT_COVERS_PUBLIC_PATH,
     proxyPublicBase: PRESS_IMAGE_PUBLIC_BASE,
-  },
-  {
-    scope: SITE_DEFAULT_IMAGE_SCOPE.newsletter,
-    slot: SITE_DEFAULT_IMAGE_SLOT.newsletterCover,
-    finalizeSlug: 'portada-newsletter-defecto',
-    uploadDir: 'public/prensa/newsletter/imagenes-por-defecto',
-    publicPath: NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
-    proxyPublicBase: NEWSLETTER_SITE_DEFAULT_COVER_PUBLIC_PATH,
   },
   {
     scope: SITE_DEFAULT_IMAGE_SCOPE.carousel,

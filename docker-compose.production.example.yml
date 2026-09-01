@@ -24,9 +24,6 @@ services:
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/eventos/documentos:/app/.output/public/eventos/documentos
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/imagenes:/app/.output/public/prensa/imagenes
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/documentos:/app/.output/public/prensa/documentos
-      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/portadas:/app/.output/public/prensa/newsletter/portadas
-      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/documentos:/app/.output/public/prensa/newsletter/documentos
-      - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/prensa/newsletter/imagenes-por-defecto:/app/.output/public/prensa/newsletter/imagenes-por-defecto
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/externos:/app/.output/public/documentos/externos
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/igualdad:/app/.output/public/documentos/igualdad
       - ${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}/documentos/informes-economicos:/app/.output/public/documentos/informes-economicos

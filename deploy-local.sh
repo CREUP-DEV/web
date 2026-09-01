@@ -219,7 +219,7 @@ const url = `http://127.0.0.1:3000${requestPath}`
 
 is_image_path() {
   case "$1" in
-    /imagenes/externas/*|/inicio/imagenes/*|/conocenos/imagenes/*|/eventos/imagenes/*|/prensa/imagenes/*|/prensa/newsletter/portadas/*|/prensa/newsletter/imagenes-por-defecto/*)
+    /imagenes/externas/*|/inicio/imagenes/*|/conocenos/imagenes/*|/eventos/imagenes/*|/prensa/imagenes/*)
       return 0
       ;;
     *.avif|*.gif|*.jpeg|*.jpg|*.png|*.svg|*.webp)

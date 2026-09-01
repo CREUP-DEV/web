@@ -7,6 +7,7 @@ import {
   toNumber,
   toStringOrNull,
 } from './adminSummaryHelpers'
+import type { NewsletterCampaignStatus } from '~~/shared/constants/newsletterCampaigns'
 
 interface AdminDashboardMetrics {
   newsletterSubscribersActive: number
@@ -60,12 +61,9 @@ export interface AdminDashboardLatestData {
     website: string
     updatedAt: Date
   } | null
-  latestNewsletter: {
-    monthKey: string
-    active: boolean
-    publicVisible: boolean
-    sentAt: Date | null
-    lastDeliveryWorkerToken: string | null
+  latestNewsletterCampaign: {
+    status: NewsletterCampaignStatus
+    subject: string
     updatedAt: Date
   } | null
   latestPressArticle: {
@@ -136,15 +134,19 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
 
       select
         'newsletter'::text as section_key,
-        n.id::text as entity_id,
-        n.updated_at,
+        c.id::text as entity_id,
+        c.updated_at,
         jsonb_build_object(
-          'monthKey', n.month_key,
-          'publicVisible', n.public_visible,
-          'sentAt', n.sent_at,
-          'lastDeliveryWorkerToken', n.last_delivery_worker_token
+          'status', c.status,
+          'subject', (
+            select ct.subject
+            from newsletter_campaign_translations ct
+            where ct.campaign_id = c.id
+            order by (ct.locale = 'es') desc, ct.locale
+            limit 1
+          )
         ) as payload
-      from newsletters n
+      from newsletter_campaigns c
 
       union all
 
@@ -257,10 +259,8 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
         where edt.equality_document_id = equality.entity_id
       ) as equality_translations,
 
-      (newsletter.payload ->> 'monthKey') as newsletter_month_key,
-      (newsletter.payload ->> 'publicVisible')::boolean as newsletter_public_visible,
-      (newsletter.payload ->> 'sentAt')::timestamptz as newsletter_sent_at,
-      (newsletter.payload ->> 'lastDeliveryWorkerToken') as newsletter_last_delivery_worker_token,
+      (newsletter.payload ->> 'status') as newsletter_status,
+      (newsletter.payload ->> 'subject') as newsletter_subject,
       newsletter.updated_at as newsletter_updated_at,
 
       (press.payload ->> 'type') as press_type,
@@ -391,13 +391,10 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
           translations: parseTranslations(row.equality_translations, 'title'),
         }
       : null,
-    latestNewsletter: newsletterUpdatedAt
+    latestNewsletterCampaign: newsletterUpdatedAt
       ? {
-          monthKey: toStringOrNull(row.newsletter_month_key) ?? '',
-          active: toBooleanOrNull(row.newsletter_active) ?? false,
-          publicVisible: toBooleanOrNull(row.newsletter_public_visible) ?? false,
-          sentAt: toDateOrNull(row.newsletter_sent_at),
-          lastDeliveryWorkerToken: toStringOrNull(row.newsletter_last_delivery_worker_token),
+          status: (toStringOrNull(row.newsletter_status) ?? 'draft') as NewsletterCampaignStatus,
+          subject: toStringOrNull(row.newsletter_subject) ?? '',
           updatedAt: newsletterUpdatedAt,
         }
       : null,

@@ -119,7 +119,7 @@ watch(areas, (available) => {
 
 const hasCoversFrom = ref(false)
 
-// AdminNewsletterMonthPicker emits 'YYYY-MM-01'; monthKey/coversFrom are 'YYYY-MM'. Convert at boundary.
+// AdminMonthPicker emits 'YYYY-MM-01'; monthKey/coversFrom are 'YYYY-MM'. Convert at boundary.
 const toMonthKey = (value: string) => (value ? value.slice(0, 7) : '')
 const fromMonthKey = (value: string) => (value ? `${value}-01` : '')
 
@@ -406,7 +406,7 @@ const confirmCancel = () => {
             :error="getFieldError('monthKey')"
           >
             <ClientOnly>
-              <AdminNewsletterMonthPicker
+              <AdminMonthPicker
                 v-model="monthPickerValue"
                 :hint="t('admin.areaReports.form.monthHint')"
                 :taken-label="t('admin.areaReports.form.monthTaken')"
@@ -433,7 +433,7 @@ const confirmCancel = () => {
               }}</span>
             </div>
             <ClientOnly v-if="hasCoversFrom">
-              <AdminNewsletterMonthPicker v-model="coversFromPickerValue" hint="" />
+              <AdminMonthPicker v-model="coversFromPickerValue" hint="" />
               <template #fallback>
                 <UInput
                   :model-value="form.coversFrom"

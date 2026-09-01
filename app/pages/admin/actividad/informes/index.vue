@@ -15,7 +15,7 @@ const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 
 const monthFilter = ref('')
 
-// AdminNewsletterMonthPicker emits 'YYYY-MM-01'; the filter / API param use 'YYYY-MM'. Bridge both.
+// AdminMonthPicker emits 'YYYY-MM-01'; the filter / API param use 'YYYY-MM'. Bridge both.
 const monthPickerValue = computed({
   get: () => (monthFilter.value ? `${monthFilter.value}-01` : ''),
   set: (value: string) => {
@@ -113,7 +113,7 @@ const formatPeriod = (item: AdminAreaReport) => {
     <div class="mb-6 flex flex-wrap items-start gap-3">
       <UFormField :label="t('admin.areaReports.list.monthFilterLabel')">
         <ClientOnly>
-          <AdminNewsletterMonthPicker v-model="monthPickerValue" hint="" />
+          <AdminMonthPicker v-model="monthPickerValue" hint="" />
           <template #fallback>
             <UInput
               :model-value="monthFilter"

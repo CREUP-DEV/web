@@ -8,7 +8,6 @@ import {
   featuredLinks,
   financialReports,
   newsletterCampaignItems,
-  newsletters,
   pressArticles,
   pressDossier,
 } from '../../db/schema'
@@ -25,8 +24,6 @@ import {
   FINANCIAL_REPORTS_PUBLIC_PATH,
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
-  NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-  NEWSLETTER_DOCUMENT_PUBLIC_PATH,
   PRESS_DOSSIER_PUBLIC_PATH,
   PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_IMAGE_PUBLIC_BASE,
@@ -219,7 +216,6 @@ export async function reconcileAdminAssetPublication() {
       featuredLinksList,
       pressArticlesList,
       pressDossierItem,
-      newslettersList,
       aboutContent,
       equalityDocumentsList,
       financialReportsList,
@@ -230,9 +226,6 @@ export async function reconcileAdminAssetPublication() {
         columns: { id: true, image: true, pdfUrl: true, active: true },
       }),
       db.query.pressDossier.findFirst({ columns: { id: true, pdfUrl: true, active: true } }),
-      db.query.newsletters.findMany({
-        columns: { id: true, coverImage: true, pdfUrl: true, publicVisible: true },
-      }),
       db.query.aboutPageContent.findFirst({
         columns: { id: true, heroImage: true, heroVisible: true },
       }),
@@ -343,40 +336,6 @@ export async function reconcileAdminAssetPublication() {
       }
     }
 
-    for (const item of newslettersList) {
-      const nextCoverImage = await reconcileStoredImage({
-        storagePath: item.coverImage,
-        publish: item.publicVisible || isSnapshotProtected(item.coverImage),
-        uploadDir: 'public/prensa/newsletter/portadas',
-        publicPath: NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-      })
-      const nextPdfUrl = await reconcileStoredDocument({
-        storagePath: item.pdfUrl,
-        publish: item.publicVisible,
-        uploadDir: 'public/prensa/newsletter/documentos',
-        publicPath: NEWSLETTER_DOCUMENT_PUBLIC_PATH,
-      })
-
-      if (nextCoverImage !== item.coverImage || nextPdfUrl !== item.pdfUrl) {
-        await db
-          .update(newsletters)
-          .set({
-            coverImage: nextCoverImage ?? item.coverImage,
-            pdfUrl: nextPdfUrl ?? item.pdfUrl,
-          })
-          .where(eq(newsletters.id, item.id))
-
-        await cleanupUnusedAdminAsset({
-          storagePath: item.coverImage,
-          allowedPublicPathPrefixes: [NEWSLETTER_COVER_IMAGE_PUBLIC_PATH],
-        })
-        await cleanupUnusedAdminAsset({
-          storagePath: item.pdfUrl,
-          allowedPublicPathPrefixes: [NEWSLETTER_DOCUMENT_PUBLIC_PATH],
-        })
-      }
-    }
-
     if (aboutContent?.id) {
       const nextHeroImage = await reconcileStoredImage({
         storagePath: aboutContent.heroImage,
@@ -447,11 +406,9 @@ export async function reconcileAdminAssetPublication() {
       return
     }
 
-    for (const relation of ['newsletters', 'newsletter_campaign_items']) {
-      if (isDatabaseMissingRelationError(error, relation)) {
-        logWarn('admin-assets.reconcile.missing-relation', { relation })
-        return
-      }
+    if (isDatabaseMissingRelationError(error, 'newsletter_campaign_items')) {
+      logWarn('admin-assets.reconcile.missing-relation', { relation: 'newsletter_campaign_items' })
+      return
     }
 
     logError('admin-assets.reconcile', error)

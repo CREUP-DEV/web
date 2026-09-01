@@ -11,9 +11,11 @@ import {
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   recordNewsletterSubscriptionEvent,
 } from '../utils/newsletter/newsletterSubscribers'
-import { NEWSLETTER_DELIVERY_MAX_ATTEMPTS } from '../utils/newsletter/newsletters'
-import { getNewsletterDeliveryStaleBefore } from './newsletterDeliveryLease'
-import { NEWSLETTER_DELIVERY_STATUS } from './newsletterDeliveryRepository'
+import {
+  NEWSLETTER_DELIVERY_MAX_ATTEMPTS,
+  NEWSLETTER_DELIVERY_STATUS,
+  getNewsletterDeliveryStaleBefore,
+} from './newsletterDeliveryShared'
 import type { NewsletterCampaignRecord } from './newsletterCampaignDeliveryLease'
 
 /**

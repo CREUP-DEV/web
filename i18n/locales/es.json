@@ -723,11 +723,10 @@
   "newsletterPage": {
     "seo": {
       "title": "Newsletter",
-      "description": "Suscríbete a la newsletter de CREUP y descarga los números anteriores."
+      "description": "Suscríbete a la newsletter de CREUP para recibir nuestras novedades por correo."
     },
     "title": "Newsletter",
     "subtitle": "Mantente al día con las últimas novedades de CREUP. Recibe nuestra newsletter mensual directamente en tu correo.",
-    "dateLocale": "es-ES",
     "confirmed": {
       "title": "Suscripción confirmada",
       "description": "Tu dirección ha quedado activada para recibir la newsletter de CREUP."
@@ -783,12 +782,6 @@
         "consentRequired": "Debes aceptar la política de privacidad para suscribirte",
         "turnstileRequired": "Completa la verificación anti-spam"
       }
-    },
-    "archive": {
-      "ariaLabel": "Archivo de newsletters",
-      "title": "Números anteriores",
-      "empty": "Aún no se ha publicado ninguna newsletter.",
-      "download": "Descargar PDF"
     }
   },
   "admin": {

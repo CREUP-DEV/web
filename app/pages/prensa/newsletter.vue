@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import type { AccordionItem } from '@nuxt/ui'
-import { getPublicNewsletterArchiveAsyncDataKey } from '~~/shared/constants/publicAsyncDataKeys'
-import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { EMAIL_MAX_LENGTH, EMAIL_PATTERN } from '~~/shared/utils/emailValidation'
 import * as turnstileComposable from '@/composables/security/useTurnstile'
@@ -37,15 +35,9 @@ const {
   isPending: formPending,
   shouldAnimate: formShouldAnimate,
 } = useEntranceObserver(0.1)
-const {
-  elRef: archiveRef,
-  isVisible: archiveVisible,
-  isPending: archivePending,
-  shouldAnimate: archiveShouldAnimate,
-} = useEntranceObserver(0.1)
 
 usePageSeo('newsletterPage.seo.title', 'newsletterPage.seo.description', {
-  webPageType: 'CollectionPage',
+  webPageType: 'WebPage',
   breadcrumbs: () => [
     {
       name: t('nav.home'),
@@ -211,56 +203,6 @@ async function handleSubscribe() {
   }
 }
 
-interface Newsletter {
-  id: string
-  month: string
-  coverImage: string | null
-  pdfUrl: string
-}
-
-const LIMIT = 12
-const page = ref(1)
-
-// Keep the pagination controls under the cursor when the page changes.
-const paginationRef = ref<HTMLElement | null>(null)
-usePaginationAnchor(page, paginationRef)
-const offset = computed(() => (page.value - 1) * LIMIT)
-
-const {
-  data,
-  pending: archivePendingPage,
-  error: archiveFetchError,
-} = await useFetch<{
-  data: Newsletter[]
-  meta: {
-    total: number
-  }
-}>('/api/newsletter', {
-  key: computed(() => getPublicNewsletterArchiveAsyncDataKey(offset.value)),
-  query: computed(() => ({ limit: LIMIT, offset: offset.value })),
-  getCachedData: publicCmsCachedData,
-})
-const newsletters = computed(() => data.value?.data ?? [])
-const total = computed(() => data.value?.meta.total ?? 0)
-const archiveError = computed(() => !!archiveFetchError.value)
-const {
-  resultsRef: archiveResultsRef,
-  isLoading: archiveIsLoading,
-  isRefreshing: archiveIsRefreshing,
-} = usePaginatedTransition(archivePendingPage, newsletters, archiveFetchError)
-
-// WCAG 4.1.3: concise polite status announced on result/page change, instead of
-// an aria-live region wrapping the whole grid (which re-reads or stays silent).
-const a11yArchiveStatus = computed(() => {
-  const totalPages = Math.max(1, Math.ceil(total.value / LIMIT))
-  return totalPages > 1
-    ? t(
-        'accessibility.resultsStatus',
-        { count: total.value, page: page.value, pages: totalPages },
-        total.value
-      )
-    : t('accessibility.resultsCount', { count: total.value }, total.value)
-})
 const privacyAccordionItems = computed<AccordionItem[]>(() => [
   {
     label: t('newsletterPage.form.privacyInfoTitle'),
@@ -268,20 +210,6 @@ const privacyAccordionItems = computed<AccordionItem[]>(() => [
     value: 'privacy-info',
   },
 ])
-
-function formatMonth(dateStr: string): string {
-  // Parse as date-only parts to avoid UTC-offset day-rollback issues.
-  const [yearStr, monthStr] = dateStr.split('-')
-  const year = Number(yearStr)
-  const month = Number(monthStr) - 1
-  const d = new Date(Date.UTC(year, month, 1))
-  const formatted = d.toLocaleDateString(t('newsletterPage.dateLocale'), {
-    year: 'numeric',
-    month: 'long',
-    timeZone: 'UTC',
-  })
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-}
 </script>
 
 <template>
@@ -374,7 +302,7 @@ function formatMonth(dateStr: string): string {
         ref="formRef"
         role="region"
         :aria-label="t('newsletterPage.form.ariaLabel')"
-        class="mx-auto mb-14 max-w-xl"
+        class="mx-auto max-w-xl"
         :class="entranceClasses(formShouldAnimate, formVisible, formPending)"
         :style="entranceStyle(formVisible, formShouldAnimate, 2)"
       >
@@ -508,108 +436,6 @@ function formatMonth(dateStr: string): string {
             </UAccordion>
           </form>
         </UCard>
-      </section>
-
-      <section ref="archiveRef" role="region" :aria-label="t('newsletterPage.archive.ariaLabel')">
-        <h2 class="mb-6 text-2xl font-bold">
-          {{ t('newsletterPage.archive.title') }}
-        </h2>
-
-        <UAlert
-          v-if="archiveError"
-          color="error"
-          variant="soft"
-          icon="i-tabler-alert-circle"
-          :title="t('newsletterPage.archive.title')"
-          :description="t('newsletterPage.form.errorGeneric')"
-        />
-
-        <p v-if="!archiveIsLoading" class="sr-only" role="status">{{ a11yArchiveStatus }}</p>
-        <div ref="archiveResultsRef" :aria-busy="archivePendingPage || undefined">
-          <div
-            v-if="archiveIsLoading"
-            class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            aria-hidden="true"
-          >
-            <UCard
-              v-for="index in 6"
-              :key="index"
-              class="motion-card flex w-full min-w-0 flex-col text-center"
-            >
-              <USkeleton class="mb-4 aspect-square w-full rounded-lg" />
-              <USkeleton class="mx-auto mb-3 h-7 w-40" />
-              <USkeleton class="h-10 w-full" />
-            </UCard>
-          </div>
-
-          <div v-else-if="newsletters.length === 0" class="text-muted py-12 text-center">
-            {{ t('newsletterPage.archive.empty') }}
-          </div>
-
-          <div
-            v-else
-            class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            :class="archiveIsRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
-          >
-            <UCard
-              v-for="(nl, index) in newsletters"
-              :key="nl.id"
-              class="motion-card flex w-full min-w-0 flex-col text-center"
-              :class="entranceClasses(archiveShouldAnimate, archiveVisible, archivePending)"
-              :style="entranceStyle(archiveVisible, archiveShouldAnimate, index, 70)"
-            >
-              <div class="flex w-full min-w-0 flex-col items-stretch">
-                <div
-                  class="bg-muted relative mb-4 aspect-square w-full min-w-0 overflow-hidden rounded-lg"
-                >
-                  <AdaptiveImage
-                    v-if="nl.coverImage"
-                    :src="nl.coverImage"
-                    :alt="formatMonth(nl.month)"
-                    width="240"
-                    height="240"
-                    sizes="240px"
-                    class="size-full object-cover"
-                    loading="lazy"
-                  />
-                  <div
-                    v-else
-                    class="bg-muted text-muted flex size-full items-center justify-center"
-                    aria-hidden="true"
-                  >
-                    <UIcon
-                      name="i-tabler-news"
-                      class="size-[clamp(3.5rem,28vmin,10rem)] opacity-70"
-                    />
-                  </div>
-                </div>
-                <p class="mb-3 text-lg font-semibold">{{ formatMonth(nl.month) }}</p>
-                <UButton
-                  :href="nl.pdfUrl"
-                  external
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  icon="i-tabler-download"
-                  variant="outline"
-                  block
-                  class="w-full min-w-0"
-                  :aria-label="`${t('newsletterPage.archive.download')} - ${formatMonth(nl.month)}`"
-                >
-                  {{ t('newsletterPage.archive.download') }}
-                </UButton>
-              </div>
-            </UCard>
-          </div>
-        </div>
-
-        <nav
-          v-if="total > LIMIT"
-          ref="paginationRef"
-          class="mt-8 flex justify-center"
-          :aria-label="`${t('newsletterPage.archive.title')} - ${t('accessibility.paginationNavigation')}`"
-        >
-          <UPagination v-model:page="page" :total="total" :items-per-page="LIMIT" />
-        </nav>
       </section>
     </div>
   </UContainer>

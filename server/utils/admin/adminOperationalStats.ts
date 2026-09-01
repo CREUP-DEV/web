@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { db, getDatabasePoolStats } from '../../db'
-import { getNewsletterDeliveryRuntimeState } from '../../services/newsletterDeliveryService'
+import { getNewsletterCampaignDeliveryRuntimeState } from '../../services/newsletterCampaignDeliveryService'
 import {
   BACKGROUND_QUEUE_NAMES,
   getMaintenanceQueue,
@@ -169,7 +169,7 @@ export async function getAdminOperationalStats() {
     generatedAt: new Date().toISOString(),
     health,
     infrastructure,
-    newsletterWorker: getNewsletterDeliveryRuntimeState(),
+    newsletterWorker: getNewsletterCampaignDeliveryRuntimeState(),
     process: getProcessVitals(),
     queues,
     ...requestMetrics,

@@ -16,8 +16,6 @@ import {
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
   HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
-  NEWSLETTER_COVER_IMAGE_PUBLIC_PATH,
-  NEWSLETTER_DOCUMENT_PUBLIC_PATH,
   PRESS_DEFAULT_COVERS_PUBLIC_PATH,
   PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_MEDIA_LOGO_PUBLIC_PATH,
@@ -52,16 +50,6 @@ type DbExecutor = Parameters<Parameters<typeof db.transaction>[0]>[0]
 const buildHomeImagePath = (publicPath: string, title: string) =>
   `${publicPath}/${slugify(title) || 'imagen'}.webp`
 
-const padMonth = (month: number) => String(month).padStart(2, '0')
-
-const buildNewsletterMonthKey = (year: number, month: number) => `${year}-${padMonth(month)}`
-
-const buildNewsletterPdfPath = (monthKey: string) =>
-  `${NEWSLETTER_DOCUMENT_PUBLIC_PATH}/newsletter-${monthKey}.pdf`
-
-const buildNewsletterCoverPath = (monthKey: string) =>
-  `${NEWSLETTER_COVER_IMAGE_PUBLIC_PATH}/newsletter-${monthKey}-portada.webp`
-
 const buildPublicAssetPath = (publicPath: string) => `public${publicPath}`
 
 const publicAssetExists = (publicPath: string) => {
@@ -79,18 +67,6 @@ const parseSpanishDate = (value: string) => {
   }
 
   return new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
-}
-
-function assertUniqueValues(values: string[], label: string) {
-  const seen = new Set<string>()
-
-  for (const value of values) {
-    if (seen.has(value)) {
-      throw new Error(`Seed ${label} contains a duplicate value: ${value}`)
-    }
-
-    seen.add(value)
-  }
 }
 
 const MISSING_MEDIA_OUTLET_LOGO = ''
@@ -232,11 +208,11 @@ async function seedDatabase(db: DbExecutor) {
   await db.delete(schema.siteDefaultImages)
   await db.delete(schema.equalityDocumentTranslations)
   await db.delete(schema.equalityDocuments)
-  await db.delete(schema.newsletterDeliveries)
   // newsletter_subscribers / newsletter_subscription_events are intentionally
   // NOT wiped: they hold GDPR consent evidence the seed never recreates, and
   // the seed inserts no subscribers, so deleting them serves no purpose.
-  await db.delete(schema.newsletters)
+  // Campaign deliveries, items and translations all cascade from the campaign.
+  await db.delete(schema.newsletterCampaigns)
   await db.delete(schema.carouselItemTranslations)
   await db.delete(schema.carouselItems)
   await db.delete(schema.pressArticleTags)
@@ -343,11 +319,6 @@ async function seedDatabase(db: DbExecutor) {
       scope: SITE_DEFAULT_IMAGE_SCOPE.press,
       slot: SITE_DEFAULT_IMAGE_SLOT.mediaAppearance,
       image: `${PRESS_DEFAULT_COVERS_PUBLIC_PATH}/portada-aparicion-medios.webp`,
-    },
-    {
-      scope: SITE_DEFAULT_IMAGE_SCOPE.newsletter,
-      slot: SITE_DEFAULT_IMAGE_SLOT.newsletterCover,
-      image: null,
     },
     {
       scope: SITE_DEFAULT_IMAGE_SCOPE.carousel,
@@ -10502,42 +10473,6 @@ async function seedDatabase(db: DbExecutor) {
         financialReportId: report.id,
       })),
     ])
-  }
-
-  console.log('📰 Creating newsletters...')
-  const newslettersData = [
-    { year: 2026, month: 2 },
-    { year: 2026, month: 1 },
-    { year: 2025, month: 11 },
-    { year: 2025, month: 10 },
-    { year: 2025, month: 9 },
-    { year: 2025, month: 6 },
-    { year: 2025, month: 5 },
-    { year: 2025, month: 3 },
-    { year: 2025, month: 2 },
-    { year: 2024, month: 12 },
-    { year: 2024, month: 11 },
-    { year: 2024, month: 10 },
-    { year: 2024, month: 9 },
-  ]
-
-  assertUniqueValues(
-    newslettersData.map((item) => buildNewsletterMonthKey(item.year, item.month)),
-    'newsletters month keys'
-  )
-
-  for (let i = 0; i < newslettersData.length; i++) {
-    const item = newslettersData[i]
-    const monthKey = buildNewsletterMonthKey(item.year, item.month)
-    const coverImage = buildNewsletterCoverPath(monthKey)
-
-    await db.insert(schema.newsletters).values({
-      month: new Date(Date.UTC(item.year, item.month - 1, 1)),
-      monthKey,
-      coverImage: publicAssetExists(coverImage) ? coverImage : null,
-      pdfUrl: buildNewsletterPdfPath(monthKey),
-      publicVisible: true,
-    })
   }
 }
 

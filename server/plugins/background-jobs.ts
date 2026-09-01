@@ -7,19 +7,11 @@ import {
   enqueueStartupMaintenanceJobs,
   ensureBackgroundJobSchedulers,
   isNewsletterCampaignSendJob,
-  isNewsletterSendJob,
 } from '../utils/core/backgroundJobs'
 import { logError, logInfo } from '../utils/core/logger'
 import { cleanupExpiredNewsletterConfirmTokens } from '../utils/newsletter/newsletterSubscribers'
 import { closeRedisClient, createBullMqConnection } from '../utils/cache/redis'
 import { closeSmtpTransporter } from '../utils/email/smtpTransporter'
-import {
-  processClaimedNewsletterDelivery,
-  processPendingNewsletterDeliveries,
-  requeueActiveNewsletterDeliveriesForShutdown,
-  requestNewsletterDeliveryShutdown,
-  waitForNewsletterDeliveryIdle,
-} from '../services/newsletterDeliveryService'
 import {
   processClaimedNewsletterCampaignDelivery,
   processPendingNewsletterCampaignDeliveries,
@@ -39,16 +31,11 @@ export default defineNitroPlugin((nitro) => {
   const newsletterWorker = new Worker(
     BACKGROUND_QUEUE_NAMES.newsletter,
     async (job) => {
-      if (isNewsletterCampaignSendJob(job)) {
-        await processClaimedNewsletterCampaignDelivery(job.data.campaignId, job.data.workerToken)
+      if (!isNewsletterCampaignSendJob(job)) {
         return
       }
 
-      if (!isNewsletterSendJob(job)) {
-        return
-      }
-
-      await processClaimedNewsletterDelivery(job.data.newsletterId, job.data.workerToken)
+      await processClaimedNewsletterCampaignDelivery(job.data.campaignId, job.data.workerToken)
     },
     {
       connection: createBullMqConnection(),
@@ -61,9 +48,6 @@ export default defineNitroPlugin((nitro) => {
     BACKGROUND_QUEUE_NAMES.maintenance,
     async (job) => {
       switch (job.name) {
-        case BACKGROUND_JOB_NAMES.newsletterRecovery:
-          await processPendingNewsletterDeliveries()
-          return
         case BACKGROUND_JOB_NAMES.newsletterCampaignRecovery:
           await processPendingNewsletterCampaignDeliveries()
           return
@@ -170,22 +154,13 @@ export default defineNitroPlugin((nitro) => {
   startSchedulerInitialization()
 
   nitro.hooks.hookOnce('close', async () => {
-    requestNewsletterDeliveryShutdown()
     requestNewsletterCampaignDeliveryShutdown()
 
-    const [completedGracefully, campaignsCompletedGracefully] = await Promise.all([
-      waitForNewsletterDeliveryIdle(DELIVERY_SHUTDOWN_TIMEOUT_MS),
-      waitForNewsletterCampaignDeliveryIdle(DELIVERY_SHUTDOWN_TIMEOUT_MS),
-    ])
+    const completedGracefully = await waitForNewsletterCampaignDeliveryIdle(
+      DELIVERY_SHUTDOWN_TIMEOUT_MS
+    )
 
     if (!completedGracefully) {
-      logInfo('newsletter.delivery.shutdown.timeout', {
-        timeoutMs: DELIVERY_SHUTDOWN_TIMEOUT_MS,
-      })
-      await requeueActiveNewsletterDeliveriesForShutdown()
-    }
-
-    if (!campaignsCompletedGracefully) {
       logInfo('newsletter.campaign.delivery.shutdown.timeout', {
         timeoutMs: DELIVERY_SHUTDOWN_TIMEOUT_MS,
       })

@@ -723,11 +723,10 @@
   "newsletterPage": {
     "seo": {
       "title": "Newsletter",
-      "description": "Harpidetu zaitez CREUPen newsletter-era eta deskargatu aurreko zenbakiak."
+      "description": "Harpidetu zaitez CREUPen newsletter-era berriak posta elektronikoz jasotzeko."
     },
     "title": "Newsletter",
     "subtitle": "Egon eguneratuta CREUPen azken berriekin. Jaso gure hileroko newsletter-a zuzenean zure postan.",
-    "dateLocale": "eu-ES",
     "confirmed": {
       "title": "Harpidetza baieztatua",
       "description": "Zure helbidea aktibatuta geratu da CREUPen newsletter-a jasotzeko."
@@ -783,12 +782,6 @@
         "consentRequired": "Pribatutasun-politika onartu behar duzu harpidetzeko",
         "turnstileRequired": "Osatu spam-aren aurkako egiaztapena"
       }
-    },
-    "archive": {
-      "ariaLabel": "Newsletter-en artxiboa",
-      "title": "Aurreko zenbakiak",
-      "empty": "Oraindik ez da newsletter-ik argitaratu.",
-      "download": "Deskargatu PDFa"
     }
   },
   "admin": {

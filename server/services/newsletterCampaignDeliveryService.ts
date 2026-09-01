@@ -11,7 +11,7 @@ import {
   loadCampaignRenderContext,
   resolveCampaignLocaleCode,
 } from '../utils/email/newsletterCampaignRender'
-import { NEWSLETTER_DELIVERY_STATUS } from './newsletterDeliveryRepository'
+import { NEWSLETTER_DELIVERY_STATUS } from './newsletterDeliveryShared'
 import {
   isNewsletterCampaignDeliveryWorkerCurrent,
   markNewsletterCampaignDeliverySending,

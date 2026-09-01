@@ -27,7 +27,6 @@ type SlotPayloadKey =
   | 'pressReleaseImage'
   | 'statementImage'
   | 'mediaAppearanceImage'
-  | 'newsletterCoverImage'
   | 'carouselSlideImage'
   | 'ogImage'
   | 'activityEntryImage'
@@ -45,10 +44,6 @@ const SLOT_PAYLOAD_MAP: Record<SlotPayloadKey, { scope: string; slot: string }> 
   mediaAppearanceImage: {
     scope: SITE_DEFAULT_IMAGE_SCOPE.press,
     slot: SITE_DEFAULT_IMAGE_SLOT.mediaAppearance,
-  },
-  newsletterCoverImage: {
-    scope: SITE_DEFAULT_IMAGE_SCOPE.newsletter,
-    slot: SITE_DEFAULT_IMAGE_SLOT.newsletterCover,
   },
   carouselSlideImage: {
     scope: SITE_DEFAULT_IMAGE_SCOPE.carousel,
@@ -190,16 +185,6 @@ export default defineEventHandler(async (event) => {
       previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.press, SITE_DEFAULT_IMAGE_SLOT.mediaAppearance),
       cleanupTargets,
     })
-    const nextNewsletter = await finalizeDefaultSlot({
-      event,
-      key: 'newsletterCoverImage',
-      incoming: validated.newsletterCoverImage,
-      previous: getPrev(
-        SITE_DEFAULT_IMAGE_SCOPE.newsletter,
-        SITE_DEFAULT_IMAGE_SLOT.newsletterCover
-      ),
-      cleanupTargets,
-    })
     const nextCarousel = await finalizeDefaultSlot({
       event,
       key: 'carouselSlideImage',
@@ -233,7 +218,6 @@ export default defineEventHandler(async (event) => {
       pressReleaseImage: nextPressRelease,
       statementImage: nextStatement,
       mediaAppearanceImage: nextMedia,
-      newsletterCoverImage: nextNewsletter,
       carouselSlideImage: nextCarousel,
       ogImage: nextOgImage,
       activityEntryImage: nextActivityEntry,
@@ -291,7 +275,6 @@ export default defineEventHandler(async (event) => {
         pressReleaseImage: nextPressRelease,
         statementImage: nextStatement,
         mediaAppearanceImage: nextMedia,
-        newsletterCoverImage: nextNewsletter,
         carouselSlideImage: nextCarousel,
         ogImage: nextOgImage,
         activityEntryImage: nextActivityEntry,

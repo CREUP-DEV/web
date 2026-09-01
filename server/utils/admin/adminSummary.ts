@@ -6,9 +6,10 @@ import {
   PRESS_TYPE_LABELS_BY_LOCALE,
   resolveSummaryLocale,
   SUMMARY_LABELS,
+  NEWSLETTER_CAMPAIGN_STATUS_LABEL_KEYS,
 } from './adminSummaryLabels'
 import type { TranslationLike } from './adminSummaryHelpers'
-import { formatNewsletterMonth, getTranslatedValue, isDefined } from './adminSummaryHelpers'
+import { getTranslatedValue, isDefined } from './adminSummaryHelpers'
 import { getAdminDashboardData } from './adminSummaryData'
 
 export interface DashboardRecentActivityItem {
@@ -24,7 +25,7 @@ type DashboardRecentActivityDraft = Omit<DashboardRecentActivityItem, 'updatedAt
 }
 
 export async function getAdminDashboardSummary(event: H3Event) {
-  const { locale, locales, fallbackLocale, languageTag } = getRequestLocaleContext(event)
+  const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
   const summaryLocale = resolveSummaryLocale(locale)
   const t = (key: string) => SUMMARY_LABELS[summaryLocale][key] ?? key
   const getActivityTitle = <T extends TranslationLike>(
@@ -40,7 +41,7 @@ export async function getAdminDashboardSummary(event: H3Event) {
     pressDossierItem,
     latestCarouselItem,
     latestEqualityDocument,
-    latestNewsletter,
+    latestNewsletterCampaign,
     latestPressArticle,
     latestFeaturedLink,
     latestTag,
@@ -86,17 +87,16 @@ export async function getAdminDashboardSummary(event: H3Event) {
           updatedAt: latestEqualityDocument.updatedAt,
         }
       : null,
-    latestNewsletter?.updatedAt
+    latestNewsletterCampaign?.updatedAt
       ? {
           sectionKey: 'newsletter',
-          title: `${t('newsletterPrefix')} ${formatNewsletterMonth(latestNewsletter.monthKey, languageTag)}`,
-          description: latestNewsletter.lastDeliveryWorkerToken
-            ? `${t('newsletterSendingNow')} · ${latestNewsletter.publicVisible ? t('newsletterVisibleWeb') : t('newsletterHiddenWeb')}`
-            : latestNewsletter.sentAt
-              ? `${t('newsletterSent')} · ${latestNewsletter.publicVisible ? t('newsletterVisibleWeb') : t('newsletterHiddenWeb')}`
-              : `${t('newsletterPending')} · ${latestNewsletter.publicVisible ? t('newsletterVisibleWeb') : t('newsletterHiddenWeb')}`,
+          title: latestNewsletterCampaign.subject || t('newsletterUntitled'),
+          description: t(
+            NEWSLETTER_CAMPAIGN_STATUS_LABEL_KEYS[latestNewsletterCampaign.status] ??
+              'newsletterStatusDraft'
+          ),
           to: ADMIN_ROUTES.newsletter,
-          updatedAt: latestNewsletter.updatedAt,
+          updatedAt: latestNewsletterCampaign.updatedAt,
         }
       : null,
     latestPressArticle?.updatedAt

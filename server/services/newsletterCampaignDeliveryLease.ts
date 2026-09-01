@@ -2,7 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { newsletterCampaigns } from '../db/schema'
-import { getNewsletterDeliveryStaleBefore } from './newsletterDeliveryLease'
+import { getNewsletterDeliveryStaleBefore } from './newsletterDeliveryShared'
 import type { NewsletterCampaignExecutor } from '../utils/newsletter/newsletterCampaigns'
 import {
   NEWSLETTER_CAMPAIGN_ACTIVE_STATUSES,
