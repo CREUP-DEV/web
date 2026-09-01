@@ -22,9 +22,14 @@ import {
 import { DEFAULT_LOCALE_CODE } from '~~/shared/utils/locale'
 import type { NewsletterCampaignItemType } from '~~/shared/constants/newsletterCampaigns'
 
-const MIN_TRIGRAM_SEARCH_LENGTH = 3
 const DEFAULT_LIMIT = 20
 
+/**
+ * Every type searches by substring, never with the trigram `%` operator. `%` compares whole-string
+ * similarity against a 0.3 threshold, so a single word never clears it against a long title:
+ * measured on this database, "estudiantes" matched 2 of 464 press articles where `ilike` matched
+ * 217. The gin_trgm_ops indexes accelerate `ilike '%…%'` regardless — 9ms across the same table.
+ */
 function escapeLikePattern(value: string) {
   return value.replace(/[%_\\]/g, '\\$&')
 }
@@ -103,10 +108,7 @@ async function listPressArticles({
     const pattern = `%${escapeLikePattern(search)}%`
     // The parentheses are load-bearing: `and()` embeds this fragment verbatim, so a bare `or`
     // would bind looser than the correlation and match every row.
-    const matches =
-      search.length >= MIN_TRIGRAM_SEARCH_LENGTH
-        ? sql`(${pressArticleTranslations.title} % ${search} or ${pressArticleTranslations.description} % ${search})`
-        : sql`(${pressArticleTranslations.title} ilike ${pattern} escape '\\' or ${pressArticleTranslations.description} ilike ${pattern} escape '\\')`
+    const matches = sql`(${pressArticleTranslations.title} ilike ${pattern} escape '\\' or ${pressArticleTranslations.description} ilike ${pattern} escape '\\')`
 
     conditions.push(
       sql`exists (
@@ -191,10 +193,7 @@ async function listActivityEntries({
 
   if (search) {
     const pattern = `%${escapeLikePattern(search)}%`
-    const matches =
-      search.length >= MIN_TRIGRAM_SEARCH_LENGTH
-        ? sql`(${activityEntryTranslations.title} % ${search} or ${activityEntryTranslations.excerpt} % ${search})`
-        : sql`(${activityEntryTranslations.title} ilike ${pattern} escape '\\' or ${activityEntryTranslations.excerpt} ilike ${pattern} escape '\\')`
+    const matches = sql`(${activityEntryTranslations.title} ilike ${pattern} escape '\\' or ${activityEntryTranslations.excerpt} ilike ${pattern} escape '\\')`
 
     conditions.push(
       sql`exists (

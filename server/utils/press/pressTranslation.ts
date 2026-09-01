@@ -140,7 +140,7 @@ const sanitizeRichTextLinkHref = (value?: string | null) => {
   return null
 }
 
-const replaceElementTag = (element: RichTextElement, tagName: 'strong' | 'em') => {
+const replaceElementTag = (element: RichTextElement, tagName: 'strong' | 'em' | 'p') => {
   const ownerDocument = element.ownerDocument
   const replacement = ownerDocument.createElement(tagName)
 
@@ -180,6 +180,23 @@ const strippedRichTextTags = new Set([
   'math',
 ])
 
+/** Disallowed elements that carry their own line break, so they become paragraphs, not bare text. */
+const blockRichTextTags = new Set([
+  'article',
+  'blockquote',
+  'div',
+  'figcaption',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'li',
+  'pre',
+  'section',
+])
+
 /**
  * Enforces the tag and attribute allowlist directly on the parsed document.
  *
@@ -205,7 +222,15 @@ const enforceAllowedTags = (document: RichTextDocument, allowedTags: string[]) =
     }
 
     if (!allowed.has(tagName)) {
-      unwrapElement(element)
+      // Unwrapping a block runs its text into the neighbouring block: a pasted list would come out
+      // as "unodos". Where the allowlist keeps `p`, blocks degrade into paragraphs instead, which
+      // is what a narrower allowlist is trying to express anyway.
+      if (blockRichTextTags.has(tagName) && allowed.has('p')) {
+        replaceElementTag(element, 'p')
+      } else {
+        unwrapElement(element)
+      }
+
       continue
     }
 
