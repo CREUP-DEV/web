@@ -80,6 +80,22 @@ const buildDefaultLocale = (): LocaleDefinition => {
   }
 }
 
+/**
+ * BCP 47 language tag for an internal locale code. The two are not interchangeable: `val` is
+ * `ca-ES-valencia`. Use the tag for `<html lang>` and `Intl`, never the code — matching is exact
+ * so `val` cannot collapse onto `ca`.
+ */
+export const resolveLanguageTag = (code?: string | null) => {
+  const normalizedCode = String(code ?? '')
+    .trim()
+    .toLowerCase()
+
+  return (
+    LOCALE_DEFINITIONS.find((locale) => locale.code === normalizedCode)?.language ??
+    buildDefaultLocale().language
+  )
+}
+
 export const normalizeLocaleDefinitions = (rawLocales: unknown): LocaleDefinition[] => {
   if (!Array.isArray(rawLocales)) {
     return [buildDefaultLocale()]

@@ -10,11 +10,13 @@ type PressTranslationLike = {
   contentHtml?: string | null
 }
 type RichTextElement = {
+  attributes: Iterable<{ name: string }>
   firstChild: ChildNode | null
   ownerDocument: RichTextDocument
   parentNode: ParentNode | null
   replaceWith: (node: unknown) => void
   removeAttribute: (name: string) => void
+  tagName: string
 }
 type RichTextAnchorElement = RichTextElement & {
   getAttribute: (name: string) => string | null
@@ -64,9 +66,17 @@ const allowedRichTextTags = [
   'b',
   'i',
 ]
+
+/**
+ * Newsletter intros run through the same sanitizer with a narrower tag allowlist: headings,
+ * blockquotes and lists render inconsistently across email clients, so they are dropped (their
+ * text is kept) instead of shipping markup that breaks in Outlook or Gmail.
+ */
+const allowedNewsletterIntroTags = ['a', 'b', 'br', 'em', 'i', 'p', 'strong']
+
 const allowedRichTextAttributes = ['href', 'target']
 
-const extractPlainText = (value?: string | null) => {
+export const extractPlainText = (value?: string | null) => {
   const normalized = String(value ?? '').trim()
   if (!normalized) {
     return ''
@@ -154,14 +164,72 @@ const unwrapElement = (element: RichTextElement) => {
   parentNode.removeChild(element)
 }
 
-export const sanitizeRichTextHtml = (value?: string | null) => {
+/**
+ * Elements whose *content* is as unwelcome as the tag itself, so they are removed outright rather
+ * than unwrapped. Everything else outside the allowlist keeps its text and loses its tag.
+ */
+const strippedRichTextTags = new Set([
+  'script',
+  'style',
+  'iframe',
+  'object',
+  'embed',
+  'template',
+  'noscript',
+  'svg',
+  'math',
+])
+
+/**
+ * Enforces the tag and attribute allowlist directly on the parsed document.
+ *
+ * This is what actually sanitizes. The DOMPurify call above is a no-op in this runtime: it gates
+ * `isSupported` on `document.implementation.createHTMLDocument`, which linkedom does not provide,
+ * and silently returns its input unchanged. Shimming the missing pieces does not help either —
+ * DOMPurify then traverses a DOM it cannot walk and returns an empty string. Until the HTML
+ * backend changes, the allowlist has to be applied here.
+ */
+const enforceAllowedTags = (document: RichTextDocument, allowedTags: string[]) => {
+  const allowed = new Set(allowedTags)
+
+  for (const element of Array.from(document.body.querySelectorAll('*')) as RichTextElement[]) {
+    const tagName = element.tagName?.toLowerCase()
+
+    if (!tagName) {
+      continue
+    }
+
+    if (strippedRichTextTags.has(tagName)) {
+      element.parentNode?.removeChild(element)
+      continue
+    }
+
+    if (!allowed.has(tagName)) {
+      unwrapElement(element)
+      continue
+    }
+
+    // Snapshot first: removing an attribute mutates the live collection being iterated.
+    for (const { name } of [...element.attributes]) {
+      if (!allowedRichTextAttributes.includes(name.toLowerCase())) {
+        element.removeAttribute(name)
+      }
+    }
+  }
+}
+
+/**
+ * Single sanitization pipeline shared by every allowlist: the tag/attribute allowlist, then the
+ * `b`/`i` normalization and anchor hardening. Only the set of allowed tags varies between callers.
+ */
+const sanitizeHtmlWithAllowedTags = (value: string | null | undefined, allowedTags: string[]) => {
   const normalized = String(value ?? '').trim()
   if (!normalized) {
     return null
   }
 
   const sanitizedSource = richTextPurifier.sanitize(normalized, {
-    ALLOWED_TAGS: allowedRichTextTags,
+    ALLOWED_TAGS: allowedTags,
     ALLOWED_ATTR: allowedRichTextAttributes,
     ALLOW_ARIA_ATTR: false,
     ALLOW_DATA_ATTR: false,
@@ -170,6 +238,8 @@ export const sanitizeRichTextHtml = (value?: string | null) => {
   }) as string
 
   const { document } = parseRichTextDocument(sanitizedSource)
+
+  enforceAllowedTags(document, allowedTags)
 
   for (const boldElement of Array.from(document.body.querySelectorAll('b')) as RichTextElement[]) {
     replaceElementTag(boldElement, 'strong')
@@ -207,6 +277,12 @@ export const sanitizeRichTextHtml = (value?: string | null) => {
 
   return extractPlainText(sanitizedHtml).length > 0 ? sanitizedHtml : null
 }
+
+export const sanitizeRichTextHtml = (value?: string | null) =>
+  sanitizeHtmlWithAllowedTags(value, allowedRichTextTags)
+
+export const sanitizeNewsletterIntroHtml = (value?: string | null) =>
+  sanitizeHtmlWithAllowedTags(value, allowedNewsletterIntroTags)
 
 export const hasMeaningfulRichTextHtml = (value?: string | null) =>
   sanitizeRichTextHtml(value) !== null

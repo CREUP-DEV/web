@@ -1,7 +1,7 @@
 import { NEWSLETTER_BRAND_BANNER_PATH } from '~~/shared/constants/assetPaths'
 import { buildAbsoluteUrl } from '../core/urlBuilder'
 
-const EMAIL_COLORS = {
+export const EMAIL_COLORS = {
   background: '#eaeaea',
   body: '#2c2c2c',
   brand: '#792225',
@@ -11,7 +11,7 @@ const EMAIL_COLORS = {
   white: '#ffffff',
 } as const
 
-const EMAIL_FONTS = {
+export const EMAIL_FONTS = {
   body: 'Arial, sans-serif',
   heading: 'Georgia, serif',
 } as const
@@ -28,20 +28,32 @@ export function escapeHtmlForAttribute(value: string): string {
   return escapeHtml(value)
 }
 
+const DEFAULT_EMAIL_LANGUAGE_TAG = 'es-ES'
+
 interface EmailLayoutOptions {
   bannerAlt?: string
   heading: string
   innerHtml: string
+  /**
+   * BCP 47 language tag for `<html lang>` — never an internal locale code (`val` is
+   * `ca-ES-valencia`). Transactional emails stay Spanish and omit it.
+   */
+  lang?: string
   preheader: string
   siteUrl: string
   title: string
 }
 
-function buildEmailLayout(options: EmailLayoutOptions): string {
+/**
+ * Shared shell for every outgoing email. `innerHtml` is spliced into an open `<table>`, so
+ * callers must supply a concatenation of `<tr>` rows. No field is escaped here: callers pass
+ * content that is already escaped or sanitized.
+ */
+export function buildEmailLayout(options: EmailLayoutOptions): string {
   const bannerImageUrl = buildAbsoluteUrl(options.siteUrl, NEWSLETTER_BRAND_BANNER_PATH)
 
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="${options.lang ?? DEFAULT_EMAIL_LANGUAGE_TAG}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
