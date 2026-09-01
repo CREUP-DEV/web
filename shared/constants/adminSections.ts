@@ -66,7 +66,7 @@ export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
   {
     key: 'newsletter',
     name: 'Newsletter',
-    description: 'Ediciones publicadas y listas para envío.',
+    description: 'Campañas de contenido y suscriptores.',
     to: ADMIN_ROUTES.newsletter,
     icon: 'i-tabler-mail',
   },
@@ -87,7 +87,7 @@ export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
   {
     key: 'siteDefaultImages',
     name: 'Imágenes por defecto',
-    description: 'Portadas de prensa, newsletter y carrusel cuando no hay imagen propia.',
+    description: 'Portadas de prensa, actividad y carrusel cuando no hay imagen propia.',
     to: ADMIN_ROUTES.siteDefaultImages,
     icon: 'i-tabler-photo-scan',
   },

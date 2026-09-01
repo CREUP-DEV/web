@@ -6,6 +6,7 @@ export const ADMIN_ROUTES = {
   about: '/admin/que-es',
   equality: '/admin/igualdad',
   newsletter: '/admin/newsletter',
+  newsletterCampaigns: '/admin/newsletter/campanas',
   newsletterSubscribers: '/admin/newsletter/suscriptores',
   press: '/admin/prensa',
   pressCreate: '/admin/prensa/crear',
