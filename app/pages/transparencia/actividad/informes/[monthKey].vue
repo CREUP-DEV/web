@@ -226,7 +226,7 @@ watch(
           <article
             :id="`area-${report.areaId}`"
             :aria-labelledby="`area-${report.areaId}-title`"
-            class="motion-card group bg-surface ring-default flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl ring-1"
+            class="motion-card bg-surface ring-default flex h-full scroll-mt-24 flex-col overflow-hidden rounded-xl ring-1"
           >
             <figure class="m-0">
               <div class="bg-muted relative aspect-video overflow-hidden">
@@ -264,10 +264,15 @@ watch(
                 >
                   {{ report.areaName }}
                 </h2>
+                <!--
+                  Always visible rather than revealed on hover: a hover-only control is invisible
+                  on touch, and hiding it behind `opacity-0` made it depend on which of several
+                  equal-specificity utilities the cascade happened to emit last.
+                -->
                 <a
                   :href="`#area-${report.areaId}`"
                   :aria-label="t('activity.reports.areaPermalink', { area: report.areaName })"
-                  class="text-muted hover:text-primary focus-visible:ring-primary/60 inline-flex size-6 shrink-0 items-center justify-center rounded-sm opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-2 focus-visible:outline-none pointer-coarse:opacity-100"
+                  class="text-dimmed hover:text-primary focus-visible:text-primary focus-visible:ring-primary/60 inline-flex size-6 shrink-0 items-center justify-center rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <UIcon name="i-tabler-link" class="size-4" aria-hidden="true" />
                 </a>
