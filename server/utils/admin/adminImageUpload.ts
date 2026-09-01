@@ -1,11 +1,10 @@
 import { createError, type H3Event } from 'h3'
-import createDOMPurify, { type WindowLike } from 'dompurify'
-import { DOMParser, parseHTML } from 'linkedom'
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import sharp from 'sharp'
 import { slugify } from '../core/slug'
 import { finalizeAdminFile, saveTemporaryAdminFile } from './adminStoredFile'
+import { SvgSanitizeError, sanitizeSvgMarkup } from './svgSanitizer'
 import { logError } from '../core/logger'
 import { resolveAdminApiMessage } from '../locale/adminApiErrorMessages'
 
@@ -28,74 +27,6 @@ const MAX_RASTER_IMAGE_DIMENSION = 5000
 const MAX_RASTER_IMAGE_PIXELS = 80_000_000
 // 100 frame limit for animated GIFs/WebP; prevents CPU exhaustion on crafted animations
 const MAX_RASTER_IMAGE_FRAMES = 100
-
-const svgSanitizerWindow = parseHTML('<!doctype html><html><body></body></html>')
-const svgPurifier = createDOMPurify(svgSanitizerWindow as unknown as WindowLike)
-const blockedSvgTags = new Set([
-  'script',
-  'foreignobject',
-  'iframe',
-  'object',
-  'embed',
-  'set',
-  'animate',
-  'animatetransform',
-  'animatemotion',
-  'handler',
-])
-const svgReferenceAttributes = new Set(['href', 'xlink:href', 'src'])
-type SanitizedSvgElement = {
-  tagName: string
-  getAttributeNames: () => string[]
-  getAttribute: (name: string) => string | null
-  removeAttribute: (name: string) => void
-}
-
-const hasUnsafeSvgReference = (value: string) => {
-  const normalized = value.trim().toLowerCase()
-
-  if (!normalized) {
-    return false
-  }
-
-  return !normalized.startsWith('#')
-}
-
-const hasUnsafeCssReference = (value: string) => {
-  const normalized = value.trim().toLowerCase()
-
-  if (!normalized) {
-    return false
-  }
-
-  if (
-    normalized.includes('@import') ||
-    normalized.includes('expression(') ||
-    normalized.includes('javascript:') ||
-    normalized.includes('data:')
-  ) {
-    return true
-  }
-
-  let cursor = normalized.indexOf('url(')
-
-  while (cursor !== -1) {
-    const closingIndex = normalized.indexOf(')', cursor + 4)
-    if (closingIndex === -1) {
-      return true
-    }
-
-    const rawTarget = normalized.slice(cursor + 4, closingIndex).trim()
-    const target = rawTarget.replaceAll('"', '').replaceAll("'", '')
-    if (target && !target.startsWith('#')) {
-      return true
-    }
-
-    cursor = normalized.indexOf('url(', closingIndex + 1)
-  }
-
-  return false
-}
 
 const invalidSvgError = (event?: H3Event) =>
   createError({
@@ -151,87 +82,15 @@ function validateRasterImageMetadata(metadata: sharp.Metadata, event?: H3Event) 
 }
 
 function sanitizeSvgContent(data: Buffer, event?: H3Event): Buffer {
-  const source = data.toString('utf8').trim()
-
-  if (!source) {
-    throw invalidSvgError(event)
-  }
-
-  const sanitized = svgPurifier.sanitize(source, {
-    USE_PROFILES: { svg: true, svgFilters: true },
-    FORBID_TAGS: Array.from(blockedSvgTags),
-    ALLOW_ARIA_ATTR: false,
-    ALLOW_DATA_ATTR: false,
-    RETURN_TRUSTED_TYPE: false,
-  }) as string
-
-  if (!sanitized.trim()) {
-    throw invalidSvgError(event)
-  }
-
-  let svgDocument: ReturnType<DOMParser['parseFromString']>
-
   try {
-    svgDocument = new DOMParser().parseFromString(sanitized, 'image/svg+xml')
-  } catch {
-    throw invalidSvgError(event)
-  }
-
-  if (svgDocument.querySelector('parsererror')) {
-    throw invalidSvgError(event)
-  }
-
-  const rootElement = svgDocument.documentElement
-  if (!rootElement || rootElement.tagName.toLowerCase() !== 'svg') {
-    throw invalidSvgError(event)
-  }
-
-  for (const element of Array.from(svgDocument.querySelectorAll('*')) as SanitizedSvgElement[]) {
-    const tagName = element.tagName.toLowerCase()
-    if (blockedSvgTags.has(tagName)) {
-      throw disallowedSvgError(event)
+    return Buffer.from(sanitizeSvgMarkup(data.toString('utf8')), 'utf8')
+  } catch (error) {
+    if (error instanceof SvgSanitizeError) {
+      throw error.reason === 'forbidden' ? disallowedSvgError(event) : invalidSvgError(event)
     }
 
-    for (const attributeName of element.getAttributeNames()) {
-      const normalizedAttributeName = attributeName.toLowerCase()
-      const attributeValue = element.getAttribute(attributeName)?.trim() ?? ''
-
-      if (normalizedAttributeName.startsWith('on')) {
-        element.removeAttribute(attributeName)
-        continue
-      }
-
-      if (
-        svgReferenceAttributes.has(normalizedAttributeName) &&
-        hasUnsafeSvgReference(attributeValue)
-      ) {
-        element.removeAttribute(attributeName)
-        continue
-      }
-
-      if (
-        (normalizedAttributeName === 'style' ||
-          normalizedAttributeName === 'fill' ||
-          normalizedAttributeName === 'filter' ||
-          normalizedAttributeName === 'clip-path' ||
-          normalizedAttributeName === 'mask' ||
-          normalizedAttributeName === 'marker-start' ||
-          normalizedAttributeName === 'marker-mid' ||
-          normalizedAttributeName === 'marker-end') &&
-        hasUnsafeCssReference(attributeValue)
-      ) {
-        element.removeAttribute(attributeName)
-      }
-    }
+    throw error
   }
-
-  const serializedSvg = rootElement.outerHTML
-
-  if (!serializedSvg.trim()) {
-    throw invalidSvgError(event)
-  }
-
-  return Buffer.from(serializedSvg, 'utf8')
 }
 
 interface SaveAdminImageOptions {

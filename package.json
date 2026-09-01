@@ -20,6 +20,7 @@
     "build:seed:content": "esbuild drizzle/seed/content.ts --bundle --platform=node --format=esm --outfile=ops/seed-content.mjs --packages=external",
     "cache:purge": "tsx scripts/purge-cache.ts",
     "build:cache-purge": "esbuild scripts/purge-cache.ts --bundle --platform=node --format=esm --outfile=ops/cache-purge.mjs --packages=external",
+    "check:svg-sanitizer": "tsx scripts/check-svg-sanitizer.ts",
     "i18n:check": "tsx scripts/check-i18n-parity.ts",
     "i18n:audit-identical": "tsx scripts/check-i18n-identical-values.ts",
     "check:admin-auth": "node scripts/check-admin-auth.mjs"
@@ -81,5 +82,5 @@
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.3"
   },
-  "packageManager": "pnpm@11.5.1"
+  "packageManager": "pnpm@11.24.0"
 }
