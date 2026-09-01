@@ -4,10 +4,18 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const route = useRoute()
 
-const token = computed(() => {
-  const raw = route.query.token
+const readQueryParam = (key: string) => {
+  const raw = route.query[key]
   return typeof raw === 'string' ? raw.trim() : ''
-})
+}
+
+const token = computed(() => readQueryParam('token'))
+/**
+ * Campaign attribution, forwarded untouched. It never affects whether the unsubscribe succeeds —
+ * the server only uses it to credit the campaign that prompted it.
+ */
+const campaignId = computed(() => readQueryParam('c'))
+const attribution = computed(() => readQueryParam('a'))
 
 const state = ref<'idle' | 'loading' | 'done' | 'error'>('idle')
 
@@ -26,7 +34,12 @@ async function unsubscribe() {
       '/api/newsletter-unsubscribe',
       {
         method: 'POST',
-        body: { token: token.value },
+        body: {
+          token: token.value,
+          ...(campaignId.value && attribution.value
+            ? { c: campaignId.value, a: attribution.value }
+            : {}),
+        },
         headers: localeApiHeaders.value,
       }
     )

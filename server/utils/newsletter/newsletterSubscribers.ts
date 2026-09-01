@@ -22,6 +22,12 @@ const NEWSLETTER_TOKEN_VERSION = 'v1'
 const NEWSLETTER_TOKEN_SEPARATOR = '.'
 const NEWSLETTER_TOKEN_KIND_CONFIRM = 'confirm'
 const NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE = 'unsubscribe'
+/**
+ * Campaign attribution is signed in its own domain so a signature from one kind can never be
+ * replayed as another. It is not a token — nothing is parsed out of it, it is only checked against
+ * values already in hand — which is why it stays out of `createNewsletterToken`.
+ */
+const NEWSLETTER_TOKEN_KIND_ATTRIBUTION = 'attribution'
 
 export const NEWSLETTER_CONSENT_SOURCES = {
   adminManual: 'admin_manual',
@@ -73,7 +79,10 @@ function getNewsletterTokenSecret() {
 }
 
 function buildNewsletterTokenSignature(
-  kind: typeof NEWSLETTER_TOKEN_KIND_CONFIRM | typeof NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE,
+  kind:
+    | typeof NEWSLETTER_TOKEN_KIND_CONFIRM
+    | typeof NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE
+    | typeof NEWSLETTER_TOKEN_KIND_ATTRIBUTION,
   subscriberId: string,
   extra: string
 ) {
@@ -125,6 +134,61 @@ function parseSignedNewsletterToken(
   return { subscriberId, extra }
 }
 
+function toSubscriptionStartedAt(subscribedAt: Date | string) {
+  const subscriptionStartedAt =
+    subscribedAt instanceof Date ? subscribedAt.getTime() : new Date(subscribedAt).getTime()
+
+  if (!Number.isInteger(subscriptionStartedAt) || subscriptionStartedAt <= 0) {
+    throw new Error('Invalid newsletter subscription timestamp')
+  }
+
+  return subscriptionStartedAt
+}
+
+/**
+ * Signs "this unsubscribe came from campaign X" without authorising anything: the unsubscribe token
+ * remains the only authorisation, and a missing or bad signature only costs the campaign a count.
+ *
+ * Binding to `subscribedAt` is what stops an old signature riding along with a newer token. Without
+ * it: unsubscribe, resubscribe (same row, same id, new `subscribedAt`), then pair the fresh token
+ * with the previous campaign's signature and have the new unsubscribe counted against it again.
+ */
+export function createNewsletterAttributionSignature(
+  subscriberId: string,
+  campaignId: string,
+  subscribedAt: Date | string
+) {
+  return buildNewsletterTokenSignature(
+    NEWSLETTER_TOKEN_KIND_ATTRIBUTION,
+    subscriberId,
+    `${campaignId}:${toSubscriptionStartedAt(subscribedAt)}`
+  )
+}
+
+export function verifyNewsletterAttributionSignature(
+  signature: string,
+  subscriberId: string,
+  campaignId: string,
+  subscribedAt: Date | string
+) {
+  let expected: string
+
+  try {
+    expected = createNewsletterAttributionSignature(subscriberId, campaignId, subscribedAt)
+  } catch {
+    return false
+  }
+
+  const expectedBuffer = Buffer.from(expected)
+  const signatureBuffer = Buffer.from(signature)
+
+  if (expectedBuffer.length !== signatureBuffer.length) {
+    return false
+  }
+
+  return timingSafeEqual(expectedBuffer, signatureBuffer)
+}
+
 export function createNewsletterConfirmToken(subscriberId: string, expiresAt: Date) {
   return createNewsletterToken(
     NEWSLETTER_TOKEN_KIND_CONFIRM,
@@ -155,17 +219,10 @@ export function createNewsletterUnsubscribeToken(
   subscriberId: string,
   subscribedAt: Date | string
 ) {
-  const subscriptionStartedAt =
-    subscribedAt instanceof Date ? subscribedAt.getTime() : new Date(subscribedAt).getTime()
-
-  if (!Number.isInteger(subscriptionStartedAt) || subscriptionStartedAt <= 0) {
-    throw new Error('Invalid newsletter subscription timestamp')
-  }
-
   return createNewsletterToken(
     NEWSLETTER_TOKEN_KIND_UNSUBSCRIBE,
     subscriberId,
-    String(subscriptionStartedAt)
+    String(toSubscriptionStartedAt(subscribedAt))
   )
 }
 

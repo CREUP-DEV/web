@@ -188,6 +188,12 @@ export const mandateSlugRouteParamSchema = z.object({
 
 export const newsletterTokenQuerySchema = z.object({
   token: toSingleStringSchema(z.string().trim().min(1, 'Token requerido')),
+  /**
+   * Optional campaign attribution. Never gates the unsubscribe: a missing or invalid pair only
+   * costs the campaign a count, so both are permissive here and verified downstream.
+   */
+  c: toOptionalSingleStringSchema(z.string().trim().min(1).max(64)),
+  a: toOptionalSingleStringSchema(z.string().trim().min(1).max(128)),
 })
 
 export const memberCalendarQuerySchema = z.object({

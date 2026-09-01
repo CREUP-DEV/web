@@ -1,12 +1,13 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { db } from '../../db'
-import { newsletterSubscribers } from '../../db/schema'
+import { newsletterCampaigns, newsletterSubscribers } from '../../db/schema'
 import {
   NEWSLETTER_CONSENT_SOURCES,
   NEWSLETTER_SUBSCRIPTION_EVENT_TYPES,
   parseNewsletterConfirmToken,
   parseNewsletterUnsubscribeToken,
   recordNewsletterSubscriptionEvent,
+  verifyNewsletterAttributionSignature,
 } from './newsletterSubscribers'
 
 export type NewsletterConfirmStatus = 'confirmed' | 'already-confirmed' | 'expired' | 'invalid'
@@ -93,8 +94,18 @@ export async function performNewsletterConfirmAction(
   return { status: 'confirmed', success: true }
 }
 
+/**
+ * Optional "this unsubscribe came from campaign X" claim. It never gates the unsubscribe itself:
+ * an absent or forged signature just leaves the campaign's counter untouched.
+ */
+export interface NewsletterUnsubscribeAttribution {
+  campaignId: string
+  signature: string
+}
+
 export async function performNewsletterUnsubscribeAction(
-  token: string
+  token: string,
+  attribution?: NewsletterUnsubscribeAttribution | null
 ): Promise<NewsletterUnsubscribeActionResult> {
   const parsedToken = parseNewsletterUnsubscribeToken(token)
   const subscriber = parsedToken
@@ -106,21 +117,31 @@ export async function performNewsletterUnsubscribeAction(
       })
 
   if (
-    subscriber &&
-    (!parsedToken || subscriber.subscribedAt.getTime() === parsedToken.subscribedAt.getTime())
+    !subscriber ||
+    (parsedToken && subscriber.subscribedAt.getTime() !== parsedToken.subscribedAt.getTime())
   ) {
-    await db.transaction(async (tx) => {
-      await tx
-        .update(newsletterSubscribers)
-        .set({
-          active: false,
-          confirmToken: null,
-          confirmTokenExpiresAt: null,
-          unsubscribedAt: new Date(),
-          unsubscribeToken: null,
-        })
-        .where(eq(newsletterSubscribers.id, subscriber.id))
+    return { status: 'invalid', success: false }
+  }
 
+  // Guarding on `active` is what makes the effects idempotent: providers retry the RFC 8058 POST,
+  // and without it every retry logged another unsubscribe event. The response stays the same
+  // either way — for whoever clicked, the outcome is identical.
+  await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(newsletterSubscribers)
+      .set({
+        active: false,
+        confirmToken: null,
+        confirmTokenExpiresAt: null,
+        unsubscribedAt: new Date(),
+        unsubscribeToken: null,
+      })
+      .where(
+        and(eq(newsletterSubscribers.id, subscriber.id), eq(newsletterSubscribers.active, true))
+      )
+      .returning({ id: newsletterSubscribers.id })
+
+    if (rows.length > 0) {
       await recordNewsletterSubscriptionEvent(
         {
           email: subscriber.email,
@@ -130,10 +151,23 @@ export async function performNewsletterUnsubscribeAction(
         },
         tx
       )
-    })
 
-    return { status: 'unsubscribed', success: true }
-  }
+      if (
+        attribution &&
+        verifyNewsletterAttributionSignature(
+          attribution.signature,
+          subscriber.id,
+          attribution.campaignId,
+          subscriber.subscribedAt
+        )
+      ) {
+        await tx
+          .update(newsletterCampaigns)
+          .set({ unsubscribeCount: sql`${newsletterCampaigns.unsubscribeCount} + 1` })
+          .where(eq(newsletterCampaigns.id, attribution.campaignId))
+      }
+    }
+  })
 
-  return { status: 'invalid', success: false }
+  return { status: 'unsubscribed', success: true }
 }
