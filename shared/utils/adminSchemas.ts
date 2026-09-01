@@ -1,6 +1,13 @@
 import { z } from 'zod'
 import { RESERVED_TAG_SLUG } from '~~/shared/constants/tags'
 import { MEMBER_ORG_SOURCES } from '~~/shared/constants/activity'
+import {
+  NEWSLETTER_CAMPAIGN_ITEM_EXCERPT_MAX_LENGTH,
+  NEWSLETTER_CAMPAIGN_ITEM_TITLE_MAX_LENGTH,
+  NEWSLETTER_CAMPAIGN_ITEM_TYPES,
+  NEWSLETTER_CAMPAIGN_PREHEADER_MAX_LENGTH,
+  NEWSLETTER_CAMPAIGN_SUBJECT_MAX_LENGTH,
+} from '~~/shared/constants/newsletterCampaigns'
 import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/utils/locale'
 
 const localeSchema = z.enum(SUPPORTED_LOCALE_CODES, {
@@ -330,3 +337,83 @@ export const updateMemberOrgCatalogEntrySchema = createMemberOrgCatalogEntrySche
   .safeExtend({
     supersededByEntryId: z.string().min(1).nullish(),
   })
+
+// Newsletter campaigns. Only `es` is required on every translatable field: the send freezes a
+// dense snapshot that falls back to it for the other locales.
+
+export const newsletterCampaignTranslationSchema = z.object({
+  locale: localeSchema,
+  subject: z.string().max(NEWSLETTER_CAMPAIGN_SUBJECT_MAX_LENGTH),
+  preheader: z.string().max(NEWSLETTER_CAMPAIGN_PREHEADER_MAX_LENGTH).nullish(),
+  introHtml: z.string().max(5000).nullish(),
+})
+
+export const createNewsletterCampaignSchema = withTranslationRules(
+  z.object({
+    translations: z
+      .array(newsletterCampaignTranslationSchema)
+      .min(1, 'admin.validation.translationRequired'),
+  }),
+  [{ field: 'subject', message: 'admin.validation.defaultSubjectRequired' }]
+)
+
+export const updateNewsletterCampaignSchema =
+  createNewsletterCampaignSchema.safeExtend(optimisticLockFields)
+
+export const newsletterCampaignItemTranslationSchema = z.object({
+  locale: localeSchema,
+  titleOverride: z.string().max(NEWSLETTER_CAMPAIGN_ITEM_TITLE_MAX_LENGTH).nullish(),
+  excerptOverride: z.string().max(NEWSLETTER_CAMPAIGN_ITEM_EXCERPT_MAX_LENGTH).nullish(),
+})
+
+export const newsletterCampaignItemSchema = z.object({
+  itemType: z.enum(NEWSLETTER_CAMPAIGN_ITEM_TYPES, {
+    message: 'admin.validation.invalidCampaignItemType',
+  }),
+  itemId: z.string().min(1).max(64),
+  translations: z.array(newsletterCampaignItemTranslationSchema).default([]),
+})
+
+/**
+ * Replaces the whole item list. `position` is implicit in array order, so the caller cannot leave
+ * gaps or duplicates. `updatedAt` is the campaign's: reordering content is a mutation of the
+ * parent, and it must contend with the text editor for the same optimistic lock.
+ */
+export const updateNewsletterCampaignItemsSchema = z
+  .object({
+    items: z.array(newsletterCampaignItemSchema).max(100),
+  })
+  .safeExtend(optimisticLockFields)
+  .superRefine((data, ctx) => {
+    const seen = new Set<string>()
+
+    data.items.forEach((item, index) => {
+      const key = `${item.itemType}:${item.itemId}`
+
+      if (seen.has(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'admin.validation.duplicateCampaignItem',
+          path: ['items', index, 'itemId'],
+        })
+      }
+
+      seen.add(key)
+      addNoDuplicateLocalesIssue(ctx, item.translations)
+    })
+  })
+
+export const newsletterCampaignTestSendSchema = z.object({
+  email: z.string().trim().email('admin.validation.invalidEmail'),
+  locale: localeSchema,
+})
+
+export const newsletterCampaignContentQuerySchema = z.object({
+  type: z.enum(NEWSLETTER_CAMPAIGN_ITEM_TYPES, {
+    message: 'admin.validation.invalidCampaignItemType',
+  }),
+  q: z.string().trim().max(200).optional(),
+  sinceLastCampaign: z.coerce.boolean().optional(),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
+})

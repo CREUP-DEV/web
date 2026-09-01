@@ -1550,6 +1550,9 @@
     "validation": {
       "invalidLocale": "Invalid locale / Locale-a ez da baliozkoa",
       "invalidMemberOrgSource": "Erakunde mota ez da baliozkoa",
+      "defaultSubjectRequired": "Gaztelaniazko gaia derrigorrezkoa da",
+      "invalidCampaignItemType": "Eduki mota ez da baliozkoa",
+      "duplicateCampaignItem": "Eduki hori kanpainan dago jada",
       "hrefFormat": "Estekak bide erlatibo bat edo http/https URL bat izan behar du",
       "duplicateLocale": "Ezin da hizkuntza bererako itzulpen bikoizturik egon",
       "translationRequired": "Gutxienez itzulpen bat behar da",
@@ -2137,6 +2140,7 @@
       "bannerTitle": "Hileko arloen txostenak",
       "bannerCta": "Ikusi txostenak",
       "viewReport": "Ikusi txostena",
+      "areaPermalink": "Esteka iraunkorra: {area}",
       "breadcrumb": "Arloen txostena"
     },
     "loadError": "Ezin izan da jarduera kargatu."

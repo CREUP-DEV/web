@@ -1550,6 +1550,9 @@
     "validation": {
       "invalidLocale": "Invalid locale / El locale no és vàlid",
       "invalidMemberOrgSource": "El tipus d'organització no és vàlid",
+      "defaultSubjectRequired": "L'assumpte en espanyol és obligatori",
+      "invalidCampaignItemType": "El tipus de contingut no és vàlid",
+      "duplicateCampaignItem": "Aquest contingut ja és a la campanya",
       "hrefFormat": "L'enllaç ha de ser una ruta relativa o una URL http/https",
       "duplicateLocale": "No pot haver-hi traduccions duplicades per al mateix idioma",
       "translationRequired": "Es requereix almenys una traducció",
@@ -2137,6 +2140,7 @@
       "bannerTitle": "Informes mensuals d'àrees",
       "bannerCta": "Veure informes",
       "viewReport": "Veure informe",
+      "areaPermalink": "Enllaç permanent a {area}",
       "breadcrumb": "Informe d'àrees"
     },
     "loadError": "No s'ha pogut carregar l'activitat."

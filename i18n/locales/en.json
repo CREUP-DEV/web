@@ -1550,6 +1550,9 @@
     "validation": {
       "invalidLocale": "Invalid locale",
       "invalidMemberOrgSource": "Invalid organisation type",
+      "defaultSubjectRequired": "The Spanish subject is required",
+      "invalidCampaignItemType": "Invalid content type",
+      "duplicateCampaignItem": "That content is already in the campaign",
       "hrefFormat": "The link must be a relative path or an http/https URL",
       "duplicateLocale": "There cannot be duplicate translations for the same language",
       "translationRequired": "At least one translation is required",
@@ -2137,6 +2140,7 @@
       "bannerTitle": "Monthly area reports",
       "bannerCta": "View reports",
       "viewReport": "View report",
+      "areaPermalink": "Permalink to {area}",
       "breadcrumb": "Area reports"
     },
     "loadError": "The activity could not be loaded."

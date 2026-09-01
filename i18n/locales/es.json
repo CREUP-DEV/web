@@ -1550,6 +1550,9 @@
     "validation": {
       "invalidLocale": "Invalid locale / El locale no es válido",
       "invalidMemberOrgSource": "El tipo de organización no es válido",
+      "defaultSubjectRequired": "El asunto en español es obligatorio",
+      "invalidCampaignItemType": "El tipo de contenido no es válido",
+      "duplicateCampaignItem": "Ese contenido ya está en la campaña",
       "hrefFormat": "El enlace debe ser una ruta relativa o una URL http/https",
       "duplicateLocale": "No puede haber traducciones duplicadas para el mismo idioma",
       "translationRequired": "Se requiere al menos una traducción",
@@ -2137,6 +2140,7 @@
       "bannerTitle": "Informes mensuales de áreas",
       "bannerCta": "Ver informes",
       "viewReport": "Ver informe",
+      "areaPermalink": "Enlace permanente a {area}",
       "breadcrumb": "Informe de áreas"
     },
     "loadError": "No se pudo cargar la actividad."
