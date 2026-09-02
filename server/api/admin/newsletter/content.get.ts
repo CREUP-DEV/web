@@ -352,15 +352,13 @@ async function listAreaReports({
         monthKey: areaReports.monthKey,
         image: areaReports.image,
         areaNameSnapshot: areaReports.areaNameSnapshot,
-        // An edition can span several months. The picker groups by edition and needs the span to
-        // label the group, so it rides along rather than costing a second round trip.
-        coversFrom: sql<string | null>`(
-          select ${areaReportEditions.coversFrom}
-          from ${areaReportEditions}
-          where ${areaReportEditions.monthKey} = ${areaReports.monthKey}
-        )`,
+        // An edition can span several months, and the picker labels each group with that span.
+        // Joined rather than fetched separately: it is one edition row per month key, so the join
+        // cannot multiply reports, and a left join keeps a report whose edition row is missing.
+        coversFrom: areaReportEditions.coversFrom,
       })
       .from(areaReports)
+      .leftJoin(areaReportEditions, eq(areaReportEditions.monthKey, areaReports.monthKey))
       .where(where)
       .orderBy(
         desc(areaReports.monthKey),
