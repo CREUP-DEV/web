@@ -1480,7 +1480,9 @@
         "mobile": "Mugikorra",
         "desktop": "Mahaigaina",
         "hint": "Benetako mezuaren txantiloi berarekin errendatzen da. Estekek ez dute klikik zenbatzen.",
-        "frameTitle": "Mezuaren aurrebista"
+        "frameTitle": "Mezuaren aurrebista",
+        "staleDescription": "Gordetako azken bertsioa erakusten du; gorde gabeko aldaketak ez daude oraindik.",
+        "staleAction": "Gorde eta eguneratu"
       },
       "send": {
         "title": "Bidalketa",

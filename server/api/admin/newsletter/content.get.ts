@@ -13,6 +13,14 @@ import { getPreferredTranslationValue } from '../../../utils/locale/localizedCon
 import { getLastDeliveredCampaignCutoff } from '../../../utils/newsletter/newsletterCampaigns'
 import { toExternalImageProxyUrl } from '../../../utils/external/externalAssetUrl'
 import { validateQuery } from '../../../utils/validation'
+import {
+  loadSiteDefaultImageEntriesMap,
+  resolveSiteDefaultImageUrlWithVersion,
+} from '../../../utils/admin/siteDefaultImages'
+import {
+  SITE_DEFAULT_IMAGE_SCOPE,
+  SITE_DEFAULT_IMAGE_SLOT,
+} from '~~/shared/constants/siteDefaultImages'
 import { newsletterCampaignContentQuerySchema } from '~~/shared/utils/adminSchemas'
 import {
   ACTIVITY_IMAGE_PUBLIC_BASE,
@@ -80,7 +88,15 @@ interface CampaignContentPage {
   total: number
 }
 
+type DefaultImages = Awaited<ReturnType<typeof loadSiteDefaultImageEntriesMap>>
+
 interface ContentQueryOptions {
+  /**
+   * Site default covers, so a piece with no image of its own is listed with the picture the send
+   * would actually freeze for it. The frozen snapshot still resolves its own copy at send time —
+   * this is only about the editor showing what it is about to produce.
+   */
+  defaultImages: DefaultImages
   /**
    * Resolve these exact pieces instead of browsing. Set when the editor rehydrates a saved
    * campaign, whose stored items hold only `itemType` + `itemId`. `active = true` still applies:
@@ -110,6 +126,7 @@ async function countRows(
 async function listPressArticles({
   ids,
   subtypes,
+  defaultImages,
   search,
   cutoff,
   limit,
@@ -197,7 +214,11 @@ async function listPressArticles({
         imageUrl: row.image
           ? (toExternalImageProxyUrl(row.image, { publicPathBase: PRESS_IMAGE_PUBLIC_BASE }) ??
             row.image)
-          : null,
+          : resolveSiteDefaultImageUrlWithVersion(
+              defaultImages,
+              SITE_DEFAULT_IMAGE_SCOPE.press,
+              row.type
+            ),
         needsExcerptOverride: excerpt === null,
       }
     }),
@@ -207,6 +228,7 @@ async function listPressArticles({
 async function listActivityEntries({
   ids,
   subtypes,
+  defaultImages,
   search,
   cutoff,
   limit,
@@ -292,7 +314,11 @@ async function listActivityEntries({
         imageUrl: row.image
           ? (toExternalImageProxyUrl(row.image, { publicPathBase: ACTIVITY_IMAGE_PUBLIC_BASE }) ??
             row.image)
-          : null,
+          : resolveSiteDefaultImageUrlWithVersion(
+              defaultImages,
+              SITE_DEFAULT_IMAGE_SCOPE.activity,
+              SITE_DEFAULT_IMAGE_SLOT.activityEntry
+            ),
         needsExcerptOverride: excerpt === null,
       }
     }),
@@ -307,6 +333,7 @@ async function listActivityEntries({
  */
 async function listAreaReports({
   ids,
+  defaultImages,
   search,
   cutoff,
   limit,
@@ -387,7 +414,11 @@ async function listAreaReports({
           ? (toExternalImageProxyUrl(row.image, {
               publicPathBase: AREA_REPORTS_IMAGE_PUBLIC_BASE,
             }) ?? row.image)
-          : null,
+          : resolveSiteDefaultImageUrlWithVersion(
+              defaultImages,
+              SITE_DEFAULT_IMAGE_SCOPE.areaReport,
+              SITE_DEFAULT_IMAGE_SLOT.areaReport
+            ),
         needsExcerptOverride: true,
       }
     }),
@@ -425,6 +456,7 @@ export default defineEventHandler(async (event) => {
     : query.subtypes?.filter((subtype) => recognisedSubtypes.includes(subtype))
 
   const options: ContentQueryOptions = {
+    defaultImages: await loadSiteDefaultImageEntriesMap(),
     ids,
     subtypes: subtypes?.length ? subtypes : undefined,
     search,

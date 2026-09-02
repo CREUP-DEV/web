@@ -1480,7 +1480,9 @@
         "mobile": "Mòbil",
         "desktop": "Escriptori",
         "hint": "Es renderitza amb la mateixa plantilla que el correu real. Els enllaços no compten clics.",
-        "frameTitle": "Previsualització del correu"
+        "frameTitle": "Previsualització del correu",
+        "staleDescription": "Mostra l’últim guardat; els canvis sense guardar encara no ixen ací.",
+        "staleAction": "Guarda i actualitza"
       },
       "send": {
         "title": "Enviament",

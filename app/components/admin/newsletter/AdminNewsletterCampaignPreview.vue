@@ -5,7 +5,16 @@ const props = defineProps<{
   campaignId: string
   /** Bumped by the owner after a save so the iframe reloads with the stored content. */
   reloadToken?: number
+  /**
+   * There are edits the preview cannot show. It renders whatever is stored, so unsaved text and
+   * content are simply not in it — saying so beats letting the frame look like a live view of the
+   * form.
+   */
+  stale?: boolean
+  saving?: boolean
 }>()
+
+const emit = defineEmits<{ save: [] }>()
 
 /** The email body is laid out for 640px; the narrow view matches a common phone viewport. */
 const WIDTHS = {
@@ -86,6 +95,27 @@ const frameKey = computed(() => `${previewLocale.value}-${props.reloadToken ?? 0
     </div>
 
     <p class="text-muted text-xs">{{ t('admin.newsletterCampaigns.preview.hint') }}</p>
+
+    <UAlert
+      v-if="stale"
+      color="warning"
+      variant="soft"
+      icon="i-tabler-refresh-alert"
+      :description="t('admin.newsletterCampaigns.preview.staleDescription')"
+    >
+      <template #actions>
+        <UButton
+          size="xs"
+          color="neutral"
+          variant="outline"
+          icon="i-tabler-device-floppy"
+          :loading="saving"
+          @click="emit('save')"
+        >
+          {{ t('admin.newsletterCampaigns.preview.staleAction') }}
+        </UButton>
+      </template>
+    </UAlert>
 
     <div class="bg-elevated/30 overflow-x-auto rounded-xl border p-4">
       <!-- Empty `sandbox`: the email carries no scripts and no forms, so nothing in the rendered

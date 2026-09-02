@@ -10,9 +10,9 @@ import { pickLocalizedValue } from '~~/shared/utils/locale'
 const es = {
   readMore: 'Leer más',
   receptionReason: 'Recibes este correo porque estás suscrito/a a la newsletter de CREUP.',
-  sectionActivity: 'Actividad',
-  sectionAreaReport: 'Informes de áreas',
-  sectionPress: 'Noticias',
+  sectionActivity: 'Nuestra actividad más reciente',
+  sectionAreaReport: 'Conoce el trabajo de nuestras áreas',
+  sectionPress: 'Últimas noticias',
   unsubscribe: 'Darme de baja',
 } as const
 
@@ -24,45 +24,45 @@ const en: NewsletterEmailMessages = {
   readMore: 'Read more',
   receptionReason:
     'You are receiving this email because you are subscribed to the CREUP newsletter.',
-  sectionActivity: 'Activity',
-  sectionAreaReport: 'Area reports',
-  sectionPress: 'News',
+  sectionActivity: 'Our latest activity',
+  sectionAreaReport: 'Inside our areas',
+  sectionPress: 'Latest news',
   unsubscribe: 'Unsubscribe',
 }
 
 const ca: NewsletterEmailMessages = {
   readMore: 'Llegeix-ne més',
   receptionReason: 'Reps aquest correu perquè estàs subscrit/a a la newsletter de la CREUP.',
-  sectionActivity: 'Activitat',
-  sectionAreaReport: 'Informes d’àrees',
-  sectionPress: 'Notícies',
+  sectionActivity: 'La nostra activitat més recent',
+  sectionAreaReport: 'Coneix la feina de les nostres àrees',
+  sectionPress: 'Últimes notícies',
   unsubscribe: 'Donar-me de baixa',
 }
 
 const eu: NewsletterEmailMessages = {
   readMore: 'Irakurri gehiago',
   receptionReason: 'Mezu hau jasotzen duzu CREUPen newsletter-era harpidetuta zaudelako.',
-  sectionActivity: 'Jarduera',
-  sectionAreaReport: 'Arloen txostenak',
-  sectionPress: 'Albisteak',
+  sectionActivity: 'Gure azken jarduera',
+  sectionAreaReport: 'Ezagutu gure arloen lana',
+  sectionPress: 'Azken albisteak',
   unsubscribe: 'Baja eman',
 }
 
 const gl: NewsletterEmailMessages = {
   readMore: 'Ler máis',
   receptionReason: 'Recibes este correo porque estás subscrito/a á newsletter de CREUP.',
-  sectionActivity: 'Actividade',
-  sectionAreaReport: 'Informes de áreas',
-  sectionPress: 'Novas',
+  sectionActivity: 'A nosa actividade máis recente',
+  sectionAreaReport: 'Coñece o traballo das nosas áreas',
+  sectionPress: 'Últimas novas',
   unsubscribe: 'Darme de baixa',
 }
 
 const val: NewsletterEmailMessages = {
   readMore: 'Llig-ne més',
   receptionReason: 'Reps este correu perquè estàs subscrit/a a la newsletter de la CREUP.',
-  sectionActivity: 'Activitat',
-  sectionAreaReport: 'Informes d’àrees',
-  sectionPress: 'Notícies',
+  sectionActivity: 'La nostra activitat més recent',
+  sectionAreaReport: 'Coneix la faena de les nostres àrees',
+  sectionPress: 'Últimes notícies',
   unsubscribe: 'Donar-me de baixa',
 }
 

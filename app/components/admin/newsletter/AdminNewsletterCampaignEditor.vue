@@ -331,7 +331,13 @@ const handleCancel = () => {
           />
         </section>
 
-        <AdminNewsletterCampaignPreview :campaign-id="campaign.id" :reload-token="previewToken" />
+        <AdminNewsletterCampaignPreview
+          :campaign-id="campaign.id"
+          :reload-token="previewToken"
+          :stale="hasFormChanges"
+          :saving="isSaving"
+          @save="handleSave"
+        />
       </div>
 
       <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
