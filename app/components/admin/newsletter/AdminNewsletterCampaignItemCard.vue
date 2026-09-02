@@ -107,7 +107,18 @@ const canMoveDown = computed(() => props.index < props.total - 1)
           <UBadge v-if="item.entry" variant="outline" size="sm" color="neutral">
             {{ formatEntryDate(item.entry.date) }}
           </UBadge>
-          <UBadge v-if="recommendsExcerpt" variant="subtle" color="warning" size="sm">
+          <!--
+            `text-toned` overrides the variant's own amber text, which sits at 2:1 against the
+            amber tint behind it. Set here rather than in app.config because a badge takes its
+            colour from a compound color+variant rule, which wins over any variant override.
+          -->
+          <UBadge
+            v-if="recommendsExcerpt"
+            variant="subtle"
+            color="warning"
+            size="sm"
+            :ui="{ base: 'text-toned' }"
+          >
             <UIcon name="i-tabler-info-circle" class="mr-1 size-3" aria-hidden="true" />
             {{ t('admin.newsletterCampaigns.editor.excerptRecommended') }}
           </UBadge>

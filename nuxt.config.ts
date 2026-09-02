@@ -177,6 +177,17 @@ const routeRules = {
   // The campaign editor previews the email in an iframe. Production `frame-src` only allows
   // Turnstile, so 'self' is granted here rather than site-wide.
   ...newsletterCampaignPreviewRouteRules,
+  // nuxt-security's XSS validator inspects GET and POST bodies but not PUT, and rejects anything
+  // its filter would rewrite. The campaign intro is rich text, so posting it for a preview was
+  // refused while saving the very same markup by PUT went through untouched — the check was
+  // stopping a door that stands open beside it. These routes are admin-only and CSRF-gated, they
+  // validate every body with zod, and the intro passes the project's own allowlist sanitizer
+  // before it is rendered or stored.
+  '/api/admin/newsletter/campaigns/**': {
+    security: {
+      xssValidator: false,
+    },
+  },
   ...adminUploadRouteRules,
   ...buildNoRateLimitRouteRules(INTERNAL_IMAGE_PROXY_PATH_BASES),
   ...productionPublicSWRRouteRules,
