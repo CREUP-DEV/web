@@ -1467,7 +1467,11 @@
         "selectedCount": "Seleccionadas: {count}",
         "addSelected": "Añadir",
         "paginationAria": "Paginación del contenido",
-        "alreadyAddedToast": "Ya estaban en la campaña: {count}"
+        "alreadyAddedToast": "Ya estaban en la campaña: {count}",
+        "subtypeFilterLabel": "Tipos:",
+        "subtypeFilterAria": "Filtrar por tipo de contenido",
+        "subtypeFilterClear": "Quitar filtro",
+        "selectEdition": "Todas las áreas"
       },
       "preview": {
         "title": "Previsualización",

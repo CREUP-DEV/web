@@ -21,6 +21,8 @@ import {
 } from '~~/shared/constants/assetPaths'
 import { DEFAULT_LOCALE_CODE } from '~~/shared/utils/locale'
 import type { NewsletterCampaignItemType } from '~~/shared/constants/newsletterCampaigns'
+import { PRESS_ARTICLE_TYPES, type PressArticleType } from '~~/shared/constants/pressTypes'
+import { ACTIVITY_KINDS, type ActivityKind } from '~~/shared/constants/activity'
 
 const DEFAULT_LIMIT = 20
 
@@ -60,6 +62,11 @@ interface CampaignContentEntry {
   excerpt: string | null
   /** `YYYY-MM-DD` for press and activity, `YYYY-MM` (the edition's anchor month) for area reports. */
   date: string
+  /**
+   * Area reports only: the first month the edition covers, when it spans more than its anchor
+   * month. Null elsewhere and on single-month editions.
+   */
+  coversFrom?: string | null
   imageUrl: string | null
   /**
    * The piece carries no excerpt of its own, so the editor should write one. Always true for area
@@ -80,6 +87,8 @@ interface ContentQueryOptions {
    * an id that does not come back is a piece the send would refuse, and the editor must say so.
    */
   ids?: string[]
+  /** Sub-kinds to keep, already narrowed to the ones the requested type recognises. */
+  subtypes?: string[]
   search?: string
   cutoff: Date | null
   limit: number
@@ -100,6 +109,7 @@ async function countRows(
 
 async function listPressArticles({
   ids,
+  subtypes,
   search,
   cutoff,
   limit,
@@ -109,6 +119,10 @@ async function listPressArticles({
 
   if (ids) {
     conditions.push(inArray(pressArticles.id, ids))
+  }
+
+  if (subtypes?.length) {
+    conditions.push(inArray(pressArticles.type, subtypes as PressArticleType[]))
   }
 
   if (cutoff) {
@@ -192,6 +206,7 @@ async function listPressArticles({
 
 async function listActivityEntries({
   ids,
+  subtypes,
   search,
   cutoff,
   limit,
@@ -201,6 +216,10 @@ async function listActivityEntries({
 
   if (ids) {
     conditions.push(inArray(activityEntries.id, ids))
+  }
+
+  if (subtypes?.length) {
+    conditions.push(inArray(activityEntries.kind, subtypes as ActivityKind[]))
   }
 
   if (cutoff) {
@@ -333,6 +352,13 @@ async function listAreaReports({
         monthKey: areaReports.monthKey,
         image: areaReports.image,
         areaNameSnapshot: areaReports.areaNameSnapshot,
+        // An edition can span several months. The picker groups by edition and needs the span to
+        // label the group, so it rides along rather than costing a second round trip.
+        coversFrom: sql<string | null>`(
+          select ${areaReportEditions.coversFrom}
+          from ${areaReportEditions}
+          where ${areaReportEditions.monthKey} = ${areaReports.monthKey}
+        )`,
       })
       .from(areaReports)
       .where(where)
@@ -358,6 +384,7 @@ async function listAreaReports({
         title: names[DEFAULT_LOCALE_CODE] || Object.values(names).find(Boolean) || '',
         excerpt: null,
         date: row.monthKey,
+        coversFrom: row.coversFrom ?? null,
         imageUrl: row.image
           ? (toExternalImageProxyUrl(row.image, {
               publicPathBase: AREA_REPORTS_IMAGE_PUBLIC_BASE,
@@ -391,8 +418,17 @@ export default defineEventHandler(async (event) => {
   const ids = query.ids
   const search = ids ? undefined : query.q?.trim() || undefined
   const cutoff = !ids && query.sinceLastCampaign ? await getLastDeliveredCampaignCutoff() : null
+  // Only the sub-kinds this type actually has. Switching tabs leaves the previous tab's filter in
+  // the query for one request; dropping the strays beats rejecting the call.
+  const recognisedSubtypes: readonly string[] =
+    query.type === 'press' ? PRESS_ARTICLE_TYPES : query.type === 'activity' ? ACTIVITY_KINDS : []
+  const subtypes = ids
+    ? undefined
+    : query.subtypes?.filter((subtype) => recognisedSubtypes.includes(subtype))
+
   const options: ContentQueryOptions = {
     ids,
+    subtypes: subtypes?.length ? subtypes : undefined,
     search,
     cutoff,
     limit: ids ? ids.length : (query.limit ?? DEFAULT_LIMIT),

@@ -1467,7 +1467,11 @@
         "selectedCount": "Seleccionadas: {count}",
         "addSelected": "Engadir",
         "paginationAria": "Paxinación do contido",
-        "alreadyAddedToast": "Xa estaban na campaña: {count}"
+        "alreadyAddedToast": "Xa estaban na campaña: {count}",
+        "subtypeFilterLabel": "Tipos:",
+        "subtypeFilterAria": "Filtrar por tipo de contido",
+        "subtypeFilterClear": "Quitar filtro",
+        "selectEdition": "Todas as áreas"
       },
       "preview": {
         "title": "Vista previa",

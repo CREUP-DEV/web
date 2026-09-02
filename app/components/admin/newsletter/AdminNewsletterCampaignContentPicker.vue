@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { NEWSLETTER_CAMPAIGN_ITEM_TYPES } from '~~/shared/constants/newsletterCampaigns'
+import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
+import { ACTIVITY_KINDS } from '~~/shared/constants/activity'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import type { NewsletterCampaignItemType } from '~~/shared/constants/newsletterCampaigns'
 import type { AdminCampaignContentEntry } from '@/composables/admin/useAdminNewsletterCampaigns'
@@ -24,12 +26,29 @@ const toast = useAdminToast()
 const { fetchContent } = useAdminCampaignContent()
 const { itemTypeLabel, itemTypeIcon, subtypeLabel, formatEntryDate } =
   useAdminCampaignPresentation()
+const { formatEditionLabel } = useActivityDates()
 
 const activeType = ref<NewsletterCampaignItemType>('press')
 const search = ref('')
 const debouncedSearch = ref('')
 const sinceLastCampaign = ref(false)
+const selectedSubtypes = ref<string[]>([])
 const page = ref(1)
+
+/** Press articles and activity entries have sub-kinds worth filtering by; area reports do not. */
+const availableSubtypes = computed<readonly string[]>(() =>
+  activeType.value === 'press'
+    ? PRESS_ARTICLE_TYPES
+    : activeType.value === 'activity'
+      ? ACTIVITY_KINDS
+      : []
+)
+
+const toggleSubtype = (subtype: string) => {
+  selectedSubtypes.value = selectedSubtypes.value.includes(subtype)
+    ? selectedSubtypes.value.filter((entry) => entry !== subtype)
+    : [...selectedSubtypes.value, subtype]
+}
 
 const entries = ref<AdminCampaignContentEntry[]>([])
 const total = ref(0)
@@ -65,6 +84,7 @@ const load = async () => {
       type: activeType.value,
       q: debouncedSearch.value || undefined,
       sinceLastCampaign: sinceLastCampaign.value,
+      subtypes: selectedSubtypes.value.length ? selectedSubtypes.value : undefined,
       limit: PAGE_SIZE,
       offset: (page.value - 1) * PAGE_SIZE,
     })
@@ -85,7 +105,11 @@ const load = async () => {
 }
 
 // Any change to the query resets to the first page; the page itself triggers the reload.
-watch([activeType, debouncedSearch, sinceLastCampaign], () => {
+watch(activeType, () => {
+  selectedSubtypes.value = []
+})
+
+watch([activeType, debouncedSearch, sinceLastCampaign, selectedSubtypes], () => {
   if (page.value === 1) {
     void load()
     return
@@ -150,14 +174,72 @@ const selectableEntries = computed(() => entries.value.filter((entry) => !isTake
  * Only the page on screen, so the count in the footer always matches what was actually picked.
  */
 const selectAllVisible = () => {
+  selectEntries(selectableEntries.value)
+}
+
+const selectEntries = (target: AdminCampaignContentEntry[]) => {
   const next = new Set(selected.value)
 
-  for (const entry of selectableEntries.value) {
+  for (const entry of target) {
+    if (isTaken(entry)) continue
     next.add(campaignItemKey(entry.itemType, entry.itemId))
   }
 
   selected.value = next
 }
+
+/**
+ * Area reports arrive one row per area per edition, ordered by edition, so a month's worth of them
+ * reads as an undifferentiated run. Grouping gives each edition a heading and, more usefully, a
+ * control that takes every area of that month at once — which is how these are actually chosen.
+ * The other two types stay a single unheaded group.
+ */
+interface EntryGroup {
+  key: string
+  label: string | null
+  entries: AdminCampaignContentEntry[]
+  selectableCount: number
+  allSelected: boolean
+}
+
+const entryGroups = computed<EntryGroup[]>(() => {
+  if (activeType.value !== 'area_report') {
+    return entries.value.length
+      ? [
+          {
+            key: 'all',
+            label: null,
+            entries: entries.value,
+            selectableCount: 0,
+            allSelected: false,
+          },
+        ]
+      : []
+  }
+
+  const groups = new Map<string, AdminCampaignContentEntry[]>()
+
+  for (const entry of entries.value) {
+    const bucket = groups.get(entry.date)
+    if (bucket) bucket.push(entry)
+    else groups.set(entry.date, [entry])
+  }
+
+  return [...groups].map(([monthKey, groupEntries]) => {
+    const selectable = groupEntries.filter((entry) => !isTaken(entry))
+
+    return {
+      key: monthKey,
+      label: formatEditionLabel({
+        monthKey,
+        coversFrom: groupEntries[0]?.coversFrom ?? null,
+      }),
+      entries: groupEntries,
+      selectableCount: selectable.length,
+      allSelected: selectable.length > 0 && selectable.every((entry) => isSelected(entry)),
+    }
+  })
+})
 
 const handleAdd = () => {
   emit('add', [...selectedEntries.value.values()])
@@ -226,6 +308,37 @@ const handleAdd = () => {
           </UButton>
         </div>
 
+        <div
+          v-if="availableSubtypes.length"
+          class="flex flex-wrap items-center gap-2"
+          role="group"
+          :aria-label="t('admin.newsletterCampaigns.picker.subtypeFilterAria')"
+        >
+          <span class="text-muted text-xs">
+            {{ t('admin.newsletterCampaigns.picker.subtypeFilterLabel') }}
+          </span>
+          <UButton
+            v-for="subtype in availableSubtypes"
+            :key="subtype"
+            :variant="selectedSubtypes.includes(subtype) ? 'solid' : 'outline'"
+            color="neutral"
+            size="xs"
+            :aria-pressed="selectedSubtypes.includes(subtype)"
+            @click="toggleSubtype(subtype)"
+          >
+            {{ subtypeLabel(subtype) }}
+          </UButton>
+          <UButton
+            v-if="selectedSubtypes.length"
+            variant="link"
+            color="neutral"
+            size="xs"
+            @click="selectedSubtypes = []"
+          >
+            {{ t('admin.newsletterCampaigns.picker.subtypeFilterClear') }}
+          </UButton>
+        </div>
+
         <p class="text-muted text-xs">
           {{ t('admin.newsletterCampaigns.picker.searchHint') }}
         </p>
@@ -260,47 +373,68 @@ const handleAdd = () => {
           </p>
 
           <template v-else>
-            <label
-              v-for="entry in entries"
-              :key="`${entry.itemType}:${entry.itemId}`"
-              class="hover:bg-elevated/50 flex items-center gap-3 rounded-lg border p-2"
-              :class="isTaken(entry) ? 'opacity-60' : 'cursor-pointer'"
-            >
-              <UCheckbox
-                :model-value="isSelected(entry) || isTaken(entry)"
-                :disabled="isTaken(entry)"
-                @update:model-value="toggleEntry(entry)"
-              />
-
-              <img
-                v-if="entry.imageUrl"
-                :src="entry.imageUrl"
-                alt=""
-                class="h-12 w-16 shrink-0 rounded object-cover"
-                loading="lazy"
-              />
+            <div v-for="group in entryGroups" :key="group.key" class="space-y-2">
               <div
-                v-else
-                class="bg-muted text-dimmed flex h-12 w-16 shrink-0 items-center justify-center rounded"
-                aria-hidden="true"
+                v-if="group.label"
+                class="bg-default sticky top-0 z-10 flex items-center justify-between gap-2 py-1"
               >
-                <UIcon :name="itemTypeIcon(entry.itemType)" class="size-5 opacity-60" />
+                <h3 class="text-toned text-sm font-semibold">{{ group.label }}</h3>
+                <UButton
+                  variant="outline"
+                  color="neutral"
+                  size="xs"
+                  icon="i-tabler-checks"
+                  :disabled="!group.selectableCount || group.allSelected"
+                  @click="selectEntries(group.entries)"
+                >
+                  {{ t('admin.newsletterCampaigns.picker.selectEdition') }}
+                </UButton>
               </div>
 
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium">{{ entry.title }}</p>
-                <div class="text-muted mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
-                  <span v-if="subtypeLabel(entry.subtype)">{{ subtypeLabel(entry.subtype) }}</span>
-                  <span>{{ formatEntryDate(entry.date) }}</span>
-                  <span v-if="entry.needsExcerptOverride" class="text-warning">
-                    {{ t('admin.newsletterCampaigns.picker.noExcerpt') }}
-                  </span>
-                  <span v-if="isTaken(entry)">
-                    {{ t('admin.newsletterCampaigns.picker.taken') }}
-                  </span>
+              <label
+                v-for="entry in group.entries"
+                :key="`${entry.itemType}:${entry.itemId}`"
+                class="hover:bg-elevated/50 flex items-center gap-3 rounded-lg border p-2"
+                :class="isTaken(entry) ? 'opacity-60' : 'cursor-pointer'"
+              >
+                <UCheckbox
+                  :model-value="isSelected(entry) || isTaken(entry)"
+                  :disabled="isTaken(entry)"
+                  @update:model-value="toggleEntry(entry)"
+                />
+
+                <img
+                  v-if="entry.imageUrl"
+                  :src="entry.imageUrl"
+                  alt=""
+                  class="h-12 w-16 shrink-0 rounded object-cover"
+                  loading="lazy"
+                />
+                <div
+                  v-else
+                  class="bg-muted text-dimmed flex h-12 w-16 shrink-0 items-center justify-center rounded"
+                  aria-hidden="true"
+                >
+                  <UIcon :name="itemTypeIcon(entry.itemType)" class="size-5 opacity-60" />
                 </div>
-              </div>
-            </label>
+
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium">{{ entry.title }}</p>
+                  <div class="text-muted mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
+                    <span v-if="subtypeLabel(entry.subtype)">{{
+                      subtypeLabel(entry.subtype)
+                    }}</span>
+                    <span>{{ formatEntryDate(entry.date) }}</span>
+                    <span v-if="entry.needsExcerptOverride" class="text-warning">
+                      {{ t('admin.newsletterCampaigns.picker.noExcerpt') }}
+                    </span>
+                    <span v-if="isTaken(entry)">
+                      {{ t('admin.newsletterCampaigns.picker.taken') }}
+                    </span>
+                  </div>
+                </div>
+              </label>
+            </div>
           </template>
         </div>
 

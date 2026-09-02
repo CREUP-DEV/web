@@ -1467,7 +1467,11 @@
         "selectedCount": "Hautatuak: {count}",
         "addSelected": "Gehitu",
         "paginationAria": "Edukiaren orrikatzea",
-        "alreadyAddedToast": "Jada kanpainan zeuden: {count}"
+        "alreadyAddedToast": "Jada kanpainan zeuden: {count}",
+        "subtypeFilterLabel": "Motak:",
+        "subtypeFilterAria": "Iragazi eduki motaren arabera",
+        "subtypeFilterClear": "Kendu iragazkia",
+        "selectEdition": "Arlo guztiak"
       },
       "preview": {
         "title": "Aurrebista",

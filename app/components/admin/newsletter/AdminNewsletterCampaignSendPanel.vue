@@ -36,7 +36,7 @@ const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
  * does not forward: a rejected SSR call would resolve to no data and never retry on hydration,
  * leaving the count at zero — which reads as "no subscribers" and disables the send outright.
  */
-const { data: subscriberData, pending: subscribersPending } = useFetch<{
+const { data: subscriberData } = useFetch<{
   meta: { activeTotal: number }
 }>('/api/admin/newsletter/subscribers', {
   headers: localeApiHeaders,
@@ -46,6 +46,14 @@ const { data: subscriberData, pending: subscribersPending } = useFetch<{
 })
 
 const recipientCount = computed(() => subscriberData.value?.meta?.activeTotal ?? 0)
+
+/**
+ * Whether the count has actually arrived, rather than whether a request is in flight. With
+ * `server: false` the request never starts during SSR, so `pending` is false there and true right
+ * after hydration — rendering one branch on the server and the other on the client. This is false
+ * in both places until the data lands, so the two agree.
+ */
+const subscribersLoaded = computed(() => subscriberData.value != null)
 
 const testEmail = ref('')
 const testLocale = ref(defaultLocale)
@@ -77,7 +85,7 @@ const blockingReason = computed(() => {
 
   // Only once the count has actually arrived — a pending fetch reads as zero, and claiming there
   // are no subscribers while still loading would be a lie the admin cannot act on.
-  if (!subscribersPending.value && recipientCount.value === 0) {
+  if (subscribersLoaded.value && recipientCount.value === 0) {
     return t('admin.newsletterCampaigns.send.blockedNoRecipients')
   }
 
@@ -165,7 +173,7 @@ const handleSend = async () => {
     <h2 class="text-lg font-semibold">{{ t('admin.newsletterCampaigns.send.title') }}</h2>
 
     <div class="flex items-baseline gap-2">
-      <USkeleton v-if="subscribersPending" class="h-7 w-12" />
+      <USkeleton v-if="!subscribersLoaded" class="h-7 w-12" />
       <span v-else class="text-2xl font-bold tabular-nums">{{ recipientCount }}</span>
       <span class="text-muted text-sm">{{ t('admin.newsletterCampaigns.send.recipients') }}</span>
     </div>
@@ -222,7 +230,7 @@ const handleSend = async () => {
       <UButton
         icon="i-tabler-send"
         color="primary"
-        :disabled="Boolean(blockingReason) || subscribersPending"
+        :disabled="Boolean(blockingReason) || !subscribersLoaded"
         block
         @click="openSendModal"
       >

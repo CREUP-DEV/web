@@ -103,6 +103,8 @@ export interface AdminCampaignContentEntry {
   title: string
   excerpt: string | null
   date: string
+  /** Area reports only: the edition's first month when it spans more than its anchor month. */
+  coversFrom?: string | null
   imageUrl: string | null
   /** The piece carries no summary of its own, so writing an override is recommended. */
   needsExcerptOverride: boolean
@@ -367,6 +369,8 @@ export function useAdminCampaignContent() {
     type: NewsletterCampaignItemType
     q?: string
     sinceLastCampaign?: boolean
+    /** Sub-kinds to keep. Omitted means every sub-kind of the requested type. */
+    subtypes?: string[]
     limit?: number
     offset?: number
   }) =>
@@ -376,6 +380,7 @@ export function useAdminCampaignContent() {
         type: query.type,
         ...(query.q ? { q: query.q } : {}),
         ...(query.sinceLastCampaign ? { sinceLastCampaign: 'true' } : {}),
+        ...(query.subtypes?.length ? { subtypes: query.subtypes.join(',') } : {}),
         limit: query.limit ?? 20,
         offset: query.offset ?? 0,
       },

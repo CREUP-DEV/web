@@ -1467,7 +1467,11 @@
         "selectedCount": "Seleccionades: {count}",
         "addSelected": "Afegir",
         "paginationAria": "Paginació del contingut",
-        "alreadyAddedToast": "Ja eren a la campanya: {count}"
+        "alreadyAddedToast": "Ja eren a la campanya: {count}",
+        "subtypeFilterLabel": "Tipus:",
+        "subtypeFilterAria": "Filtra per tipus de contingut",
+        "subtypeFilterClear": "Treu el filtre",
+        "selectEdition": "Totes les àrees"
       },
       "preview": {
         "title": "Previsualització",

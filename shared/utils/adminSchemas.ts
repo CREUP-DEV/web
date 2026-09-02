@@ -449,6 +449,24 @@ export const newsletterCampaignContentQuerySchema = z.object({
     },
     z.array(z.string().min(1).max(64)).min(1).max(100).optional()
   ),
+  /**
+   * Narrows the browse to some sub-kinds of the requested type: press article types for `press`,
+   * entry kinds for `activity`. Area reports have no sub-kind. Values that do not belong to the
+   * requested type are dropped rather than rejected, so switching tabs cannot 400 on a stale
+   * filter. Absent means every sub-kind, which is what an untouched picker sends.
+   */
+  subtypes: z.preprocess(
+    (value) => {
+      const rawValues = Array.isArray(value) ? value : [value]
+      const subtypes = rawValues
+        .flatMap((entry) => (typeof entry === 'string' ? entry.split(',') : []))
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+
+      return subtypes.length > 0 ? Array.from(new Set(subtypes)) : undefined
+    },
+    z.array(z.string().min(1).max(40)).min(1).max(10).optional()
+  ),
   limit: z.coerce.number().int().min(1).max(50).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 })
