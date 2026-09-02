@@ -20,5 +20,13 @@ export default defineAppConfig({
         description: 'text-sm text-toned',
       },
     },
+    // Same problem in `subtle` badges, where the tint is even lighter.
+    badge: {
+      variants: {
+        variant: {
+          subtle: 'text-toned',
+        },
+      },
+    },
   },
 })

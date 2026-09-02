@@ -342,14 +342,28 @@ const handleCancel = () => {
       </div>
 
       <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
-        <AdminNewsletterCampaignSendPanel
-          :campaign-id="campaign.id"
-          :item-count="items.length"
-          :has-unsaved-changes="hasFormChanges"
-          @sent="handleSent"
-          @blocked="blockedItems = $event"
-          @oversized="oversizedLocales = $event"
-        />
+        <!--
+          The panel's controls disable themselves from the subscriber count, which is fetched
+          client-side only (the admin cookie does not travel on the SSR call). That made the server
+          render one enabled/disabled state and the client another, and Vue leaves such a mismatch
+          uncorrected in production — a send button that looks clickable when it is not. Rendering
+          the panel on the client settles it; there is nothing to gain from server-rendering a
+          control panel behind a login.
+        -->
+        <ClientOnly>
+          <AdminNewsletterCampaignSendPanel
+            :campaign-id="campaign.id"
+            :item-count="items.length"
+            :has-unsaved-changes="hasFormChanges"
+            @sent="handleSent"
+            @blocked="blockedItems = $event"
+            @oversized="oversizedLocales = $event"
+          />
+
+          <template #fallback>
+            <USkeleton class="h-96 w-full rounded-xl" />
+          </template>
+        </ClientOnly>
       </aside>
     </div>
 

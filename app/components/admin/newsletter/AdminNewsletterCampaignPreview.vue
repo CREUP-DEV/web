@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CAMPAIGNS_API_BASE } from '@/composables/admin/useAdminNewsletterCampaigns'
+import { getApiErrorMessage } from '~~/shared/utils/apiError'
 
 const props = defineProps<{
   campaignId: string
@@ -50,6 +51,8 @@ const DRAFT_DEBOUNCE_MS = 500
 
 const draftHtml = ref<string | null>(null)
 const draftError = ref(false)
+/** The server names the offending field on a rejected draft; showing it beats a generic line. */
+const draftErrorDetail = ref<string | null>(null)
 const isRendering = ref(false)
 
 let draftTimer: ReturnType<typeof setTimeout> | null = null
@@ -72,10 +75,12 @@ const renderDraft = async () => {
 
     draftHtml.value = html
     draftError.value = false
-  } catch {
+    draftErrorDetail.value = null
+  } catch (error) {
     if (seq !== requestSeq) return
 
     draftError.value = true
+    draftErrorDetail.value = getApiErrorMessage(error, '')
   } finally {
     if (seq === requestSeq) isRendering.value = false
   }
@@ -150,7 +155,7 @@ onBeforeUnmount(() => {
       color="warning"
       variant="soft"
       icon="i-tabler-alert-triangle"
-      :description="t('admin.newsletterCampaigns.preview.renderError')"
+      :description="draftErrorDetail || t('admin.newsletterCampaigns.preview.renderError')"
     />
 
     <div class="bg-elevated/30 overflow-x-auto rounded-xl border p-4">
