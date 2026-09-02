@@ -470,3 +470,14 @@ export const newsletterCampaignContentQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 })
+
+/**
+ * Draft preview: renders text and content that have not been saved yet. Nothing is persisted, so
+ * the item list arrives as references rather than stored rows and carries no `updatedAt` — there is
+ * no row to contend for.
+ */
+export const newsletterCampaignPreviewBodySchema = z.object({
+  locale: localeSchema,
+  translations: z.array(newsletterCampaignTranslationSchema).max(10),
+  items: z.array(newsletterCampaignItemSchema).max(100),
+})

@@ -1481,8 +1481,7 @@
         "desktop": "Escritorio",
         "hint": "Renderízase coa mesma plantilla que o correo real. As ligazóns non contan clics.",
         "frameTitle": "Vista previa do correo",
-        "staleDescription": "Mostra o último gardado; os teus cambios sen gardar aínda non saen aquí.",
-        "staleAction": "Gardar e actualizar"
+        "renderError": "Non se puido xerar a vista previa. Segue escribindo: volverá tentalo."
       },
       "send": {
         "title": "Envío",

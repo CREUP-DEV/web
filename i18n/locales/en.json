@@ -1481,8 +1481,7 @@
         "desktop": "Desktop",
         "hint": "Rendered with the same template as the real email. Links do not count clicks here.",
         "frameTitle": "Email preview",
-        "staleDescription": "This shows the last saved version; unsaved changes are not in it yet.",
-        "staleAction": "Save and refresh"
+        "renderError": "The preview could not be generated. Keep writing — it will try again."
       },
       "send": {
         "title": "Sending",

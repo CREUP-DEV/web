@@ -44,6 +44,7 @@ const {
   moveItem,
   setOrder,
   buildTextsValidationPayload,
+  buildItemsPayload,
   resetFormSnapshot,
   resolveItemEntries,
   applyCampaign,
@@ -63,7 +64,14 @@ const {
 
 const isSaving = ref(false)
 const showPicker = ref(false)
-const previewToken = ref(0)
+/**
+ * What the preview renders: the texts and content as they stand in the form, saved or not. The
+ * send stays blocked while there are unsaved changes, so nothing can go out that this did not show.
+ */
+const previewDraft = computed(() => ({
+  translations: buildTextsValidationPayload().translations,
+  items: buildItemsPayload(),
+}))
 const blockedItems = ref<AdminCampaignUnavailableItem[]>([])
 const oversizedLocales = ref<AdminCampaignOversizedLocale[]>([])
 
@@ -141,7 +149,6 @@ const handleSave = async () => {
   try {
     const campaign = await save()
     clearErrors()
-    previewToken.value += 1
     emit('updated', campaign)
     toast.add({ title: t('admin.newsletterCampaigns.editor.savedToast'), color: 'success' })
   } catch (error) {
@@ -331,13 +338,7 @@ const handleCancel = () => {
           />
         </section>
 
-        <AdminNewsletterCampaignPreview
-          :campaign-id="campaign.id"
-          :reload-token="previewToken"
-          :stale="hasFormChanges"
-          :saving="isSaving"
-          @save="handleSave"
-        />
+        <AdminNewsletterCampaignPreview :campaign-id="campaign.id" :draft="previewDraft" />
       </div>
 
       <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">

@@ -6,15 +6,12 @@ const props = defineProps<{
   /** Bumped by the owner after a save so the iframe reloads with the stored content. */
   reloadToken?: number
   /**
-   * There are edits the preview cannot show. It renders whatever is stored, so unsaved text and
-   * content are simply not in it — saying so beats letting the frame look like a live view of the
-   * form.
+   * The unsaved draft. When given, the preview renders this instead of what is stored, so the
+   * email tracks what is being written. Omitted on sent campaigns, which render their frozen
+   * snapshot through the GET endpoint.
    */
-  stale?: boolean
-  saving?: boolean
+  draft?: { translations: unknown[]; items: unknown[] } | null
 }>()
-
-const emit = defineEmits<{ save: [] }>()
 
 /** The email body is laid out for 640px; the narrow view matches a common phone viewport. */
 const WIDTHS = {
@@ -48,6 +45,58 @@ const previewSrc = computed(
  * browser can reuse the frame it already painted.
  */
 const frameKey = computed(() => `${previewLocale.value}-${props.reloadToken ?? 0}`)
+
+const DRAFT_DEBOUNCE_MS = 500
+
+const draftHtml = ref<string | null>(null)
+const draftError = ref(false)
+const isRendering = ref(false)
+
+let draftTimer: ReturnType<typeof setTimeout> | null = null
+let requestSeq = 0
+
+const renderDraft = async () => {
+  if (!props.draft) return
+
+  isRendering.value = true
+  // Debounced typing can overtake itself; only the newest response may paint.
+  const seq = ++requestSeq
+
+  try {
+    const html = await $fetch<string>(`${CAMPAIGNS_API_BASE}/${props.campaignId}/preview`, {
+      method: 'POST',
+      body: { locale: previewLocale.value, ...props.draft },
+    })
+
+    if (seq !== requestSeq) return
+
+    draftHtml.value = html
+    draftError.value = false
+  } catch {
+    if (seq !== requestSeq) return
+
+    draftError.value = true
+  } finally {
+    if (seq === requestSeq) isRendering.value = false
+  }
+}
+
+const scheduleDraftRender = () => {
+  if (draftTimer) clearTimeout(draftTimer)
+  draftTimer = setTimeout(() => void renderDraft(), DRAFT_DEBOUNCE_MS)
+}
+
+watch(
+  () => [props.draft, previewLocale.value],
+  () => {
+    if (props.draft) scheduleDraftRender()
+  },
+  { deep: true, immediate: true }
+)
+
+onBeforeUnmount(() => {
+  if (draftTimer) clearTimeout(draftTimer)
+})
 </script>
 
 <template>
@@ -97,30 +146,31 @@ const frameKey = computed(() => `${previewLocale.value}-${props.reloadToken ?? 0
     <p class="text-muted text-xs">{{ t('admin.newsletterCampaigns.preview.hint') }}</p>
 
     <UAlert
-      v-if="stale"
+      v-if="draftError"
       color="warning"
       variant="soft"
-      icon="i-tabler-refresh-alert"
-      :description="t('admin.newsletterCampaigns.preview.staleDescription')"
-    >
-      <template #actions>
-        <UButton
-          size="xs"
-          color="neutral"
-          variant="outline"
-          icon="i-tabler-device-floppy"
-          :loading="saving"
-          @click="emit('save')"
-        >
-          {{ t('admin.newsletterCampaigns.preview.staleAction') }}
-        </UButton>
-      </template>
-    </UAlert>
+      icon="i-tabler-alert-triangle"
+      :description="t('admin.newsletterCampaigns.preview.renderError')"
+    />
 
     <div class="bg-elevated/30 overflow-x-auto rounded-xl border p-4">
-      <!-- Empty `sandbox`: the email carries no scripts and no forms, so nothing in the rendered
-           HTML needs to run even if the server-side sanitizer ever let something through. -->
+      <!--
+        `allow-scripts` is deliberately absent from both: the email carries none, so nothing in the
+        frame can execute. The draft frame adds `allow-same-origin` because a srcdoc document
+        otherwise gets an opaque origin, against which the page's `img-src 'self'` matches nothing
+        and every image is blocked. Same-origin without scripts grants no execution.
+      -->
       <iframe
+        v-if="draft"
+        :srcdoc="draftHtml ?? ''"
+        sandbox="allow-same-origin"
+        class="mx-auto block h-[42rem] max-w-full rounded-lg border bg-white shadow-sm transition-opacity"
+        :class="{ 'opacity-60': isRendering }"
+        :style="{ width: `${WIDTHS[width]}px` }"
+        :title="t('admin.newsletterCampaigns.preview.frameTitle')"
+      />
+      <iframe
+        v-else
         :key="frameKey"
         :src="previewSrc"
         sandbox=""

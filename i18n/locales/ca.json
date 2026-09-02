@@ -1481,8 +1481,7 @@
         "desktop": "Escriptori",
         "hint": "Es renderitza amb la mateixa plantilla que el correu real. Els enllaços no compten clics.",
         "frameTitle": "Previsualització del correu",
-        "staleDescription": "Mostra l’últim desat; els canvis sense desar encara no hi surten.",
-        "staleAction": "Desa i actualitza"
+        "renderError": "No s’ha pogut generar la vista prèvia. Continua escrivint: ho tornarà a intentar."
       },
       "send": {
         "title": "Enviament",
