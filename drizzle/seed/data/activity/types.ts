@@ -27,7 +27,7 @@ export interface SeedActivityEntry {
   location?: string | null
   /** Initials key into MEMBER_ORGS; required when kind === 'member', forbidden otherwise. */
   memberOrgKey?: string
-  /** Storage path under public/, e.g. '/transparencia/actividad/imagenes/<slug>.webp'. Null = no image. */
+  /** Storage path under public/, e.g. '/prensa/actividad/imagenes/<slug>.webp'. Null = no image. */
   image?: string | null
   es: SeedActivityTranslation
 }
@@ -42,7 +42,7 @@ export interface SeedAreaSnapshot {
 
 export interface SeedAreaReport {
   area: SeedAreaSnapshot
-  /** Storage path under public/, e.g. '/transparencia/informes-areas/imagenes/<slug>.webp'. */
+  /** Storage path under public/, e.g. '/prensa/informes-areas/imagenes/<slug>.webp'. */
   image?: string | null
   es: { contentHtml: string; alt?: string | null; imageCaption?: string | null }
 }

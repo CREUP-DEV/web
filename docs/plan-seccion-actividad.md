@@ -43,7 +43,7 @@
 | Badges de categoría | **No se incluyen.** La metadata de tarjeta/detalle es **lugar** (puede ser «Online») + fecha(s). |
 | Eventos de miembro | Se marcan con un **overlay de logo sobre la imagen**, igual que las apariciones en medios (`PressMediaOutletLogoOverlay`, reutilizable tal cual). |
 | Área en actividades | **No.** Las actividades CREUP **no** tienen área; el área vive **solo** en los informes de áreas. |
-| Ruta de detalle | **Única** `/transparencia/actividad/[slug]`, con layout y migas según `kind`. |
+| Ruta de detalle | **Única** `/prensa/actividad/[slug]`, con layout y migas según `kind`. |
 | Admin | **Una** sección «Actividad» con dos sub-vistas (entradas / informes). |
 | Migración Feb 2026 | **Todas** las piezas del PDF, **con imágenes extraídas del propio PDF**. |
 | Fallback de imagen | Imagen de la entrada → **imagen por defecto configurable** en `/admin/imagenes-por-defecto` → **icono**. Igual que prensa/newsletter (`siteDefaultImages`). |
@@ -371,11 +371,11 @@ animación existentes (`motion-card`, `motion-link-card`, `motion-link-media`). 
 - **Inserción**: en `app/pages/index.vue`, **entre** el cierre de la sección noticias+agenda (≈línea
   86) y `<HomeFeaturedLinks>` (≈línea 88).
 - Datos: `home.value.data.recentActivity.items` (extensión de `/api/home`). CTA «Ver todo el trabajo
-  reciente» → `/transparencia/actividad`.
+  reciente» → `/prensa/actividad`.
 - Las tarjetas de miembro muestran el **overlay de logo** sobre la imagen.
 
 ### 7.2 `Versión combinada (B + filtros de A).png` → Listado bajo Transparencia
-- Página nueva `app/pages/transparencia/actividad.vue` (clona `app/pages/prensa/noticias.vue`).
+- Página nueva `app/pages/prensa/actividad.vue` (clona `app/pages/prensa/noticias.vue`).
 - **Pestañas**: «Toda la actividad» / «CREUP» / «Eventos de miembros» = filtro por `kind`.
 - **Filtros**: selector de **mes** (por `start_date`) y **búsqueda** con debounce 300 ms.
   > Cambio respecto al mockup: el desplegable «Área» del mockup **se elimina** del listado, porque las
@@ -394,7 +394,7 @@ animación existentes (`motion-card`, `motion-link-card`, `motion-link-media`). 
   lugar/«Online»; miembro → overlay de logo. **Sin badges de categoría.**
 
 ### 7.3 `A _ Artículo.png` → Detalle de evento CREUP
-- `app/pages/transparencia/actividad/[slug].vue` (clona `PressArticleDetail.vue`), layout según `kind`.
+- `app/pages/prensa/actividad/[slug].vue` (clona `PressArticleDetail.vue`), layout según `kind`.
 - Migas: `Transparencia › Actividad › {título}`. Metadata: fecha(s) · lugar/«Online». Imagen con pie,
   cuerpo rich-text. (Sin área — cambio respecto al mockup de Sumar, que mostraba «Área de Presidencia».)
 
@@ -405,7 +405,7 @@ animación existentes (`motion-card`, `motion-link-card`, `motion-link-media`). 
   («Foto cedida por …»). Metadata: fecha(s) · lugar. (Sin área.)
 
 ### 7.5 `Informe de áreas _ Febrero 2026.png` → Página de informes
-- `app/pages/transparencia/actividad/informes/[monthKey].vue` + **`informes.vue`** (sin mes → redirige
+- `app/pages/prensa/actividad/informes/[monthKey].vue` + **`informes.vue`** (sin mes → redirige
   al mes más reciente con informes; ver §7.5 *UX*).
 - Migas: `Inicio › Transparencia › Actividad de CREUP › Informe de áreas`.
 - Encabezado «INFORME MENSUAL · N ÁREAS» (**N dinámico**: solo áreas con informe ese mes — el mock dice
@@ -461,7 +461,7 @@ un slot toca **todo** este conjunto (si falta alguno, la UI no valida o no persi
 
 ### 8.1 Navegación
 - `app/composables/home/usePublicHeaderNavigation.ts`: añadir «Actividad» a los hijos de
-  Transparencia (desktop ≈204-225 y móvil ≈335-362) → `/transparencia/actividad/`.
+  Transparencia (desktop ≈204-225 y móvil ≈335-362) → `/prensa/actividad/`.
 - Claves nuevas en `i18n/locales/{es,en,ca,eu,gl,val}.json` bajo `nav.transparency.activity`
   (+ títulos de página, pestañas, filtros, «Online», banner de miembro, etiquetas de informe).
 
@@ -504,8 +504,8 @@ un slot toca **todo** este conjunto (si falta alguno, la UI no valida o no persi
 
 En este repo cada carpeta de uploads públicos **se sirve y se monta una a una**. Funciona en dev sin
 configurar nada, pero **tras build/deploy se rompe** si no se añaden todos los puntos. Para cada ruta
-nueva (`public/transparencia/actividad/imagenes`, `.../imagenes-por-defecto`,
-`public/transparencia/informes-areas/imagenes`, etc.) hay que tocar:
+nueva (`public/prensa/actividad/imagenes`, `.../imagenes-por-defecto`,
+`public/prensa/informes-areas/imagenes`, etc.) hay que tocar:
 
 1. **`shared/constants/assetPaths.ts`** — constantes de las rutas públicas (`ACTIVITY_*`, `AREA_REPORTS_*`,
    y los default de `siteDefaultImages`).
@@ -519,7 +519,7 @@ nueva (`public/transparencia/actividad/imagenes`, `.../imagenes-por-defecto`,
 5. **`DEPLOYMENT.md`** (y/o `README.md`) — documentar los nuevos volúmenes/rutas (ahí se documentan
    `APP_PUBLIC_UPLOADS_DIR` / `LOCAL_DEPLOY_PUBLIC_UPLOADS_DIR`). No existe `docs/env`.
 
-> Conviene **minimizar el número de carpetas nuevas** (p. ej. un único `public/transparencia/actividad/`
+> Conviene **minimizar el número de carpetas nuevas** (p. ej. un único `public/prensa/actividad/`
 > con subcarpetas `imagenes/` e `imagenes-por-defecto/`) para reducir handlers y montajes.
 
 - **Versionado/uso**: `?v=updatedAt`; reusar `finalizeAdminImage` y el proxy de imágenes existente.
@@ -531,9 +531,9 @@ nueva (`public/transparencia/actividad/imagenes`, `.../imagenes-por-defecto`,
 | Vista | Ruta |
 |------|------|
 | Home (fila compacta) | `/` (componente nuevo entre agenda y enlaces) |
-| Listado | `/transparencia/actividad` |
-| Detalle CREUP / miembro | `/transparencia/actividad/[slug]` (layout según `kind`) |
-| Informes de áreas (por mes) | `/transparencia/actividad/informes/[monthKey]` |
+| Listado | `/prensa/actividad` |
+| Detalle CREUP / miembro | `/prensa/actividad/[slug]` (layout según `kind`) |
+| Informes de áreas (por mes) | `/prensa/actividad/informes/[monthKey]` |
 | Admin entradas | `/admin/actividad`, `/admin/actividad/crear`, `/admin/actividad/[id]` |
 | Admin informes | `/admin/actividad/informes`, `.../crear`, `.../[id]` |
 | Admin áreas (dropdown) | `GET /api/admin/areas` |
@@ -561,14 +561,14 @@ nueva (`public/transparencia/actividad/imagenes`, `.../imagenes-por-defecto`,
 - API admin: `server/api/admin/activity/*`, `server/api/admin/area-reports/*`,
   `server/api/admin/areas.get.ts`, `server/api/admin/member-orgs.get.ts`.
 - Sitemap: `server/api/__sitemap__/activity.ts`.
-- **Servido de assets** (uno por carpeta nueva, ver §9.1): `server/routes/transparencia/actividad/imagenes/[...path].ts`
+- **Servido de assets** (uno por carpeta nueva, ver §9.1): `server/routes/prensa/actividad/imagenes/[...path].ts`
   (y, si se separan, `.../imagenes-por-defecto/[...path].ts` e informes).
 - Composables: `app/composables/activity/useActivity.ts`, `useActivityArchiveFilters.ts`,
   `app/composables/admin/useAdminActivity.ts`.
-- Páginas públicas: `app/pages/transparencia/actividad.vue`,
-  `app/pages/transparencia/actividad/[slug].vue`,
-  `app/pages/transparencia/actividad/informes/[monthKey].vue`,
-  `app/pages/transparencia/actividad/informes.vue` (redirige al mes más reciente).
+- Páginas públicas: `app/pages/prensa/actividad.vue`,
+  `app/pages/prensa/actividad/[slug].vue`,
+  `app/pages/prensa/actividad/informes/[monthKey].vue`,
+  `app/pages/prensa/actividad/informes.vue` (redirige al mes más reciente).
 - Páginas admin: `app/pages/admin/actividad/{index,crear,[id]}.vue`,
   `app/pages/admin/actividad/informes/{index,crear,[id]}.vue`.
 - Componentes: `app/components/home/RecentActivity.vue`, `app/components/activity/ActivityList.vue`,
@@ -615,7 +615,7 @@ nueva (`public/transparencia/actividad/imagenes`, `.../imagenes-por-defecto`,
 
 **Todos resueltos:**
 - ~~1. Área en actividades~~ → **No.** Área solo en informes. Eliminado de actividades y del filtro del listado.
-- ~~2. Ruta de detalle~~ → **Única** `/transparencia/actividad/[slug]` con layout según `kind`.
+- ~~2. Ruta de detalle~~ → **Única** `/prensa/actividad/[slug]` con layout según `kind`.
 - ~~3. Sección de admin~~ → **Una** sección «Actividad» con dos sub-vistas.
 - ~~4. Navegación de informes~~ → **Selector de mes + banner**, sin página índice.
 - ~~5. Origen de imágenes Feb 2026~~ → **Extraídas del PDF.**

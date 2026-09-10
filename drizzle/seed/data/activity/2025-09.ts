@@ -28,7 +28,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-01',
       endDate: '2025-09-05',
       location: 'Cantabria',
-      image: '/transparencia/actividad/imagenes/cea-presencial-cantabria-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/cea-presencial-cantabria-septiembre-2025.webp',
       es: {
         title: 'III Comisión Ejecutiva Ampliada (CEA) presencial en Cantabria',
         excerpt:
@@ -44,7 +44,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-03',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-anem-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-anem-septiembre-2025.webp',
       es: {
         title: 'Reunión CAS-ANEM',
         excerpt:
@@ -60,7 +60,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-11',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-aealcee-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-aealcee-septiembre-2025.webp',
       es: {
         title: 'Reunión CAS-AEALCEE',
         excerpt:
@@ -76,7 +76,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-16',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-creic-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-creic-septiembre-2025.webp',
       es: {
         title: 'Reunión CAS-CREIC',
         excerpt:
@@ -92,7 +92,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-17',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-ritsi-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-ritsi-septiembre-2025.webp',
       es: {
         title: 'Reunión CAS-RITSI',
         excerpt:
@@ -108,7 +108,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-16',
       endDate: '2025-09-22',
       location: 'Universidad de Zaragoza',
-      image: '/transparencia/actividad/imagenes/jornadas-formacion-ceeina-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/jornadas-formacion-ceeina-septiembre-2025.webp',
       es: {
         title: 'CREUP participa en las Jornadas de Formación del CEEINA',
         excerpt:
@@ -124,8 +124,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-22',
       endDate: '2025-09-25',
       location: 'Toledo',
-      image:
-        '/transparencia/actividad/imagenes/i-foro-estudiantes-alianzas-europeas-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/i-foro-estudiantes-alianzas-europeas-septiembre-2025.webp',
       es: {
         title: 'I Foro de Estudiantes y Alianzas Europeas organizado por CREUP',
         excerpt:
@@ -141,7 +140,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-23',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/colaboracion-eacnur-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/colaboracion-eacnur-septiembre-2025.webp',
       es: {
         title: 'CREUP explora vías de colaboración con EACNUR',
         excerpt:
@@ -157,7 +156,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-21',
       endDate: '2025-09-25',
       location: 'Barcelos (Portugal)',
-      image: '/transparencia/actividad/imagenes/esc50-barcelos-portugal-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/esc50-barcelos-portugal-septiembre-2025.webp',
       es: {
         title: 'CREUP participa en la ESC50 celebrada en Barcelos, Portugal',
         excerpt:
@@ -173,8 +172,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-23',
       isOnline: true,
       location: null,
-      image:
-        '/transparencia/actividad/imagenes/grupo-trabajo-participacion-crue-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/grupo-trabajo-participacion-crue-septiembre-2025.webp',
       es: {
         title: 'CREUP participa en el Grupo de Trabajo de Participación de CRUE',
         excerpt:
@@ -190,8 +188,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image:
-        '/transparencia/actividad/imagenes/grupo-trabajo-ley-juventud-cje-septiembre-2025.webp',
+      image: '/prensa/actividad/imagenes/grupo-trabajo-ley-juventud-cje-septiembre-2025.webp',
       es: {
         title: 'CREUP avanza en la elaboración de la nueva Ley de Juventud',
         excerpt:
@@ -205,7 +202,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: PREVIOUS_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-septiembre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-septiembre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de septiembre, el área de Presidencia ha centrado sus esfuerzos principalmente en el desarrollo del I Foro de Estudiantes y Alianzas Europeas. Al ser un evento directamente vinculado a nuestra área, hemos trabajado de manera estrecha con el CAI, especialmente con Juan Alfonso, a quien queremos agradecer por su implicación y contribución en la organización del foro.</p><p>Asimismo, hemos colaborado junto a FONCE en el proyecto de inclusión de personas con discapacidad en el Stage Formativo, reforzando nuestro compromiso con la accesibilidad y la participación de todo el estudiantado.</p><p>Por otra parte, nuestra coordinadora del CAI, Ainhoa, ha participado en el 50º European Students’ Convention (ESC) celebrado en Portugal, organizado por nuestras compañeras de FAIRE, fortaleciendo así las relaciones internacionales y la presencia de CREUP en foros europeos.</p><p>Finalmente, la celebración de la CEA durante la primera semana de septiembre nos ha permitido retomar proyectos y mantener conversaciones con distintas entidades, organismos y partidos, con el objetivo de seguir trabajando por una Universidad Pública de calidad.</p>',
@@ -214,7 +211,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-septiembre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-septiembre-2025.webp',
       es: {
         contentHtml:
           '<p>La Vocalía de Digitalización y Transparencia ha avanzado en la integración de la intranet con FACe, lo que permite ahorrar pasos en la emisión de facturas y mantener un control centralizado sobre su estado. Además, se han continuado desarrollando actualizaciones en la intranet relacionadas con eventos, certificación y la incorporación de nuevos apartados dentro del perfil de los MOREs.</p><p>En lo que respecta a las funciones propias de la Secretaría, se han realizado las labores cotidianas del cargo y la preparación de la documentación necesaria para la 78.ª Asamblea General Ordinaria.</p><p>Por último, los tres miembros del área participaron como formadores en las IV Jornadas de Formación del CEEINA, contribuyendo a la capacitación y desarrollo del personal asociado.</p>',
@@ -223,7 +220,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.TESORERIA,
-      image: '/transparencia/informes-areas/imagenes/informe-tesoreria-septiembre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-tesoreria-septiembre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, la Tesorería ha centrado su labor en poner al día la contabilidad de la asociación, abordando los retrasos acumulados durante el año, así como en la revisión de la contabilidad correspondiente al 2024, garantizando la transparencia y el correcto registro de las cuentas.</p><p>Por su parte, la Vocalía de Proyectos ha llevado a cabo estudios sobre posibles convocatorias a las que la asociación podría presentarse, así como contactos con empresas y entidades para lograr patrocinios de los eventos planificados para los próximos meses.</p>',
@@ -233,7 +230,7 @@ const month: SeedNewsletterMonth = {
     {
       area: PREVIOUS_AREAS.RRII,
       image:
-        '/transparencia/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-septiembre-2025.webp',
+        '/prensa/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-septiembre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante septiembre, el área de Relaciones Institucionales inició el curso académico con una agenda diversa y activa. En la CEA presencial se definieron las líneas de actuación para este periodo.</p><p>Se participó en el I Foro de Estudiantes y Alianzas Europeas, así como en las jornadas del Consejo de Estudiantes de la Universidad de Extremadura como formadores, consolidando la presencia de CREUP en espacios de representación externa.</p><p>Asimismo, se trabajó en la reforma del Estatuto del Estudiante Universitario con FONCE, en la Ley de Juventud del CJE, y en la comisión universidades-empresas de la Cámara de Comercio, además de apoyar a Presidencia en reuniones con Amnistía Internacional y el Consejo de la Juventud de España.</p><p>Por último, se avanzó en la elaboración del informe de precios públicos y en el posicionamiento en política social, fortaleciendo la labor institucional de CREUP.</p>',
@@ -242,8 +239,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-septiembre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-septiembre-2025.webp',
       es: {
         contentHtml:
           '<p>Desde el área de Política Universitaria se ha avanzado en la redacción de los borradores de la documentación que, en las próximas semanas, será sometida a debate y mejora en los diferentes Grupos de Trabajo.</p><p>Asimismo, se ha concluido con éxito el proceso de inscripción de las personas miembros de la Asamblea en dichos grupos. Queremos agradecer el alto nivel de participación registrado y confiamos en que esta implicación se traduzca en numerosas aportaciones enriquecedoras para los documentos en desarrollo.</p><p>Por otro lado, se está trabajando de manera intensa y coordinada con el resto de áreas en la organización del XII Stage Formativo, tanto en lo relativo a las cuestiones logísticas como en la planificación de las líneas formativas específicas de esta vicepresidencia.</p>',
@@ -252,7 +248,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-septiembre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-septiembre-2025.webp',
       es: {
         contentHtml:
           '<p>Septiembre ha sido un mes marcado por dos eventos clave para el Área de Organización: la CEA presencial en Riaño (Cantabria), del 1 al 4 de septiembre, cuya preparación comenzó antes del verano y permitió reforzar la coordinación de la Comisión Ejecutiva Ampliada; y el I Foro de Estudiantes y Alianzas Europeas en Toledo, del 23 al 26 de septiembre, organizado principalmente por la Vocalía de Logística junto al Área de Presidencia.</p><p>Además, desde la Vocalía de Formación y Contacto con los Miembros se han iniciado reuniones con asociados y se ha mantenido contacto con el Comité de Asuntos Sectoriales.</p><p>El XII Stage Formativo y la 78ª Asamblea General Ordinaria continúan siendo los principales focos de trabajo, con avances en la logística, el plan formativo y el dossier para las personas formadoras.</p>',
@@ -261,7 +257,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-septiembre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-septiembre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de septiembre, el área de Comunicación de CREUP ha centrado sus esfuerzos en el impulso de campañas clave para el estudiantado, poniendo el foco en tres ejes prioritarios: vivienda, financiación y salud mental.</p><p>Para ello, se han desarrollado distintas piezas audiovisuales y artículos que visibilizan las necesidades reales del estudiantado, especialmente en lo relativo al bienestar en el entorno universitario. Estas acciones han contribuido a reforzar la voz del estudiantado en el debate público y a trasladar sus demandas a los distintos actores sociales y políticos.</p>',

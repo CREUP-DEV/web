@@ -6,7 +6,7 @@ const { data: monthsData } = await useAreaReportsMonths()
 const mostRecentAnchorKey = computed(() => monthsData.value?.data.anchors[0]?.monthKey ?? null)
 
 if (mostRecentAnchorKey.value) {
-  await navigateTo(localePath(`/transparencia/actividad/informes/${mostRecentAnchorKey.value}`), {
+  await navigateTo(localePath(`/prensa/actividad/informes/${mostRecentAnchorKey.value}`), {
     redirectCode: 302,
   })
 }
@@ -14,11 +14,11 @@ if (mostRecentAnchorKey.value) {
 usePageSeo('activity.reports.title', 'activity.description', {
   breadcrumbs: () => [
     { name: t('nav.home'), path: localePath('/') },
-    { name: t('nav.transparency.label'), path: localePath('/transparencia/actividad') },
-    { name: t('activity.title'), path: localePath('/transparencia/actividad') },
+    { name: t('nav.press.label'), path: localePath('/prensa/noticias') },
+    { name: t('activity.title'), path: localePath('/prensa/actividad') },
     {
       name: t('activity.reports.breadcrumb'),
-      path: localePath('/transparencia/actividad/informes'),
+      path: localePath('/prensa/actividad/informes'),
     },
   ],
 })
@@ -36,7 +36,7 @@ usePageSeo('activity.reports.title', 'activity.description', {
           <UIcon name="i-tabler-file-off" class="text-muted size-10" />
           <p class="text-muted">{{ t('activity.reports.empty') }}</p>
           <UButton
-            :to="localePath('/transparencia/actividad')"
+            :to="localePath('/prensa/actividad')"
             variant="outline"
             color="neutral"
             icon="i-tabler-arrow-left"

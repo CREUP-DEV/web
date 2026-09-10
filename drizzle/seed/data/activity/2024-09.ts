@@ -24,7 +24,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-09-11',
       endDate: '2024-09-14',
       location: 'Toledo',
-      image: '/transparencia/actividad/imagenes/cea-presencial-toledo-septiembre-2024.webp',
+      image: '/prensa/actividad/imagenes/cea-presencial-toledo-septiembre-2024.webp',
       es: {
         title: 'La Comisión Ejecutiva Ampliada de CREUP se reúne de forma presencial en Toledo',
         excerpt:
@@ -40,7 +40,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-09-03',
       location: 'Congreso de los Diputados, Madrid',
       image:
-        '/transparencia/actividad/imagenes/reunion-grupo-parlamentario-socialista-septiembre-2024.webp',
+        '/prensa/actividad/imagenes/reunion-grupo-parlamentario-socialista-septiembre-2024.webp',
       es: {
         title: 'CREUP se reúne con el Grupo Parlamentario Socialista',
         excerpt:
@@ -55,7 +55,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2024-09-05',
       location: 'Santander',
-      image: '/transparencia/actividad/imagenes/cursos-uimp-santander-septiembre-2024.webp',
+      image: '/prensa/actividad/imagenes/cursos-uimp-santander-septiembre-2024.webp',
       es: {
         title: 'CREUP acude a los cursos de la UIMP',
         excerpt:
@@ -70,7 +70,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2024-09-07',
       endDate: '2024-09-08',
-      image: '/transparencia/actividad/imagenes/25-ago-cje-septiembre-2024.webp',
+      image: '/prensa/actividad/imagenes/25-ago-cje-septiembre-2024.webp',
       es: {
         title: 'CREUP asiste a la 25ª AGO del Consejo de la Juventud de España (CJE)',
         excerpt:
@@ -84,8 +84,7 @@ const month: SeedNewsletterMonth = {
       slug: 'dia-mundial-prevencion-suicidio-septiembre-2024',
       kind: 'creup',
       startDate: '2024-09-10',
-      image:
-        '/transparencia/actividad/imagenes/dia-mundial-prevencion-suicidio-septiembre-2024.webp',
+      image: '/prensa/actividad/imagenes/dia-mundial-prevencion-suicidio-septiembre-2024.webp',
       es: {
         title: 'CREUP conmemora el Día Mundial de la Prevención del Suicidio',
         excerpt:
@@ -101,7 +100,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-09-19',
       location: 'Varsovia, Polonia',
       image:
-        '/transparencia/actividad/imagenes/esc-european-students-convention-varsovia-septiembre-2024.webp',
+        '/prensa/actividad/imagenes/esc-european-students-convention-varsovia-septiembre-2024.webp',
       es: {
         title: 'CREUP acude a la European Students’ Convention de la European Students’ Union',
         excerpt:
@@ -118,7 +117,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2024-09-14',
       location: 'Toledo',
       image:
-        '/transparencia/actividad/imagenes/reunion-consejo-estudiantes-uclm-toledo-septiembre-2024.webp',
+        '/prensa/actividad/imagenes/reunion-consejo-estudiantes-uclm-toledo-septiembre-2024.webp',
       es: {
         title:
           'CREUP se reúne con el Consejo de Estudiantes de la UCLM durante la CEA presencial en Toledo',
@@ -133,7 +132,7 @@ const month: SeedNewsletterMonth = {
       slug: 'xv-aniversario-creic-septiembre-2024',
       kind: 'creup',
       startDate: '2024-09-22',
-      image: '/transparencia/actividad/imagenes/xv-aniversario-creic-septiembre-2024.webp',
+      image: '/prensa/actividad/imagenes/xv-aniversario-creic-septiembre-2024.webp',
       es: {
         title: 'CREUP está presente en el XV aniversario de CREIC',
         excerpt:
@@ -147,8 +146,7 @@ const month: SeedNewsletterMonth = {
       slug: 'evaluacion-externa-madrid-mas-d-septiembre-2024',
       kind: 'creup',
       startDate: '2024-09-26',
-      image:
-        '/transparencia/actividad/imagenes/evaluacion-externa-madrid-mas-d-septiembre-2024.webp',
+      image: '/prensa/actividad/imagenes/evaluacion-externa-madrid-mas-d-septiembre-2024.webp',
       es: {
         title: 'CREUP participa en la evaluación externa de Madri+d',
         excerpt:
@@ -165,7 +163,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2024-09-22',
       location: 'Universidad de Zaragoza',
       image:
-        '/transparencia/actividad/imagenes/iii-jornadas-formacion-ceeina-zaragoza-septiembre-2024.webp',
+        '/prensa/actividad/imagenes/iii-jornadas-formacion-ceeina-zaragoza-septiembre-2024.webp',
       es: {
         title: 'CREUP colabora en las III Jornadas de Formación de CEEINA',
         excerpt:
@@ -179,7 +177,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: PREVIOUS_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-septiembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-septiembre-2024.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de septiembre, el área de Presidencia de CREUP ha centrado sus esfuerzos en varios proyectos importantes destinados a fortalecer la representación estudiantil y la inclusión social. Entre los avances más destacados, se encuentra la finalización de los acuerdos con FONCE, que permitirá el inicio de un curso especializado para representantes en materia de inclusión de la discapacidad.</p><p>En el ámbito internacional, CREUP ha trabajado en conjunto con el Comité de Asuntos Internacionales (CAI) para definir los objetivos del curso 2024/2025. Además, se han restablecido comunicaciones con MEDNET, la Red Mediterránea de Estudiantes, con el fin de retomar proyectos conjuntos y analizar el futuro de esta colaboración. En representación de CREUP, Ainhoa y Celia asistieron al European Students’ Convention (ESC), donde tuvieron la oportunidad de intercambiar ideas con otras uniones estudiantiles europeas, abordando temas tan relevantes como la inteligencia artificial y su impacto en la educación.</p><p>Finalmente, el área de Presidencia también ha estado trabajando en la planificación operativa de la organización para el nuevo mandato, estableciendo objetivos basados en un análisis exhaustivo de la situación actual de la Asociación y las necesidades del estudiantado español. Estos esfuerzos pretenden reforzar la estrategia de CREUP y garantizar que las voces de los estudiantes sean escuchadas a nivel nacional e internacional.</p>',
@@ -189,7 +187,7 @@ const month: SeedNewsletterMonth = {
     {
       area: PREVIOUS_AREAS.RRII,
       image:
-        '/transparencia/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-septiembre-2024.webp',
+        '/prensa/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-septiembre-2024.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de septiembre, la Vicepresidencia de Relaciones Institucionales y Proyectos de CREUP ha llevado a cabo una serie de importantes encuentros y participaciones.</p><p>Del 6 al 8 de septiembre, se asistió a la Asamblea General Ordinaria del Consejo de la Juventud de España, y el día 20 se sostuvo una reunión con Enrique Hernández Díez, profesor de Derecho Administrativo de la Universidad de Extremadura, para tratar temas relacionados con la incorporación plena de CREUP en el CJE y la obtención de subvenciones para asociaciones juveniles.</p><p>Finalmente, el 27 de septiembre, la Vicepresidencia asistió a la Comisión Permanente del Consejo de Estudiantes Universitario del Estado junto al Secretario General de Universidades y participó en una entrevista para el estudio "Negotiating a University Law in Spain: Actors, Conflicts, and Innovations: the case of the LOSU".</p>',
@@ -198,7 +196,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-septiembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-septiembre-2024.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de septiembre, la Secretaría General ha finalizado su planificación estratégica, estableciendo objetivos clave en dos áreas fundamentales: la reforma normativa y la transformación digital. Durante la Comisión Ejecutiva Ampliada Presencial, se ultimaron los borradores de diversas reformas normativas y se diseñó un plan de mejoras en los soportes digitales de la asociación.</p><p>Además, el equipo ha avanzado en la actualización de la documentación interna y la optimización de los procesos de archivo y consulta. Se llevaron a cabo reuniones con Tesorería para revisar la situación de deudas y establecer un plan de actuación concreto.</p><p>Asimismo, se supervisaron las elecciones a la Coordinación del Comité de Asuntos Internacionales y al Órgano de Coordinación del Comité de Asuntos Sectoriales. La Secretaría General continúa dando soporte a la CEA y gestionando las consultas recibidas, mientras mantiene el soporte informático de la organización.</p>',
@@ -207,8 +205,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-septiembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-septiembre-2024.webp',
       es: {
         contentHtml:
           '<p>Septiembre ha sido un mes intenso para la Vicepresidencia de Política Universitaria de CREUP, con una serie de reuniones y colaboraciones importantes. El 4 de septiembre, se realizó un encuentro con la Agencia de Calidad (ACCUA), donde se revisaron propuestas para mejorar los estándares educativos en las universidades públicas.</p><p>El 11 de septiembre, CREUP cerró el documento final del Plan de Participación con CRUE, definiendo los detalles del Congreso de Participación que se celebrará en octubre en Córdoba. Entre el 17 y el 22, CREUP colaboró en la formación de talleres en las Jornadas CEEINA-UZ, reforzando la capacitación de los representantes estudiantiles.</p><p>El 23 de septiembre, se lanzó un nuevo grupo de trabajo sobre salud mental, con la primera reunión programada para la próxima semana. Ese mismo día, CREUP estuvo presente en el acto de apertura del curso académico en Zaragoza. Para culminar el mes, el 28 de septiembre, se llevó a cabo una reunión con el grupo de participación para definir las mesas redondas del Congreso de octubre.</p><p>Estas acciones subrayan el compromiso de CREUP con la calidad educativa y la participación activa del estudiantado.</p>',
@@ -217,7 +214,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-septiembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-septiembre-2024.webp',
       es: {
         contentHtml:
           '<p>La Vicepresidencia de Organización de CREUP ha tenido un mes de septiembre cargado de actividades clave para el desarrollo y fortalecimiento de la red estudiantil.</p><p>Del 11 al 14 de septiembre, se celebró en Toledo la Comisión Ejecutiva Ampliada (CEA) de CREUP, donde se abordaron temas fundamentales para la organización. Durante la reunión se trabajó en la planificación del XI Stage, la 76ª AGO, la organización interna y el desarrollo del Plan Formativo Anual. Además, se mantuvieron encuentros con otras áreas para alinear proyectos conjuntos.</p><p>En septiembre, se ultimaron los detalles del XI Stage, con la apertura de inscripciones a mediados de mes. La Vicepresidencia de Organización, en colaboración con el área de tesorería, ha trabajado en la logística de transporte y en asegurar las infraestructuras necesarias para el evento. También se definieron las líneas formativas, supervisando que cada formación cumpla con los criterios establecidos en un dossier detallado.</p><p>Se lanzó un cuestionario de asistencia provisional para la 76ª Asamblea General Ordinaria (AGO), obteniendo una alta participación. La sede ha avanzado en la planificación de horarios, alojamiento y espacios para el evento, mientras que el equipo organizador continúa trabajando para ofrecer detalles completos en las próximas semanas. La Vicepresidencia de Organización ha lanzado el Plan Formativo Anual, con el objetivo de mejorar el impacto de las formaciones y reducir las desigualdades entre los miembros de CREUP.</p>',
@@ -226,7 +223,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-septiembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-septiembre-2024.webp',
       es: {
         contentHtml:
           '<p>A lo largo del mes de septiembre, el Área de Comunicación de CREUP ha trabajado arduamente para visibilizar toda la actividad de la Coordinadora a través de redes sociales. Durante los primeros días del mes, el equipo se dedicó a planificar diversas campañas para los próximos meses y explorar nuevas vías de contacto con el público, apostando también por medios tradicionales.</p><p>Uno de los hitos del mes fue la aparición de la Directora de Comunicación en El País, donde abordó el creciente problema de la vivienda estudiantil. Asimismo, del 17 al 22 de septiembre, Mª Ángeles, miembro del equipo, participó en las Jornadas de Formación de CEEINA, impartiendo una formación sobre Diseño y Comunicación.</p><p>En paralelo, se definió la estética para la 76ª Asamblea General Ordinaria (AGO) de CREUP, inspirada en los elementos culturales de la ciudad de Granada, sede del evento. También se activó el Grupo de Trabajo de Comunicación, abierto a todos los MOREs y sectoriales de la Coordinadora, lo que permitirá una mayor colaboración en futuras campañas.</p><p>El mes culmina con la creación de esta newsletter, un esfuerzo que busca compartir los logros de la Coordinadora con todos sus miembros.</p>',

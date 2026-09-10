@@ -40,7 +40,7 @@ const memberLogo = (item: RecentActivityItem) =>
           {{ t('activity.homeTitle') }}
         </h2>
         <UButton
-          :to="localePath('/transparencia/actividad')"
+          :to="localePath('/prensa/actividad')"
           color="secondary"
           variant="outline"
           size="sm"

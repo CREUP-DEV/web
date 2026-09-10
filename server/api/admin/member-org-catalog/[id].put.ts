@@ -19,7 +19,7 @@ import {
 } from '../../../utils/admin/adminAssetPublication'
 import { MEMBER_ORG_LOGOS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
-const LOGO_UPLOAD_DIR = 'public/transparencia/actividad/imagenes/organizaciones'
+const LOGO_UPLOAD_DIR = 'public/prensa/actividad/imagenes/organizaciones'
 
 export default defineEventHandler(async (event) => {
   const { id } = validateRouteParams(event, idRouteParamSchema)

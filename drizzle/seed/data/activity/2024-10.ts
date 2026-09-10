@@ -23,7 +23,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-10-17',
       endDate: '2024-10-20',
       location: 'Isín, Huesca',
-      image: '/transparencia/actividad/imagenes/xi-stage-formativo-isin-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/xi-stage-formativo-isin-octubre-2024.webp',
       es: {
         title: 'XI Stage Formativo de CREUP en Isín',
         excerpt:
@@ -39,7 +39,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-10-02',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-acsug-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/reunion-acsug-octubre-2024.webp',
       es: {
         title: 'Reunión de CREUP con ACSUG',
         excerpt:
@@ -55,8 +55,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-10-06',
       isOnline: true,
       location: null,
-      image:
-        '/transparencia/actividad/imagenes/reunion-comite-asuntos-sectoriales-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/reunion-comite-asuntos-sectoriales-octubre-2024.webp',
       es: {
         title: 'Reunión del Comité de Asuntos Sectoriales',
         excerpt:
@@ -71,7 +70,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
       location: null,
-      image: '/transparencia/actividad/imagenes/posicionamiento-salud-mental-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/posicionamiento-salud-mental-octubre-2024.webp',
       es: {
         title: 'La salud mental: un pilar en la vida universitaria',
         excerpt:
@@ -85,7 +84,7 @@ const month: SeedNewsletterMonth = {
       slug: 'creup-la-sexta-xplica-vivienda-octubre-2024',
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
-      image: '/transparencia/actividad/imagenes/creup-la-sexta-xplica-vivienda-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/creup-la-sexta-xplica-vivienda-octubre-2024.webp',
       es: {
         title: 'CREUP alza la voz sobre el problema de la vivienda en «La Sexta Xplica»',
         excerpt:
@@ -102,7 +101,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2024-10-25',
       location: 'Huelva',
       image:
-        '/transparencia/actividad/imagenes/xxvi-encuentro-defensorias-universitarias-octubre-2024.webp',
+        '/prensa/actividad/imagenes/xxvi-encuentro-defensorias-universitarias-octubre-2024.webp',
       es: {
         title: 'XXVI Encuentro Estatal de Defensorías Universitarias',
         excerpt:
@@ -118,7 +117,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-10-28',
       location: 'Universidad de Córdoba',
       image:
-        '/transparencia/actividad/imagenes/i-jornada-participacion-estudiantil-crue-creup-octubre-2024.webp',
+        '/prensa/actividad/imagenes/i-jornada-participacion-estudiantil-crue-creup-octubre-2024.webp',
       es: {
         title: 'I Jornada de Participación Estudiantil CRUE - CREUP',
         excerpt:
@@ -135,7 +134,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2024-10-30',
       location: 'Sevilla y Córdoba',
       image:
-        '/transparencia/actividad/imagenes/i-congreso-internacional-participacion-estudiantil-octubre-2024.webp',
+        '/prensa/actividad/imagenes/i-congreso-internacional-participacion-estudiantil-octubre-2024.webp',
       es: {
         title: 'I Congreso Internacional de Participación Estudiantil',
         excerpt:
@@ -151,7 +150,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-10-10',
       location: 'Universidad Complutense de Madrid',
       memberOrgKey: 'DCEUCM',
-      image: '/transparencia/actividad/imagenes/jornadas-salud-mental-dceucm-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/jornadas-salud-mental-dceucm-octubre-2024.webp',
       es: {
         title: 'La DCE de la Universidad Complutense organiza unas Jornadas de Salud Mental',
         excerpt:
@@ -167,8 +166,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-10-04',
       endDate: '2024-10-06',
       memberOrgKey: 'CEULL',
-      image:
-        '/transparencia/actividad/imagenes/ii-cumbre-consejos-estudiantes-canarias-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/ii-cumbre-consejos-estudiantes-canarias-octubre-2024.webp',
       es: {
         title: 'II Cumbre de Consejos de Estudiantes de las Universidades Públicas de Canarias',
         excerpt:
@@ -184,8 +182,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       location: 'Universidad de Sevilla',
       memberOrgKey: 'CADUS',
-      image:
-        '/transparencia/actividad/imagenes/asambleas-estatutos-universidad-sevilla-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/asambleas-estatutos-universidad-sevilla-octubre-2024.webp',
       es: {
         title:
           'Asambleas multitudinarias por el anteproyecto de los estatutos de la Universidad de Sevilla',
@@ -203,7 +200,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2024-10-27',
       location: 'Universidad de Jaén',
       memberOrgKey: 'CEUJA',
-      image: '/transparencia/actividad/imagenes/ceuja-coordinacion-acua-octubre-2024.webp',
+      image: '/prensa/actividad/imagenes/ceuja-coordinacion-acua-octubre-2024.webp',
       es: {
         title: 'El Consejo de Estudiantes de la Universidad de Jaén asume la coordinación de ACUA',
         excerpt:
@@ -217,7 +214,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: PREVIOUS_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-octubre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-octubre-2024.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de octubre, el área de Presidencia de CREUP centró sus esfuerzos en el Stage Formativo. A la par, el equipo avanzó en iniciativas de cooperación y desarrollo, contactando con expertas en feminismo y espacios seguros para integrar estas prácticas en CREUP, además de continuar la colaboración con la Fundación ONCE para el Stage y desarrollar microformaciones dirigidas al estudiantado en temas de inclusión, cuyo lanzamiento está previsto para este curso. Asimismo, se mantuvo el diálogo con la ONCE para aportar una perspectiva estudiantil en el análisis de la inclusión en las universidades españolas.</p><p>En el ámbito internacional, CREUP participó en varios grupos de trabajo de MedNet, incluyendo el de comunicación y estatutos, y actuó como enlace informativo para otras uniones estudiantiles que asistirán al ISPN, donde CREUP también fue ponente. En paralelo, se reactivó la colaboración con OCLAE para abordar el Espacio Iberoamericano del Conocimiento desde una perspectiva estudiantil.</p><p>Finalmente, el Comité de Asuntos Internacionales avanzó en la organización del próximo Board Meeting de la European Students Union en Oslo, y convocó una reunión abierta para explicar su misión y fomentar la participación en candidaturas a las vacantes.</p>',
@@ -226,7 +223,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-octubre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-octubre-2024.webp',
       es: {
         contentHtml:
           '<p>La Secretaría de CREUP ha avanzado en la renovación de la documentación, la creación de un archivo histórico y la colaboración con Tesorería para mejorar la normativa económica. Además, trabajó con el área de Relaciones Institucionales en la adaptación de CREUP al Consejo de la Juventud de España (CJE) y participó activamente en el XI Stage Formativo como formadora.</p><p>Se ha implementado un espacio en la web para alojar las newsletters y una nueva herramienta para encuestas y votaciones secretas accesible a todos los miembros. También se realizaron mejoras en la página principal, la intranet y el dominio, y se desarrolló una plataforma de registro de asistencia mediante códigos QR en el Stage Formativo para facilitar la emisión de certificados.</p>',
@@ -236,7 +233,7 @@ const month: SeedNewsletterMonth = {
     {
       area: PREVIOUS_AREAS.RRII,
       image:
-        '/transparencia/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-octubre-2024.webp',
+        '/prensa/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-octubre-2024.webp',
       es: {
         contentHtml:
           '<p>En octubre, la Vicepresidencia de Relaciones Institucionales de CREUP ha llevado a cabo una serie de actividades estratégicas en el ámbito universitario y de la juventud. Entre las principales, destaca la reunión con Pilar Paneque, directora de la ANECA, donde se discutió la calidad del sistema universitario. En paralelo, se ha trabajado en la búsqueda de nuevas fórmulas de financiación para CREUP y en alternativas para mejorar la situación de la vivienda estudiantil en España.</p><p>Además, CREUP ha gestionado la participación de Mª Ángeles Guzmán y Nicolás Pingarrón en el programa «La Sexta Xplica» para exponer temas de interés estudiantil. También se ha impulsado un proyecto en conmemoración del Día Internacional del Estudiantado y se ha mantenido una reunión con el partido Más Madrid, seguida de la asistencia a una manifestación en Madrid en defensa del derecho a la vivienda y una reunión con Alumni España.</p><p>El equipo de CREUP participó en el XI Stage, en la Asamblea Ejecutiva Extraordinaria del Consejo de la Juventud de España y en el XXVI Encuentro Estatal de Defensorías Universitarias, organizado por la Conferencia Estatal de Defensores Universitarios.</p>',
@@ -245,8 +242,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-octubre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-octubre-2024.webp',
       es: {
         contentHtml:
           '<p>En el ámbito de la calidad educativa, se celebró el pasado día 2 una reunión con la Agencia para la Calidad del Sistema Universitario de Galicia (ACSUG). En este encuentro, se fortaleció el contacto con la agencia y se transmitieron demandas clave para mejorar la calidad en las dobles titulaciones, buscando que la estructura y el desarrollo de estos programas se adapten mejor a las necesidades de los estudiantes.</p><p>En relación con la Política Universitaria, se ha trabajado en un análisis exhaustivo sobre la Prueba de Acceso a la Universidad (PAU) para ofrecer una respuesta frente a sus cambios recientes y, a su vez, mejorar su posicionamiento en el sistema educativo. También se ha brindado asesoramiento en la reforma de los estatutos universitarios a través del proyecto MOREs, contribuyendo a una mayor coherencia en la normativa de las universidades.</p><p>Por último, en Participación Universitaria, se ha elaborado un plan de participación que involucra a universidades de toda España, en colaboración con la CRUE. Este plan fue presentado en el Congreso de Participación, en el cual se coorganizaron ponencias para promover una cultura de colaboración activa entre las instituciones. Además, en un esfuerzo por abordar el bienestar estudiantil, se ha lanzado y difundido una encuesta sobre salud mental en el entorno universitario, buscando conocer y mejorar el estado de salud de los estudiantes.</p>',
@@ -255,7 +251,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-octubre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-octubre-2024.webp',
       es: {
         contentHtml:
           '<p>Durante octubre, el área de Organización ha intensificado sus esfuerzos en la planificación y el desarrollo del Plan Formativo Anual, el cual será implementado el próximo año con el objetivo de fortalecer la formación de sus miembros.</p><p>Además, el mes marcó un hito importante con la realización del XI Stage Formativo, celebrado en Isín del 17 al 20 de octubre. Este evento ha requerido una cuidadosa planificación y el trabajo de todo el equipo, enfocado en garantizar una experiencia enriquecedora para los asistentes, desde la logística de los desplazamientos hasta la creación de un formulario de valoración final, con el fin de identificar oportunidades de mejora en futuros encuentros.</p><p>Por otro lado, también se abrió el periodo de inscripciones para la 76ª Asamblea General Ordinaria, que se celebrará en la Universidad de Granada del 20 al 24 de noviembre. Este evento, de gran magnitud, ha requerido una serie de reuniones con la sede anfitriona para coordinar los detalles logísticos y prever las necesidades operativas que implica reunir a un gran número de participantes.</p>',
@@ -264,7 +260,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-octubre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-octubre-2024.webp',
       es: {
         contentHtml:
           '<p>Durante el reciente XI Stage Formativo de la Coordinadora de Representantes de Universidades Públicas (CREUP), se llevaron a cabo diversas actividades que fomentaron el aprendizaje y el intercambio de ideas entre más de 80 representantes estudiantiles. A través de una serie de formaciones y talleres, los asistentes pudieron adquirir nuevas habilidades y conocimientos esenciales para su labor como representantes.</p><p>Uno de los momentos destacados fue la participación de Mª Ángeles Guzmán en el programa «La Sexta Xplica», donde compartió sus experiencias y reflexiones sobre la importancia de una vivienda digna para el estudiantado. Además, se publicó un artículo realizado por Gabriel Suárez, en el que se abordó el tema de la salud mental en las universidades.</p><p>En un esfuerzo por mantener a todos informados sobre lo sucedido en el XI Stage, el equipo ha estado creando contenido multimedia. A través de reels y publicaciones en redes sociales, queremos que podáis conocer de primera mano todo lo que hicimos y aprendimos durante este evento formativo. Por último, seguimos avanzando en los diseños para la Asamblea General Ordinaria (AGO), con el objetivo de facilitar la comunicación y la participación de todos los estudiantes en este importante encuentro.</p>',

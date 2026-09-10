@@ -1044,7 +1044,7 @@ JSON se escribe `{'@'}`.
 
 ## 11. Anclas y mejoras en las tarjetas de informes de áreas
 
-En `app/pages/transparencia/actividad/informes/[monthKey].vue`. El payload público ya expone
+En `app/pages/prensa/actividad/informes/[monthKey].vue`. El payload público ya expone
 `areaId` (`server/api/area-reports.ts`), así que no hay que tocar la API.
 
 1. `:id="'area-' + report.areaId"` en el `<article>` de cada tarjeta.
@@ -1166,7 +1166,7 @@ shared/constants/{adminRoutes,adminSections,assetPaths,publicAsyncDataKeys,siteD
 app/pages/prensa/newsletter.vue                      (quirúrgico, §10.5)
 app/pages/admin/newsletter/index.vue                 (listado de campañas)
 app/pages/admin/{index,estado,imagenes-por-defecto}.vue
-app/pages/transparencia/actividad/informes/[monthKey].vue
+app/pages/prensa/actividad/informes/[monthKey].vue
 app/composables/home/usePublicHeaderNavigation.ts
 nuxt.config.ts                                       (CSP por ruta, rate limiter, uploads)
 drizzle/seed.ts                                      (§10.2) + pnpm build:seed

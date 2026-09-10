@@ -27,7 +27,7 @@ export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.
 
 // Activity section ("Actividad"). One parent folder with sub-folders keeps the number of
 // per-folder serve handlers + docker volume mounts low (plan §9.1).
-export const ACTIVITY_IMAGE_PUBLIC_BASE = '/transparencia/actividad/imagenes'
+export const ACTIVITY_IMAGE_PUBLIC_BASE = '/prensa/actividad/imagenes'
 /** Admin-uploaded fallbacks (per kind) when an activity entry has no `image`. */
 export const ACTIVITY_DEFAULT_IMAGES_SEGMENT = 'imagenes-por-defecto'
 export const ACTIVITY_DEFAULT_IMAGES_PUBLIC_PATH = `${ACTIVITY_IMAGE_PUBLIC_BASE}/${ACTIVITY_DEFAULT_IMAGES_SEGMENT}`
@@ -35,7 +35,7 @@ export const ACTIVITY_DEFAULT_IMAGES_PUBLIC_PATH = `${ACTIVITY_IMAGE_PUBLIC_BASE
  * under the activity base so it needs no serve handler or volume mount of its own. */
 export const MEMBER_ORG_LOGOS_SEGMENT = 'organizaciones'
 export const MEMBER_ORG_LOGOS_PUBLIC_PATH = `${ACTIVITY_IMAGE_PUBLIC_BASE}/${MEMBER_ORG_LOGOS_SEGMENT}`
-export const AREA_REPORTS_IMAGE_PUBLIC_BASE = '/transparencia/informes-areas/imagenes'
+export const AREA_REPORTS_IMAGE_PUBLIC_BASE = '/prensa/informes-areas/imagenes'
 /** Admin-uploaded fallback when an area report has no `image`. */
 export const AREA_REPORTS_DEFAULT_IMAGES_SEGMENT = 'imagenes-por-defecto'
 export const AREA_REPORTS_DEFAULT_IMAGES_PUBLIC_PATH = `${AREA_REPORTS_IMAGE_PUBLIC_BASE}/${AREA_REPORTS_DEFAULT_IMAGES_SEGMENT}`

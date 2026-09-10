@@ -23,7 +23,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-ceule-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-ceule-febrero-2026.webp',
       es: {
         title: 'Reunión con CEULE',
         excerpt:
@@ -39,7 +39,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-ceuex-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-ceuex-febrero-2026.webp',
       es: {
         title: 'Reunión con CEUEX',
         excerpt:
@@ -55,7 +55,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-aeae-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-aeae-febrero-2026.webp',
       es: {
         title: 'Reunión con AEAE',
         excerpt:
@@ -71,7 +71,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-caruh-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-caruh-febrero-2026.webp',
       es: {
         title: 'Reunión con CARUH',
         excerpt: 'Reunión de contacto para conocer la nueva junta directiva y resolver dudas.',
@@ -87,7 +87,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/reunion-subdireccion-general-coordinacion-iniciativas-febrero-2026.webp',
+        '/prensa/actividad/imagenes/reunion-subdireccion-general-coordinacion-iniciativas-febrero-2026.webp',
       es: {
         title: 'Reunión con la Subdirección General de Coordinación e Iniciativas',
         excerpt:
@@ -103,7 +103,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-lejsee-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-lejsee-febrero-2026.webp',
       es: {
         title: 'Reunión con la Liga de Estudiantes y Jóvenes Saharauis',
         excerpt:
@@ -119,7 +119,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2026-02-08',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-extraordinaria-cas-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-extraordinaria-cas-febrero-2026.webp',
       es: {
         title: 'Reunión extraordinaria del CAS',
         excerpt:
@@ -136,7 +136,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/reunion-guia-buenas-practicas-sectoriales-febrero-2026.webp',
+        '/prensa/actividad/imagenes/reunion-guia-buenas-practicas-sectoriales-febrero-2026.webp',
       es: {
         title: 'Reunión del proyecto de guía de buenas prácticas con sectoriales',
         excerpt:
@@ -152,7 +152,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-siueh-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-siueh-febrero-2026.webp',
       es: {
         title: 'Reunión con SIUEH',
         excerpt:
@@ -168,7 +168,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-semanal-cai-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-semanal-cai-febrero-2026.webp',
       es: {
         title: 'Reunión semanal del CAI',
         excerpt:
@@ -184,7 +184,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cestulpgc-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-cestulpgc-febrero-2026.webp',
       es: {
         title: 'Reunión con CESTULPGC',
         excerpt:
@@ -200,7 +200,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-coordinacion-cas-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-coordinacion-cas-febrero-2026.webp',
       es: {
         title: 'Reunión de coordinación del CAS',
         excerpt: 'Reunión de toma de contacto con la nueva coordinación del CAS.',
@@ -213,8 +213,7 @@ const month: SeedNewsletterMonth = {
       slug: 'v-jornadas-crue-asuntos-estudiantiles-febrero-2026',
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
-      image:
-        '/transparencia/actividad/imagenes/v-jornadas-crue-asuntos-estudiantiles-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/v-jornadas-crue-asuntos-estudiantiles-febrero-2026.webp',
       es: {
         title: 'V Jornadas CRUE-Asuntos Estudiantiles',
         excerpt:
@@ -228,7 +227,7 @@ const month: SeedNewsletterMonth = {
       slug: 'xlvii-jornadas-colegios-mayores-febrero-2026',
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
-      image: '/transparencia/actividad/imagenes/xlvii-jornadas-colegios-mayores-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/xlvii-jornadas-colegios-mayores-febrero-2026.webp',
       es: {
         title: 'XLVII Jornadas de Colegios Mayores',
         excerpt:
@@ -242,8 +241,7 @@ const month: SeedNewsletterMonth = {
       slug: 'reunion-grupo-parlamentario-sumar-febrero-2026',
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
-      image:
-        '/transparencia/actividad/imagenes/reunion-grupo-parlamentario-sumar-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/reunion-grupo-parlamentario-sumar-febrero-2026.webp',
       es: {
         title: 'Reunión con el Grupo Parlamentario de Sumar',
         excerpt:
@@ -257,8 +255,7 @@ const month: SeedNewsletterMonth = {
       slug: 'toma-posesion-consell-estudiants-uib-febrero-2026',
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
-      image:
-        '/transparencia/actividad/imagenes/toma-posesion-consell-estudiants-uib-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/toma-posesion-consell-estudiants-uib-febrero-2026.webp',
       es: {
         title: "Toma de posesión del Consell d'Estudiants de la UIB",
         excerpt:
@@ -273,7 +270,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2026-02-24',
       image:
-        '/transparencia/actividad/imagenes/presentacion-informe-cultura-inclusiva-once-febrero-2026.webp',
+        '/prensa/actividad/imagenes/presentacion-informe-cultura-inclusiva-once-febrero-2026.webp',
       es: {
         title:
           'Presentación del informe «Promoción y desarrollo de una cultura inclusiva en las universidades españolas»',
@@ -291,7 +288,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2026-03-01',
       location: 'Universitat Politècnica de València',
       image:
-        '/transparencia/actividad/imagenes/vii-encuentro-creup-crue-xv-encuentro-representantes-upv-febrero-2026.webp',
+        '/prensa/actividad/imagenes/vii-encuentro-creup-crue-xv-encuentro-representantes-upv-febrero-2026.webp',
       es: {
         title: 'VII Encuentro CREUP-CRUE y XV Encuentro de Representantes en la UPV',
         excerpt:
@@ -307,7 +304,7 @@ const month: SeedNewsletterMonth = {
       startDate: PLACEHOLDER_DATE,
       location: 'Universitat Jaume I',
       memberOrgKey: 'CEUJI',
-      image: '/transparencia/actividad/imagenes/paellas-2026-ceuji-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/paellas-2026-ceuji-febrero-2026.webp',
       es: {
         title: "El Consell de l'Estudiantat organiza «Paellas 2026»",
         excerpt:
@@ -324,8 +321,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2026-02-06',
       location: 'Universidad de Sevilla',
       memberOrgKey: 'RITSI',
-      image:
-        '/transparencia/actividad/imagenes/ritsi-xv-jornadas-formacion-sevilla-febrero-2026.webp',
+      image: '/prensa/actividad/imagenes/ritsi-xv-jornadas-formacion-sevilla-febrero-2026.webp',
       es: {
         title: 'RITSI realiza sus XV Jornadas de Formación en la Universidad de Sevilla',
         excerpt:
@@ -339,7 +335,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: CURRENT_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-febrero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-febrero-2026.webp',
       es: {
         contentHtml:
           '<p>A lo largo de febrero, el área de Presidencia ha trabajado por desarrollar lo discutido en la CEA presencial. Nos hemos reunido con distintos grupos políticos para presentarles las prioridades del estudiantado universitario para el 2026. Se ha colaborado con CANAE, ESN, Cruz Roja Juventud y ACNUR para organizar una campaña de sensibilización en materia de inmigración y personas refugiadas. Además, con la celebración del VII Congreso CREUP-CRUE, se ha colaborado en el envío de invitaciones y la elaboración de la línea del Encuentro de Representantes.</p>',
@@ -348,7 +344,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-febrero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-febrero-2026.webp',
       es: {
         contentHtml:
           '<p>Desde el área de Secretaría Ejecutiva y la Dirección de Gabinete se prepararon las elecciones al Órgano de Coordinación del Comité de Asuntos Sectoriales y, posteriormente, se mantuvo una reunión de traspaso junto con la candidatura electa.</p><p>Por otro lado, el Secretario Ejecutivo y Director de Gabinete colaboró en la organización del VII Congreso CREUP-CRUE y el XV Encuentro de Representantes, en especial en la coordinación del protocolo del acto de inauguración.</p>',
@@ -357,7 +353,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.TESORERIA,
-      image: '/transparencia/informes-areas/imagenes/informe-tesoreria-febrero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-tesoreria-febrero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante este periodo, el área de Tesorería de CREUP se enfocó activamente en el saneamiento del estado de las deudas que se deben a la asociación y en la revisión del estado de las facturas pendientes del anterior periodo fiscal.</p><p>Junto al área de Secretaría y a la Vocalía de Digitalización, se ha seguido añadiendo nuevas herramientas para facilitar la gestión económica en la intranet. Por otro lado, la Vocalía de Proyectos se ha centrado en la búsqueda de subvenciones, especialmente centrada en proyectos europeos.</p>',
@@ -366,7 +362,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-febrero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-febrero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, el área de Comunicación ha estado ultimando los detalles de la identidad visual del XV Encuentro de Representantes y el VII Congreso CREUP-CRUE.</p><p>Además, hemos planteado algunas campañas junto a la Vocalía de Igualdad para el 8 de marzo y otras centradas en las personas con discapacidad. Asimismo, hemos cubierto algunos eventos a los que ha asistido la Comisión Ejecutiva Ampliada.</p>',
@@ -375,8 +371,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-febrero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-febrero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de febrero, desde el área de Política Universitaria hemos seguido trabajando la documentación que presentaremos en la 79 AGO. Además, hemos estado preparando las diferentes mesas de debate del Encuentro de Representantes. Por otro lado, nos hemos estado reuniendo con distintas entidades sociales para llevar a cabo proyectos de colaboración e hicimos una sesión abierta para trabajar el documento del reconocimiento de competencias.</p>',
@@ -386,7 +381,7 @@ const month: SeedNewsletterMonth = {
     {
       area: CURRENT_AREAS.COORDINACION,
       image:
-        '/transparencia/informes-areas/imagenes/informe-coordinacion-interna-y-formacion-febrero-2026.webp',
+        '/prensa/informes-areas/imagenes/informe-coordinacion-interna-y-formacion-febrero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, desde el área de Coordinación Interna y Formación hemos continuado reforzando el contacto con los MOREs y las sectoriales de la entidad, manteniendo un seguimiento activo para conocer sus necesidades actuales, resolver dudas y acompañar sus procesos internos. Este trabajo se ha desarrollado tanto a través de reuniones directas como mediante el contacto continuo en los distintos canales de comunicación habituales.</p><p>Asimismo, hemos colaborado estrechamente con el área de Organización en la preparación y el desarrollo del VII Congreso CREUP-CRUE y del XV Encuentro de Representantes Estudiantiles.</p>',
@@ -395,7 +390,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-febrero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-febrero-2026.webp',
       es: {
         contentHtml:
           '<p>Este mes, el área se ha centrado en la coordinación logística del VII Encuentro CREUP-CRUE y el XV Encuentro de Representantes junto al Consell de la UPV. Durante el evento, el área ha mantenido labores constantes de apoyo y logística en la sede. En cuanto al trabajo interno, destaca la finalización de la Guía de presentación de sede.</p>',

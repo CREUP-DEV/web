@@ -24,6 +24,7 @@
     "press": {
       "label": "Prentsa",
       "news": "Albisteak",
+      "activity": "Gure jarduera",
       "newsletter": "Newsletter",
       "pressReleases": "Prentsa-oharrak",
       "statements": "Adierazpenak",
@@ -36,8 +37,7 @@
       "regulations": "Araudia",
       "financialReports": "Txosten ekonomikoak",
       "corporateIdentity": "Identitate Korporatiboa",
-      "equality": "Berdintasuna",
-      "activity": "Gure jarduera"
+      "equality": "Berdintasuna"
     },
     "contact": "Harremana"
   },

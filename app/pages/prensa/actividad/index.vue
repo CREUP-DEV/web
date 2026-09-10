@@ -10,8 +10,8 @@ usePageSeo('activity.title', 'activity.description', {
   webPageType: 'CollectionPage',
   breadcrumbs: () => [
     { name: t('nav.home'), path: localePath('/') },
-    { name: t('nav.transparency.label'), path: localePath('/transparencia/actividad') },
-    { name: t('activity.title'), path: localePath('/transparencia/actividad') },
+    { name: t('nav.press.label'), path: localePath('/prensa/noticias') },
+    { name: t('activity.title'), path: localePath('/prensa/actividad') },
   ],
 })
 
@@ -128,7 +128,7 @@ const setKind = (value: ActivityKind | null) => {
   page.value = 1
 }
 
-const detailPath = (slug: string) => localePath(`/transparencia/actividad/${slug}`)
+const detailPath = (slug: string) => localePath(`/prensa/actividad/${slug}`)
 
 // Area-reports banner: show when the selected month is covered by an edition (mapped via
 // coveredToAnchor); with no month selected, link to the most recent anchor. Hidden if no anchors.
@@ -144,9 +144,7 @@ const bannerAnchorKey = computed(() => {
 })
 
 const bannerPath = computed(() =>
-  bannerAnchorKey.value
-    ? localePath(`/transparencia/actividad/informes/${bannerAnchorKey.value}`)
-    : null
+  bannerAnchorKey.value ? localePath(`/prensa/actividad/informes/${bannerAnchorKey.value}`) : null
 )
 
 const getAnimationStyle = (index: number) => ({

@@ -24,8 +24,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-04-02',
       endDate: '2025-04-06',
       location: 'Universidad de Sevilla',
-      image:
-        '/transparencia/actividad/imagenes/77-asamblea-general-ordinaria-sevilla-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/77-asamblea-general-ordinaria-sevilla-mayo-2025.webp',
       es: {
         title: 'CREUP celebra su 77ª AGO en la Universidad de Sevilla',
         excerpt:
@@ -41,8 +40,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-04-09',
       isOnline: true,
       location: null,
-      image:
-        '/transparencia/actividad/imagenes/reunion-gt-participacion-estudiantil-crue-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-gt-participacion-estudiantil-crue-mayo-2025.webp',
       es: {
         title: 'Reunión del Grupo de Trabajo de Participación Estudiantil con CRUE',
         excerpt:
@@ -58,7 +56,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-04-24',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-docentia-aneca-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-docentia-aneca-mayo-2025.webp',
       es: {
         title: 'Reunión sobre DOCENTIA, nuevas modalidades docentes y colaboración con ANECA',
         excerpt:
@@ -73,7 +71,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-05-05',
       location: null,
-      image: '/transparencia/actividad/imagenes/jornada-cje-ayudas-desarrollo-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/jornada-cje-ayudas-desarrollo-mayo-2025.webp',
       es: {
         title: 'CREUP participa en la jornada del CJE sobre ayudas al desarrollo',
         excerpt:
@@ -88,7 +86,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-05-05',
       location: 'Universidad Rovira i Virgili, Tarragona',
-      image: '/transparencia/actividad/imagenes/xxv-encuentro-siou-rovira-virgili-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/xxv-encuentro-siou-rovira-virgili-mayo-2025.webp',
       es: {
         title: 'CREUP defiende la participación estudiantil en el XXV Encuentro Anual de los SIOU',
         excerpt:
@@ -105,7 +103,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/reunion-cje-canae-asociaciones-estudiantiles-mayo-2025.webp',
+        '/prensa/actividad/imagenes/reunion-cje-canae-asociaciones-estudiantiles-mayo-2025.webp',
       es: {
         title:
           'Reunión con el CJE para abordar la situación de las asociaciones estudiantiles en España',
@@ -121,8 +119,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-05-20',
       location: null,
-      image:
-        '/transparencia/actividad/imagenes/iii-jornada-alumni-microcredenciales-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/iii-jornada-alumni-microcredenciales-mayo-2025.webp',
       es: {
         title:
           'CREUP participa en la III Jornada de Trabajo de Alumni sobre microcredenciales universitarias',
@@ -138,7 +135,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-05-21',
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-psm-universidades-madrid-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-psm-universidades-madrid-mayo-2025.webp',
       es: {
         title:
           'CREUP y los consejos de estudiantes madrileños se reúnen con el PSM para abordar la situación de las universidades en Madrid',
@@ -155,8 +152,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-05-25',
       endDate: '2025-05-27',
       location: 'Universidad Jaume I',
-      image:
-        '/transparencia/actividad/imagenes/reunion-gt-participacion-crue-jaume-i-mayo-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-gt-participacion-crue-jaume-i-mayo-2025.webp',
       es: {
         title: 'El Grupo de Trabajo sobre Participación de CRUE se reúne en la Universidad Jaume I',
         excerpt:
@@ -174,7 +170,7 @@ const month: SeedNewsletterMonth = {
       location: 'Las Palmas de Gran Canaria',
       memberOrgKey: 'SIUEH',
       image:
-        '/transparencia/actividad/imagenes/siueh-vi-asamblea-general-ordinaria-las-palmas-mayo-2025.webp',
+        '/prensa/actividad/imagenes/siueh-vi-asamblea-general-ordinaria-las-palmas-mayo-2025.webp',
       es: {
         title: 'SIUEH celebra su VI AGO en Las Palmas de Gran Canaria',
         excerpt:
@@ -188,7 +184,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: PREVIOUS_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-mayo-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-mayo-2025.webp',
       es: {
         contentHtml:
           '<p>Tras la celebración de la 77ª Asamblea General Ordinaria (AGO) en Sevilla, desde Presidencia hemos iniciado los trabajos de incidencia relacionados con los documentos aprobados durante el encuentro. Entre las primeras acciones, destaca la interlocución con el rector de la Universidad Pablo de Olavide y miembro del Comité Permanente de CRUE, para abordar el documento relativo al Estatuto del Estudiante en Formación Práctica No Laboral en el Ámbito de la Empresa. Además, participamos en el Pleno del Consejo de Estudiantes Universitarios del Estado (CEUNE), donde se formalizó la entrada de la nueva Comisión Permanente.</p><p>El Área de Internacionales ha continuado impulsando las líneas aprobadas tanto en Sevilla como en asambleas anteriores. Se ha avanzado en los proyectos sobre estudiantado refugiado, la situación del Sáhara Occidental y las alianzas universitarias europeas. También hemos organizado una reunión presencial de Mednet en la Universidad de Cádiz y asistido al Board Meeting en Banja Luka. En este encuentro, se aprobaron dos resoluciones impulsadas por el Comité de Asuntos Internacionales (CAI): la inclusión del Sáhara Occidental en las políticas universitarias y una denuncia sobre la situación de la vivienda para el estudiantado.</p><p>Desde el área de Igualdad se dio por finalizado el ciclo de píldoras formativas impulsadas junto a FONCE, centradas en la discapacidad y dirigidas al estudiantado. Agradecemos profundamente el compromiso de FONCE con la formación inclusiva y su labor en esta iniciativa.</p>',
@@ -197,7 +193,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-mayo-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-mayo-2025.webp',
       es: {
         contentHtml:
           '<p>Desde Secretaría se ha publicado en la intranet y web toda la documentación aprobada en la 77.ª Asamblea General Ordinaria. Además, se completó el cambio de sede social tras la inscripción de la reforma de estatutos en el Registro de Asociaciones.</p><p>Se organizaron las elecciones del Órgano de Coordinación del CAS y de la Coordinación del CAI, gestionando toda la documentación y procedimientos necesarios. También se participó en la administración electoral para la convocatoria de vocalías.</p><p>Se inició la firma de nuevos convenios con las sectoriales y se colaboró con Tesorería en la preparación de la documentación para la subvención del INJUVE.</p><p>El Secretario Ejecutivo representó a CREUP en la Comisión Permanente del CEUNE y en reuniones con el Secretario General de Universidades, además de acompañar al presidente en diversos actos en Madrid, incluyendo encuentros con el PSOE y otros MOREs.</p><p>Por último, avanzan los preparativos de la 78.ª Asamblea General Ordinaria y se mantienen reuniones para organizar la actividad interna, la incidencia política y la comunicación.</p>',
@@ -206,7 +202,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.TESORERIA,
-      image: '/transparencia/informes-areas/imagenes/informe-tesoreria-mayo-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-tesoreria-mayo-2025.webp',
       es: {
         contentHtml:
           '<p>En las semanas posteriores a la 77 Asamblea General Ordinaria (AGO), el área de Tesorería ha centrado sus esfuerzos en la facturación a los asistentes y en la gestión de pagos pendientes relacionados con el evento. Además, se ha continuado con las tareas de gestión ordinaria y se ha elaborado una guía de comisiones de gasto destinada a los miembros de la Comisión Ejecutiva Ampliada, para mejorar la transparencia y el control en el uso de recursos.</p><p>Tras la AGO, se realizó una valoración exhaustiva del periodo interasambleario con el fin de detectar aspectos que requerían replanteamiento. Esta revisión ha impulsado una reestructuración en la planificación operativa de la vocalía de proyectos, orientando los esfuerzos hacia las necesidades reales identificadas durante este análisis.</p><p>Entre las acciones más destacadas del periodo, desde Tesorería se ha llevado a cabo un intenso trabajo en la gestión de la subvención del Instituto de la Juventud (INJUVE) para asociaciones juveniles. Este proceso ha contado con la coordinación estrecha entre distintas áreas de la Comisión Ejecutiva Ampliada para maximizar el apoyo a la mayor cantidad posible de iniciativas juveniles.</p>',
@@ -216,7 +212,7 @@ const month: SeedNewsletterMonth = {
     {
       area: PREVIOUS_AREAS.RRII,
       image:
-        '/transparencia/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-mayo-2025.webp',
+        '/prensa/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-mayo-2025.webp',
       es: {
         contentHtml:
           '<p>Tras la 77ª AGO, la Vicepresidencia ha trabajado con el área de Política Universitaria en el RD 640 sobre creación de universidades, trasladando nuestras propuestas al Secretario General de Universidades. También se ha colaborado con el área de Comunicación para preparar futuras campañas.</p><p>Se participó en una jornada con Alumni España sobre buenas prácticas y microcredenciales, y en una reunión con el PSOE de Madrid para tratar la financiación y la nueva ley autonómica de universidades.</p><p>Además, se mantuvieron encuentros con el CJE sobre la situación de las asociaciones juveniles, y se participó en unas jornadas junto al Ministerio de Exteriores sobre temas como comercio digital, desarrollo, fiscalidad internacional y tecnología.</p>',
@@ -225,7 +221,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image: '/transparencia/informes-areas/imagenes/informe-politica-universitaria-mayo-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-mayo-2025.webp',
       es: {
         contentHtml:
           '<p>La Vicepresidencia de Política Universitaria de CREUP ha avanzado en varios frentes clave durante las últimas semanas.</p><p>Se ha formalizado el traspaso de la Vocalía de Gobernanza y Coordinación, asegurando una transición fluida y la continuidad del trabajo dentro del área.</p><p>Además, CREUP participó en el encuentro presencial del Grupo de Trabajo de Participación de CRUE, donde se abordaron cuestiones sobre representación estudiantil y estructuras de participación en las universidades.</p><p>En el ámbito institucional, se mantuvieron reuniones con el Ministerio de Educación, Formación Profesional y Deportes para tratar la próxima convocatoria de becas, y con el Ministerio de Ciencia, Innovación y Universidades en relación con la modificación del Real Decreto 640/2021, así como otros asuntos de política universitaria.</p><p>Finalmente, el área de Política Universitaria celebró una reunión interna para coordinar líneas estratégicas y preparar futuras acciones.</p>',
@@ -234,7 +230,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-mayo-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-mayo-2025.webp',
       es: {
         contentHtml:
           '<p>El área de Organización comenzó abril trabajando en la 77ª AGO en Sevilla, colaborando con la sede en la ejecución del evento y la gestión de imprevistos.</p><p>Tras la Asamblea, se renovaron las vocalías: Carla Sosa asumió Formación y Lorena Villalba, Logística. Desde entonces, se ha avanzado en la organización de la próxima CEA presencial y del XII Stage Formativo, para el que ya se ha lanzado una encuesta a la Asamblea con el fin de definir sus contenidos.</p><p>Además, ya se han iniciado los preparativos y reuniones para la 78ª AGO, que tendrá lugar en la Universitat de Barcelona.</p>',
@@ -243,7 +239,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-mayo-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-mayo-2025.webp',
       es: {
         contentHtml:
           '<p>Durante los últimos meses, el área de Comunicación de CREUP ha centrado sus esfuerzos en el impulso de campañas clave para el estudiantado, poniendo el foco en tres ejes prioritarios: vivienda, financiación y salud mental.</p><p>En este marco, se han desarrollado distintas piezas comunicativas y artículos que visibilizan las necesidades reales del alumnado, especialmente en lo relativo al bienestar psicológico. Estas acciones han contribuido a reforzar la voz del estudiantado en el debate público y a trasladar sus demandas a los distintos actores sociales y políticos.</p>',

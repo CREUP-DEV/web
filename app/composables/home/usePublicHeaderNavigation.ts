@@ -136,7 +136,7 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
 
   // Nuxt UI derives a link's active state from Vue Router's record matching, which only marks
   // ancestors of the current route. Detail routes (`/prensa/noticias/[slug]`,
-  // `/transparencia/actividad/informes/[monthKey]`, ...) are flat siblings of their section index,
+  // `/prensa/actividad/informes/[monthKey]`, ...) are flat siblings of their section index,
   // so the parent entry would never highlight. Resolve `active` from the path prefix instead, the
   // same way the mobile menu already does.
   const createNavigationChild = (label: string, path: string): NavigationMenuItem => ({
@@ -176,6 +176,7 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       active: isSectionActive('/prensa'),
       children: [
         createNavigationChild(t('nav.press.news'), '/prensa/noticias/'),
+        createNavigationChild(t('nav.press.activity'), '/prensa/actividad/'),
         createNavigationChild(t('nav.press.newsletter'), '/prensa/newsletter/'),
         ...(resolvedPressDossierLink.value
           ? [createExternalNavigationItem(t('nav.press.pressKit'), resolvedPressDossierLink.value)]
@@ -186,7 +187,6 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       label: t('nav.transparency.label'),
       active: isSectionActive('/transparencia'),
       children: [
-        createNavigationChild(t('nav.transparency.activity'), '/transparencia/actividad/'),
         createNavigationChild(t('nav.transparency.regulations'), '/transparencia/normativa/'),
         createNavigationChild(
           t('nav.transparency.financialReports'),
@@ -288,6 +288,11 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
           icon: 'i-tabler-news',
         }),
         createMobileNavLink({
+          label: t('nav.press.activity'),
+          to: localizedPath('/prensa/actividad/'),
+          icon: 'i-tabler-activity',
+        }),
+        createMobileNavLink({
           label: t('nav.press.newsletter'),
           to: localizedPath('/prensa/newsletter/'),
           icon: 'i-tabler-mail',
@@ -311,11 +316,6 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
       icon: 'i-tabler-building-bank',
       active: isSectionActive('/transparencia'),
       links: [
-        createMobileNavLink({
-          label: t('nav.transparency.activity'),
-          to: localizedPath('/transparencia/actividad/'),
-          icon: 'i-tabler-activity',
-        }),
         createMobileNavLink({
           label: t('nav.transparency.regulations'),
           to: localizedPath('/transparencia/normativa/'),

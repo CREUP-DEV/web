@@ -3,7 +3,7 @@
 ## Qué es
 Nueva sección que sustituye la newsletter mensual (PDF): entradas de actividad
 (eventos a los que CREUP asiste / eventos de miembros) + informes mensuales de
-áreas. Público bajo `/transparencia/actividad` + fila en la home; gestión en
+áreas. Público bajo `/prensa/actividad` + fila en la home; gestión en
 `/admin`. Plan completo: [`docs/plan-seccion-actividad.md`](./plan-seccion-actividad.md). Léelo primero.
 
 ## Estado git

@@ -24,7 +24,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/reunion-coordinacion-encuentro-congreso-creup-crue-enero-2026.webp',
+        '/prensa/actividad/imagenes/reunion-coordinacion-encuentro-congreso-creup-crue-enero-2026.webp',
       es: {
         title: 'Reunión de coordinación para la preparación del Encuentro y el Congreso CREUP-CRUE',
         excerpt:
@@ -41,7 +41,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/reunion-excoordinador-cientifico-eurostudent-enero-2026.webp',
+        '/prensa/actividad/imagenes/reunion-excoordinador-cientifico-eurostudent-enero-2026.webp',
       es: {
         title: 'Reunión con el excoordinador científico de EUROSTUDENT',
         excerpt:
@@ -58,7 +58,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/reunion-grupo-trabajo-ii-jornadas-participacion-enero-2026.webp',
+        '/prensa/actividad/imagenes/reunion-grupo-trabajo-ii-jornadas-participacion-enero-2026.webp',
       es: {
         title: 'Reunión del grupo de trabajo de las II Jornadas de Participación CREUP-CRUE',
         excerpt:
@@ -74,7 +74,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2026-01-15',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/lanzamiento-campus-rural-2026-enero-2026.webp',
+      image: '/prensa/actividad/imagenes/lanzamiento-campus-rural-2026-enero-2026.webp',
       es: {
         title: 'Lanzamiento de Campus Rural 2026',
         excerpt:
@@ -89,7 +89,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2026-01-17',
       location: 'Universidad de Granada',
-      image: '/transparencia/actividad/imagenes/firma-convenio-canae-enero-2026.webp',
+      image: '/prensa/actividad/imagenes/firma-convenio-canae-enero-2026.webp',
       es: {
         title:
           'CREUP firma un convenio con la Confederación Estatal de Asociaciones de Estudiantes (CANAE)',
@@ -107,7 +107,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/xxxi-asamblea-general-extraordinaria-telematica-enero-2026.webp',
+        '/prensa/actividad/imagenes/xxxi-asamblea-general-extraordinaria-telematica-enero-2026.webp',
       es: {
         title: 'XXXI Asamblea General Extraordinaria Telemática',
         excerpt:
@@ -121,7 +121,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: CURRENT_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-enero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-enero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, el área de Presidencia de CREUP ha reforzado su actividad en los ámbitos internacional, de cooperación y de relaciones institucionales. Hemos mantenido reuniones de área en las que hemos coordinado nuestra actividad y preparado la CEA, que tendrá lugar a finales de mes. En el plano internacional, España ha sido el país con mayor participación en la encuesta de doctorado de ESU, y Daniel y Carlos se han incorporado al CAI, fortaleciendo el trabajo en iniciativas que ya teníamos iniciadas, como el proyecto Students At Risk (StAR) y el seguimiento de los ESG.</p><p>En el ámbito de la cooperación, se ha avanzado en conversaciones con la Red Reconoce para explorar posibles vías de colaboración; hemos consultado a YOUNGO sobre el papel que podría desempeñar CREUP en las dinámicas de las conferencias locales de la ONU sobre el clima, y hemos asistido al lanzamiento del programa Campus Rural 2026.</p><p>En cuanto a las relaciones institucionales, se han mantenido reuniones para trabajar el EEU; hemos contactado con el Ministerio para analizar qué acciones se podrían llevar a cabo en el marco del proyecto Eurostudent, así como con Cruz Roja Juventud para idear posibles colaboraciones en materia de sensibilización, consolidando líneas de colaboración.</p>',
@@ -131,7 +131,7 @@ const month: SeedNewsletterMonth = {
     {
       area: CURRENT_AREAS.SECRETARIA,
       image:
-        '/transparencia/informes-areas/imagenes/informe-secretaria-ejecutiva-y-direccion-de-gabinete-enero-2026.webp',
+        '/prensa/informes-areas/imagenes/informe-secretaria-ejecutiva-y-direccion-de-gabinete-enero-2026.webp',
       es: {
         contentHtml:
           '<p>Desde el Área de Secretaría Ejecutiva y Dirección de Gabinete se ha estado trabajando en tres líneas fundamentales durante este mes. En primer lugar, se ha priorizado, por parte de la Vocalía de Digitalización y en colaboración con el Secretario Ejecutivo y el Tesorero, la modificación del apartado de gestión económica de la intranet, con el fin de adecuarlo al nuevo sistema presupuestario de la asociación, realizando una mejora significativa para un mayor control de los gastos e ingresos de la misma.</p><p>En segundo lugar, en la actividad común de la Secretaría Ejecutiva, se han concluido los procesos de selección de las dos últimas vocalías vacantes, además de haberse dado comienzo al procedimiento de elección del nuevo Órgano de Coordinación del Comité de Asuntos Sectoriales. Asimismo, el Secretario Ejecutivo acudió a la firma del convenio con CANAE, celebrada en la Universidad de Granada.</p><p>Por último, en lo relativo a la Dirección de Gabinete, junto con la Presidencia y la Dirección de Relaciones Institucionales, así como con el apoyo del Área de Política Universitaria, se ha estado trabajando en el anteproyecto del Estatuto del Estudiante Universitario.</p>',
@@ -140,7 +140,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.TESORERIA,
-      image: '/transparencia/informes-areas/imagenes/informe-tesoreria-enero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-tesoreria-enero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante este periodo, el Área de Tesorería de CREUP participó activamente en la 30.ª AGET y en el trabajo burocrático de la organización del encuentro. Asimismo, centró su labor en poner al día la contabilidad de la asociación, abordando los retrasos acumulados durante el año, así como en la revisión de la contabilidad de los últimos ejercicios.</p><p>Además, junto al área de Secretaría y a la Vocalía de Digitalización, se ha realizado un importante trabajo de rediseño de la intranet, especialmente en el apartado de gestión económica, y se han incorporado los presupuestos de 2026. También se ha iniciado la facturación de las cuotas correspondientes a 2026.</p><p>Por último, se ha elaborado y enviado la solicitud de subvención para asociaciones del Ministerio de Universidades, se ha llevado a cabo un seguimiento de los deudores y se han creado protocolos para poder solucionar su situación.</p>',
@@ -149,7 +149,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-enero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-enero-2026.webp',
       es: {
         contentHtml:
           '<p>El Área de Comunicación ha estado trabajando, sobre todo, en la identidad visual del VII Congreso CREUP-CRUE y del XV Encuentro de Representantes, que se celebrará en el mes de febrero.</p><p>Además, nos hemos centrado en organizar todas las cuestiones relativas a la comunicación interna, tanto de la CEA como las correspondientes a la Asamblea, con el objetivo de que el trabajo sea más efectivo, reestructurando formularios y algunos procesos. Se ha creado el Grupo de Trabajo de Comunicación, que empezará a funcionar el próximo mes. Asimismo, hemos mantenido informada a la comunidad sobre la actividad de CREUP a través de las redes sociales y estamos planificando nuevas estrategias y campañas para el año 2026.</p>',
@@ -158,8 +158,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-enero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-enero-2026.webp',
       es: {
         contentHtml:
           '<p>Este mes, desde el área de Política Universitaria, hemos estado trabajando principalmente de manera interna con el objetivo de plantear y estructurar la documentación necesaria de cara a la próxima asamblea. Asimismo, se ha avanzado en la definición de los contenidos del próximo Congreso CREUP-CRUE y del Encuentro de Representantes de Estudiantes, que tendrá lugar el próximo 26 de febrero.</p><p>Paralelamente a este trabajo, hemos diseñado y fijado las estrategias de comunicación que acompañarán a cada uno de los documentos elaborados, con el fin de reforzar su difusión y garantizar una mayor incidencia en el conjunto del Sistema Universitario Español (SUE).</p>',
@@ -169,7 +168,7 @@ const month: SeedNewsletterMonth = {
     {
       area: CURRENT_AREAS.COORDINACION,
       image:
-        '/transparencia/informes-areas/imagenes/informe-coordinacion-interna-y-formacion-enero-2026.webp',
+        '/prensa/informes-areas/imagenes/informe-coordinacion-interna-y-formacion-enero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, desde el área de Coordinación Interna y Formación hemos centrado nuestro trabajo en el refuerzo del contacto con los MOREs y las sectoriales de la entidad. Se han mantenido reuniones de toma de contacto con el objetivo de conocer de primera mano sus necesidades, su realidad actual y las posibles líneas de trabajo conjunto con CREUP, así como de resolver dudas relacionadas con el funcionamiento interno y los próximos eventos.</p><p>Asimismo, hemos participado en reuniones de coordinación con sede en el marco del encuentro CREUP-CRUE, en las que se han abordado aspectos logísticos y organizativos junto a diferentes áreas de CREUP. De forma paralela, se ha continuado con el contacto directo y permanente con los MOREs y las sectoriales a través de los grupos de Telegram, revisando la información disponible en la intranet y actualizando los datos de los distintos canales de comunicación.</p><p>También se ha avanzado en la preparación de contenidos dinámicos de cara a la próxima CEA, en la definición de los contenidos del encuentro CREUP-CRUE y en la planificación general del curso.</p>',
@@ -178,7 +177,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: CURRENT_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-enero-2026.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-enero-2026.webp',
       es: {
         contentHtml:
           '<p>Durante este periodo, el Área de Organización se ha conformado definitivamente con la elección de la Vocalía de Logística. De este modo, se celebró en primer lugar una reunión de toma de contacto y formación sobre las herramientas disponibles para la CEA.</p><p>Nuestro trabajo se ha centrado en los eventos que tendrán lugar en este primer cuatrimestre del año:</p><ul><li>La CEA presencial en Sevilla, organizando los viajes de todos los miembros y la logística necesaria para el alojamiento y las sesiones de trabajo.</li><li>El VII Congreso CREUP-CRUE y el XV Encuentro de Representantes en la UPV, coordinándonos con la sede mediante reuniones y un seguimiento continuo del trabajo. Se han abierto las inscripciones para ambos eventos y se están atendiendo todas las dudas recibidas.</li><li>La 79.ª AGO en la UJI, tomando contacto con la sede e iniciando las primeras tareas organizativas.</li></ul><p>Además, se envió a los MOREs y a las sectoriales un formulario en el que se recogía su disponibilidad para asistir a los eventos de la primera parte del año.</p>',

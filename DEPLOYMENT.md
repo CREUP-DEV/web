@@ -94,10 +94,28 @@ mkdir -p \
   data/public-uploads/documentos/externos \
   data/public-uploads/documentos/igualdad \
   data/public-uploads/documentos/informes-economicos \
-  data/public-uploads/transparencia/actividad/imagenes \
-  data/public-uploads/transparencia/informes-areas/imagenes \
+  data/public-uploads/prensa/actividad/imagenes \
+  data/public-uploads/prensa/informes-areas/imagenes \
   data/admin-assets
 ```
+
+> **Despliegue con la migración 0016 (actividad pasa a Prensa).** En una instalación que ya venía
+> sirviendo `/transparencia/actividad`, el orden importa y no es reversible a medias:
+>
+> ```bash
+> # 1. Mover los ficheros dentro del volumen montado, ANTES de migrar.
+> mkdir -p data/public-uploads/prensa
+> mv data/public-uploads/transparencia/actividad       data/public-uploads/prensa/actividad
+> mv data/public-uploads/transparencia/informes-areas  data/public-uploads/prensa/informes-areas
+> ```
+>
+> 2. Aplicar la migración, que reescribe las rutas guardadas en la base de datos.
+> 3. Redesplegar: el manifiesto de assets públicos de Nitro se calcula al arrancar, así que los
+>    directorios nuevos no se sirven hasta que la app se reinicia.
+>
+> Migrar antes de mover los ficheros deja la base de datos apuntando a `/prensa/...` mientras los
+> ficheros siguen en `/transparencia/...`: todas las imágenes dan 404 en ese intervalo. Las URLs
+> antiguas siguen funcionando indefinidamente vía 301 en `routeRules`.
 
 ### 3b. Copiar los archivos del proyecto al VPS
 

@@ -21,8 +21,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-12-03',
       endDate: '2024-12-07',
       location: null,
-      image:
-        '/transparencia/actividad/imagenes/iii-encuentro-jovenes-constitucion-diciembre-2024.webp',
+      image: '/prensa/actividad/imagenes/iii-encuentro-jovenes-constitucion-diciembre-2024.webp',
       es: {
         title: 'III Encuentro de Jóvenes con la Constitución de 1978',
         excerpt:
@@ -38,7 +37,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-12-09',
       location: 'Congreso de los Diputados',
       image:
-        '/transparencia/actividad/imagenes/jornadas-hablamos-universidad-bien-comun-negocio-diciembre-2024.webp',
+        '/prensa/actividad/imagenes/jornadas-hablamos-universidad-bien-comun-negocio-diciembre-2024.webp',
       es: {
         title: 'Jornadas «Hablamos de Universidad: bien común o negocio»',
         excerpt:
@@ -54,7 +53,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-12-16',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-creup-crue-diciembre-2024.webp',
+      image: '/prensa/actividad/imagenes/reunion-creup-crue-diciembre-2024.webp',
       es: {
         title: 'Reunión CREUP - CRUE',
         excerpt:
@@ -69,7 +68,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2024-12-13',
       location: 'Universidad de Alcalá',
-      image: '/transparencia/actividad/imagenes/iii-gala-navidad-ceuah-diciembre-2024.webp',
+      image: '/prensa/actividad/imagenes/iii-gala-navidad-ceuah-diciembre-2024.webp',
       es: {
         title: 'CREUP asiste a la III Gala de Navidad de la CEUAH',
         excerpt:
@@ -84,7 +83,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2024-12-18',
       location: null,
-      image: '/transparencia/actividad/imagenes/grupo-trabajo-1-financiacion-diciembre-2024.webp',
+      image: '/prensa/actividad/imagenes/grupo-trabajo-1-financiacion-diciembre-2024.webp',
       es: {
         title: 'CREUP participa en el Grupo de Trabajo 1% Financiación',
         excerpt:
@@ -99,7 +98,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2024-12-14',
       endDate: '2024-12-21',
-      image: '/transparencia/actividad/imagenes/creup-la-sexta-xplica-diciembre-2024.webp',
+      image: '/prensa/actividad/imagenes/creup-la-sexta-xplica-diciembre-2024.webp',
       es: {
         title: 'CREUP participa en «La Sexta Xplica»',
         excerpt:
@@ -115,7 +114,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-12-18',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/xxvi-aget-creup-diciembre-2024.webp',
+      image: '/prensa/actividad/imagenes/xxvi-aget-creup-diciembre-2024.webp',
       es: {
         title: 'XXVI AGET de CREUP',
         excerpt:
@@ -133,7 +132,7 @@ const month: SeedNewsletterMonth = {
       location: 'Asamblea de Madrid',
       memberOrgKey: 'DCEUCM',
       image:
-        '/transparencia/actividad/imagenes/movilizacion-financiacion-comunidad-madrid-diciembre-2024.webp',
+        '/prensa/actividad/imagenes/movilizacion-financiacion-comunidad-madrid-diciembre-2024.webp',
       es: {
         title:
           'Movilización del estudiantado ante la falta de financiación en la Comunidad de Madrid',
@@ -148,7 +147,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: PREVIOUS_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-diciembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-diciembre-2024.webp',
       es: {
         contentHtml:
           '<p>El área de Presidencia concluye el mes de diciembre con importantes avances en diversas iniciativas y evaluaciones internas. Durante este periodo, se llevó a cabo un análisis exhaustivo del primer periodo interasambleario y de la propia asamblea, con el objetivo de identificar fortalezas y áreas de mejora en los procesos desarrollados.</p><p>Entre los proyectos destacados, se inició ODSesionad@s, en colaboración con la Universidad de Murcia, una iniciativa enfocada en la implementación de los Objetivos de Desarrollo Sostenible (ODS) que tendrá su fase presencial en febrero. Asimismo, se cerraron las formaciones programadas con FONCE, consolidando el plan formativo previsto.</p><p>En el ámbito internacional, se dio la bienvenida a los nuevos integrantes del Comité de Asuntos Internacionales (CAI), quienes sostuvieron reuniones para planificar acciones futuras tras el reciente Board Meeting.</p><p>Por último, se prestó apoyo al desarrollo del Encuentro de Representantes, un evento que contará con sesiones dedicadas a promover la cooperación y la implicación universitaria en diversos asuntos sociales, reforzando el compromiso del área con la incidencia en temáticas de relevancia global.</p>',
@@ -166,7 +165,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-diciembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-diciembre-2024.webp',
       es: {
         contentHtml:
           '<p>La Secretaría de CREUP ha tramitado la inscripción de los nuevos estatutos en el Registro de Asociaciones del Ministerio del Interior, además de actualizar la sede fiscal ante la Agencia Tributaria. Estas gestiones buscan reforzar la estructura organizativa de la asociación.</p><p>En paralelo, se han modificado el convenio de sedes y el convenio marco de sectoriales, con el objetivo de mejorar técnicamente ambos documentos y adaptarlos a las necesidades actuales de la organización.</p><p>En el ámbito institucional, el Secretario Ejecutivo, en colaboración con el área de Relaciones Institucionales, participó en la reunión de la Comisión Permanente del Consejo de Estudiantes Universitario del Estado (CEUNE), representando a CREUP. Además, asistió a las jornadas «Hablemos de Universidad. Bien común o negocio», celebradas en el Congreso de los Diputados, reforzando el papel de CREUP en el debate sobre el futuro de la educación superior en España.</p>',
@@ -175,8 +174,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-diciembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-diciembre-2024.webp',
       es: {
         contentHtml:
           '<p>Desde la Vicepresidencia de Política Universitaria y Asistencia a los CCEE del Consejo de la Juventud de España (CJE), se ha llevado a cabo una participación activa en el grupo de prioridades estratégicas. Durante este período, se ha realizado una reunión de análisis del área de Política Universitaria, donde se discutieron nuevas líneas y métodos de trabajo.</p><p>Además, se ha coordinado estrechamente con la nueva Vicepresidencia de Relaciones Internacionales para fortalecer la colaboración institucional. Esta labor también incluyó la definición de mesas y talleres para el Encuentro, donde se abordaron diversas temáticas clave para el futuro del sistema universitario.</p><p>En paralelo, se ha trabajado en el análisis y planificación de nuevos Grupos de Trabajo (GTs) que impulsarán proyectos innovadores. Finalmente, se celebró una reunión con la Presidenta de la Conferencia de Rectores de Universidades Españolas (CRUE) el 16 de diciembre, en la que se trataron cuestiones fundamentales para el desarrollo y la mejora de la educación superior en España.</p>',
@@ -185,7 +183,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-diciembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-diciembre-2024.webp',
       es: {
         contentHtml:
           '<p>El área de Organización ha mantenido reuniones con las sedes del VI Congreso CREUP-CRUE y el XIV Encuentro, que se celebrarán en Madrid con la colaboración de la Universidad de Alcalá y la Universidad Autónoma de Madrid. Estos encuentros han permitido establecer un canal de comunicación directo con las universidades organizadoras, coordinar esfuerzos y definir las bases del evento, que será un punto de referencia para la representación estudiantil universitaria.</p><p>Además, se realizaron reuniones con la sede de la 77ª Asamblea General Ordinaria, que tendrá lugar en Sevilla, con el objetivo de garantizar una adecuada coordinación y dar seguimiento a los preparativos de este importante encuentro.</p><p>Por otro lado, el área trabaja activamente en la planificación de la próxima Comisión Ejecutiva Ampliada (CEA) presencial, programada para el siguiente cuatrimestre, lo que reafirma su compromiso con el fortalecimiento de la organización y la participación estudiantil a nivel nacional.</p>',
@@ -194,7 +192,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-diciembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-diciembre-2024.webp',
       es: {
         contentHtml:
           '<p>El área de Comunicación de la Coordinadora de Representantes de Universidades Públicas (CREUP) ha desarrollado diversas iniciativas durante este mes para reforzar su presencia y mejorar su estrategia comunicativa.</p><p>El vocal de diseño de contenido, Gabriel Suárez González, participó en el programa La Sexta Xplica, donde representó a la organización en un debate sobre la vivienda estudiantil en España.</p><p>Además, se ha trabajado intensamente en la creación de la identidad visual y la estética del VI Encuentro CREUP-CRUE, un evento que se celebrará próximamente en las universidades de Alcalá y la Autónoma de Madrid. Este encuentro reunirá a representantes de estudiantes y rectores para abordar retos comunes en el ámbito de la educación superior.</p><p>Por último, se ha avanzado en el desarrollo de la campaña «Mente del Estudiante», una iniciativa enfocada en visibilizar y reflexionar sobre los desafíos psicológicos que enfrentan los/as universitarios/as en su día a día. La campaña busca promover el bienestar mental y emocional entre el estudiantado de todo el país.</p>',

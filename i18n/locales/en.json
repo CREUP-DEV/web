@@ -24,6 +24,7 @@
     "press": {
       "label": "Press",
       "news": "News",
+      "activity": "Our activity",
       "newsletter": "Newsletter",
       "pressReleases": "Press releases",
       "statements": "Statements",
@@ -36,8 +37,7 @@
       "regulations": "Regulations",
       "financialReports": "Financial reports",
       "corporateIdentity": "Corporate Identity",
-      "equality": "Equality",
-      "activity": "Our activity"
+      "equality": "Equality"
     },
     "contact": "Contact"
   },

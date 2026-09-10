@@ -24,6 +24,7 @@
     "press": {
       "label": "Premsa",
       "news": "Notícies",
+      "activity": "La nostra activitat",
       "newsletter": "Newsletter",
       "pressReleases": "Notes de premsa",
       "statements": "Comunicats",
@@ -36,8 +37,7 @@
       "regulations": "Normativa",
       "financialReports": "Informes econòmics",
       "corporateIdentity": "Identitat Corporativa",
-      "equality": "Igualtat",
-      "activity": "La nostra activitat"
+      "equality": "Igualtat"
     },
     "contact": "Contacte"
   },

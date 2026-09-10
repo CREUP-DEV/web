@@ -23,8 +23,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-11-20',
       endDate: '2024-11-24',
       location: 'Universidad de Granada',
-      image:
-        '/transparencia/actividad/imagenes/76-asamblea-general-ordinaria-granada-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/76-asamblea-general-ordinaria-granada-noviembre-2024.webp',
       es: {
         title:
           'Granada acoge la 76ª Asamblea General de CREUP con más de 100 representantes estudiantiles',
@@ -41,8 +40,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-11-13',
       isOnline: true,
       location: null,
-      image:
-        '/transparencia/actividad/imagenes/reunion-comite-asuntos-sectoriales-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/reunion-comite-asuntos-sectoriales-noviembre-2024.webp',
       es: {
         title: 'Reunión del Comité de Asuntos Sectoriales (CAS)',
         excerpt:
@@ -57,7 +55,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2024-11-19',
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-junts-jnc-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/reunion-junts-jnc-noviembre-2024.webp',
       es: {
         title: 'CREUP se reúne con Junts y JNC',
         excerpt:
@@ -73,7 +71,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-11-15',
       endDate: '2024-11-17',
       location: 'Universidad Autónoma de Madrid',
-      image: '/transparencia/actividad/imagenes/vi-jornadas-formativas-ceuam-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/vi-jornadas-formativas-ceuam-noviembre-2024.webp',
       es: {
         title: 'CREUP participa en las VI Jornadas Formativas del CEUAM',
         excerpt:
@@ -89,7 +87,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-11-15',
       endDate: '2024-11-17',
       location: 'Universidad de Murcia',
-      image: '/transparencia/actividad/imagenes/jornadas-formativas-ceum-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/jornadas-formativas-ceum-noviembre-2024.webp',
       es: {
         title: 'CREUP acude a las Jornadas Formativas del CEUM',
         excerpt:
@@ -105,7 +103,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-11-17',
       endDate: '2024-11-23',
       location: 'Oslo, Noruega',
-      image: '/transparencia/actividad/imagenes/88-board-meeting-esu-oslo-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/88-board-meeting-esu-oslo-noviembre-2024.webp',
       es: {
         title: 'Oslo acoge el 88º Board Meeting del European Students’ Union (ESU)',
         excerpt:
@@ -121,7 +119,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2024-11-28',
       endDate: '2024-12-01',
       location: null,
-      image: '/transparencia/actividad/imagenes/comisiones-especializadas-cje-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/comisiones-especializadas-cje-noviembre-2024.webp',
       es: {
         title: 'CREUP participa en las Comisiones Especializadas del CJE',
         excerpt:
@@ -136,7 +134,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2024-11-29',
       location: null,
-      image: '/transparencia/actividad/imagenes/convenio-aneca-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/convenio-aneca-noviembre-2024.webp',
       es: {
         title: 'CREUP y ANECA sellan un convenio para fortalecer la calidad educativa',
         excerpt:
@@ -153,7 +151,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2024-10-27',
       location: 'Sevilla',
       memberOrgKey: 'FEEF',
-      image: '/transparencia/actividad/imagenes/feef-xlvii-asamblea-general-noviembre-2024.webp',
+      image: '/prensa/actividad/imagenes/feef-xlvii-asamblea-general-noviembre-2024.webp',
       es: {
         title: 'La FEEF celebra su XLVII Asamblea General en Sevilla',
         excerpt:
@@ -176,7 +174,7 @@ const month: SeedNewsletterMonth = {
     {
       area: PREVIOUS_AREAS.RRII,
       image:
-        '/transparencia/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-noviembre-2024.webp',
+        '/prensa/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-noviembre-2024.webp',
       es: {
         contentHtml:
           '<p>Desde el área de Institucionales y Proyectos, se ha avanzado en diversas iniciativas clave durante el mes de noviembre. Entre los trabajos destacados, se ha desarrollado un acto conmemorativo para el Día Internacional del Estudiantado de 2025 y se ha colaborado en la creación de formaciones en calidad, en coordinación con las agencias estatales especializadas en este ámbito. Asimismo, se elaboraron y remitieron alegaciones al proyecto de Ley de Juventud y Justicia Intergeneracional, en defensa de los intereses del estudiantado.</p><p>Entre las actividades realizadas, se participó en las VI Jornadas de Formación del Consejo de Estudiantes de la Universidad Autónoma de Madrid, celebradas los días 15, 16 y 17 de noviembre, donde se abordaron temas como liderazgo estudiantil y mejora de la representación universitaria. El 18 de noviembre, se llevó a cabo una reunión con representantes del partido Junts y la Juventut Nacionalista de Catalunya, con el objetivo de tratar temas relacionados con juventud y educación en el contexto estatal y autonómico.</p><p>Finalmente, el día 26, se asistió a la reunión del Grupo de Trabajo sobre la Ley de Juventud y Justicia Intergeneracional, organizada por el Consejo de la Juventud de España, donde se debatieron propuestas para fortalecer el enfoque intergeneracional en la normativa y garantizar su impacto positivo en los jóvenes.</p>',
@@ -185,7 +183,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-noviembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-noviembre-2024.webp',
       es: {
         contentHtml:
           '<p>Desde el Área, se ha trabajado intensamente en la organización de la 76ª Asamblea General Ordinaria (AGO). Entre las tareas realizadas, destaca la preparación de los documentos propios del Área, la revisión de la documentación presentada por el resto de la Comisión Ejecutiva Ampliada (CEA), así como por todos los miembros y sectoriales. Además, se llevó a cabo la subida y envío de toda la documentación correspondiente a la Asamblea.</p><p>Asimismo, se gestionaron las convocatorias de los diversos procesos electorales que tuvieron lugar durante la AGO, asegurando el cumplimiento de los plazos y normativas establecidos.</p><p>Por último, se desarrolló un nuevo apartado en la intranet, diseñado específicamente para mejorar la accesibilidad a la documentación de las Asambleas Generales, facilitando su consulta por parte de todos los miembros.</p>',
@@ -194,8 +192,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-noviembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-noviembre-2024.webp',
       es: {
         contentHtml:
           '<p>En el contexto de los preparativos para la 76ª Asamblea General Ordinaria, se han desarrollado importantes trabajos en diversas áreas clave para el estudiantado universitario:</p><p>Vida Universitaria: Se ha trabajado junto al Grupo de Trabajo específico en la elaboración de una Resolución sobre los servicios de atención a la salud mental dirigidos al estudiantado universitario. Este documento busca responder a la creciente demanda de apoyo psicológico y bienestar dentro de las universidades, proponiendo medidas concretas para reforzar estos servicios.</p><p>Garantía de la Calidad: Se ha elaborado un Informe Ejecutivo centrado en los programas académicos de simultaneidad de dobles titulaciones con itinerarios específicos. Este informe analiza las oportunidades y desafíos de estos programas, con el objetivo de optimizar su implementación y mejorar la oferta educativa para el estudiantado.</p><p>Política Universitaria: En esta área se han concluido los trabajos finales para la redacción del Posicionamiento sobre la prueba de acceso a la universidad, un documento que aborda las principales problemáticas del actual modelo de acceso y propone reformas orientadas a garantizar la igualdad de oportunidades. Asimismo, se ha elaborado una Resolución sobre el problema del acceso a la vivienda para estudiantes universitarios, planteando soluciones frente a la crisis habitacional que afecta al colectivo.</p>',
@@ -204,7 +201,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-noviembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-noviembre-2024.webp',
       es: {
         contentHtml:
           '<p>En noviembre, el área de organización se enfocó en la planificación de la 76ª Asamblea General Ordinaria, abordando desde la logística hasta la creación de un formulario de valoración para futuras mejoras. Agradecen al Consejo General de Estudiantes de la Universidad de Granada por su apoyo.</p><p>En cuanto a cambios internos, celebran la incorporación de Sara Abad como nueva vicepresidenta de organización, aunque lamentan la salida de Adrián Rivero de la vocalía de formación por incompatibilidades con su puesto en CESED.</p><p>Además, se trabajó en ampliar la membresía de CREUP, destacando la participación como invitadas de la Universidad Pablo de Olavide y la Universidad de Málaga, y retomando conversaciones con la Universitat Politècnica de Catalunya para futuras adhesiones.</p>',
@@ -213,7 +210,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-noviembre-2024.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-noviembre-2024.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, el equipo ha centrado sus esfuerzos en el diseño de los elementos identificativos para la 76ª Asamblea General Ordinaria de CREUP, celebrada en Granada.</p><p>Además, se finalizaron los ajustes necesarios para el nuevo Manual de Identidad Corporativa, que fue presentado y aprobado en el marco de dicha asamblea.</p><p>En colaboración con la Vocalía de Igualdad y Cooperación al Desarrollo, se llevó a cabo la campaña del 25 de noviembre contra las Violencias Machistas, mostrando el compromiso de la organización con esta causa.</p><p>El equipo también dedicó tiempo a la difusión de la Asamblea General Ordinaria y a la creación de contenido que será compartido próximamente en las redes sociales. Como es habitual, se trasladaron todas las actividades y eventos realizados a los canales de comunicación correspondientes, asegurando la transparencia y la visibilidad del trabajo realizado.</p>',

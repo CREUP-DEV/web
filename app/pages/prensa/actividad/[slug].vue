@@ -23,7 +23,7 @@ const breadcrumbLabel = computed(() =>
 )
 
 useLocalizedPressDetailSeo({
-  path: `/transparencia/actividad/${slug}`,
+  path: `/prensa/actividad/${slug}`,
   translatedLocales: computed(() => entry.value.translatedLocales ?? null),
 })
 
@@ -35,7 +35,7 @@ useHead(() => ({
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: t('nav.transparency.label') },
+          { '@type': 'ListItem', position: 1, name: t('nav.press.label') },
           { '@type': 'ListItem', position: 2, name: breadcrumbLabel.value },
           { '@type': 'ListItem', position: 3, name: entry.value.title },
         ],
@@ -48,7 +48,7 @@ useHead(() => ({
 <template>
   <ActivityDetail
     :entry="entry"
-    :back-to="localePath('/transparencia/actividad')"
+    :back-to="localePath('/prensa/actividad')"
     :back-label="t('activity.detail.back')"
   />
 </template>

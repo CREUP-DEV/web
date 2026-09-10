@@ -22,7 +22,7 @@ const month: SeedNewsletterMonth = {
       endDate: '2025-11-08',
       location: 'Universitat de Barcelona',
       image:
-        '/transparencia/actividad/imagenes/78-asamblea-general-ordinaria-barcelona-noviembre-2025.webp',
+        '/prensa/actividad/imagenes/78-asamblea-general-ordinaria-barcelona-noviembre-2025.webp',
       es: {
         title: 'CREUP celebra su 78ª Asamblea General Ordinaria en Barcelona',
         excerpt:
@@ -39,7 +39,7 @@ const month: SeedNewsletterMonth = {
       isOnline: true,
       location: null,
       image:
-        '/transparencia/actividad/imagenes/29-asamblea-general-extraordinaria-telematica-noviembre-2025.webp',
+        '/prensa/actividad/imagenes/29-asamblea-general-extraordinaria-telematica-noviembre-2025.webp',
       es: {
         title: '29ª Asamblea General Extraordinaria Telemática (AGET)',
         excerpt:
@@ -55,7 +55,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-11-25',
       location: 'Universitat de València',
       image:
-        '/transparencia/actividad/imagenes/acto-apertura-nacional-curso-universitat-valencia-noviembre-2025.webp',
+        '/prensa/actividad/imagenes/acto-apertura-nacional-curso-universitat-valencia-noviembre-2025.webp',
       es: {
         title:
           'CREUP asiste al Acto de Apertura Nacional del curso 2025-2026 en la Universitat de València',
@@ -72,7 +72,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-11-28',
       endDate: '2025-11-30',
       image:
-        '/transparencia/actividad/imagenes/encuentro-asociacionismo-democracia-cje-noviembre-2025.webp',
+        '/prensa/actividad/imagenes/encuentro-asociacionismo-democracia-cje-noviembre-2025.webp',
       es: {
         title:
           'CREUP participa en el Encuentro de Asociacionismo y Democracia del Consejo de la Juventud de España',
@@ -88,7 +88,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-11-24',
       image:
-        '/transparencia/actividad/imagenes/movilizacion-ley-ordenacion-profesionales-deporte-noviembre-2025.webp',
+        '/prensa/actividad/imagenes/movilizacion-ley-ordenacion-profesionales-deporte-noviembre-2025.webp',
       es: {
         title:
           'Movilización histórica: más de 45 universidades exigen una Ley Estatal de Ordenación de los Profesionales del Deporte',
@@ -107,7 +107,7 @@ const month: SeedNewsletterMonth = {
       location: 'Jaén',
       memberOrgKey: 'SIUEH',
       image:
-        '/transparencia/actividad/imagenes/siueh-vii-asamblea-general-ordinaria-jaen-noviembre-2025.webp',
+        '/prensa/actividad/imagenes/siueh-vii-asamblea-general-ordinaria-jaen-noviembre-2025.webp',
       es: {
         title: 'SIUEH celebra su VII Asamblea General Ordinaria en Jaén',
         excerpt:

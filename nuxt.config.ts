@@ -149,6 +149,38 @@ const newsletterCampaignPreviewRouteRules = Object.fromEntries(
   ])
 )
 
+// The activity section moved from Transparencia to Prensa. Nitro wildcard redirects preserve the
+// tail (slug, monthKey, `#area-<id>` anchor), which the legacy-redirects middleware cannot express
+// — its prefix entries collapse everything onto a fixed target. Generated per locale prefix because
+// `prefix_except_default` means `/en/transparencia/actividad/...` is a distinct path.
+const ACTIVITY_MOVED_PATHS = [
+  // `isIndexRoute` marks a path Nuxt serves from an `index.vue`, which normalizes itself to a
+  // trailing slash. Targeting that form directly spares crawlers a second 301. The asset base is
+  // a directory with no page behind it, so it keeps the bare form.
+  { from: '/transparencia/actividad', to: '/prensa/actividad', isIndexRoute: true },
+  {
+    from: '/transparencia/informes-areas/imagenes',
+    to: '/prensa/informes-areas/imagenes',
+    isIndexRoute: false,
+  },
+] as const
+const activityMovedRouteRules = Object.fromEntries(
+  ACTIVITY_MOVED_PATHS.flatMap(({ from, to, isIndexRoute }) =>
+    [
+      '',
+      ...SUPPORTED_LOCALE_CODES.filter((code) => code !== DEFAULT_LOCALE_CODE).map(
+        (code) => `/${code}`
+      ),
+    ].flatMap((prefix) => [
+      [
+        `${prefix}${from}`,
+        { redirect: { to: `${prefix}${to}${isIndexRoute ? '/' : ''}`, statusCode: 301 } },
+      ],
+      [`${prefix}${from}/**`, { redirect: { to: `${prefix}${to}/**`, statusCode: 301 } }],
+    ])
+  )
+)
+
 const routeRules = {
   '/admin/**': adminNoIndexHeaders,
   // Localized admin routes (prefix_except_default) must be excluded from indexing too.
@@ -188,6 +220,7 @@ const routeRules = {
       xssValidator: false,
     },
   },
+  ...activityMovedRouteRules,
   ...adminUploadRouteRules,
   ...buildNoRateLimitRouteRules(INTERNAL_IMAGE_PROXY_PATH_BASES),
   ...productionPublicSWRRouteRules,

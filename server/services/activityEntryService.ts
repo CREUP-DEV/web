@@ -25,7 +25,7 @@ import { SUPPORTED_LOCALE_CODES, type SupportedLocaleCode } from '~~/shared/util
 import { ACTIVITY_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import type { createActivityEntrySchema, updateActivityEntrySchema } from '../utils/validation'
 
-const IMAGE_UPLOAD_DIR = 'public/transparencia/actividad/imagenes'
+const IMAGE_UPLOAD_DIR = 'public/prensa/actividad/imagenes'
 
 type ActivityEntryData = z.infer<typeof createActivityEntrySchema>
 type UpdateActivityEntryData = z.infer<typeof updateActivityEntrySchema>

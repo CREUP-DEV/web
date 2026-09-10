@@ -19,7 +19,7 @@ import { sanitizeRichTextHtml } from '../../press/pressTranslation'
 import { AREA_REPORTS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import type { createAreaReportSchema, updateAreaReportSchema } from '../../validation'
 
-const IMAGE_UPLOAD_DIR = 'public/transparencia/informes-areas/imagenes'
+const IMAGE_UPLOAD_DIR = 'public/prensa/informes-areas/imagenes'
 
 type AreaReportData = z.infer<typeof createAreaReportSchema>
 type UpdateAreaReportData = z.infer<typeof updateAreaReportSchema>

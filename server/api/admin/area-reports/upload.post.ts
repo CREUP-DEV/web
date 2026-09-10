@@ -14,7 +14,7 @@ import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMess
 import { AREA_REPORTS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
-const IMAGE_UPLOAD_DIR = 'public/transparencia/informes-areas/imagenes'
+const IMAGE_UPLOAD_DIR = 'public/prensa/informes-areas/imagenes'
 const UPLOAD_MAX_REQUEST_BYTES = 7 * 1024 * 1024 // 7 MB hard ceiling (above image limit)
 
 export default defineEventHandler(async (event) => {

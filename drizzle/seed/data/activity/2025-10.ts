@@ -24,7 +24,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-09-30',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-conede-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-conede-octubre-2025.webp',
       es: {
         title: 'El coordinador del CAS se reúne con CONEDE',
         excerpt:
@@ -40,7 +40,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-03',
       endDate: '2025-10-06',
       location: 'La Gomera',
-      image: '/transparencia/actividad/imagenes/iii-cumbre-ceupca-canarias-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/iii-cumbre-ceupca-canarias-octubre-2025.webp',
       es: {
         title:
           'CREUP asiste a la III Cumbre de los Consejos de Estudiantes de las Universidades Públicas de Canarias',
@@ -57,7 +57,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-06',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-aeae-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-aeae-octubre-2025.webp',
       es: {
         title: 'El CAS se reúne con la Asociación de Estudiantes de Aeronáutica y Espacio',
         excerpt:
@@ -73,7 +73,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-10',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/xxviii-aget-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/xxviii-aget-octubre-2025.webp',
       es: {
         title: 'La XXVIII AGET de CREUP aprueba importantes avances internos',
         excerpt:
@@ -88,7 +88,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-10-10',
       location: null,
-      image: '/transparencia/actividad/imagenes/inauguracion-aebe-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/inauguracion-aebe-octubre-2025.webp',
       es: {
         title:
           'CREUP participa en la inauguración de la Asociación de Estudiantes de Biociencias de España',
@@ -104,7 +104,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-10-13',
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-ministra-morant-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-ministra-morant-octubre-2025.webp',
       es: {
         title:
           'CREUP se reúne con la ministra Diana Morant para abordar los principales retos del estudiantado',
@@ -121,7 +121,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-13',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-aerraaiti-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-aerraaiti-octubre-2025.webp',
       es: {
         title:
           'Reunión del CAS con la Asociación de Ingenierías de Ámbito Industrial para avanzar en nuevas líneas de colaboración',
@@ -138,7 +138,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-16',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-extraordinaria-cas-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-extraordinaria-cas-octubre-2025.webp',
       es: {
         title:
           'El CAS celebra una reunión extraordinaria para avanzar en los preparativos de la próxima asamblea',
@@ -155,7 +155,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-17',
       endDate: '2025-10-19',
       location: 'Torremolinos',
-      image: '/transparencia/actividad/imagenes/iii-encuentro-delegaciones-cadus-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/iii-encuentro-delegaciones-cadus-octubre-2025.webp',
       es: {
         title:
           'CREUP participa en el III Encuentro de Delegaciones del CADUS con formación y trabajo en comunicación e igualdad',
@@ -172,7 +172,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-21',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-crearq-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-crearq-octubre-2025.webp',
       es: {
         title:
           'Encuentro entre la Coordinación del CAS y el Consejo de Representantes de Estudiantes de Arquitectura',
@@ -189,7 +189,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-21',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-arell-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-arell-octubre-2025.webp',
       es: {
         title:
           'La Coordinación del CAS se reúne con la Asociación de Representantes de Estudiantes de Lenguas y Literaturas',
@@ -206,7 +206,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-24',
       endDate: '2025-10-26',
       location: 'Santander',
-      image: '/transparencia/actividad/imagenes/asamblea-ejecutiva-cje-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/asamblea-ejecutiva-cje-octubre-2025.webp',
       es: {
         title:
           'CREUP participa en la Asamblea Ejecutiva del Consejo de la Juventud para abordar los retos de la vivienda, el empleo y la acción climática',
@@ -223,7 +223,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-22',
       endDate: '2025-10-26',
       location: 'Isín (Huesca)',
-      image: '/transparencia/actividad/imagenes/xii-stage-formativo-isin-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/xii-stage-formativo-isin-octubre-2025.webp',
       es: {
         title:
           'Más de un centenar de representantes estudiantiles se forman en el XII Stage Formativo de CREUP en Isín',
@@ -239,7 +239,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-10-27',
       location: 'Universidad Pablo de Olavide, Sevilla',
-      image: '/transparencia/actividad/imagenes/convenio-auip-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/convenio-auip-octubre-2025.webp',
       es: {
         title:
           'CREUP y la AUIP firman un convenio marco para impulsar la cooperación académica iberoamericana',
@@ -256,7 +256,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-10-28',
       isOnline: true,
       location: null,
-      image: '/transparencia/actividad/imagenes/reunion-cas-siueh-octubre-2025.webp',
+      image: '/prensa/actividad/imagenes/reunion-cas-siueh-octubre-2025.webp',
       es: {
         title: 'La Coordinación del CAS se reúne con la Sectorial de Estudiantes de Humanidades',
         excerpt:
@@ -274,7 +274,7 @@ const month: SeedNewsletterMonth = {
       location: 'Lugo y Santiago de Compostela',
       memberOrgKey: 'CEstUSC',
       image:
-        '/transparencia/actividad/imagenes/cestusc-iii-jornadas-convivencia-formacion-octubre-2025.webp',
+        '/prensa/actividad/imagenes/cestusc-iii-jornadas-convivencia-formacion-octubre-2025.webp',
       es: {
         title:
           'III Jornadas de Convivencia y Formación Universitaria: dos días para conocer, participar y construir comunidad en la USC',
@@ -289,7 +289,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: PREVIOUS_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-octubre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-octubre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante este último mes de mandato, el Área de Presidencia ha centrado sus esfuerzos en cerrar diferentes asuntos y reforzar la presencia institucional de CREUP en distintos espacios. En el ámbito internacional, se ha impulsado un debate interno en el seno de MedNet sobre la continuidad de NUIS dentro del lobby europeo, siguiendo lo planteado en la AGET. Desde el área de igualdad, se ha continuado trabajando con distintas entidades para elaborar el posicionamiento sobre barreras, que será presentado en la próxima Asamblea General Ordinaria.</p><p>A lo largo del mes, la Presidencia ha participado en diversos encuentros clave. El presidente asistió a las jornadas del Pacto de Estado frente a la Emergencia Climática, donde mantuvo un encuentro con la ministra de Ciencia, Innovación y Universidades para abordar algunos de los temas prioritarios para CREUP. También se participó en el III Encuentro de Delegaciones del CADUS en Torremolinos, con formaciones en igualdad y comunicación.</p><p>Del 22 al 26 de octubre, el área tuvo una participación activa en el XII Stage Formativo, impartiendo sesiones en igualdad, asuntos internacionales y planificación estratégica. Finalmente, el 30 de octubre, el presidente asistió a las jornadas de Campus Rural en Beas de Segura, donde conoció de cerca la realidad del programa y firmó el protocolo que reafirma el compromiso de CREUP con esta iniciativa.</p>',
@@ -298,7 +298,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-octubre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-octubre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante este periodo, el Área de Secretaría de CREUP ha desempeñado un papel clave en la elaboración y revisión de la aportación de la organización al Pacto de Estado contra el Cambio Climático, garantizando la coherencia institucional y la integración de la perspectiva estudiantil.</p><p>Asimismo, el área participó activamente en la organización de la AGET y en la coordinación del XII Stage Formativo, colaborando en su gestión documental y en el correcto desarrollo del evento.</p><p>Por último, se ha trabajado en la preparación de la próxima Asamblea General Ordinaria, cuidando el cumplimiento de los plazos y la adecuación de la documentación necesaria para su correcta celebración.</p>',
@@ -308,7 +308,7 @@ const month: SeedNewsletterMonth = {
     {
       area: PREVIOUS_AREAS.RRII,
       image:
-        '/transparencia/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-octubre-2025.webp',
+        '/prensa/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-octubre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante el mes de octubre, el Área de Institucionales de CREUP centró su trabajo en la finalización de la documentación para la próxima Asamblea de noviembre y en la participación en las formaciones del XII Stage Formativo.</p><p>Asimismo, se mantuvieron reuniones con entidades sociales como FELGBTI y SOS Racismo para abordar conjuntamente las barreras que afectan al estudiantado. CREUP participó en el acto de inauguración de la XXV Asamblea Confederal de CANAE y en la Asamblea Ejecutiva del CJE en Santander, donde defendió la regulación de las prácticas extracurriculares. También asistió a una reunión con el Ministerio para avanzar hacia el objetivo del 1% de financiación universitaria.</p><p>Además, CREUP participó en la presentación del libro «Talento universitario y empresa. Valoración de perfiles, contratación y futuro del empleo en España», organizado por CRUE, interviniendo en la mesa redonda para trasladar la perspectiva del estudiantado sobre la empleabilidad y sus principales preocupaciones.</p>',
@@ -317,8 +317,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-octubre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-octubre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, el Área de Política Universitaria ha avanzado en la coordinación del grupo de trabajo sobre las Becas FPU, promoviendo su seguimiento y desarrollo. Además, se elaboró la documentación para la próxima Asamblea General Ordinaria, incluyendo resoluciones e informes sobre temas clave como Menciones Duales, Gobernanza Universitaria, infraestructuras, participación estudiantil y los Reales Decretos 1721/2007 y 822/2021.</p><p>El área también coordinó la planificación e impartición de diversas formaciones en el XII Stage Formativo, centradas en la garantía de calidad, los derechos estudiantiles y el Espacio Europeo de Educación Superior.</p><p>Finalmente, colaboró en las tareas logísticas de montaje y desmontaje de la sede del evento, contribuyendo a su correcto desarrollo y éxito organizativo.</p>',
@@ -327,7 +326,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-octubre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-octubre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante octubre, el Área de Organización centró sus esfuerzos en el XII Stage Formativo, celebrado en Isín (Huesca) del 22 al 26, gestionando la organización y logística del evento. La Vocalía de Formación elaboró el dossier con la estructura de las sesiones formativas.</p><p>Además, la Vicepresidencia de Organización y la Vocalía de Logística avanzaron en la preparación de la 78ª Asamblea General Ordinaria junto a la sede de Barcelona. La Vocalía de Formación también mantuvo reuniones con distintos miembros de la asociación y participó en la reunión extraordinaria del CAS el 16 de octubre.</p>',
@@ -336,7 +335,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-octubre-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-octubre-2025.webp',
       es: {
         contentHtml:
           '<p>Durante este periodo, el Área de Comunicación de CREUP ha trabajado en fortalecer la presencia institucional de la organización y en situar la salud mental como un eje transversal dentro del discurso estudiantil. Se ha potenciado la participación activa en medios de comunicación y prensa, consolidando la visibilidad y el posicionamiento público de CREUP ante los principales temas de la agenda universitaria.</p><p>Además, el área ha desarrollado la identidad visual de la 78ª Asamblea General Ordinaria, garantizando una imagen cohesionada y representativa del evento. Por último, el equipo de Comunicación diseñó e impartió formaciones en el XII Stage Formativo centradas en la mejora de las capacidades comunicativas y estratégicas del estudiantado, reforzando su papel dentro de la representación universitaria.</p>',

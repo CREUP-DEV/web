@@ -31,7 +31,7 @@ const reports = computed(() => data.value?.data.reports ?? [])
 const mostRecentAnchorKey = computed(() => anchors.value[0]?.monthKey ?? null)
 const mostRecentPath = computed(() =>
   mostRecentAnchorKey.value
-    ? localePath(`/transparencia/actividad/informes/${mostRecentAnchorKey.value}`)
+    ? localePath(`/prensa/actividad/informes/${mostRecentAnchorKey.value}`)
     : null
 )
 
@@ -57,18 +57,18 @@ const monthSelectItems = computed(() =>
 
 const goToMonth = (key: string | undefined) => {
   if (!key || key === monthKey.value) return
-  navigateTo(localePath(`/transparencia/actividad/informes/${key}`))
+  navigateTo(localePath(`/prensa/actividad/informes/${key}`))
 }
 
 usePageSeo('activity.reports.title', 'activity.description', {
   webPageType: 'CollectionPage',
   breadcrumbs: () => [
     { name: t('nav.home'), path: localePath('/') },
-    { name: t('nav.transparency.label'), path: localePath('/transparencia/actividad') },
-    { name: t('activity.title'), path: localePath('/transparencia/actividad') },
+    { name: t('nav.press.label'), path: localePath('/prensa/noticias') },
+    { name: t('activity.title'), path: localePath('/prensa/actividad') },
     {
       name: t('activity.reports.breadcrumb'),
-      path: localePath(`/transparencia/actividad/informes/${monthKey.value}`),
+      path: localePath(`/prensa/actividad/informes/${monthKey.value}`),
     },
   ],
 })
@@ -113,7 +113,7 @@ watch(
     <UContainer>
       <nav class="mb-6">
         <NuxtLink
-          :to="localePath('/transparencia/actividad')"
+          :to="localePath('/prensa/actividad')"
           class="text-muted hover:text-foreground inline-flex items-center gap-1 text-sm transition-colors"
         >
           <UIcon name="i-tabler-arrow-left" class="size-4" />

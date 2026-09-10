@@ -21,7 +21,7 @@ const month: SeedNewsletterMonth = {
       slug: 'observatorio-emancipacion-cje-febrero-2025',
       kind: 'creup',
       startDate: '2025-01-16',
-      image: '/transparencia/actividad/imagenes/observatorio-emancipacion-cje-febrero-2025.webp',
+      image: '/prensa/actividad/imagenes/observatorio-emancipacion-cje-febrero-2025.webp',
       es: {
         title: 'CREUP acude a la presentación del Observatorio de Emancipación del CJE',
         excerpt:
@@ -35,7 +35,7 @@ const month: SeedNewsletterMonth = {
       slug: 'jornadas-discursos-odio-esn-febrero-2025',
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
-      image: '/transparencia/actividad/imagenes/jornadas-discursos-odio-esn-febrero-2025.webp',
+      image: '/prensa/actividad/imagenes/jornadas-discursos-odio-esn-febrero-2025.webp',
       es: {
         title:
           'CREUP participa en las jornadas de formación sobre discursos de odio y espacios seguros de ESN',
@@ -66,7 +66,7 @@ const month: SeedNewsletterMonth = {
       slug: 'encuesta-juventud-emancipacion-febrero-2025',
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
-      image: '/transparencia/actividad/imagenes/encuesta-juventud-emancipacion-febrero-2025.webp',
+      image: '/prensa/actividad/imagenes/encuesta-juventud-emancipacion-febrero-2025.webp',
       es: {
         title: 'Presentación de la encuesta a la juventud sobre las condiciones de la emancipación',
         excerpt:
@@ -81,7 +81,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: '2025-02-03',
       location: 'Institución Libre de Enseñanza',
-      image: '/transparencia/actividad/imagenes/encuesta-esdees-estudiantes-febrero-2025.webp',
+      image: '/prensa/actividad/imagenes/encuesta-esdees-estudiantes-febrero-2025.webp',
       es: {
         title: 'Presentación de la encuesta del EsdeES a los estudiantes',
         excerpt:
@@ -96,7 +96,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
       image:
-        '/transparencia/actividad/imagenes/pleno-sectorial-asuntos-estudiantiles-crue-febrero-2025.webp',
+        '/prensa/actividad/imagenes/pleno-sectorial-asuntos-estudiantiles-crue-febrero-2025.webp',
       es: {
         title: 'Pleno de la Sectorial de Asuntos Estudiantiles de CRUE',
         excerpt:
@@ -112,7 +112,7 @@ const month: SeedNewsletterMonth = {
       startDate: '2025-02-07',
       endDate: '2025-02-10',
       location: 'Universitat Politècnica de València',
-      image: '/transparencia/actividad/imagenes/cea-presencial-valencia-febrero-2025.webp',
+      image: '/prensa/actividad/imagenes/cea-presencial-valencia-febrero-2025.webp',
       es: {
         title: 'CEA presencial en Valencia',
         excerpt:
@@ -127,7 +127,7 @@ const month: SeedNewsletterMonth = {
       kind: 'creup',
       startDate: PLACEHOLDER_DATE,
       location: 'Universidad de Murcia',
-      image: '/transparencia/actividad/imagenes/evento-ods-universidad-murcia-febrero-2025.webp',
+      image: '/prensa/actividad/imagenes/evento-ods-universidad-murcia-febrero-2025.webp',
       es: {
         title:
           'Participación de CREUP en el evento sobre los Objetivos de Desarrollo Sostenible en la Universidad de Murcia',
@@ -156,7 +156,7 @@ const month: SeedNewsletterMonth = {
   areaReports: [
     {
       area: PREVIOUS_AREAS.PRESIDENCIA,
-      image: '/transparencia/informes-areas/imagenes/informe-presidencia-febrero-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-presidencia-febrero-2025.webp',
       es: {
         contentHtml:
           '<p>Durante los últimos dos meses, el área de Presidencia ha trabajado activamente en varias líneas de acción. Desde el área de Igualdad y Cooperación al Desarrollo, se ha retomado la resolución sobre paridad en la representación estudiantil y se han establecido contactos con distintas entidades sociales para involucrarlas en CREUP como agentes de cambio en el XIV Encuentro de Representantes. También se ha mantenido una reunión con la nueva Presidenta de CRUE-Sostenibilidad para avanzar en la resolución sobre oficinas de sostenibilidad.</p><p>En cuanto a las microformaciones ONCE, se celebró la primera sesión con la participación de 200 inscritos. Además, la Fundación ONCE ha incluido a la organización en el diseño del Congreso Internacional de Discapacidad, previsto para noviembre de 2025 en Granada.</p><p>Desde el CAI y el área de Internacionales, se ha trabajado en la organización del European Students Congress en Irlanda y en el desarrollo de un proyecto de protección universitaria para inmigrantes en peligro, enfocándose especialmente en la situación del colectivo estudiantil saharaui.</p><p>En el ámbito institucional, se participó en la sectorial de CRUE-Asuntos Estudiantiles, donde se discutió el futuro papel de las universidades tras la aprobación del Estatuto del Estudiante Universitario. También se mantuvieron reuniones con el grupo parlamentario Sumar en relación con el Estatuto del Estudiante en formación práctica.</p><p>Finalmente, junto con el área de Tesorería, se ha comenzado a trabajar en posibles proyectos Erasmus+ en los que el área de Presidencia pueda colaborar.</p>',
@@ -165,7 +165,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.SECRETARIA,
-      image: '/transparencia/informes-areas/imagenes/informe-secretaria-febrero-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-secretaria-febrero-2025.webp',
       es: {
         contentHtml:
           '<p>Durante este mes, desde la Secretaría se han elaborado los primeros borradores del Reglamento del Pool de Calidad y del Reglamento de Funcionamiento del CAS. Para ambos documentos, se han mantenido reuniones con el área de Política Universitaria. En el caso del RFCAS, se ha celebrado una reunión con el Coordinador del CAS, acordándose una próxima reunión de trabajo con el propio CAS, donde se revisará el texto propuesto por la Secretaría antes de su aprobación en la AGO.</p><p>Asimismo, se han iniciado los trámites de admisión de la Universitat Pompeu Fabra y de la sectorial NUSGREM.</p><p>Por otro lado, han comenzado los trabajos de modificación de los convenios modelo de sede y de sectoriales, cuya aprobación está prevista en la AGO. Además, para garantizar la adaptación a la normativa vigente en materia de protección de datos, se está elaborando una Política de Protección de Datos para CREUP, junto con la creación de un nuevo correo electrónico (proteccion.datos@creup.es) destinado a la gestión de los derechos legalmente reconocidos en esta materia.</p><p>En cuanto a digitalización, se ha iniciado el proceso de migración de la infraestructura digital de CREUP a un nuevo alojamiento.</p>',
@@ -174,7 +174,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.TESORERIA,
-      image: '/transparencia/informes-areas/imagenes/informe-tesoreria-febrero-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-tesoreria-febrero-2025.webp',
       es: {
         contentHtml:
           '<p>Desde esta área se ha trabajado en el cierre del ejercicio económico, revisando la facturación y la justificación de gastos, lo que ha permitido mejorar estos procesos. Se han gestionado las cuotas de membresía y analizado las solicitudes presentadas por los MOREs, además de avanzar en la implementación del sistema de facturación electrónica, que ya cubre aproximadamente al 86,5% de los miembros.</p><p>En cuanto a subvenciones y proyectos, en enero se trabajó en la subvención del Ministerio de Ciencia, Innovación y Universidades para asociaciones juveniles de ámbito universitario, solicitando financiación para dos actividades y elaborando un dossier con objetivos, beneficiarios y presupuesto detallado. Además, se ha iniciado un plan de trabajo para acceder a subvenciones europeas que impulsen el crecimiento en distintos ámbitos.</p><p>Por otro lado, en febrero se fijaron líneas estratégicas de cara a la próxima asamblea y se avanzó en proyectos previamente iniciados, fortaleciendo el trabajo en equipo entre distintas áreas.</p>',
@@ -184,7 +184,7 @@ const month: SeedNewsletterMonth = {
     {
       area: PREVIOUS_AREAS.RRII,
       image:
-        '/transparencia/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-febrero-2025.webp',
+        '/prensa/informes-areas/imagenes/informe-relaciones-institucionales-y-proyectos-febrero-2025.webp',
       es: {
         contentHtml:
           '<p>Este mes se inició con la presentación de una encuesta del estudiantado por parte del EsdeES, donde se comparaba la satisfacción de los estudiantes en universidades públicas y privadas, así como entre estudios telemáticos y presenciales, identificando desafíos para mejorar.</p><p>A continuación, junto al Presidente, participamos en el Pleno de CRUE Estudiantes para exponer la perspectiva del estudiantado sobre el EEU y el EB. También se abrió un espacio de diálogo para acercar posturas entre distintas posiciones.</p><p>Como resultado del trabajo realizado, se han creado dos grupos de trabajo: uno sobre la financiación en el SUE y otro sobre vivienda. Ya se ha celebrado la primera sesión, avanzando en la documentación correspondiente.</p>',
@@ -193,8 +193,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.POLITICA,
-      image:
-        '/transparencia/informes-areas/imagenes/informe-politica-universitaria-febrero-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-politica-universitaria-febrero-2025.webp',
       es: {
         contentHtml:
           '<p>Se llevó a cabo una reunión con ANECA para evaluar posibles modificaciones en el borrador sobre la regulación de los Documentos de Transparencia y Evaluación Institucional (DTIEs), recopilando información clave de ANECA y REACU para mejorar su aplicación en el ámbito universitario.</p><p>Asimismo, se organizó la convocatoria de los distintos Grupos de Trabajo (GTs), estableciendo la distribución de tareas y el calendario de reuniones.</p><p>Por último, en el encuentro con el Grupo de Trabajo de Participación Estudiantil de CRUE, se abordó la creación de un pasaporte cultural estandarizado para fomentar el acceso a la cultura en el ámbito universitario y se planificarán las próximas Jornadas de Participación Estudiantil.</p>',
@@ -203,7 +202,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.ORGANIZACION,
-      image: '/transparencia/informes-areas/imagenes/informe-organizacion-febrero-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-organizacion-febrero-2025.webp',
       es: {
         contentHtml:
           '<p>El área de Organización ha trabajado en la planificación y logística del VI Congreso CREUP-CRUE y el XIV Encuentro de Representantes, coordinando reuniones con las sedes y ultimando detalles. Además, se está preparando la 77ª Asamblea General Ordinaria en colaboración con la Universidad de Sevilla, avanzando en aspectos clave para su viabilidad.</p>',
@@ -212,7 +211,7 @@ const month: SeedNewsletterMonth = {
     },
     {
       area: PREVIOUS_AREAS.COMUNICACION,
-      image: '/transparencia/informes-areas/imagenes/informe-comunicacion-febrero-2025.webp',
+      image: '/prensa/informes-areas/imagenes/informe-comunicacion-febrero-2025.webp',
       es: {
         contentHtml:
           '<p>Durante los meses de enero y febrero, el área de Comunicación ha trabajado intensamente para potenciar el Instagram de la Coordinadora, creando contenido más dinámico y alineado con nuestro público objetivo.</p><p>Para acercar CREUP a la comunidad estudiantil, hemos lanzado nuevas secciones en redes sociales donde explicamos la estructura de la organización, el trabajo de cada área y otros temas de interés. Además, hemos desarrollado vídeos y campañas sobre cuestiones clave, como la infrafinanciación de las universidades y los problemas asociados a las becas FPU.</p><p>En el ámbito del diseño, nos hemos encargado de la identidad visual del XIV Encuentro de CREUP y el VI Congreso CREUP-CRUE, asegurándonos de que se adaptara de la mejor manera a las necesidades de la doble sede. También hemos iniciado el desarrollo de la identidad visual de la 77ª AGO, que tendrá lugar en Sevilla.</p><p>Como cada mes, dedicamos una parte fundamental de nuestro esfuerzo a esta newsletter, para que todas vosotras podáis estar al tanto de los avances de la Coordinadora.</p>',
