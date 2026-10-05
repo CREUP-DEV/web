@@ -12,6 +12,19 @@ require_command() {
   }
 }
 
+# Under WSL (what a bare `bash` typed in PowerShell or cmd resolves to) the Linux
+# ssh reads the distro's own ~/.ssh, which has none of the keys or host aliases in
+# the Windows user's %USERPROFILE%\.ssh — the ones Git Bash and the Windows
+# terminal use. Going through Windows' ssh.exe there makes every shell
+# authenticate against the VPS the same way. rsync takes it as its transport.
+resolve_ssh_bin() {
+  SSH_BIN=ssh
+  if [ -n "${WSL_DISTRO_NAME:-}" ] && command -v ssh.exe >/dev/null 2>&1; then
+    SSH_BIN=ssh.exe
+  fi
+  require_command "$SSH_BIN"
+}
+
 load_env_file() {
   local env_file="$1"
 
@@ -82,7 +95,7 @@ build_and_push_image() {
 }
 
 sync_public_uploads() {
-  rsync -avz --mkpath public/ "$VPS_HOST:${REMOTE_DIR}/data/public-uploads/"
+  rsync -avz --mkpath -e "$SSH_BIN" public/ "$VPS_HOST:${REMOTE_DIR}/data/public-uploads/"
 }
 
 build_seed() {
@@ -95,7 +108,7 @@ build_seed() {
 }
 
 remote_compose_up() {
-  ssh "$VPS_HOST" 'bash -se' <<EOF
+  "$SSH_BIN" "$VPS_HOST" 'bash -se' <<EOF
 set -euo pipefail
 
 ROLLBACK_IMAGE_FILE="${ROLLBACK_IMAGE_FILE}"
@@ -277,7 +290,7 @@ done
 : "${NUXT_SITE_URL:?ERROR: NUXT_SITE_URL is required}"
 
 require_command docker
-require_command ssh
+resolve_ssh_bin
 require_command git
 if [ "$SEED_ON_DEPLOY" = "true" ]; then
   require_command rsync
@@ -317,7 +330,7 @@ if [ "$SEED_ON_DEPLOY" = "true" ]; then
   sync_public_uploads
 
   log "Copy seed script to VPS"
-  rsync -az --mkpath ops/seed.mjs "$VPS_HOST:${REMOTE_DIR}/ops/seed.mjs"
+  rsync -az --mkpath -e "$SSH_BIN" ops/seed.mjs "$VPS_HOST:${REMOTE_DIR}/ops/seed.mjs"
 fi
 
 log "Deploy to VPS with docker compose"

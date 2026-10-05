@@ -52,6 +52,19 @@ require_command() {
   }
 }
 
+# Under WSL (what a bare `bash` typed in PowerShell or cmd resolves to) the Linux
+# ssh reads the distro's own ~/.ssh, which has none of the keys or host aliases in
+# the Windows user's %USERPROFILE%\.ssh — the ones Git Bash and the Windows
+# terminal use. Going through Windows' ssh.exe there makes every shell
+# authenticate against the VPS the same way. rsync takes it as its transport.
+resolve_ssh_bin() {
+  SSH_BIN=ssh
+  if [ -n "${WSL_DISTRO_NAME:-}" ] && command -v ssh.exe >/dev/null 2>&1; then
+    SSH_BIN=ssh.exe
+  fi
+  require_command "$SSH_BIN"
+}
+
 load_env_file() {
   local env_file="$1"
 
@@ -127,14 +140,15 @@ LOCAL_POSTGRES_SERVICE="postgres"
 LOCAL_REDIS_SERVICE="redis"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 
+resolve_ssh_bin
+
 SSH_OPTS=(-o ConnectTimeout=10)
-RSYNC_RSH="ssh -o ConnectTimeout=10"
+RSYNC_RSH="$SSH_BIN -o ConnectTimeout=10"
 if [ -n "${SSH_PORT:-}" ]; then
   SSH_OPTS+=(-p "$SSH_PORT")
-  RSYNC_RSH="ssh -o ConnectTimeout=10 -p $SSH_PORT"
+  RSYNC_RSH="$SSH_BIN -o ConnectTimeout=10 -p $SSH_PORT"
 fi
 
-require_command ssh
 require_command docker
 if [ "$SKIP_DB" != "true" ]; then
   require_command gzip
@@ -162,7 +176,7 @@ fi
 # the VPS; when unset there they default to ./data/... relative to COMPOSE_DIR
 # (see deploy.sh ensure_host_data_dirs).
 remote_env_get() {
-  ssh "${SSH_OPTS[@]}" "$VPS_HOST" \
+  "$SSH_BIN" "${SSH_OPTS[@]}" "$VPS_HOST" \
     "sed -n 's/^$1=//p' '$PROD_ENV_FILE_ABS' 2>/dev/null | tail -n1" |
     sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
 }
@@ -207,7 +221,7 @@ if [ "$SKIP_DB" != "true" ]; then
   # so every table is visible no matter which role owns it on the shared
   # instance. Passing -d "$POSTGRES_DB" was the earlier bug: that var is unset in
   # this service's container, so libpq fell back to dumping the empty `postgres`.
-  ssh "${SSH_OPTS[@]}" "$VPS_HOST" bash -s -- \
+  "$SSH_BIN" "${SSH_OPTS[@]}" "$VPS_HOST" bash -s -- \
     "$COMPOSE_DIR" "$PROD_ENV_FILE_ABS" "$COMPOSE_POSTGRES_SERVICE" <<'REMOTE' | gzip >"$PROD_DUMP_FILE"
 set -euo pipefail
 compose_dir=$1

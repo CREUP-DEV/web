@@ -12,6 +12,19 @@ require_command() {
   }
 }
 
+# Under WSL (what a bare `bash` typed in PowerShell or cmd resolves to) the Linux
+# ssh reads the distro's own ~/.ssh, which has none of the keys or host aliases in
+# the Windows user's %USERPROFILE%\.ssh — the ones Git Bash and the Windows
+# terminal use. Going through Windows' ssh.exe there makes every shell
+# authenticate against the VPS the same way.
+resolve_ssh_bin() {
+  SSH_BIN=ssh
+  if [ -n "${WSL_DISTRO_NAME:-}" ] && command -v ssh.exe >/dev/null 2>&1; then
+    SSH_BIN=ssh.exe
+  fi
+  require_command "$SSH_BIN"
+}
+
 load_env_file() {
   local env_file="$1"
 
@@ -28,7 +41,7 @@ load_env_file ".env"
 : "${VPS_HOST:?ERROR: VPS_HOST is required}"
 : "${REMOTE_DIR:?ERROR: REMOTE_DIR is required}"
 
-require_command ssh
+resolve_ssh_bin
 
 IMAGE_NAME="${IMAGE_NAME:-ghcr.io/creup-dev/web}"
 COMPOSE_DIR="${COMPOSE_DIR:-$REMOTE_DIR}"
@@ -64,7 +77,7 @@ elif [ -n "${IMAGE_TAG:-}" ]; then
 else
   log "Read saved rollback image"
   ROLLBACK_IMAGE="$(
-    ssh "$VPS_HOST" "cd '$COMPOSE_DIR' && test -s '$ROLLBACK_IMAGE_FILE' && cat '$ROLLBACK_IMAGE_FILE'"
+    "$SSH_BIN" "$VPS_HOST" "cd '$COMPOSE_DIR' && test -s '$ROLLBACK_IMAGE_FILE' && cat '$ROLLBACK_IMAGE_FILE'"
   )"
 fi
 
@@ -75,7 +88,7 @@ fi
 
 log "Rollback to: $ROLLBACK_IMAGE"
 
-ssh "$VPS_HOST" 'bash -se' <<EOF
+"$SSH_BIN" "$VPS_HOST" 'bash -se' <<EOF
 set -euo pipefail
 
 cd "${COMPOSE_DIR}"
