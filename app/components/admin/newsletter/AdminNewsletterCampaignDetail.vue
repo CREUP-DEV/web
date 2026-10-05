@@ -56,12 +56,69 @@ const failedRecipients = computed(() => props.campaign.lastDeliveryFailedRecipie
 const timestamp = (value: string | null) =>
   value ? formatDateTime(value, { dateStyle: 'medium', timeStyle: 'short' }) : '—'
 
+const { fetchContentByIds } = useAdminCampaignContent()
+
+/**
+ * Titles of the pieces as they stand today, for items that were never frozen. Only the migrated
+ * PDF-era archive is in that state — recorded as sent without this system rendering an email — so
+ * it falls back to the live piece through the same lookup the draft editor uses.
+ */
+const liveTitles = ref(new Map<string, string>())
+const isResolvingTitles = ref(false)
+
+const unfrozenItemsKey = computed(() =>
+  props.campaign.items
+    .filter((item) => !item.snapshot)
+    .map((item) => `${item.itemType}:${item.itemId}`)
+    .join(',')
+)
+
+const resolveLiveTitles = async () => {
+  const idsByType = new Map<NewsletterCampaignItemType, string[]>()
+
+  for (const item of props.campaign.items) {
+    if (item.snapshot) continue
+
+    const ids = idsByType.get(item.itemType)
+
+    if (ids) {
+      ids.push(item.itemId)
+    } else {
+      idsByType.set(item.itemType, [item.itemId])
+    }
+  }
+
+  if (!idsByType.size) {
+    liveTitles.value = new Map()
+    return
+  }
+
+  isResolvingTitles.value = true
+
+  try {
+    const entries = await fetchContentByIds(idsByType)
+    liveTitles.value = new Map([...entries].map(([key, entry]) => [key, entry.title]))
+  } finally {
+    isResolvingTitles.value = false
+  }
+}
+
+onMounted(resolveLiveTitles)
+watch(unfrozenItemsKey, resolveLiveTitles)
+
+/**
+ * Nothing frozen means nothing this system ever rendered, so a preview would be an empty shell
+ * rather than the email that went out.
+ */
+const hasFrozenContent = computed(() => props.campaign.items.some((item) => item.snapshot))
+
 /** Sent campaigns render from their frozen snapshot, which survives the piece being deleted. */
 const itemTitle = (item: AdminCampaignItem) => {
   const locales = item.snapshot?.locales ?? {}
   return (
     locales[DEFAULT_LOCALE_CODE]?.title ||
     Object.values(locales).find((entry) => entry?.title)?.title ||
+    liveTitles.value.get(`${item.itemType}:${item.itemId}`) ||
     t('admin.newsletterCampaigns.editor.unknownPiece')
   )
 }
@@ -317,7 +374,8 @@ const handleDuplicate = async () => {
                   class="text-muted size-4 shrink-0"
                   aria-hidden="true"
                 />
-                <span class="truncate">{{ itemTitle(item) }}</span>
+                <USkeleton v-if="isResolvingTitles && !item.snapshot" class="h-4 w-48 max-w-full" />
+                <span v-else class="truncate">{{ itemTitle(item) }}</span>
               </span>
               <span class="shrink-0 font-semibold tabular-nums">{{ item.clickCount }}</span>
             </li>
@@ -328,7 +386,7 @@ const handleDuplicate = async () => {
           </p>
         </section>
 
-        <AdminNewsletterCampaignPreview :campaign-id="campaign.id" />
+        <AdminNewsletterCampaignPreview v-if="hasFrozenContent" :campaign-id="campaign.id" />
       </div>
 
       <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">

@@ -122,6 +122,86 @@ export const seedAreaReportEditions: SeedAreaReportEditionResolved[] = MONTHS.fi
   coversFrom: month.coversFrom ?? null,
 }))
 
+/**
+ * Prefix of every campaign id minted here. The destructive seed keys its campaign wipe on it so a
+ * full reseed keeps the migrated archive instead of dropping the record of what already went out.
+ */
+export const SEED_NEWSLETTER_CAMPAIGN_ID_PREFIX = 'seed-nl-'
+
+/** Spanish month names, hardcoded so the generated subjects never depend on the host's ICU data. */
+const MONTH_NAMES_ES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+]
+
+function monthLabel(monthKey: string) {
+  const [year, month] = monthKey.split('-')
+  return `${MONTH_NAMES_ES[Number(month) - 1]} de ${year}`
+}
+
+/** `YYYY-MM-DD` -> the next day at a fixed UTC instant, so the value never shifts with the host TZ. */
+function dayAfter(date: string) {
+  const [year, month, day] = date.split('-').map(Number)
+  return new Date(Date.UTC(year!, month! - 1, day! + 1, 9, 0, 0))
+}
+
+/**
+ * One record per migrated newsletter, reproducing the PDF edition that shipped its content as a
+ * campaign already sent. The content picker's "Desde el último envío" filter offers only pieces
+ * taken on after the last campaign that delivered something, so without these the whole migrated
+ * archive would come back as if it had never gone out.
+ *
+ * `deliveredAt` is derived from the data rather than from `monthKey`: an edition regularly reports
+ * on days outside its anchor month (the November 2024 one runs to 2024-12-01), so the day after the
+ * last date it covers is the only rule that cannot place the send before its own contents.
+ */
+export interface SeedNewsletterEditionResolved {
+  /** Stable, human-readable id so re-seeding lands on the same campaign row. */
+  campaignId: string
+  monthKey: string
+  coversFrom: string | null
+  subject: string
+  deliveredAt: Date
+  entrySlugs: string[]
+  areaReportKeys: Array<{ monthKey: string; areaId: number }>
+}
+
+export const seedNewsletterEditions: SeedNewsletterEditionResolved[] = MONTHS.map((month) => {
+  const coveredDates = month.entries
+    .flatMap((entry) => [entry.startDate, entry.endDate ?? entry.startDate])
+    .sort()
+  const lastCoveredDate = coveredDates[coveredDates.length - 1]
+
+  if (!lastCoveredDate) {
+    throw new Error(`Newsletter ${month.monthKey} has no entries to date its delivery from`)
+  }
+
+  return {
+    campaignId: `${SEED_NEWSLETTER_CAMPAIGN_ID_PREFIX}${month.monthKey}`,
+    monthKey: month.monthKey,
+    coversFrom: month.coversFrom ?? null,
+    subject: month.coversFrom
+      ? `Boletín CREUP · ${monthLabel(month.coversFrom)} – ${monthLabel(month.monthKey)}`
+      : `Boletín CREUP · ${monthLabel(month.monthKey)}`,
+    deliveredAt: dayAfter(lastCoveredDate),
+    entrySlugs: month.entries.map((entry) => entry.slug),
+    areaReportKeys: month.areaReports.map((report) => ({
+      monthKey: month.monthKey,
+      areaId: report.area.areaId,
+    })),
+  }
+})
+
 export const seedAreaReports: SeedAreaReportResolved[] = MONTHS.flatMap((month) =>
   month.areaReports.map((report) => ({
     monthKey: month.monthKey,
@@ -145,3 +225,20 @@ if (duplicateMonth) throw new Error(`Duplicate newsletter month: ${duplicateMont
 const areaKeys = seedAreaReports.map((r) => `${r.monthKey}:${r.areaId}`)
 const duplicateArea = areaKeys.find((k, i) => areaKeys.indexOf(k) !== i)
 if (duplicateArea) throw new Error(`Duplicate area report (month:areaId): ${duplicateArea}`)
+
+const editionMonthKeys = seedNewsletterEditions.map((e) => e.monthKey)
+const duplicateEditionMonth = editionMonthKeys.find((m, i) => editionMonthKeys.indexOf(m) !== i)
+if (duplicateEditionMonth)
+  throw new Error(`Duplicate newsletter month in MONTHS: ${duplicateEditionMonth}`)
+
+// Each send must fall strictly after the previous one: the cut-off is a single `max()` over the
+// delivered campaigns, so an edition dated out of order would silently widen what counts as new.
+for (let i = 1; i < seedNewsletterEditions.length; i += 1) {
+  const previous = seedNewsletterEditions[i - 1]!
+  const current = seedNewsletterEditions[i]!
+  if (current.deliveredAt <= previous.deliveredAt) {
+    throw new Error(
+      `Newsletter ${current.monthKey} is dated ${current.deliveredAt.toISOString()}, not after ${previous.monthKey} (${previous.deliveredAt.toISOString()})`
+    )
+  }
+}

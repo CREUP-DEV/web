@@ -5,6 +5,7 @@
 
 import 'dotenv/config'
 import { existsSync } from 'node:fs'
+import { notLike } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from '../server/db/schema'
 import { requireConfigString } from '../shared/utils/config'
@@ -22,6 +23,7 @@ import {
   PRESS_DOSSIER_PUBLIC_PATH,
 } from '../shared/constants/assetPaths'
 import { slugify } from '../server/utils/core/slug'
+import { SEED_NEWSLETTER_CAMPAIGN_ID_PREFIX } from './seed/data/activity'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
@@ -211,8 +213,12 @@ async function seedDatabase(db: DbExecutor) {
   // newsletter_subscribers / newsletter_subscription_events are intentionally
   // NOT wiped: they hold GDPR consent evidence the seed never recreates, and
   // the seed inserts no subscribers, so deleting them serves no purpose.
-  // Campaign deliveries, items and translations all cascade from the campaign.
-  await db.delete(schema.newsletterCampaigns)
+  // Campaign deliveries, items and translations all cascade from the campaign. The migrated PDF
+  // archive is spared: it records sends that really happened, and dropping it would put all 212
+  // migrated pieces back in front of the campaign editor as unsent content.
+  await db
+    .delete(schema.newsletterCampaigns)
+    .where(notLike(schema.newsletterCampaigns.id, `${SEED_NEWSLETTER_CAMPAIGN_ID_PREFIX}%`))
   await db.delete(schema.carouselItemTranslations)
   await db.delete(schema.carouselItems)
   await db.delete(schema.pressArticleTags)

@@ -16,7 +16,7 @@
  */
 
 import 'dotenv/config'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from '../../server/db/schema'
 import { requireConfigString } from '../../shared/utils/config'
@@ -28,10 +28,16 @@ import {
   seedTagTranslations,
 } from './data/seedContentTranslations'
 import { seedPressArticleTranslations } from './data/seedPressTranslations'
-import { seedActivityEntries, seedAreaReportEditions, seedAreaReports } from './data/activity'
+import {
+  seedActivityEntries,
+  seedAreaReportEditions,
+  seedAreaReports,
+  seedNewsletterEditions,
+} from './data/activity'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
+const DAY_IN_MS = 24 * 60 * 60 * 1000
 
 async function main() {
   console.log('🌱 Seeding content translations (idempotent)...')
@@ -218,7 +224,13 @@ async function main() {
   // carry no organiser; member-org events carry the frozen member_org_snapshot resolved in
   // ./data/activity (logos null — added later from admin).
   let activityTranslations = 0
+  const activityEntryIdBySlug = new Map<string, string>()
   for (const entry of seedActivityEntries) {
+    // `created_at` is what the campaign content picker reads as the day the piece was taken on
+    // (these rows carry no publication date of their own), so it holds the event's own date rather
+    // than the moment the seed ran. Left at `now()` the whole migrated archive would resurface as
+    // new content after every seed.
+    const entryCreatedAt = new Date(`${entry.startDate}T00:00:00Z`)
     const [created] = await db
       .insert(schema.activityEntries)
       .values({
@@ -233,6 +245,7 @@ async function main() {
         memberOrgId: entry.memberOrgId,
         memberOrgSnapshot: entry.memberOrgSnapshot,
         active: true,
+        createdAt: entryCreatedAt,
       })
       .onConflictDoNothing({ target: schema.activityEntries.slug })
       .returning({ id: schema.activityEntries.id })
@@ -245,8 +258,23 @@ async function main() {
         .where(eq(schema.activityEntries.slug, entry.slug))
         .limit(1)
       entryId = existing?.id
+
+      // Rows seeded before the dates were backfilled. The `ne` keeps a re-run a no-op instead of
+      // touching `updated_at` on every pass.
+      if (entryId) {
+        await db
+          .update(schema.activityEntries)
+          .set({ createdAt: entryCreatedAt })
+          .where(
+            and(
+              eq(schema.activityEntries.id, entryId),
+              ne(schema.activityEntries.createdAt, entryCreatedAt)
+            )
+          )
+      }
     }
     if (!entryId) continue
+    activityEntryIdBySlug.set(entry.slug, entryId)
 
     const rows = await db
       .insert(schema.activityEntryTranslations)
@@ -287,7 +315,23 @@ async function main() {
   // areaNameSnapshot/areaOrderSnapshot are frozen here (the seed is the publish moment), so the
   // eventless seed never needs the live org-chart resolver.
   let areaReportTranslationsInserted = 0
+  const areaReportIdByKey = new Map<string, string>()
+  // A report carries no date of its own, only the edition's anchor month, which can sit before
+  // entries the same edition covers. Dating it the day before its own send keeps it under that
+  // edition whatever range the edition spans.
+  const areaReportCreatedAtByMonth = new Map(
+    seedNewsletterEditions.map((edition) => [
+      edition.monthKey,
+      new Date(edition.deliveredAt.getTime() - DAY_IN_MS),
+    ])
+  )
   for (const report of seedAreaReports) {
+    const reportCreatedAt = areaReportCreatedAtByMonth.get(report.monthKey)
+
+    if (!reportCreatedAt) {
+      throw new Error(`Area report month ${report.monthKey} has no migrated newsletter edition`)
+    }
+
     const [created] = await db
       .insert(schema.areaReports)
       .values({
@@ -297,6 +341,7 @@ async function main() {
         areaOrderSnapshot: report.areaOrderSnapshot,
         image: report.image,
         active: true,
+        createdAt: reportCreatedAt,
       })
       .onConflictDoNothing({
         target: [schema.areaReports.monthKey, schema.areaReports.areaId],
@@ -316,8 +361,21 @@ async function main() {
         )
         .limit(1)
       reportId = existing?.id
+
+      if (reportId) {
+        await db
+          .update(schema.areaReports)
+          .set({ createdAt: reportCreatedAt })
+          .where(
+            and(
+              eq(schema.areaReports.id, reportId),
+              ne(schema.areaReports.createdAt, reportCreatedAt)
+            )
+          )
+      }
     }
     if (!reportId) continue
+    areaReportIdByKey.set(`${report.monthKey}:${report.areaId}`, reportId)
 
     const rows = await db
       .insert(schema.areaReportTranslations)
@@ -339,6 +397,87 @@ async function main() {
   inserted += areaReportTranslationsInserted
   console.log(
     `   area reports: ensured ${seedAreaReports.length} across ${seedAreaReportEditions.length} edition(s), +${areaReportTranslationsInserted} es translation(s)`
+  )
+
+  // The migrated newsletters, recorded as campaigns already sent. The content they carry went out
+  // as a monthly PDF long before this model existed, so the archive is a fact about the past, not a
+  // send this system performed — and the picker's "Desde el último envío" filter has to see it or
+  // it would offer all 212 migrated pieces as unsent.
+  //
+  // Delivery counters stay empty except the one the cut-off query reads: `getLastDeliveredCampaignCutoff`
+  // ignores any campaign without a positive `last_delivery_sent_count`, and that exclusion is
+  // deliberate (a campaign that reached nobody must not move the cut-off). The PDF era kept no
+  // per-recipient record, so 1 is a floor standing in for "it was delivered", not a measurement —
+  // which is why `last_delivery_total` is left null rather than matched to it. The admin list then
+  // shows "Destinatarios 0 · Enviados 1", which reads as the placeholder it is.
+  //
+  // Items carry no snapshot: nothing was ever frozen for these, and a snapshot's other job —
+  // keeping the image of a delivered email alive after its piece is unpublished — does not apply to
+  // an email that never linked here.
+  let campaignItemsInserted = 0
+  for (const edition of seedNewsletterEditions) {
+    await db
+      .insert(schema.newsletterCampaigns)
+      .values({
+        id: edition.campaignId,
+        status: 'sent',
+        sentAt: edition.deliveredAt,
+        lastDeliveryStartedAt: edition.deliveredAt,
+        lastDeliveryFinishedAt: edition.deliveredAt,
+        lastDeliverySentCount: 1,
+      })
+      .onConflictDoNothing({ target: schema.newsletterCampaigns.id })
+
+    await db
+      .insert(schema.newsletterCampaignTranslations)
+      .values({
+        locale: 'es',
+        subject: edition.subject,
+        campaignId: edition.campaignId,
+      })
+      .onConflictDoNothing({
+        target: [
+          schema.newsletterCampaignTranslations.locale,
+          schema.newsletterCampaignTranslations.campaignId,
+        ],
+      })
+
+    const items = [
+      ...edition.entrySlugs.flatMap((slug) => {
+        const itemId = activityEntryIdBySlug.get(slug)
+        return itemId ? [{ itemType: 'activity' as const, itemId }] : []
+      }),
+      ...edition.areaReportKeys.flatMap((key) => {
+        const itemId = areaReportIdByKey.get(`${key.monthKey}:${key.areaId}`)
+        return itemId ? [{ itemType: 'area_report' as const, itemId }] : []
+      }),
+    ]
+
+    if (!items.length) continue
+
+    const rows = await db
+      .insert(schema.newsletterCampaignItems)
+      .values(
+        items.map((item, position) => ({
+          campaignId: edition.campaignId,
+          position,
+          itemType: item.itemType,
+          itemId: item.itemId,
+        }))
+      )
+      .onConflictDoNothing({
+        target: [
+          schema.newsletterCampaignItems.campaignId,
+          schema.newsletterCampaignItems.itemType,
+          schema.newsletterCampaignItems.itemId,
+        ],
+      })
+      .returning({ id: schema.newsletterCampaignItems.id })
+    campaignItemsInserted += rows.length
+  }
+  inserted += campaignItemsInserted
+  console.log(
+    `   migrated newsletters: ensured ${seedNewsletterEditions.length} sent campaign(s), +${campaignItemsInserted} item(s)`
   )
 
   console.log(`✅ Content translations seeded (inserted ${inserted} new row(s)).`)
