@@ -1,6 +1,20 @@
 import { defineEventHandler, getMethod, getRequestURL, sendRedirect } from 'h3'
+import {
+  INTERNAL_DOCUMENT_PROXY_PATH_BASES,
+  INTERNAL_IMAGE_PROXY_PATH_BASES,
+} from '~~/shared/constants/assetPaths'
 
 const REDIRECT_STATUS_CODE = 301
+
+/**
+ * Asset proxies that live beneath a legacy prefix: `/eventos/` collapses the old event pages onto
+ * the listing, but the event image and document proxies are served from under it too. Matched
+ * first, or every banner, logo and PDF not already cached answers with a redirect to an HTML page.
+ */
+const ASSET_PROXY_PATH_BASES: readonly string[] = [
+  ...INTERNAL_IMAGE_PROXY_PATH_BASES,
+  ...INTERNAL_DOCUMENT_PROXY_PATH_BASES,
+]
 
 const exactLegacyRedirects: Record<string, string> = {
   '/ejecutiva': '/conocenos/equipo',
@@ -72,8 +86,19 @@ function appendSearch(target: string, search: string) {
   return `${target}${target.includes('?') ? '&' : '?'}${search.slice(1)}`
 }
 
+function isAssetProxyPath(normalizedPath: string) {
+  return ASSET_PROXY_PATH_BASES.some(
+    (base) => normalizedPath === base || normalizedPath.startsWith(`${base}/`)
+  )
+}
+
 function findLegacyRedirect(pathname: string) {
   const normalizedPath = normalizeLegacyPath(pathname)
+
+  if (isAssetProxyPath(normalizedPath)) {
+    return null
+  }
+
   const exactTarget = exactLegacyRedirects[normalizedPath]
 
   if (exactTarget) {
