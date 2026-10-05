@@ -65,7 +65,7 @@ formularios.
 
 ### 3.1 El PDF de febrero de 2026 — paso bloqueante e irreversible
 
-`docs/handoff-actividad.md` señala `public/prensa/newsletter/documentos/newsletter-2026-02.pdf`
+El handoff de la sección Actividad señalaba `public/prensa/newsletter/documentos/newsletter-2026-02.pdf`
 como material fuente del seed de contenido de febrero 2026, que **sigue bloqueado** (fase 9 de
 `plan-seccion-actividad.md`: ~20 piezas × 6 idiomas + 31 imágenes por extraer de ese PDF).
 
