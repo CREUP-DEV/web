@@ -61,6 +61,8 @@ Internet
 - `ssh` y `git`
 - Acceso a un registro de contenedores (GitHub Container Registry — GHCR — está preconfigurado)
 
+En Windows, `deploy.sh`, `rollback.sh` y `clone-prod-db.sh` funcionan tanto desde Git Bash como desde WSL (que es lo que abre un `bash` escrito en PowerShell o cmd). Bajo WSL usan el `ssh.exe` de Windows, así que las claves y los alias de host son siempre los de `%USERPROFILE%\.ssh`, no los del `~/.ssh` de la distribución.
+
 ### En el VPS
 
 - Ubuntu 22.04 LTS o superior (Debian 12 también funciona)
@@ -99,23 +101,53 @@ mkdir -p \
   data/admin-assets
 ```
 
-> **Despliegue con la migración 0016 (actividad pasa a Prensa).** En una instalación que ya venía
-> sirviendo `/transparencia/actividad`, el orden importa y no es reversible a medias:
+#### Imágenes de Actividad e informes de áreas: con o sin bind mount
+
+Estas imágenes (`public/prensa/actividad/imagenes` y `public/prensa/informes-areas/imagenes`) no
+están en git, pero **sí entran en la imagen Docker**: el build se hace desde el árbol de trabajo
+local y `.dockerignore` no excluye `public/`. Por eso su comportamiento depende de si el Compose del
+VPS monta esas carpetas:
+
+| | Con bind mount (como `docker-compose.production.example.yml`) | Sin bind mount |
+| --- | --- | --- |
+| De dónde las sirve la app | Del host (`data/public-uploads/...`) | De la propia imagen |
+| Lo que se sube desde admin | Persiste entre despliegues | **Se pierde al recrear el contenedor** |
+| Cambios hechos en el `public/` local | No llegan con el deploy (el montaje tapa la imagen): súbelos con `rsync` | Llegan con el siguiente deploy |
+
+Sin bind mount, la imagen lleva exactamente lo que haya en el `public/` de quien despliega: un
+despliegue desde un clon limpio, sin esas imágenes, las deja fuera y todas dan 404.
+
+Lo recomendable es el bind mount. Para pasar de una instalación sin montaje a una con montaje, el
+orden importa, porque montar una carpeta vacía tapa las imágenes que trae la imagen:
+
+```bash
+# En el directorio del Compose del VPS, con la app en marcha
+mkdir -p data/public-uploads/prensa/actividad/imagenes data/public-uploads/prensa/informes-areas/imagenes
+docker compose cp app:/app/.output/public/prensa/actividad/imagenes/. data/public-uploads/prensa/actividad/imagenes/
+docker compose cp app:/app/.output/public/prensa/informes-areas/imagenes/. data/public-uploads/prensa/informes-areas/imagenes/
+sudo chown -R 1000:1000 data/public-uploads/prensa
+# Después: añadir los dos montajes al Compose y recrear solo la app
+docker compose up -d app
+```
+
+> **Despliegue con la migración 0016 (actividad pasa a Prensa).** La migración reescribe las rutas
+> guardadas en la base de datos de `/transparencia/...` a `/prensa/...`, y las URLs antiguas siguen
+> funcionando indefinidamente vía 301 en `routeRules`.
 >
-> ```bash
-> # 1. Mover los ficheros dentro del volumen montado, ANTES de migrar.
-> mkdir -p data/public-uploads/prensa
-> mv data/public-uploads/transparencia/actividad       data/public-uploads/prensa/actividad
-> mv data/public-uploads/transparencia/informes-areas  data/public-uploads/prensa/informes-areas
-> ```
+> - **Sin bind mount:** no hay nada que mover. El deploy trae las imágenes ya en `/prensa/...`.
+> - **Con bind mount:** mueve los ficheros y cambia los dos montajes del Compose (`transparencia/...`
+>   → `prensa/...`) **antes** de lanzar `deploy.sh`. El script crea al empezar las carpetas
+>   `prensa/.../imagenes` vacías, así que mueve el contenido, no la carpeta (un `mv` de la carpeta
+>   sobre una que ya existe la anida dentro):
 >
-> 2. Aplicar la migración, que reescribe las rutas guardadas en la base de datos.
-> 3. Redesplegar: el manifiesto de assets públicos de Nitro se calcula al arrancar, así que los
->    directorios nuevos no se sirven hasta que la app se reinicia.
+>   ```bash
+>   mkdir -p data/public-uploads/prensa/actividad/imagenes data/public-uploads/prensa/informes-areas/imagenes
+>   mv data/public-uploads/transparencia/actividad/imagenes/*      data/public-uploads/prensa/actividad/imagenes/
+>   mv data/public-uploads/transparencia/informes-areas/imagenes/* data/public-uploads/prensa/informes-areas/imagenes/
+>   ```
 >
-> Migrar antes de mover los ficheros deja la base de datos apuntando a `/prensa/...` mientras los
-> ficheros siguen en `/transparencia/...`: todas las imágenes dan 404 en ese intervalo. Las URLs
-> antiguas siguen funcionando indefinidamente vía 301 en `routeRules`.
+>   Migrar antes de mover deja la base de datos apuntando a `/prensa/...` con los ficheros aún en
+>   `/transparencia/...`: todas las imágenes dan 404 en ese intervalo.
 
 ### 3b. Copiar los archivos del proyecto al VPS
 
@@ -777,6 +809,16 @@ ls -la /opt/creup-web/data/
 sudo chown -R 1000:1000 /opt/creup-web/data/
 ```
 
+Comprueba también que el contenedor tiene montadas **todas** las carpetas de subida, en particular
+las de Actividad e informes de áreas, que un Compose antiguo puede no incluir:
+
+```bash
+docker compose ps -q app | xargs docker inspect -f '{{range .Mounts}}{{.Destination}}{{println}}{{end}}'
+```
+
+Si falta alguna, lo que se sube ahí vive solo dentro del contenedor. Antes de añadir el montaje,
+copia los ficheros fuera como se explica en [3a](#3a-crear-el-directorio-del-proyecto-en-el-vps).
+
 ### La migración de base de datos falla durante el despliegue
 
 Las migraciones adquieren un advisory lock de PostgreSQL — solo una ejecución avanza a la vez. Si una ejecución anterior quedó a medias:
@@ -792,3 +834,36 @@ docker compose exec postgres psql -U creup -d creup \
 ```
 
 Después vuelve a ejecutar el despliegue.
+
+Si falla una migración, el despliegue se detiene antes de recrear la app: todas las migraciones
+pendientes se aplican en una sola transacción, así que la base de datos vuelve a como estaba y
+sigue corriendo la imagen anterior.
+
+### La migración 0015 aborta con `newsletters were delivered`
+
+La 0015 elimina las tablas de la newsletter en PDF (`newsletters`, `newsletter_deliveries`). Antes
+de borrar comprueba que ninguna edición se llegó a enviar, y si encuentra algo se detiene: un envío
+real tendría que convertirse, no tirarse. Mira qué ha encontrado:
+
+```sql
+SELECT n.month_key, n.sent_at, d.status, count(d.id)
+  FROM newsletters n LEFT JOIN newsletter_deliveries d ON d.newsletter_id = n.id
+ WHERE n.sent_at IS NOT NULL OR d.id IS NOT NULL
+ GROUP BY 1, 2, 3;
+```
+
+Si solo aparecen envíos de prueba (a direcciones propias), haz una copia de la base de datos y
+límpialos; las tablas desaparecen justo después de todos modos:
+
+```sql
+BEGIN;
+DELETE FROM newsletter_deliveries;
+UPDATE newsletters SET sent_at = NULL WHERE sent_at IS NOT NULL;
+COMMIT;
+```
+
+Si hay envíos reales, no lo fuerces. El seed de contenido ya registra las ediciones migradas como
+campañas enviadas, pero las entregas por suscriptor se perderían.
+
+Tras esta migración ya no se usan las carpetas `prensa/newsletter/{portadas,documentos,imagenes-por-defecto}`:
+si un Compose antiguo las monta, quita esos montajes.
