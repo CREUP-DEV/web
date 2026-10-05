@@ -1294,6 +1294,25 @@
         "discardChanges": "Irten gorde gabe"
       }
     },
+    "monthPicker": {
+      "jan": "Urt",
+      "feb": "Ots",
+      "mar": "Mar",
+      "apr": "Api",
+      "may": "Mai",
+      "jun": "Eka",
+      "jul": "Uzt",
+      "aug": "Abu",
+      "sep": "Ira",
+      "oct": "Urr",
+      "nov": "Aza",
+      "dec": "Abe",
+      "groupAria": "Hilabete eta urte hautatzailea",
+      "prevYearAria": "Aurreko urtea",
+      "nextYearAria": "Hurrengo urtea",
+      "taken": "Hilabete horretarako newsletter bat existitzen da jada.",
+      "hint": "Hilabeteko newsletter bakarra onartzen da."
+    },
     "newsletter": {
       "subscribers": {
         "title": "Harpidedunak",
@@ -1323,25 +1342,6 @@
         "updateErrorToast": "Ezin izan da harpideduna eguneratu",
         "deletedToast": "Harpideduna ezabatu da",
         "deleteErrorToast": "Ezin izan da harpideduna ezabatu"
-      },
-      "monthPicker": {
-        "jan": "Urt",
-        "feb": "Ots",
-        "mar": "Mar",
-        "apr": "Api",
-        "may": "Mai",
-        "jun": "Eka",
-        "jul": "Uzt",
-        "aug": "Abu",
-        "sep": "Ira",
-        "oct": "Urr",
-        "nov": "Aza",
-        "dec": "Abe",
-        "groupAria": "Hilabete eta urte hautatzailea",
-        "prevYearAria": "Aurreko urtea",
-        "nextYearAria": "Hurrengo urtea",
-        "taken": "Hilabete horretarako newsletter bat existitzen da jada.",
-        "hint": "Hilabeteko newsletter bakarra onartzen da."
       }
     },
     "newsletterCampaigns": {
@@ -1375,7 +1375,7 @@
         "subjectPlaceholder": "Sarrera-ontzian irakurtzen dena",
         "preheader": "Aurregoiburua",
         "preheaderHint": "Bezero askok gaiaren ondoan erakusten duten aurrebista-testua.",
-        "preheaderPlaceholder": "Edizio honen laburpen laburra",
+        "preheaderPlaceholder": "Kanpaina honen laburpen laburra",
         "intro": "Sarrera",
         "introHint": "Hasierako paragrafoa. Lodia, etzana eta estekak baino ez ditu onartzen."
       },
@@ -1471,7 +1471,7 @@
         "subtypeFilterLabel": "Motak:",
         "subtypeFilterAria": "Iragazi eduki motaren arabera",
         "subtypeFilterClear": "Kendu iragazkia",
-        "selectEdition": "Arlo guztiak"
+        "selectAllAreas": "Arlo guztiak"
       },
       "preview": {
         "title": "Aurrebista",

@@ -22,7 +22,7 @@ export const PRESS_DEFAULT_COVERS_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/${PR
 export const PRESS_MEDIA_LOGO_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/medios`
 export const PRESS_DOCUMENT_PUBLIC_PATH = '/prensa/documentos'
 export const PRESS_DOSSIER_PUBLIC_PATH = '/prensa/dossier-prensa.pdf'
-/** Site default newsletter cover (admin-managed; distinct from per-edition covers). */
+/** Brand banner shown at the top of newsletter campaign emails. Ships with the build. */
 export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.png'
 
 // Activity section ("Actividad"). One parent folder with sub-folders keeps the number of

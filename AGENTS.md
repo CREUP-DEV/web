@@ -10,7 +10,7 @@ Goals:
 - Compact admin area to manage public content shown on the site.
 - Spanish-first localization strategy, scalable to additional languages without rewrites.
 
-Current admin scope: access control, home carousel, "Qué es CREUP" hero, equality documents, newsletter issues and subscribers, press articles, optional per-type default press cover images (when an article has no hero image), press dossier, tags, media outlets, featured links, financial reports.
+Current admin scope: access control, home carousel, "Qué es CREUP" hero, equality documents, newsletter campaigns and subscribers, press articles, optional per-type default press cover images (when an article has no hero image), press dossier, tags, media outlets, featured links, financial reports.
 
 ---
 
@@ -44,7 +44,7 @@ server/
   middleware/       locale.ts
   plugins/          background-jobs.ts, admin-asset-publication.ts, startup-config-validation.ts
   routes/           Non-API server routes (health.ts, asset proxy routes)
-  services/         pressArticleService.ts, newsletterDeliveryService.ts (complex mutations)
+  services/         pressArticleService.ts, newsletterCampaignDelivery*.ts (complex mutations)
   utils/            All server helpers — see Key Helpers section below
   db/               schema/ (table modules), index.ts (Drizzle client)
 shared/
@@ -329,32 +329,16 @@ Cache is shared through Redis and coordinates refreshes with Redis locks so stal
 
 ### Public Content Caching & Invalidation
 
-Public CMS content (press, home, tags, dossier, equality, financial reports, about, newsletter) is cached at three layers. When adding a public read or an admin mutation, wire **all** of them or content goes stale.
+Public CMS content (press, home, tags, dossier, equality, financial reports, about, activity) is cached at three layers. When adding a public read or an admin mutation, wire **all** of them or content goes stale.
 
 1. **Server route cache.** Public GET handlers use `defineCachedEventHandler(handler, { ...PUBLIC_ROUTE_CACHE_OPTIONS, getKey: (e) => buildPublicRouteCacheKey(e, 'public-<scope>', { queryKeys }) })` (`server/utils/cache/publicRouteCache.ts`). The `cache` storage base is mounted to Redis by `server/plugins/runtime-cache-storage.ts`, so entries and purges are shared across all Nitro instances — never leave the route cache on the in-memory default.
 2. **Server invalidation.** Every admin create/update/delete/reorder that changes public output MUST call the matching `invalidate*` from `server/utils/admin/adminCacheInvalidation.ts` (e.g. `invalidatePressRelatedCaches`, `invalidateHomeDataCache`). The asset-backed CRUD + reorder factories already do this via their `invalidate` config; bespoke handlers must call it explicitly. The substring it matches must line up with the handler's `public-<scope>` cache key.
 3. **Client cache.** Public reads pass `getCachedData: publicCmsCachedData` (`app/utils/publicCmsCachedData.ts`) and a stable key whose prefix is in `PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES` (`shared/constants/publicAsyncDataKeys.ts`). This gives anonymous visitors a 60s TTL cache on SPA navigation (fast, no refetch storm) instead of the default `payloadExtraction` behaviour, which reuses `static.data` forever and is **not** cleared by `clearNuxtData`. On the admin success path, call a `usePublicCmsCacheRefresh()` function (`refreshAllClientAsyncData`, or the scoped `refreshHomeData` / `refreshAboutPage`) — it drops the cache timestamps so the editor's next navigation refetches immediately. Adding a new public read without `getCachedData: publicCmsCachedData` reintroduces the stale-after-edit bug.
 
-### Newsletter Delivery (`server/services/newsletterDeliveryService.ts`)
-
-- Delivery state machine: `queued → sending → sent | failed`
-- Worker token claimed atomically via DB UPDATE with stale-heartbeat check — safe for concurrent instances
-- Batches claimed with `SELECT ... FOR UPDATE SKIP LOCKED` — no duplicate sends
-- Sends run in parallel with `p-limit(5)` concurrency per batch
-- Subscribers with ≥ 3 total failed deliveries are auto-deactivated (`deactivateSubscriberOnBounce`)
-- Stale `sending` rows (older than 2 min) are reset to `queued` on next batch claim
-- Newsletter sending and maintenance scheduling run through BullMQ via `server/plugins/background-jobs.ts`
-
-`server/utils/newsletters.ts` contains shared constants and month-key helper utilities used by delivery and API layers.
-
-`server/plugins/background-jobs.ts` initializes schedulers with retry (`max 5` attempts, exponential backoff from `1s` up to `30s`) and re-triggers initialization on worker `ready` events when startup timing races occur.
-
-Never bypass the worker token system — use `sendNewsletterById` or `claimNewsletterForSending`.
-
 ### Newsletter Campaign Delivery (`server/services/newsletterCampaignDelivery*.ts`)
 
-The campaign pipeline runs alongside the PDF one until the removal phase drops the latter. Same
-lease/batch/heartbeat shape, plus the rules `newsletter_campaigns` enforces with CHECK constraints:
+The only delivery pipeline; the PDF-edition one was removed. Lease/batch/heartbeat shape, plus the
+rules `newsletter_campaigns` enforces with CHECK constraints:
 
 - `sent_at` means **finished with nothing pending**. The lease only claims campaigns with
   `sent_at IS NULL`, so a run that ends with failed or still-queued deliveries finishes in `failed`,
@@ -378,6 +362,11 @@ lease/batch/heartbeat shape, plus the rules `newsletter_campaigns` enforces with
   `adminAssetReferences` blocks their deletion (`snapshot -> 'assetPaths' ? $1`), and
   `adminAssetPublication` computes the whole protected set before reconciling anything and treats
   those paths as published whatever the owning entity's `active` says.
+
+Campaign sending and maintenance scheduling run through BullMQ via
+`server/plugins/background-jobs.ts`, which initializes schedulers with retry (`max 5` attempts,
+exponential backoff from `1s` up to `30s`) and re-triggers initialization on worker `ready` events
+when startup timing races occur.
 
 ### Optimistic Locking (Admin Mutations)
 
@@ -428,9 +417,15 @@ const {
 
 Use this for any admin page with a list + create/edit modal pattern.
 
-### Admin Newsletters (`app/composables/admin/useAdminNewsletters.ts`)
+### Admin Newsletter Campaigns (`app/composables/admin/useAdminNewsletterCampaigns.ts`)
 
-Data + send/cancel layer for the newsletter admin list: owns the list fetch, the mutable collection (`items` + mutators), `maxDeliveryAttempts`, the `Newsletter` type and `toNewsletterListItem` normalizer, the manual-send and cancel flows (state + handlers), and the polling timer that refreshes while any newsletter is sending. The page keeps form/modal/submit/delete logic and reaches the collection mutators through this composable's return. Mirrors the per-resource pattern of `useAdminPress`.
+Types and shared presentation for the campaign admin: the `AdminCampaign*` interfaces, the API base
+paths (`CAMPAIGNS_API_BASE`, `CAMPAIGN_CONTENT_API`), `campaignEditorPath`, the
+`useAdminCampaignPresentation()` label/colour/icon helpers, and `extractUnavailableCampaignItems`
+for the 409 body returned when a send is blocked by unpublished content.
+
+`useAdminCampaignEditor.ts` holds the editor state for a single campaign: per-locale translations,
+item ordering and overrides, and the save/send flows.
 
 ### Admin File Upload (`app/composables/useAdminFileUpload.ts`)
 

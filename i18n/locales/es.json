@@ -1294,6 +1294,25 @@
         "discardChanges": "Salir sin guardar"
       }
     },
+    "monthPicker": {
+      "jan": "Ene",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dic",
+      "groupAria": "Selector de mes y año",
+      "prevYearAria": "Año anterior",
+      "nextYearAria": "Año siguiente",
+      "taken": "Ya existe una newsletter para ese mes.",
+      "hint": "Solo se permite una newsletter por mes."
+    },
     "newsletter": {
       "subscribers": {
         "title": "Suscriptores",
@@ -1323,25 +1342,6 @@
         "updateErrorToast": "No se pudo actualizar el suscriptor",
         "deletedToast": "Suscriptor eliminado",
         "deleteErrorToast": "No se pudo eliminar el suscriptor"
-      },
-      "monthPicker": {
-        "jan": "Ene",
-        "feb": "Feb",
-        "mar": "Mar",
-        "apr": "Abr",
-        "may": "May",
-        "jun": "Jun",
-        "jul": "Jul",
-        "aug": "Ago",
-        "sep": "Sep",
-        "oct": "Oct",
-        "nov": "Nov",
-        "dec": "Dic",
-        "groupAria": "Selector de mes y año",
-        "prevYearAria": "Año anterior",
-        "nextYearAria": "Año siguiente",
-        "taken": "Ya existe una newsletter para ese mes.",
-        "hint": "Solo se permite una newsletter por mes."
       }
     },
     "newsletterCampaigns": {
@@ -1375,7 +1375,7 @@
         "subjectPlaceholder": "Lo que se lee en la bandeja de entrada",
         "preheader": "Preencabezado",
         "preheaderHint": "Texto de vista previa que muchos clientes muestran junto al asunto.",
-        "preheaderPlaceholder": "Resumen breve de esta edición",
+        "preheaderPlaceholder": "Resumen breve de esta campaña",
         "intro": "Entradilla",
         "introHint": "Párrafo de apertura. Solo admite negrita, cursiva y enlaces."
       },
@@ -1471,7 +1471,7 @@
         "subtypeFilterLabel": "Tipos:",
         "subtypeFilterAria": "Filtrar por tipo de contenido",
         "subtypeFilterClear": "Quitar filtro",
-        "selectEdition": "Todas las áreas"
+        "selectAllAreas": "Todas las áreas"
       },
       "preview": {
         "title": "Previsualización",

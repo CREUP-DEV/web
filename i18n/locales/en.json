@@ -1294,6 +1294,25 @@
         "discardChanges": "Leave without saving"
       }
     },
+    "monthPicker": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec",
+      "groupAria": "Month and year picker",
+      "prevYearAria": "Previous year",
+      "nextYearAria": "Next year",
+      "taken": "A newsletter already exists for that month.",
+      "hint": "Only one newsletter is allowed per month."
+    },
     "newsletter": {
       "subscribers": {
         "title": "Subscribers",
@@ -1323,25 +1342,6 @@
         "updateErrorToast": "Could not update the subscriber",
         "deletedToast": "Subscriber deleted",
         "deleteErrorToast": "Could not delete the subscriber"
-      },
-      "monthPicker": {
-        "jan": "Jan",
-        "feb": "Feb",
-        "mar": "Mar",
-        "apr": "Apr",
-        "may": "May",
-        "jun": "Jun",
-        "jul": "Jul",
-        "aug": "Aug",
-        "sep": "Sep",
-        "oct": "Oct",
-        "nov": "Nov",
-        "dec": "Dec",
-        "groupAria": "Month and year picker",
-        "prevYearAria": "Previous year",
-        "nextYearAria": "Next year",
-        "taken": "A newsletter already exists for that month.",
-        "hint": "Only one newsletter is allowed per month."
       }
     },
     "newsletterCampaigns": {
@@ -1375,7 +1375,7 @@
         "subjectPlaceholder": "What people read in their inbox",
         "preheader": "Preheader",
         "preheaderHint": "Preview text many mail clients show next to the subject.",
-        "preheaderPlaceholder": "Short summary of this issue",
+        "preheaderPlaceholder": "Short summary of this campaign",
         "intro": "Intro",
         "introHint": "Opening paragraph. Only bold, italics and links are kept."
       },
@@ -1471,7 +1471,7 @@
         "subtypeFilterLabel": "Types:",
         "subtypeFilterAria": "Filter by content type",
         "subtypeFilterClear": "Clear filter",
-        "selectEdition": "All areas"
+        "selectAllAreas": "All areas"
       },
       "preview": {
         "title": "Preview",

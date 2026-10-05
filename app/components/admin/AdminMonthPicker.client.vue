@@ -11,8 +11,8 @@ const props = defineProps<{
   takenLabel?: string
 }>()
 
-const hintText = computed(() => props.hint ?? t('admin.newsletter.monthPicker.hint'))
-const takenText = computed(() => props.takenLabel ?? t('admin.newsletter.monthPicker.taken'))
+const hintText = computed(() => props.hint ?? t('admin.monthPicker.hint'))
+const takenText = computed(() => props.takenLabel ?? t('admin.monthPicker.taken'))
 const footnote = computed(() => (props.taken ? takenText.value : hintText.value))
 
 const emit = defineEmits<{
@@ -34,18 +34,18 @@ watch(
 )
 
 const monthNames = computed(() => [
-  t('admin.newsletter.monthPicker.jan'),
-  t('admin.newsletter.monthPicker.feb'),
-  t('admin.newsletter.monthPicker.mar'),
-  t('admin.newsletter.monthPicker.apr'),
-  t('admin.newsletter.monthPicker.may'),
-  t('admin.newsletter.monthPicker.jun'),
-  t('admin.newsletter.monthPicker.jul'),
-  t('admin.newsletter.monthPicker.aug'),
-  t('admin.newsletter.monthPicker.sep'),
-  t('admin.newsletter.monthPicker.oct'),
-  t('admin.newsletter.monthPicker.nov'),
-  t('admin.newsletter.monthPicker.dec'),
+  t('admin.monthPicker.jan'),
+  t('admin.monthPicker.feb'),
+  t('admin.monthPicker.mar'),
+  t('admin.monthPicker.apr'),
+  t('admin.monthPicker.may'),
+  t('admin.monthPicker.jun'),
+  t('admin.monthPicker.jul'),
+  t('admin.monthPicker.aug'),
+  t('admin.monthPicker.sep'),
+  t('admin.monthPicker.oct'),
+  t('admin.monthPicker.nov'),
+  t('admin.monthPicker.dec'),
 ])
 
 const selectedMonth = computed(() =>
@@ -74,17 +74,13 @@ function pickMonth(monthIndex: number) {
 
 <template>
   <div>
-    <div
-      class="rounded-lg border p-3"
-      role="group"
-      :aria-label="t('admin.newsletter.monthPicker.groupAria')"
-    >
+    <div class="rounded-lg border p-3" role="group" :aria-label="t('admin.monthPicker.groupAria')">
       <div class="mb-2 flex items-center justify-between">
         <UButton
           icon="i-tabler-chevron-left"
           variant="ghost"
           size="sm"
-          :aria-label="t('admin.newsletter.monthPicker.prevYearAria')"
+          :aria-label="t('admin.monthPicker.prevYearAria')"
           @click="pickerYear--"
         />
         <span class="text-sm font-semibold">{{ pickerYear }}</span>
@@ -93,7 +89,7 @@ function pickMonth(monthIndex: number) {
           variant="ghost"
           size="sm"
           :disabled="pickerYear >= new Date().getFullYear()"
-          :aria-label="t('admin.newsletter.monthPicker.nextYearAria')"
+          :aria-label="t('admin.monthPicker.nextYearAria')"
           @click="pickerYear++"
         />
       </div>

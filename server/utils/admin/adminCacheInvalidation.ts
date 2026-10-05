@@ -81,20 +81,14 @@ export async function invalidateAreaReportsCache() {
   await invalidateCachedHandlersMatching('public-area-reports')
 }
 
-export async function invalidateNewsletterArchiveCache() {
-  // Match any Nitro cached-handler key for this route (prefix-only clears can miss flattened keys).
-  await invalidateCachedHandlersMatching('public-newsletter-archive')
-}
-
 /**
- * Home carousel, newsletter archive, press lists, activity (list + detail) and area reports all
- * bake the configured site default image URL into their cached payloads, so changing a default in
- * admin must clear them. `invalidateActivityRelatedCaches` already covers the home payload.
+ * Home carousel, press lists, activity (list + detail) and area reports all bake the configured
+ * site default image URL into their cached payloads, so changing a default in admin must clear
+ * them. `invalidateActivityRelatedCaches` already covers the home payload.
  */
 export async function invalidateSiteDefaultImagesCaches() {
   await Promise.all([
     invalidateHomeDataCache(),
-    invalidateNewsletterArchiveCache(),
     invalidatePressRelatedCaches(),
     invalidateActivityRelatedCaches(),
     invalidateAreaReportsCache(),

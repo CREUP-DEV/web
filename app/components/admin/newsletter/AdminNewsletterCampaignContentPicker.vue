@@ -387,7 +387,7 @@ const handleAdd = () => {
                   :disabled="!group.selectableCount || group.allSelected"
                   @click="selectEntries(group.entries)"
                 >
-                  {{ t('admin.newsletterCampaigns.picker.selectEdition') }}
+                  {{ t('admin.newsletterCampaigns.picker.selectAllAreas') }}
                 </UButton>
               </div>
 

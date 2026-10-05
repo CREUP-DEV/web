@@ -1294,6 +1294,25 @@
         "discardChanges": "Surt sense desar"
       }
     },
+    "monthPicker": {
+      "jan": "Gen",
+      "feb": "Febr",
+      "mar": "Març",
+      "apr": "Abr",
+      "may": "Maig",
+      "jun": "Juny",
+      "jul": "Jul",
+      "aug": "Ag",
+      "sep": "Set",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Des",
+      "groupAria": "Selector de mes i any",
+      "prevYearAria": "Any anterior",
+      "nextYearAria": "Any següent",
+      "taken": "Ja existeix una newsletter per a aquest mes.",
+      "hint": "Només es permet una newsletter per mes."
+    },
     "newsletter": {
       "subscribers": {
         "title": "Subscriptors",
@@ -1323,25 +1342,6 @@
         "updateErrorToast": "No s'ha pogut actualitzar el subscriptor",
         "deletedToast": "Subscriptor eliminat",
         "deleteErrorToast": "No s'ha pogut eliminar el subscriptor"
-      },
-      "monthPicker": {
-        "jan": "Gen",
-        "feb": "Febr",
-        "mar": "Març",
-        "apr": "Abr",
-        "may": "Maig",
-        "jun": "Juny",
-        "jul": "Jul",
-        "aug": "Ag",
-        "sep": "Set",
-        "oct": "Oct",
-        "nov": "Nov",
-        "dec": "Des",
-        "groupAria": "Selector de mes i any",
-        "prevYearAria": "Any anterior",
-        "nextYearAria": "Any següent",
-        "taken": "Ja existeix una newsletter per a aquest mes.",
-        "hint": "Només es permet una newsletter per mes."
       }
     },
     "newsletterCampaigns": {
@@ -1375,7 +1375,7 @@
         "subjectPlaceholder": "El que es llegeix a la safata d’entrada",
         "preheader": "Precapçalera",
         "preheaderHint": "Text de previsualització que molts clients mostren al costat de l’assumpte.",
-        "preheaderPlaceholder": "Resum breu d'aquesta edició",
+        "preheaderPlaceholder": "Resum breu d'aquesta campanya",
         "intro": "Entradeta",
         "introHint": "Paràgraf d'obertura. Només admet negreta, cursiva i enllaços."
       },
@@ -1471,7 +1471,7 @@
         "subtypeFilterLabel": "Tipus:",
         "subtypeFilterAria": "Filtra per tipus de contingut",
         "subtypeFilterClear": "Treu el filtre",
-        "selectEdition": "Totes les àrees"
+        "selectAllAreas": "Totes les àrees"
       },
       "preview": {
         "title": "Previsualització",
