@@ -113,24 +113,33 @@ set -euo pipefail
 
 ROLLBACK_IMAGE_FILE="${ROLLBACK_IMAGE_FILE}"
 
-ensure_host_data_dirs() {
-  local public_uploads_dir="\${APP_PUBLIC_UPLOADS_DIR:-./data/public-uploads}"
-  local admin_assets_dir="\${APP_ADMIN_ASSETS_DIR:-./data/admin-assets}"
+# Host directories behind the app's data bind mounts, as Compose itself resolves them. Relative
+# paths in the app's compose file resolve against that file's own directory, and its \${APP_*_DIR}
+# against the .env beside it; when a shared root compose include:s web/docker-compose.yml, neither
+# is the directory this script runs from, so building the paths here created them where nothing
+# mounts them. The service's dependencies are listed too, hence the filter on the app's targets.
+app_data_bind_sources() {
+  docker compose config "${COMPOSE_APP_SERVICE}" | awk '
+    /^ *- type: / { bind = (\$3 == "bind"); source = ""; next }
+    bind && /^ *source: / { source = \$2; next }
+    bind && source != "" && /^ *target: \/app\/\.output\// { print source; source = "" }
+  '
+}
 
-  mkdir -p \
-    "\$public_uploads_dir/og" \
-    "\$public_uploads_dir/inicio/imagenes" \
-    "\$public_uploads_dir/conocenos/imagenes" \
-    "\$public_uploads_dir/eventos/imagenes" \
-    "\$public_uploads_dir/eventos/documentos" \
-    "\$public_uploads_dir/prensa/imagenes" \
-    "\$public_uploads_dir/prensa/documentos" \
-    "\$public_uploads_dir/documentos/externos" \
-    "\$public_uploads_dir/documentos/igualdad" \
-    "\$public_uploads_dir/documentos/informes-economicos" \
-    "\$public_uploads_dir/prensa/actividad/imagenes" \
-    "\$public_uploads_dir/prensa/informes-areas/imagenes" \
-    "\$admin_assets_dir"
+# Created up front so they belong to the deploy user: left to Docker, a missing bind source is
+# created as root and the app (uid 1000) cannot write uploads into it.
+ensure_host_data_dirs() {
+  local sources
+  sources="\$(app_data_bind_sources)"
+
+  if [ -z "\$sources" ]; then
+    echo "== No data bind mounts found for ${COMPOSE_APP_SERVICE}; nothing to create =="
+    return
+  fi
+
+  while IFS= read -r dir; do
+    mkdir -p "\$dir"
+  done <<< "\$sources"
 }
 
 cleanup_old_app_images() {
