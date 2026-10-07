@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { CalendarEvent } from '@/composables/events/useGoogleCalendar'
-import type { EnrichedMember } from '@/types/team'
+import type { EnrichedMember, OrgMember } from '@/types/team'
 import { detailModalUi } from '@/utils/detailModalUi'
+import { getSocialButtons, socialNetworkIcons } from '~~/shared/utils/social'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -126,6 +127,36 @@ const openSelectedMemberAgenda = () => {
   closeMemberModal()
 }
 
+// The member modal's content as native popovers for web archive replays, where the modal can't
+// open. Executive and extended members together are every area's members, once each.
+const getArchivePopoverId = (member: Pick<OrgMember, 'id'>) => `persona-${member.id}`
+const archiveMemberDetails = computed(() =>
+  [...executiveMembers.value, ...extendedMembers.value].map((member) => {
+    const displayName = getMemberDisplayName(member)
+
+    return {
+      id: getArchivePopoverId(member),
+      eyebrow: member.denomination,
+      heading: displayName,
+      imageSrc: member.photo,
+      imageAlt: displayName,
+      imageShape: 'round' as const,
+      facts: [
+        { label: t('team.university'), value: member.university, icon: 'i-tabler-school' },
+        { label: t('team.degree'), value: member.degree, icon: 'i-tabler-book' },
+      ].flatMap((fact) => (fact.value ? [{ ...fact, value: fact.value }] : [])),
+      aboutTitle: t('team.about', { name: member.name.trim() || displayName }),
+      description: member.description,
+      linksTitle: t('members.socialNetworks'),
+      links: getSocialButtons(member.socialNetworks).map((button) => ({
+        label: t(`members.networks.${button.network}`),
+        href: button.href,
+        icon: socialNetworkIcons[button.network],
+      })),
+    }
+  })
+)
+
 const tabItems = computed(() => [
   { label: t('team.hierarchyView'), value: 'hierarchy' as ViewMode, icon: 'i-tabler-hierarchy-2' },
   { label: t('team.areaView'), value: 'area' as ViewMode, icon: 'i-tabler-layout-grid' },
@@ -200,6 +231,7 @@ const tabItems = computed(() => [
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                :archive-popover-id="getArchivePopoverId(member)"
                 :entrance-delay="getEntranceDelay(index)"
                 @click-card="openMemberModal(member)"
                 @open-agenda="openAgenda(member)"
@@ -228,6 +260,7 @@ const tabItems = computed(() => [
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                :archive-popover-id="getArchivePopoverId(member)"
                 :entrance-delay="getEntranceDelay(idx)"
                 @click-card="openMemberModal(member)"
                 @open-agenda="openAgenda(member)"
@@ -262,6 +295,7 @@ const tabItems = computed(() => [
                 :display-name="getMemberDisplayName(member)"
                 :view-profile-aria-label="getViewProfileAriaLabel(getMemberDisplayName(member))"
                 :public-agenda-aria-label="getPublicAgendaAriaLabel(getMemberDisplayName(member))"
+                :archive-popover-id="getArchivePopoverId(member)"
                 :entrance-delay="getEntranceDelay(idx)"
                 @click-card="openMemberModal(toEnrichedMember(member, area, idx === 0))"
                 @open-agenda="openAgenda(toEnrichedMember(member, area, idx === 0))"
@@ -293,6 +327,15 @@ const tabItems = computed(() => [
         />
       </template>
     </UModal>
+
+    <template v-if="!pending">
+      <LazyArchiveDetailPopover
+        v-for="detail in archiveMemberDetails"
+        :key="detail.id"
+        v-bind="detail"
+        hydrate-never
+      />
+    </template>
 
     <TeamAgendaModal
       v-model:open="agendaOpen"

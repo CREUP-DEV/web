@@ -12,6 +12,8 @@ const props = defineProps<{
   detailsAriaLabel?: string
   animationStyle?: Record<string, string>
   to?: RouteLocationRaw
+  /** Id of the ArchiveDetailPopover this card opens inside a web archive, where the modal can't. */
+  archivePopoverId?: string
 }>()
 
 const colorMode = useColorMode()
@@ -33,7 +35,7 @@ const emit = defineEmits<{
     class="motion-card-strong group bg-surface/50 hover:bg-surface ring-default rounded-2xl p-5 ring-1 sm:p-6"
     :style="animationStyle"
     :aria-label="detailsAriaLabel"
-    v-bind="to ? { to } : { type: 'button' }"
+    v-bind="to ? { to } : { type: 'button', 'data-archive-popover': archivePopoverId }"
     @click="!to && emit('click')"
   >
     <div class="flex items-start gap-4">

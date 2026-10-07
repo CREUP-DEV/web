@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { SPAIN_REGION_PATHS } from '@/components/members/spainRegions'
+import type { OrganizationDetailModalData } from '@/types/members'
 import { detailModalUi } from '@/utils/detailModalUi'
+import { socialNetworkIcons } from '~~/shared/utils/social'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -115,6 +117,44 @@ const openSectorialModal = (sectorial: (typeof allSectoriales.value)[number]) =>
   selectedSectorial.value = sectorial
   organizationModalOpen.value = true
 }
+
+// The organisation modal's content as native popovers for web archive replays, where the modal
+// can't open. The email stays out: the live site only puts it in the page once the modal opens.
+const getMemberArchivePopoverId = (member: { id: string }) => `miembro-${member.id}`
+const getSectorialArchivePopoverId = (sectorial: { id: string }) => `sectorial-${sectorial.id}`
+const toArchiveDetail = (id: string, data: OrganizationDetailModalData) => ({
+  id,
+  eyebrow: data.eyebrow,
+  heading: data.heading,
+  imageSrc: data.logoLight ?? data.logoDark,
+  imageDarkSrc: data.logoLight && data.logoDark !== data.logoLight ? data.logoDark : null,
+  imageAlt: data.imageAlt,
+  imageShape: 'logo' as const,
+  facts: [
+    { label: t('members.initials'), value: data.initials, icon: 'i-tabler-building-community' },
+    { label: t('members.community'), value: data.communityLabel, icon: 'i-tabler-map-pin' },
+  ].flatMap((fact) => (fact.value ? [{ ...fact, value: fact.value }] : [])),
+  aboutTitle: data.aboutTitle,
+  description: data.description,
+  links: [
+    ...(data.website
+      ? [{ label: data.website.label, href: data.website.href, icon: 'i-tabler-world-www' }]
+      : []),
+    ...data.socialButtons.map((button) => ({
+      label: t(`members.networks.${button.network}`),
+      href: button.href,
+      icon: socialNetworkIcons[button.network],
+    })),
+  ],
+})
+const archiveOrganizationDetails = computed(() => [
+  ...allMembers.value.map((member) =>
+    toArchiveDetail(getMemberArchivePopoverId(member), buildMemberDetailData(member))
+  ),
+  ...allSectoriales.value.map((sectorial) =>
+    toArchiveDetail(getSectorialArchivePopoverId(sectorial), buildSectorialDetailData(sectorial))
+  ),
+])
 
 const closeOrganizationModal = () => {
   organizationModalOpen.value = false
@@ -299,6 +339,7 @@ watch(
                   "
                   :details-aria-label="getMemberDetailsAriaLabel(member)"
                   :animation-style="getMemberAnimationStyle(index)"
+                  :archive-popover-id="getMemberArchivePopoverId(member)"
                   @click="openMemberModal(member)"
                 />
               </TransitionGroup>
@@ -350,6 +391,7 @@ watch(
               :initials="sectorial.initials"
               :details-aria-label="getSectorialDetailsAriaLabel(sectorial)"
               :animation-style="getMemberAnimationStyle(index)"
+              :archive-popover-id="getSectorialArchivePopoverId(sectorial)"
               @click="openSectorialModal(sectorial)"
             />
           </TransitionGroup>
@@ -366,6 +408,15 @@ watch(
         </div>
       </div>
     </UContainer>
+
+    <template v-if="!pending && !error">
+      <LazyArchiveDetailPopover
+        v-for="detail in archiveOrganizationDetails"
+        :key="detail.id"
+        v-bind="detail"
+        hydrate-never
+      />
+    </template>
 
     <UModal
       v-model:open="organizationModalOpen"

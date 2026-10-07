@@ -18,6 +18,8 @@ defineProps<{
   publicAgendaAriaLabel?: string
   entranceDelay?: string | Record<string, string>
   to?: RouteLocationRaw
+  /** Id of the ArchiveDetailPopover this card opens inside a web archive, where the modal can't. */
+  archivePopoverId?: string
 }>()
 
 const emit = defineEmits<{
@@ -44,7 +46,7 @@ const triggerClass =
       :is="to ? 'NuxtLink' : 'button'"
       :class="triggerClass"
       :aria-label="viewProfileAriaLabel"
-      v-bind="to ? { to } : { type: 'button' }"
+      v-bind="to ? { to } : { type: 'button', 'data-archive-popover': archivePopoverId }"
       @click="!to && emit('clickCard')"
     >
       <div class="mb-4 flex justify-center">

@@ -47,6 +47,21 @@ function wireColorModeToggles() {
   }
 }
 
+/**
+ * Person and organisation cards open their detail in a modal driven by the app. Inside an archive
+ * they point at the native popover the server rendered for each one instead. The attribute is only
+ * added here, because on the live site it would open the popover on top of the modal.
+ */
+function wireDetailPopovers() {
+  for (const trigger of document.querySelectorAll<HTMLElement>('[data-archive-popover]')) {
+    const popoverId = trigger.dataset.archivePopover
+
+    if (popoverId && document.getElementById(popoverId)) {
+      trigger.setAttribute('popovertarget', popoverId)
+    }
+  }
+}
+
 export default defineNuxtPlugin({
   name: 'web-archive-replay',
   // Ahead of every other plugin, Nuxt's own included (the lowest is -30): those are the ones that
@@ -55,6 +70,7 @@ export default defineNuxtPlugin({
   setup() {
     if (isWebArchiveReplay()) {
       wireColorModeToggles()
+      wireDetailPopovers()
       // Never settles, so the plugin chain stops here and the app is never mounted.
       return new Promise<void>(() => {})
     }
