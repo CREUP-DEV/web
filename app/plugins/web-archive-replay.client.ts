@@ -15,6 +15,38 @@ function isWebArchiveReplay() {
   return Boolean(document.querySelector('script[src*="/wombat.js"], #wm-ipp-base'))
 }
 
+/** @nuxtjs/color-mode's default key; its inline head script reads it back on every capture. */
+const COLOR_MODE_STORAGE_KEY = 'nuxt-color-mode'
+
+/**
+ * The colour mode button is the one header control a native element cannot stand in for, so it
+ * gets a plain listener here. The Wayback Machine leaves localStorage alone, which lets the choice
+ * carry over to the next capture the visitor opens.
+ */
+function wireColorModeToggles() {
+  const root = document.documentElement
+
+  for (const button of document.querySelectorAll<HTMLElement>('[data-color-mode-toggle]')) {
+    // The server rendered a label for whichever mode it assumed, so it may already be wrong.
+    if (button.dataset.archiveLabel) {
+      button.setAttribute('aria-label', button.dataset.archiveLabel)
+    }
+
+    button.addEventListener('click', () => {
+      const dark = !root.classList.contains('dark')
+      root.classList.toggle('dark', dark)
+      root.classList.toggle('light', !dark)
+
+      try {
+        localStorage.setItem(COLOR_MODE_STORAGE_KEY, dark ? 'dark' : 'light')
+      } catch {
+        // Storage can be unavailable (private mode, blocked by the archive); the switch still
+        // applies to this page.
+      }
+    })
+  }
+}
+
 export default defineNuxtPlugin({
   name: 'web-archive-replay',
   // Ahead of every other plugin, Nuxt's own included (the lowest is -30): those are the ones that
@@ -22,6 +54,7 @@ export default defineNuxtPlugin({
   order: -100,
   setup() {
     if (isWebArchiveReplay()) {
+      wireColorModeToggles()
       // Never settles, so the plugin chain stops here and the app is never mounted.
       return new Promise<void>(() => {})
     }

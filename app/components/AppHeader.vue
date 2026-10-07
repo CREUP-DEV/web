@@ -17,6 +17,7 @@ const {
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const switchLocalePath = useSwitchLocalePath()
 const socials = useSocials()
 const instagramSocial = computed(() =>
   socials.value.find((social) => social.icon === 'i-tabler-brand-instagram')
@@ -104,14 +105,49 @@ watch(menuOpen, (isOpen) => {
       </UTooltip>
 
       <UTooltip :text="t('theme.toggle')">
-        <UColorModeButton />
+        <!-- Wired up by plugins/web-archive-replay.client.ts when the app does not mount. -->
+        <UColorModeButton data-color-mode-toggle :data-archive-label="t('theme.toggle')" />
       </UTooltip>
+
+      <!--
+        The locale switchers below need the app; inside a web archive this plain list of links to
+        the same page in every locale takes their place.
+      -->
+      <details name="archive-navigation" class="group archived:block relative hidden">
+        <summary
+          :aria-label="t('language.openMenu')"
+          class="hover:bg-elevated/50 flex cursor-pointer list-none items-center gap-1 rounded-md px-2 py-1.5 text-sm [&::-webkit-details-marker]:hidden"
+        >
+          <UIcon v-if="currentLocale" :name="currentLocale.icon" class="size-5" />
+          <span class="hidden sm:inline">{{ currentLocale?.label }}</span>
+          <UIcon
+            name="i-lucide-chevron-down"
+            class="size-4 transition-transform group-open:rotate-180"
+          />
+        </summary>
+        <ul
+          class="bg-default ring-default absolute top-full right-0 z-50 mt-1 w-max min-w-40 rounded-md p-1 shadow-lg ring"
+        >
+          <li v-for="locale in localeItems" :key="locale.value">
+            <NuxtLink
+              :to="switchLocalePath(locale.value)"
+              :hreflang="locale.value"
+              :aria-current="locale.value === currentLocale?.value ? 'true' : undefined"
+              :class="locale.value === currentLocale?.value ? 'text-primary' : 'text-default'"
+              class="hover:bg-elevated/50 flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm"
+            >
+              <UIcon :name="locale.icon" class="size-5" />
+              {{ locale.label }}
+            </NuxtLink>
+          </li>
+        </ul>
+      </details>
 
       <USelect
         v-model="selectedLocale"
         :items="localeItems"
         value-key="value"
-        class="hidden w-36 xl:block"
+        class="archived:hidden! hidden w-36 xl:block"
         :aria-label="t('language.toggle')"
       >
         <template #leading="{ modelValue }">
@@ -119,7 +155,7 @@ watch(menuOpen, (isOpen) => {
         </template>
       </USelect>
 
-      <UDropdownMenu :items="mobileLocaleItems" class="xl:hidden">
+      <UDropdownMenu :items="mobileLocaleItems" class="archived:hidden! xl:hidden">
         <UButton
           :icon="currentLocale?.icon"
           color="neutral"
