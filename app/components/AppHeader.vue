@@ -54,8 +54,12 @@ watch(menuOpen, (isOpen) => {
     :to="localePath('/')"
     :toggle="headerToggle"
     :ui="{
+      // The archive-only menu in #bottom adds a row the fixed header height would leave spilling
+      // over the page, and it wraps to several rows on a phone, too tall to keep stuck on top.
+      root: 'archived:h-auto archived:max-xl:static',
+      container: 'archived:h-(--ui-header-height)',
       center: 'hidden xl:flex!',
-      toggle: 'xl:hidden',
+      toggle: 'xl:hidden archived:hidden',
     }"
   >
     <template #title>
@@ -80,6 +84,7 @@ watch(menuOpen, (isOpen) => {
       content-orientation="vertical"
       :items="items"
       :aria-label="t('accessibility.mainNavigation')"
+      class="archived:hidden"
     />
 
     <template #right>
@@ -123,6 +128,59 @@ watch(menuOpen, (isOpen) => {
           :aria-label="t('language.openMenu')"
         />
       </UDropdownMenu>
+    </template>
+
+    <template #bottom>
+      <!--
+        Stand-in for the menu above inside a web archive, where the app never mounts and neither the
+        dropdowns nor the mobile panel can open. Native <details> open without JavaScript, and being
+        in the server HTML the section links also reach crawlers that never open a dropdown.
+      -->
+      <nav
+        :aria-label="t('accessibility.mainNavigation')"
+        class="border-default archived:block hidden border-t"
+      >
+        <UContainer class="flex flex-wrap items-center gap-1 py-2">
+          <template v-for="item in items" :key="item.label">
+            <details v-if="item.children?.length" name="archive-navigation" class="group relative">
+              <summary
+                :class="item.active ? 'text-primary' : 'text-muted hover:text-highlighted'"
+                class="hover:bg-elevated/50 flex cursor-pointer list-none items-center gap-1 rounded-md px-2.5 py-1.5 text-sm font-medium [&::-webkit-details-marker]:hidden"
+              >
+                {{ item.label }}
+                <UIcon
+                  name="i-lucide-chevron-down"
+                  class="size-4 transition-transform group-open:rotate-180"
+                />
+              </summary>
+              <ul
+                class="bg-default ring-default absolute top-full left-0 z-50 mt-1 w-max max-w-[calc(100vw-2rem)] min-w-48 rounded-md p-1 shadow-lg ring"
+              >
+                <li v-for="child in item.children" :key="child.label">
+                  <NuxtLink
+                    :to="child.to"
+                    :external="child.external"
+                    :target="child.target"
+                    :rel="child.rel"
+                    :class="child.active ? 'text-primary' : 'text-default'"
+                    class="hover:bg-elevated/50 block rounded-md px-2.5 py-1.5 text-sm"
+                  >
+                    {{ child.label }}
+                  </NuxtLink>
+                </li>
+              </ul>
+            </details>
+            <NuxtLink
+              v-else
+              :to="item.to"
+              :class="item.active ? 'text-primary' : 'text-muted hover:text-highlighted'"
+              class="hover:bg-elevated/50 rounded-md px-2.5 py-1.5 text-sm font-medium"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </template>
+        </UContainer>
+      </nav>
     </template>
 
     <template #body>

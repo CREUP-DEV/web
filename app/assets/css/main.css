@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+/* Inside a web archive replay (Wayback, pywb), told apart by the replay engine's own script tag or
+   the Wayback toolbar. Pure CSS, so it holds from the first paint even though the app never mounts
+   there (app/plugins/web-archive-replay.client.ts). */
+@custom-variant archived (&:where(html:has(script[src*='/wombat.js'], #wm-ipp-base) *));
+
 @theme {
   --font-sans: 'Raleway', sans-serif;
   --font-serif: 'Red Rose', serif;

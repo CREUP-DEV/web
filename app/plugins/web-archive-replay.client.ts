@@ -8,7 +8,8 @@
  *
  * Detected from the DOM rather than `window` or `location`: the replay rewrites scripts so both
  * resolve to proxies of the original site, but it cannot hide its own wombat.js script tag or the
- * Wayback toolbar, and both are in the document before any module script runs.
+ * Wayback toolbar, and both are in the document before any module script runs. The `archived:`
+ * CSS variant (main.css) keys on the same two signals to swap in the header's no-JS menu.
  */
 function isWebArchiveReplay() {
   return Boolean(document.querySelector('script[src*="/wombat.js"], #wm-ipp-base'))
