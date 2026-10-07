@@ -659,6 +659,19 @@ See `app/pages/prensa/comunicados/[slug].vue` for full reference implementation.
 
 ---
 
+## Web Archives (Wayback Machine)
+
+Crawlers that archive the site store the server-rendered HTML and what it references directly, but not what the app fetches once it boots (`_payload.json`, `/_i18n/` messages, chunks imported on demand, `/api/*`). Booting inside a replay therefore swapped archived pages for the error page with raw i18n keys. The site now stays static inside an archive, so **anything that only exists after JavaScript runs does not exist there**, and crawlers that never open a menu never find the links behind it.
+
+- `app/plugins/web-archive-replay.client.ts` (order `-100`, ahead of every plugin) detects a replay and never resolves, so the app is not mounted. Detection keys on the replay engine's `script[src*="/wombat.js"]` or the Wayback toolbar `#wm-ipp-base`; never on `window`/`location`, which the replay proxies to the original site. Before halting it wires the few things a native element cannot do: the colour mode button (`data-color-mode-toggle`) and the detail popovers (below).
+- The `archived:` CSS variant (`app/assets/css/main.css`) keys on the same signals through `:has()`, so it applies from the first paint with no script. Use `archived:block` / `archived:hidden!` to swap a no-JS stand-in in for a control that needs the app.
+- Header: `AppHeader.vue` server-renders the menu sections and the locale switch as native `<details>` (sharing `name="archive-navigation"`), shown only `archived:`. A new menu entry belongs in `usePublicHeaderNavigation` `items`, which feeds both menus.
+- Detail modals: a card that opens a modal also takes `archivePopoverId`, and the page renders one `LazyArchiveDetailPopover` per entity with `hydrate-never` (`app/pages/conocenos/equipo/index.vue`, `miembros.vue`). The live site downloads the markup but no script and, as its images are lazy, no hidden image. Emails stay out of these popovers: the live site only reveals them on demand.
+- New navigation or content reachable only through a JS-driven dropdown, modal or client-only fetch needs an SSR link or an `archived:` stand-in. Test it by loading the page's HTML with a `<script src=".../wombat.js">` added at the top of `<head>`.
+- Captures taken before this existed replay their own archived JavaScript and cannot be fixed from here.
+
+---
+
 ## Skeleton Loaders & Error States
 
 Every page/section that loads async data must have:
@@ -786,6 +799,7 @@ perf: reduce admin dashboard SSR requests
 - No domain-based access checks introduced.
 - Translations added/updated when public copy changed.
 - Skeleton loaders and error states present for async sections.
+- New dropdowns, modals or client-only content stay reachable in web archives (SSR link or `archived:` stand-in).
 - Accessibility verified (semantic HTML, keyboard nav, `alt` text).
 - Lint passes (`pnpm lint:fix`).
 - i18n key parity verified (`pnpm i18n:check`).
