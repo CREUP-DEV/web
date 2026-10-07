@@ -24,15 +24,11 @@ import {
   FINANCIAL_REPORTS_PUBLIC_PATH,
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
-  PRESS_DOSSIER_PUBLIC_PATH,
+  PRESS_DOSSIER_STORAGE_PATH,
   PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_IMAGE_PUBLIC_BASE,
 } from '~~/shared/constants/assetPaths'
-
-const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
-  0,
-  PRESS_DOSSIER_PUBLIC_PATH.lastIndexOf('/')
-)
+import { isLegacyPressDossierPath, LEGACY_PRESS_DOSSIER_BASE } from '../press/pressDossier'
 
 export interface CleanupUnusedAdminAssetOptions {
   storagePath: string | null | undefined
@@ -316,11 +312,18 @@ export async function reconcileAdminAssetPublication() {
     }
 
     if (pressDossierItem?.id) {
+      // A dossier not uploaded since storage moved still lives directly under /prensa; reconciled
+      // against the new folder it would be rejected as out of place, so it keeps its own until the
+      // admin uploads it again.
+      const isLegacyDossier = isLegacyPressDossierPath(pressDossierItem.pdfUrl)
+      const dossierPublicPath = isLegacyDossier
+        ? LEGACY_PRESS_DOSSIER_BASE
+        : PRESS_DOSSIER_STORAGE_PATH
       const nextPdfUrl = await reconcileStoredDocument({
         storagePath: pressDossierItem.pdfUrl,
         publish: pressDossierItem.active,
-        uploadDir: 'public/prensa',
-        publicPath: PRESS_DOSSIER_PUBLIC_BASE,
+        uploadDir: `public${dossierPublicPath}`,
+        publicPath: dossierPublicPath,
       })
 
       if (nextPdfUrl !== pressDossierItem.pdfUrl) {
@@ -331,7 +334,11 @@ export async function reconcileAdminAssetPublication() {
 
         await cleanupUnusedAdminAsset({
           storagePath: pressDossierItem.pdfUrl,
-          allowedPublicPathPrefixes: [PRESS_DOSSIER_PUBLIC_PATH],
+          allowedPublicPathPrefixes: [
+            isLegacyDossier
+              ? `${LEGACY_PRESS_DOSSIER_BASE}/dossier-prensa`
+              : `${PRESS_DOSSIER_STORAGE_PATH}/`,
+          ],
         })
       }
     }

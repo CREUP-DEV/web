@@ -286,8 +286,11 @@ For any new public asset base path used by admin uploads:
 1. Add it to the appropriate shared asset path constants if it may be consumed by IPX or public URLs.
 2. Add a matching `server/routes/**/[...path].ts` handler using the shared public asset helpers, unless an existing route already covers that base path.
 3. Add or verify route rules needed for public asset delivery, such as disabling rate limiting for image proxy paths.
-4. Add the matching bind mount / host directory setup anywhere production or local deployment persists uploads (`docker-compose*.yml`, `deploy.sh`, deployment docs, and related env examples when applicable). The container path must match the finalized public path under `/app/.output/public/...`.
-5. Confirm the upload preview URL and the saved public URL both work after the record is persisted and after the app container is recreated.
+4. Add the matching bind mount anywhere production or local deployment persists uploads (`docker-compose*.yml`, deployment docs, and related env examples when applicable). The container path must match the finalized public path under `/app/.output/public/...`; `deploy.sh` creates the host directories from `docker compose config`, so it needs no list of its own.
+5. Add the base to `ADMIN_UPLOAD_PUBLIC_PATH_BASES` (`shared/constants/assetPaths.ts`). The `nitro:build:public-assets` hook in `nuxt.config.ts` strips those folders from the build output: the image is built from the working tree, whose gitignored local copies would otherwise land in Nitro's static manifest with their build-time size, and a file the admin later replaces under the same name would be served with that stale `Content-Length` and arrive truncated (this broke the press dossier).
+6. Confirm the upload preview URL and the saved public URL both work after the record is persisted and after the app container is recreated.
+
+A fixed public URL for an asset whose stored name changes on upload (the press dossier: `PRESS_DOSSIER_PUBLIC_PATH`) redirects to the current file instead of serving one; see `server/routes/prensa/dossier-prensa.pdf.ts`.
 
 ### Rich Text Sanitization (`server/utils/press/pressTranslation.ts`)
 

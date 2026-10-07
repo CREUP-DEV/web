@@ -12,16 +12,19 @@ import {
 import { invalidatePressDossierCache } from '../../../utils/admin/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
 import { validateBody } from '../../../utils/validation'
-import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
+import { PRESS_DOSSIER_STORAGE_PATH } from '~~/shared/constants/assetPaths'
 import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
 import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
+import { LEGACY_PRESS_DOSSIER_BASE } from '../../../utils/press/pressDossier'
 
-const PDF_UPLOAD_DIR = 'public/prensa'
+const PDF_UPLOAD_DIR = `public${PRESS_DOSSIER_STORAGE_PATH}`
 const PRESS_DOSSIER_FILE_SLUG = 'dossier-prensa'
-const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
-  0,
-  PRESS_DOSSIER_PUBLIC_PATH.lastIndexOf('/')
-)
+// Cleanup may only touch dossier files: the storage folder, plus the legacy location under /prensa
+// that the first upload after the move leaves behind. Never the other press documents.
+const PRESS_DOSSIER_CLEANUP_PREFIXES = [
+  `${PRESS_DOSSIER_STORAGE_PATH}/`,
+  `${LEGACY_PRESS_DOSSIER_BASE}/${PRESS_DOSSIER_FILE_SLUG}`,
+]
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -51,7 +54,7 @@ export default defineEventHandler(async (event) => {
         ? await finalizeAdminDocument({
             storagePath: validated.pdfUrl,
             uploadDir: PDF_UPLOAD_DIR,
-            publicPath: PRESS_DOSSIER_PUBLIC_BASE,
+            publicPath: PRESS_DOSSIER_STORAGE_PATH,
             slug: PRESS_DOSSIER_FILE_SLUG,
             publish: validated.active,
             fallbackBaseName: 'dossier-prensa',
@@ -61,7 +64,7 @@ export default defineEventHandler(async (event) => {
       trackAdminAssetFinalization(cleanupTargets, {
         sourceStoragePath: validated.pdfUrl,
         storagePath: pdfUrl,
-        allowedPublicPathPrefixes: [PRESS_DOSSIER_PUBLIC_PATH],
+        allowedPublicPathPrefixes: PRESS_DOSSIER_CLEANUP_PREFIXES,
       })
 
       let upserted = null
@@ -100,7 +103,7 @@ export default defineEventHandler(async (event) => {
       await cleanupUnusedAdminAssetSafely(
         {
           storagePath: item.previousPdfUrl,
-          allowedPublicPathPrefixes: [PRESS_DOSSIER_PUBLIC_PATH],
+          allowedPublicPathPrefixes: PRESS_DOSSIER_CLEANUP_PREFIXES,
         },
         'admin.press-dossier.update.cleanup',
         event

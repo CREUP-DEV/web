@@ -1,9 +1,15 @@
+import { readdir, rm } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import { createResolver } from 'nuxt/kit'
 import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtSecurityRouteRules } from 'nuxt-security'
 import { getOptionalConfigUrl } from './shared/utils/config'
-import { INTERNAL_IMAGE_PROXY_PATH_BASES } from './shared/constants/assetPaths'
+import {
+  ADMIN_UPLOAD_PUBLIC_PATH_BASES,
+  INTERNAL_IMAGE_PROXY_PATH_BASES,
+  PRESS_DOSSIER_PUBLIC_PATH,
+} from './shared/constants/assetPaths'
 import { NEWSLETTER_CLICK_BASE_PATH } from './shared/constants/newsletterCampaigns'
 import {
   DEFAULT_LOCALE_CODE,
@@ -423,6 +429,32 @@ export default defineNuxtConfig({
     // Disabled: pre-compressing public assets broke PDF serving under public/.
     // gzip is handled at the edge by NGINX (gzip on + configured types).
     compressPublicAssets: false,
+  },
+
+  hooks: {
+    // Admin uploads are served at runtime from their volumes (ADMIN_UPLOAD_PUBLIC_PATH_BASES).
+    // The working tree keeps local copies of them, gitignored but still in the build context; left
+    // in the output they would enter Nitro's static manifest and be answered with build-time sizes.
+    // Runs after public/ is copied and before the manifest is generated.
+    async 'nitro:build:public-assets'(nitro) {
+      const publicDir = nitro.options.output.publicDir
+
+      await Promise.all(
+        ADMIN_UPLOAD_PUBLIC_PATH_BASES.map((base) =>
+          rm(join(publicDir, base), { recursive: true, force: true })
+        )
+      )
+
+      // Dossiers stored at their legacy location, straight under /prensa.
+      const legacyDossierDir = join(publicDir, dirname(PRESS_DOSSIER_PUBLIC_PATH))
+      const legacyDossierFiles = await readdir(legacyDossierDir).catch(() => [])
+
+      await Promise.all(
+        legacyDossierFiles
+          .filter((name) => /^dossier-prensa(-\d+)?\.pdf$/.test(name))
+          .map((name) => rm(join(legacyDossierDir, name), { force: true }))
+      )
+    },
   },
 
   css: ['~/assets/css/main.css'],

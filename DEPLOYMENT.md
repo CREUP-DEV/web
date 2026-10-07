@@ -101,32 +101,40 @@ mkdir -p \
   data/admin-assets
 ```
 
-#### Imágenes de Actividad e informes de áreas: con o sin bind mount
+#### Archivos subidos desde el admin: siempre en volúmenes, nunca en la imagen
 
-Estas imágenes (`public/prensa/actividad/imagenes` y `public/prensa/informes-areas/imagenes`) no
-están en git, pero **sí entran en la imagen Docker**: el build se hace desde el árbol de trabajo
-local y `.dockerignore` no excluye `public/`. Por eso su comportamiento depende de si el Compose del
-VPS monta esas carpetas:
+Cada carpeta a la que sube el admin (la lista está en `ADMIN_UPLOAD_PUBLIC_PATH_BASES`,
+`shared/constants/assetPaths.ts`) vive en un bind mount y la sirve en tiempo de ejecución su ruta de
+`server/routes/`. El build las elimina de la salida (hook `nitro:build:public-assets` en
+`nuxt.config.ts`), así que la imagen no las lleva aunque tu `public/` local tenga copias: el build se
+hace desde el árbol de trabajo y esas copias, ignoradas por git, entrarían en él.
 
-| | Con bind mount (como `docker-compose.production.example.yml`) | Sin bind mount |
-| --- | --- | --- |
-| De dónde las sirve la app | Del host (`data/public-uploads/...`) | De la propia imagen |
-| Lo que se sube desde admin | Persiste entre despliegues | **Se pierde al recrear el contenedor** |
-| Cambios hechos en el `public/` local | No llegan con el deploy (el montaje tapa la imagen): súbelos con `rsync` | Llegan con el siguiente deploy |
+El motivo: una copia horneada entra en el manifiesto de estáticos de Nitro con el tamaño que tenía al
+compilar. Si después el admin la sustituye con el mismo nombre, la respuesta sigue anunciando el
+tamaño viejo y llega cortada (le pasó al dossier de prensa).
 
-Sin bind mount, la imagen lleva exactamente lo que haya en el `public/` de quien despliega: un
-despliegue desde un clon limpio, sin esas imágenes, las deja fuera y todas dan 404.
+En consecuencia:
 
-Lo recomendable es el bind mount. Para pasar de una instalación sin montaje a una con montaje, el
-orden importa, porque montar una carpeta vacía tapa las imágenes que trae la imagen:
+- **Todas esas carpetas tienen que estar montadas**, como en `docker-compose.production.example.yml`.
+  Sin montaje no hay nada en la imagen a lo que recurrir: dan 404 y lo que se sube se pierde al
+  recrear el contenedor.
+- **Los cambios en el `public/` local no llegan con el deploy.** Súbelos con `rsync` a
+  `data/public-uploads/...` (o con `--seed`, que sincroniza `public/` entero).
+- **El dossier de prensa** se guarda en `prensa/documentos/dossier/`, dentro del volumen de
+  documentos de prensa, y `/prensa/dossier-prensa.pdf` redirige al fichero vigente, cuyo nombre
+  alterna en cada subida. Uno que siga en su ubicación antigua (`/prensa/dossier-prensa*.pdf`) se
+  sirve allí mismo hasta que se vuelva a subir; tras el primer despliegue con este cambio ya no está
+  en la imagen, así que hay que subirlo de nuevo desde el admin.
+
+Para montar una carpeta que hasta ahora vivía solo dentro del contenedor, sácala antes, porque montar
+una carpeta vacía tapa lo que hubiera (sustituye `<carpeta>`, p. ej. `prensa/actividad/imagenes`):
 
 ```bash
 # En el directorio del Compose del VPS, con la app en marcha
-mkdir -p data/public-uploads/prensa/actividad/imagenes data/public-uploads/prensa/informes-areas/imagenes
-docker compose cp app:/app/.output/public/prensa/actividad/imagenes/. data/public-uploads/prensa/actividad/imagenes/
-docker compose cp app:/app/.output/public/prensa/informes-areas/imagenes/. data/public-uploads/prensa/informes-areas/imagenes/
-sudo chown -R 1000:1000 data/public-uploads/prensa
-# Después: añadir los dos montajes al Compose y recrear solo la app
+mkdir -p data/public-uploads/<carpeta>
+docker compose cp app:/app/.output/public/<carpeta>/. data/public-uploads/<carpeta>/
+sudo chown -R 1000:1000 data/public-uploads/<carpeta>
+# Después: añadir el montaje al Compose y recrear solo la app
 docker compose up -d app
 ```
 
@@ -134,11 +142,10 @@ docker compose up -d app
 > guardadas en la base de datos de `/transparencia/...` a `/prensa/...`, y las URLs antiguas siguen
 > funcionando indefinidamente vía 301 en `routeRules`.
 >
-> - **Sin bind mount:** no hay nada que mover. El deploy trae las imágenes ya en `/prensa/...`.
-> - **Con bind mount:** mueve los ficheros y cambia los dos montajes del Compose (`transparencia/...`
->   → `prensa/...`) **antes** de lanzar `deploy.sh`. El script crea al empezar las carpetas
->   `prensa/.../imagenes` vacías, así que mueve el contenido, no la carpeta (un `mv` de la carpeta
->   sobre una que ya existe la anida dentro):
+> Mueve los ficheros y cambia los dos montajes del Compose (`transparencia/...` → `prensa/...`)
+> **antes** de lanzar `deploy.sh`. El script crea al empezar las carpetas que monta el Compose, así
+> que mueve el contenido, no la carpeta (un `mv` de la carpeta sobre una que ya existe la anida
+> dentro):
 >
 >   ```bash
 >   mkdir -p data/public-uploads/prensa/actividad/imagenes data/public-uploads/prensa/informes-areas/imagenes

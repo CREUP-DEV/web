@@ -1,17 +1,10 @@
 import { db } from '../db'
-import { toExternalPdfProxyUrl } from '../utils/external/externalAssetUrl'
 import {
   buildPublicRouteCacheKey,
   PUBLIC_ROUTE_CACHE_OPTIONS,
 } from '../utils/cache/publicRouteCache'
-import { PRESS_DOSSIER_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
-import { appendAssetVersion } from '../utils/core/assetVersion'
-
-const PRESS_DOSSIER_PUBLIC_BASE = PRESS_DOSSIER_PUBLIC_PATH.slice(
-  0,
-  PRESS_DOSSIER_PUBLIC_PATH.lastIndexOf('/')
-)
+import { getPressDossierPublicUrl } from '../utils/press/pressDossier'
 
 export default defineCachedEventHandler(
   async (event) => {
@@ -26,12 +19,7 @@ export default defineCachedEventHandler(
         data: {
           id: item.id,
           active: item.active,
-          pdfUrl: appendAssetVersion(
-            toExternalPdfProxyUrl(item.pdfUrl, {
-              publicPathBase: PRESS_DOSSIER_PUBLIC_BASE,
-            }) ?? item.pdfUrl,
-            item.updatedAt
-          ),
+          pdfUrl: getPressDossierPublicUrl({ pdfUrl: item.pdfUrl, updatedAt: item.updatedAt }),
         },
       }
     } catch (error) {

@@ -21,7 +21,13 @@ export const PRESS_DEFAULT_COVERS_SEGMENT = 'portadas-por-defecto'
 export const PRESS_DEFAULT_COVERS_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/${PRESS_DEFAULT_COVERS_SEGMENT}`
 export const PRESS_MEDIA_LOGO_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/medios`
 export const PRESS_DOCUMENT_PUBLIC_PATH = '/prensa/documentos'
+/**
+ * Stable public URL of the press dossier. It redirects to the current file, whose name alternates
+ * between uploads (dossier-prensa.pdf, dossier-prensa-2.pdf) so no cache serves a stale copy.
+ */
 export const PRESS_DOSSIER_PUBLIC_PATH = '/prensa/dossier-prensa.pdf'
+/** Where uploaded dossiers are stored: inside the press documents volume, in a folder of its own. */
+export const PRESS_DOSSIER_STORAGE_PATH = `${PRESS_DOCUMENT_PUBLIC_PATH}/dossier`
 /** Brand banner shown at the top of newsletter campaign emails. Ships with the build. */
 export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.png'
 
@@ -64,3 +70,26 @@ export const INTERNAL_ASSET_PROXY_PATH_BASES = [
 
 export const EQUALITY_DOCUMENTS_PUBLIC_PATH = '/documentos/igualdad'
 export const FINANCIAL_REPORTS_PUBLIC_PATH = '/documentos/informes-economicos'
+
+/**
+ * Folders whose files the admin uploads at runtime. Production keeps each on a bind-mounted volume
+ * and serves it through its server/routes handler, so they are stripped from the build output
+ * (nuxt.config `nitro:build:public-assets`): a copy baked into the build lands in Nitro's static
+ * manifest with its build-time size, and once the admin replaces the file under the same name the
+ * response keeps that stale Content-Length and arrives truncated. A new upload folder belongs here,
+ * with its volume and route.
+ */
+export const ADMIN_UPLOAD_PUBLIC_PATH_BASES = [
+  SITE_OG_IMAGE_PUBLIC_PATH,
+  HOME_IMAGE_PUBLIC_BASE,
+  ABOUT_IMAGE_PUBLIC_PATH,
+  EVENT_IMAGE_PUBLIC_BASE,
+  EVENT_DOCUMENT_PUBLIC_BASE,
+  PRESS_IMAGE_PUBLIC_BASE,
+  PRESS_DOCUMENT_PUBLIC_PATH,
+  ACTIVITY_IMAGE_PUBLIC_BASE,
+  AREA_REPORTS_IMAGE_PUBLIC_BASE,
+  EXTERNAL_DOCUMENT_PUBLIC_BASE,
+  EQUALITY_DOCUMENTS_PUBLIC_PATH,
+  FINANCIAL_REPORTS_PUBLIC_PATH,
+] as const
