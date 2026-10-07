@@ -15,3 +15,6 @@ npm-debug.log
 .turbo
 .codex
 .data
+# Database dumps and archived files, production's included (clone-prod-db.sh writes here). No
+# build step reads them, and they carry personal data.
+backups
