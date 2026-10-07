@@ -77,14 +77,9 @@ public/fonts/
 ops/seed.mjs
 ops/seed-content.mjs
 
-# Ruflo / claude-flow tooling (generated, not part of the app)
+# Claude Code settings and instructions — machine-local, not part of the app
 .claude/
-.claude-flow/
-.swarm/
-.hive-mind/
 .mcp.json
-ruvector.db
-ruvector.db-*
 CLAUDE.md
 
 # Local agent CLI configs (Codex, etc.) — machine-local, not part of the app
