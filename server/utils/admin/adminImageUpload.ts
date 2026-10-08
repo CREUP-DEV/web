@@ -21,12 +21,19 @@ export const ALLOWED_ADMIN_IMAGE_EXTENSIONS = [
 const VECTOR_IMAGE_EXTENSIONS = new Set(['.svg'])
 const OUTPUT_IMAGE_EXTENSIONS = new Set([...ALLOWED_ADMIN_IMAGE_EXTENSIONS, '.webp'])
 const OUTPUT_IMAGE_EXTENSION_LIST = Array.from(OUTPUT_IMAGE_EXTENSIONS)
-// 5000px per side covers high-resolution editorial assets while bounding upload latency.
+// Stored raster images keep at most 5000px per side; larger uploads (e.g. 24MP camera photos)
+// are downscaled to fit instead of rejected.
 const MAX_RASTER_IMAGE_DIMENSION = 5000
 // ~80MP total pixel cap across all frames; prevents memory exhaustion during Sharp processing
 const MAX_RASTER_IMAGE_PIXELS = 80_000_000
 // 100 frame limit for animated GIFs/WebP; prevents CPU exhaustion on crafted animations
 const MAX_RASTER_IMAGE_FRAMES = 100
+const RASTER_IMAGE_RESIZE: sharp.ResizeOptions = {
+  width: MAX_RASTER_IMAGE_DIMENSION,
+  height: MAX_RASTER_IMAGE_DIMENSION,
+  fit: 'inside',
+  withoutEnlargement: true,
+}
 
 const invalidSvgError = (event?: H3Event) =>
   createError({
@@ -56,13 +63,6 @@ function validateRasterImageMetadata(metadata: sharp.Metadata, event?: H3Event) 
     throw invalidRasterImageError('dimensiones no válidas', event)
   }
 
-  if (width > MAX_RASTER_IMAGE_DIMENSION || height > MAX_RASTER_IMAGE_DIMENSION) {
-    throw invalidRasterImageError(
-      `dimensiones demasiado grandes (máximo ${MAX_RASTER_IMAGE_DIMENSION}px por lado)`,
-      event
-    )
-  }
-
   const frames = metadata.pages ?? 1
   if (!Number.isInteger(frames) || frames <= 0) {
     throw invalidRasterImageError('número de fotogramas no válido', event)
@@ -75,7 +75,8 @@ function validateRasterImageMetadata(metadata: sharp.Metadata, event?: H3Event) 
     )
   }
 
-  const totalPixels = width * height * frames
+  // Loaded as animated, `height` already spans every frame; `pageHeight` is one frame's height.
+  const totalPixels = width * (metadata.pageHeight ?? height) * frames
   if (totalPixels > MAX_RASTER_IMAGE_PIXELS) {
     throw invalidRasterImageError('demasiados píxeles para procesar de forma segura', event)
   }
@@ -119,6 +120,7 @@ async function convertRasterImageToWebp(data: Buffer, event?: H3Event) {
       limitInputPixels: MAX_RASTER_IMAGE_PIXELS,
     })
       .rotate()
+      .resize(RASTER_IMAGE_RESIZE)
       .webp({ quality: 82 })
       .toBuffer()
   } catch (error) {
@@ -140,6 +142,7 @@ async function convertImageToJpeg(data: Buffer, event?: H3Event) {
       limitInputPixels: MAX_RASTER_IMAGE_PIXELS,
     })
       .rotate()
+      .resize(RASTER_IMAGE_RESIZE)
       .flatten({ background: '#ffffff' })
       .jpeg({ quality: 90, mozjpeg: true })
       .toBuffer()
