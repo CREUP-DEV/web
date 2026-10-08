@@ -8,7 +8,7 @@ import {
 } from '../../../utils/locale/localizedContent'
 import {
   assertOptimisticLock,
-  buildOptimisticLockCondition,
+  buildExpectedVersionCondition,
 } from '../../../utils/admin/optimisticLock'
 import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
 import { invalidatePressRelatedCaches } from '../../../utils/admin/adminCacheInvalidation'
@@ -50,68 +50,73 @@ export default defineEventHandler(async (event) => {
       (translation) => Boolean(translation.name?.trim())
     )
 
-    const item = await runAdminCrudTransaction(async (tx) => {
-      const existingItem = await tx.query.tags.findFirst({
-        where: eq(tags.id, id),
-      })
-
-      if (!existingItem) {
-        throw createError({
-          statusCode: 404,
-          message: getAdminApiErrorMessage(event, 'tagNotFound'),
+    const item = await runAdminCrudTransaction(
+      async (tx) => {
+        const existingItem = await tx.query.tags.findFirst({
+          where: eq(tags.id, id),
         })
-      }
 
-      // The built-in `all` meta-tag is protected — block edits even when the payload
-      // tries to rename its slug away from `all`.
-      assertTagMutable(existingItem.slug, event)
+        if (!existingItem) {
+          throw createError({
+            statusCode: 404,
+            message: getAdminApiErrorMessage(event, 'tagNotFound'),
+          })
+        }
 
-      assertOptimisticLock(
-        validated.updatedAt,
-        existingItem.updatedAt,
-        getAdminApiErrorMessage(event, 'tagOptimisticLock')
-      )
+        // The built-in `all` meta-tag is protected — block edits even when the payload
+        // tries to rename its slug away from `all`.
+        assertTagMutable(existingItem.slug, event)
 
-      const updatedRows = await tx
-        .update(tags)
-        .set({
-          slug: validated.slug,
-          order: validated.order,
-        })
-        .where(
-          validated.updatedAt
-            ? and(
-                eq(tags.id, id),
-                buildOptimisticLockCondition(tags.updatedAt, validated.updatedAt)
+        assertOptimisticLock(
+          validated.updatedAt,
+          existingItem.updatedAt,
+          getAdminApiErrorMessage(event, 'tagOptimisticLock')
+        )
+
+        const updatedRows = await tx
+          .update(tags)
+          .set({
+            slug: validated.slug,
+            order: validated.order,
+          })
+          .where(
+            and(
+              eq(tags.id, id),
+              buildExpectedVersionCondition(
+                tags.updatedAt,
+                validated.updatedAt,
+                existingItem.updatedAt
               )
-            : eq(tags.id, id)
-        )
-        .returning({ id: tags.id })
+            )
+          )
+          .returning({ id: tags.id })
 
-      if (updatedRows.length === 0) {
-        throw createError({
-          statusCode: 409,
-          message: getAdminApiErrorMessage(event, 'tagOptimisticLock'),
+        if (updatedRows.length === 0) {
+          throw createError({
+            statusCode: 409,
+            message: getAdminApiErrorMessage(event, 'tagOptimisticLock'),
+          })
+        }
+
+        await tx.delete(tagTranslations).where(eq(tagTranslations.tagId, id))
+
+        if (translationsToUpdate.length > 0) {
+          await tx.insert(tagTranslations).values(
+            translationsToUpdate.map((translation) => ({
+              locale: translation.locale,
+              name: translation.name,
+              tagId: id,
+            }))
+          )
+        }
+
+        return tx.query.tags.findFirst({
+          where: eq(tags.id, id),
+          with: { translations: true },
         })
-      }
-
-      await tx.delete(tagTranslations).where(eq(tagTranslations.tagId, id))
-
-      if (translationsToUpdate.length > 0) {
-        await tx.insert(tagTranslations).values(
-          translationsToUpdate.map((translation) => ({
-            locale: translation.locale,
-            name: translation.name,
-            tagId: id,
-          }))
-        )
-      }
-
-      return tx.query.tags.findFirst({
-        where: eq(tags.id, id),
-        with: { translations: true },
-      })
-    }, 'No se pudo actualizar la etiqueta')
+      },
+      () => getAdminApiErrorMessage(event, 'tagUpdateFailed')
+    )
 
     await invalidatePressRelatedCaches()
     return { data: item }

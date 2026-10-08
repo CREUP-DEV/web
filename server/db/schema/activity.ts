@@ -141,6 +141,23 @@ export const activityEntryTranslations = pgTable(
   ]
 )
 
+/**
+ * Slugs an entry used to carry — same contract as `press_article_slug_history`: the public detail
+ * API falls back to it, other entries' former slugs count as taken, the entry's own stay free to
+ * reclaim, and deleting the entry frees them.
+ */
+export const activityEntrySlugHistory = pgTable(
+  'activity_entry_slug_history',
+  {
+    slug: text('slug').primaryKey(),
+    activityEntryId: text('activity_entry_id')
+      .notNull()
+      .references(() => activityEntries.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  },
+  (table) => [index('idx_activity_entry_slug_history_entry_id').on(table.activityEntryId)]
+)
+
 // Area reports
 
 export const areaReportEditions = pgTable(

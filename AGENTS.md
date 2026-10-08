@@ -244,8 +244,11 @@ This is the standard pattern for ALL admin file uploads. Never write files direc
 1. Upload endpoint calls `saveAdminImage` or `saveAdminDocument` with `temporary: true` → returns a `storagePath` under `/api/admin/assets/tmp/`.
 2. On create/update mutation, call `finalizeAdminImage` / `finalizeAdminDocument` inside the DB transaction. Pass `publish: data.active` so inactive records move to `/api/admin/assets/inactive/` instead of `public/`.
 3. On publish/unpublish toggle, the asset publication plugin (`server/plugins/admin-asset-publication.ts`) handles moving assets between inactive and public directories.
-4. On failure, call `cleanupAdminAssetFinalizationsSafely(cleanupTargets, ...)` to roll back moved files.
+4. On failure, call `cleanupAdminAssetFinalizationsSafely(cleanupTargets, ...)` to roll back: a temp upload goes back to its temp path (the form still holds it, so a resubmit works), a copy is deleted.
 5. Track finalization with `trackAdminAssetFinalization(cleanupTargets, ...)`.
+6. After commit, remove the record's previous file when it changed (`cleanupUnusedAdminAssetSafely`, which skips anything still referenced).
+
+Finalize runs before the commit, so it never deletes or overwrites a file a row may still point at: a temp upload is moved, an already-stored file (rename on a slug change, publish toggle) is **copied**, and a taken name is skipped for the next `-N` suffix, claimed atomically (hard link or `COPYFILE_EXCL`). Removing the old file is always the caller's post-commit step 6.
 
 See `server/services/pressArticleService.ts` for a full working example.
 
@@ -334,9 +337,17 @@ Cache is shared through Redis and coordinates refreshes with Redis locks so stal
 
 Public CMS content (press, home, tags, dossier, equality, financial reports, about, activity) is cached at three layers. When adding a public read or an admin mutation, wire **all** of them or content goes stale.
 
-1. **Server route cache.** Public GET handlers use `defineCachedEventHandler(handler, { ...PUBLIC_ROUTE_CACHE_OPTIONS, getKey: (e) => buildPublicRouteCacheKey(e, 'public-<scope>', { queryKeys }) })` (`server/utils/cache/publicRouteCache.ts`). The `cache` storage base is mounted to Redis by `server/plugins/runtime-cache-storage.ts`, so entries and purges are shared across all Nitro instances — never leave the route cache on the in-memory default.
-2. **Server invalidation.** Every admin create/update/delete/reorder that changes public output MUST call the matching `invalidate*` from `server/utils/admin/adminCacheInvalidation.ts` (e.g. `invalidatePressRelatedCaches`, `invalidateHomeDataCache`). The asset-backed CRUD + reorder factories already do this via their `invalidate` config; bespoke handlers must call it explicitly. The substring it matches must line up with the handler's `public-<scope>` cache key.
-3. **Client cache.** Public reads pass `getCachedData: publicCmsCachedData` (`app/utils/publicCmsCachedData.ts`) and a stable key whose prefix is in `PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES` (`shared/constants/publicAsyncDataKeys.ts`). This gives anonymous visitors a 60s TTL cache on SPA navigation (fast, no refetch storm) instead of the default `payloadExtraction` behaviour, which reuses `static.data` forever and is **not** cleared by `clearNuxtData`. On the admin success path, call a `usePublicCmsCacheRefresh()` function (`refreshAllClientAsyncData`, or the scoped `refreshHomeData` / `refreshAboutPage`) — it drops the cache timestamps so the editor's next navigation refetches immediately. Adding a new public read without `getCachedData: publicCmsCachedData` reintroduces the stale-after-edit bug.
+1. **Server route cache.** Public GET handlers use `defineCachedEventHandler(handler, publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.<scope>, { queryKeys, keyParts }))` (`server/utils/cache/publicRouteCache.ts`). The scope becomes the Nitro cache `name`, so entries live under `nitro:handlers:<scope>:`; the varying part of the key (locale, route params, query) is hashed. Never hand-build a `getKey` string: Nitro strips every non-word character from custom keys (`escapeKey`), which is how invalidation silently stopped matching anything. The `cache` storage base is mounted to Redis by `server/plugins/runtime-cache-storage.ts`, so entries and purges are shared across all Nitro instances — never leave the route cache on the in-memory default.
+2. **Server invalidation.** Every admin create/update/delete/reorder that changes public output MUST call the matching `invalidate*` from `server/utils/admin/adminCacheInvalidation.ts` (e.g. `invalidatePressRelatedCaches`, `invalidateHomeDataCache`). The asset-backed CRUD + reorder factories already do this via their `invalidate` config; bespoke handlers must call it explicitly. A new CMS scope goes into `PUBLIC_CMS_CACHE_SCOPES` and into every invalidator whose data it embeds. Invalidators never throw (the save already committed) and purge twice, a few seconds apart, to drop entries a request in flight wrote back. Content shown by pages under `swr` route rules (HTML cached as `nitro:routes`, payload as `nuxt:payload`) also purges those bases; it is purged on startup too, since cached HTML points at the previous build's assets. Date-gated press content goes live through the `public-content.day-rollover` job at 00:00:30 Europe/Madrid.
+3. **Client cache.** Public reads pass `getCachedData: publicCmsCachedData` (`app/utils/publicCmsCachedData.ts`) and a stable, locale-aware key whose prefix is in `PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES` (`shared/constants/publicAsyncDataKeys.ts`). Navigation reuses a read for up to 60s; explicit refreshes, watch triggers and failed fetches always go to the network (a miss drops the cached value, so a 404 never revives it). On the admin success path, call a `usePublicCmsCacheRefresh()` function (`refreshAllClientAsyncData`, or the scoped `refreshHomeData` / `refreshAboutPage`): it expires every cached read in this tab and, over a BroadcastChannel (`app/plugins/public-cms-cache-sync.client.ts`), in the site's other open tabs, which refetch what is on screen. `experimental.payloadExtraction` stays off: with no prerendering it only made the client fetch `swr` pages' payload as `_payload.json` with `force-cache`, under a URL that only changes per deploy. Adding a new public read without `getCachedData: publicCmsCachedData` reintroduces the stale-after-edit bug.
+
+### Public Detail Slugs, Previews and Duplicates (press articles, activity entries)
+
+- Slugs follow the Spanish title and month on every save (`server/utils/core/slug.ts`), so an old URL must keep working: the slug a save replaces goes into `press_article_slug_history` / `activity_entry_slug_history` (`recordPressSlugChange` / `recordActivitySlugChange`, same transaction). Slug generation treats another entity's former slugs as taken; history rows go with their entity when it is deleted.
+- The public detail endpoints resolve a former slug to the current entity, and the pages redirect (301) to the canonical path, also when a press URL names the wrong type section: `usePublicDetailCanonical`. Detail payloads are built in `server/utils/press/pressArticleDetail.ts` / `server/utils/activity/activityEntryDetail.ts`, shared with the admin previews so the two cannot drift.
+- Admin previews (`ADMIN_ROUTES.pressPreview` / `activityPreview` + `/<id>`, endpoints `GET /api/admin/{press,activity}/:id/preview`) render an item as the public page would whatever its status; admin "view on web" links point there while the item is not public (`shared/utils/publicVisibility.ts`).
+- Creating an item whose title and month match an existing one answers 409 with `data.code === 'possibleDuplicate'` (`shared/utils/possibleDuplicate.ts`); the create page confirms and resends with `confirmDuplicate: true`.
+- Newsletter click redirects resolve the item's current URL at click time instead of the path frozen in the snapshot.
 
 ### Newsletter Campaign Delivery (`server/services/newsletterCampaignDelivery*.ts`)
 
@@ -373,22 +384,12 @@ when startup timing races occur.
 
 ### Optimistic Locking (Admin Mutations)
 
-Press article updates include an `updatedAt` timestamp sent from the client. The server rejects with `409` if the row was modified by another admin since the client last fetched:
+Edits send the `updatedAt` the client last read; the server answers `409` with the resource's locale-aware optimistic-lock message if the row changed since. Use the helpers in `server/utils/admin/optimisticLock.ts`:
 
-```typescript
-if (data.updatedAt) {
-  const clientTs = new Date(data.updatedAt).getTime()
-  const serverTs = existingItem.updatedAt ? new Date(existingItem.updatedAt).getTime() : 0
-  if (clientTs !== serverTs) {
-    throw createError({
-      statusCode: 409,
-      message: 'El artículo fue modificado por otro usuario...',
-    })
-  }
-}
-```
-
-Follow this pattern for any resource that adds optimistic locking. `updatedAt` is set automatically in the DB schema via `.$onUpdate(() => new Date())`.
+- `assertOptimisticLock(clientUpdatedAt, row.updatedAt, message)` for an early check.
+- The write itself must be conditional, or two concurrent saves both pass that check: `.where(and(eq(table.id, id), buildExpectedVersionCondition(table.updatedAt, clientUpdatedAt, loaded.updatedAt)))`, then `409` when no row matched. Without a client version it guards on the version the server just read. Never compare with `eq(table.updatedAt, date)`: the column keeps microseconds and a JS `Date` only milliseconds, so it never matches.
+- Deletes accept an optional `?updatedAt=` (`optimisticDeleteQuerySchema`) and go through `deleteWithOptimisticLock`, which answers 404 (gone) or 409 (changed).
+- Reorders bump `updatedAt` on every row: `reorderCollection` returns the new values and the client applies them with `applyAdminReorder` (`app/utils/adminReorder.ts`), or the next edit of those rows fails as a conflict.
 
 ---
 

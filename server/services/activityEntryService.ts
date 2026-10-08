@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 import type { H3Event } from 'h3'
-import { and, eq, isNull, notInArray, sql } from 'drizzle-orm'
+import { and, desc, eq, notInArray, sql } from 'drizzle-orm'
 import type { z } from 'zod'
 import { db } from '../db'
 import { activityEntries, activityEntryTranslations } from '../db/schema'
@@ -12,16 +12,26 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../utils/admin/adminAssetPublication'
-import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/admin/adminErrors'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../utils/admin/optimisticLock'
+import { throwAdminMutationError } from '../utils/admin/adminErrors'
+import { throwPossibleDuplicate } from '../utils/admin/possibleDuplicate'
+import { assertOptimisticLock, buildExpectedVersionCondition } from '../utils/admin/optimisticLock'
 import { lockMemberOrgCatalogEntry } from '../utils/admin/activitySnapshots'
 import { getRequiredTranslationValue } from '../utils/locale/localizedContent'
 import { getAdminApiErrorMessage } from '../utils/locale/adminApiErrorMessages'
 import { sanitizeActivityTranslations } from '../utils/activity/activityTranslation'
 import { hasMeaningfulRichTextHtml, sanitizeRichTextHtml } from '../utils/press/pressTranslation'
-import { generateActivitySlug } from '../utils/core/slug'
+import {
+  buildActivityBaseSlug,
+  buildSlugFamilyPattern,
+  generateActivitySlug,
+  recordActivitySlugChange,
+} from '../utils/core/slug'
 import { dateOnlyToStorageDate } from '~~/shared/utils/date'
-import { SUPPORTED_LOCALE_CODES, type SupportedLocaleCode } from '~~/shared/utils/locale'
+import {
+  DEFAULT_LOCALE_CODE,
+  SUPPORTED_LOCALE_CODES,
+  type SupportedLocaleCode,
+} from '~~/shared/utils/locale'
 import { ACTIVITY_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import type { createActivityEntrySchema, updateActivityEntrySchema } from '../utils/validation'
 
@@ -41,18 +51,6 @@ type ActivityEntryQueryItem = NonNullable<
   Awaited<ReturnType<typeof db.query.activityEntries.findFirst>>
 > & {
   translations: ActivityEntryTranslationRow[]
-}
-
-function randomSlugSuffix(): string {
-  return Math.random().toString(16).slice(2, 6)
-}
-
-function isSlugUniqueConstraintViolation(error: unknown): boolean {
-  if (!isUniqueConstraintViolation(error)) return false
-  const e = error as { constraint?: string; detail?: string }
-  if (e.constraint) return e.constraint.toLowerCase().includes('slug')
-  if (e.detail) return e.detail.toLowerCase().includes('slug')
-  return true
 }
 
 interface ResolvedMemberFields {
@@ -137,6 +135,44 @@ async function resolveMemberFields(
   }
 }
 
+/**
+ * Refuse a create whose title and month match an existing entry — its slug would come out as
+ * `<base>-N` — unless the editor confirmed it. Must run after `generateActivitySlug` in the same
+ * transaction: the base slug's advisory lock is what makes the check race-free.
+ */
+async function assertNoActivityEntryDuplicate(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  baseSlug: string,
+  event: H3Event
+) {
+  const [duplicate] = await tx
+    .select({
+      id: activityEntries.id,
+      slug: activityEntries.slug,
+      startDate: activityEntries.startDate,
+      title: activityEntryTranslations.title,
+    })
+    .from(activityEntries)
+    .leftJoin(
+      activityEntryTranslations,
+      and(
+        eq(activityEntryTranslations.activityEntryId, activityEntries.id),
+        eq(activityEntryTranslations.locale, DEFAULT_LOCALE_CODE)
+      )
+    )
+    .where(sql`${activityEntries.slug} ~ ${buildSlugFamilyPattern(baseSlug)}`)
+    .orderBy(desc(activityEntries.createdAt))
+    .limit(1)
+
+  if (duplicate) {
+    throwPossibleDuplicate(event, {
+      id: duplicate.id,
+      title: duplicate.title ?? duplicate.slug,
+      startDate: duplicate.startDate,
+    })
+  }
+}
+
 function buildTranslationValues(
   translations: ActivityEntryData['translations'],
   activityEntryId: string
@@ -169,26 +205,31 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
   let image: string | null = null
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
-  async function runTransaction(
-    defaultTitle: string,
-    startDateValue: string,
-    startDateAnchor: Date,
-    memberPlan: MemberFieldsPlan,
-    opts: { forcedSlugSuffix?: string; imageSource?: string | null }
-  ) {
-    return db.transaction(async (tx) => {
-      const slug = await generateActivitySlug(defaultTitle, startDateAnchor, {
-        executor: tx,
-        forcedSuffix: opts.forcedSlugSuffix,
-      })
+  try {
+    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
+    if (!defaultTitle) throw new Error('El título en español es obligatorio')
+
+    const startDateValue = data.startDate
+    const startDateAnchor = dateOnlyToStorageDate(startDateValue)
+    const memberPlan = planMemberFields(data)
+
+    const completeItem = await db.transaction(async (tx) => {
+      const slug = await generateActivitySlug(defaultTitle, startDateAnchor, { executor: tx })
+
+      // Before any asset moves: a refused create leaves the upload where the resend expects it.
+      if (!data.confirmDuplicate) {
+        await assertNoActivityEntryDuplicate(
+          tx,
+          buildActivityBaseSlug(defaultTitle, startDateAnchor),
+          event
+        )
+      }
 
       const memberFields = await resolveMemberFields(tx, memberPlan, event)
 
-      const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
-
-      if (effectiveImageSource) {
+      if (data.image) {
         image = await finalizeAdminImage({
-          storagePath: effectiveImageSource,
+          storagePath: data.image,
           uploadDir: IMAGE_UPLOAD_DIR,
           publicPath: ACTIVITY_IMAGE_PUBLIC_BASE,
           slug,
@@ -196,7 +237,7 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
           fallbackBaseName: 'actividad',
         })
         trackAdminAssetFinalization(cleanupTargets, {
-          sourceStoragePath: effectiveImageSource,
+          sourceStoragePath: data.image,
           storagePath: image,
           allowedPublicPathPrefixes: [ACTIVITY_IMAGE_PUBLIC_BASE],
         })
@@ -237,45 +278,6 @@ export async function createActivityEntry(data: ActivityEntryData, event: H3Even
         with: { translations: true },
       })) as ActivityEntryQueryItem | null
     })
-  }
-
-  try {
-    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
-    if (!defaultTitle) throw new Error('El título en español es obligatorio')
-
-    const startDateValue = data.startDate
-    const startDateAnchor = dateOnlyToStorageDate(startDateValue)
-    const memberPlan = planMemberFields(data)
-
-    let completeItem: ActivityEntryQueryItem | null
-    try {
-      completeItem = await runTransaction(
-        defaultTitle,
-        startDateValue,
-        startDateAnchor,
-        memberPlan,
-        {}
-      )
-    } catch (firstError) {
-      if (!isSlugUniqueConstraintViolation(firstError)) throw firstError
-
-      const firstImage = image
-      image = null
-      cleanupTargets.splice(0)
-
-      completeItem = await runTransaction(
-        defaultTitle,
-        startDateValue,
-        startDateAnchor,
-        memberPlan,
-        { forcedSlugSuffix: randomSlugSuffix(), imageSource: firstImage ?? undefined }
-      ).catch(() => {
-        throw createError({
-          statusCode: 409,
-          message: getAdminApiErrorMessage(event, 'activitySlugFailed'),
-        })
-      })
-    }
 
     if (data.image && data.image !== image) {
       await cleanupUnusedAdminAssetSafely(
@@ -305,28 +307,41 @@ export async function updateActivityEntry(
   let image: string | null = null
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
-  async function runTransaction(
-    existingItem: ActivityEntryQueryItem,
-    defaultTitle: string,
-    startDateValue: string,
-    startDateAnchor: Date,
-    memberPlan: MemberFieldsPlan,
-    opts: { forcedSlugSuffix?: string; imageSource?: string | null }
-  ) {
-    return db.transaction(async (tx) => {
+  try {
+    const existingItem = (await db.query.activityEntries.findFirst({
+      where: eq(activityEntries.id, id),
+      with: { translations: true },
+    })) as ActivityEntryQueryItem | undefined
+
+    if (!existingItem) {
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
+    }
+
+    assertOptimisticLock(
+      data.updatedAt,
+      existingItem.updatedAt,
+      getAdminApiErrorMessage(event, 'activityOptimisticLock')
+    )
+
+    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
+    if (!defaultTitle) throw new Error('El título en español es obligatorio')
+
+    const startDateValue = data.startDate
+    const startDateAnchor = dateOnlyToStorageDate(startDateValue)
+    const memberPlan = planMemberFields(data, existingItem)
+    previousImage = existingItem.image
+
+    const item = await db.transaction(async (tx) => {
       const slug = await generateActivitySlug(defaultTitle, startDateAnchor, {
         excludeId: id,
         executor: tx,
-        forcedSuffix: opts.forcedSlugSuffix,
       })
 
       const memberFields = await resolveMemberFields(tx, memberPlan, event)
 
-      const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
-
-      if (effectiveImageSource) {
+      if (data.image) {
         image = await finalizeAdminImage({
-          storagePath: effectiveImageSource,
+          storagePath: data.image,
           uploadDir: IMAGE_UPLOAD_DIR,
           publicPath: ACTIVITY_IMAGE_PUBLIC_BASE,
           slug,
@@ -335,17 +350,17 @@ export async function updateActivityEntry(
           replaceStoragePath: existingItem.image ?? undefined,
         })
         trackAdminAssetFinalization(cleanupTargets, {
-          sourceStoragePath: effectiveImageSource,
+          sourceStoragePath: data.image,
           storagePath: image,
           allowedPublicPathPrefixes: [ACTIVITY_IMAGE_PUBLIC_BASE],
         })
       }
 
-      const optimisticLockCondition = data.updatedAt
-        ? buildOptimisticLockCondition(activityEntries.updatedAt, data.updatedAt)
-        : existingItem.updatedAt
-          ? eq(activityEntries.updatedAt, existingItem.updatedAt)
-          : isNull(activityEntries.updatedAt)
+      const optimisticLockCondition = buildExpectedVersionCondition(
+        activityEntries.updatedAt,
+        data.updatedAt,
+        existingItem.updatedAt
+      )
 
       const updatedRows = await tx
         .update(activityEntries)
@@ -371,6 +386,9 @@ export async function updateActivityEntry(
           message: getAdminApiErrorMessage(event, 'activityOptimisticLock'),
         })
       }
+
+      // The optimistic lock above guarantees the row still carried `existingItem.slug`.
+      await recordActivitySlugChange(tx, id, existingItem.slug, slug)
 
       const newLocales = data.translations.map((translation) => translation.locale)
       if (newLocales.length > 0) {
@@ -407,63 +425,6 @@ export async function updateActivityEntry(
         with: { translations: true },
       })) as ActivityEntryQueryItem | null
     })
-  }
-
-  try {
-    const existingItem = (await db.query.activityEntries.findFirst({
-      where: eq(activityEntries.id, id),
-      with: { translations: true },
-    })) as ActivityEntryQueryItem | undefined
-
-    if (!existingItem) {
-      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
-    }
-
-    assertOptimisticLock(
-      data.updatedAt,
-      existingItem.updatedAt,
-      getAdminApiErrorMessage(event, 'activityOptimisticLock')
-    )
-
-    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
-    if (!defaultTitle) throw new Error('El título en español es obligatorio')
-
-    const startDateValue = data.startDate
-    const startDateAnchor = dateOnlyToStorageDate(startDateValue)
-    const memberPlan = planMemberFields(data, existingItem)
-    previousImage = existingItem.image
-
-    let item: ActivityEntryQueryItem | null
-    try {
-      item = await runTransaction(
-        existingItem,
-        defaultTitle,
-        startDateValue,
-        startDateAnchor,
-        memberPlan,
-        {}
-      )
-    } catch (firstError) {
-      if (!isSlugUniqueConstraintViolation(firstError)) throw firstError
-
-      const firstImage = image
-      image = null
-      cleanupTargets.splice(0)
-
-      item = await runTransaction(
-        existingItem,
-        defaultTitle,
-        startDateValue,
-        startDateAnchor,
-        memberPlan,
-        { forcedSlugSuffix: randomSlugSuffix(), imageSource: firstImage ?? undefined }
-      ).catch(() => {
-        throw createError({
-          statusCode: 409,
-          message: getAdminApiErrorMessage(event, 'activitySlugFailed'),
-        })
-      })
-    }
 
     if (previousImage !== image) {
       await cleanupUnusedAdminAssetSafely(

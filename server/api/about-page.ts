@@ -12,8 +12,9 @@ import { logError } from '../utils/core/logger'
 import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
 import { ABOUT_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import {
-  buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  PUBLIC_CMS_CACHE_SCOPES,
+  publicRouteCacheOptions,
 } from '../utils/cache/publicRouteCache'
 import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { appendAssetVersion } from '../utils/core/assetVersion'
@@ -87,8 +88,9 @@ export default defineCachedEventHandler(
       },
     }
   },
-  {
-    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-    getKey: (event) => buildPublicRouteCacheKey(event, 'about-page', { includeLocale: false }),
-  }
+  publicRouteCacheOptions(
+    PUBLIC_CMS_CACHE_SCOPES.aboutPage,
+    { includeLocale: false },
+    FAST_EXTERNAL_ROUTE_CACHE_OPTIONS
+  )
 )

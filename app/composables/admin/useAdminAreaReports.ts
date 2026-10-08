@@ -41,6 +41,8 @@ const MONTH_KEY_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
 
 export function useAdminAreaReports(month: MaybeRef<string>) {
   const localeApiHeaders = useLocaleApiHeaders()
+  // Forwards the session cookie during SSR; a bare `$fetch` there would answer 401 on a full load.
+  const requestFetch = useRequestFetch()
   // Only forward a fully-formed 'YYYY-MM' month to the API; partial values are treated as no filter
   // so mid-typing keystrokes never trigger a 400 from the strict server-side month validator.
   const monthValue = computed(() => {
@@ -65,9 +67,10 @@ export function useAdminAreaReports(month: MaybeRef<string>) {
       if (debouncedMonth.value) params.set('month', debouncedMonth.value)
       params.set('limit', String(ADMIN_AREA_REPORTS_PAGE_SIZE))
       params.set('offset', String(offset.value))
-      return $fetch<AdminAreaReportsResponse>(`/api/admin/area-reports?${params.toString()}`, {
-        headers: localeApiHeaders.value,
-      })
+      return requestFetch<AdminAreaReportsResponse>(
+        `/api/admin/area-reports?${params.toString()}`,
+        { headers: localeApiHeaders.value }
+      )
     },
     {
       default: () => ({ data: [], meta: { total: 0 } }),
@@ -85,6 +88,19 @@ export function useAdminAreaReports(month: MaybeRef<string>) {
     }))
   }
 
+  /**
+   * Backfills the page after a row was removed locally: steps back when that emptied a later page
+   * (the key change refetches), otherwise refetches so the next page's first row moves up.
+   */
+  const refreshAfterRemoval = async () => {
+    if (!items.value.length && page.value > 1) {
+      page.value -= 1
+      return
+    }
+
+    await refresh()
+  }
+
   return {
     decrementTotal,
     error,
@@ -94,6 +110,7 @@ export function useAdminAreaReports(month: MaybeRef<string>) {
     pageSize: ADMIN_AREA_REPORTS_PAGE_SIZE,
     pending,
     refresh,
+    refreshAfterRemoval,
     removeItem,
     total,
   }

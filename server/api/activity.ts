@@ -15,14 +15,15 @@ import {
 import { resolveActivityTranslationSummary } from '../utils/activity/activityTranslation'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
+  PUBLIC_CMS_CACHE_SCOPES,
+  publicRouteCacheOptions,
   setPublicApiCacheHeaders,
   setPublicRouteVaryHeaders,
 } from '../utils/cache/publicRouteCache'
 import { activityListQuerySchema, validatePublicQuery } from '../utils/validation'
 import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { appendAssetVersion } from '../utils/core/assetVersion'
+import { buildActivityMemberOrgPayload } from '../utils/activity/activityEntryDetail'
 
 function escapeLikePattern(value: string) {
   return value.replace(/[%_\\]/g, '\\$&')
@@ -127,15 +128,11 @@ export default defineCachedEventHandler(
           imageCaption: trans.imageCaption,
           titleLocale: trans.titleLocale,
           excerptLocale: trans.excerptLocale,
-          memberOrg:
-            item.kind === 'member' && item.memberOrgSnapshot
-              ? {
-                  denomination: item.memberOrgSnapshot.denomination,
-                  initials: item.memberOrgSnapshot.initials,
-                  logoLight: item.memberOrgSnapshot.logoLight,
-                  logoDark: item.memberOrgSnapshot.logoDark,
-                }
-              : null,
+          memberOrg: buildActivityMemberOrgPayload(
+            item.kind,
+            item.memberOrgSnapshot,
+            item.updatedAt
+          ),
         }
       })
 
@@ -148,16 +145,14 @@ export default defineCachedEventHandler(
     }
   },
   {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    ...publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.activity, {
+      queryKeys: ['kind', 'month', 'limit', 'offset'],
+    }),
     // Free-text search has unbounded cardinality, so never cache search responses.
     shouldBypassCache: (event) => {
       const raw = getQuery(event).q
       const q = Array.isArray(raw) ? raw[0] : raw
       return typeof q === 'string' && q.trim().length > 0
     },
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'public-activity', {
-        queryKeys: ['kind', 'month', 'limit', 'offset'],
-      }),
   }
 )

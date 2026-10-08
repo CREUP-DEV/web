@@ -12,7 +12,11 @@ import {
   trackAdminAssetFinalization,
 } from '../adminAssetPublication'
 import { isExclusionConstraintViolation, throwAdminMutationError } from '../adminErrors'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../optimisticLock'
+import {
+  assertOptimisticLock,
+  buildExpectedVersionCondition,
+  deleteWithOptimisticLock,
+} from '../optimisticLock'
 import { lockAreaCatalogEntry } from '../activitySnapshots'
 import { getAdminApiErrorMessage } from '../../locale/adminApiErrorMessages'
 import { sanitizeRichTextHtml } from '../../press/pressTranslation'
@@ -64,6 +68,15 @@ async function upsertEdition(
 
 /** Delete an edition once its last report has gone, so the month selector never lists empty months. */
 async function cleanupOrphanEdition(tx: AreaReportTx, monthKey: string) {
+  // Lock the edition before counting: two transactions removing its last two reports would each
+  // still see the other's row and both leave the empty edition behind. The second one now counts
+  // after the first commits (READ COMMITTED takes a fresh snapshot per statement).
+  await tx
+    .select({ monthKey: areaReportEditions.monthKey })
+    .from(areaReportEditions)
+    .where(eq(areaReportEditions.monthKey, monthKey))
+    .for('update')
+
   const [remaining] = await tx
     .select({ count: sql<number>`count(*)`.mapWith(Number) })
     .from(areaReports)
@@ -244,9 +257,11 @@ export async function updateAreaReport(id: string, data: UpdateAreaReportData, e
         })
       }
 
-      const optimisticLockCondition = data.updatedAt
-        ? buildOptimisticLockCondition(areaReports.updatedAt, data.updatedAt)
-        : eq(areaReports.updatedAt, existing.updatedAt)
+      const optimisticLockCondition = buildExpectedVersionCondition(
+        areaReports.updatedAt,
+        data.updatedAt,
+        existing.updatedAt
+      )
 
       const updatedRows = await tx
         .update(areaReports)
@@ -304,20 +319,31 @@ export async function updateAreaReport(id: string, data: UpdateAreaReportData, e
   }
 }
 
-export async function deleteAreaReport(id: string, event: H3Event) {
+/** `clientUpdatedAt`: the version the client last read; when sent, a changed row answers 409. */
+export async function deleteAreaReport(
+  id: string,
+  clientUpdatedAt: string | undefined,
+  event: H3Event
+) {
   try {
-    const existing = await db.query.areaReports.findFirst({ where: eq(areaReports.id, id) })
-    if (!existing) {
-      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
-    }
-
-    await db.transaction(async (tx) => {
-      await tx.delete(areaReports).where(eq(areaReports.id, id))
-      await cleanupOrphanEdition(tx, existing.monthKey)
+    const deleted = await db.transaction(async (tx) => {
+      const row = await deleteWithOptimisticLock(tx, {
+        table: areaReports,
+        idColumn: areaReports.id,
+        updatedAtColumn: areaReports.updatedAt,
+        id,
+        clientUpdatedAt,
+        messages: {
+          notFound: getAdminApiErrorMessage(event, 'notFound'),
+          optimisticLock: getAdminApiErrorMessage(event, 'areaReportOptimisticLock'),
+        },
+      })
+      await cleanupOrphanEdition(tx, row.monthKey)
+      return row
     })
 
     await cleanupUnusedAdminAssetSafely(
-      { storagePath: existing.image, allowedPublicPathPrefixes: [AREA_REPORTS_IMAGE_PUBLIC_BASE] },
+      { storagePath: deleted.image, allowedPublicPathPrefixes: [AREA_REPORTS_IMAGE_PUBLIC_BASE] },
       'admin.area-reports.delete.cleanup.image',
       event
     )

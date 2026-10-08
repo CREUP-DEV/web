@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, isNull, sql, type SQLWrapper } from 'drizzle-orm'
 import { db } from '../../db'
 import {
   aboutPageContent,
@@ -15,8 +15,14 @@ import { isDatabaseMissingRelationError, isDatabaseUnavailableError } from '../c
 import { finalizeAdminDocument } from './adminDocumentUpload'
 import { finalizeAdminImage } from './adminImageUpload'
 import { hasAdminStoredFileReference } from './adminAssetReferences'
-import { deleteAdminStoredFile } from './adminStoredFile'
+import {
+  deleteAdminStoredFile,
+  isTemporaryAdminStoragePath,
+  normalizeAdminStoredPath,
+  restoreAdminStoredFileToTemporaryPath,
+} from './adminStoredFile'
 import { logError, logWarn } from '../core/logger'
+import { getDefaultAdminApiErrorMessage } from '../locale/adminApiErrorMessages'
 import {
   ABOUT_HERO_DEFAULT_IMAGE,
   ABOUT_IMAGE_PUBLIC_PATH,
@@ -34,6 +40,11 @@ export interface CleanupUnusedAdminAssetOptions {
   storagePath: string | null | undefined
   allowedPublicPathPrefixes: string[]
   protectedPublicPaths?: string[]
+  /**
+   * Set by `trackAdminAssetFinalization` when the file was moved out of the temporary store: the
+   * rollback moves it back there instead of deleting it, so the form can be resubmitted.
+   */
+  restoreToTemporaryStoragePath?: string
 }
 
 export async function cleanupUnusedAdminAsset(options: CleanupUnusedAdminAssetOptions) {
@@ -71,6 +82,11 @@ export async function cleanupUnusedAdminAssetSafely(
   }
 }
 
+/**
+ * Records a file `finalizeAdminImage` / `finalizeAdminDocument` just produced, so a failed save can
+ * undo it with `cleanupAdminAssetFinalizationsSafely`. Call it right after each finalize, inside the
+ * same try as the transaction.
+ */
 export function trackAdminAssetFinalization(
   targets: CleanupUnusedAdminAssetOptions[],
   options: CleanupUnusedAdminAssetOptions & { sourceStoragePath?: string | null | undefined }
@@ -88,19 +104,121 @@ export function trackAdminAssetFinalization(
     protectedPublicPaths: options.protectedPublicPaths
       ? [...options.protectedPublicPaths]
       : undefined,
+    restoreToTemporaryStoragePath: isTemporaryAdminStoragePath(sourceStoragePath)
+      ? normalizeAdminStoredPath(sourceStoragePath)
+      : undefined,
   })
 
   return true
 }
 
+async function rollbackAdminAssetFinalization(target: CleanupUnusedAdminAssetOptions) {
+  const storagePath = target.storagePath?.trim()
+  const temporaryStoragePath = target.restoreToTemporaryStoragePath
+
+  if (!temporaryStoragePath || !storagePath) {
+    return cleanupUnusedAdminAsset(target)
+  }
+
+  if (
+    target.protectedPublicPaths?.includes(storagePath) ||
+    (await hasAdminStoredFileReference(storagePath))
+  ) {
+    return false
+  }
+
+  try {
+    await restoreAdminStoredFileToTemporaryPath(storagePath, temporaryStoragePath)
+  } catch (error) {
+    // Losing the upload is better than leaving an unreferenced file in a public folder: the
+    // editor can upload it again.
+    logWarn('admin-assets.rollback.restore-failed', { storagePath, temporaryStoragePath, error })
+  }
+
+  return deleteAdminStoredFile({
+    storagePath,
+    allowedPublicPathPrefixes: target.allowedPublicPathPrefixes,
+    protectedPublicPaths: target.protectedPublicPaths,
+  })
+}
+
+/**
+ * Undoes the finalizations of a failed save, newest first. A file moved out of the temporary store
+ * goes back to its temporary path (the form still holds it, so a resubmit works); a copy of an
+ * already stored file is deleted (the original was never touched). Anything a committed row
+ * references is left alone.
+ */
 export async function cleanupAdminAssetFinalizationsSafely(
   targets: CleanupUnusedAdminAssetOptions[],
   scope: string,
   event?: H3Event
 ) {
   for (const target of [...targets].reverse()) {
-    await cleanupUnusedAdminAssetSafely(target, scope, event)
+    try {
+      await rollbackAdminAssetFinalization(target)
+    } catch (error) {
+      logError(scope, error, { ...target }, event)
+    }
   }
+}
+
+function matchesStoredPath(column: SQLWrapper, storagePath: string | null) {
+  return storagePath === null ? isNull(column) : eq(column, storagePath)
+}
+
+interface ReconciledPath {
+  previous: string | null
+  next: string | null
+  allowedPublicPathPrefixes: string[]
+  protectedPublicPaths?: string[]
+}
+
+/**
+ * Finishes a reconcile write. `applied` says whether the row was repointed: the UPDATE only matches
+ * while the row still holds the paths that were reconciled, because an admin save may have
+ * replaced them in the meantime. When it was, the superseded files go; when it was not, the copies
+ * made for it go instead. Either way only files nothing references are deleted.
+ */
+async function settleReconciledPaths(applied: boolean, paths: ReconciledPath[]) {
+  for (const path of paths) {
+    if (path.previous === path.next) {
+      continue
+    }
+
+    await cleanupUnusedAdminAsset({
+      storagePath: applied ? path.previous : path.next,
+      allowedPublicPathPrefixes: path.allowedPublicPathPrefixes,
+      protectedPublicPaths: path.protectedPublicPaths,
+    })
+  }
+}
+
+/** Runs a conditional reconcile UPDATE and settles its files. Returns whether the row matched. */
+async function applyReconciledPaths(update: () => Promise<unknown[]>, paths: ReconciledPath[]) {
+  let applied: boolean
+
+  try {
+    applied = (await update()).length > 0
+  } catch (error) {
+    await settleReconciledPaths(false, paths).catch((cleanupError) => {
+      logWarn('admin-assets.reconcile.rollback-failed', { error: cleanupError })
+    })
+    throw error
+  }
+
+  await settleReconciledPaths(applied, paths)
+  return applied
+}
+
+function isAssetUnavailableError(error: unknown) {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'statusCode' in error &&
+    error.statusCode === 400 &&
+    'message' in error &&
+    error.message === getDefaultAdminApiErrorMessage('assetUnavailable')
+  )
 }
 
 async function reconcileStoredImage(options: {
@@ -125,14 +243,7 @@ async function reconcileStoredImage(options: {
       protectedPublicPaths: options.protectedPublicPaths,
     })
   } catch (error) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'statusCode' in error &&
-      error.statusCode === 400 &&
-      'message' in error &&
-      error.message === 'El archivo ya no está disponible'
-    ) {
+    if (isAssetUnavailableError(error)) {
       return normalizedStoragePath
     }
 
@@ -160,14 +271,7 @@ async function reconcileStoredDocument(options: {
       publish: options.publish,
     })
   } catch (error) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'statusCode' in error &&
-      error.statusCode === 400 &&
-      'message' in error &&
-      error.message === 'El archivo ya no está disponible'
-    ) {
+    if (isAssetUnavailableError(error)) {
       return normalizedStoragePath
     }
 
@@ -197,7 +301,10 @@ async function loadSnapshotProtectedAssetPaths(): Promise<Set<string>> {
   )
 }
 
-export async function reconcileAdminAssetPublication() {
+/** Returns whether any stored path was rewritten, so the caller can purge the public caches. */
+export async function reconcileAdminAssetPublication(): Promise<boolean> {
+  let changed = false
+
   try {
     // Preventing the deletion of these files is a different mechanism (`adminAssetReferences`) and
     // it is not enough on its own: unpublishing the piece that owns an image would move the file to
@@ -246,14 +353,27 @@ export async function reconcileAdminAssetPublication() {
       })
 
       if (nextImage && nextImage !== item.image) {
-        await db
-          .update(carouselItems)
-          .set({ image: nextImage })
-          .where(eq(carouselItems.id, item.id))
-        await cleanupUnusedAdminAsset({
-          storagePath: item.image,
-          allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
-        })
+        const applied = await applyReconciledPaths(
+          () =>
+            db
+              .update(carouselItems)
+              .set({ image: nextImage })
+              .where(
+                and(
+                  eq(carouselItems.id, item.id),
+                  matchesStoredPath(carouselItems.image, item.image)
+                )
+              )
+              .returning({ id: carouselItems.id }),
+          [
+            {
+              previous: item.image,
+              next: nextImage,
+              allowedPublicPathPrefixes: [HOME_CAROUSEL_IMAGE_PUBLIC_PATH],
+            },
+          ]
+        )
+        if (applied) changed = true
       }
     }
 
@@ -266,14 +386,27 @@ export async function reconcileAdminAssetPublication() {
       })
 
       if (nextImage && nextImage !== item.image) {
-        await db
-          .update(featuredLinks)
-          .set({ image: nextImage })
-          .where(eq(featuredLinks.id, item.id))
-        await cleanupUnusedAdminAsset({
-          storagePath: item.image,
-          allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
-        })
+        const applied = await applyReconciledPaths(
+          () =>
+            db
+              .update(featuredLinks)
+              .set({ image: nextImage })
+              .where(
+                and(
+                  eq(featuredLinks.id, item.id),
+                  matchesStoredPath(featuredLinks.image, item.image)
+                )
+              )
+              .returning({ id: featuredLinks.id }),
+          [
+            {
+              previous: item.image,
+              next: nextImage,
+              allowedPublicPathPrefixes: [HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH],
+            },
+          ]
+        )
+        if (applied) changed = true
       }
     }
 
@@ -292,22 +425,34 @@ export async function reconcileAdminAssetPublication() {
       })
 
       if (nextImage !== item.image || nextPdfUrl !== item.pdfUrl) {
-        await db
-          .update(pressArticles)
-          .set({
-            image: nextImage ?? item.image,
-            pdfUrl: nextPdfUrl,
-          })
-          .where(eq(pressArticles.id, item.id))
-
-        await cleanupUnusedAdminAsset({
-          storagePath: item.image,
-          allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
-        })
-        await cleanupUnusedAdminAsset({
-          storagePath: item.pdfUrl,
-          allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
-        })
+        const image = nextImage ?? item.image
+        const applied = await applyReconciledPaths(
+          () =>
+            db
+              .update(pressArticles)
+              .set({ image, pdfUrl: nextPdfUrl })
+              .where(
+                and(
+                  eq(pressArticles.id, item.id),
+                  matchesStoredPath(pressArticles.image, item.image),
+                  matchesStoredPath(pressArticles.pdfUrl, item.pdfUrl)
+                )
+              )
+              .returning({ id: pressArticles.id }),
+          [
+            {
+              previous: item.image,
+              next: image,
+              allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
+            },
+            {
+              previous: item.pdfUrl,
+              next: nextPdfUrl,
+              allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
+            },
+          ]
+        )
+        if (applied) changed = true
       }
     }
 
@@ -327,19 +472,31 @@ export async function reconcileAdminAssetPublication() {
       })
 
       if (nextPdfUrl !== pressDossierItem.pdfUrl) {
-        await db
-          .update(pressDossier)
-          .set({ pdfUrl: nextPdfUrl })
-          .where(eq(pressDossier.id, pressDossierItem.id))
-
-        await cleanupUnusedAdminAsset({
-          storagePath: pressDossierItem.pdfUrl,
-          allowedPublicPathPrefixes: [
-            isLegacyDossier
-              ? `${LEGACY_PRESS_DOSSIER_BASE}/dossier-prensa`
-              : `${PRESS_DOSSIER_STORAGE_PATH}/`,
-          ],
-        })
+        const applied = await applyReconciledPaths(
+          () =>
+            db
+              .update(pressDossier)
+              .set({ pdfUrl: nextPdfUrl })
+              .where(
+                and(
+                  eq(pressDossier.id, pressDossierItem.id),
+                  matchesStoredPath(pressDossier.pdfUrl, pressDossierItem.pdfUrl)
+                )
+              )
+              .returning({ id: pressDossier.id }),
+          [
+            {
+              previous: pressDossierItem.pdfUrl,
+              next: nextPdfUrl,
+              allowedPublicPathPrefixes: [
+                isLegacyDossier
+                  ? `${LEGACY_PRESS_DOSSIER_BASE}/dossier-prensa`
+                  : `${PRESS_DOSSIER_STORAGE_PATH}/`,
+              ],
+            },
+          ]
+        )
+        if (applied) changed = true
       }
     }
 
@@ -353,16 +510,28 @@ export async function reconcileAdminAssetPublication() {
       })
 
       if (nextHeroImage !== aboutContent.heroImage) {
-        await db
-          .update(aboutPageContent)
-          .set({ heroImage: nextHeroImage })
-          .where(eq(aboutPageContent.id, aboutContent.id))
-
-        await cleanupUnusedAdminAsset({
-          storagePath: aboutContent.heroImage,
-          allowedPublicPathPrefixes: [ABOUT_IMAGE_PUBLIC_PATH],
-          protectedPublicPaths: [ABOUT_HERO_DEFAULT_IMAGE],
-        })
+        const applied = await applyReconciledPaths(
+          () =>
+            db
+              .update(aboutPageContent)
+              .set({ heroImage: nextHeroImage })
+              .where(
+                and(
+                  eq(aboutPageContent.id, aboutContent.id),
+                  matchesStoredPath(aboutPageContent.heroImage, aboutContent.heroImage)
+                )
+              )
+              .returning({ id: aboutPageContent.id }),
+          [
+            {
+              previous: aboutContent.heroImage,
+              next: nextHeroImage,
+              allowedPublicPathPrefixes: [ABOUT_IMAGE_PUBLIC_PATH],
+              protectedPublicPaths: [ABOUT_HERO_DEFAULT_IMAGE],
+            },
+          ]
+        )
+        if (applied) changed = true
       }
     }
 
@@ -375,15 +544,28 @@ export async function reconcileAdminAssetPublication() {
       })
 
       if (nextPdfUrl !== item.pdfUrl) {
-        await db
-          .update(equalityDocuments)
-          .set({ pdfUrl: nextPdfUrl ?? item.pdfUrl })
-          .where(eq(equalityDocuments.id, item.id))
-
-        await cleanupUnusedAdminAsset({
-          storagePath: item.pdfUrl,
-          allowedPublicPathPrefixes: [EQUALITY_DOCUMENTS_PUBLIC_PATH],
-        })
+        const pdfUrl = nextPdfUrl ?? item.pdfUrl
+        const applied = await applyReconciledPaths(
+          () =>
+            db
+              .update(equalityDocuments)
+              .set({ pdfUrl })
+              .where(
+                and(
+                  eq(equalityDocuments.id, item.id),
+                  matchesStoredPath(equalityDocuments.pdfUrl, item.pdfUrl)
+                )
+              )
+              .returning({ id: equalityDocuments.id }),
+          [
+            {
+              previous: item.pdfUrl,
+              next: pdfUrl,
+              allowedPublicPathPrefixes: [EQUALITY_DOCUMENTS_PUBLIC_PATH],
+            },
+          ]
+        )
+        if (applied) changed = true
       }
     }
 
@@ -396,28 +578,43 @@ export async function reconcileAdminAssetPublication() {
       })
 
       if (nextPdfUrl !== item.pdfUrl) {
-        await db
-          .update(financialReports)
-          .set({ pdfUrl: nextPdfUrl ?? item.pdfUrl })
-          .where(eq(financialReports.id, item.id))
-
-        await cleanupUnusedAdminAsset({
-          storagePath: item.pdfUrl,
-          allowedPublicPathPrefixes: [FINANCIAL_REPORTS_PUBLIC_PATH],
-        })
+        const pdfUrl = nextPdfUrl ?? item.pdfUrl
+        const applied = await applyReconciledPaths(
+          () =>
+            db
+              .update(financialReports)
+              .set({ pdfUrl })
+              .where(
+                and(
+                  eq(financialReports.id, item.id),
+                  matchesStoredPath(financialReports.pdfUrl, item.pdfUrl)
+                )
+              )
+              .returning({ id: financialReports.id }),
+          [
+            {
+              previous: item.pdfUrl,
+              next: pdfUrl,
+              allowedPublicPathPrefixes: [FINANCIAL_REPORTS_PUBLIC_PATH],
+            },
+          ]
+        )
+        if (applied) changed = true
       }
     }
   } catch (error) {
     if (isDatabaseUnavailableError(error)) {
       logWarn('admin-assets.reconcile.database-unavailable')
-      return
+      return changed
     }
 
     if (isDatabaseMissingRelationError(error, 'newsletter_campaign_items')) {
       logWarn('admin-assets.reconcile.missing-relation', { relation: 'newsletter_campaign_items' })
-      return
+      return changed
     }
 
     logError('admin-assets.reconcile', error)
   }
+
+  return changed
 }

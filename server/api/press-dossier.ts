@@ -1,8 +1,5 @@
 import { db } from '../db'
-import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
-} from '../utils/cache/publicRouteCache'
+import { PUBLIC_CMS_CACHE_SCOPES, publicRouteCacheOptions } from '../utils/cache/publicRouteCache'
 import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { getPressDossierPublicUrl } from '../utils/press/pressDossier'
 
@@ -26,8 +23,5 @@ export default defineCachedEventHandler(
       throwPublicDatabaseAwareError(event, 'public.press-dossier', error)
     }
   },
-  {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) => buildPublicRouteCacheKey(event, 'press-dossier', { includeLocale: false }),
-  }
+  publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.pressDossier, { includeLocale: false })
 )

@@ -8,13 +8,15 @@ import { getRequestLocaleContext } from '../../../../utils/locale/requestLocale'
 import { enforceRateLimit } from '../../../../utils/public/rateLimit'
 import { getPublicApiErrorMessage } from '../../../../utils/locale/apiErrorMessages'
 import { logError } from '../../../../utils/core/logger'
+import { resolveCampaignItemCurrentPath } from '../../../../utils/newsletter/campaignItemCurrentPath'
 
 /**
- * Click tracking for newsletter campaign links. Counts the click, then redirects to the target
- * frozen in the item's snapshot.
+ * Click tracking for newsletter campaign links. Counts the click, then redirects to where the piece
+ * lives now — slugs follow titles, so the path frozen in the item's snapshot can be stale — falling
+ * back to that frozen path when the piece is gone.
  *
  * Never cached: it is a GET that mutates. And never redirects anywhere the request asked for — the
- * destination comes from the snapshot, so a crafted query cannot turn this into an open redirect.
+ * destination comes from the database, so a crafted query cannot turn this into an open redirect.
  */
 
 const clickParamsSchema = z.object({
@@ -62,7 +64,11 @@ export default defineEventHandler(async (event) => {
     // Both conditions matter: matching on the item alone would let any campaign id count a click
     // against the wrong campaign.
     const [item] = await db
-      .select({ snapshot: newsletterCampaignItems.snapshot })
+      .select({
+        itemType: newsletterCampaignItems.itemType,
+        itemId: newsletterCampaignItems.itemId,
+        snapshot: newsletterCampaignItems.snapshot,
+      })
       .from(newsletterCampaignItems)
       .where(
         and(
@@ -74,9 +80,12 @@ export default defineEventHandler(async (event) => {
 
     const target = item?.snapshot?.locales?.[localeCode] ?? item?.snapshot?.locales?.[defaultLocale]
 
-    if (!target?.targetPath) {
+    if (!item || !target?.targetPath) {
       return sendRedirect(event, fallbackPath, 302)
     }
+
+    const targetPath =
+      (await resolveCampaignItemCurrentPath(item.itemType, item.itemId)) ?? target.targetPath
 
     await db
       .update(newsletterCampaignItems)
@@ -90,7 +99,7 @@ export default defineEventHandler(async (event) => {
 
     return sendRedirect(
       event,
-      buildLocalizedPathFromLocale(target.targetPath, localeCode, locales, defaultLocale),
+      buildLocalizedPathFromLocale(targetPath, localeCode, locales, defaultLocale),
       302
     )
   } catch (error) {

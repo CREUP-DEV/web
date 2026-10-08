@@ -53,6 +53,8 @@ export function useAdminActivity(
   search: MaybeRef<string>
 ) {
   const localeApiHeaders = useLocaleApiHeaders()
+  // Forwards the session cookie during SSR; a bare `$fetch` there would answer 401 on a full load.
+  const requestFetch = useRequestFetch()
   const kindValue = computed(() => unref(kind))
   const searchValue = computed(() => unref(search))
   const debouncedSearch = refDebounced(searchValue, 300)
@@ -77,7 +79,7 @@ export function useAdminActivity(
       if (debouncedSearch.value) params.set('search', debouncedSearch.value)
       params.set('limit', String(ADMIN_ACTIVITY_PAGE_SIZE))
       params.set('offset', String(offset.value))
-      return $fetch<AdminActivityResponse>(`/api/admin/activity?${params.toString()}`, {
+      return requestFetch<AdminActivityResponse>(`/api/admin/activity?${params.toString()}`, {
         headers: localeApiHeaders.value,
       })
     },
@@ -97,6 +99,19 @@ export function useAdminActivity(
     }))
   }
 
+  /**
+   * Backfills the page after a row was removed locally: steps back when that emptied a later page
+   * (the key change refetches), otherwise refetches so the next page's first row moves up.
+   */
+  const refreshAfterRemoval = async () => {
+    if (!items.value.length && page.value > 1) {
+      page.value -= 1
+      return
+    }
+
+    await refresh()
+  }
+
   return {
     decrementTotal,
     error,
@@ -106,6 +121,7 @@ export function useAdminActivity(
     pageSize: ADMIN_ACTIVITY_PAGE_SIZE,
     pending,
     refresh,
+    refreshAfterRemoval,
     removeItem,
     total,
   }

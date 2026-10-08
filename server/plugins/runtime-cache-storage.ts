@@ -1,4 +1,6 @@
 import redisDriver from 'unstorage/drivers/redis'
+import { purgePageCaches } from '../utils/admin/adminCacheInvalidation'
+import { logError } from '../utils/core/logger'
 import { getOptionalRuntimeConfigString } from '../utils/core/runtimeConfig'
 
 const CACHE_STORAGE_BASE = 'creup:web:cache'
@@ -6,6 +8,7 @@ const CACHE_STORAGE_BASE = 'creup:web:cache'
 // above the longest cached handler's freshness window (maxAge 300s + swr) so still-warm
 // entries are never evicted between revalidations; abandoned keys expire after this.
 const CACHE_REDIS_TTL_SECONDS = 3600
+const CACHE_REDIS_SCAN_COUNT = 500
 
 // nuxt-security keeps its rate-limiter state under this named storage mount
 // (useStorage('#rate-limiter-storage') in its middleware).
@@ -59,6 +62,13 @@ export default defineNitroPlugin(async () => {
       preConnect: true,
       url: redisUrl,
       ttl: CACHE_REDIS_TTL_SECONDS,
+      // Admin invalidation lists keys by prefix; the default SCAN COUNT (10) walks the keyspace in
+      // tiny steps on every save.
+      scanCount: CACHE_REDIS_SCAN_COUNT,
     })
   )
+
+  purgePageCaches().catch((error) => {
+    logError('cache.page-purge.startup', error)
+  })
 })

@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import {
-  buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  publicRouteCacheOptions,
 } from '../utils/cache/publicRouteCache'
 import { toExternalImageProxyUrlWithKindHint } from '../utils/external/externalAssetKind'
 import { externalCommitteesResponseSchema } from '../utils/validation'
@@ -176,7 +176,7 @@ async function buildCommitteesResponse(event: H3Event) {
   })
 }
 
-export default defineCachedEventHandler((event) => buildCommitteesResponse(event), {
-  ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-  getKey: (event) => buildPublicRouteCacheKey(event, 'comites', { includeLocale: false }),
-})
+export default defineCachedEventHandler(
+  (event) => buildCommitteesResponse(event),
+  publicRouteCacheOptions('comites', { includeLocale: false }, FAST_EXTERNAL_ROUTE_CACHE_OPTIONS)
+)

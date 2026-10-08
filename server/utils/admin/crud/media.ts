@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets } from '../../../db/schema'
-import { invalidatePressCache } from '../adminCacheInvalidation'
+import { invalidatePressRelatedCaches } from '../adminCacheInvalidation'
 import { defineAssetBackedTranslatableCrud } from '../defineAssetBackedTranslatableCrud'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { createMediaOutletSchema, updateMediaOutletSchema } from '~~/shared/utils/adminSchemas'
@@ -32,7 +32,7 @@ export const mediaCrud = defineAssetBackedTranslatableCrud({
     },
     refetch: (tx, id) => tx.query.mediaOutlets.findFirst({ where: eq(mediaOutlets.id, id) }),
   },
-  invalidate: invalidatePressCache,
+  invalidate: invalidatePressRelatedCaches,
   messages: {
     notFound: 'notFound',
     optimisticLock: 'mediaOptimisticLock',

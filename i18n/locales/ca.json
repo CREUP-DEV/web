@@ -785,6 +785,17 @@
     }
   },
   "admin": {
+    "contentPreview": {
+      "label": "Previsualització",
+      "status": {
+        "public": "Publicat: així es veu al web.",
+        "inactive": "No és públic: està desactivat.",
+        "scheduled": "Encara no és públic: es publicarà el {date}."
+      },
+      "viewPublic": "Mostra al web",
+      "backToEditor": "Torna a l'editor",
+      "loadError": "No s'ha pogut carregar la previsualització"
+    },
     "errors": {
       "slugExists": "Ja existeix una etiqueta amb aquest slug",
       "tagOrderSaveFailed": "No s'ha pogut desar l'ordre d'etiquetes",
@@ -920,6 +931,7 @@
       "adminTitle": "Administració",
       "signOut": "Tanca la sessió",
       "viewSite": "Veure el lloc",
+      "viewSiteAria": "Veure el lloc (s'obre en una pestanya nova)",
       "collapseSidebar": "Contreu el menú lateral",
       "expandSidebar": "Expandeix el menú lateral",
       "closeSidebar": "Tanca el menú lateral",
@@ -1194,7 +1206,20 @@
       "deleteErrorToast": "No s'ha pogut eliminar l'accés"
     },
     "press": {
-      "viewOnWebAria": "Veure l'article a la web",
+      "viewOnWebAria": "Veure l'article a la web (s'obre en una pestanya nova)",
+      "duplicate": {
+        "title": "Article duplicat?",
+        "description": "Ja existeix «{title}» ({type}, {date}). Vols crear-lo igualment?",
+        "openExisting": "Obre l'existent",
+        "confirm": "Crea'l igualment",
+        "types": {
+          "press_release": "Nota de premsa",
+          "statement": "Comunicat",
+          "media_appearance": "Als mitjans"
+        }
+      },
+      "previewInactive": "Obre la previsualització en una pestanya nova: l'article està inactiu i no és públic",
+      "previewScheduled": "Obre la previsualització en una pestanya nova: l'article està programat i no serà públic fins al {date}",
       "unsavedChangesPrompt": "Hi ha canvis sense desar. Si surts ara, es perdran.",
       "types": {
         "pressRelease": "Notes de premsa",
@@ -1211,7 +1236,6 @@
         "filterByTypeAria": "Filtra els articles per tipus",
         "searchPlaceholder": "Cerca articles...",
         "loadErrorTitle": "No s'han pogut carregar els articles de premsa",
-        "viewOnWebTitle": "Veure a la web",
         "editTitle": "Edita l'article",
         "editAria": "Edita l'article",
         "deleteTitle": "Elimina l'article",
@@ -1737,6 +1761,12 @@
       "campaignSubjectRequiredForLocale": "Escriu l’assumpte en aquest idioma o els altres textos no es desaran"
     },
     "activity": {
+      "duplicate": {
+        "title": "Entrada duplicada?",
+        "description": "Ja existeix «{title}» ({date}). Vols crear-la igualment?",
+        "openExisting": "Obre l'existent",
+        "confirm": "Crea-la igualment"
+      },
       "unsavedChangesPrompt": "Hi ha canvis sense desar. Si surts ara, es perdran.",
       "subnav": {
         "aria": "Subseccions d’Activitat",
@@ -1757,7 +1787,6 @@
         "searchPlaceholder": "Cerca entrades...",
         "loadErrorTitle": "No s’han pogut carregar les entrades d’activitat",
         "online": "En línia",
-        "viewOnWebTitle": "Veure al web",
         "editTitle": "Edita l’entrada",
         "editAria": "Edita l’entrada",
         "deleteTitle": "Elimina l’entrada",
@@ -1788,9 +1817,11 @@
         "newLabel": "Nova activitat",
         "saveChanges": "Desa els canvis",
         "createEntry": "Crea l’entrada",
-        "viewOnWebAria": "Veure l’entrada al web",
+        "viewOnWebAria": "Veure l’entrada al web (s’obre en una pestanya nova)",
+        "previewInactive": "Obre la previsualització en una pestanya nova: l’entrada està inactiva i no és pública",
         "refreshSnapshot": "Actualitza les dades de l’organigrama",
         "refreshSnapshotHint": "Torna a congelar el logo i les sigles de l’organitzador amb les dades actuals de l’organigrama.",
+        "refreshSnapshotUnsaved": "Desa o descarta els canvis pendents abans d’actualitzar les dades de l’organitzador",
         "requiredBadge": "Obligatori",
         "titleLabel": "Títol",
         "excerptLabel": "Descripció breu",
@@ -1847,6 +1878,7 @@
         "monthFilterLabel": "Filtra per mes",
         "clearFilter": "Neteja el filtre",
         "loadErrorTitle": "No s’han pogut carregar els informes d’àrees",
+        "viewOnWebAria": "Veure l’informe al web (s’obre en una pestanya nova)",
         "editTitle": "Edita l’informe",
         "editAria": "Edita l’informe",
         "deleteTitle": "Elimina l’informe",

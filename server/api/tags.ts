@@ -4,8 +4,8 @@ import { pressArticles, pressArticleTags, tags } from '../db/schema'
 import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
+  PUBLIC_CMS_CACHE_SCOPES,
+  publicRouteCacheOptions,
   setPublicRouteVaryHeaders,
 } from '../utils/cache/publicRouteCache'
 import { tagsListQuerySchema, validatePublicQuery } from '../utils/validation'
@@ -64,11 +64,5 @@ export default defineCachedEventHandler(
       throwPublicDatabaseAwareError(event, 'public.tags', error)
     }
   },
-  {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'public-tags', {
-        queryKeys: ['type'],
-      }),
-  }
+  publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.tags, { queryKeys: ['type'] })
 )

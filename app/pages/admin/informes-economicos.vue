@@ -255,6 +255,7 @@ const handleDelete = async () => {
   try {
     await $fetch(`/api/admin/financial-reports/${itemToDelete.value.id}`, {
       method: 'DELETE',
+      query: { updatedAt: itemToDelete.value.updatedAt },
     })
     removeItem(itemToDelete.value.id)
     await refreshAllClientAsyncData()

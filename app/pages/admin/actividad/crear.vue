@@ -43,6 +43,9 @@ onBeforeRouteLeave(() => {
   return window.confirm(t('admin.activity.unsavedChangesPrompt'))
 })
 
+const possibleDuplicate = useAdminPossibleDuplicate<Record<string, unknown>>()
+const { duplicate: duplicateEntry, isOpen: isDuplicateModalOpen } = possibleDuplicate
+
 const handleSubmit = async (payload: Record<string, unknown>) => {
   isSubmitting.value = true
   try {
@@ -52,6 +55,8 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
     toast.add({ title: t('admin.activity.toast.created'), color: 'success' })
     router.push(localePath(ADMIN_ROUTES.activity))
   } catch (e) {
+    // Same title and month as an existing entry: ask before creating a second one.
+    if (possibleDuplicate.hold(e, payload)) return
     toast.add({
       title: getApiErrorMessage(e, t('admin.activity.toast.createError')),
       color: 'error',
@@ -59,6 +64,11 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
   } finally {
     isSubmitting.value = false
   }
+}
+
+const handleDuplicateConfirm = async () => {
+  const payload = possibleDuplicate.confirm()
+  if (payload) await handleSubmit(payload)
 }
 
 const handleCancel = () => {
@@ -75,6 +85,12 @@ const handleCancel = () => {
       :submitting="isSubmitting"
       @submit="handleSubmit"
       @cancel="handleCancel"
+    />
+    <AdminPossibleDuplicateModal
+      v-model:open="isDuplicateModalOpen"
+      kind="activity"
+      :duplicate="duplicateEntry"
+      @confirm="handleDuplicateConfirm"
     />
   </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PressArticle } from '@/composables/press/usePress'
+import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -15,10 +16,12 @@ if (error.value || !data.value?.data) {
 
 const article = computed<PressArticle>(() => data.value!.data as PressArticle)
 
-useLocalizedPressDetailSeo({
-  path: `/prensa/comunicados/${slug}`,
-  translatedLocales: computed(() => article.value.translatedLocales ?? null),
+const canonicalRedirect = usePublicDetailCanonical({
+  requestedPath: `${getPressArticlePublicListPath('statement')}/${slug}`,
+  canonicalPath: () => `${getPressArticlePublicListPath(article.value.type)}/${article.value.slug}`,
+  translatedLocales: () => article.value.translatedLocales,
 })
+if (canonicalRedirect) await canonicalRedirect
 </script>
 
 <template>

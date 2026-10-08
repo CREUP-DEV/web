@@ -186,16 +186,14 @@ async function main() {
   // Cache purge must run only after the seed transaction has committed.
   const redisUrl = process.env.NUXT_REDIS_URL?.trim() || process.env.REDIS_URL?.trim()
   if (redisUrl) {
-    console.log('🧹 Clearing Nitro cache for press dossier API...')
-    const { purgeNitroHandlerCacheByPrefixes } =
+    // The seed rewrites every CMS table, so every cached public response is stale.
+    console.log('🧹 Clearing Nitro public caches...')
+    const { ALL_NITRO_CACHE_PREFIXES, purgeNitroHandlerCacheByPrefixes } =
       await import('../server/utils/cache/nitroRedisCachePurge')
-    await purgeNitroHandlerCacheByPrefixes(redisUrl, [
-      'nitro/handlers/press-dossier',
-      'nitro/handlers/public-press-dossier',
-    ])
+    await purgeNitroHandlerCacheByPrefixes(redisUrl, ALL_NITRO_CACHE_PREFIXES)
   } else {
     console.log(
-      'ℹ️ NUXT_REDIS_URL not set: if the dossier link is missing in the header, restart the dev server (Nitro in-memory cache).'
+      'ℹ️ NUXT_REDIS_URL not set: restart the dev server to drop its in-memory Nitro cache.'
     )
   }
 

@@ -1,8 +1,8 @@
 import { createError } from 'h3'
-import { access, copyFile, mkdir, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises'
+import { constants as fsConstants } from 'node:fs'
+import { access, copyFile, link, mkdir, readdir, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join, posix, resolve, sep } from 'node:path'
 import { createId } from '@paralleldrive/cuid2'
-import { hasAdminStoredFileReference } from './adminAssetReferences'
 import { slugify } from '../core/slug'
 import { logWarn } from '../core/logger'
 import { getDefaultAdminApiErrorMessage } from '../locale/adminApiErrorMessages'
@@ -27,6 +27,11 @@ interface FinalizeAdminFileOptions {
   publicPath: string
   slug?: string
   fallbackBaseName?: string
+  /**
+   * The record's current file. Finalize never touches it (the row points at it until the caller
+   * commits); it only keeps a new upload from reusing its published URL. The caller removes it
+   * after commit.
+   */
   replaceStoragePath?: string | null
   publish?: boolean
   protectedPublicPaths?: string[]
@@ -47,45 +52,67 @@ async function fileExists(path: string) {
   }
 }
 
-function isCrossDeviceRenameError(error: unknown): error is NodeJS.ErrnoException {
-  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'EXDEV'
+function getErrorCode(error: unknown) {
+  return typeof error === 'object' && error !== null && 'code' in error ? error.code : undefined
 }
 
-async function moveFileSafely(sourceAbsolutePath: string, targetAbsolutePath: string) {
+/**
+ * `link()` failures that mean these two paths cannot share an inode (different devices, as the
+ * uploads volume and the internal store usually are, or a filesystem without hard links), rather
+ * than that the target name is taken.
+ */
+const HARD_LINK_UNAVAILABLE_ERROR_CODES = new Set([
+  'EXDEV',
+  'EPERM',
+  'ENOTSUP',
+  'EOPNOTSUPP',
+  'ENOSYS',
+  'EMLINK',
+])
+
+/**
+ * Gives the source's content a second name, only if nothing is stored under that name yet: returns
+ * false when the target exists, and never overwrites it, so two requests can never end up sharing
+ * (or clobbering) one file. A hard link claims the name atomically; where the paths cannot be
+ * linked, an exclusive copy (COPYFILE_EXCL) claims it just as atomically.
+ */
+async function placeFileExclusively(sourceAbsolutePath: string, targetAbsolutePath: string) {
   try {
-    await rename(sourceAbsolutePath, targetAbsolutePath)
-    return
+    await link(sourceAbsolutePath, targetAbsolutePath)
+    return true
   } catch (error) {
-    if (!isCrossDeviceRenameError(error)) {
+    if (getErrorCode(error) === 'EEXIST') {
+      return false
+    }
+
+    if (!HARD_LINK_UNAVAILABLE_ERROR_CODES.has(String(getErrorCode(error)))) {
       throw error
     }
   }
 
-  const targetDirectory = dirname(targetAbsolutePath)
-  const targetBasename = basename(targetAbsolutePath)
-  const temporaryTargetAbsolutePath = join(
-    targetDirectory,
-    `.${targetBasename}.${createId().slice(0, 12)}.tmp`
-  )
-
-  await copyFile(sourceAbsolutePath, temporaryTargetAbsolutePath)
-
   try {
-    await rename(temporaryTargetAbsolutePath, targetAbsolutePath)
+    await copyFile(sourceAbsolutePath, targetAbsolutePath, fsConstants.COPYFILE_EXCL)
+    return true
   } catch (error) {
-    try {
-      await unlink(temporaryTargetAbsolutePath)
-    } catch {
-      // Best-effort cleanup for failed cross-device moves.
+    if (getErrorCode(error) === 'EEXIST') {
+      return false
     }
 
     throw error
   }
+}
 
+/** Drops the old name of a file that now lives at `targetAbsolutePath` too. */
+async function removeMovedSource(sourceAbsolutePath: string, targetAbsolutePath: string) {
   try {
     await unlink(sourceAbsolutePath)
   } catch (error) {
-    logWarn('admin-assets.cross-device-source-cleanup-failed', {
+    if (getErrorCode(error) === 'ENOENT') {
+      return
+    }
+
+    // The content is safe under its new name; a temporary leftover is swept within a day.
+    logWarn('admin-assets.move-source-cleanup-failed', {
       sourceAbsolutePath,
       targetAbsolutePath,
       error,
@@ -291,8 +318,7 @@ async function resolveAdminReplacementFilename(
   }
 
   // Do not skip "protected" paths here: the canonical filename may match a shipped default
-  // asset (same public path). We still need the basename so finalize can replace-in-place
-  // instead of suffixing (e.g. banner-que-es-creup-2.webp).
+  // asset (same public path), and finalize still needs the basename to avoid reusing it.
 
   const isInternalStoragePath =
     isTemporaryAdminStoragePath(normalizedStoragePath) ||
@@ -323,33 +349,21 @@ async function resolveAdminReplacementFilename(
   return basename(relativeFilename)
 }
 
-async function removeUnreferencedConflictingFile(options: {
-  absoluteUploadDir: string
-  candidateFilename: string
-  publicPath: string
-  publish: boolean
-}) {
-  const candidateStoragePath = options.publish
-    ? `${options.publicPath}/${options.candidateFilename}`
-    : buildInactiveStoragePath(options.publicPath, options.candidateFilename)
-
-  if (await hasAdminStoredFileReference(candidateStoragePath)) {
-    return false
-  }
-
-  try {
-    await unlink(join(options.absoluteUploadDir, options.candidateFilename))
-  } catch (error) {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
-      return true
-    }
-
-    throw error
-  }
-
-  return true
-}
-
+/**
+ * Gives a stored file its final name (from `slug`) in the public folder, or in the inactive store
+ * when `publish` is false, and returns its new storage path.
+ *
+ * It never deletes or overwrites a file a row may still point at, because it runs before the
+ * caller's transaction commits:
+ * - A temporary upload is moved: nothing but the submitting form refers to it, and a failed save
+ *   moves it back (`cleanupAdminAssetFinalizationsSafely`).
+ * - Any other source (the record's current file, on a rename or a publish toggle) is copied. The
+ *   original stays where the DB says it is until the caller removes it after commit, once nothing
+ *   references it; a failed save just drops the copy.
+ * - A name already in use (another record, a concurrent request that has not committed yet, an
+ *   orphan, the record's own current file) is skipped for the next `-N` suffix, never reclaimed.
+ *   The claim itself is atomic, so two requests cannot both get one name.
+ */
 export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
   const normalizedStoragePath = options.storagePath.trim()
   const publish = options.publish ?? true
@@ -374,99 +388,81 @@ export async function finalizeAdminFile(options: FinalizeAdminFileOptions) {
   const absoluteUploadDir = publish
     ? join(process.cwd(), options.uploadDir)
     : resolveInactiveUploadDir(options.publicPath)
-  const currentFilename = sourceFile.currentFilename
-  const replaceFilename = await resolveAdminReplacementFilename(
-    options.replaceStoragePath,
-    options.publicPath
-  )
+  const sourceAbsolutePath = resolve(sourceFile.absolutePath)
+  // A new upload never takes over the URL the file it replaces was published at, so no cache
+  // (browser, CDN, IPX) keeps serving the old content under it once that file is removed.
   const shouldAvoidPublishedPathReuse =
     sourceFile.kind === 'temp' &&
     publish &&
     !!options.replaceStoragePath &&
     !isInternalAdminStoragePath(options.replaceStoragePath)
+  const replaceFilename = shouldAvoidPublishedPathReuse
+    ? await resolveAdminReplacementFilename(options.replaceStoragePath, options.publicPath)
+    : ''
 
   await mkdir(absoluteUploadDir, { recursive: true })
 
-  let candidateBaseSlug = baseSlug
-  let suffix = 2
-  let attempts = 0
+  for (let attempt = 0; attempt < MAX_FILENAME_COLLISION_ATTEMPTS; attempt++) {
+    const candidateFilename = `${attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`}${extension}`
+    const candidateAbsolutePath = resolve(absoluteUploadDir, candidateFilename)
 
-  while (true) {
-    attempts++
-    if (attempts > MAX_FILENAME_COLLISION_ATTEMPTS) {
-      throw createError({
-        statusCode: 500,
-        message: getDefaultAdminApiErrorMessage('filenameUnavailable'),
-      })
+    // Already stored under this name in this folder.
+    if (candidateAbsolutePath === sourceAbsolutePath) {
+      return normalizedStoragePath
     }
 
-    const candidateFilename = `${candidateBaseSlug}${extension}`
-
-    if (candidateFilename === currentFilename) {
-      break
-    }
-
-    if (candidateFilename === replaceFilename) {
-      if (!shouldAvoidPublishedPathReuse) {
-        break
-      }
-
-      candidateBaseSlug = `${baseSlug}-${suffix}`
-      suffix++
+    if (shouldAvoidPublishedPathReuse && candidateFilename === replaceFilename) {
       continue
     }
 
-    const candidateAbsolutePath = join(absoluteUploadDir, candidateFilename)
-
-    if (!(await fileExists(candidateAbsolutePath))) {
-      break
+    if (!(await placeFileExclusively(sourceAbsolutePath, candidateAbsolutePath))) {
+      continue
     }
 
-    if (
-      await removeUnreferencedConflictingFile({
-        absoluteUploadDir,
-        candidateFilename,
-        publicPath: options.publicPath,
-        publish,
-      })
-    ) {
-      break
+    if (sourceFile.kind === 'temp') {
+      await removeMovedSource(sourceAbsolutePath, candidateAbsolutePath)
     }
 
-    candidateBaseSlug = `${baseSlug}-${suffix}`
-    suffix++
+    return publish
+      ? `${options.publicPath}/${candidateFilename}`
+      : buildInactiveStoragePath(options.publicPath, candidateFilename)
   }
 
-  const targetFilename = `${candidateBaseSlug}${extension}`
-  const targetStoragePath = publish
-    ? `${options.publicPath}/${targetFilename}`
-    : buildInactiveStoragePath(options.publicPath, targetFilename)
+  throw createError({
+    statusCode: 500,
+    message: getDefaultAdminApiErrorMessage('filenameUnavailable'),
+  })
+}
 
-  if (targetStoragePath === normalizedStoragePath) {
-    return normalizedStoragePath
+/**
+ * Undoes the move of a temporary upload: gives the finalized file back its temporary path, so the
+ * form that still holds that path can be submitted again after a failed save. Leaves the finalized
+ * name in place (the caller deletes it once it has checked nothing references it). Returns false
+ * when there is nothing to restore or the temporary path is already taken (the upload is still
+ * there, e.g. its old name could not be dropped).
+ */
+export async function restoreAdminStoredFileToTemporaryPath(
+  storagePath: string,
+  temporaryStoragePath: string
+) {
+  if (!isTemporaryAdminStoragePath(temporaryStoragePath)) {
+    return false
   }
 
-  if (
-    options.replaceStoragePath &&
-    targetStoragePath === options.replaceStoragePath &&
-    options.replaceStoragePath !== normalizedStoragePath
-  ) {
-    const replaceAbsolutePath = resolveAdminStoredAbsolutePath(options.replaceStoragePath)
+  const absolutePath = resolveAdminStoredAbsolutePath(storagePath)
+  const temporaryAbsolutePath = resolveInternalAbsolutePath(temporaryStoragePath)
 
-    if (await fileExists(replaceAbsolutePath)) {
-      await unlink(replaceAbsolutePath)
+  await mkdir(dirname(temporaryAbsolutePath), { recursive: true })
+
+  try {
+    return await placeFileExclusively(absolutePath, temporaryAbsolutePath)
+  } catch (error) {
+    if (getErrorCode(error) === 'ENOENT') {
+      return false
     }
+
+    throw error
   }
-
-  const targetAbsolutePath = join(absoluteUploadDir, targetFilename)
-
-  if (sourceFile.kind === 'public' && !publish) {
-    await copyFile(sourceFile.absolutePath, targetAbsolutePath)
-  } else {
-    await moveFileSafely(sourceFile.absolutePath, targetAbsolutePath)
-  }
-
-  return targetStoragePath
 }
 
 export async function deleteAdminStoredFile(options: DeleteAdminStoredFileOptions) {

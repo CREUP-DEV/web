@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ActivityDetail } from '@/composables/activity/useActivity'
 import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
+import { ACTIVITY_PUBLIC_BASE_PATH } from '~~/shared/constants/activity'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -22,10 +23,12 @@ const breadcrumbLabel = computed(() =>
     : t('activity.detail.breadcrumbCreup')
 )
 
-useLocalizedPressDetailSeo({
-  path: `/prensa/actividad/${slug}`,
-  translatedLocales: computed(() => entry.value.translatedLocales ?? null),
+const canonicalRedirect = usePublicDetailCanonical({
+  requestedPath: `${ACTIVITY_PUBLIC_BASE_PATH}/${slug}`,
+  canonicalPath: () => `${ACTIVITY_PUBLIC_BASE_PATH}/${entry.value.slug}`,
+  translatedLocales: () => entry.value.translatedLocales,
 })
+if (canonicalRedirect) await canonicalRedirect
 
 useHead(() => ({
   script: [

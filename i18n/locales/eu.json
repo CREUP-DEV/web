@@ -785,6 +785,17 @@
     }
   },
   "admin": {
+    "contentPreview": {
+      "label": "Aurrebista",
+      "status": {
+        "public": "Argitaratuta: horrela ikusten da webgunean.",
+        "inactive": "Ez da publikoa: desaktibatuta dago.",
+        "scheduled": "Oraindik ez da publikoa. Argitaratze-data: {date}."
+      },
+      "viewPublic": "Ikusi webgunean",
+      "backToEditor": "Itzuli editorera",
+      "loadError": "Ezin izan da aurrebista kargatu"
+    },
     "errors": {
       "slugExists": "Slug hau duen etiketa bat existitzen da jada",
       "tagOrderSaveFailed": "Ezin izan da etiketen ordena gorde",
@@ -920,6 +931,7 @@
       "adminTitle": "Administrazioa",
       "signOut": "Itxi saioa",
       "viewSite": "Ikusi gunea",
+      "viewSiteAria": "Ikusi gunea (fitxa berri batean irekitzen da)",
       "collapseSidebar": "Tolestu alboko menua",
       "expandSidebar": "Zabaldu alboko menua",
       "closeSidebar": "Itxi alboko menua",
@@ -1194,7 +1206,20 @@
       "deleteErrorToast": "Ezin izan da sarbidea ezabatu"
     },
     "press": {
-      "viewOnWebAria": "Ikusi artikulua webean",
+      "viewOnWebAria": "Ikusi artikulua webean (fitxa berri batean irekitzen da)",
+      "duplicate": {
+        "title": "Artikulu bikoiztua?",
+        "description": "«{title}» badago lehendik ({type}, {date}). Sortu hala ere?",
+        "openExisting": "Ireki lehendik dagoena",
+        "confirm": "Sortu hala ere",
+        "types": {
+          "press_release": "Prentsa-oharra",
+          "statement": "Adierazpena",
+          "media_appearance": "Hedabideetan"
+        }
+      },
+      "previewInactive": "Ireki aurrebista fitxa berri batean: artikulua ez dago aktibo eta ez da publikoa",
+      "previewScheduled": "Ireki aurrebista fitxa berri batean: artikulua programatuta dago eta ez da publikoa izango {date} arte",
       "unsavedChangesPrompt": "Gorde gabeko aldaketak daude. Orain irteten bazara, galdu egingo dira.",
       "types": {
         "pressRelease": "Prentsa-oharrak",
@@ -1211,7 +1236,6 @@
         "filterByTypeAria": "Iragazi artikuluak motaren arabera",
         "searchPlaceholder": "Bilatu artikuluak...",
         "loadErrorTitle": "Ezin izan dira prentsa-artikuluak kargatu",
-        "viewOnWebTitle": "Ikusi webean",
         "editTitle": "Editatu artikulua",
         "editAria": "Editatu artikulua",
         "deleteTitle": "Ezabatu artikulua",
@@ -1737,6 +1761,12 @@
       "campaignSubjectRequiredForLocale": "Idatzi gaia hizkuntza honetan edo beste testuak ez dira gordeko"
     },
     "activity": {
+      "duplicate": {
+        "title": "Sarrera bikoiztua?",
+        "description": "«{title}» badago lehendik ({date}). Sortu hala ere?",
+        "openExisting": "Ireki lehendik dagoena",
+        "confirm": "Sortu hala ere"
+      },
       "unsavedChangesPrompt": "Gorde gabeko aldaketak daude. Orain irtetzen bazara, galdu egingo dira.",
       "subnav": {
         "aria": "Jardueraren azpiatalak",
@@ -1757,7 +1787,6 @@
         "searchPlaceholder": "Bilatu sarrerak...",
         "loadErrorTitle": "Ezin izan dira jarduera-sarrerak kargatu",
         "online": "Online",
-        "viewOnWebTitle": "Ikusi webgunean",
         "editTitle": "Editatu sarrera",
         "editAria": "Editatu sarrera",
         "deleteTitle": "Ezabatu sarrera",
@@ -1788,9 +1817,11 @@
         "newLabel": "Jarduera berria",
         "saveChanges": "Gorde aldaketak",
         "createEntry": "Sortu sarrera",
-        "viewOnWebAria": "Ikusi sarrera webgunean",
+        "viewOnWebAria": "Ikusi sarrera webgunean (fitxa berri batean irekitzen da)",
+        "previewInactive": "Ireki aurrebista fitxa berri batean: sarrera ez dago aktibo eta ez da publikoa",
         "refreshSnapshot": "Eguneratu datuak antolaketa-organigrametik",
         "refreshSnapshotHint": "Antolatzailearen logoa eta siglak berriz izozten ditu organigramaren uneko datuekin.",
+        "refreshSnapshotUnsaved": "Gorde edo baztertu zain dauden aldaketak antolatzailearen datuak eguneratu aurretik",
         "requiredBadge": "Derrigorrezkoa",
         "titleLabel": "Izenburua",
         "excerptLabel": "Deskribapen laburra",
@@ -1847,6 +1878,7 @@
         "monthFilterLabel": "Iragazi hilabetearen arabera",
         "clearFilter": "Garbitu iragazkia",
         "loadErrorTitle": "Ezin izan dira arloen txostenak kargatu",
+        "viewOnWebAria": "Ikusi txostena webgunean (fitxa berri batean irekitzen da)",
         "editTitle": "Editatu txostena",
         "editAria": "Editatu txostena",
         "deleteTitle": "Ezabatu txostena",

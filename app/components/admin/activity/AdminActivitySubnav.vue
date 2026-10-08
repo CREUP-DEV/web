@@ -11,18 +11,13 @@ const localePath = useLocalePath()
 </script>
 
 <template>
-  <div
-    class="mb-6 flex gap-2 border-b"
-    role="tablist"
-    :aria-label="t('admin.activity.subnav.aria')"
-  >
+  <nav class="mb-6 flex gap-2 border-b" :aria-label="t('admin.activity.subnav.aria')">
     <UButton
       :to="localePath(ADMIN_ROUTES.activity)"
       :variant="active === 'entries' ? 'solid' : 'ghost'"
       icon="i-tabler-calendar-event"
       size="sm"
-      role="tab"
-      :aria-selected="active === 'entries'"
+      :aria-current="active === 'entries' ? 'page' : undefined"
       class="rounded-b-none"
     >
       {{ t('admin.activity.subnav.entries') }}
@@ -32,11 +27,10 @@ const localePath = useLocalePath()
       :variant="active === 'reports' ? 'solid' : 'ghost'"
       icon="i-tabler-report"
       size="sm"
-      role="tab"
-      :aria-selected="active === 'reports'"
+      :aria-current="active === 'reports' ? 'page' : undefined"
       class="rounded-b-none"
     >
       {{ t('admin.activity.subnav.reports') }}
     </UButton>
-  </div>
+  </nav>
 </template>

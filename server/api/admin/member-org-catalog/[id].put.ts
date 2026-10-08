@@ -3,7 +3,7 @@ import { and, eq, sql } from 'drizzle-orm'
 import { memberOrgCatalogEntries } from '../../../db/schema'
 import {
   assertOptimisticLock,
-  buildOptimisticLockCondition,
+  buildExpectedVersionCondition,
 } from '../../../utils/admin/optimisticLock'
 import { runAdminCrudTransaction } from '../../../utils/admin/adminCrud'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
@@ -30,143 +30,151 @@ export default defineEventHandler(async (event) => {
   try {
     const validated = validateBody(event, updateMemberOrgCatalogEntrySchema, body)
 
-    const item = await runAdminCrudTransaction(async (tx) => {
-      const existingItem = await tx.query.memberOrgCatalogEntries.findFirst({
-        where: eq(memberOrgCatalogEntries.id, id),
-      })
+    const item = await runAdminCrudTransaction(
+      async (tx) => {
+        const existingItem = await tx.query.memberOrgCatalogEntries.findFirst({
+          where: eq(memberOrgCatalogEntries.id, id),
+        })
 
-      if (!existingItem) {
-        throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
-      }
-
-      assertOptimisticLock(
-        validated.updatedAt,
-        existingItem.updatedAt,
-        getAdminApiErrorMessage(event, 'memberOrgCatalogEntryOptimisticLock')
-      )
-
-      // `source` is part of this row's identity (selectionKey/sourceKey uniqueness is scoped by
-      // it) — immutable after creation, never taken from the update payload.
-      let supersededByEntryId = existingItem.supersededByEntryId
-      if (validated.supersededByEntryId !== undefined) {
-        if (validated.supersededByEntryId === null) {
-          supersededByEntryId = null
-        } else if (validated.supersededByEntryId === id) {
+        if (!existingItem) {
           throw createError({
-            statusCode: 400,
-            message: getAdminApiErrorMessage(event, 'memberOrgCatalogSupersedeSelfReference'),
+            statusCode: 404,
+            message: getAdminApiErrorMessage(event, 'notFound'),
           })
-        } else {
-          const target = await tx.query.memberOrgCatalogEntries.findFirst({
-            where: eq(memberOrgCatalogEntries.id, validated.supersededByEntryId),
-          })
-          if (!target) {
-            throw createError({
-              statusCode: 404,
-              message: getAdminApiErrorMessage(event, 'notFound'),
-            })
-          }
-          if (target.source !== existingItem.source) {
+        }
+
+        assertOptimisticLock(
+          validated.updatedAt,
+          existingItem.updatedAt,
+          getAdminApiErrorMessage(event, 'memberOrgCatalogEntryOptimisticLock')
+        )
+
+        // `source` is part of this row's identity (selectionKey/sourceKey uniqueness is scoped by
+        // it) — immutable after creation, never taken from the update payload.
+        let supersededByEntryId = existingItem.supersededByEntryId
+        if (validated.supersededByEntryId !== undefined) {
+          if (validated.supersededByEntryId === null) {
+            supersededByEntryId = null
+          } else if (validated.supersededByEntryId === id) {
             throw createError({
               statusCode: 400,
-              message: getAdminApiErrorMessage(event, 'memberOrgCatalogSupersedeSourceMismatch'),
+              message: getAdminApiErrorMessage(event, 'memberOrgCatalogSupersedeSelfReference'),
             })
+          } else {
+            const target = await tx.query.memberOrgCatalogEntries.findFirst({
+              where: eq(memberOrgCatalogEntries.id, validated.supersededByEntryId),
+            })
+            if (!target) {
+              throw createError({
+                statusCode: 404,
+                message: getAdminApiErrorMessage(event, 'notFound'),
+              })
+            }
+            if (target.source !== existingItem.source) {
+              throw createError({
+                statusCode: 400,
+                message: getAdminApiErrorMessage(event, 'memberOrgCatalogSupersedeSourceMismatch'),
+              })
+            }
+            supersededByEntryId = target.id
           }
-          supersededByEntryId = target.id
         }
-      }
 
-      // A superseded row is always historical, regardless of what the client sent for `active` —
-      // otherwise it stays invisible to the client's own active-group filter while still counting
-      // toward the server's active-only reorder scope, breaking every reorder for that source
-      // group. It also keeps a superseded row out of another row's own supersede-candidate list.
-      const active = supersededByEntryId !== null ? false : validated.active
+        // A superseded row is always historical, regardless of what the client sent for `active` —
+        // otherwise it stays invisible to the client's own active-group filter while still counting
+        // toward the server's active-only reorder scope, breaking every reorder for that source
+        // group. It also keeps a superseded row out of another row's own supersede-candidate list.
+        const active = supersededByEntryId !== null ? false : validated.active
 
-      // Reactivating a historical row appends it to the end of its source group's active order.
-      let nextOrder = validated.order
-      if (active && !existingItem.active) {
-        const [row] = await tx
-          .select({
-            maxOrder: sql<number>`coalesce(max(${memberOrgCatalogEntries.order}), -1)`.mapWith(
-              Number
-            ),
+        // Reactivating a historical row appends it to the end of its source group's active order.
+        let nextOrder = validated.order
+        if (active && !existingItem.active) {
+          const [row] = await tx
+            .select({
+              maxOrder: sql<number>`coalesce(max(${memberOrgCatalogEntries.order}), -1)`.mapWith(
+                Number
+              ),
+            })
+            .from(memberOrgCatalogEntries)
+            .where(
+              and(
+                eq(memberOrgCatalogEntries.source, existingItem.source),
+                eq(memberOrgCatalogEntries.active, true)
+              )
+            )
+          nextOrder = (row?.maxOrder ?? -1) + 1
+        }
+
+        // A freshly uploaded logo arrives as a temporary path and has to be moved into the public
+        // folder; an unchanged one is already published and passes straight through.
+        const publishLogo = async (
+          nextPath: string | null | undefined,
+          currentPath: string | null,
+          variant: string
+        ) => {
+          // Clearing the logo still replaces a file: record the old one so it is cleaned up too.
+          if (!nextPath) {
+            if (currentPath) replacedLogos.push(currentPath)
+            return null
+          }
+          if (nextPath === currentPath) return currentPath
+
+          const published = await finalizeAdminImage({
+            storagePath: nextPath,
+            uploadDir: LOGO_UPLOAD_DIR,
+            publicPath: MEMBER_ORG_LOGOS_PUBLIC_PATH,
+            slug: `${validated.initials || validated.denomination}-${variant}`,
+            publish: true,
+            fallbackBaseName: 'organizacion-logo',
           })
-          .from(memberOrgCatalogEntries)
+          trackAdminAssetFinalization(cleanupTargets, {
+            sourceStoragePath: nextPath,
+            storagePath: published,
+            allowedPublicPathPrefixes: [MEMBER_ORG_LOGOS_PUBLIC_PATH],
+          })
+          if (currentPath) replacedLogos.push(currentPath)
+          return published
+        }
+
+        const logoLight = await publishLogo(validated.logoLight, existingItem.logoLight, 'claro')
+        const logoDark = await publishLogo(validated.logoDark, existingItem.logoDark, 'oscuro')
+
+        const updatedRows = await tx
+          .update(memberOrgCatalogEntries)
+          .set({
+            denomination: validated.denomination,
+            initials: validated.initials,
+            logoLight,
+            logoDark,
+            order: nextOrder,
+            active,
+            supersededByEntryId,
+          })
           .where(
             and(
-              eq(memberOrgCatalogEntries.source, existingItem.source),
-              eq(memberOrgCatalogEntries.active, true)
+              eq(memberOrgCatalogEntries.id, id),
+              buildExpectedVersionCondition(
+                memberOrgCatalogEntries.updatedAt,
+                validated.updatedAt,
+                existingItem.updatedAt
+              )
             )
           )
-        nextOrder = (row?.maxOrder ?? -1) + 1
-      }
+          .returning({ id: memberOrgCatalogEntries.id })
 
-      // A freshly uploaded logo arrives as a temporary path and has to be moved into the public
-      // folder; an unchanged one is already published and passes straight through.
-      const publishLogo = async (
-        nextPath: string | null | undefined,
-        currentPath: string | null,
-        variant: string
-      ) => {
-        // Clearing the logo still replaces a file: record the old one so it is cleaned up too.
-        if (!nextPath) {
-          if (currentPath) replacedLogos.push(currentPath)
-          return null
+        if (updatedRows.length === 0) {
+          throw createError({
+            statusCode: 409,
+            message: getAdminApiErrorMessage(event, 'memberOrgCatalogEntryOptimisticLock'),
+          })
         }
-        if (nextPath === currentPath) return currentPath
 
-        const published = await finalizeAdminImage({
-          storagePath: nextPath,
-          uploadDir: LOGO_UPLOAD_DIR,
-          publicPath: MEMBER_ORG_LOGOS_PUBLIC_PATH,
-          slug: `${validated.initials || validated.denomination}-${variant}`,
-          publish: true,
-          fallbackBaseName: 'organizacion-logo',
+        return tx.query.memberOrgCatalogEntries.findFirst({
+          where: eq(memberOrgCatalogEntries.id, id),
         })
-        trackAdminAssetFinalization(cleanupTargets, {
-          sourceStoragePath: nextPath,
-          storagePath: published,
-          allowedPublicPathPrefixes: [MEMBER_ORG_LOGOS_PUBLIC_PATH],
-        })
-        if (currentPath) replacedLogos.push(currentPath)
-        return published
-      }
-
-      const logoLight = await publishLogo(validated.logoLight, existingItem.logoLight, 'claro')
-      const logoDark = await publishLogo(validated.logoDark, existingItem.logoDark, 'oscuro')
-
-      const updatedRows = await tx
-        .update(memberOrgCatalogEntries)
-        .set({
-          denomination: validated.denomination,
-          initials: validated.initials,
-          logoLight,
-          logoDark,
-          order: nextOrder,
-          active,
-          supersededByEntryId,
-        })
-        .where(
-          validated.updatedAt
-            ? and(
-                eq(memberOrgCatalogEntries.id, id),
-                buildOptimisticLockCondition(memberOrgCatalogEntries.updatedAt, validated.updatedAt)
-              )
-            : eq(memberOrgCatalogEntries.id, id)
-        )
-        .returning({ id: memberOrgCatalogEntries.id })
-
-      if (updatedRows.length === 0) {
-        throw createError({
-          statusCode: 409,
-          message: getAdminApiErrorMessage(event, 'memberOrgCatalogEntryOptimisticLock'),
-        })
-      }
-
-      return tx.query.memberOrgCatalogEntries.findFirst({
-        where: eq(memberOrgCatalogEntries.id, id),
-      })
-    }, 'No se pudo actualizar la organización')
+      },
+      () => getAdminApiErrorMessage(event, 'memberOrgCatalogEntryUpdateFailed')
+    )
 
     // The row now points at the new logos, so the ones they replaced can go.
     for (const replaced of replacedLogos) {

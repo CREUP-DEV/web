@@ -11,12 +11,6 @@ import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { appendAssetVersion } from '../core/assetVersion'
 
-export type PressDefaultCoversRow = {
-  pressReleaseImage: string | null
-  statementImage: string | null
-  mediaAppearanceImage: string | null
-}
-
 export interface SiteDefaultImageEntry {
   image: string | null
   updatedAt: Date | null
@@ -74,23 +68,6 @@ export async function loadSiteDefaultImageEntriesMap(): Promise<NestedDefaultEnt
   return buildNestedEntryMap(rows)
 }
 
-export function getPressDefaultCoversRowFromMap(map: NestedDefaults): PressDefaultCoversRow | null {
-  const press = map.get(SITE_DEFAULT_IMAGE_SCOPE.press)
-  if (!press) {
-    return null
-  }
-  return {
-    pressReleaseImage: press.get(SITE_DEFAULT_IMAGE_SLOT.pressRelease) ?? null,
-    statementImage: press.get(SITE_DEFAULT_IMAGE_SLOT.statement) ?? null,
-    mediaAppearanceImage: press.get(SITE_DEFAULT_IMAGE_SLOT.mediaAppearance) ?? null,
-  }
-}
-
-export async function getPressDefaultCoversRow(): Promise<PressDefaultCoversRow | null> {
-  const map = await loadSiteDefaultImagesMap()
-  return getPressDefaultCoversRowFromMap(map)
-}
-
 export function getPressDefaultCoverEntriesRowFromMap(
   map: NestedDefaultEntries
 ): PressDefaultCoverEntriesRow | null {
@@ -109,28 +86,6 @@ export function getPressDefaultCoverEntriesRowFromMap(
 export async function getPressDefaultCoverEntriesRow(): Promise<PressDefaultCoverEntriesRow | null> {
   const map = await loadSiteDefaultImageEntriesMap()
   return getPressDefaultCoverEntriesRowFromMap(map)
-}
-
-/**
- * Resolves the public image URL for a press article, using type defaults when `image` is null.
- */
-export function resolvePressArticleListImage(
-  type: PressArticleType,
-  image: string | null,
-  defaults: PressDefaultCoversRow | null
-): string | null {
-  if (image) {
-    return toExternalImageProxyUrl(image, { publicPathBase: PRESS_IMAGE_PUBLIC_BASE }) ?? image
-  }
-  if (!defaults) return null
-  const raw =
-    type === 'press_release'
-      ? defaults.pressReleaseImage
-      : type === 'statement'
-        ? defaults.statementImage
-        : defaults.mediaAppearanceImage
-  if (!raw) return null
-  return toExternalImageProxyUrl(raw, { publicPathBase: PRESS_IMAGE_PUBLIC_BASE }) ?? raw
 }
 
 export function resolvePressArticleListImageWithVersion(

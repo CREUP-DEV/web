@@ -32,34 +32,37 @@ export default defineEventHandler(async (event) => {
       (translation) => Boolean(translation.name?.trim())
     )
 
-    const completeItem = await runAdminCrudTransaction(async (tx) => {
-      const [item] = await tx
-        .insert(tags)
-        .values({
-          slug: validated.slug,
-          order: validated.order,
+    const completeItem = await runAdminCrudTransaction(
+      async (tx) => {
+        const [item] = await tx
+          .insert(tags)
+          .values({
+            slug: validated.slug,
+            order: validated.order,
+          })
+          .returning()
+
+        if (!item) {
+          return null
+        }
+
+        if (translationsToCreate.length > 0) {
+          await tx.insert(tagTranslations).values(
+            translationsToCreate.map((translation) => ({
+              locale: translation.locale,
+              name: translation.name,
+              tagId: item.id,
+            }))
+          )
+        }
+
+        return tx.query.tags.findFirst({
+          where: eq(tags.id, item.id),
+          with: { translations: true },
         })
-        .returning()
-
-      if (!item) {
-        return null
-      }
-
-      if (translationsToCreate.length > 0) {
-        await tx.insert(tagTranslations).values(
-          translationsToCreate.map((translation) => ({
-            locale: translation.locale,
-            name: translation.name,
-            tagId: item.id,
-          }))
-        )
-      }
-
-      return tx.query.tags.findFirst({
-        where: eq(tags.id, item.id),
-        with: { translations: true },
-      })
-    }, 'No se pudo crear la etiqueta')
+      },
+      () => getAdminApiErrorMessage(event, 'tagCreateFailed')
+    )
 
     await invalidatePressRelatedCaches()
     return { data: completeItem }

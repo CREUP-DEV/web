@@ -10,6 +10,8 @@ export const ADMIN_ROUTES = {
   newsletterSubscribers: '/admin/newsletter/suscriptores',
   press: '/admin/prensa',
   pressCreate: '/admin/prensa/crear',
+  /** Followed by `/<id>`: renders an article as the public page would, whatever its status. */
+  pressPreview: '/admin/prensa/vista-previa',
   pressDossier: '/admin/dossier-prensa',
   siteDefaultImages: '/admin/imagenes-por-defecto',
   links: '/admin/enlaces',
@@ -18,6 +20,8 @@ export const ADMIN_ROUTES = {
   financialReports: '/admin/informes-economicos',
   activity: '/admin/actividad',
   activityCreate: '/admin/actividad/crear',
+  /** Followed by `/<id>`: renders an entry as the public page would, whatever its status. */
+  activityPreview: '/admin/actividad/vista-previa',
   activityReports: '/admin/actividad/informes',
   activityReportsCreate: '/admin/actividad/informes/crear',
   areaCatalog: '/admin/actividad/areas',

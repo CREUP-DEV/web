@@ -427,10 +427,12 @@ useHead({
 
           <UButton
             :to="publicSitePath"
+            target="_blank"
             icon="i-tabler-external-link"
             variant="ghost"
             color="neutral"
             class="shrink-0 whitespace-nowrap"
+            :aria-label="t('admin.layout.viewSiteAria')"
           >
             {{ t('admin.layout.viewSite') }}
           </UButton>

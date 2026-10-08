@@ -1,8 +1,9 @@
 import { createError, readBody, type H3Event } from 'h3'
-import { inArray, sql, type AnyColumn, type SQL } from 'drizzle-orm'
+import { getTableColumns, inArray, sql, type AnyColumn, type SQL } from 'drizzle-orm'
 import type { PgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { db } from '../../db'
 import { throwAdminMutationError } from './adminErrors'
+import { logError } from '../core/logger'
 import { validateBody } from '../validation'
 import { getAdminApiErrorMessage } from '../locale/adminApiErrorMessages'
 import { updateOrderSchema } from '~~/shared/utils/adminSchemas'
@@ -88,9 +89,14 @@ interface ReorderCollectionConfig {
  * existing rows, assert the request matches the current set, apply the new order, invalidate
  * cache. Wrapped so failures return a normalized `{ message }` error via `throwAdminMutationError`
  * instead of leaking a raw 500.
+ *
+ * The UPDATE bumps every reordered row's `updatedAt`, so the response carries the new values
+ * (`data.items: [{ id, updatedAt }]`): the client must adopt them, or its next edit or delete of
+ * any of those rows would be rejected by the optimistic lock as a concurrent change.
  */
 export async function reorderCollection(event: H3Event, config: ReorderCollectionConfig) {
   const { table, idColumn, orderColumn, invalidate, scope, where } = config
+  const updatedAtColumn = getTableColumns(table).updatedAt
 
   try {
     const body = await readBody(event)
@@ -98,7 +104,7 @@ export async function reorderCollection(event: H3Event, config: ReorderCollectio
     const reorderedIds = validated.items.map((item) => item.id)
     const reorderedOrder = buildReorderOrderExpression(idColumn, orderColumn, validated.items)
 
-    await db.transaction(async (tx) => {
+    const versions = await db.transaction(async (tx) => {
       const existingItemsQuery = tx.select({ id: idColumn }).from(table).$dynamic()
       const existingItems = await (
         where ? existingItemsQuery.where(where) : existingItemsQuery
@@ -110,16 +116,32 @@ export async function reorderCollection(event: H3Event, config: ReorderCollectio
         existingItems.map((item) => item.id as string)
       )
 
-      if (validated.items.length > 0) {
-        await tx
-          .update(table)
-          .set({ order: reorderedOrder } as never)
-          .where(inArray(idColumn, reorderedIds))
+      if (validated.items.length === 0) {
+        return []
       }
+
+      const updatedRows = await tx
+        .update(table)
+        .set({ order: reorderedOrder } as never)
+        .where(inArray(idColumn, reorderedIds))
+        .returning(
+          updatedAtColumn ? { id: idColumn, updatedAt: updatedAtColumn } : { id: idColumn }
+        )
+
+      return updatedRows.map((row) => ({
+        id: row.id as string,
+        updatedAt: (row as { updatedAt?: unknown }).updatedAt ?? null,
+      }))
     })
 
-    await invalidate()
-    return { data: { success: true } }
+    // After commit: never turn a reorder that went through into an error.
+    try {
+      await invalidate()
+    } catch (error) {
+      logError(`${scope}.invalidate`, error, undefined, event)
+    }
+
+    return { data: { success: true, items: versions } }
   } catch (error) {
     throwAdminMutationError(scope, error, event)
   }

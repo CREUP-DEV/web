@@ -7,8 +7,8 @@ import {
 import { getEventBySlug } from '../../utils/external/events'
 import { slugRouteParamSchema, validatePublicRouteParams } from '../../utils/validation'
 import {
-  buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  publicRouteCacheOptions,
 } from '../../utils/cache/publicRouteCache'
 
 export default defineCachedEventHandler(
@@ -33,12 +33,15 @@ export default defineCachedEventHandler(
       },
     }
   },
-  {
-    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-    getKey: (event) => {
-      const params = event.context.params ?? {}
-      const slug = typeof params.slug === 'string' ? params.slug : ''
-      return buildPublicRouteCacheKey(event, `evento-slug:${slug}`, { includeLocale: false })
+  publicRouteCacheOptions(
+    'evento-slug',
+    {
+      includeLocale: false,
+      keyParts: (event) => {
+        const params = event.context.params ?? {}
+        return [typeof params.slug === 'string' ? params.slug : '']
+      },
     },
-  }
+    FAST_EXTERNAL_ROUTE_CACHE_OPTIONS
+  )
 )

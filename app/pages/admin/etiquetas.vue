@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { type AdminReorderResponse, applyAdminReorder } from '@/utils/adminReorder'
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 import { createTagSchema } from '~~/shared/utils/adminSchemas'
 import { RESERVED_TAG_SLUG } from '~~/shared/constants/tags'
@@ -108,16 +109,11 @@ const {
 } = useAdminCollectionState<Tag>({
   items,
   persistOrder: async (updates) => {
-    await $fetch('/api/admin/tags/reorder', {
+    const response = await $fetch<AdminReorderResponse>('/api/admin/tags/reorder', {
       method: 'POST',
       body: { items: updates },
     })
-    setItems(
-      items.value.map((item) => {
-        const nextOrder = updates.find((update) => update.id === item.id)?.order
-        return nextOrder === undefined ? item : { ...item, order: nextOrder }
-      })
-    )
+    setItems(applyAdminReorder(items.value, updates, response))
   },
   prepareCreate: () => {
     clearErrors()
@@ -220,7 +216,10 @@ const handleDelete = async () => {
   if (!itemToDelete.value) return
   isDeleting.value = true
   try {
-    await $fetch(`/api/admin/tags/${itemToDelete.value.id}`, { method: 'DELETE' })
+    await $fetch(`/api/admin/tags/${itemToDelete.value.id}`, {
+      method: 'DELETE',
+      query: { updatedAt: itemToDelete.value.updatedAt },
+    })
     removeItem(itemToDelete.value.id)
     await refreshAllClientAsyncData()
     closeDeleteModal()

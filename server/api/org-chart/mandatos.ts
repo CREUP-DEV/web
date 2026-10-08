@@ -1,6 +1,6 @@
 import {
-  buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  publicRouteCacheOptions,
 } from '../../utils/cache/publicRouteCache'
 import { externalMandatesResponseSchema } from '../../utils/validation'
 import { fetchExternalDocumentCollection } from '../../utils/external/externalDocumentCollection'
@@ -39,9 +39,9 @@ export default defineCachedEventHandler(
         }
       },
     }),
-  {
-    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'organigrama-mandatos', { includeLocale: false }),
-  }
+  publicRouteCacheOptions(
+    'organigrama-mandatos',
+    { includeLocale: false },
+    FAST_EXTERNAL_ROUTE_CACHE_OPTIONS
+  )
 )

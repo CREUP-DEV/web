@@ -55,6 +55,9 @@ onBeforeRouteLeave(() => {
   return window.confirm(t('admin.press.unsavedChangesPrompt'))
 })
 
+const possibleDuplicate = useAdminPossibleDuplicate<Record<string, unknown>>()
+const { duplicate: duplicateArticle, isOpen: isDuplicateModalOpen } = possibleDuplicate
+
 const handleSubmit = async (payload: Record<string, unknown>) => {
   isSubmitting.value = true
   try {
@@ -69,10 +72,17 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
     toast.add({ title: t('admin.press.toast.created'), color: 'success' })
     router.push(localePath(ADMIN_ROUTES.press))
   } catch (e) {
+    // Same title and month as an existing article: ask before creating a second one.
+    if (possibleDuplicate.hold(e, payload)) return
     toast.add({ title: getApiErrorMessage(e, t('admin.press.toast.createError')), color: 'error' })
   } finally {
     isSubmitting.value = false
   }
+}
+
+const handleDuplicateConfirm = async () => {
+  const payload = possibleDuplicate.confirm()
+  if (payload) await handleSubmit(payload)
 }
 
 const handleCancel = () => {
@@ -90,6 +100,12 @@ const handleCancel = () => {
       :submitting="isSubmitting"
       @submit="handleSubmit"
       @cancel="handleCancel"
+    />
+    <AdminPossibleDuplicateModal
+      v-model:open="isDuplicateModalOpen"
+      kind="press"
+      :duplicate="duplicateArticle"
+      @confirm="handleDuplicateConfirm"
     />
   </div>
 </template>

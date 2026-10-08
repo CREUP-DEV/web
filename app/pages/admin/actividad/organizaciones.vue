@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { type AdminReorderResponse, applyAdminReorder } from '@/utils/adminReorder'
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 import { createMemberOrgCatalogEntrySchema } from '~~/shared/utils/adminSchemas'
@@ -93,16 +94,15 @@ const historicalSectoriales = historicalItemsBySource('sectorial')
 
 const persistSourceOrder =
   (source: MemberOrgSource) => async (updates: Array<{ id: string; order: number }>) => {
-    await $fetch(`/api/admin/member-org-catalog/reorder?source=${source}`, {
-      method: 'POST',
-      body: { items: updates },
-    })
-    setItems(
-      items.value.map((item) => {
-        const nextOrder = updates.find((update) => update.id === item.id)?.order
-        return nextOrder === undefined ? item : { ...item, order: nextOrder }
-      })
+    const response = await $fetch<AdminReorderResponse>(
+      `/api/admin/member-org-catalog/reorder?source=${source}`,
+      {
+        method: 'POST',
+        body: { items: updates },
+      }
     )
+    // The reorder stamps a new updatedAt on each row: keep it, or the next edit would 409.
+    setItems(applyAdminReorder(items.value, updates, response))
   }
 
 const asociadoListRef = ref<HTMLElement | null>(null)
@@ -526,7 +526,7 @@ const handleClearSupersede = async (item: MemberOrgCatalogEntry) => {
     <template v-else>
       <div
         class="mb-6 flex gap-2 border-b"
-        role="tablist"
+        role="group"
         :aria-label="t('admin.memberOrgCatalog.sourceTabsAria')"
       >
         <UButton
@@ -535,8 +535,7 @@ const handleClearSupersede = async (item: MemberOrgCatalogEntry) => {
           :variant="activeSource === source ? 'solid' : 'ghost'"
           :icon="source === 'asociado' ? 'i-tabler-building-community' : 'i-tabler-users-group'"
           size="sm"
-          role="tab"
-          :aria-selected="activeSource === source"
+          :aria-pressed="activeSource === source"
           class="rounded-b-none"
           @click="activeSource = source"
         >

@@ -1,5 +1,5 @@
 import { createError, defineEventHandler, readBody } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { pressDossier } from '../../../db/schema'
 import { finalizeAdminDocument } from '../../../utils/admin/adminDocumentUpload'
@@ -11,13 +11,19 @@ import {
 } from '../../../utils/admin/adminAssetPublication'
 import { invalidatePressDossierCache } from '../../../utils/admin/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import {
+  assertOptimisticLock,
+  buildExpectedVersionCondition,
+} from '../../../utils/admin/optimisticLock'
 import { validateBody } from '../../../utils/validation'
 import { PRESS_DOSSIER_STORAGE_PATH } from '~~/shared/constants/assetPaths'
 import { updatePressDossierSchema } from '~~/shared/utils/adminSchemas'
 import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
-import { LEGACY_PRESS_DOSSIER_BASE } from '../../../utils/press/pressDossier'
+import {
+  isLegacyPressDossierPath,
+  LEGACY_PRESS_DOSSIER_BASE,
+} from '../../../utils/press/pressDossier'
 
-const PDF_UPLOAD_DIR = `public${PRESS_DOSSIER_STORAGE_PATH}`
 const PRESS_DOSSIER_FILE_SLUG = 'dossier-prensa'
 // Cleanup may only touch dossier files: the storage folder, plus the legacy location under /prensa
 // that the first upload after the move leaves behind. Never the other press documents.
@@ -32,29 +38,27 @@ export default defineEventHandler(async (event) => {
 
   try {
     const validated = validateBody(event, updatePressDossierSchema, body)
+    const optimisticLockMessage = getAdminApiErrorMessage(event, 'pressDossierOptimisticLock')
+
     const item = await db.transaction(async (tx) => {
       const existingItem = await tx.query.pressDossier.findFirst()
 
-      if (validated.updatedAt && existingItem) {
-        const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-        const serverUpdatedAt = existingItem.updatedAt
-          ? new Date(existingItem.updatedAt).getTime()
-          : 0
-
-        if (clientUpdatedAt !== serverUpdatedAt) {
-          throw createError({
-            statusCode: 409,
-            message: getAdminApiErrorMessage(event, 'pressDossierOptimisticLock'),
-          })
-        }
+      if (existingItem) {
+        assertOptimisticLock(validated.updatedAt, existingItem.updatedAt, optimisticLockMessage)
       }
 
       const previousPdfUrl = existingItem?.pdfUrl ?? null
+      // A dossier not uploaded since storage moved still lives directly under /prensa; finalized
+      // against the new folder it would be rejected as out of place, so it keeps its own until the
+      // admin uploads it again (the startup reconcile follows the same rule).
+      const dossierPublicPath = isLegacyPressDossierPath(validated.pdfUrl)
+        ? LEGACY_PRESS_DOSSIER_BASE
+        : PRESS_DOSSIER_STORAGE_PATH
       const pdfUrl = validated.pdfUrl
         ? await finalizeAdminDocument({
             storagePath: validated.pdfUrl,
-            uploadDir: PDF_UPLOAD_DIR,
-            publicPath: PRESS_DOSSIER_STORAGE_PATH,
+            uploadDir: `public${dossierPublicPath}`,
+            publicPath: dossierPublicPath,
             slug: PRESS_DOSSIER_FILE_SLUG,
             publish: validated.active,
             fallbackBaseName: 'dossier-prensa',
@@ -69,6 +73,9 @@ export default defineEventHandler(async (event) => {
 
       let upserted = null
 
+      // The check above ran on a plain read, so two saves can both pass it; the write itself only
+      // matches the version that was read (and the first save creates the row exactly once), so the
+      // second one gets a 409 instead of silently overwriting the first.
       if (existingItem) {
         ;[upserted] = await tx
           .update(pressDossier)
@@ -76,7 +83,16 @@ export default defineEventHandler(async (event) => {
             active: validated.active,
             pdfUrl,
           })
-          .where(eq(pressDossier.id, existingItem.id))
+          .where(
+            and(
+              eq(pressDossier.id, existingItem.id),
+              buildExpectedVersionCondition(
+                pressDossier.updatedAt,
+                validated.updatedAt,
+                existingItem.updatedAt
+              )
+            )
+          )
           .returning()
       } else {
         ;[upserted] = await tx
@@ -86,14 +102,12 @@ export default defineEventHandler(async (event) => {
             pdfUrl,
             active: validated.active,
           })
+          .onConflictDoNothing()
           .returning()
       }
 
       if (!upserted) {
-        throw createError({
-          statusCode: 500,
-          message: getAdminApiErrorMessage(event, 'pressDossierSaveFailed'),
-        })
+        throw createError({ statusCode: 409, message: optimisticLockMessage })
       }
 
       return { previousPdfUrl, upserted }

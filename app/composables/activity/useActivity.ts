@@ -1,5 +1,6 @@
 import type { MaybeRef } from 'vue'
 import { parseDateOnlyString } from '~~/shared/utils/date'
+import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
 
 export type ActivityKind = 'creup' | 'member'
 
@@ -159,6 +160,7 @@ export function useActivityList(
     },
     {
       default: () => ({ data: [], meta: { total: 0 } }),
+      getCachedData: publicCmsCachedData,
       watch: [locale, kindValue, monthValue, searchValue, limitValue, offsetValue],
     }
   )
@@ -177,6 +179,7 @@ export function useActivityEntry(slug: string) {
       }),
     {
       default: () => ({ data: null }),
+      getCachedData: publicCmsCachedData,
       watch: [locale],
     }
   )
@@ -201,6 +204,7 @@ export function useAreaReportsEdition(month: MaybeRef<string | null | undefined>
     },
     {
       default: () => ({ data: { edition: null, reports: [] } }),
+      getCachedData: publicCmsCachedData,
       watch: [locale, monthValue],
     }
   )
@@ -212,6 +216,7 @@ export function useAreaReportsMonths() {
     () => $fetch<AreaReportsMonthsResponse>('/api/area-reports/months'),
     {
       default: () => ({ data: { anchors: [], coveredToAnchor: {} } }),
+      getCachedData: publicCmsCachedData,
     }
   )
 }

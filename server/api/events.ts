@@ -5,8 +5,8 @@ import {
 } from '../utils/cache/externalApiCache'
 import { getEventsPayload } from '../utils/external/events'
 import {
-  buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  publicRouteCacheOptions,
 } from '../utils/cache/publicRouteCache'
 import {
   publicPaginationQuerySchema,
@@ -74,12 +74,9 @@ export default defineCachedEventHandler(
       },
     }
   },
-  {
-    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'eventos', {
-        includeLocale: false,
-        queryKeys: ['type', 'types', 'limit', 'offset'],
-      }),
-  }
+  publicRouteCacheOptions(
+    'eventos',
+    { includeLocale: false, queryKeys: ['type', 'types', 'limit', 'offset'] },
+    FAST_EXTERNAL_ROUTE_CACHE_OPTIONS
+  )
 )

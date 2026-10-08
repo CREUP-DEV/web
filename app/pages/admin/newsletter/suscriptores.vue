@@ -19,6 +19,7 @@ const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const localePath = useLocalePath()
+const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const LIMIT = 20
 const page = ref(1)
 
@@ -188,7 +189,7 @@ async function handleDelete() {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-ES', {
+  return formatLocaleDate(iso, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

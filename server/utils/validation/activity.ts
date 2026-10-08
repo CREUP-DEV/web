@@ -115,7 +115,13 @@ const baseActivityEntrySchema = z.object({
     .min(1, 'Se requiere al menos una traducción'),
 })
 
-export const createActivityEntrySchema = baseActivityEntrySchema.superRefine(refineActivityEntry)
+export const createActivityEntrySchema = baseActivityEntrySchema
+  .safeExtend({
+    // Set when the editor confirms creating an entry whose title and month already match an
+    // existing one; without it such a create answers 409 `possibleDuplicate`.
+    confirmDuplicate: z.boolean().optional(),
+  })
+  .superRefine(refineActivityEntry)
 
 export const updateActivityEntrySchema = baseActivityEntrySchema
   .safeExtend({

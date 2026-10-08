@@ -7,8 +7,8 @@ import {
   validatePublicQuery,
 } from '../validation'
 import {
-  buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  publicRouteCacheOptions,
 } from '../cache/publicRouteCache'
 
 const POLICY_DOCUMENTS_CACHE_VERSION = 1
@@ -108,13 +108,10 @@ export function createPolicyDocumentCollectionRouteHandler(
         },
       }
     },
-    {
-      ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-      getKey: (event: H3Event) =>
-        buildPublicRouteCacheKey(event, collection, {
-          includeLocale: false,
-          queryKeys: ['limit', 'offset'],
-        }),
-    }
+    publicRouteCacheOptions(
+      collection,
+      { includeLocale: false, queryKeys: ['limit', 'offset'] },
+      FAST_EXTERNAL_ROUTE_CACHE_OPTIONS
+    )
   )
 }

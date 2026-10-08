@@ -165,6 +165,7 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
   const active = payload.active
   const publishedAt = payload.publishedAt
   const tagIds = payload.tagIds
+  const confirmDuplicate = payload.confirmDuplicate
 
   if (!PRESS_ARTICLE_TYPE_SET.has(type)) {
     issues.push({ message: 'admin.validation.invalidArticleType', path: ['type'] })
@@ -209,6 +210,11 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
     if (typeof publishedAt !== 'string' || !DATE_ONLY_PATTERN.test(publishedAt)) {
       issues.push({ message: 'admin.validation.invalidPublishedAt', path: ['publishedAt'] })
     }
+  }
+
+  // Only set by the create page when resending after the possible-duplicate warning.
+  if (confirmDuplicate !== undefined && typeof confirmDuplicate !== 'boolean') {
+    issues.push({ message: 'admin.validation.invalidInput', path: ['confirmDuplicate'] })
   }
 
   if (!Array.isArray(tagIds)) {
@@ -326,6 +332,7 @@ export const pressArticleClientSchema = buildValidator((payload, issues) => {
     image: normalizedImage,
   } as {
     active: boolean
+    confirmDuplicate?: boolean
     externalUrl?: string | null
     image: string | null
     mediaOutletId?: string | null

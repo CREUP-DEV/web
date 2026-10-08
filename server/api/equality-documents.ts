@@ -6,13 +6,14 @@ import { pickLocalizedEntryWithFieldFallback } from '~~/shared/utils/locale'
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 import { definePublicPaginatedListHandler } from '../utils/public/definePublicPaginatedListHandler'
+import { PUBLIC_CMS_CACHE_SCOPES } from '../utils/cache/publicRouteCache'
 
 const activeWhere = eq(equalityDocuments.active, true)
 
 export default definePublicPaginatedListHandler({
   table: equalityDocuments,
   activeWhere,
-  cacheScope: 'public-equality-documents',
+  cacheScope: PUBLIC_CMS_CACHE_SCOPES.equalityDocuments,
   errorScope: 'public.equality-documents',
   fetchPage: ({ limit, offset }) =>
     db.query.equalityDocuments.findMany({

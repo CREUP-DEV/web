@@ -1,6 +1,7 @@
 import type { Job, JobsOptions, Queue } from 'bullmq'
 import { Queue as BullMqQueue } from 'bullmq'
 import { createBullMqConnection } from '../cache/redis'
+import { databaseTimeZone } from '../../db'
 
 const BULLMQ_PREFIX = 'creup:web:bullmq'
 
@@ -14,6 +15,7 @@ export const BACKGROUND_JOB_NAMES = {
   newsletterCampaignRecovery: 'newsletter.campaign-recovery',
   newsletterCampaignSend: 'newsletter.campaign-send',
   newsletterConfirmTokenCleanup: 'newsletter.confirm-token-cleanup',
+  publicContentDayRollover: 'public-content.day-rollover',
 } as const
 
 export interface NewsletterCampaignSendJobData {
@@ -112,6 +114,17 @@ export async function ensureBackgroundJobSchedulers() {
       {
         data: {},
         name: BACKGROUND_JOB_NAMES.newsletterConfirmTokenCleanup,
+        opts: getDefaultJobOptions(),
+      }
+    ),
+    // Scheduled press articles go live when CURRENT_DATE passes their publication date, but the
+    // cached press, tags and home payloads only notice once they are purged.
+    queue.upsertJobScheduler(
+      BACKGROUND_JOB_NAMES.publicContentDayRollover,
+      { pattern: '30 0 0 * * *', tz: databaseTimeZone },
+      {
+        data: {},
+        name: BACKGROUND_JOB_NAMES.publicContentDayRollover,
         opts: getDefaultJobOptions(),
       }
     ),

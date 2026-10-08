@@ -21,6 +21,10 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from '../../server/db/schema'
 import { requireConfigString } from '../../shared/utils/config'
 import {
+  ALL_NITRO_CACHE_PREFIXES,
+  purgeNitroHandlerCacheByPrefixes,
+} from '../../server/utils/cache/nitroRedisCachePurge'
+import {
   seedCarouselTranslations,
   seedEqualityDocumentTranslations,
   seedFeaturedLinkTranslations,
@@ -38,6 +42,34 @@ import {
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
 const db = drizzle(connectionString, { schema })
 const DAY_IN_MS = 24 * 60 * 60 * 1000
+
+// Seeded rows are matched by their stable seed slug, but an admin edit of the title moves the slug
+// and keeps the old one in the slug history: follow it, or the row would be missed (press) or created
+// a second time (activity).
+async function findPressArticleIdBySeedSlug(slug: string) {
+  const [current] = await db
+    .select({ id: schema.pressArticles.id })
+    .from(schema.pressArticles)
+    .where(eq(schema.pressArticles.slug, slug))
+    .limit(1)
+  if (current) return current.id
+
+  const [former] = await db
+    .select({ id: schema.pressArticleSlugHistory.pressArticleId })
+    .from(schema.pressArticleSlugHistory)
+    .where(eq(schema.pressArticleSlugHistory.slug, slug))
+    .limit(1)
+  return former?.id
+}
+
+async function findRenamedActivityEntryId(slug: string) {
+  const [former] = await db
+    .select({ id: schema.activityEntrySlugHistory.activityEntryId })
+    .from(schema.activityEntrySlugHistory)
+    .where(eq(schema.activityEntrySlugHistory.slug, slug))
+    .limit(1)
+  return former?.id
+}
 
 async function main() {
   console.log('🌱 Seeding content translations (idempotent)...')
@@ -182,12 +214,8 @@ async function main() {
   let pressMatched = 0
   const pressUnmatched: string[] = []
   for (const [slug, translations] of Object.entries(seedPressArticleTranslations)) {
-    const [article] = await db
-      .select({ id: schema.pressArticles.id })
-      .from(schema.pressArticles)
-      .where(eq(schema.pressArticles.slug, slug))
-      .limit(1)
-    if (!article) {
+    const articleId = await findPressArticleIdBySeedSlug(slug)
+    if (!articleId) {
       pressUnmatched.push(slug)
       continue
     }
@@ -200,7 +228,7 @@ async function main() {
           locale: t.locale,
           title: t.title,
           description: t.description ?? null,
-          pressArticleId: article.id,
+          pressArticleId: articleId,
         }))
       )
       .onConflictDoNothing({
@@ -231,24 +259,27 @@ async function main() {
     // than the moment the seed ran. Left at `now()` the whole migrated archive would resurface as
     // new content after every seed.
     const entryCreatedAt = new Date(`${entry.startDate}T00:00:00Z`)
-    const [created] = await db
-      .insert(schema.activityEntries)
-      .values({
-        kind: entry.kind,
-        slug: entry.slug,
-        image: entry.image,
-        startDate: entry.startDate,
-        endDate: entry.endDate,
-        isOnline: entry.isOnline,
-        location: entry.location,
-        memberOrgSource: entry.memberOrgSource,
-        memberOrgId: entry.memberOrgId,
-        memberOrgSnapshot: entry.memberOrgSnapshot,
-        active: true,
-        createdAt: entryCreatedAt,
-      })
-      .onConflictDoNothing({ target: schema.activityEntries.slug })
-      .returning({ id: schema.activityEntries.id })
+    const renamedEntryId = await findRenamedActivityEntryId(entry.slug)
+    const [created] = renamedEntryId
+      ? [{ id: renamedEntryId }]
+      : await db
+          .insert(schema.activityEntries)
+          .values({
+            kind: entry.kind,
+            slug: entry.slug,
+            image: entry.image,
+            startDate: entry.startDate,
+            endDate: entry.endDate,
+            isOnline: entry.isOnline,
+            location: entry.location,
+            memberOrgSource: entry.memberOrgSource,
+            memberOrgId: entry.memberOrgId,
+            memberOrgSnapshot: entry.memberOrgSnapshot,
+            active: true,
+            createdAt: entryCreatedAt,
+          })
+          .onConflictDoNothing({ target: schema.activityEntries.slug })
+          .returning({ id: schema.activityEntries.id })
 
     let entryId = created?.id
     if (!entryId) {
@@ -481,6 +512,13 @@ async function main() {
   )
 
   console.log(`✅ Content translations seeded (inserted ${inserted} new row(s)).`)
+
+  // New translations change what the cached public responses would render.
+  const redisUrl = process.env.NUXT_REDIS_URL?.trim() || process.env.REDIS_URL?.trim()
+  if (inserted > 0 && redisUrl) {
+    console.log('🧹 Clearing Nitro public caches...')
+    await purgeNitroHandlerCacheByPrefixes(redisUrl, ALL_NITRO_CACHE_PREFIXES)
+  }
 }
 
 main()

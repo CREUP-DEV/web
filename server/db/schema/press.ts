@@ -119,6 +119,29 @@ export const pressArticleTranslations = pgTable(
   ]
 )
 
+/**
+ * Slugs an article used to carry. Slugs follow the Spanish title and month on every save, so a
+ * retitled article would otherwise break every link to its old URL: the public detail API falls
+ * back to this table and the page answers with a 301 to the current URL.
+ *
+ * The slug generator treats another article's former slugs as taken, so an old link never lands
+ * on a different article, while an article's own former slugs stay free for it to reclaim (the
+ * row is deleted when it does). Deleting the article cascades here and frees them.
+ *
+ * Keyed by the slug itself rather than a CUID: a former slug resolves to exactly one article.
+ */
+export const pressArticleSlugHistory = pgTable(
+  'press_article_slug_history',
+  {
+    slug: text('slug').primaryKey(),
+    pressArticleId: text('press_article_id')
+      .notNull()
+      .references(() => pressArticles.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  },
+  (table) => [index('idx_press_article_slug_history_article_id').on(table.pressArticleId)]
+)
+
 // Junction table for Press Articles to Tags (many-to-many)
 export const pressArticleTags = pgTable(
   'press_article_tags',

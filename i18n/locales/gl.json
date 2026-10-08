@@ -785,6 +785,17 @@
     }
   },
   "admin": {
+    "contentPreview": {
+      "label": "Vista previa",
+      "status": {
+        "public": "Publicado: así se ve na web.",
+        "inactive": "Non é público: está desactivado.",
+        "scheduled": "Aínda non é público: publicarase o {date}."
+      },
+      "viewPublic": "Ver na web",
+      "backToEditor": "Volver ao editor",
+      "loadError": "Non se puido cargar a vista previa"
+    },
     "errors": {
       "slugExists": "Xa existe unha etiqueta con este slug",
       "tagOrderSaveFailed": "Non se puido gardar a orde de etiquetas",
@@ -920,6 +931,7 @@
       "adminTitle": "Administración",
       "signOut": "Pechar sesión",
       "viewSite": "Ver sitio",
+      "viewSiteAria": "Ver sitio (ábrese nunha nova lapela)",
       "collapseSidebar": "Contraer menú lateral",
       "expandSidebar": "Expandir menú lateral",
       "closeSidebar": "Pechar menú lateral",
@@ -1194,7 +1206,20 @@
       "deleteErrorToast": "Non se puido eliminar o acceso"
     },
     "press": {
-      "viewOnWebAria": "Ver artigo na web",
+      "viewOnWebAria": "Ver artigo na web (ábrese nunha nova lapela)",
+      "duplicate": {
+        "title": "Artigo duplicado?",
+        "description": "Xa existe «{title}» ({type}, {date}). Crealo igualmente?",
+        "openExisting": "Abrir o existente",
+        "confirm": "Crear igualmente",
+        "types": {
+          "press_release": "Nota de prensa",
+          "statement": "Comunicado",
+          "media_appearance": "Nos medios"
+        }
+      },
+      "previewInactive": "Abrir a vista previa nunha nova lapela: o artigo está inactivo e non é público",
+      "previewScheduled": "Abrir a vista previa nunha nova lapela: o artigo está programado e non será público ata o {date}",
       "unsavedChangesPrompt": "Hai cambios sen gardar. Se saes agora, perderanse.",
       "types": {
         "pressRelease": "Notas de prensa",
@@ -1211,7 +1236,6 @@
         "filterByTypeAria": "Filtrar artigos por tipo",
         "searchPlaceholder": "Buscar artigos...",
         "loadErrorTitle": "Non se puideron cargar os artigos de prensa",
-        "viewOnWebTitle": "Ver na web",
         "editTitle": "Editar artigo",
         "editAria": "Editar artigo",
         "deleteTitle": "Eliminar artigo",
@@ -1737,6 +1761,12 @@
       "campaignSubjectRequiredForLocale": "Escribe o asunto neste idioma ou os seus outros textos non se gardarán"
     },
     "activity": {
+      "duplicate": {
+        "title": "Entrada duplicada?",
+        "description": "Xa existe «{title}» ({date}). Creala igualmente?",
+        "openExisting": "Abrir a existente",
+        "confirm": "Crear igualmente"
+      },
       "unsavedChangesPrompt": "Hai cambios sen gardar. Se saes agora, perderanse.",
       "subnav": {
         "aria": "Subseccións de Actividade",
@@ -1757,7 +1787,6 @@
         "searchPlaceholder": "Buscar entradas...",
         "loadErrorTitle": "Non se puideron cargar as entradas de actividade",
         "online": "En liña",
-        "viewOnWebTitle": "Ver na web",
         "editTitle": "Editar entrada",
         "editAria": "Editar entrada",
         "deleteTitle": "Eliminar entrada",
@@ -1788,9 +1817,11 @@
         "newLabel": "Nova actividade",
         "saveChanges": "Gardar cambios",
         "createEntry": "Crear entrada",
-        "viewOnWebAria": "Ver entrada na web",
+        "viewOnWebAria": "Ver entrada na web (ábrese nunha nova lapela)",
+        "previewInactive": "Abrir a vista previa nunha nova lapela: a entrada está inactiva e non é pública",
         "refreshSnapshot": "Actualizar datos desde o organigrama",
         "refreshSnapshotHint": "Volve conxelar o logo e as siglas do organizador cos datos actuais do organigrama.",
+        "refreshSnapshotUnsaved": "Garda ou descarta os cambios pendentes antes de actualizar os datos do organizador",
         "requiredBadge": "Obrigatorio",
         "titleLabel": "Título",
         "excerptLabel": "Descrición breve",
@@ -1847,6 +1878,7 @@
         "monthFilterLabel": "Filtrar por mes",
         "clearFilter": "Limpar filtro",
         "loadErrorTitle": "Non se puideron cargar os informes de áreas",
+        "viewOnWebAria": "Ver o informe na web (ábrese nunha nova lapela)",
         "editTitle": "Editar informe",
         "editAria": "Editar informe",
         "deleteTitle": "Eliminar informe",

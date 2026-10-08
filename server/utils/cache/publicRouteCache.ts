@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import type { H3Event } from 'h3'
 import { getQuery, setHeader } from 'h3'
 import { getRequestLocaleContext } from '../locale/requestLocale'
@@ -5,7 +6,33 @@ import { getRequestLocaleContext } from '../locale/requestLocale'
 interface PublicRouteCacheKeyOptions {
   includeLocale?: boolean
   queryKeys?: string[]
+  /** Extra request-derived parts (e.g. a route param) that select a distinct cached response. */
+  keyParts?: (event: H3Event) => string[]
 }
+
+/**
+ * Scopes of the public handlers whose payload admins can change. Each one is the handler's Nitro
+ * cache `name`, so its entries live under `nitro:handlers:<scope>:` in the `cache` storage and
+ * `server/utils/admin/adminCacheInvalidation.ts` purges exactly that prefix. Sharing the constant
+ * is what keeps the two from drifting apart again.
+ */
+export const PUBLIC_CMS_CACHE_SCOPES = {
+  aboutPage: 'about-page',
+  activity: 'public-activity',
+  activityDetail: 'public-activity-detail',
+  areaReports: 'public-area-reports',
+  areaReportsMonths: 'public-area-reports-months',
+  equalityDocuments: 'public-equality-documents',
+  financialReports: 'public-financial-reports',
+  home: 'public-home',
+  press: 'public-press',
+  pressDetail: 'public-press-detail',
+  pressDossier: 'press-dossier',
+  tags: 'public-tags',
+} as const
+
+export type PublicCmsCacheScope =
+  (typeof PUBLIC_CMS_CACHE_SCOPES)[keyof typeof PUBLIC_CMS_CACHE_SCOPES]
 
 interface PublicApiCacheHeaderOptions {
   browserMaxAgeSeconds?: number
@@ -72,21 +99,41 @@ const normalizeQueryValue = (value: unknown) => {
   return String(value)
 }
 
-export function buildPublicRouteCacheKey(
-  event: H3Event,
-  scope: string,
-  options: PublicRouteCacheKeyOptions = {}
-) {
-  const keySegments = [scope]
-
-  if (options.includeLocale !== false) {
-    keySegments.push(`locale=${getRequestLocaleContext(event).locale}`)
-  }
-
+/**
+ * Nitro runs a custom cache key through `escapeKey`, which strips every non-word character, so
+ * `a-b` and `ab` (or `offset=10` and `offset=1.0`) would share an entry. Hashing the parts keeps
+ * the key word-only and collision-free; the locale stays readable in front for debugging.
+ */
+function buildPublicRouteCacheKey(event: H3Event, options: PublicRouteCacheKeyOptions) {
+  const locale = options.includeLocale === false ? 'all' : getRequestLocaleContext(event).locale
   const query = getQuery(event)
-  for (const key of options.queryKeys ?? []) {
-    keySegments.push(`${key}=${normalizeQueryValue(query[key])}`)
+  const parts = [
+    ...(options.keyParts?.(event) ?? []),
+    ...(options.queryKeys ?? []).map((key) => `${key}=${normalizeQueryValue(query[key])}`),
+  ]
+
+  if (parts.length === 0) {
+    return locale
   }
 
-  return keySegments.join(':')
+  const digest = createHash('sha256').update(JSON.stringify(parts)).digest('hex').slice(0, 32)
+  return `${locale}_${digest}`
+}
+
+/**
+ * Cache options for a public `defineCachedEventHandler`. `scope` becomes the Nitro cache `name`
+ * (names, unlike keys, are not escaped), which is what lets admin mutations purge it by prefix.
+ */
+export function publicRouteCacheOptions(
+  scope: string,
+  keyOptions: PublicRouteCacheKeyOptions = {},
+  baseOptions:
+    | typeof PUBLIC_ROUTE_CACHE_OPTIONS
+    | typeof FAST_EXTERNAL_ROUTE_CACHE_OPTIONS = PUBLIC_ROUTE_CACHE_OPTIONS
+) {
+  return {
+    ...baseOptions,
+    name: scope,
+    getKey: (event: H3Event) => buildPublicRouteCacheKey(event, keyOptions),
+  }
 }

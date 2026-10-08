@@ -1,4 +1,5 @@
 import { Worker } from 'bullmq'
+import { invalidatePressRelatedCaches } from '../utils/admin/adminCacheInvalidation'
 import { cleanupExpiredAuthRows } from '../utils/auth/authHousekeeping'
 import {
   BACKGROUND_JOB_NAMES,
@@ -58,6 +59,9 @@ export default defineNitroPlugin((nitro) => {
           }
           return
         }
+        case BACKGROUND_JOB_NAMES.publicContentDayRollover:
+          await invalidatePressRelatedCaches()
+          return
         case BACKGROUND_JOB_NAMES.authHousekeeping: {
           const cleanupResult = await cleanupExpiredAuthRows()
           if (cleanupResult.deletedSessionCount > 0 || cleanupResult.deletedVerificationCount > 0) {

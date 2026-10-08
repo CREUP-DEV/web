@@ -11,11 +11,7 @@ import {
   normalizeMemberCalendarId,
 } from '../utils/external/memberCalendar'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
-import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
-  setPublicRouteVaryHeaders,
-} from '../utils/cache/publicRouteCache'
+import { publicRouteCacheOptions, setPublicRouteVaryHeaders } from '../utils/cache/publicRouteCache'
 import { memberCalendarQuerySchema, validatePublicQuery } from '../utils/validation'
 
 interface GoogleCalendarResponse {
@@ -108,11 +104,5 @@ export default defineCachedEventHandler(
       })
     }
   },
-  {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'public-member-calendar', {
-        queryKeys: ['calendarId'],
-      }),
-  }
+  publicRouteCacheOptions('public-member-calendar', { queryKeys: ['calendarId'] })
 )

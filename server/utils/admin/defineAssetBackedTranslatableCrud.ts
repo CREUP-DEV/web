@@ -16,7 +16,8 @@ import {
   getAdminApiErrorMessage,
 } from '../locale/adminApiErrorMessages'
 import { finalizeAdminImage } from './adminImageUpload'
-import { assertOptimisticLock, buildOptimisticLockCondition } from './optimisticLock'
+import { assertOptimisticLock, buildExpectedVersionCondition } from './optimisticLock'
+import { logError } from '../core/logger'
 import { idRouteParamSchema, validateBody, validateRouteParams } from '../validation'
 
 type CrudTx = Parameters<Parameters<typeof db.transaction>[0]>[0]
@@ -107,6 +108,16 @@ export function defineAssetBackedTranslatableCrud<
   const finalizeAsset = asset.finalize ?? finalizeAdminImage
   const allowedPublicPathPrefixes = [asset.publicPath]
 
+  // Runs after commit: a failure here must not answer 500 for a save that went through (the editor
+  // would retry it, duplicating a create).
+  const invalidateAfterCommit = async (logScope: string, event: H3Event) => {
+    try {
+      await config.invalidate()
+    } catch (error) {
+      logError(`${logScope}.invalidate`, error, undefined, event)
+    }
+  }
+
   const finalizeIncomingAsset = async (
     validated: TCreate | TUpdate,
     cleanupTargets: CleanupUnusedAdminAssetOptions[],
@@ -183,7 +194,7 @@ export function defineAssetBackedTranslatableCrud<
         )
       }
 
-      await config.invalidate()
+      await invalidateAfterCommit(scope.create, event)
       return { data: row }
     } catch (error) {
       await cleanupAdminAssetFinalizationsSafely(cleanupTargets, `${scope.create}.rollback`, event)
@@ -196,7 +207,6 @@ export function defineAssetBackedTranslatableCrud<
     const { id } = validateRouteParams(event, idRouteParamSchema)
     const body = await readBody(event)
 
-    let dbUpdated = false
     let previousAsset: string | null = null
     let assetPath: string | null = null
     const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
@@ -238,17 +248,20 @@ export function defineAssetBackedTranslatableCrud<
             await tx.delete(translations.table).where(eq(translations.fkColumn, id))
           }
 
-          const whereCondition = validated.updatedAt
-            ? and(
-                eq(main.idColumn, id),
-                buildOptimisticLockCondition(main.updatedAtColumn, validated.updatedAt)
-              )
-            : eq(main.idColumn, id)
-
+          // Without a client `updatedAt`, the version loaded above still guards the write.
           const updatedRows = await tx
             .update(main.table)
             .set(main.buildValues(validated, { assetPath, event }) as never)
-            .where(whereCondition)
+            .where(
+              and(
+                eq(main.idColumn, id),
+                buildExpectedVersionCondition(
+                  main.updatedAtColumn,
+                  validated.updatedAt,
+                  existing.updatedAt
+                )
+              )
+            )
             .returning({ id: main.idColumn })
 
           if (updatedRows.length === 0) {
@@ -264,8 +277,9 @@ export function defineAssetBackedTranslatableCrud<
         },
         () => getAdminApiErrorMessage(event, messages.updateFailed)
       )
-      dbUpdated = true
 
+      // The row now points at `assetPath`. The file it pointed at before (replaced, or left in
+      // place by a rename or publish toggle, which copy) goes once nothing references it.
       if (previousAsset !== assetPath) {
         await cleanupUnusedAdminAssetSafely(
           { storagePath: previousAsset, allowedPublicPathPrefixes },
@@ -274,18 +288,12 @@ export function defineAssetBackedTranslatableCrud<
         )
       }
 
-      await config.invalidate()
+      await invalidateAfterCommit(scope.update, event)
       return { data: row }
     } catch (error) {
+      // Only the files this request produced are undone; the record's current file was never
+      // touched, so the row still points at a file that exists.
       await cleanupAdminAssetFinalizationsSafely(cleanupTargets, `${scope.update}.rollback`, event)
-
-      if (!dbUpdated && assetPath && assetPath !== previousAsset) {
-        await cleanupUnusedAdminAssetSafely(
-          { storagePath: assetPath, allowedPublicPathPrefixes },
-          `${scope.update}.rollback.cleanup`,
-          event
-        )
-      }
 
       throwAdminMutationError(scope.update, error, event)
     }

@@ -514,7 +514,12 @@ export default defineNuxtConfig({
 
   // Performance optimizations
   experimental: {
-    payloadExtraction: true,
+    // Nothing is prerendered, so this only affected the `swr` route rules: the client fetched their
+    // payload as `<page>/_payload.json` with `force-cache`, under a URL that only changes per deploy,
+    // so SPA navigation could show content from any point since then. Off, the payload is inlined in
+    // the (purgeable) page HTML instead. Nuxt still writes `nuxt:payload` for cached routes, which
+    // admin invalidation purges along with the pages.
+    payloadExtraction: false,
     renderJsonPayloads: true,
     componentIslands: true,
   },

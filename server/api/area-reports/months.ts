@@ -2,8 +2,8 @@ import { and, desc, eq } from 'drizzle-orm'
 import { db } from '../../db'
 import { areaReportEditions, areaReports } from '../../db/schema'
 import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
+  PUBLIC_CMS_CACHE_SCOPES,
+  publicRouteCacheOptions,
   setPublicApiCacheHeaders,
 } from '../../utils/cache/publicRouteCache'
 import { throwPublicDatabaseAwareError } from '../../utils/public/publicErrors'
@@ -70,9 +70,5 @@ export default defineCachedEventHandler(
       throwPublicDatabaseAwareError(event, 'public.area-reports-months', error)
     }
   },
-  {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'public-area-reports-months', { includeLocale: false }),
-  }
+  publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.areaReportsMonths, { includeLocale: false })
 )

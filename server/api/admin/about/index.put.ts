@@ -1,6 +1,10 @@
 import { createError, defineEventHandler, readBody } from 'h3'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
+import {
+  assertOptimisticLock,
+  buildExpectedVersionCondition,
+} from '../../../utils/admin/optimisticLock'
 import { db } from '../../../db'
 import { aboutPageContent } from '../../../db/schema'
 import { finalizeAdminImage } from '../../../utils/admin/adminImageUpload'
@@ -27,19 +31,13 @@ export default defineEventHandler(async (event) => {
     const validated = validateBody(event, updateAboutPageContentSchema, body)
     let previousHeroImage: string | null = null
 
+    const optimisticLockMessage = getAdminApiErrorMessage(event, 'aboutOptimisticLock')
+
     const item = await db.transaction(async (tx) => {
       const existing = await tx.query.aboutPageContent.findFirst()
 
-      if (validated.updatedAt && existing) {
-        const clientUpdatedAt = new Date(validated.updatedAt).getTime()
-        const serverUpdatedAt = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0
-
-        if (clientUpdatedAt !== serverUpdatedAt) {
-          throw createError({
-            statusCode: 409,
-            message: getAdminApiErrorMessage(event, 'aboutOptimisticLock'),
-          })
-        }
+      if (existing) {
+        assertOptimisticLock(validated.updatedAt, existing.updatedAt, optimisticLockMessage)
       }
 
       previousHeroImage = existing?.heroImage ?? null
@@ -66,6 +64,9 @@ export default defineEventHandler(async (event) => {
 
       let upserted = null
 
+      // The check above ran on a plain read, so two saves can both pass it; the write itself only
+      // matches the version that was read (and the first save creates the row exactly once), so the
+      // second one gets a 409 instead of silently overwriting the first.
       if (existing) {
         ;[upserted] = await tx
           .update(aboutPageContent)
@@ -73,7 +74,16 @@ export default defineEventHandler(async (event) => {
             heroImage,
             heroVisible: validated.heroVisible && Boolean(heroImage),
           })
-          .where(eq(aboutPageContent.id, existing.id))
+          .where(
+            and(
+              eq(aboutPageContent.id, existing.id),
+              buildExpectedVersionCondition(
+                aboutPageContent.updatedAt,
+                validated.updatedAt,
+                existing.updatedAt
+              )
+            )
+          )
           .returning()
       } else {
         ;[upserted] = await tx
@@ -83,14 +93,12 @@ export default defineEventHandler(async (event) => {
             heroImage,
             heroVisible: validated.heroVisible && Boolean(heroImage),
           })
+          .onConflictDoNothing()
           .returning()
       }
 
       if (!upserted) {
-        throw createError({
-          statusCode: 500,
-          message: getAdminApiErrorMessage(event, 'aboutSaveFailed'),
-        })
+        throw createError({ statusCode: 409, message: optimisticLockMessage })
       }
 
       return upserted

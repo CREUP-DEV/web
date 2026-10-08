@@ -5,7 +5,8 @@ import {
   getPressArticlePublicListPath,
 } from '~~/shared/constants/pressRoutes'
 import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
-import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
+import { isPressArticlePublic } from '~~/shared/utils/publicVisibility'
 import type {
   AdminPressArticle,
   AdminPressArticleType,
@@ -36,8 +37,12 @@ const {
   pending,
   error: fetchError,
   refresh,
+  refreshAfterRemoval,
   removeItem,
 } = useAdminPress(currentType, searchQuery)
+
+// Skeletons only on a first load; a refetch (page, filter, backfill after a delete) dims the rows.
+const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, items, fetchError)
 
 // Keep the pagination controls under the cursor when the page changes.
 const paginationRef = ref<HTMLElement | null>(null)
@@ -74,27 +79,56 @@ const getItemDescription = (item: AdminPressArticle) =>
 const formatDate = (iso: string) =>
   formatLocaleDate(iso, { year: 'numeric', month: 'short', day: 'numeric' })
 
+const getEditPath = (item: AdminPressArticle) => localePath(`${ADMIN_ROUTES.press}/${item.id}`)
+
+const getPublicPath = (item: AdminPressArticle) =>
+  localePath(`${getPressArticlePublicListPath(item.type)}/${item.slug}`)
+
+const getPreviewPath = (item: AdminPressArticle) =>
+  localePath(`${ADMIN_ROUTES.pressPreview}/${item.id}`)
+
+/** Why the article is not public yet: switched off, or active with a future publication date. */
+const getPreviewLabel = (item: AdminPressArticle) =>
+  item.active
+    ? t('admin.press.previewScheduled', { date: formatDate(item.publishedAt) })
+    : t('admin.press.previewInactive')
+
 const confirmDelete = (item: AdminPressArticle) => {
   itemToDelete.value = item
   showDeleteModal.value = true
 }
 
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  itemToDelete.value = null
+}
+
 const handleDelete = async () => {
-  if (!itemToDelete.value) return
+  const item = itemToDelete.value
+  if (!item) return
   isDeleting.value = true
   try {
-    await $fetch(`/api/admin/press/${itemToDelete.value.id}`, { method: 'DELETE' })
-    removeItem(itemToDelete.value.id)
+    await $fetch(`/api/admin/press/${item.id}`, {
+      method: 'DELETE',
+      query: { updatedAt: item.updatedAt },
+    })
+    removeItem(item.id)
     decrementTotal()
     await refreshAllClientAsyncData()
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     toast.add({ title: t('admin.press.toast.deleted'), color: 'success' })
+    await refreshAfterRemoval()
   } catch (error) {
+    // 409: another admin changed the article since this list loaded; show it as it is now.
+    const isConflict = getApiErrorStatusCode(error) === 409
     toast.add({
       title: getApiErrorMessage(error, t('admin.press.toast.deleteError')),
-      color: 'error',
+      color: isConflict ? 'warning' : 'error',
     })
+    if (isConflict) {
+      closeDeleteModal()
+      await refresh()
+    }
   } finally {
     isDeleting.value = false
   }
@@ -115,7 +149,6 @@ const activeTab = computed({
     currentType.value = val === 'all' ? null : (val as AdminPressArticleType)
   },
 })
-const tabPanelId = 'admin-press-results'
 
 const emptyStateCreatePath = computed(() =>
   localePath(
@@ -173,19 +206,15 @@ const emptyStateTypeLabel = computed(() =>
     <div class="mb-6 space-y-4">
       <div
         class="flex gap-2 overflow-x-auto"
-        role="tablist"
+        role="group"
         :aria-label="t('admin.press.list.filterByTypeAria')"
       >
         <UButton
           v-for="tab in tabItems"
-          :id="`press-tab-${tab.key}`"
           :key="tab.key"
           :icon="tab.icon"
           :variant="activeTab === tab.key ? 'solid' : 'outline'"
-          role="tab"
-          :aria-selected="activeTab === tab.key"
-          :aria-controls="tabPanelId"
-          :tabindex="activeTab === tab.key ? 0 : -1"
+          :aria-pressed="activeTab === tab.key"
           size="sm"
           @click="activeTab = tab.key"
         >
@@ -213,14 +242,8 @@ const emptyStateTypeLabel = computed(() =>
       </UButton>
     </div>
 
-    <div
-      v-else
-      :id="tabPanelId"
-      role="tabpanel"
-      :aria-labelledby="`press-tab-${activeTab}`"
-      class="space-y-3"
-    >
-      <div v-if="pending" aria-hidden="true" class="space-y-3">
+    <div v-else ref="resultsRef" class="space-y-3" :aria-busy="pending || undefined">
+      <div v-if="isLoading" aria-hidden="true" class="space-y-3">
         <div v-for="n in 5" :key="n" class="rounded-xl border p-4">
           <div class="flex gap-4">
             <USkeleton class="h-24 w-40 shrink-0 rounded-lg" />
@@ -234,20 +257,23 @@ const emptyStateTypeLabel = computed(() =>
       </div>
 
       <template v-else>
-        <article
-          v-for="item in items"
-          :key="item.id"
-          class="group rounded-xl border transition-shadow hover:shadow-md"
+        <div
+          v-if="items.length"
+          class="space-y-3"
+          :class="isRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
         >
-          <NuxtLink
-            :to="localePath(`${ADMIN_ROUTES.press}/${item.id}`)"
-            class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
+          <!-- Stretched link: the title's ::after overlay makes the whole card open the editor,
+               while the actions sit above it as siblings instead of nesting inside the link. -->
+          <article
+            v-for="item in items"
+            :key="item.id"
+            class="group has-focus-visible:ring-primary relative flex flex-col gap-4 rounded-xl border p-4 transition-shadow hover:shadow-md has-focus-visible:ring-2 sm:flex-row sm:items-center"
           >
             <div class="shrink-0">
               <img
                 v-if="item.listThumbnailUrl"
                 :src="item.listThumbnailUrl"
-                :alt="getItemTitle(item)"
+                alt=""
                 class="h-24 w-full rounded-lg object-cover sm:w-40"
                 loading="lazy"
               />
@@ -261,7 +287,12 @@ const emptyStateTypeLabel = computed(() =>
             <div class="min-w-0 flex-1">
               <div class="mb-1 flex items-start gap-2">
                 <h3 class="group-hover:text-primary truncate text-base font-semibold">
-                  {{ getItemTitle(item) }}
+                  <NuxtLink
+                    :to="getEditPath(item)"
+                    class="after:absolute after:inset-0 focus-visible:outline-none"
+                  >
+                    {{ getItemTitle(item) }}
+                  </NuxtLink>
                 </h3>
               </div>
 
@@ -305,21 +336,29 @@ const emptyStateTypeLabel = computed(() =>
               </div>
             </div>
 
-            <div
-              class="flex shrink-0 items-center gap-1 self-start sm:self-center"
-              @click.prevent.stop
-            >
+            <div class="relative z-10 flex shrink-0 items-center gap-1 self-start sm:self-center">
               <UButton
-                :to="localePath(`${getPressArticlePublicListPath(item.type)}/${item.slug}`)"
+                v-if="isPressArticlePublic(item)"
+                :to="getPublicPath(item)"
                 icon="i-tabler-external-link"
                 variant="ghost"
                 size="sm"
                 target="_blank"
-                :title="t('admin.press.list.viewOnWebTitle')"
+                :title="t('admin.press.viewOnWebAria')"
                 :aria-label="t('admin.press.viewOnWebAria')"
               />
               <UButton
-                :to="localePath(`${ADMIN_ROUTES.press}/${item.id}`)"
+                v-else
+                :to="getPreviewPath(item)"
+                icon="i-tabler-eye"
+                variant="ghost"
+                size="sm"
+                target="_blank"
+                :title="getPreviewLabel(item)"
+                :aria-label="getPreviewLabel(item)"
+              />
+              <UButton
+                :to="getEditPath(item)"
                 icon="i-tabler-pencil"
                 variant="ghost"
                 size="sm"
@@ -336,8 +375,8 @@ const emptyStateTypeLabel = computed(() =>
                 @click="confirmDelete(item)"
               />
             </div>
-          </NuxtLink>
-        </article>
+          </article>
+        </div>
 
         <div v-if="!items.length && searchQuery.trim()" class="py-16 text-center">
           <UIcon name="i-tabler-search-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />

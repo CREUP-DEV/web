@@ -1,6 +1,6 @@
 import { createError } from 'h3'
 import type { H3Event } from 'h3'
-import { and, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, notInArray, sql } from 'drizzle-orm'
 import { db } from '../db'
 import { pressArticles, pressArticleTranslations, pressArticleTags, tags } from '../db/schema'
 import { finalizeAdminDocument } from '../utils/admin/adminDocumentUpload'
@@ -11,7 +11,8 @@ import {
   cleanupUnusedAdminAssetSafely,
   trackAdminAssetFinalization,
 } from '../utils/admin/adminAssetPublication'
-import { isUniqueConstraintViolation, throwAdminMutationError } from '../utils/admin/adminErrors'
+import { throwAdminMutationError } from '../utils/admin/adminErrors'
+import { throwPossibleDuplicate } from '../utils/admin/possibleDuplicate'
 import { getRequiredTranslationValue } from '../utils/locale/localizedContent'
 import { getAdminApiErrorMessage } from '../utils/locale/adminApiErrorMessages'
 import {
@@ -19,27 +20,22 @@ import {
   sanitizePressTranslations,
   sanitizeRichTextHtml,
 } from '../utils/press/pressTranslation'
-import { assertOptimisticLock, buildOptimisticLockCondition } from '../utils/admin/optimisticLock'
-import { generatePressSlug } from '../utils/core/slug'
+import { assertOptimisticLock, buildExpectedVersionCondition } from '../utils/admin/optimisticLock'
+import {
+  buildPressBaseSlug,
+  buildSlugFamilyPattern,
+  generatePressSlug,
+  recordPressSlugChange,
+} from '../utils/core/slug'
 import { dateOnlyToStorageDate, dateValueToDateOnly } from '~~/shared/utils/date'
-import { SUPPORTED_LOCALE_CODES, type SupportedLocaleCode } from '~~/shared/utils/locale'
+import {
+  DEFAULT_LOCALE_CODE,
+  SUPPORTED_LOCALE_CODES,
+  type SupportedLocaleCode,
+} from '~~/shared/utils/locale'
 import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
 import type { z } from 'zod'
 import type { createPressArticleSchema, updatePressArticleSchema } from '../utils/validation'
-
-function randomSlugSuffix(): string {
-  return Math.random().toString(16).slice(2, 6)
-}
-
-function isSlugUniqueConstraintViolation(error: unknown): boolean {
-  if (!isUniqueConstraintViolation(error)) return false
-  const e = error as { constraint?: string; detail?: string }
-  // If constraint name or detail mention slug, it's a slug collision.
-  // Fall back to accepting any unique violation if constraint info is absent.
-  if (e.constraint) return e.constraint.toLowerCase().includes('slug')
-  if (e.detail) return e.detail.toLowerCase().includes('slug')
-  return true
-}
 
 const IMAGE_UPLOAD_DIR = 'public/prensa/imagenes'
 const PDF_UPLOAD_DIR = 'public/prensa/documentos'
@@ -56,6 +52,42 @@ async function assertTagsExist(tx: PressServiceTx, tagIds: string[], event: H3Ev
     throw createError({
       statusCode: 409,
       message: getAdminApiErrorMessage(event, 'pressArticleTagsMissing'),
+    })
+  }
+}
+
+/**
+ * Refuse a create whose title and month match an existing article — its slug would come out as
+ * `<base>-N` — unless the editor confirmed it. Must run after `generatePressSlug` in the same
+ * transaction: the base slug's advisory lock is what makes the check race-free.
+ */
+async function assertNoPressArticleDuplicate(tx: PressServiceTx, baseSlug: string, event: H3Event) {
+  const [duplicate] = await tx
+    .select({
+      id: pressArticles.id,
+      slug: pressArticles.slug,
+      type: pressArticles.type,
+      publishedAt: pressArticles.publishedAt,
+      title: pressArticleTranslations.title,
+    })
+    .from(pressArticles)
+    .leftJoin(
+      pressArticleTranslations,
+      and(
+        eq(pressArticleTranslations.pressArticleId, pressArticles.id),
+        eq(pressArticleTranslations.locale, DEFAULT_LOCALE_CODE)
+      )
+    )
+    .where(sql`${pressArticles.slug} ~ ${buildSlugFamilyPattern(baseSlug)}`)
+    .orderBy(desc(pressArticles.createdAt))
+    .limit(1)
+
+  if (duplicate) {
+    throwPossibleDuplicate(event, {
+      id: duplicate.id,
+      title: duplicate.title ?? duplicate.slug,
+      type: duplicate.type,
+      publishedAt: dateValueToDateOnly(duplicate.publishedAt),
     })
   }
 }
@@ -118,26 +150,28 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
   let pdfUrl: string | null = null
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
-  // Runs one create transaction. imageSource/pdfSource allow a retry to pass
-  // the already-moved file paths from a failed first attempt.
-  async function runTransaction(
-    defaultTitle: string,
-    publishedAt: string,
-    publishedAtDate: Date,
-    opts: { forcedSlugSuffix?: string; imageSource?: string | null; pdfSource?: string | null }
-  ) {
-    return db.transaction(async (tx) => {
-      const slug = await generatePressSlug(defaultTitle, publishedAtDate, {
-        executor: tx,
-        forcedSuffix: opts.forcedSlugSuffix,
-      })
+  try {
+    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
+    if (!defaultTitle) throw new Error('El título en español es obligatorio')
 
-      const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
-      const effectivePdfSource = opts.pdfSource !== undefined ? opts.pdfSource : data.pdfUrl
+    const publishedAt = data.publishedAt ?? dateValueToDateOnly(new Date())
+    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
 
-      if (effectiveImageSource) {
+    const completeItem = await db.transaction(async (tx) => {
+      const slug = await generatePressSlug(defaultTitle, publishedAtDate, { executor: tx })
+
+      // Before any asset moves: a refused create leaves the uploads where the resend expects them.
+      if (!data.confirmDuplicate) {
+        await assertNoPressArticleDuplicate(
+          tx,
+          buildPressBaseSlug(defaultTitle, publishedAtDate),
+          event
+        )
+      }
+
+      if (data.image) {
         image = await finalizeAdminImage({
-          storagePath: effectiveImageSource,
+          storagePath: data.image,
           uploadDir: IMAGE_UPLOAD_DIR,
           publicPath: PRESS_IMAGE_PUBLIC_BASE,
           slug,
@@ -145,15 +179,15 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
           fallbackBaseName: 'prensa',
         })
         trackAdminAssetFinalization(cleanupTargets, {
-          sourceStoragePath: effectiveImageSource,
+          sourceStoragePath: data.image,
           storagePath: image,
           allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
         })
       }
 
-      pdfUrl = effectivePdfSource
+      pdfUrl = data.pdfUrl
         ? await finalizeAdminDocument({
-            storagePath: effectivePdfSource,
+            storagePath: data.pdfUrl,
             uploadDir: PDF_UPLOAD_DIR,
             publicPath: PRESS_DOCUMENT_PUBLIC_PATH,
             slug,
@@ -162,7 +196,7 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
           })
         : null
       trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: effectivePdfSource,
+        sourceStoragePath: data.pdfUrl,
         storagePath: pdfUrl,
         allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
       })
@@ -205,46 +239,6 @@ export async function createPressArticle(data: PressArticleData, event: H3Event)
         with: WITH_FULL_RELATIONS,
       })) as PressArticleQueryItem | null
     })
-  }
-
-  try {
-    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
-    if (!defaultTitle) throw new Error('El título en español es obligatorio')
-
-    const publishedAt = data.publishedAt ?? dateValueToDateOnly(new Date())
-    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
-
-    let completeItem: PressArticleQueryItem | null
-
-    try {
-      completeItem = await runTransaction(defaultTitle, publishedAt, publishedAtDate, {})
-    } catch (firstError) {
-      if (!isSlugUniqueConstraintViolation(firstError)) throw firstError
-
-      // Slug collision on insert — retry once with a random suffix on the slug.
-      // Capture the paths where assets were moved in the failed attempt so the
-      // retry can rename them to match the new slug instead of re-reading the
-      // (now-gone) temp source.
-      const firstImage = image
-      const firstPdfUrl = pdfUrl
-      image = null
-      pdfUrl = null
-      // Clear tracking so rollback cleanup doesn't double-delete on retry failure.
-      cleanupTargets.splice(0)
-
-      completeItem = await runTransaction(defaultTitle, publishedAt, publishedAtDate, {
-        forcedSlugSuffix: randomSlugSuffix(),
-        // Only override source if the first attempt actually moved the file;
-        // otherwise fall back to the original data path (file still in place).
-        imageSource: firstImage ?? undefined,
-        pdfSource: firstPdfUrl ?? undefined,
-      }).catch(() => {
-        throw createError({
-          statusCode: 409,
-          message: getAdminApiErrorMessage(event, 'pressArticleSlugFailed'),
-        })
-      })
-    }
 
     if (data.image && data.image !== image) {
       await cleanupUnusedAdminAssetSafely(
@@ -275,28 +269,38 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
   let pdfUrl: string | null = null
   const cleanupTargets: CleanupUnusedAdminAssetOptions[] = []
 
-  // Runs one update transaction. imageSource/pdfSource allow a retry to pass
-  // the already-moved file paths from a failed first attempt.
-  async function runTransaction(
-    existingItem: NonNullable<Awaited<ReturnType<typeof db.query.pressArticles.findFirst>>>,
-    publishedAt: string,
-    publishedAtDate: Date,
-    defaultTitle: string,
-    opts: { forcedSlugSuffix?: string; imageSource?: string | null; pdfSource?: string | null }
-  ) {
-    return db.transaction(async (tx) => {
+  try {
+    const existingItem = await db.query.pressArticles.findFirst({
+      where: eq(pressArticles.id, id),
+    })
+
+    if (!existingItem)
+      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
+
+    assertOptimisticLock(
+      data.updatedAt,
+      existingItem.updatedAt,
+      getAdminApiErrorMessage(event, 'pressArticleOptimisticLock')
+    )
+
+    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
+    if (!defaultTitle) throw new Error('El título en español es obligatorio')
+
+    const publishedAt = data.publishedAt ?? existingItem.publishedAt
+    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
+
+    previousImage = existingItem.image
+    previousPdfUrl = existingItem.pdfUrl
+
+    const item = await db.transaction(async (tx) => {
       const slug = await generatePressSlug(defaultTitle, publishedAtDate, {
         excludeId: id,
         executor: tx,
-        forcedSuffix: opts.forcedSlugSuffix,
       })
 
-      const effectiveImageSource = opts.imageSource !== undefined ? opts.imageSource : data.image
-      const effectivePdfSource = opts.pdfSource !== undefined ? opts.pdfSource : data.pdfUrl
-
-      if (effectiveImageSource) {
+      if (data.image) {
         image = await finalizeAdminImage({
-          storagePath: effectiveImageSource,
+          storagePath: data.image,
           uploadDir: IMAGE_UPLOAD_DIR,
           publicPath: PRESS_IMAGE_PUBLIC_BASE,
           slug,
@@ -305,15 +309,15 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
           replaceStoragePath: existingItem.image ?? undefined,
         })
         trackAdminAssetFinalization(cleanupTargets, {
-          sourceStoragePath: effectiveImageSource,
+          sourceStoragePath: data.image,
           storagePath: image,
           allowedPublicPathPrefixes: [PRESS_IMAGE_PUBLIC_BASE],
         })
       }
 
-      pdfUrl = effectivePdfSource
+      pdfUrl = data.pdfUrl
         ? await finalizeAdminDocument({
-            storagePath: effectivePdfSource,
+            storagePath: data.pdfUrl,
             uploadDir: PDF_UPLOAD_DIR,
             publicPath: PRESS_DOCUMENT_PUBLIC_PATH,
             slug,
@@ -323,16 +327,16 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
           })
         : null
       trackAdminAssetFinalization(cleanupTargets, {
-        sourceStoragePath: effectivePdfSource,
+        sourceStoragePath: data.pdfUrl,
         storagePath: pdfUrl,
         allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
       })
 
-      const optimisticLockCondition = data.updatedAt
-        ? buildOptimisticLockCondition(pressArticles.updatedAt, data.updatedAt)
-        : existingItem.updatedAt
-          ? eq(pressArticles.updatedAt, existingItem.updatedAt)
-          : isNull(pressArticles.updatedAt)
+      const optimisticLockCondition = buildExpectedVersionCondition(
+        pressArticles.updatedAt,
+        data.updatedAt,
+        existingItem.updatedAt
+      )
 
       const updatedRows = await tx
         .update(pressArticles)
@@ -355,6 +359,9 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
           message: getAdminApiErrorMessage(event, 'pressArticleOptimisticLock'),
         })
       }
+
+      // The optimistic lock above guarantees the row still carried `existingItem.slug`.
+      await recordPressSlugChange(tx, id, existingItem.slug, slug)
 
       // Translations: upsert changed locales, delete removed ones
       const newLocales = data.translations.map((t) => t.locale)
@@ -411,62 +418,6 @@ export async function updatePressArticle(id: string, data: UpdatePressArticleDat
         with: WITH_FULL_RELATIONS,
       })) as PressArticleQueryItem | null
     })
-  }
-
-  try {
-    const existingItem = await db.query.pressArticles.findFirst({
-      where: eq(pressArticles.id, id),
-    })
-
-    if (!existingItem)
-      throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
-
-    assertOptimisticLock(
-      data.updatedAt,
-      existingItem.updatedAt,
-      getAdminApiErrorMessage(event, 'pressArticleOptimisticLock')
-    )
-
-    const defaultTitle = getRequiredTranslationValue(data.translations, 'title')
-    if (!defaultTitle) throw new Error('El título en español es obligatorio')
-
-    const publishedAt = data.publishedAt ?? existingItem.publishedAt
-    const publishedAtDate = dateOnlyToStorageDate(publishedAt)
-
-    previousImage = existingItem.image
-    previousPdfUrl = existingItem.pdfUrl
-
-    let item: PressArticleQueryItem | null
-
-    try {
-      item = await runTransaction(existingItem, publishedAt, publishedAtDate, defaultTitle, {})
-    } catch (firstError) {
-      if (!isSlugUniqueConstraintViolation(firstError)) throw firstError
-
-      // Slug collision on update — retry once with a random suffix on the slug.
-      // Capture the paths where assets were moved in the failed attempt so the
-      // retry can rename them to match the new slug instead of re-reading the
-      // (now-gone) temp source.
-      const firstImage = image
-      const firstPdfUrl = pdfUrl
-      image = null
-      pdfUrl = null
-      // Clear tracking so rollback cleanup doesn't double-delete on retry failure.
-      cleanupTargets.splice(0)
-
-      item = await runTransaction(existingItem, publishedAt, publishedAtDate, defaultTitle, {
-        forcedSlugSuffix: randomSlugSuffix(),
-        // Only override source if the first attempt actually moved the file;
-        // otherwise fall back to the original data path (file still in place).
-        imageSource: firstImage ?? undefined,
-        pdfSource: firstPdfUrl ?? undefined,
-      }).catch(() => {
-        throw createError({
-          statusCode: 409,
-          message: getAdminApiErrorMessage(event, 'pressArticleSlugFailed'),
-        })
-      })
-    }
 
     if (previousImage !== image) {
       await cleanupUnusedAdminAssetSafely(

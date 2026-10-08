@@ -1,14 +1,16 @@
 import { clearNuxtData, refreshNuxtData } from '#app'
 import {
-  PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES,
   getPublicHomeAsyncDataKey,
+  isPublicCmsAsyncDataKey,
   PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY,
 } from '~~/shared/constants/publicAsyncDataKeys'
 import { invalidatePublicCmsCache } from '@/utils/publicCmsCachedData'
 
 /**
  * Refreshes client-side Nuxt data caches after admin saves so public pages do not show stale
- * content when navigating via SPA (server Nitro cache is already invalidated separately).
+ * content when navigating via SPA (server Nitro cache is already invalidated separately). Each
+ * function also expires the public reads cached in the site's other open tabs, which refetch the
+ * ones on screen (`invalidatePublicCmsCache`).
  */
 export function usePublicCmsCacheRefresh() {
   const { locales } = useI18n()
@@ -17,7 +19,7 @@ export function usePublicCmsCacheRefresh() {
   const getCachedPublicCmsKeys = () =>
     Array.from(
       new Set([...Object.keys(nuxtApp.payload.data), ...Object.keys(nuxtApp._asyncData)])
-    ).filter((key) => PUBLIC_CMS_ASYNC_DATA_KEY_PREFIXES.some((prefix) => key.startsWith(prefix)))
+    ).filter(isPublicCmsAsyncDataKey)
 
   async function refreshAboutPage() {
     if (import.meta.server) {
@@ -41,8 +43,8 @@ export function usePublicCmsCacheRefresh() {
   }
 
   /**
-   * Refetches every `useAsyncData` / `useFetch` entry. Use sparingly when many public lists depend
-   * on a change (e.g. site-wide default images).
+   * Refetches every public CMS `useAsyncData` / `useFetch` entry. Use sparingly when many public
+   * lists depend on a change (e.g. site-wide default images).
    */
   async function refreshAllClientAsyncData() {
     if (import.meta.server) {

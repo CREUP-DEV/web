@@ -41,6 +41,7 @@ export interface AdminPressArticle {
   mediaOutletId: string | null
   active: boolean
   publishedAt: string
+  updatedAt: string
   translations: AdminPressTranslation[]
   tags: Array<{
     id: string
@@ -65,6 +66,8 @@ export function useAdminPress(
   search: MaybeRef<string>
 ) {
   const localeApiHeaders = useLocaleApiHeaders()
+  // Forwards the session cookie during SSR; a bare `$fetch` there would answer 401 on a full load.
+  const requestFetch = useRequestFetch()
   const typeValue = computed(() => unref(type))
   const searchValue = computed(() => unref(search))
   const debouncedSearch = refDebounced(searchValue, 300)
@@ -89,7 +92,7 @@ export function useAdminPress(
       if (debouncedSearch.value) params.set('search', debouncedSearch.value)
       params.set('limit', String(ADMIN_PRESS_PAGE_SIZE))
       params.set('offset', String(offset.value))
-      return $fetch<AdminPressResponse>(`/api/admin/press?${params.toString()}`, {
+      return requestFetch<AdminPressResponse>(`/api/admin/press?${params.toString()}`, {
         headers: localeApiHeaders.value,
       })
     },
@@ -109,5 +112,29 @@ export function useAdminPress(
     }))
   }
 
-  return { decrementTotal, error, items, page, pageCount, pending, refresh, removeItem, total }
+  /**
+   * Backfills the page after a row was removed locally: steps back when that emptied a later page
+   * (the key change refetches), otherwise refetches so the next page's first row moves up.
+   */
+  const refreshAfterRemoval = async () => {
+    if (!items.value.length && page.value > 1) {
+      page.value -= 1
+      return
+    }
+
+    await refresh()
+  }
+
+  return {
+    decrementTotal,
+    error,
+    items,
+    page,
+    pageCount,
+    pending,
+    refresh,
+    refreshAfterRemoval,
+    removeItem,
+    total,
+  }
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
-import { getApiErrorMessage } from '~~/shared/utils/apiError'
+import { AREA_REPORTS_PUBLIC_BASE_PATH } from '~~/shared/constants/activity'
+import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 import type { AdminAreaReport } from '@/composables/admin/useAdminAreaReports'
 
 definePageMeta({
@@ -33,8 +34,12 @@ const {
   pending,
   error: fetchError,
   refresh,
+  refreshAfterRemoval,
   removeItem,
 } = useAdminAreaReports(monthFilter)
+
+// Skeletons only on a first load; a refetch (page, filter, backfill after a delete) dims the rows.
+const { resultsRef, isLoading, isRefreshing } = usePaginatedTransition(pending, items, fetchError)
 
 // Keep the pagination controls under the cursor when the page changes.
 const paginationRef = ref<HTMLElement | null>(null)
@@ -50,27 +55,54 @@ const getAreaName = (item: AdminAreaReport) => {
   return snapshot[locale.value] ?? snapshot.es ?? Object.values(snapshot)[0] ?? ''
 }
 
+const getEditPath = (item: AdminAreaReport) =>
+  localePath(`${ADMIN_ROUTES.activityReports}/${item.id}`)
+
+/**
+ * Area reports have no page of their own: the public site lists the active ones of an edition on
+ * the edition's month page, each under an `#area-<id>` anchor (the URL newsletters link to too).
+ */
+const isPublic = (item: AdminAreaReport) => item.active && item.edition !== null
+
+const getPublicPath = (item: AdminAreaReport) =>
+  `${localePath(`${AREA_REPORTS_PUBLIC_BASE_PATH}/${item.monthKey}`)}#area-${item.areaId}`
+
 const confirmDelete = (item: AdminAreaReport) => {
   itemToDelete.value = item
   showDeleteModal.value = true
 }
 
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  itemToDelete.value = null
+}
+
 const handleDelete = async () => {
-  if (!itemToDelete.value) return
+  const item = itemToDelete.value
+  if (!item) return
   isDeleting.value = true
   try {
-    await $fetch(`/api/admin/area-reports/${itemToDelete.value.id}`, { method: 'DELETE' })
-    removeItem(itemToDelete.value.id)
+    await $fetch(`/api/admin/area-reports/${item.id}`, {
+      method: 'DELETE',
+      query: { updatedAt: item.updatedAt },
+    })
+    removeItem(item.id)
     decrementTotal()
     await refreshAllClientAsyncData()
-    showDeleteModal.value = false
-    itemToDelete.value = null
+    closeDeleteModal()
     toast.add({ title: t('admin.areaReports.toast.deleted'), color: 'success' })
+    await refreshAfterRemoval()
   } catch (error) {
+    // 409: another admin changed the report since this list loaded; show it as it is now.
+    const isConflict = getApiErrorStatusCode(error) === 409
     toast.add({
       title: getApiErrorMessage(error, t('admin.areaReports.toast.deleteError')),
-      color: 'error',
+      color: isConflict ? 'warning' : 'error',
     })
+    if (isConflict) {
+      closeDeleteModal()
+      await refresh()
+    }
   } finally {
     isDeleting.value = false
   }
@@ -142,26 +174,29 @@ const formatPeriod = (item: AdminAreaReport) => {
       </UButton>
     </div>
 
-    <div v-else class="space-y-3">
-      <div v-if="pending" aria-hidden="true" class="space-y-3">
+    <div v-else ref="resultsRef" class="space-y-3" :aria-busy="pending || undefined">
+      <div v-if="isLoading" aria-hidden="true" class="space-y-3">
         <USkeleton v-for="n in 4" :key="n" class="h-24 w-full rounded-xl" />
       </div>
 
       <template v-else>
-        <article
-          v-for="item in items"
-          :key="item.id"
-          class="group rounded-xl border transition-shadow hover:shadow-md"
+        <div
+          v-if="items.length"
+          class="space-y-3"
+          :class="isRefreshing ? 'opacity-60 transition-opacity duration-200' : ''"
         >
-          <NuxtLink
-            :to="localePath(`${ADMIN_ROUTES.activityReports}/${item.id}`)"
-            class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
+          <!-- Stretched link: the title's ::after overlay makes the whole card open the editor,
+               while the actions sit above it as siblings instead of nesting inside the link. -->
+          <article
+            v-for="item in items"
+            :key="item.id"
+            class="group has-focus-visible:ring-primary relative flex flex-col gap-4 rounded-xl border p-4 transition-shadow hover:shadow-md has-focus-visible:ring-2 sm:flex-row sm:items-center"
           >
             <div class="shrink-0">
               <img
                 v-if="item.listThumbnailUrl"
                 :src="item.listThumbnailUrl"
-                :alt="getAreaName(item)"
+                alt=""
                 class="h-20 w-32 rounded-lg object-cover"
                 loading="lazy"
               />
@@ -176,7 +211,12 @@ const formatPeriod = (item: AdminAreaReport) => {
 
             <div class="min-w-0 flex-1">
               <h3 class="group-hover:text-primary mb-1 truncate text-base font-semibold">
-                {{ getAreaName(item) }}
+                <NuxtLink
+                  :to="getEditPath(item)"
+                  class="after:absolute after:inset-0 focus-visible:outline-none"
+                >
+                  {{ getAreaName(item) }}
+                </NuxtLink>
               </h3>
               <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                 <span class="text-muted flex items-center gap-1 text-xs">
@@ -189,12 +229,19 @@ const formatPeriod = (item: AdminAreaReport) => {
               </div>
             </div>
 
-            <div
-              class="flex shrink-0 items-center gap-1 self-start sm:self-center"
-              @click.prevent.stop
-            >
+            <div class="relative z-10 flex shrink-0 items-center gap-1 self-start sm:self-center">
               <UButton
-                :to="localePath(`${ADMIN_ROUTES.activityReports}/${item.id}`)"
+                v-if="isPublic(item)"
+                :to="getPublicPath(item)"
+                icon="i-tabler-external-link"
+                variant="ghost"
+                size="sm"
+                target="_blank"
+                :title="t('admin.areaReports.list.viewOnWebAria')"
+                :aria-label="t('admin.areaReports.list.viewOnWebAria')"
+              />
+              <UButton
+                :to="getEditPath(item)"
                 icon="i-tabler-pencil"
                 variant="ghost"
                 size="sm"
@@ -211,8 +258,8 @@ const formatPeriod = (item: AdminAreaReport) => {
                 @click="confirmDelete(item)"
               />
             </div>
-          </NuxtLink>
-        </article>
+          </article>
+        </div>
 
         <div v-if="!items.length && monthFilter.trim()" class="py-16 text-center">
           <UIcon name="i-tabler-search-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />

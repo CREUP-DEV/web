@@ -46,7 +46,6 @@ const es = {
     'No se puede conectar al servidor de correo. Verifica la configuración SMTP antes de enviar.',
   // Per-resource create/update failures
   pressArticleCreateFailed: 'Error al crear el artículo',
-  pressArticleSlugFailed: 'No se pudo generar un slug único para el artículo',
   pressArticleTagsMissing:
     'Una o varias etiquetas seleccionadas ya no existen. Recarga la página e inténtalo de nuevo.',
   mediaCreateFailed: 'No se pudo crear el medio',
@@ -61,7 +60,9 @@ const es = {
   financialReportUpdateFailed: 'No se pudo actualizar el informe económico',
   activityCreateFailed: 'No se pudo crear la actividad',
   activityUpdateFailed: 'No se pudo actualizar la actividad',
-  activitySlugFailed: 'No se pudo generar un slug único para la actividad',
+  tagCreateFailed: 'No se pudo crear la etiqueta',
+  tagUpdateFailed: 'No se pudo actualizar la etiqueta',
+  memberOrgCatalogEntryUpdateFailed: 'No se pudo actualizar la organización',
   activityOptimisticLock:
     'La actividad fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
   activityMemberOrgMissing:
@@ -125,9 +126,7 @@ const es = {
   // Jobs
   jobGone: 'El trabajo ya no existe.',
   jobNotFailed: 'El trabajo ya no estaba en estado fallido.',
-  // About / press dossier / tags / images
-  aboutSaveFailed: 'No se pudo guardar el contenido',
-  pressDossierSaveFailed: 'No se pudo guardar el dossier',
+  // Site default images / tags
   slotConfigInvalid: 'Configuración de slot no válida',
   tagNotFound: 'Etiqueta no encontrada',
   tagReserved: 'La etiqueta «Todas» es del sistema y no se puede editar ni eliminar.',
@@ -196,7 +195,6 @@ const en: Record<AdminApiErrorMessageKey, string> = {
     'Cannot connect to the mail server. Check the SMTP configuration before sending.',
   // Per-resource create/update failures
   pressArticleCreateFailed: 'Could not create the article',
-  pressArticleSlugFailed: 'Could not generate a unique slug for the article',
   pressArticleTagsMissing:
     'One or more selected tags no longer exist. Reload the page and try again.',
   mediaCreateFailed: 'Could not create the media outlet',
@@ -211,7 +209,9 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   financialReportUpdateFailed: 'Could not update the financial report',
   activityCreateFailed: 'Could not create the activity',
   activityUpdateFailed: 'Could not update the activity',
-  activitySlugFailed: 'Could not generate a unique slug for the activity',
+  tagCreateFailed: 'Could not create the tag',
+  tagUpdateFailed: 'Could not update the tag',
+  memberOrgCatalogEntryUpdateFailed: 'Could not update the organization',
   activityOptimisticLock:
     'The activity was modified by another user. Reload the page to see the most recent changes.',
   activityMemberOrgMissing:
@@ -274,9 +274,7 @@ const en: Record<AdminApiErrorMessageKey, string> = {
   // Jobs
   jobGone: 'The job no longer exists.',
   jobNotFailed: 'The job was no longer in a failed state.',
-  // About / press dossier / tags / images
-  aboutSaveFailed: 'Could not save the content',
-  pressDossierSaveFailed: 'Could not save the press kit',
+  // Site default images / tags
   slotConfigInvalid: 'Invalid slot configuration',
   tagNotFound: 'Tag not found',
   tagReserved: 'The “All” tag is a system tag and cannot be edited or deleted.',
@@ -343,7 +341,6 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
     "No es pot connectar al servidor de correu. Comprova la configuració SMTP abans d'enviar.",
   // Per-resource create/update failures
   pressArticleCreateFailed: "Error en crear l'article",
-  pressArticleSlugFailed: "No s'ha pogut generar un slug únic per a l'article",
   pressArticleTagsMissing:
     'Una o més etiquetes seleccionades ja no existeixen. Torna a carregar la pàgina i torna-ho a provar.',
   mediaCreateFailed: "No s'ha pogut crear el mitjà",
@@ -358,7 +355,9 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   financialReportUpdateFailed: "No s'ha pogut actualitzar l'informe econòmic",
   activityCreateFailed: "No s'ha pogut crear l'activitat",
   activityUpdateFailed: "No s'ha pogut actualitzar l'activitat",
-  activitySlugFailed: "No s'ha pogut generar un slug únic per a l'activitat",
+  tagCreateFailed: "No s'ha pogut crear l'etiqueta",
+  tagUpdateFailed: "No s'ha pogut actualitzar l'etiqueta",
+  memberOrgCatalogEntryUpdateFailed: "No s'ha pogut actualitzar l'organització",
   activityOptimisticLock:
     "L'activitat ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
   activityMemberOrgMissing:
@@ -423,9 +422,7 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
   // Jobs
   jobGone: 'La tasca ja no existeix.',
   jobNotFailed: 'La tasca ja no estava en estat fallit.',
-  // About / press dossier / tags / images
-  aboutSaveFailed: "No s'ha pogut desar el contingut",
-  pressDossierSaveFailed: "No s'ha pogut desar el dossier",
+  // Site default images / tags
   slotConfigInvalid: 'Configuració de slot no vàlida',
   tagNotFound: 'Etiqueta no trobada',
   tagReserved: "L'etiqueta «Totes» és del sistema i no es pot editar ni eliminar.",
@@ -492,7 +489,6 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
     'Ezin da posta-zerbitzariarekin konektatu. Egiaztatu SMTP konfigurazioa bidali aurretik.',
   // Per-resource create/update failures
   pressArticleCreateFailed: 'Errorea artikulua sortzean',
-  pressArticleSlugFailed: 'Ezin izan da slug bakar bat sortu artikulurako',
   pressArticleTagsMissing:
     'Hautatutako etiketa bat edo gehiago jada ez daude erabilgarri. Kargatu orria berriro eta saiatu berriz.',
   mediaCreateFailed: 'Ezin izan da hedabidea sortu',
@@ -507,7 +503,9 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   financialReportUpdateFailed: 'Ezin izan da txosten ekonomikoa eguneratu',
   activityCreateFailed: 'Ezin izan da jarduera sortu',
   activityUpdateFailed: 'Ezin izan da jarduera eguneratu',
-  activitySlugFailed: 'Ezin izan da slug bakar bat sortu jarduerarako',
+  tagCreateFailed: 'Ezin izan da etiketa sortu',
+  tagUpdateFailed: 'Ezin izan da etiketa eguneratu',
+  memberOrgCatalogEntryUpdateFailed: 'Ezin izan da erakundea eguneratu',
   activityOptimisticLock:
     'Beste erabiltzaile batek aldatu du jarduera. Birkargatu orria azken aldaketak ikusteko.',
   activityMemberOrgMissing:
@@ -572,9 +570,7 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
   // Jobs
   jobGone: 'Lana jada ez da existitzen.',
   jobNotFailed: 'Lana jada ez zegoen huts egindako egoeran.',
-  // About / press dossier / tags / images
-  aboutSaveFailed: 'Ezin izan da edukia gorde',
-  pressDossierSaveFailed: 'Ezin izan da dosierra gorde',
+  // Site default images / tags
   slotConfigInvalid: 'Slot-konfigurazioa ez da baliozkoa',
   tagNotFound: 'Etiketa ez da aurkitu',
   tagReserved: '«Guztiak» etiketa sistemakoa da, eta ezin da editatu edo ezabatu.',
@@ -641,7 +637,6 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
     'Non se pode conectar ao servidor de correo. Verifica a configuración SMTP antes de enviar.',
   // Per-resource create/update failures
   pressArticleCreateFailed: 'Erro ao crear o artigo',
-  pressArticleSlugFailed: 'Non se puido xerar un slug único para o artigo',
   pressArticleTagsMissing:
     'Unha ou varias etiquetas seleccionadas xa non existen. Recarga a páxina e téntao de novo.',
   mediaCreateFailed: 'Non se puido crear o medio',
@@ -656,7 +651,9 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   financialReportUpdateFailed: 'Non se puido actualizar o informe económico',
   activityCreateFailed: 'Non se puido crear a actividade',
   activityUpdateFailed: 'Non se puido actualizar a actividade',
-  activitySlugFailed: 'Non se puido xerar un slug único para a actividade',
+  tagCreateFailed: 'Non se puido crear a etiqueta',
+  tagUpdateFailed: 'Non se puido actualizar a etiqueta',
+  memberOrgCatalogEntryUpdateFailed: 'Non se puido actualizar a organización',
   activityOptimisticLock:
     'A actividade foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
   activityMemberOrgMissing:
@@ -720,9 +717,7 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
   // Jobs
   jobGone: 'O traballo xa non existe.',
   jobNotFailed: 'O traballo xa non estaba en estado fallido.',
-  // About / press dossier / tags / images
-  aboutSaveFailed: 'Non se puido gardar o contido',
-  pressDossierSaveFailed: 'Non se puido gardar o dossier',
+  // Site default images / tags
   slotConfigInvalid: 'Configuración de slot non válida',
   tagNotFound: 'Etiqueta non atopada',
   tagReserved: 'A etiqueta «Todas» é do sistema e non se pode editar nin eliminar.',
@@ -789,7 +784,6 @@ const val: Record<AdminApiErrorMessageKey, string> = {
     "No es pot connectar al servidor de correu. Comprova la configuració SMTP abans d'enviar.",
   // Per-resource create/update failures
   pressArticleCreateFailed: "Error en crear l'article",
-  pressArticleSlugFailed: "No s'ha pogut generar un slug únic per a l'article",
   pressArticleTagsMissing:
     'Una o més etiquetes seleccionades ja no existixen. Torna a carregar la pàgina i torna-ho a provar.',
   mediaCreateFailed: "No s'ha pogut crear el mitjà",
@@ -804,7 +798,9 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   financialReportUpdateFailed: "No s'ha pogut actualitzar l'informe econòmic",
   activityCreateFailed: "No s'ha pogut crear l'activitat",
   activityUpdateFailed: "No s'ha pogut actualitzar l'activitat",
-  activitySlugFailed: "No s'ha pogut generar un slug únic per a l'activitat",
+  tagCreateFailed: "No s'ha pogut crear l'etiqueta",
+  tagUpdateFailed: "No s'ha pogut actualitzar l'etiqueta",
+  memberOrgCatalogEntryUpdateFailed: "No s'ha pogut actualitzar l'organització",
   activityOptimisticLock:
     "L'activitat ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
   activityMemberOrgMissing:
@@ -869,9 +865,7 @@ const val: Record<AdminApiErrorMessageKey, string> = {
   // Jobs
   jobGone: 'La tasca ja no existix.',
   jobNotFailed: 'La tasca ja no estava en estat fallit.',
-  // About / press dossier / tags / images
-  aboutSaveFailed: "No s'ha pogut guardar el contingut",
-  pressDossierSaveFailed: "No s'ha pogut guardar el dossier",
+  // Site default images / tags
   slotConfigInvalid: 'Configuració de slot no vàlida',
   tagNotFound: 'Etiqueta no trobada',
   tagReserved: "L'etiqueta «Totes» és del sistema i no es pot editar ni eliminar.",

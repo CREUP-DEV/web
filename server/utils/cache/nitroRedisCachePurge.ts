@@ -16,13 +16,19 @@ function toRedisGlobPattern(relativeKeyPrefix: string) {
 }
 
 /**
+ * Every cached public response: API handlers (`nitro:handlers:<scope>:…`) and the HTML of the
+ * `swr` route rules (`nitro:routes:…`). A seed rewrites the content all of them embed.
+ */
+export const ALL_NITRO_CACHE_PREFIXES = ['nitro:handlers', 'nitro:routes'] as const
+
+/**
  * Deletes Nitro handler cache keys for the given unstorage-relative prefixes.
  * Use when a script runs outside Nitro (e.g. `pnpm db:seed`) after data changes
  * that affect `defineCachedEventHandler` responses.
  */
 export async function purgeNitroHandlerCacheByPrefixes(
   redisUrl: string,
-  relativeKeyPrefixes: string[]
+  relativeKeyPrefixes: readonly string[]
 ) {
   const client = new Redis(redisUrl, {
     enableAutoPipelining: true,

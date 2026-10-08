@@ -10,7 +10,9 @@ import type {
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { pressArticleClientSchema } from './pressArticleFormSchema'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
+import { isPressArticlePublic } from '~~/shared/utils/publicVisibility'
 import {
   calendarDateLikeToDateOnly,
   dateValueToDateOnly,
@@ -34,6 +36,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const localePath = useLocalePath()
+const { formatDate } = useLocaleFormatting()
 const { getDefaultTranslationValue, createEmptyTranslations, mapTranslationsToForm } = useLocales()
 const { clearErrors, formErrors, getFieldError, validate } = useFormValidation()
 
@@ -193,9 +196,35 @@ const typeIcons: Record<PressArticleType, string> = {
   media_appearance: 'i-tabler-broadcast',
 }
 
-const publicArticleUrl = computed(() => {
-  if (!props.article?.slug) return null
-  return localePath(`${getPressArticlePublicListPath(props.article.type)}/${props.article.slug}`)
+/**
+ * Built from the saved article, not the form: unsaved edits (switching it on, moving the date)
+ * change neither the public URL nor whether the public site serves it yet.
+ */
+const savedArticleLink = computed(() => {
+  const article = props.article
+  if (!article?.slug) return null
+
+  if (isPressArticlePublic(article)) {
+    return {
+      to: localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`),
+      icon: 'i-tabler-external-link',
+      label: t('admin.press.viewOnWebAria'),
+    }
+  }
+
+  return {
+    to: localePath(`${ADMIN_ROUTES.pressPreview}/${article.id}`),
+    icon: 'i-tabler-eye',
+    label: article.active
+      ? t('admin.press.previewScheduled', {
+          date: formatDate(article.publishedAt, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
+        })
+      : t('admin.press.previewInactive'),
+  }
 })
 
 const canSubmit = computed(() => !supportDataError.value)
@@ -449,14 +478,15 @@ const confirmCancel = () => {
       </div>
       <div class="flex shrink-0 items-center gap-2">
         <UButton
-          v-if="publicArticleUrl"
+          v-if="savedArticleLink"
           type="button"
           variant="ghost"
-          icon="i-tabler-external-link"
+          :icon="savedArticleLink.icon"
           size="sm"
-          :to="publicArticleUrl"
+          :to="savedArticleLink.to"
           target="_blank"
-          :aria-label="t('admin.press.viewOnWebAria')"
+          :title="savedArticleLink.label"
+          :aria-label="savedArticleLink.label"
         />
         <UButton
           type="submit"

@@ -8,8 +8,8 @@ import { PRESS_DOCUMENT_PUBLIC_PATH, PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/c
 import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
+  PUBLIC_CMS_CACHE_SCOPES,
+  publicRouteCacheOptions,
   setPublicApiCacheHeaders,
   setPublicRouteVaryHeaders,
 } from '../utils/cache/publicRouteCache'
@@ -200,7 +200,9 @@ export default defineCachedEventHandler(
     }
   },
   {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
+    ...publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.press, {
+      queryKeys: ['type', 'types', 'tag', 'limit', 'offset'],
+    }),
     // Free-text search has unbounded cardinality, so never cache search responses
     // (and never mint a Redis key for them). Non-search lists stay cached as before.
     shouldBypassCache: (event) => {
@@ -208,9 +210,5 @@ export default defineCachedEventHandler(
       const q = Array.isArray(raw) ? raw[0] : raw
       return typeof q === 'string' && q.trim().length > 0
     },
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'public-press', {
-        queryKeys: ['type', 'types', 'tag', 'limit', 'offset'],
-      }),
   }
 )

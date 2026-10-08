@@ -785,6 +785,17 @@
     }
   },
   "admin": {
+    "contentPreview": {
+      "label": "Vista previa",
+      "status": {
+        "public": "Publicado: así se ve en la web.",
+        "inactive": "No es público: está desactivado.",
+        "scheduled": "Aún no es público: se publicará el {date}."
+      },
+      "viewPublic": "Ver en la web",
+      "backToEditor": "Volver al editor",
+      "loadError": "No se pudo cargar la vista previa"
+    },
     "errors": {
       "slugExists": "Ya existe una etiqueta con este slug",
       "tagOrderSaveFailed": "No se pudo guardar el orden de etiquetas",
@@ -920,6 +931,7 @@
       "adminTitle": "Administración",
       "signOut": "Cerrar sesión",
       "viewSite": "Ver sitio",
+      "viewSiteAria": "Ver sitio (se abre en una nueva pestaña)",
       "collapseSidebar": "Contraer menú lateral",
       "expandSidebar": "Expandir menú lateral",
       "closeSidebar": "Cerrar menú lateral",
@@ -1194,7 +1206,20 @@
       "deleteErrorToast": "No se pudo eliminar el acceso"
     },
     "press": {
-      "viewOnWebAria": "Ver artículo en la web",
+      "viewOnWebAria": "Ver artículo en la web (se abre en una nueva pestaña)",
+      "duplicate": {
+        "title": "¿Artículo duplicado?",
+        "description": "Ya existe «{title}» ({type}, {date}). ¿Crear de todos modos?",
+        "openExisting": "Abrir el existente",
+        "confirm": "Crear de todos modos",
+        "types": {
+          "press_release": "Nota de prensa",
+          "statement": "Comunicado",
+          "media_appearance": "En los medios"
+        }
+      },
+      "previewInactive": "Abrir vista previa en una nueva pestaña: el artículo está inactivo y no es público",
+      "previewScheduled": "Abrir vista previa en una nueva pestaña: el artículo está programado y no será público hasta el {date}",
       "unsavedChangesPrompt": "Hay cambios sin guardar. Si sales ahora, se perderán.",
       "types": {
         "pressRelease": "Notas de prensa",
@@ -1211,7 +1236,6 @@
         "filterByTypeAria": "Filtrar artículos por tipo",
         "searchPlaceholder": "Buscar artículos...",
         "loadErrorTitle": "No se pudieron cargar los artículos de prensa",
-        "viewOnWebTitle": "Ver en la web",
         "editTitle": "Editar artículo",
         "editAria": "Editar artículo",
         "deleteTitle": "Eliminar artículo",
@@ -1737,6 +1761,12 @@
       "campaignSubjectRequiredForLocale": "Escribe el asunto en este idioma o sus otros textos no se guardarán"
     },
     "activity": {
+      "duplicate": {
+        "title": "¿Entrada duplicada?",
+        "description": "Ya existe «{title}» ({date}). ¿Crear de todos modos?",
+        "openExisting": "Abrir la existente",
+        "confirm": "Crear de todos modos"
+      },
       "unsavedChangesPrompt": "Hay cambios sin guardar. Si sales ahora, se perderán.",
       "subnav": {
         "aria": "Subsecciones de Actividad",
@@ -1757,7 +1787,6 @@
         "searchPlaceholder": "Buscar entradas...",
         "loadErrorTitle": "No se pudieron cargar las entradas de actividad",
         "online": "Online",
-        "viewOnWebTitle": "Ver en la web",
         "editTitle": "Editar entrada",
         "editAria": "Editar entrada",
         "deleteTitle": "Eliminar entrada",
@@ -1788,9 +1817,11 @@
         "newLabel": "Nueva actividad",
         "saveChanges": "Guardar cambios",
         "createEntry": "Crear entrada",
-        "viewOnWebAria": "Ver entrada en la web",
+        "viewOnWebAria": "Ver entrada en la web (se abre en una nueva pestaña)",
+        "previewInactive": "Abrir vista previa en una nueva pestaña: la entrada está inactiva y no es pública",
         "refreshSnapshot": "Actualizar datos desde el organigrama",
         "refreshSnapshotHint": "Vuelve a congelar el logo y las siglas del organizador con los datos actuales del organigrama.",
+        "refreshSnapshotUnsaved": "Guarda o descarta los cambios pendientes antes de actualizar los datos del organizador",
         "requiredBadge": "Obligatorio",
         "titleLabel": "Título",
         "excerptLabel": "Descripción breve",
@@ -1847,6 +1878,7 @@
         "monthFilterLabel": "Filtrar por mes",
         "clearFilter": "Limpiar filtro",
         "loadErrorTitle": "No se pudieron cargar los informes de áreas",
+        "viewOnWebAria": "Ver el informe en la web (se abre en una nueva pestaña)",
         "editTitle": "Editar informe",
         "editAria": "Editar informe",
         "deleteTitle": "Eliminar informe",

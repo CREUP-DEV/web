@@ -785,6 +785,17 @@
     }
   },
   "admin": {
+    "contentPreview": {
+      "label": "Preview",
+      "status": {
+        "public": "Published: this is how it looks on the website.",
+        "inactive": "Not public: it is deactivated.",
+        "scheduled": "Not public yet: it will be published on {date}."
+      },
+      "viewPublic": "View on the website",
+      "backToEditor": "Back to the editor",
+      "loadError": "Could not load the preview"
+    },
     "errors": {
       "slugExists": "A tag with this slug already exists",
       "tagOrderSaveFailed": "Could not save tag order",
@@ -920,6 +931,7 @@
       "adminTitle": "Administration",
       "signOut": "Sign out",
       "viewSite": "View site",
+      "viewSiteAria": "View site (opens in a new tab)",
       "collapseSidebar": "Collapse sidebar",
       "expandSidebar": "Expand sidebar",
       "closeSidebar": "Close sidebar",
@@ -1194,7 +1206,20 @@
       "deleteErrorToast": "Could not delete the access"
     },
     "press": {
-      "viewOnWebAria": "View article on the website",
+      "viewOnWebAria": "View article on the website (opens in a new tab)",
+      "duplicate": {
+        "title": "Duplicate article?",
+        "description": "«{title}» already exists ({type}, {date}). Create anyway?",
+        "openExisting": "Open the existing one",
+        "confirm": "Create anyway",
+        "types": {
+          "press_release": "Press release",
+          "statement": "Statement",
+          "media_appearance": "In the media"
+        }
+      },
+      "previewInactive": "Open preview in a new tab: the article is inactive and not public",
+      "previewScheduled": "Open preview in a new tab: the article is scheduled and won't be public until {date}",
       "unsavedChangesPrompt": "You have unsaved changes. If you leave now, they will be lost.",
       "types": {
         "pressRelease": "Press releases",
@@ -1211,7 +1236,6 @@
         "filterByTypeAria": "Filter articles by type",
         "searchPlaceholder": "Search articles...",
         "loadErrorTitle": "Could not load the press articles",
-        "viewOnWebTitle": "View on the website",
         "editTitle": "Edit article",
         "editAria": "Edit article",
         "deleteTitle": "Delete article",
@@ -1737,6 +1761,12 @@
       "campaignSubjectRequiredForLocale": "Add the subject in this language or its other texts will not be saved"
     },
     "activity": {
+      "duplicate": {
+        "title": "Duplicate entry?",
+        "description": "«{title}» already exists ({date}). Create anyway?",
+        "openExisting": "Open the existing one",
+        "confirm": "Create anyway"
+      },
       "unsavedChangesPrompt": "You have unsaved changes. If you leave now, they will be lost.",
       "subnav": {
         "aria": "Activity subsections",
@@ -1757,7 +1787,6 @@
         "searchPlaceholder": "Search entries...",
         "loadErrorTitle": "Could not load activity entries",
         "online": "Online",
-        "viewOnWebTitle": "View on website",
         "editTitle": "Edit entry",
         "editAria": "Edit entry",
         "deleteTitle": "Delete entry",
@@ -1788,9 +1817,11 @@
         "newLabel": "New activity",
         "saveChanges": "Save changes",
         "createEntry": "Create entry",
-        "viewOnWebAria": "View entry on website",
+        "viewOnWebAria": "View entry on website (opens in a new tab)",
+        "previewInactive": "Open preview in a new tab: the entry is inactive and not public",
         "refreshSnapshot": "Refresh data from the org chart",
         "refreshSnapshotHint": "Re-freezes the organiser logo and initials with the current org-chart data.",
+        "refreshSnapshotUnsaved": "Save or discard your pending changes before refreshing the organiser data",
         "requiredBadge": "Required",
         "titleLabel": "Title",
         "excerptLabel": "Short description",
@@ -1847,6 +1878,7 @@
         "monthFilterLabel": "Filter by month",
         "clearFilter": "Clear filter",
         "loadErrorTitle": "Could not load area reports",
+        "viewOnWebAria": "View the report on the website (opens in a new tab)",
         "editTitle": "Edit report",
         "editAria": "Edit report",
         "deleteTitle": "Delete report",

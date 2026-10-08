@@ -9,8 +9,8 @@ import {
 } from '../../../utils/validation'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import {
-  getPressDefaultCoversRow,
-  resolvePressArticleListImage,
+  getPressDefaultCoverEntriesRow,
+  resolvePressArticleListImageWithVersion,
 } from '../../../utils/admin/siteDefaultImages'
 
 const adminPressQuerySchema = adminPressListQuerySchema.merge(paginationQuerySchema)
@@ -88,7 +88,7 @@ export default defineEventHandler(async (event) => {
       .select({ count: sql<number>`count(*)`.mapWith(Number) })
       .from(pressArticles)
       .where(whereClause),
-    getPressDefaultCoversRow(),
+    getPressDefaultCoverEntriesRow(),
   ])
 
   const items = pageIds.length
@@ -162,7 +162,12 @@ export default defineEventHandler(async (event) => {
     data: items.map((item) => ({
       ...item,
       publishedAt: dateValueToDateOnly(item.publishedAt),
-      listThumbnailUrl: resolvePressArticleListImage(item.type, item.image, pressDefaults),
+      listThumbnailUrl: resolvePressArticleListImageWithVersion(
+        item.type,
+        item.image,
+        item.updatedAt,
+        pressDefaults
+      ),
     })),
     meta: {
       total: countResult[0]?.count ?? 0,

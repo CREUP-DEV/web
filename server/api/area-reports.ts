@@ -15,8 +15,8 @@ import {
 import { resolveAreaReportTranslation } from '../utils/activity/activityTranslation'
 import { getRequestLocaleContext } from '../utils/locale/requestLocale'
 import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
+  PUBLIC_CMS_CACHE_SCOPES,
+  publicRouteCacheOptions,
   setPublicApiCacheHeaders,
   setPublicRouteVaryHeaders,
 } from '../utils/cache/publicRouteCache'
@@ -94,9 +94,5 @@ export default defineCachedEventHandler(
       throwPublicDatabaseAwareError(event, 'public.area-reports', error, { month })
     }
   },
-  {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) =>
-      buildPublicRouteCacheKey(event, 'public-area-reports', { queryKeys: ['month'] }),
-  }
+  publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.areaReports, { queryKeys: ['month'] })
 )

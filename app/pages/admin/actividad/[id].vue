@@ -88,8 +88,11 @@ const handleSubmit = async (payload: Record<string, unknown>) => {
 }
 
 // Standalone re-snapshot: re-freezes the organiser from the live org-chart without other edits.
+// It sends the saved entry and the form reloads from the response, so pending edits would be lost:
+// the form disables the button while there are any, and this guard backs that up.
 const handleRefreshSnapshot = async () => {
-  if (!entry.value) return
+  if (!entry.value || entry.value.kind !== 'member') return
+  if (activityFormRef.value?.hasUnsavedChanges) return
   isRefreshingSnapshot.value = true
   try {
     const response = await $fetch<{ data: AdminActivityEntry }>(

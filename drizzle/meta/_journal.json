@@ -120,6 +120,13 @@
       "when": 1789076143835,
       "tag": "0016_activity_moves_to_prensa",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791483505997,
+      "tag": "0017_slug_history",
+      "breakpoints": true
     }
   ]
 }

@@ -12,8 +12,8 @@ import {
 } from '~~/shared/constants/assetPaths'
 import { ACTIVITY_PUBLIC_BASE_PATH } from '~~/shared/constants/activity'
 import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
+  PUBLIC_CMS_CACHE_SCOPES,
+  publicRouteCacheOptions,
   setPublicApiCacheHeaders,
   setPublicRouteVaryHeaders,
 } from '../utils/cache/publicRouteCache'
@@ -27,6 +27,7 @@ import {
 import { resolvePressTranslationSummary } from '../utils/press/pressTranslation'
 import { throwPublicDatabaseAwareError } from '../utils/public/publicErrors'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
+import { buildActivityMemberOrgPayload } from '../utils/activity/activityEntryDetail'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
@@ -38,284 +39,270 @@ import { pickLocalizedEntry, pickLocalizedEntryWithFieldFallback } from '~~/shar
 const HOME_FEATURED_PRESS_LIMIT = 4
 const HOME_RECENT_ACTIVITY_LIMIT = 4
 
-export default defineCachedEventHandler(
-  async (event) => {
-    setPublicApiCacheHeaders(event, {
-      sharedMaxAgeSeconds: 5,
-      staleWhileRevalidateSeconds: 5,
-    })
-    setPublicRouteVaryHeaders(event)
+export default defineCachedEventHandler(async (event) => {
+  setPublicApiCacheHeaders(event, {
+    sharedMaxAgeSeconds: 5,
+    staleWhileRevalidateSeconds: 5,
+  })
+  setPublicRouteVaryHeaders(event)
 
-    const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
+  const { locale, locales, fallbackLocale } = getRequestLocaleContext(event)
 
-    try {
-      const [
-        carouselItemsList,
-        linkItemsList,
-        pressItemsList,
-        siteDefaultImageEntries,
-        pressDefaultCovers,
-        recentActivityList,
-      ] = await Promise.all([
-        db.query.carouselItems.findMany({
-          where: eq(carouselItems.active, true),
-          orderBy: [asc(carouselItems.order), asc(carouselItems.id)],
-          with: {
-            translations: {
-              columns: {
-                locale: true,
-                title: true,
-                buttonText: true,
-                alt: true,
-              },
+  try {
+    const [
+      carouselItemsList,
+      linkItemsList,
+      pressItemsList,
+      siteDefaultImageEntries,
+      pressDefaultCovers,
+      recentActivityList,
+    ] = await Promise.all([
+      db.query.carouselItems.findMany({
+        where: eq(carouselItems.active, true),
+        orderBy: [asc(carouselItems.order), asc(carouselItems.id)],
+        with: {
+          translations: {
+            columns: {
+              locale: true,
+              title: true,
+              buttonText: true,
+              alt: true,
             },
           },
-        }),
-        db.query.featuredLinks.findMany({
-          where: eq(featuredLinks.active, true),
-          orderBy: [asc(featuredLinks.order), asc(featuredLinks.id)],
-          with: {
-            translations: {
-              columns: {
-                locale: true,
-                title: true,
-                alt: true,
-              },
+        },
+      }),
+      db.query.featuredLinks.findMany({
+        where: eq(featuredLinks.active, true),
+        orderBy: [asc(featuredLinks.order), asc(featuredLinks.id)],
+        with: {
+          translations: {
+            columns: {
+              locale: true,
+              title: true,
+              alt: true,
             },
           },
-        }),
-        db.query.pressArticles.findMany({
-          where: and(
-            eq(pressArticles.active, true),
-            lte(pressArticles.publishedAt, sql`CURRENT_DATE`)
-          ),
-          orderBy: [desc(pressArticles.publishedAt), desc(pressArticles.createdAt)],
-          limit: HOME_FEATURED_PRESS_LIMIT,
-          with: {
-            translations: {
-              columns: {
-                locale: true,
-                title: true,
-                description: true,
-                alt: true,
-              },
+        },
+      }),
+      db.query.pressArticles.findMany({
+        where: and(
+          eq(pressArticles.active, true),
+          lte(pressArticles.publishedAt, sql`CURRENT_DATE`)
+        ),
+        orderBy: [desc(pressArticles.publishedAt), desc(pressArticles.createdAt)],
+        limit: HOME_FEATURED_PRESS_LIMIT,
+        with: {
+          translations: {
+            columns: {
+              locale: true,
+              title: true,
+              description: true,
+              alt: true,
             },
-            tags: {
-              with: {
-                tag: {
-                  with: {
-                    translations: {
-                      columns: {
-                        locale: true,
-                        name: true,
-                      },
+          },
+          tags: {
+            with: {
+              tag: {
+                with: {
+                  translations: {
+                    columns: {
+                      locale: true,
+                      name: true,
                     },
                   },
                 },
               },
             },
-            mediaOutlet: {
-              columns: { name: true, logo: true, website: true, updatedAt: true },
-            },
           },
-        }),
-        loadSiteDefaultImageEntriesMap(),
-        getPressDefaultCoverEntriesRow(),
-        db.query.activityEntries.findMany({
-          where: eq(activityEntries.active, true),
-          orderBy: [desc(activityEntries.startDate), desc(activityEntries.createdAt)],
-          limit: HOME_RECENT_ACTIVITY_LIMIT,
-          columns: {
-            id: true,
-            kind: true,
-            slug: true,
-            image: true,
-            startDate: true,
-            endDate: true,
-            isOnline: true,
-            location: true,
-            memberOrgSnapshot: true,
-            updatedAt: true,
+          mediaOutlet: {
+            columns: { name: true, logo: true, website: true, updatedAt: true },
           },
-          with: {
-            translations: {
-              columns: { locale: true, title: true, excerpt: true, alt: true, imageCaption: true },
-            },
+        },
+      }),
+      loadSiteDefaultImageEntriesMap(),
+      getPressDefaultCoverEntriesRow(),
+      db.query.activityEntries.findMany({
+        where: eq(activityEntries.active, true),
+        orderBy: [desc(activityEntries.startDate), desc(activityEntries.createdAt)],
+        limit: HOME_RECENT_ACTIVITY_LIMIT,
+        columns: {
+          id: true,
+          kind: true,
+          slug: true,
+          image: true,
+          startDate: true,
+          endDate: true,
+          isOnline: true,
+          location: true,
+          memberOrgSnapshot: true,
+          updatedAt: true,
+        },
+        with: {
+          translations: {
+            columns: { locale: true, title: true, excerpt: true, alt: true, imageCaption: true },
           },
-        }),
-      ])
+        },
+      }),
+    ])
 
-      const defaultCarouselImage = resolveSiteDefaultImageUrlWithVersion(
-        siteDefaultImageEntries,
-        SITE_DEFAULT_IMAGE_SCOPE.carousel,
-        SITE_DEFAULT_IMAGE_SLOT.carouselSlide
-      )
+    const defaultCarouselImage = resolveSiteDefaultImageUrlWithVersion(
+      siteDefaultImageEntries,
+      SITE_DEFAULT_IMAGE_SCOPE.carousel,
+      SITE_DEFAULT_IMAGE_SLOT.carouselSlide
+    )
 
-      const defaultActivityImage = resolveSiteDefaultImageUrlWithVersion(
-        siteDefaultImageEntries,
-        SITE_DEFAULT_IMAGE_SCOPE.activity,
-        SITE_DEFAULT_IMAGE_SLOT.activityEntry
-      )
+    const defaultActivityImage = resolveSiteDefaultImageUrlWithVersion(
+      siteDefaultImageEntries,
+      SITE_DEFAULT_IMAGE_SCOPE.activity,
+      SITE_DEFAULT_IMAGE_SLOT.activityEntry
+    )
 
-      const carousel = carouselItemsList.map((item) => {
-        const translation = pickLocalizedEntryWithFieldFallback(
-          item.translations,
-          locale,
-          locales,
-          fallbackLocale
-        ) || {
-          title: '',
-          buttonText: '',
-          alt: null,
-        }
-        const resolvedImage = item.image
-          ? appendAssetVersion(
-              toExternalImageProxyUrl(item.image, {
-                publicPathBase: HOME_IMAGE_PUBLIC_BASE,
-              }) ?? item.image,
-              item.updatedAt
-            )
-          : defaultCarouselImage
-
-        return {
-          image: resolvedImage,
-          href: item.href,
-          title: translation.title,
-          buttonText: translation.buttonText,
-          alt: (translation as { alt?: string | null }).alt ?? '',
-        }
-      })
-
-      const featuredLinksList = linkItemsList.map((item) => {
-        const translation = pickLocalizedEntryWithFieldFallback(
-          item.translations,
-          locale,
-          locales,
-          fallbackLocale
-        ) || {
-          title: '',
-          alt: null,
-        }
-
-        return {
-          image: appendAssetVersion(
+    const carousel = carouselItemsList.map((item) => {
+      const translation = pickLocalizedEntryWithFieldFallback(
+        item.translations,
+        locale,
+        locales,
+        fallbackLocale
+      ) || {
+        title: '',
+        buttonText: '',
+        alt: null,
+      }
+      const resolvedImage = item.image
+        ? appendAssetVersion(
             toExternalImageProxyUrl(item.image, {
               publicPathBase: HOME_IMAGE_PUBLIC_BASE,
             }) ?? item.image,
             item.updatedAt
-          ),
-          to: item.to,
-          title: translation.title,
-          alt: (translation as { alt?: string | null }).alt ?? '',
-        }
-      })
+          )
+        : defaultCarouselImage
 
-      const featuredPressItems = pressItemsList.map((item) => {
-        const trans = resolvePressTranslationSummary(item.translations, locale, fallbackLocale)
-        const articleTags = item.tags.map((pt) => {
-          const tagTrans = pickLocalizedEntry(pt.tag.translations, locale, locales, fallbackLocale)
+      return {
+        image: resolvedImage,
+        href: item.href,
+        title: translation.title,
+        buttonText: translation.buttonText,
+        alt: (translation as { alt?: string | null }).alt ?? '',
+      }
+    })
 
-          return {
-            slug: pt.tag.slug,
-            name: tagTrans?.name ?? pt.tag.slug,
-          }
-        })
+    const featuredLinksList = linkItemsList.map((item) => {
+      const translation = pickLocalizedEntryWithFieldFallback(
+        item.translations,
+        locale,
+        locales,
+        fallbackLocale
+      ) || {
+        title: '',
+        alt: null,
+      }
+
+      return {
+        image: appendAssetVersion(
+          toExternalImageProxyUrl(item.image, {
+            publicPathBase: HOME_IMAGE_PUBLIC_BASE,
+          }) ?? item.image,
+          item.updatedAt
+        ),
+        to: item.to,
+        title: translation.title,
+        alt: (translation as { alt?: string | null }).alt ?? '',
+      }
+    })
+
+    const featuredPressItems = pressItemsList.map((item) => {
+      const trans = resolvePressTranslationSummary(item.translations, locale, fallbackLocale)
+      const articleTags = item.tags.map((pt) => {
+        const tagTrans = pickLocalizedEntry(pt.tag.translations, locale, locales, fallbackLocale)
 
         return {
-          id: item.id,
-          type: item.type,
-          slug: item.slug,
-          path: `${getPressArticlePublicListPath(item.type as PressArticleType)}/${item.slug}`,
-          image: resolvePressArticleListImageWithVersion(
-            item.type as PressArticleType,
-            item.image,
-            item.updatedAt,
-            pressDefaultCovers
-          ),
-          pdfUrl: appendAssetVersion(
-            toExternalPdfProxyUrl(item.pdfUrl, {
-              publicPathBase: PRESS_DOCUMENT_PUBLIC_PATH,
-            }) ?? item.pdfUrl,
-            item.updatedAt
-          ),
-          externalUrl: item.externalUrl,
-          title: trans?.title ?? '',
-          description: trans?.description ?? '',
-          alt: trans?.alt ?? '',
-          titleLocale: trans?.titleLocale ?? null,
-          publishedAt: dateValueToDateOnly(item.publishedAt),
-          tags: articleTags,
-          mediaOutlet: item.mediaOutlet
-            ? {
-                name: item.mediaOutlet.name,
-                logo: item.mediaOutlet.logo
-                  ? appendAssetVersion(
-                      toExternalImageProxyUrl(item.mediaOutlet.logo, {
-                        publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
-                      }) ?? item.mediaOutlet.logo,
-                      item.mediaOutlet.updatedAt
-                    )
-                  : null,
-                website: item.mediaOutlet.website,
-              }
-            : null,
-        }
-      })
-
-      const recentActivityItems = recentActivityList.map((item) => {
-        const trans = resolveActivityTranslationSummary(item.translations, locale, fallbackLocale)
-        return {
-          id: item.id,
-          kind: item.kind,
-          slug: item.slug,
-          path: `${ACTIVITY_PUBLIC_BASE_PATH}/${item.slug}`,
-          image: item.image
-            ? appendAssetVersion(
-                toExternalImageProxyUrl(item.image, {
-                  publicPathBase: ACTIVITY_IMAGE_PUBLIC_BASE,
-                }) ?? item.image,
-                item.updatedAt
-              )
-            : defaultActivityImage,
-          startDate: item.startDate,
-          endDate: item.endDate,
-          isOnline: item.isOnline,
-          location: item.location,
-          title: trans.title,
-          excerpt: trans.excerpt,
-          alt: trans.alt,
-          titleLocale: trans.titleLocale,
-          excerptLocale: trans.excerptLocale,
-          memberOrg:
-            item.kind === 'member' && item.memberOrgSnapshot
-              ? {
-                  denomination: item.memberOrgSnapshot.denomination,
-                  initials: item.memberOrgSnapshot.initials,
-                  logoLight: item.memberOrgSnapshot.logoLight,
-                  logoDark: item.memberOrgSnapshot.logoDark,
-                }
-              : null,
+          slug: pt.tag.slug,
+          name: tagTrans?.name ?? pt.tag.slug,
         }
       })
 
       return {
-        data: {
-          carousel,
-          featuredLinks: featuredLinksList,
-          featuredPress: {
-            items: featuredPressItems,
-          },
-          recentActivity: {
-            items: recentActivityItems,
-          },
-        },
+        id: item.id,
+        type: item.type,
+        slug: item.slug,
+        path: `${getPressArticlePublicListPath(item.type as PressArticleType)}/${item.slug}`,
+        image: resolvePressArticleListImageWithVersion(
+          item.type as PressArticleType,
+          item.image,
+          item.updatedAt,
+          pressDefaultCovers
+        ),
+        pdfUrl: appendAssetVersion(
+          toExternalPdfProxyUrl(item.pdfUrl, {
+            publicPathBase: PRESS_DOCUMENT_PUBLIC_PATH,
+          }) ?? item.pdfUrl,
+          item.updatedAt
+        ),
+        externalUrl: item.externalUrl,
+        title: trans?.title ?? '',
+        description: trans?.description ?? '',
+        alt: trans?.alt ?? '',
+        titleLocale: trans?.titleLocale ?? null,
+        publishedAt: dateValueToDateOnly(item.publishedAt),
+        tags: articleTags,
+        mediaOutlet: item.mediaOutlet
+          ? {
+              name: item.mediaOutlet.name,
+              logo: item.mediaOutlet.logo
+                ? appendAssetVersion(
+                    toExternalImageProxyUrl(item.mediaOutlet.logo, {
+                      publicPathBase: PRESS_IMAGE_PUBLIC_BASE,
+                    }) ?? item.mediaOutlet.logo,
+                    item.mediaOutlet.updatedAt
+                  )
+                : null,
+              website: item.mediaOutlet.website,
+            }
+          : null,
       }
-    } catch (error) {
-      throwPublicDatabaseAwareError(event, 'public.home', error)
+    })
+
+    const recentActivityItems = recentActivityList.map((item) => {
+      const trans = resolveActivityTranslationSummary(item.translations, locale, fallbackLocale)
+      return {
+        id: item.id,
+        kind: item.kind,
+        slug: item.slug,
+        path: `${ACTIVITY_PUBLIC_BASE_PATH}/${item.slug}`,
+        image: item.image
+          ? appendAssetVersion(
+              toExternalImageProxyUrl(item.image, {
+                publicPathBase: ACTIVITY_IMAGE_PUBLIC_BASE,
+              }) ?? item.image,
+              item.updatedAt
+            )
+          : defaultActivityImage,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        isOnline: item.isOnline,
+        location: item.location,
+        title: trans.title,
+        excerpt: trans.excerpt,
+        alt: trans.alt,
+        titleLocale: trans.titleLocale,
+        excerptLocale: trans.excerptLocale,
+        memberOrg: buildActivityMemberOrgPayload(item.kind, item.memberOrgSnapshot, item.updatedAt),
+      }
+    })
+
+    return {
+      data: {
+        carousel,
+        featuredLinks: featuredLinksList,
+        featuredPress: {
+          items: featuredPressItems,
+        },
+        recentActivity: {
+          items: recentActivityItems,
+        },
+      },
     }
-  },
-  {
-    ...PUBLIC_ROUTE_CACHE_OPTIONS,
-    getKey: (event) => buildPublicRouteCacheKey(event, 'public-home'),
+  } catch (error) {
+    throwPublicDatabaseAwareError(event, 'public.home', error)
   }
-)
+}, publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.home))

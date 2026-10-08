@@ -3,25 +3,32 @@ import { eq } from 'drizzle-orm'
 import { db } from '../../../db'
 import { mediaOutlets, pressArticles } from '../../../db/schema'
 import { cleanupUnusedAdminAssetSafely } from '../../../utils/admin/adminAssetPublication'
-import { invalidatePressCache } from '../../../utils/admin/adminCacheInvalidation'
+import { invalidatePressRelatedCaches } from '../../../utils/admin/adminCacheInvalidation'
 import {
   isConstraintBlockedDeletionError,
   throwAdminMutationError,
 } from '../../../utils/admin/adminErrors'
+import { assertOptimisticLock } from '../../../utils/admin/optimisticLock'
 import { getAdminApiErrorMessage } from '../../../utils/locale/adminApiErrorMessages'
-import { idRouteParamSchema, validateRouteParams } from '../../../utils/validation'
+import {
+  idRouteParamSchema,
+  optimisticDeleteQuerySchema,
+  validateQuery,
+  validateRouteParams,
+} from '../../../utils/validation'
 import { PRESS_MEDIA_LOGO_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 export default defineEventHandler(async (event) => {
   try {
     const { id } = validateRouteParams(event, idRouteParamSchema)
+    const { updatedAt } = validateQuery(event, optimisticDeleteQuerySchema)
 
-    // Run the linked-article check and the delete in one transaction with the media
-    // row locked, so a concurrent article-link can't slip between them. The FK/CHECK
-    // constraint is the backstop for a race that still wins: map it to 409, not 500.
+    // Run the version check, the linked-article check and the delete in one transaction with
+    // the media row locked, so a concurrent edit or article-link can't slip between them. The
+    // FK/CHECK constraint is the backstop for a race that still wins: map it to 409, not 500.
     const removedLogo = await db.transaction(async (tx) => {
       const [existingItem] = await tx
-        .select({ id: mediaOutlets.id, logo: mediaOutlets.logo })
+        .select({ id: mediaOutlets.id, logo: mediaOutlets.logo, updatedAt: mediaOutlets.updatedAt })
         .from(mediaOutlets)
         .where(eq(mediaOutlets.id, id))
         .for('update')
@@ -29,6 +36,12 @@ export default defineEventHandler(async (event) => {
       if (!existingItem) {
         throw createError({ statusCode: 404, message: getAdminApiErrorMessage(event, 'notFound') })
       }
+
+      assertOptimisticLock(
+        updatedAt,
+        existingItem.updatedAt,
+        getAdminApiErrorMessage(event, 'mediaOptimisticLock')
+      )
 
       const linkedArticle = await tx.query.pressArticles.findFirst({
         where: eq(pressArticles.mediaOutletId, id),
@@ -66,7 +79,7 @@ export default defineEventHandler(async (event) => {
       event
     )
 
-    await invalidatePressCache()
+    await invalidatePressRelatedCaches()
     return { data: { success: true } }
   } catch (error) {
     throwAdminMutationError('admin.media.delete', error, event)

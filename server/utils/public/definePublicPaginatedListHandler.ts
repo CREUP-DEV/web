@@ -4,11 +4,7 @@ import { sql } from 'drizzle-orm'
 import type { PgTable } from 'drizzle-orm/pg-core'
 import { db } from '../../db'
 import { getRequestLocaleContext } from '../locale/requestLocale'
-import {
-  buildPublicRouteCacheKey,
-  PUBLIC_ROUTE_CACHE_OPTIONS,
-  setPublicRouteVaryHeaders,
-} from '../cache/publicRouteCache'
+import { publicRouteCacheOptions, setPublicRouteVaryHeaders } from '../cache/publicRouteCache'
 import { publicPaginationQuerySchema, validatePublicQuery } from '../validation'
 import { throwPublicDatabaseAwareError } from './publicErrors'
 
@@ -31,11 +27,11 @@ interface PublicPaginatedListConfig<TItem, TResult> {
   /** Map one row to its response shape. Owns its own translation resolver, so
    *  per-handler resolver choices (field-fallback or not) are never unified. */
   mapItem: (item: TItem, ctx: PublicListLocaleContext) => TResult
-  /** buildPublicRouteCacheKey scope, e.g. 'public-financial-reports'. */
+  /** Cache scope (the Nitro cache name admin invalidation purges). */
   cacheScope: string
   /** throwPublicDatabaseAwareError scope base, e.g. 'public.financial-reports'. */
   errorScope: string
-  /** Forwarded to buildPublicRouteCacheKey when set. */
+  /** Forwarded to publicRouteCacheOptions when set. */
   includeLocale?: boolean
 }
 
@@ -73,13 +69,9 @@ export function definePublicPaginatedListHandler<TItem, TResult>(
         throwPublicDatabaseAwareError(event, config.errorScope, error)
       }
     },
-    {
-      ...PUBLIC_ROUTE_CACHE_OPTIONS,
-      getKey: (event) =>
-        buildPublicRouteCacheKey(event, config.cacheScope, {
-          ...(config.includeLocale === undefined ? {} : { includeLocale: config.includeLocale }),
-          queryKeys: ['limit', 'offset'],
-        }),
-    }
+    publicRouteCacheOptions(config.cacheScope, {
+      ...(config.includeLocale === undefined ? {} : { includeLocale: config.includeLocale }),
+      queryKeys: ['limit', 'offset'],
+    })
   )
 }

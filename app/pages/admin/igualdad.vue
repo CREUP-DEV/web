@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { type AdminReorderResponse, applyAdminReorder } from '@/utils/adminReorder'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
 
@@ -121,16 +122,11 @@ const {
 } = useAdminCollectionState<EqualityDocument>({
   items,
   persistOrder: async (updates) => {
-    await $fetch('/api/admin/equality/reorder', {
+    const response = await $fetch<AdminReorderResponse>('/api/admin/equality/reorder', {
       method: 'POST',
       body: { items: updates },
     })
-    setItems(
-      items.value.map((item) => {
-        const nextOrder = updates.find((update) => update.id === item.id)?.order
-        return nextOrder === undefined ? item : { ...item, order: nextOrder }
-      })
-    )
+    setItems(applyAdminReorder(items.value, updates, response))
   },
   prepareCreate: () => {
     clearErrors()
@@ -253,6 +249,7 @@ const handleDelete = async () => {
   try {
     await $fetch(`/api/admin/equality/${itemToDelete.value.id}`, {
       method: 'DELETE',
+      query: { updatedAt: itemToDelete.value.updatedAt },
     })
     removeItem(itemToDelete.value.id)
     await refreshAllClientAsyncData()

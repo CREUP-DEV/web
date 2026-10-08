@@ -142,7 +142,13 @@ const basePressArticleSchema = z.object({
     .min(1, 'Se requiere al menos una traducción'),
 })
 
-export const createPressArticleSchema = basePressArticleSchema.superRefine(refinePressArticle)
+export const createPressArticleSchema = basePressArticleSchema
+  .safeExtend({
+    // Set when the editor confirms creating an article whose title and month already match an
+    // existing one; without it such a create answers 409 `possibleDuplicate`.
+    confirmDuplicate: z.boolean().optional(),
+  })
+  .superRefine(refinePressArticle)
 
 export const updatePressArticleSchema = basePressArticleSchema
   .safeExtend({ updatedAt: z.string().datetime().optional() })

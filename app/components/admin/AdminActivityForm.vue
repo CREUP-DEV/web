@@ -4,6 +4,8 @@ import type { AdminActivityEntry, AdminActivityKind } from '@/composables/admin/
 import type { AdminMemberOrg } from '@/components/admin/activity/AdminActivityOrganiserPanel.vue'
 import { activityEntryClientSchema } from './activityFormSchema'
 import { ACTIVITY_PUBLIC_BASE_PATH } from '~~/shared/constants/activity'
+import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
+import { isActivityEntryPublic } from '~~/shared/utils/publicVisibility'
 import {
   calendarDateLikeToDateOnly,
   dateValueToDateOnly,
@@ -152,10 +154,32 @@ const resetUnsavedChangesBaseline = () => {
   hasUnsavedChanges.value = false
 }
 
-const publicEntryUrl = computed(() => {
-  if (!props.entry?.slug) return null
-  return localePath(`${ACTIVITY_PUBLIC_BASE_PATH}/${props.entry.slug}`)
+/**
+ * Built from the saved entry, not the form: an unsaved switch of `active` does not change what the
+ * public site serves yet.
+ */
+const savedEntryLink = computed(() => {
+  const entry = props.entry
+  if (!entry?.slug) return null
+
+  return isActivityEntryPublic(entry)
+    ? {
+        to: localePath(`${ACTIVITY_PUBLIC_BASE_PATH}/${entry.slug}`),
+        icon: 'i-tabler-external-link',
+        label: t('admin.activity.form.viewOnWebAria'),
+      }
+    : {
+        to: localePath(`${ADMIN_ROUTES.activityPreview}/${entry.id}`),
+        icon: 'i-tabler-eye',
+        label: t('admin.activity.form.previewInactive'),
+      }
 })
+
+/**
+ * The re-snapshot PUTs the saved entry and the form then reloads from the response, so it is only
+ * offered for a saved member event and is locked while there are edits it would throw away.
+ */
+const canRefreshSnapshot = computed(() => props.entry?.kind === 'member')
 
 const clearImage = () => {
   form.image = ''
@@ -329,27 +353,33 @@ const confirmCancel = () => {
       </div>
       <div class="flex shrink-0 items-center gap-2">
         <UButton
-          v-if="isEditing && form.kind === 'member'"
+          v-if="canRefreshSnapshot"
           type="button"
           variant="outline"
           color="neutral"
           icon="i-tabler-refresh"
           size="sm"
           :loading="refreshingSnapshot"
-          :title="t('admin.activity.form.refreshSnapshotHint')"
+          :disabled="hasUnsavedChanges || submitting"
+          :title="
+            hasUnsavedChanges
+              ? t('admin.activity.form.refreshSnapshotUnsaved')
+              : t('admin.activity.form.refreshSnapshotHint')
+          "
           @click="emit('refreshSnapshot')"
         >
           {{ t('admin.activity.form.refreshSnapshot') }}
         </UButton>
         <UButton
-          v-if="publicEntryUrl"
+          v-if="savedEntryLink"
           type="button"
           variant="ghost"
-          icon="i-tabler-external-link"
+          :icon="savedEntryLink.icon"
           size="sm"
-          :to="publicEntryUrl"
+          :to="savedEntryLink.to"
           target="_blank"
-          :aria-label="t('admin.activity.form.viewOnWebAria')"
+          :title="savedEntryLink.label"
+          :aria-label="savedEntryLink.label"
         />
         <UButton
           type="submit"

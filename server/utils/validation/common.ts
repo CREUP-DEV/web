@@ -171,6 +171,15 @@ export const idRouteParamSchema = z.object({
   id: z.string().trim().min(1, 'ID requerido'),
 })
 
+/**
+ * `?updatedAt=` on admin DELETEs: the version of the row the client last read. When sent, the row
+ * is only deleted if it has not changed since (409 otherwise); without it the delete is
+ * unconditional.
+ */
+export const optimisticDeleteQuerySchema = z.object({
+  updatedAt: toOptionalSingleStringSchema(z.string().datetime()),
+})
+
 export const numericIdRouteParamSchema = z.object({
   id: z.coerce.number().int().min(1, 'ID no válido'),
 })

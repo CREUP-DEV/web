@@ -10,7 +10,8 @@ import { logError } from '../utils/core/logger'
 import * as schema from './schema'
 
 const connectionString = requireConfigString(process.env.DATABASE_URL, 'DATABASE_URL')
-const databaseTimeZone = process.env.TZ?.trim() || 'Europe/Madrid'
+/** Timezone every DB session runs in, so `CURRENT_DATE` (press publication gate) rolls over here. */
+export const databaseTimeZone = process.env.TZ?.trim() || 'Europe/Madrid'
 
 function resolveDatabaseMaxConnections() {
   const rawValue = process.env.DATABASE_MAX_CONNECTIONS

@@ -4,8 +4,8 @@ import {
 } from '../utils/cache/externalApiCache'
 import { getSectorialesResponse } from '../utils/public/publicMembers'
 import {
-  buildPublicRouteCacheKey,
   FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
+  publicRouteCacheOptions,
 } from '../utils/cache/publicRouteCache'
 
 export default defineCachedEventHandler(
@@ -21,8 +21,9 @@ export default defineCachedEventHandler(
       },
     }
   },
-  {
-    ...FAST_EXTERNAL_ROUTE_CACHE_OPTIONS,
-    getKey: (event) => buildPublicRouteCacheKey(event, 'sectoriales', { includeLocale: false }),
-  }
+  publicRouteCacheOptions(
+    'sectoriales',
+    { includeLocale: false },
+    FAST_EXTERNAL_ROUTE_CACHE_OPTIONS
+  )
 )

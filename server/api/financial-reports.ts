@@ -6,6 +6,7 @@ import { pickLocalizedEntry } from '~~/shared/utils/locale'
 import { dateValueToDateOnly } from '~~/shared/utils/date'
 import { appendAssetVersion } from '../utils/core/assetVersion'
 import { definePublicPaginatedListHandler } from '../utils/public/definePublicPaginatedListHandler'
+import { PUBLIC_CMS_CACHE_SCOPES } from '../utils/cache/publicRouteCache'
 import { FINANCIAL_REPORTS_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 
 const activeWhere = eq(financialReports.active, true)
@@ -13,7 +14,7 @@ const activeWhere = eq(financialReports.active, true)
 export default definePublicPaginatedListHandler({
   table: financialReports,
   activeWhere,
-  cacheScope: 'public-financial-reports',
+  cacheScope: PUBLIC_CMS_CACHE_SCOPES.financialReports,
   errorScope: 'public.financial-reports',
   fetchPage: ({ limit, offset }) =>
     db.query.financialReports.findMany({

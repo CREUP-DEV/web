@@ -56,8 +56,6 @@ const isLoading = ref(false)
 const loadError = ref(false)
 const selected = ref<Set<string>>(new Set())
 
-const tabPanelId = 'campaign-content-results'
-
 const existing = computed(() => new Set(props.existingKeys))
 const pageCount = computed(() => Math.ceil(total.value / PAGE_SIZE))
 const selectedCount = computed(() => selected.value.size)
@@ -258,19 +256,15 @@ const handleAdd = () => {
       <div class="space-y-4">
         <div
           class="flex gap-2 overflow-x-auto"
-          role="tablist"
+          role="group"
           :aria-label="t('admin.newsletterCampaigns.picker.tabsAria')"
         >
           <UButton
             v-for="type in NEWSLETTER_CAMPAIGN_ITEM_TYPES"
-            :id="`campaign-content-tab-${type}`"
             :key="type"
             :icon="itemTypeIcon(type)"
             :variant="activeType === type ? 'solid' : 'outline'"
-            role="tab"
-            :aria-selected="activeType === type"
-            :aria-controls="tabPanelId"
-            :tabindex="activeType === type ? 0 : -1"
+            :aria-pressed="activeType === type"
             size="sm"
             @click="activeType = type"
           >
@@ -343,12 +337,7 @@ const handleAdd = () => {
           {{ t('admin.newsletterCampaigns.picker.searchHint') }}
         </p>
 
-        <div
-          :id="tabPanelId"
-          role="tabpanel"
-          :aria-labelledby="`campaign-content-tab-${activeType}`"
-          class="max-h-96 space-y-2 overflow-y-auto"
-        >
+        <div class="max-h-96 space-y-2 overflow-y-auto">
           <div v-if="isLoading" class="space-y-2" aria-hidden="true">
             <USkeleton v-for="n in 5" :key="n" class="h-16 w-full rounded-lg" />
           </div>

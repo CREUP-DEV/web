@@ -11,7 +11,10 @@ import {
 } from '../../../utils/admin/adminAssetPublication'
 import { invalidateSiteDefaultImagesCaches } from '../../../utils/admin/adminCacheInvalidation'
 import { throwAdminMutationError } from '../../../utils/admin/adminErrors'
-import { assertOptimisticLock } from '../../../utils/admin/optimisticLock'
+import {
+  assertOptimisticLock,
+  getOptimisticLockTimestampMs,
+} from '../../../utils/admin/optimisticLock'
 import { validateBody } from '../../../utils/validation'
 import {
   SITE_DEFAULT_IMAGE_SCOPE,
@@ -62,6 +65,9 @@ const SLOT_PAYLOAD_MAP: Record<SlotPayloadKey, { scope: string; slot: string }> 
     slot: SITE_DEFAULT_IMAGE_SLOT.areaReport,
   },
 }
+
+/** Advisory-lock key serializing saves of the site default images (several rows, one version). */
+const SITE_DEFAULT_IMAGES_LOCK_KEY = 'admin.site-default-images'
 
 const SLOT_KEY_BY_SCOPE_SLOT = new Map(
   Object.entries(SLOT_PAYLOAD_MAP).map(([key, value]) => [`${value.scope}\0${value.slot}`, key])
@@ -224,7 +230,33 @@ export default defineEventHandler(async (event) => {
       areaReportImage: nextAreaReport,
     }
 
-    await db.transaction(async (tx) => {
+    const savedVersion = await db.transaction(async (tx) => {
+      const selectVersion = async () => {
+        const [row] = await tx
+          .select({
+            updatedAt: sql<Date | null>`max(${siteDefaultImages.updatedAt})`.mapWith(
+              siteDefaultImages.updatedAt
+            ),
+          })
+          .from(siteDefaultImages)
+        return row?.updatedAt ?? null
+      }
+
+      // The version check above ran before the files were finalized, without a lock, so two saves
+      // could both pass it. Serialize the writers (an advisory lock also covers the very first
+      // save, when there are no rows to lock yet) and check again against what is stored now.
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${SITE_DEFAULT_IMAGES_LOCK_KEY}))`)
+
+      if (
+        getOptimisticLockTimestampMs(validated.updatedAt ?? serverVersion) !==
+        getOptimisticLockTimestampMs(await selectVersion())
+      ) {
+        throw createError({
+          statusCode: 409,
+          message: getAdminApiErrorMessage(event, 'siteDefaultImagesOptimisticLock'),
+        })
+      }
+
       for (const def of SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS) {
         const key = getPayloadKeyForSlot(event, def.scope, def.slot)
         const image = nextByKey[key]
@@ -244,6 +276,9 @@ export default defineEventHandler(async (event) => {
             },
           })
       }
+
+      // Read inside the transaction: nothing after the commit may fail a save that went through.
+      return selectVersion()
     })
 
     for (const def of SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS) {
@@ -264,11 +299,7 @@ export default defineEventHandler(async (event) => {
 
     await invalidateSiteDefaultImagesCaches()
 
-    const rows = await db.query.siteDefaultImages.findMany({ columns: { updatedAt: true } })
-    const updatedAt =
-      rows.length > 0
-        ? new Date(Math.max(...rows.map((r) => r.updatedAt.getTime()))).toISOString()
-        : null
+    const updatedAt = savedVersion?.toISOString() ?? null
 
     return {
       data: {
