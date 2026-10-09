@@ -439,9 +439,11 @@ export default defineNuxtConfig({
     async 'nitro:build:public-assets'(nitro) {
       const publicDir = nitro.options.output.publicDir
 
+      // Retries ride out Windows locks on just-copied files (sync clients, antivirus), which
+      // otherwise fail the rmdir with EPERM/ENOTEMPTY.
       await Promise.all(
         ADMIN_UPLOAD_PUBLIC_PATH_BASES.map((base) =>
-          rm(join(publicDir, base), { recursive: true, force: true })
+          rm(join(publicDir, base), { recursive: true, force: true, maxRetries: 10 })
         )
       )
 
