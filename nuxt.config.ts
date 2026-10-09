@@ -1,5 +1,5 @@
-import { readdir, rm } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import { createResolver } from 'nuxt/kit'
 import type { NitroRouteConfig } from 'nitropack/types'
@@ -8,9 +8,9 @@ import { getOptionalConfigUrl } from './shared/utils/config'
 import {
   ADMIN_UPLOAD_PUBLIC_PATH_BASES,
   INTERNAL_IMAGE_PROXY_PATH_BASES,
-  PRESS_DOSSIER_PUBLIC_PATH,
 } from './shared/constants/assetPaths'
 import { NEWSLETTER_CLICK_BASE_PATH } from './shared/constants/newsletterCampaigns'
+import { LEGACY_PRESS_DOSSIER_PDF_PATH } from './shared/constants/pressRoutes'
 import {
   DEFAULT_LOCALE_CODE,
   LOCALE_DEFINITIONS,
@@ -61,7 +61,6 @@ const adminUploadRoutePaths = [
   '/api/admin/home/upload',
   '/api/admin/media/upload',
   '/api/admin/press/upload',
-  '/api/admin/press-dossier/upload',
   '/api/admin/activity/upload',
   '/api/admin/area-reports/upload',
 ] as const
@@ -447,15 +446,9 @@ export default defineNuxtConfig({
         )
       )
 
-      // Dossiers stored at their legacy location, straight under /prensa.
-      const legacyDossierDir = join(publicDir, dirname(PRESS_DOSSIER_PUBLIC_PATH))
-      const legacyDossierFiles = await readdir(legacyDossierDir).catch(() => [])
-
-      await Promise.all(
-        legacyDossierFiles
-          .filter((name) => /^dossier-prensa(-\d+)?\.pdf$/.test(name))
-          .map((name) => rm(join(legacyDossierDir, name), { force: true }))
-      )
+      // The retired dossier's URL now redirects to the press kit; a local copy left at that path
+      // would be served as a static file ahead of the redirect route.
+      await rm(join(publicDir, LEGACY_PRESS_DOSSIER_PDF_PATH), { force: true, maxRetries: 10 })
     },
   },
 

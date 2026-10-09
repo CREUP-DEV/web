@@ -77,11 +77,6 @@ export interface AdminDashboardLatestData {
     updatedAt: Date
     translations: Array<{ locale: string; name: string | null }>
   } | null
-  pressDossierItem: {
-    pdfUrl: string | null
-    active: boolean
-    updatedAt: Date
-  } | null
 }
 
 async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> {
@@ -96,18 +91,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
           'heroVisible', apc.hero_visible
         ) as payload
       from about_page_content apc
-
-      union all
-
-      select
-        'pressDossier'::text as section_key,
-        pd.id::text as entity_id,
-        pd.updated_at,
-        jsonb_build_object(
-          'pdfUrl', pd.pdf_url,
-          'active', pd.active
-        ) as payload
-      from press_dossier pd
 
       union all
 
@@ -219,10 +202,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
       (about.payload ->> 'heroImage') as about_hero_image,
       (about.payload ->> 'heroVisible')::boolean as about_hero_visible,
       about.updated_at as about_updated_at,
-
-      (press_dossier.payload ->> 'pdfUrl') as press_dossier_pdf_url,
-      (press_dossier.payload ->> 'active')::boolean as press_dossier_active,
-      press_dossier.updated_at as press_dossier_updated_at,
 
       (carousel.payload ->> 'active')::boolean as carousel_active,
       (carousel.payload ->> 'href') as carousel_href,
@@ -337,7 +316,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
       ) as financial_reports_translations
     from (select 1 as singleton_marker) singleton
     left join latest about on about.section_key = 'about'
-    left join latest press_dossier on press_dossier.section_key = 'pressDossier'
     left join latest carousel on carousel.section_key = 'carousel'
     left join latest equality on equality.section_key = 'equality'
     left join latest newsletter on newsletter.section_key = 'newsletter'
@@ -351,7 +329,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
   const row = (result.rows?.[0] ?? {}) as Record<string, unknown>
 
   const aboutUpdatedAt = toDateOrNull(row.about_updated_at)
-  const pressDossierUpdatedAt = toDateOrNull(row.press_dossier_updated_at)
   const carouselUpdatedAt = toDateOrNull(row.carousel_updated_at)
   const equalityUpdatedAt = toDateOrNull(row.equality_updated_at)
   const newsletterUpdatedAt = toDateOrNull(row.newsletter_updated_at)
@@ -367,13 +344,6 @@ async function getAdminDashboardLatestData(): Promise<AdminDashboardLatestData> 
           heroImage: toStringOrNull(row.about_hero_image),
           heroVisible: toBooleanOrNull(row.about_hero_visible) ?? false,
           updatedAt: aboutUpdatedAt,
-        }
-      : null,
-    pressDossierItem: pressDossierUpdatedAt
-      ? {
-          pdfUrl: toStringOrNull(row.press_dossier_pdf_url),
-          active: toBooleanOrNull(row.press_dossier_active) ?? false,
-          updatedAt: pressDossierUpdatedAt,
         }
       : null,
     latestCarouselItem: carouselUpdatedAt

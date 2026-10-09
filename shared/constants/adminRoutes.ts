@@ -12,7 +12,6 @@ export const ADMIN_ROUTES = {
   pressCreate: '/admin/prensa/crear',
   /** Followed by `/<id>`: renders an article as the public page would, whatever its status. */
   pressPreview: '/admin/prensa/vista-previa',
-  pressDossier: '/admin/dossier-prensa',
   siteDefaultImages: '/admin/imagenes-por-defecto',
   links: '/admin/enlaces',
   tags: '/admin/etiquetas',

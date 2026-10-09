@@ -188,24 +188,6 @@ export const pressArticleTagsRelations = relations(pressArticleTags, ({ one }) =
   }),
 }))
 
-// Press dossier
-
-export const pressDossier = pgTable(
-  'press_dossier',
-  {
-    /** Fixed singleton row — always 'singleton'. Enforced by CHECK constraint. */
-    id: text('id').primaryKey().default('singleton'),
-    pdfUrl: text('pdf_url'),
-    active: boolean('active').default(false).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' })
-      .defaultNow()
-      .notNull()
-      .$onUpdate(() => sql`now()`),
-  },
-  (table) => [check('press_dossier_singleton_check', sql`${table.id} = 'singleton'`)]
-)
-
 export const tagsRelations = relations(tags, ({ many }) => ({
   translations: many(tagTranslations),
   pressArticles: many(pressArticleTags),

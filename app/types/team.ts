@@ -16,6 +16,10 @@ export interface OrgMember {
   isCommitteeResponsible: boolean
   publicAgenda: boolean
   socialNetworks: SocialNetwork[]
+  /** Listed as a press contact in the press kit. */
+  pressContact: boolean
+  /** E.164 phone; the server only sends it for press contacts. */
+  phone: string | null
 }
 
 export interface OrgArea {

@@ -4,6 +4,7 @@ import {
   socialNetworkIcons,
   type SocialNetworkEntry,
 } from '~~/shared/utils/social'
+import { encodeObfuscatedEmail } from '@/utils/obfuscatedEmail'
 
 interface TeamMemberModalPerson {
   id?: string
@@ -33,11 +34,6 @@ const emit = defineEmits<{
   close: []
   openAgenda: []
 }>()
-
-function encodeEmail(email: string) {
-  const [user = '', domain = ''] = email.split('@')
-  return { eu: btoa(user), ed: btoa(domain) }
-}
 
 const { t } = useI18n()
 const networkIcons = socialNetworkIcons
@@ -138,7 +134,7 @@ const aboutName = computed(() => props.member.name.trim() || props.displayName)
                     {{ t('team.email') }}
                   </p>
                   <ObfuscatedEmail
-                    v-bind="encodeEmail(member.email)"
+                    v-bind="encodeObfuscatedEmail(member.email)"
                     class="mt-1 block text-sm font-medium break-all hover:underline"
                   />
                 </div>

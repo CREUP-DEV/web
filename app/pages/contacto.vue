@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { watchDebounced } from '@vueuse/core'
-import { CONTACT_FIELD_LIMITS, isValidOptionalContactPhone } from '~~/shared/utils/contactShared'
+import {
+  CONTACT_FIELD_LIMITS,
+  CONTACT_TYPE_QUERY_KEY,
+  PRESS_CONTACT_TYPE_QUERY_VALUE,
+  isValidOptionalContactPhone,
+} from '~~/shared/utils/contactShared'
 import { EMAIL_PATTERN } from '~~/shared/utils/emailValidation'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import { useTurnstile } from '@/composables/security/useTurnstile'
@@ -69,7 +74,10 @@ usePageSeo('contactPage.seo.title', 'contactPage.seo.description', {
   ],
 })
 
-const contactType = ref<'general' | 'press'>('general')
+const route = useRoute()
+const contactType = ref<'general' | 'press'>(
+  route.query[CONTACT_TYPE_QUERY_KEY] === PRESS_CONTACT_TYPE_QUERY_VALUE ? 'press' : 'general'
+)
 const isPress = computed(() => contactType.value === 'press')
 const displayEmail = computed(() => (isPress.value ? 'prensa@creup.es' : 'info@creup.es'))
 const mailtoHref = computed(() => `mailto:${displayEmail.value}`)

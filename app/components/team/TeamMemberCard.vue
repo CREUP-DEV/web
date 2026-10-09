@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { SocialNetworkEntry } from '~~/shared/utils/social'
+import { encodeObfuscatedEmail } from '@/utils/obfuscatedEmail'
 
 interface Member {
   id: string
@@ -28,11 +29,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-
-function encodeEmail(email: string) {
-  const [user = '', domain = ''] = email.split('@')
-  return { eu: btoa(user), ed: btoa(domain) }
-}
 
 const cardClass =
   'motion-card-strong group bg-surface/50 hover:bg-surface w-full max-w-md rounded-xl ring-1 ring-default p-5 md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]'
@@ -85,7 +81,7 @@ const triggerClass =
       <div class="text-muted inline-flex items-center gap-1 text-sm">
         <UIcon name="i-tabler-mail" class="size-4" />
         <ObfuscatedEmail
-          v-bind="encodeEmail(member.email)"
+          v-bind="encodeObfuscatedEmail(member.email)"
           class="hover:text-primary text-center break-all transition-colors"
         />
       </div>

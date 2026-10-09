@@ -1,71 +1,39 @@
 <script setup lang="ts">
-import { PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY } from '~~/shared/constants/publicAsyncDataKeys'
-import { publicCmsCachedData } from '@/utils/publicCmsCachedData'
+import {
+  CREUP_REPRESENTED_STUDENTS,
+  CREUP_STAT_ICONS,
+  CREUP_VALUES,
+  type CreupStatKey,
+} from '@/composables/about/useAboutPageData'
 
 type RelatedSectionKey = 'members' | 'team' | 'committees' | 'events'
-type StatKey = 'universities' | 'students' | 'years'
-type ValueKey =
-  | 'independence'
-  | 'cooperation'
-  | 'nonDiscrimination'
-  | 'socialCommitment'
-  | 'participation'
-
-interface AboutPageContent {
-  heroImage: string | null
-  heroVisible: boolean
-}
-
-const foundationDate = new Date(Date.UTC(2003, 9, 24))
-const fallbackMemberCount = 30
-const fallbackMemberCountLabel = '+30'
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const aboutOverviewRef = useTemplateRef<HTMLElement>('aboutOverviewRef')
 
-const { data, error, pending, refresh } = await useFetch<{
-  data: {
-    content: AboutPageContent | null
-    memberCount: number | null
-  }
-}>('/api/about-page', {
-  key: PUBLIC_ABOUT_PAGE_ASYNC_DATA_KEY,
-  getCachedData: publicCmsCachedData,
-})
-
-const memberCount = computed(() => data.value?.data.memberCount ?? fallbackMemberCount)
-
-const formattedMemberCount = computed(() =>
-  error.value
-    ? fallbackMemberCountLabel
-    : new Intl.NumberFormat(locale.value).format(memberCount.value)
-)
-
-const completedYears = computed(() => {
-  const now = new Date()
-  const currentYear = now.getUTCFullYear()
-  const currentMonth = now.getUTCMonth()
-  const currentDay = now.getUTCDate()
-
-  let years = currentYear - foundationDate.getUTCFullYear()
-  const hasReachedAnniversary =
-    currentMonth > foundationDate.getUTCMonth() ||
-    (currentMonth === foundationDate.getUTCMonth() && currentDay >= foundationDate.getUTCDate())
-
-  if (!hasReachedAnniversary) {
-    years -= 1
-  }
-
-  return Math.max(years, 0)
-})
+const {
+  error,
+  pending,
+  refresh,
+  heroImage,
+  heroVisible,
+  memberCountAvailable,
+  memberCount,
+  formattedMemberCount,
+  fallbackMemberCountLabel,
+  completedYears,
+} = await useAboutPageData()
 
 const { elRef: statsRef, isVisible: statsVisible } = useEntranceObserver(0.15)
 
 const { displayValue: countUniversities, start: startCountUniversities } = useCountUp(memberCount)
-const { displayValue: countStudents, start: startCountStudents } = useCountUp(1000000, {
-  duration: 2200,
-})
+const { displayValue: countStudents, start: startCountStudents } = useCountUp(
+  CREUP_REPRESENTED_STUDENTS,
+  {
+    duration: 2200,
+  }
+)
 const { displayValue: countYears, start: startCountYears } = useCountUp(completedYears)
 
 watch(statsVisible, (visible) => {
@@ -77,9 +45,9 @@ watch(statsVisible, (visible) => {
 })
 
 const formattedCountUniversities = computed(() =>
-  error.value
-    ? fallbackMemberCountLabel
-    : new Intl.NumberFormat(locale.value).format(countUniversities.value)
+  memberCountAvailable.value
+    ? new Intl.NumberFormat(locale.value).format(countUniversities.value)
+    : fallbackMemberCountLabel
 )
 const formattedCountStudents = computed(
   () => `+${new Intl.NumberFormat(locale.value).format(countStudents.value)}`
@@ -88,14 +56,8 @@ const formattedCountYears = computed(() =>
   new Intl.NumberFormat(locale.value).format(countYears.value)
 )
 
-const statIcons: Record<StatKey, string> = {
-  universities: 'i-tabler-building-community',
-  students: 'i-tabler-school',
-  years: 'i-tabler-calendar-stats',
-}
-
 const stats = computed(() =>
-  (['universities', 'students', 'years'] as StatKey[]).map((key) => ({
+  (['universities', 'students', 'years'] as CreupStatKey[]).map((key) => ({
     key,
     value:
       key === 'universities'
@@ -105,30 +67,14 @@ const stats = computed(() =>
           : formattedCountYears.value,
     suffix: key === 'years' ? ` ${t('aboutPage.stats.years.suffix')}` : '',
     label: t(`aboutPage.stats.${key}.label`),
-    icon: statIcons[key],
+    icon: CREUP_STAT_ICONS[key],
   }))
 )
 
-const valueIcons: Record<ValueKey, string> = {
-  independence: 'i-tabler-scale',
-  cooperation: 'i-tabler-users-group',
-  nonDiscrimination: 'i-tabler-accessible',
-  socialCommitment: 'i-tabler-heart-handshake',
-  participation: 'i-tabler-message-circle-heart',
-}
-
 const values = computed(() =>
-  (
-    [
-      'independence',
-      'cooperation',
-      'nonDiscrimination',
-      'socialCommitment',
-      'participation',
-    ] as ValueKey[]
-  ).map((key) => ({
+  CREUP_VALUES.map(({ key, icon }) => ({
     key,
-    icon: valueIcons[key],
+    icon,
     title: t(`aboutPage.values.${key}.title`),
     description: t(`aboutPage.values.${key}.description`),
   }))
@@ -171,8 +117,8 @@ const relatedSections = computed(() => [
 ])
 
 const pageContent = computed(() => ({
-  heroImage: data.value?.data.content?.heroImage ?? null,
-  heroVisible: data.value?.data.content?.heroVisible ?? false,
+  heroImage: heroImage.value,
+  heroVisible: heroVisible.value,
   title: t('aboutPage.title'),
   lead: t('aboutPage.lead', { count: formattedMemberCount.value }),
   intro: t('aboutPage.intro'),

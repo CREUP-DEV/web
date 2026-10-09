@@ -43,7 +43,6 @@ useSeoMeta({
 })
 
 const route = useRoute()
-const { data: pressDossierLink } = await usePressDossierLink()
 
 watch(
   () => route.fullPath,
@@ -97,7 +96,7 @@ const handleNavigationClick = async (event: MouseEvent) => {
 <template>
   <UApp :locale="currentLocale">
     <div class="bg-background flex min-h-screen flex-col" @click.capture="handleNavigationClick">
-      <AppHeader :press-dossier-link="pressDossierLink" />
+      <AppHeader />
 
       <UMain class="flex-1">
         <UContainer class="flex items-center justify-center px-4 py-16">

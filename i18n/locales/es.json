@@ -647,6 +647,106 @@
       "backToList": "Volver a noticias"
     }
   },
+  "pressKit": {
+    "seo": {
+      "description": "Dossier de prensa de CREUP, siempre actualizado: quiénes somos, universidades miembro, equipo, posicionamientos y contacto para medios."
+    },
+    "tagline": "La voz de la universidad pública",
+    "cover": {
+      "organization": "Coordinadora de Representantes de Estudiantes de Universidades Públicas",
+      "heroAlt": "Fotografía de grupo de CREUP",
+      "liveNote": "Este dossier se genera a partir de la información publicada en la web, así que siempre está al día. Puedes guardarlo en PDF para compartirlo o imprimirlo.",
+      "printAction": "Guardar en PDF o imprimir",
+      "printHint": "Se abrirá el diálogo de impresión del navegador: elige «Guardar como PDF» como destino para obtener el archivo.",
+      "generatedOn": "Información actualizada a {date}"
+    },
+    "toc": {
+      "title": "Contenido",
+      "liveVersion": "Consulta la versión más reciente de este dossier en"
+    },
+    "sections": {
+      "about": "¿Qué es CREUP?",
+      "philosophy": "Filosofía de la organización",
+      "members": "Universidades miembro",
+      "sectorials": "Entidades sectoriales",
+      "executive": "Comisión Ejecutiva",
+      "organization": "Organización",
+      "pressRoom": "Sala de prensa",
+      "positions": "Posicionamientos",
+      "faq": "Preguntas frecuentes",
+      "contact": "Contacto"
+    },
+    "about": {
+      "paragraph1": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) es la principal plataforma de representación estudiantil en España. Está formada por los Consejos de Estudiantes de {universities} universidades públicas y representa a más de {students} de estudiantes universitarios desde hace {years} años. Su labor es esencial en la defensa de los derechos e intereses del estudiantado y garantiza su participación activa en la toma de decisiones que afectan a la Educación Superior.",
+      "paragraph1Approx": "La Coordinadora de Representantes de Estudiantes de Universidades Públicas (CREUP) es la principal plataforma de representación estudiantil en España. Está formada por los Consejos de Estudiantes de más de {universities} universidades públicas y representa a más de {students} de estudiantes universitarios desde hace {years} años. Su labor es esencial en la defensa de los derechos e intereses del estudiantado y garantiza su participación activa en la toma de decisiones que afectan a la Educación Superior.",
+      "paragraph2": "Como máximo órgano de representación del estudiantado universitario a nivel estatal, CREUP actúa como interlocutora directa ante el ministerio competente en materia de universidades, el Congreso de los Diputados y otras instituciones clave en el desarrollo de las políticas educativas. Su objetivo es que la voz del estudiantado se escuche en la construcción y mejora del sistema universitario, promoviendo un modelo de educación pública de calidad, inclusiva y accesible.",
+      "paragraph3": "El funcionamiento de CREUP es asambleario, lo que garantiza la participación democrática de todos sus miembros. Cada año se celebran al menos dos Asambleas Generales, en las que se fijan las líneas estratégicas y se decide sobre posicionamientos y acciones. Además, la organización desarrolla eventos formativos, encuentros y foros de debate que fomentan el intercambio de experiencias entre representantes estudiantiles y refuerzan su capacidad de incidencia y liderazgo.",
+      "paragraph4": "Más allá de su trabajo interno, CREUP colabora estrechamente con entidades y organismos del ámbito universitario. A través de convenios y acuerdos, trabaja con la Conferencia Estatal de Defensorías Universitarias (CEDU), Crue Universidades Españolas, la Red Española de Agencias de Calidad Universitaria (REACU) y la asociación de egresados ALUMNI, entre otras organizaciones comprometidas con la mejora de la educación superior."
+    },
+    "members": {
+      "intro": "CREUP está formada por los Consejos de Estudiantes de {count} universidades públicas de toda España."
+    },
+    "sectorials": {
+      "intro": "CREUP firma convenios con entidades sectoriales: asociaciones de estudiantes especializadas en un ámbito de conocimiento concreto, como las ciencias sociales, las ingenierías, la salud o las humanidades. Estas colaboraciones permiten desarrollar iniciativas conjuntas, coordinar acciones de representación y defensa de los derechos estudiantiles e impulsar propuestas para mejorar la calidad de la enseñanza en cada área académica. Así se fomenta el diálogo entre los distintos colectivos universitarios y se refuerza la voz del estudiantado en el panorama educativo estatal."
+    },
+    "executive": {
+      "intro": "La Comisión Ejecutiva coordina el trabajo diario de CREUP. La forman las personas responsables de cada una de sus áreas."
+    },
+    "organization": {
+      "intro": "CREUP organiza su trabajo en áreas. Cada área está dirigida por una persona de la Comisión Ejecutiva, de la que dependen los miembros de la Comisión Ejecutiva Ampliada que la integran. Los comités de trabajo completan la estructura.",
+      "legend": "Leyenda",
+      "areas": "Áreas de trabajo",
+      "committeeResponsible": "Responsable: {committee}",
+      "responsible": "Responsable",
+      "noResponsible": "Sin responsable asignado",
+      "memberCount": "{count} integrante | {count} integrantes"
+    },
+    "pressRoom": {
+      "paragraph1": "La sección de prensa de la web de CREUP reúne la comunicación institucional de la organización: notas de prensa, comunicados oficiales y apariciones en medios de comunicación.",
+      "paragraph2": "El equipo de comunicación atiende a periodistas, instituciones y cualquier persona interesada en conocer de primera mano las posiciones y acciones de CREUP en el ámbito universitario. Las solicitudes de información y de entrevistas pueden enviarse desde el formulario de contacto de prensa.",
+      "allNews": "Todas las noticias",
+      "latestTitle": "Últimas publicaciones",
+      "empty": "Todavía no hay publicaciones de prensa."
+    },
+    "positions": {
+      "paragraph1": "Los posicionamientos de CREUP reflejan su visión y su compromiso con la mejora continua de la Educación Superior. Con ellos, la organización fija una postura clara sobre temas clave e impulsa cambios y propuestas que contribuyan a un sistema universitario más justo, inclusivo y de calidad.",
+      "paragraph2": "El área de Política Universitaria de la web reúne los posicionamientos, las resoluciones y los informes ejecutivos con los que CREUP trabaja para construir un futuro académico más sólido y equitativo.",
+      "listTitle": "Posicionamientos vigentes"
+    },
+    "faq": {
+      "positioning": {
+        "question": "¿Qué es un posicionamiento?",
+        "answer": "Los posicionamientos representan la postura oficial de CREUP ante cuestiones relevantes de la Educación Superior. Buscan generar un impacto a largo plazo, estableciendo líneas de actuación y propuestas para mejorar aspectos clave del sistema universitario."
+      },
+      "resolution": {
+        "question": "¿Qué es una resolución?",
+        "answer": "Las resoluciones son declaraciones de CREUP sobre temas de actualidad que afectan directamente a la comunidad universitaria. A diferencia de los posicionamientos, abordan situaciones más inmediatas: expresan la postura de la organización y buscan influir en la toma de decisiones."
+      },
+      "where": {
+        "question": "¿Dónde se pueden consultar?",
+        "answer": "Los posicionamientos y las resoluciones están publicados en el área de Política Universitaria de la web de CREUP."
+      },
+      "assemblies": {
+        "question": "¿Cada cuánto se celebran las Asambleas?",
+        "answer": "CREUP celebra al menos dos Asambleas Generales Ordinarias cada año. En ellas se toman las decisiones estratégicas y se debaten los temas prioritarios que afectan al estudiantado."
+      },
+      "events": {
+        "question": "¿Qué otros eventos organiza CREUP?",
+        "answer": "Además de las Asambleas Generales, CREUP organiza cada año dos grandes eventos:",
+        "stage": "un evento dedicado a la formación de representantes estudiantiles, que adquieren herramientas sobre política universitaria, liderazgo, comunicación y otras áreas clave para su labor de representación.",
+        "congress": "un encuentro anual de estudiantes, profesionales y personas expertas del ámbito universitario para debatir los retos y oportunidades de la Educación Superior e impulsar propuestas de mejora."
+      },
+      "upcomingTitle": "Próximos eventos",
+      "noUpcoming": "No hay eventos programados próximamente.",
+      "allEvents": "Todos los eventos"
+    },
+    "contact": {
+      "intro": "Para cualquier consulta, solicitud de información o entrevista, puedes contactar con CREUP a través de:",
+      "peopleTitle": "Personas de contacto para medios",
+      "phone": "Teléfono",
+      "form": "Formulario de contacto de prensa"
+    }
+  },
   "cookies": {
     "banner": {
       "title": "Respetamos tu privacidad",
@@ -898,10 +998,6 @@
         "name": "Noticias",
         "description": "Artículos, comunicados y apariciones en medios."
       },
-      "pressDossier": {
-        "name": "Dossier de prensa",
-        "description": "PDF enlazado desde el menú de navegación."
-      },
       "siteDefaultImages": {
         "name": "Imágenes por defecto",
         "description": "Portadas de prensa, newsletter y carrusel cuando no hay imagen propia."
@@ -1127,23 +1223,6 @@
       "activityIntro": "Imágenes que se muestran cuando una entrada de actividad o un informe de área no tiene imagen propia.",
       "activityEntryLabel": "Entradas de actividad",
       "areaReportLabel": "Informes de área"
-    },
-    "pressDossier": {
-      "title": "Dossier de prensa",
-      "intro": "Sube el PDF que se enlazará desde el menú de navegación cuando esté activo.",
-      "loadErrorTitle": "No se pudo cargar el dossier de prensa",
-      "noDossier": "No hay dossier subido",
-      "pdfReady": "PDF preparado para publicar.",
-      "pdfUploadHint": "Sube un PDF para activarlo.",
-      "changePdf": "Cambiar PDF",
-      "uploadPdf": "Subir PDF",
-      "viewCurrentPdf": "Ver PDF actual",
-      "removePdf": "Quitar PDF",
-      "statusLabel": "Estado",
-      "saveChanges": "Guardar cambios",
-      "removePdfConfirm": "Se eliminará el PDF seleccionado del dossier de prensa. Tendrás que volver a subirlo si quieres recuperarlo.",
-      "saveSuccess": "Dossier guardado",
-      "saveError": "No se pudo guardar el dossier"
     },
     "about": {
       "title": "Qué es CREUP",
@@ -1722,7 +1801,6 @@
       "defaultDescriptionRequired": "La descripción en español es obligatoria",
       "pdfRequired": "El PDF es requerido",
       "invalidDate": "La fecha no es válida",
-      "dossierPdfRequired": "Debes subir un PDF para activar el dossier",
       "storagePathNotUrl": "La imagen debe ser una ruta de almacenamiento, no una URL",
       "invalidMonth": "El mes no es válido",
       "invalidEmail": "El email no es válido",

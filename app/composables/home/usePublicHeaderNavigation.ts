@@ -1,6 +1,6 @@
 import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
-import type { MaybeRef } from 'vue'
 import type { Locale } from 'vue-i18n'
+import { PRESS_KIT_PATH } from '~~/shared/constants/pressRoutes'
 
 type LocaleItem = {
   value: Locale
@@ -26,22 +26,12 @@ type MobileNavSection = {
   value: string
 }
 
-const createExternalNavigationItem = (label: string, href: string): NavigationMenuItem => ({
-  label,
-  to: href,
-  external: true,
-  target: '_blank',
-  rel: 'noopener noreferrer',
-})
-
-export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | null | undefined>) {
+export function usePublicHeaderNavigation() {
   const { locale, t, setLocaleCookie } = useI18n()
   const { getLocaleName, localeConfigs } = useLocales()
   const localePath = useLocalePath()
   const switchLocalePath = useSwitchLocalePath()
   const route = useRoute()
-
-  const resolvedPressDossierLink = computed(() => unref(pressDossierLink))
 
   const localeItems = computed<LocaleItem[]>(() =>
     localeConfigs.value.map((config) => ({
@@ -178,9 +168,7 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
         createNavigationChild(t('nav.press.news'), '/prensa/noticias/'),
         createNavigationChild(t('nav.press.activity'), '/prensa/actividad/'),
         createNavigationChild(t('nav.press.newsletter'), '/prensa/newsletter/'),
-        ...(resolvedPressDossierLink.value
-          ? [createExternalNavigationItem(t('nav.press.pressKit'), resolvedPressDossierLink.value)]
-          : []),
+        createNavigationChild(t('nav.press.pressKit'), PRESS_KIT_PATH),
       ],
     },
     {
@@ -297,17 +285,11 @@ export function usePublicHeaderNavigation(pressDossierLink?: MaybeRef<string | n
           to: localizedPath('/prensa/newsletter/'),
           icon: 'i-tabler-mail',
         }),
-        ...(resolvedPressDossierLink.value
-          ? [
-              {
-                ...createExternalNavigationItem(
-                  t('nav.press.pressKit'),
-                  resolvedPressDossierLink.value
-                ),
-                icon: 'i-tabler-file-type-pdf',
-              } as MobileNavLink,
-            ]
-          : []),
+        createMobileNavLink({
+          label: t('nav.press.pressKit'),
+          to: localizedPath(PRESS_KIT_PATH),
+          icon: 'i-tabler-file-text',
+        }),
       ],
     },
     {

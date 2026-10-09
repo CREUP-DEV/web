@@ -111,7 +111,7 @@ hace desde el árbol de trabajo y esas copias, ignoradas por git, entrarían en 
 
 El motivo: una copia horneada entra en el manifiesto de estáticos de Nitro con el tamaño que tenía al
 compilar. Si después el admin la sustituye con el mismo nombre, la respuesta sigue anunciando el
-tamaño viejo y llega cortada (le pasó al dossier de prensa).
+tamaño viejo y llega cortada.
 
 En consecuencia:
 
@@ -120,11 +120,21 @@ En consecuencia:
   recrear el contenedor.
 - **Los cambios en el `public/` local no llegan con el deploy.** Súbelos con `rsync` a
   `data/public-uploads/...` (o con `--seed`, que sincroniza `public/` entero).
-- **El dossier de prensa** se guarda en `prensa/documentos/dossier/`, dentro del volumen de
-  documentos de prensa, y `/prensa/dossier-prensa.pdf` redirige al fichero vigente, cuyo nombre
-  alterna en cada subida. Uno que siga en su ubicación antigua (`/prensa/dossier-prensa*.pdf`) se
-  sirve allí mismo hasta que se vuelva a subir; tras el primer despliegue con este cambio ya no está
-  en la imagen, así que hay que subirlo de nuevo desde el admin.
+- **El dossier de prensa** ya no se sube desde el admin: es la página `/prensa/dossier`, generada
+  con el contenido del sitio. Sus direcciones antiguas redirigen (301) a ella:
+  `/prensa/dossier-prensa.pdf` y todo lo que cuelga de `/prensa/documentos/dossier/`, la carpeta
+  donde se guardaban las subidas y a la que enlazaba la cabecera. Esos PDF ya no se sirven, pero
+  siguen en el volumen y nada los borra (la migración 0018 solo elimina la tabla). **Tras el primer
+  despliegue con este cambio, bórralos** en el directorio del Compose del VPS:
+
+  ```bash
+  rm -rf data/public-uploads/prensa/documentos/dossier
+  ```
+
+  Si tienes una copia local en `public/prensa/documentos/dossier/`, bórrala también: el build la
+  excluye, pero `deploy.sh --seed` sincroniza `public/` entero con `data/public-uploads/` y la
+  devolvería al volumen. La de `public/prensa/dossier-prensa.pdf` ya no se usa (el build la
+  elimina de la salida) y se puede borrar.
 
 Para montar una carpeta que hasta ahora vivía solo dentro del contenedor, sácala antes, porque montar
 una carpeta vacía tapa lo que hubiera (sustituye `<carpeta>`, p. ej. `prensa/actividad/imagenes`):

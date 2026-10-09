@@ -213,22 +213,6 @@ export const createFinancialReportSchema = withTranslationRules(
 export const updateFinancialReportSchema =
   createFinancialReportSchema.safeExtend(optimisticLockFields)
 
-export const updatePressDossierSchema = z
-  .object({
-    pdfUrl: z.string().min(1, 'admin.validation.pdfRequired').nullable(),
-    active: z.boolean().default(false),
-  })
-  .safeExtend(optimisticLockFields)
-  .superRefine((data, ctx) => {
-    if (data.active && !data.pdfUrl) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'admin.validation.dossierPdfRequired',
-        path: ['pdfUrl'],
-      })
-    }
-  })
-
 const pressDefaultCoverStoragePath = z
   .string()
   .trim()

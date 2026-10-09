@@ -9,7 +9,6 @@ import {
   financialReports,
   newsletterCampaignItems,
   pressArticles,
-  pressDossier,
 } from '../../db/schema'
 import { isDatabaseMissingRelationError, isDatabaseUnavailableError } from '../core/databaseErrors'
 import { finalizeAdminDocument } from './adminDocumentUpload'
@@ -30,11 +29,9 @@ import {
   FINANCIAL_REPORTS_PUBLIC_PATH,
   HOME_CAROUSEL_IMAGE_PUBLIC_PATH,
   HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
-  PRESS_DOSSIER_STORAGE_PATH,
   PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_IMAGE_PUBLIC_BASE,
 } from '~~/shared/constants/assetPaths'
-import { isLegacyPressDossierPath, LEGACY_PRESS_DOSSIER_BASE } from '../press/pressDossier'
 
 export interface CleanupUnusedAdminAssetOptions {
   storagePath: string | null | undefined
@@ -318,7 +315,6 @@ export async function reconcileAdminAssetPublication(): Promise<boolean> {
       carouselItemsList,
       featuredLinksList,
       pressArticlesList,
-      pressDossierItem,
       aboutContent,
       equalityDocumentsList,
       financialReportsList,
@@ -328,7 +324,6 @@ export async function reconcileAdminAssetPublication(): Promise<boolean> {
       db.query.pressArticles.findMany({
         columns: { id: true, image: true, pdfUrl: true, active: true },
       }),
-      db.query.pressDossier.findFirst({ columns: { id: true, pdfUrl: true, active: true } }),
       db.query.aboutPageContent.findFirst({
         columns: { id: true, heroImage: true, heroVisible: true },
       }),
@@ -449,50 +444,6 @@ export async function reconcileAdminAssetPublication(): Promise<boolean> {
               previous: item.pdfUrl,
               next: nextPdfUrl,
               allowedPublicPathPrefixes: [PRESS_DOCUMENT_PUBLIC_PATH],
-            },
-          ]
-        )
-        if (applied) changed = true
-      }
-    }
-
-    if (pressDossierItem?.id) {
-      // A dossier not uploaded since storage moved still lives directly under /prensa; reconciled
-      // against the new folder it would be rejected as out of place, so it keeps its own until the
-      // admin uploads it again.
-      const isLegacyDossier = isLegacyPressDossierPath(pressDossierItem.pdfUrl)
-      const dossierPublicPath = isLegacyDossier
-        ? LEGACY_PRESS_DOSSIER_BASE
-        : PRESS_DOSSIER_STORAGE_PATH
-      const nextPdfUrl = await reconcileStoredDocument({
-        storagePath: pressDossierItem.pdfUrl,
-        publish: pressDossierItem.active,
-        uploadDir: `public${dossierPublicPath}`,
-        publicPath: dossierPublicPath,
-      })
-
-      if (nextPdfUrl !== pressDossierItem.pdfUrl) {
-        const applied = await applyReconciledPaths(
-          () =>
-            db
-              .update(pressDossier)
-              .set({ pdfUrl: nextPdfUrl })
-              .where(
-                and(
-                  eq(pressDossier.id, pressDossierItem.id),
-                  matchesStoredPath(pressDossier.pdfUrl, pressDossierItem.pdfUrl)
-                )
-              )
-              .returning({ id: pressDossier.id }),
-          [
-            {
-              previous: pressDossierItem.pdfUrl,
-              next: nextPdfUrl,
-              allowedPublicPathPrefixes: [
-                isLegacyDossier
-                  ? `${LEGACY_PRESS_DOSSIER_BASE}/dossier-prensa`
-                  : `${PRESS_DOSSIER_STORAGE_PATH}/`,
-              ],
             },
           ]
         )

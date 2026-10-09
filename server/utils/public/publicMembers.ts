@@ -71,6 +71,10 @@ export interface PublicTeamMember {
   isCommitteeResponsible: boolean
   publicAgenda: boolean
   socialNetworks: SocialNetworkEntry[]
+  /** Listed as a press contact in the press kit. */
+  pressContact: boolean
+  /** E.164 phone, only ever set for a press contact. */
+  phone: string | null
 }
 
 export interface PublicTeamArea {
@@ -149,7 +153,23 @@ const normalizeCommunity = (communityName: string) => {
 }
 
 const normalizeText = normalizeSocialText
-const PUBLIC_MEMBERS_CACHE_VERSION = 2
+// v3: org chart members carry `pressContact` and `phone`.
+const PUBLIC_MEMBERS_CACHE_VERSION = 3
+
+const E164_PHONE_PATTERN = /^\+[1-9]\d{6,14}$/
+
+/**
+ * The phone of a press contact, in E.164. Anyone else's phone is dropped even if the Intranet
+ * sends one, and so is a value that is not a phone number, since it becomes a public `tel:` link.
+ */
+const toPressContactPhone = (pressContact: boolean, value: string | null | undefined) => {
+  if (!pressContact) {
+    return null
+  }
+
+  const phone = normalizeText(value).replace(/[\s().-]/g, '')
+  return E164_PHONE_PATTERN.test(phone) ? phone : null
+}
 
 const buildStableMemberSlug = (
   parts: Array<string | null | undefined>,
@@ -435,6 +455,8 @@ async function loadTeamAreas(event: H3Event) {
                       isCommitteeResponsible: member.is_committee_responsible ?? false,
                       publicAgenda: member.public_agenda ?? false,
                       socialNetworks,
+                      pressContact: member.press_contact,
+                      phone: toPressContactPhone(member.press_contact, member.phone),
                     }
                   })
                 )

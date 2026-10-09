@@ -23,6 +23,22 @@ const sortCommitteeResponsibleMembersLast = <T extends { isCommitteeResponsible:
   return [...primaryMembers, ...committeeResponsibleMembers]
 }
 
+/** The Intranet numbers an area's responsible 1 and its other members from 2. */
+const AREA_RESPONSIBLE_ORDER = 1
+
+/**
+ * An area's responsible (Executive Committee) and its other members (Extended Executive Committee).
+ * An area can be left without a responsible (the role ends before a replacement is named): the
+ * Intranet then sends no member numbered 1, and every member is an ordinary one.
+ */
+const splitAreaMembers = (area: OrgArea) => {
+  const [first, ...rest] = area.members
+
+  return first?.order === AREA_RESPONSIBLE_ORDER
+    ? { responsible: first, members: rest }
+    : { responsible: null, members: area.members }
+}
+
 export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
   const { t, locale } = useI18n()
   const { fallbackLocale } = useLocales()
@@ -42,30 +58,30 @@ export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
     isLeader,
   })
 
-  const executiveMembers = computed<EnrichedMember[]>(() => {
-    return sortCommitteeResponsibleMembersLast(
-      areas.value
-        .filter((area) => area.members.length > 0)
-        .map((area) => toEnrichedMember(area.members[0]!, area, true))
+  const executiveMembers = computed<EnrichedMember[]>(() =>
+    sortCommitteeResponsibleMembersLast(
+      areas.value.flatMap((area) => {
+        const { responsible } = splitAreaMembers(area)
+
+        return responsible ? [toEnrichedMember(responsible, area, true)] : []
+      })
     )
-  })
+  )
 
-  const extendedMembers = computed<EnrichedMember[]>(() => {
-    const result: EnrichedMember[] = []
-
-    for (const area of areas.value) {
-      for (let i = 1; i < area.members.length; i++) {
-        result.push(toEnrichedMember(area.members[i]!, area, false))
-      }
-    }
-
-    return sortCommitteeResponsibleMembersLast(result)
-  })
+  const extendedMembers = computed<EnrichedMember[]>(() =>
+    sortCommitteeResponsibleMembersLast(
+      areas.value.flatMap((area) =>
+        splitAreaMembers(area).members.map((member) => toEnrichedMember(member, area, false))
+      )
+    )
+  )
 
   const allMembers = computed<EnrichedMember[]>(() =>
-    areas.value.flatMap((area) =>
-      area.members.map((member, index) => toEnrichedMember(member, area, index === 0))
-    )
+    areas.value.flatMap((area) => {
+      const { responsible } = splitAreaMembers(area)
+
+      return area.members.map((member) => toEnrichedMember(member, area, member === responsible))
+    })
   )
 
   const getViewProfileAriaLabel = (fullName: string) => `${t('team.viewProfile')}: ${fullName}`
@@ -79,6 +95,7 @@ export const useTeamDirectory = ({ areas }: UseTeamDirectoryOptions) => {
     getMemberDisplayName,
     getPublicAgendaAriaLabel,
     getViewProfileAriaLabel,
+    splitAreaMembers,
     toEnrichedMember,
   }
 }

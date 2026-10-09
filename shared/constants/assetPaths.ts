@@ -21,13 +21,6 @@ export const PRESS_DEFAULT_COVERS_SEGMENT = 'portadas-por-defecto'
 export const PRESS_DEFAULT_COVERS_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/${PRESS_DEFAULT_COVERS_SEGMENT}`
 export const PRESS_MEDIA_LOGO_PUBLIC_PATH = `${PRESS_IMAGE_PUBLIC_BASE}/medios`
 export const PRESS_DOCUMENT_PUBLIC_PATH = '/prensa/documentos'
-/**
- * Stable public URL of the press dossier. It redirects to the current file, whose name alternates
- * between uploads (dossier-prensa.pdf, dossier-prensa-2.pdf) so no cache serves a stale copy.
- */
-export const PRESS_DOSSIER_PUBLIC_PATH = '/prensa/dossier-prensa.pdf'
-/** Where uploaded dossiers are stored: inside the press documents volume, in a folder of its own. */
-export const PRESS_DOSSIER_STORAGE_PATH = `${PRESS_DOCUMENT_PUBLIC_PATH}/dossier`
 /** Brand banner shown at the top of newsletter campaign emails. Ships with the build. */
 export const NEWSLETTER_BRAND_BANNER_PATH = '/marca/horizontal-completo-granate.png'
 

@@ -32,8 +32,6 @@ const es = {
     'El contenido de Qué es CREUP fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
   tagOptimisticLock:
     'La etiqueta fue modificada por otro usuario. Recarga la página para ver los cambios más recientes.',
-  pressDossierOptimisticLock:
-    'El dossier de prensa fue modificado por otro usuario. Recarga la página para ver los cambios más recientes.',
   siteDefaultImagesOptimisticLock:
     'Las imágenes por defecto fueron modificadas por otro usuario. Recarga la página para ver los cambios más recientes.',
   newsletterOptimisticLock:
@@ -181,8 +179,6 @@ const en: Record<AdminApiErrorMessageKey, string> = {
     'The "What is CREUP" content was modified by another user. Reload the page to see the most recent changes.',
   tagOptimisticLock:
     'The tag was modified by another user. Reload the page to see the most recent changes.',
-  pressDossierOptimisticLock:
-    'The press kit was modified by another user. Reload the page to see the most recent changes.',
   siteDefaultImagesOptimisticLock:
     'The default images were modified by another user. Reload the page to see the most recent changes.',
   newsletterOptimisticLock:
@@ -327,8 +323,6 @@ const ca: Record<AdminApiErrorMessageKey, string> = {
     'El contingut de Què és CREUP ha estat modificat per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.',
   tagOptimisticLock:
     "L'etiqueta ha estat modificada per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.",
-  pressDossierOptimisticLock:
-    'El dossier de premsa ha estat modificat per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.',
   siteDefaultImagesOptimisticLock:
     'Les imatges per defecte han estat modificades per un altre usuari. Torna a carregar la pàgina per veure els canvis més recents.',
   newsletterOptimisticLock:
@@ -475,8 +469,6 @@ const eu: Record<AdminApiErrorMessageKey, string> = {
     'Beste erabiltzaile batek aldatu du Zer da CREUP edukia. Birkargatu orria azken aldaketak ikusteko.',
   tagOptimisticLock:
     'Beste erabiltzaile batek aldatu du etiketa. Birkargatu orria azken aldaketak ikusteko.',
-  pressDossierOptimisticLock:
-    'Beste erabiltzaile batek aldatu du prentsa-dosierra. Birkargatu orria azken aldaketak ikusteko.',
   siteDefaultImagesOptimisticLock:
     'Beste erabiltzaile batek aldatu ditu lehenetsitako irudiak. Birkargatu orria azken aldaketak ikusteko.',
   newsletterOptimisticLock:
@@ -623,8 +615,6 @@ const gl: Record<AdminApiErrorMessageKey, string> = {
     'O contido de Que é CREUP foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
   tagOptimisticLock:
     'A etiqueta foi modificada por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
-  pressDossierOptimisticLock:
-    'O dossier de prensa foi modificado por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
   siteDefaultImagesOptimisticLock:
     'As imaxes por defecto foron modificadas por outro usuario. Recarga a páxina para ver os cambios máis recentes.',
   newsletterOptimisticLock:
@@ -770,8 +760,6 @@ const val: Record<AdminApiErrorMessageKey, string> = {
     'El contingut de Què és CREUP ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
   tagOptimisticLock:
     "L'etiqueta ha sigut modificada per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.",
-  pressDossierOptimisticLock:
-    'El dossier de premsa ha sigut modificat per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
   siteDefaultImagesOptimisticLock:
     'Les imatges per defecte han sigut modificades per un altre usuari. Torna a carregar la pàgina per a vore els canvis més recents.',
   newsletterOptimisticLock:

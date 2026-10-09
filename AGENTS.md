@@ -10,7 +10,7 @@ Goals:
 - Compact admin area to manage public content shown on the site.
 - Spanish-first localization strategy, scalable to additional languages without rewrites.
 
-Current admin scope: access control, home carousel, "Qué es CREUP" hero, equality documents, newsletter campaigns and subscribers, press articles, optional per-type default press cover images (when an article has no hero image), press dossier, tags, media outlets, featured links, financial reports.
+Current admin scope: access control, home carousel, "Qué es CREUP" hero, equality documents, newsletter campaigns and subscribers, press articles, optional per-type default press cover images (when an article has no hero image), tags, media outlets, featured links, financial reports.
 
 ---
 
@@ -290,10 +290,10 @@ For any new public asset base path used by admin uploads:
 2. Add a matching `server/routes/**/[...path].ts` handler using the shared public asset helpers, unless an existing route already covers that base path.
 3. Add or verify route rules needed for public asset delivery, such as disabling rate limiting for image proxy paths.
 4. Add the matching bind mount anywhere production or local deployment persists uploads (`docker-compose*.yml`, deployment docs, and related env examples when applicable). The container path must match the finalized public path under `/app/.output/public/...`; `deploy.sh` creates the host directories from `docker compose config`, so it needs no list of its own.
-5. Add the base to `ADMIN_UPLOAD_PUBLIC_PATH_BASES` (`shared/constants/assetPaths.ts`). The `nitro:build:public-assets` hook in `nuxt.config.ts` strips those folders from the build output: the image is built from the working tree, whose gitignored local copies would otherwise land in Nitro's static manifest with their build-time size, and a file the admin later replaces under the same name would be served with that stale `Content-Length` and arrive truncated (this broke the press dossier).
+5. Add the base to `ADMIN_UPLOAD_PUBLIC_PATH_BASES` (`shared/constants/assetPaths.ts`). The `nitro:build:public-assets` hook in `nuxt.config.ts` strips those folders from the build output: the image is built from the working tree, whose gitignored local copies would otherwise land in Nitro's static manifest with their build-time size, and a file the admin later replaces under the same name would be served with that stale `Content-Length` and arrive truncated.
 6. Confirm the upload preview URL and the saved public URL both work after the record is persisted and after the app container is recreated.
 
-A fixed public URL for an asset whose stored name changes on upload (the press dossier: `PRESS_DOSSIER_PUBLIC_PATH`) redirects to the current file instead of serving one; see `server/routes/prensa/dossier-prensa.pdf.ts`.
+The press dossier is no longer an uploaded PDF but a page built from live content (`PRESS_KIT_PATH`, `/prensa/dossier`). Its old URL, `/prensa/dossier-prensa.pdf`, answers with a 301 to it (`server/routes/prensa/dossier-prensa.pdf.ts`); the same build hook deletes any local file at that path, which would otherwise be served as a static asset ahead of the redirect. So does the folder the uploads were stored in, `/prensa/documentos/dossier/`: the generic press documents handler (`server/routes/prensa/documentos/[...path].ts`) redirects any request whose decoded, normalized path falls in it, because the header linked those files directly, they carry personal phone numbers and they stay on the volume until deleted. Don't move that check into a separate `dossier/` route: an encoded slash or a `./` segment would reach the generic handler and serve the file.
 
 ### Rich Text Sanitization (`server/utils/press/pressTranslation.ts`)
 
@@ -335,7 +335,7 @@ Cache is shared through Redis and coordinates refreshes with Redis locks so stal
 
 ### Public Content Caching & Invalidation
 
-Public CMS content (press, home, tags, dossier, equality, financial reports, about, activity) is cached at three layers. When adding a public read or an admin mutation, wire **all** of them or content goes stale.
+Public CMS content (press, home, tags, equality, financial reports, about, activity) is cached at three layers. When adding a public read or an admin mutation, wire **all** of them or content goes stale.
 
 1. **Server route cache.** Public GET handlers use `defineCachedEventHandler(handler, publicRouteCacheOptions(PUBLIC_CMS_CACHE_SCOPES.<scope>, { queryKeys, keyParts }))` (`server/utils/cache/publicRouteCache.ts`). The scope becomes the Nitro cache `name`, so entries live under `nitro:handlers:<scope>:`; the varying part of the key (locale, route params, query) is hashed. Never hand-build a `getKey` string: Nitro strips every non-word character from custom keys (`escapeKey`), which is how invalidation silently stopped matching anything. The `cache` storage base is mounted to Redis by `server/plugins/runtime-cache-storage.ts`, so entries and purges are shared across all Nitro instances — never leave the route cache on the in-memory default.
 2. **Server invalidation.** Every admin create/update/delete/reorder that changes public output MUST call the matching `invalidate*` from `server/utils/admin/adminCacheInvalidation.ts` (e.g. `invalidatePressRelatedCaches`, `invalidateHomeDataCache`). The asset-backed CRUD + reorder factories already do this via their `invalidate` config; bespoke handlers must call it explicitly. A new CMS scope goes into `PUBLIC_CMS_CACHE_SCOPES` and into every invalidator whose data it embeds. Invalidators never throw (the save already committed) and purge twice, a few seconds apart, to drop entries a request in flight wrote back. Content shown by pages under `swr` route rules (HTML cached as `nitro:routes`, payload as `nuxt:payload`) also purges those bases; it is purged on startup too, since cached HTML points at the previous build's assets. Date-gated press content goes live through the `public-content.day-rollover` job at 00:00:30 Europe/Madrid.

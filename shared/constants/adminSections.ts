@@ -8,7 +8,6 @@ export type AdminSectionKey =
   | 'equality'
   | 'newsletter'
   | 'press'
-  | 'pressDossier'
   | 'siteDefaultImages'
   | 'links'
   | 'tags'
@@ -76,13 +75,6 @@ export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
     description: 'Artículos, comunicados y apariciones en medios.',
     to: ADMIN_ROUTES.press,
     icon: 'i-tabler-news',
-  },
-  {
-    key: 'pressDossier',
-    name: 'Dossier de prensa',
-    description: 'PDF enlazado desde el menú de navegación.',
-    to: ADMIN_ROUTES.pressDossier,
-    icon: 'i-tabler-file-type-pdf',
   },
   {
     key: 'siteDefaultImages',

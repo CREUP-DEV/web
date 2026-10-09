@@ -647,6 +647,106 @@
       "backToList": "Back to news"
     }
   },
+  "pressKit": {
+    "seo": {
+      "description": "CREUP's press kit, always up to date: who we are, member universities, team, positions and media contacts."
+    },
+    "tagline": "The voice of public universities",
+    "cover": {
+      "organization": "Coordinator of Student Representatives of Public Universities",
+      "heroAlt": "CREUP group photo",
+      "liveNote": "This press kit is built from the information published on the website, so it is always up to date. You can save it as a PDF to share it, or print it.",
+      "printAction": "Save as PDF or print",
+      "printHint": "Your browser’s print dialog will open: choose “Save as PDF” as the destination to get the file.",
+      "generatedOn": "Information as of {date}"
+    },
+    "toc": {
+      "title": "Contents",
+      "liveVersion": "Find the latest version of this press kit at"
+    },
+    "sections": {
+      "about": "What is CREUP?",
+      "philosophy": "Our philosophy",
+      "members": "Member universities",
+      "sectorials": "Sectorial associations",
+      "executive": "Executive Committee",
+      "organization": "Organization",
+      "pressRoom": "Press room",
+      "positions": "Positions",
+      "faq": "Frequently asked questions",
+      "contact": "Contact"
+    },
+    "about": {
+      "paragraph1": "The Coordinator of Student Representatives of Public Universities (CREUP) is the main student representation platform in Spain. It brings together the Student Councils of {universities} public universities and has represented more than {students} university students for {years} years. Its work is essential to defending the rights and interests of students and ensures that they take an active part in the decisions that affect Higher Education.",
+      "paragraph1Approx": "The Coordinator of Student Representatives of Public Universities (CREUP) is the main student representation platform in Spain. It brings together the Student Councils of more than {universities} public universities and has represented more than {students} university students for {years} years. Its work is essential to defending the rights and interests of students and ensures that they take an active part in the decisions that affect Higher Education.",
+      "paragraph2": "As the highest body representing university students at state level, CREUP is a direct interlocutor of the ministry responsible for universities, the Congress of Deputies and other key institutions in the development of education policy. Its aim is for students' voices to be heard in building and improving the university system, promoting a model of quality, inclusive and accessible public education.",
+      "paragraph3": "CREUP is run by its assembly, which guarantees the democratic participation of all its members. At least two General Assemblies are held every year to set the strategic lines and decide on positions and actions. The organization also runs training events, meetings and discussion forums that encourage student representatives to share their experience, strengthening their influence and leadership.",
+      "paragraph4": "Beyond its internal work, CREUP works closely with organizations across the university sector. Through agreements, it collaborates with the State Conference of University Ombudspersons (CEDU), Crue Universidades Españolas, the Spanish Network of University Quality Agencies (REACU) and the graduate association ALUMNI, among other organizations committed to improving higher education."
+    },
+    "members": {
+      "intro": "CREUP brings together the Student Councils of {count} public universities from all over Spain."
+    },
+    "sectorials": {
+      "intro": "CREUP signs agreements with sectorial associations: student associations specializing in a specific field of knowledge, such as the social sciences, engineering, health or the humanities. These partnerships make it possible to develop joint initiatives, coordinate the representation and defense of student rights, and promote proposals to improve the quality of teaching in each academic field. They foster dialogue between the different university groups and strengthen the student voice in the national education landscape."
+    },
+    "executive": {
+      "intro": "The Executive Committee coordinates CREUP's day-to-day work. It is made up of the people in charge of each of its areas."
+    },
+    "organization": {
+      "intro": "CREUP organizes its work in areas. Each area is led by a member of the Executive Committee, to whom the members of the Extended Executive Committee in that area report. Working committees complete the structure.",
+      "legend": "Key",
+      "areas": "Working areas",
+      "committeeResponsible": "Head: {committee}",
+      "responsible": "Head",
+      "noResponsible": "No head assigned",
+      "memberCount": "{count} member | {count} members"
+    },
+    "pressRoom": {
+      "paragraph1": "The press section of CREUP's website brings together the organization's institutional communication: press releases, official statements and media appearances.",
+      "paragraph2": "The communication team assists journalists, institutions and anyone interested in learning first-hand about CREUP's positions and actions in the university sphere. Requests for information and interviews can be sent through the press contact form.",
+      "allNews": "All news",
+      "latestTitle": "Latest publications",
+      "empty": "There are no press publications yet."
+    },
+    "positions": {
+      "paragraph1": "CREUP's positions reflect its vision and its commitment to the continuous improvement of Higher Education. Through them, the organization takes a clear stance on key issues and promotes changes and proposals for a fairer, more inclusive, high-quality university system.",
+      "paragraph2": "The University Policy area of the website brings together the positions, resolutions and executive reports through which CREUP works to build a stronger and fairer academic future.",
+      "listTitle": "Positions in force"
+    },
+    "faq": {
+      "positioning": {
+        "question": "What is a position?",
+        "answer": "Positions set out CREUP's official stance on relevant Higher Education issues. They seek a long-term impact, establishing lines of action and proposals to improve key aspects of the university system."
+      },
+      "resolution": {
+        "question": "What is a resolution?",
+        "answer": "Resolutions are CREUP's statements on current issues that directly affect the university community. Unlike positions, they address more immediate situations: they express the organization's stance and seek to influence decision-making."
+      },
+      "where": {
+        "question": "Where can I find them?",
+        "answer": "Positions and resolutions are published in the University Policy area of CREUP's website."
+      },
+      "assemblies": {
+        "question": "How often are the Assemblies held?",
+        "answer": "CREUP holds at least two Ordinary General Assemblies every year. They are where strategic decisions are made and the priority issues affecting students are discussed."
+      },
+      "events": {
+        "question": "What other events does CREUP organize?",
+        "answer": "Besides the General Assemblies, CREUP organizes two major events every year:",
+        "stage": "an event devoted to training student representatives, who gain tools in university policy, leadership, communication and other key areas for their work as representatives.",
+        "congress": "an annual meeting of students, professionals and experts from the university sphere to discuss the challenges and opportunities of Higher Education and promote proposals for improvement."
+      },
+      "upcomingTitle": "Upcoming events",
+      "noUpcoming": "There are no upcoming events scheduled.",
+      "allEvents": "All events"
+    },
+    "contact": {
+      "intro": "For any inquiry, request for information or interview, you can reach CREUP through:",
+      "peopleTitle": "Media contacts",
+      "phone": "Phone",
+      "form": "Press contact form"
+    }
+  },
   "cookies": {
     "banner": {
       "title": "We respect your privacy",
@@ -898,10 +998,6 @@
         "name": "News",
         "description": "Articles, statements and media appearances."
       },
-      "pressDossier": {
-        "name": "Press kit",
-        "description": "PDF linked from the navigation menu."
-      },
       "siteDefaultImages": {
         "name": "Default images",
         "description": "Press, newsletter and carousel covers when there is no custom image."
@@ -1127,23 +1223,6 @@
       "activityIntro": "Images shown when an activity entry or an area report has no image of its own.",
       "activityEntryLabel": "Activity entries",
       "areaReportLabel": "Area reports"
-    },
-    "pressDossier": {
-      "title": "Press kit",
-      "intro": "Upload the PDF that will be linked from the navigation menu when it is active.",
-      "loadErrorTitle": "The press kit could not be loaded",
-      "noDossier": "No press kit uploaded",
-      "pdfReady": "PDF ready to publish.",
-      "pdfUploadHint": "Upload a PDF to activate it.",
-      "changePdf": "Change PDF",
-      "uploadPdf": "Upload PDF",
-      "viewCurrentPdf": "View current PDF",
-      "removePdf": "Remove PDF",
-      "statusLabel": "Status",
-      "saveChanges": "Save changes",
-      "removePdfConfirm": "The selected PDF will be removed from the press kit. You will need to upload it again if you want to restore it.",
-      "saveSuccess": "Press kit saved",
-      "saveError": "The press kit could not be saved"
     },
     "about": {
       "title": "What is CREUP",
@@ -1722,7 +1801,6 @@
       "defaultDescriptionRequired": "The Spanish description is required",
       "pdfRequired": "The PDF is required",
       "invalidDate": "The date is not valid",
-      "dossierPdfRequired": "You must upload a PDF to activate the dossier",
       "storagePathNotUrl": "The image must be a storage path, not a URL",
       "invalidMonth": "The month is not valid",
       "invalidEmail": "The email is not valid",

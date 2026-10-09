@@ -3,7 +3,6 @@ import type { SeoAlternateLink } from '@/composables/seo/useSeoAlternateLinksOve
 
 const { t } = useI18n()
 const siteUrl = useRuntimeSiteUrl()
-const { data: pressDossierLink } = await usePressDossierLink()
 const alternateLinksOverride = useState<SeoAlternateLink[] | null>(
   'seo-alternate-links-override',
   () => null
@@ -74,7 +73,7 @@ useHead(() => {
       {{ t('accessibility.skipToMain') }}
     </a>
 
-    <AppHeader :press-dossier-link="pressDossierLink" />
+    <AppHeader />
 
     <UMain id="main-content" class="flex-1">
       <slot />

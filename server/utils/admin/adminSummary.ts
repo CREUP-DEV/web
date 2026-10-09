@@ -38,7 +38,6 @@ export async function getAdminDashboardSummary(event: H3Event) {
 
   const {
     aboutItem,
-    pressDossierItem,
     latestCarouselItem,
     latestEqualityDocument,
     latestNewsletterCampaign,
@@ -106,19 +105,6 @@ export async function getAdminDashboardSummary(event: H3Event) {
           description: `${(PRESS_TYPE_LABELS_BY_LOCALE[summaryLocale] as Record<string, string>)[latestPressArticle.type] ?? t('pressTypeFallback')} · ${latestPressArticle.active ? t('statusActive') : t('statusInactive')}`,
           to: ADMIN_ROUTES.press,
           updatedAt: latestPressArticle.updatedAt,
-        }
-      : null,
-    pressDossierItem?.updatedAt
-      ? {
-          sectionKey: 'pressDossier',
-          title: t('pressDossierTitle'),
-          description: !pressDossierItem.pdfUrl
-            ? t('pressDossierNoPdf')
-            : pressDossierItem.active
-              ? t('pressDossierActive')
-              : t('pressDossierInactive'),
-          to: ADMIN_ROUTES.pressDossier,
-          updatedAt: pressDossierItem.updatedAt,
         }
       : null,
     latestFeaturedLink?.updatedAt

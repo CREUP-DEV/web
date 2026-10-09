@@ -1,8 +1,4 @@
 <script setup lang="ts">
-const props = defineProps<{
-  pressDossierLink?: string | null
-}>()
-
 const {
   currentLocale,
   getLocaleIcon,
@@ -13,7 +9,7 @@ const {
   mobilePrimaryLinks,
   mobileSections,
   selectedLocale,
-} = usePublicHeaderNavigation(toRef(props, 'pressDossierLink'))
+} = usePublicHeaderNavigation()
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -22,7 +18,6 @@ const socials = useSocials()
 const instagramSocial = computed(() =>
   socials.value.find((social) => social.icon === 'i-tabler-brand-instagram')
 )
-const navigationMenuKey = computed(() => `public-nav:${props.pressDossierLink ?? 'none'}`)
 const menuOpen = ref(false)
 const headerToggle = computed(() => ({
   color: 'neutral' as const,
@@ -81,7 +76,6 @@ watch(menuOpen, (isOpen) => {
     </template>
 
     <UNavigationMenu
-      :key="navigationMenuKey"
       content-orientation="vertical"
       :items="items"
       :aria-label="t('accessibility.mainNavigation')"

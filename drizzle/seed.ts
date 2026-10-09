@@ -20,7 +20,6 @@ import {
   PRESS_DEFAULT_COVERS_PUBLIC_PATH,
   PRESS_DOCUMENT_PUBLIC_PATH,
   PRESS_MEDIA_LOGO_PUBLIC_PATH,
-  PRESS_DOSSIER_PUBLIC_PATH,
 } from '../shared/constants/assetPaths'
 import { slugify } from '../server/utils/core/slug'
 import { SEED_NEWSLETTER_CAMPAIGN_ID_PREFIX } from './seed/data/activity'
@@ -204,7 +203,6 @@ async function seedDatabase(db: DbExecutor) {
   // Clear existing data (in correct order for foreign keys)
   console.log('🗑️ Clearing existing data...')
   await db.delete(schema.aboutPageContent)
-  await db.delete(schema.pressDossier)
   await db.delete(schema.siteDefaultImages)
   await db.delete(schema.equalityDocumentTranslations)
   await db.delete(schema.equalityDocuments)
@@ -298,13 +296,6 @@ async function seedDatabase(db: DbExecutor) {
   await db.insert(schema.aboutPageContent).values({
     heroImage: ABOUT_HERO_DEFAULT_IMAGE,
     heroVisible: true,
-  })
-
-  console.log('📋 Creating press dossier singleton...')
-  await db.insert(schema.pressDossier).values({
-    id: 'singleton',
-    pdfUrl: PRESS_DOSSIER_PUBLIC_PATH,
-    active: true,
   })
 
   console.log('🖼️ Creating site default image slots...')

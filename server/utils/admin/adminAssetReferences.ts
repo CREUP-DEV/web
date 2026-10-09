@@ -12,7 +12,6 @@ import {
   memberOrgCatalogEntries,
   newsletterCampaignItems,
   pressArticles,
-  pressDossier,
   siteDefaultImages,
   users,
 } from '../../db/schema'
@@ -34,7 +33,6 @@ const ASSET_COLUMN_REGISTRY: Array<{ table: any; column: any }> = [
   { table: memberOrgCatalogEntries, column: memberOrgCatalogEntries.logoDark },
   { table: pressArticles, column: pressArticles.image },
   { table: pressArticles, column: pressArticles.pdfUrl },
-  { table: pressDossier, column: pressDossier.pdfUrl },
   { table: siteDefaultImages, column: siteDefaultImages.image },
   { table: users, column: users.image },
 ]

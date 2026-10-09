@@ -84,6 +84,10 @@ export const externalOrganigramaMemberSchema = z.object({
   is_committee_responsible: z.boolean().optional().default(false),
   public_agenda: z.boolean().optional().default(false),
   social_networks: z.array(externalOrganigramaMemberSocialSchema).nullable().optional().default([]),
+  // Press contacts listed in the press kit. Older Intranet deployments send neither field; `phone`
+  // (E.164) is only meant to be non-null for a press contact, which the mapping enforces again.
+  press_contact: z.boolean().optional().default(false),
+  phone: z.string().nullable().optional(),
 })
 
 export const externalOrganigramaAreaSchema = z.object({

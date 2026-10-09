@@ -5,7 +5,7 @@ Web pública de CREUP construida con Nuxt 4, Nitro, PostgreSQL, Redis, BullMQ y 
 ## Qué incluye
 
 - Web pública SSR con SEO, accesibilidad e i18n.
-- Panel de administración para accesos, carrusel, "Qué es CREUP", igualdad, newsletter, prensa, dossier de prensa, enlaces, etiquetas, medios e informes económicos.
+- Panel de administración para accesos, carrusel, "Qué es CREUP", igualdad, newsletter, prensa, enlaces, etiquetas, medios e informes económicos.
 - Integración con Google Calendar para la agenda pública y agendas individuales.
 - Integración con una API externa para miembros, organigrama, comités, eventos y documentos.
 - Caché SSR/API, caché SWR de integraciones externas y limitación de peticiones compartidas en Redis.

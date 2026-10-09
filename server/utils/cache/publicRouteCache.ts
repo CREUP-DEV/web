@@ -27,7 +27,6 @@ export const PUBLIC_CMS_CACHE_SCOPES = {
   home: 'public-home',
   press: 'public-press',
   pressDetail: 'public-press-detail',
-  pressDossier: 'press-dossier',
   tags: 'public-tags',
 } as const
 

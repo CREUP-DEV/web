@@ -28,6 +28,12 @@ export const useMembersPageData = async () => {
     allSectoriales: computed(() => sectorialesData.value?.data ?? []),
     pending: computed(() => membersPending.value || sectorialesPending.value),
     error: computed(() => membersError.value ?? sectorialesError.value ?? null),
+    membersPending,
+    membersError,
+    refreshMembers,
+    sectorialesPending,
+    sectorialesError,
+    refreshSectoriales,
     refresh: async () => {
       await Promise.all([refreshMembers(), refreshSectoriales()])
     },

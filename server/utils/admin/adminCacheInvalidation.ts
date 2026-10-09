@@ -10,10 +10,9 @@ const HANDLER_CACHE_BASE = 'nitro:handlers'
 /**
  * Pages under the `swr` route rules in nuxt.config.ts: their HTML (`nitro:routes`) and the payload
  * Nuxt still extracts for cached routes and serves at `<page>/_payload.json` (`nuxt:payload`).
- * They embed admin content too (the layout's press dossier link and default OG image on all of
- * them; equality documents, financial reports and the about hero on their own pages), and their
- * keys are hashed paths, so they are purged as a whole: there are only a handful, and they
- * re-render on the next request.
+ * They embed admin content too (the default OG image on all of them; equality documents, financial
+ * reports and the about hero on their own pages), and their keys are hashed paths, so they are
+ * purged as a whole: there are only a handful, and they re-render on the next request.
  */
 const PAGE_CACHE_BASES = ['nitro:routes', 'nuxt:payload'] as const
 
@@ -90,13 +89,6 @@ export async function invalidateTagsCache() {
 /** Press list + detail, tags and home: all of them embed articles, tags and media outlets. */
 export async function invalidatePressRelatedCaches() {
   await invalidateCacheBases(handlerCacheBases(...PRESS_RELATED_SCOPES))
-}
-
-export async function invalidatePressDossierCache() {
-  await invalidateCacheBases([
-    ...handlerCacheBases(PUBLIC_CMS_CACHE_SCOPES.pressDossier),
-    ...PAGE_CACHE_BASES,
-  ])
 }
 
 export async function invalidateAboutPageCache() {

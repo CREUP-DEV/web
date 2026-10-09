@@ -1,0 +1,1 @@
+DROP TABLE "press_dossier" CASCADE;

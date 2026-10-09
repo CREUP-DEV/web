@@ -647,6 +647,106 @@
       "backToList": "Itzuli albisteetara"
     }
   },
+  "pressKit": {
+    "seo": {
+      "description": "CREUPen prentsa-dosierra, beti eguneratuta: nor garen, unibertsitate kideak, taldea, posizionamenduak eta hedabideentzako harremana."
+    },
+    "tagline": "Unibertsitate publikoaren ahotsa",
+    "cover": {
+      "organization": "Unibertsitate Publikoetako Ikasleen Ordezkarien Koordinakundea",
+      "heroAlt": "CREUPen talde-argazkia",
+      "liveNote": "Dosier hau webgunean argitaratutako informaziotik sortzen da; beraz, beti dago eguneratuta. PDF gisa gorde dezakezu partekatzeko, edo inprimatu.",
+      "printAction": "Gorde PDF gisa edo inprimatu",
+      "printHint": "Nabigatzailearen inprimatzeko leihoa irekiko da: aukeratu «Gorde PDF gisa» helmuga gisa fitxategia lortzeko.",
+      "generatedOn": "Eguneratze-data: {date}"
+    },
+    "toc": {
+      "title": "Edukia",
+      "liveVersion": "Dosier honen bertsio berriena hemen kontsulta dezakezu:"
+    },
+    "sections": {
+      "about": "Zer da CREUP?",
+      "philosophy": "Erakundearen filosofia",
+      "members": "Unibertsitate kideak",
+      "sectorials": "Erakunde sektorialak",
+      "executive": "Batzorde Exekutiboa",
+      "organization": "Antolaketa",
+      "pressRoom": "Prentsa-aretoa",
+      "positions": "Posizionamenduak",
+      "faq": "Ohiko galderak",
+      "contact": "Harremanetarako"
+    },
+    "about": {
+      "paragraph1": "Unibertsitate Publikoetako Ikasleen Ordezkarien Koordinakundea (CREUP) Espainiako ikasle-ordezkaritzaren plataforma nagusia da. {universities} unibertsitate publikotako Ikasle Kontseiluek osatzen dute, eta {students} unibertsitate-ikasle baino gehiago ordezkatu ditu azken {years} urteetan. Bere lana funtsezkoa da ikasleen eskubideak eta interesak defendatzeko, eta Goi Mailako Hezkuntzari eragiten dioten erabakietan parte-hartze aktiboa bermatzen die.",
+      "paragraph1Approx": "Unibertsitate Publikoetako Ikasleen Ordezkarien Koordinakundea (CREUP) Espainiako ikasle-ordezkaritzaren plataforma nagusia da. {universities} unibertsitate publiko baino gehiagotako Ikasle Kontseiluek osatzen dute, eta {students} unibertsitate-ikasle baino gehiago ordezkatu ditu azken {years} urteetan. Bere lana funtsezkoa da ikasleen eskubideak eta interesak defendatzeko, eta Goi Mailako Hezkuntzari eragiten dioten erabakietan parte-hartze aktiboa bermatzen die.",
+      "paragraph2": "Estatu mailan unibertsitateko ikasleak ordezkatzen dituen organo gorena den aldetik, CREUP solaskide zuzena da unibertsitateen arloko ministerio eskudunaren, Diputatuen Kongresuaren eta hezkuntza-politiken garapenean funtsezkoak diren beste erakunde batzuen aurrean. Bere helburua da ikasleen ahotsa entzun dadin unibertsitate-sistema eraikitzean eta hobetzean, kalitatezko hezkuntza publiko inklusibo eta irisgarria sustatuz.",
+      "paragraph3": "CREUPen funtzionamendua asanblearioa da, eta horrek kide guztien parte-hartze demokratikoa bermatzen du. Urtero gutxienez bi Batzar Orokor egiten dira, eta horietan estrategia-lerroak finkatzen dira eta posizionamenduei eta ekintzei buruzko erabakiak hartzen dira. Gainera, erakundeak prestakuntza-ekitaldiak, topaketak eta eztabaida-foroak antolatzen ditu, ikasle-ordezkarien arteko esperientzia-trukea sustatzeko eta haien eragin- eta lidergo-gaitasuna indartzeko.",
+      "paragraph4": "Barne-lanaz harago, CREUPek estuki lan egiten du unibertsitate-esparruko erakunde eta organismoekin. Hitzarmen eta akordioen bidez, Unibertsitateetako Arartekoen Estatu Konferentziarekin (CEDU), Crue Universidades Españolas-ekin, Unibertsitate Kalitateko Agentzien Espainiako Sarearekin (REACU) eta ALUMNI tituludunen elkartearekin aritzen da elkarlanean, goi-mailako hezkuntza hobetzeko konpromisoa duten beste erakunde batzuen artean."
+    },
+    "members": {
+      "intro": "Espainia osoko {count} unibertsitate publikotako Ikasle Kontseiluek osatzen dute CREUP."
+    },
+    "sectorials": {
+      "intro": "CREUPek hitzarmenak sinatzen ditu erakunde sektorialekin: jakintza-arlo jakin batean espezializatutako ikasle-elkarteekin, hala nola gizarte-zientzietan, ingeniaritzetan, osasunean edo humanitateetan. Lankidetza horiei esker, ekimen bateratuak garatu, ordezkaritza-ekintzak eta ikasleen eskubideen defentsa koordinatu eta arlo akademiko bakoitzean irakaskuntzaren kalitatea hobetzeko proposamenak bultza daitezke. Horrela, unibertsitateko kolektiboen arteko elkarrizketa sustatzen da eta ikasleen ahotsa indartzen da estatuko hezkuntza-panoraman."
+    },
+    "executive": {
+      "intro": "Batzorde Exekutiboak CREUPen eguneroko lana koordinatzen du. Arlo bakoitzeko arduradunek osatzen dute."
+    },
+    "organization": {
+      "intro": "CREUPek arlotan antolatzen du bere lana. Arlo bakoitza Batzorde Exekutiboko pertsona batek zuzentzen du, eta arlo horretako Batzorde Exekutibo Zabaldua osatzen duten kideak haren mende daude. Lan-batzordeek osatzen dute egitura.",
+      "legend": "Legenda",
+      "areas": "Lan-arloak",
+      "committeeResponsible": "Arduraduna: {committee}",
+      "responsible": "Arduraduna",
+      "noResponsible": "Ez dago arduradunik esleituta",
+      "memberCount": "{count} kide | {count} kide"
+    },
+    "pressRoom": {
+      "paragraph1": "CREUPen webguneko prentsa-atalak erakundearen komunikazio instituzionala biltzen du: prentsa-oharrak, adierazpen ofizialak eta hedabideetako agerpenak.",
+      "paragraph2": "Komunikazio-taldeak kazetariei, erakundeei eta CREUPek unibertsitate-esparruan dituen jarrerak eta ekintzak zuzenean ezagutu nahi dituen edonori ematen die arreta. Informazio- eta elkarrizketa-eskaerak prentsarako harreman-formularioaren bidez bidal daitezke.",
+      "allNews": "Albiste guztiak",
+      "latestTitle": "Azken argitalpenak",
+      "empty": "Oraindik ez dago prentsa-argitalpenik."
+    },
+    "positions": {
+      "paragraph1": "CREUPen posizionamenduek Goi Mailako Hezkuntza etengabe hobetzeko duen ikuspegia eta konpromisoa islatzen dituzte. Haien bidez, erakundeak jarrera argia finkatzen du gai garrantzitsuei buruz, eta unibertsitate-sistema bidezkoagoa, inklusiboagoa eta kalitatezkoa lortzen lagunduko duten aldaketak eta proposamenak bultzatzen ditu.",
+      "paragraph2": "Webguneko Unibertsitate Politika arloan daude CREUPek etorkizun akademiko sendoagoa eta bidezkoagoa eraikitzeko lantzen dituen posizionamenduak, ebazpenak eta txosten exekutiboak.",
+      "listTitle": "Indarrean dauden posizionamenduak"
+    },
+    "faq": {
+      "positioning": {
+        "question": "Zer da posizionamendu bat?",
+        "answer": "Posizionamenduak CREUPek Goi Mailako Hezkuntzako gai garrantzitsuen aurrean duen jarrera ofiziala dira. Epe luzeko eragina bilatzen dute, eta unibertsitate-sistemaren funtsezko alderdiak hobetzeko jarduera-ildoak eta proposamenak ezartzen dituzte."
+      },
+      "resolution": {
+        "question": "Zer da ebazpen bat?",
+        "answer": "Ebazpenak CREUPek unibertsitate-komunitateari zuzenean eragiten dioten gaurkotasuneko gaiei buruz egiten dituen adierazpenak dira. Posizionamenduek ez bezala, egoera berehalakoagoak jorratzen dituzte: erakundearen jarrera adierazten dute eta erabakiak hartzean eragina izan nahi dute."
+      },
+      "where": {
+        "question": "Non kontsulta daitezke?",
+        "answer": "Posizionamenduak eta ebazpenak CREUPen webguneko Unibertsitate Politika arloan argitaratuta daude."
+      },
+      "assemblies": {
+        "question": "Zenbatero egiten dira Batzarrak?",
+        "answer": "CREUPek gutxienez bi Ohiko Batzar Orokor egiten ditu urtero. Horietan hartzen dira erabaki estrategikoak eta eztabaidatzen dira ikasleei eragiten dieten gai lehenetsiak."
+      },
+      "events": {
+        "question": "Zer beste ekitaldi antolatzen ditu CREUPek?",
+        "answer": "Batzar Orokorrez gain, CREUPek bi ekitaldi handi antolatzen ditu urtero:",
+        "stage": "ikasle-ordezkarien prestakuntzari eskainitako ekitaldia; bertan, unibertsitate-politikari, lidergoari, komunikazioari eta ordezkaritza-lanerako funtsezkoak diren beste arlo batzuei buruzko tresnak eskuratzen dituzte.",
+        "congress": "unibertsitate-esparruko ikasleen, profesionalen eta adituen urteroko topaketa, Goi Mailako Hezkuntzaren erronkak eta aukerak eztabaidatzeko eta hobekuntza-proposamenak bultzatzeko."
+      },
+      "upcomingTitle": "Hurrengo ekitaldiak",
+      "noUpcoming": "Ez dago laster programatutako ekitaldirik.",
+      "allEvents": "Ekitaldi guztiak"
+    },
+    "contact": {
+      "intro": "Edozein kontsulta, informazio-eskaera edo elkarrizketa egiteko, CREUPekin harremanetan jar zaitezke bide hauen bidez:",
+      "peopleTitle": "Hedabideentzako harreman-pertsonak",
+      "phone": "Telefonoa",
+      "form": "Prentsarako harreman-formularioa"
+    }
+  },
   "cookies": {
     "banner": {
       "title": "Zure pribatutasuna errespetatzen dugu",
@@ -898,10 +998,6 @@
         "name": "Albisteak",
         "description": "Artikuluak, adierazpenak eta hedabideetako agerpenak."
       },
-      "pressDossier": {
-        "name": "Prentsa-dosierra",
-        "description": "Nabigazio-menutik estekatutako PDFa."
-      },
       "siteDefaultImages": {
         "name": "Lehenetsitako irudiak",
         "description": "Prentsa, newsletter eta karruselaren azalak irudi propiorik ez dagoenean."
@@ -1127,23 +1223,6 @@
       "activityIntro": "Jarduera-sarrera batek edo arlo-txosten batek irudi propiorik ez duenean erakusten diren irudiak.",
       "activityEntryLabel": "Jarduera-sarrerak",
       "areaReportLabel": "Arlo-txostenak"
-    },
-    "pressDossier": {
-      "title": "Prentsa-dosierra",
-      "intro": "Igo nabigazio-menutik estekatuko den PDFa aktibo dagoenean.",
-      "loadErrorTitle": "Ezin izan da prentsa-dosierra kargatu",
-      "noDossier": "Ez dago dosierrik igota",
-      "pdfReady": "PDFa argitaratzeko prest.",
-      "pdfUploadHint": "Igo PDF bat aktibatzeko.",
-      "changePdf": "Aldatu PDFa",
-      "uploadPdf": "Igo PDFa",
-      "viewCurrentPdf": "Ikusi uneko PDFa",
-      "removePdf": "Kendu PDFa",
-      "statusLabel": "Egoera",
-      "saveChanges": "Gorde aldaketak",
-      "removePdfConfirm": "Hautatutako PDFa prentsa-dosierretik kenduko da. Berriro igo beharko duzu berreskuratu nahi baduzu.",
-      "saveSuccess": "Dosierra gorde da",
-      "saveError": "Ezin izan da dosierra gorde"
     },
     "about": {
       "title": "Zer da CREUP",
@@ -1722,7 +1801,6 @@
       "defaultDescriptionRequired": "Gaztelaniazko deskribapena nahitaezkoa da",
       "pdfRequired": "PDFa beharrezkoa da",
       "invalidDate": "Data ez da baliozkoa",
-      "dossierPdfRequired": "PDF bat igo behar duzu dosierra aktibatzeko",
       "storagePathNotUrl": "Irudia biltegiratze-bide bat izan behar du, ez URL bat",
       "invalidMonth": "Hilabetea ez da baliozkoa",
       "invalidEmail": "Email-a ez da baliozkoa",

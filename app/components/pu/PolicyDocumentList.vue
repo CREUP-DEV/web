@@ -1,24 +1,5 @@
 <script setup lang="ts">
-interface PolicyDocumentFile {
-  name: string | null
-  url: string | null
-}
-
-interface PolicyDocument {
-  order: number
-  name: string
-  date: string
-  assembly: string | null
-  file: PolicyDocumentFile | null
-}
-
-interface PolicyDocumentsResponse {
-  data: PolicyDocument[]
-  meta: {
-    generatedAt?: string | null
-    total: number
-  }
-}
+import type { PolicyDocumentsResponse } from '@/types/policy'
 
 const props = defineProps<{
   apiEndpoint: string

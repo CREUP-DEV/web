@@ -20,6 +20,10 @@ export const CONTACT_FIELD_LIMITS = {
   turnstileTokenMax: 2048,
 } as const
 
+/** `/contacto?tipo=prensa` opens the contact form on the press contact type. */
+export const CONTACT_TYPE_QUERY_KEY = 'tipo'
+export const PRESS_CONTACT_TYPE_QUERY_VALUE = 'prensa'
+
 export const CONTACT_PHONE_PATTERN = /^[+\d][\d\s()-]{5,29}$/
 
 export function isValidOptionalContactPhone(value?: string | null) {

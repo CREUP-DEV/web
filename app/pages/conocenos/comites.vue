@@ -1,12 +1,10 @@
 <script setup lang="ts">
+import type { Committee, CommitteeMember } from '@/types/committees'
 import { detailModalUi } from '@/utils/detailModalUi'
-import type { SocialNetworkEntry } from '~~/shared/utils/social'
-import { pickLocalizedValue } from '~~/shared/utils/locale'
+import { encodeObfuscatedEmail } from '@/utils/obfuscatedEmail'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const localePath = useLocalePath()
-const { fallbackLocale } = useLocales()
-const localeApiHeaders = useLocaleApiHeaders()
 const { getDisplayName: getMemberDisplayName } = usePersonHelpers()
 
 usePageSeo('committees.title', 'committees.description', {
@@ -23,60 +21,15 @@ usePageSeo('committees.title', 'committees.description', {
   ],
 })
 
-type SocialNetwork = SocialNetworkEntry
-
-interface CommitteeMember {
-  id: string
-  order: number
-  denomination: string | null
-  photo: string | null
-  email: string
-  name: string
-  surname: string
-  university: string | null
-  degree: string | null
-  description: string | null
-  publicAgenda: boolean
-  socialNetworks: SocialNetwork[]
-}
-
-interface Committee {
-  id: number
-  name: string
-  nameTranslations: Record<string, string>
-  description: string | null
-  descriptionTranslations: Record<string, string>
-  order: number
-  members: CommitteeMember[]
-}
-
-interface CommitteesResponse {
-  data: Committee[]
-  meta: {
-    generatedAt?: string | null
-  }
-}
 interface EnrichedMember extends CommitteeMember {
   committeeName: string
   committeeId: number
 }
 
-const { data, pending, error, refresh } = useFetch<CommitteesResponse>('/api/committees', {
-  cache: 'no-store',
-  headers: localeApiHeaders,
-})
+const { committees, pending, error, refresh, getCommitteeName, getCommitteeDescription } =
+  useCommitteesData()
 
-const committees = computed(() => data.value?.data ?? [])
 const getEntranceDelay = (index: number) => getEntranceDelayStyle(index, 70)
-
-const getCommitteeName = (committee: Committee) =>
-  pickLocalizedValue(committee.nameTranslations ?? {}, locale.value, fallbackLocale) ??
-  committee.name
-
-const getCommitteeDescription = (committee: Committee) =>
-  pickLocalizedValue(committee.descriptionTranslations ?? {}, locale.value, fallbackLocale) ??
-  committee.description ??
-  ''
 
 const getViewProfileAriaLabel = (fullName: string) => `${t('committees.viewProfile')}: ${fullName}`
 const memberCardClass =
@@ -108,11 +61,6 @@ const openMemberModal = (member: CommitteeMember, committee: Committee) => {
 const closeMemberModal = () => {
   modalOpen.value = false
   selectedMember.value = null
-}
-
-function encodeEmail(email: string) {
-  const [user = '', domain = ''] = email.split('@')
-  return { eu: btoa(user), ed: btoa(domain) }
 }
 </script>
 
@@ -239,7 +187,7 @@ function encodeEmail(email: string) {
                 <div v-if="member.email" class="text-muted inline-flex items-center gap-1 text-sm">
                   <UIcon name="i-tabler-mail" class="size-4" />
                   <ObfuscatedEmail
-                    v-bind="encodeEmail(member.email)"
+                    v-bind="encodeObfuscatedEmail(member.email)"
                     class="hover:text-primary transition-colors"
                   />
                 </div>
