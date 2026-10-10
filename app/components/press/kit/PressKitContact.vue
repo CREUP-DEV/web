@@ -48,12 +48,6 @@ const pressContactPath = computed(() =>
   })
 )
 
-/** Spanish numbers read as "+34 600 00 00 00"; any other E.164 number is shown as sent. */
-const formatPhone = (phone: string) => {
-  const spanishNumber = /^\+34(\d{3})(\d{2})(\d{2})(\d{2})$/.exec(phone)
-  return spanishNumber ? `+34 ${spanishNumber.slice(1).join(' ')}` : phone
-}
-
 // People the Intranet marks as press contacts, once each even if they sit in several areas.
 const pressContacts = computed(() => {
   const seen = new Set<string>()
@@ -75,9 +69,7 @@ const pressContacts = computed(() => {
           name,
           role: member.denomination || getAreaName(area),
           email: member.email || null,
-          phone: member.phone
-            ? { href: `tel:${member.phone}`, label: formatPhone(member.phone) }
-            : null,
+          encodedPhone: member.encodedPhone,
         },
       ]
     })
@@ -153,18 +145,16 @@ const pressContacts = computed(() => {
                   />
                 </dd>
               </div>
-              <div v-if="contact.phone" class="flex items-center gap-1.5">
+              <div v-if="contact.encodedPhone" class="flex items-center gap-1.5">
                 <dt>
                   <UIcon name="i-tabler-phone" class="size-4" aria-hidden="true" />
                   <span class="sr-only">{{ t('pressKit.contact.phone') }}</span>
                 </dt>
                 <dd>
-                  <a
-                    :href="contact.phone.href"
+                  <ObfuscatedPhone
+                    :encoded="contact.encodedPhone"
                     class="hover:text-primary tabular-nums transition-colors"
-                  >
-                    {{ contact.phone.label }}
-                  </a>
+                  />
                 </dd>
               </div>
             </dl>

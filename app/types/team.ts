@@ -18,8 +18,8 @@ export interface OrgMember {
   socialNetworks: SocialNetwork[]
   /** Listed as a press contact in the press kit. */
   pressContact: boolean
-  /** E.164 phone; the server only sends it for press contacts. */
-  phone: string | null
+  /** Base64 of the E.164 phone (`<ObfuscatedPhone>` decodes it); only press contacts have one. */
+  encodedPhone: string | null
 }
 
 export interface OrgArea {
