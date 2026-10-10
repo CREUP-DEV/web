@@ -1,30 +1,12 @@
 <script setup lang="ts">
-import {
-  CONTACT_TYPE_QUERY_KEY,
-  PRESS_CONTACT_TYPE_QUERY_VALUE,
-} from '~~/shared/utils/contactShared'
-
 const props = defineProps<{
   heroImage: string | null
   generatedAt: Date
-  isPreparingPrint: boolean
   siteHost: string
 }>()
 
-const emit = defineEmits<{
-  print: []
-}>()
-
 const { t } = useI18n()
-const localePath = useLocalePath()
 const { formatDate } = useLocaleFormatting()
-
-const pressContactPath = computed(() =>
-  localePath({
-    path: '/contacto',
-    query: { [CONTACT_TYPE_QUERY_KEY]: PRESS_CONTACT_TYPE_QUERY_VALUE },
-  })
-)
 
 const formattedGeneratedAt = computed(() =>
   formatDate(props.generatedAt, {
@@ -37,39 +19,41 @@ const formattedGeneratedAt = computed(() =>
 </script>
 
 <template>
+  <!--
+    On screen, the page's title, so the contents follow right away. On paper, the cover page: the
+    same heading, with the logo, the organisation, the photo and the date around it.
+  -->
   <header
-    class="space-y-8 text-center print:flex print:min-h-[240mm] print:break-after-page print:flex-col print:justify-between print:space-y-0"
+    class="print:flex print:min-h-[240mm] print:break-after-page print:flex-col print:justify-between print:text-center"
   >
-    <div class="flex flex-col items-center print:pt-[18mm]">
+    <div class="print:flex print:flex-col print:items-center print:pt-[18mm]">
       <img
         src="/nav/creup-site-header-logo-light.svg"
         :alt="t('accessibility.siteLogo')"
         width="144"
         height="32"
-        class="h-10 w-auto dark:hidden print:block! print:h-14"
+        class="hidden h-14 w-auto print:block"
       />
-      <img
-        src="/nav/creup-site-header-logo-dark.svg"
-        :alt="t('accessibility.siteLogo')"
-        width="144"
-        height="32"
-        class="hidden h-10 w-auto dark:block print:hidden!"
-      />
-
-      <p class="text-muted mt-6 text-sm font-medium tracking-wide uppercase print:mt-10">
+      <p
+        class="text-muted hidden text-sm font-medium tracking-wide uppercase print:mt-10 print:block"
+      >
         {{ t('pressKit.cover.organization') }}
       </p>
-      <h1 class="mt-3 text-4xl font-bold sm:text-5xl print:text-6xl">
+      <h1 class="text-3xl font-bold sm:text-4xl print:mt-3 print:text-6xl">
         {{ t('nav.press.pressKit') }}
       </h1>
-      <p class="text-primary mt-4 font-serif text-xl sm:text-2xl print:text-3xl">
+      <p class="text-primary mt-2 font-serif text-xl print:mt-4 print:text-3xl">
         {{ t('pressKit.tagline') }}
       </p>
     </div>
 
+    <!--
+      Hidden on screen, but loaded anyway at low priority: printing from the browser's own menu
+      does not wait for an image that only starts loading then.
+    -->
     <div
       v-if="heroImage"
-      class="bg-muted aspect-1925/550 overflow-hidden rounded-3xl border print:rounded-xl"
+      class="bg-muted hidden aspect-1925/550 overflow-hidden rounded-xl border print:block"
     >
       <AdaptiveImage
         :src="heroImage"
@@ -78,38 +62,10 @@ const formattedGeneratedAt = computed(() =>
         height="550"
         class="size-full object-cover"
         loading="eager"
-        fetchpriority="high"
+        fetchpriority="low"
         decoding="async"
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1024px"
+        sizes="1024px"
       />
-    </div>
-
-    <div class="no-print space-y-5">
-      <p class="text-muted mx-auto max-w-2xl leading-relaxed">
-        {{ t('pressKit.cover.liveNote') }}
-      </p>
-      <div class="flex flex-wrap justify-center gap-3">
-        <!-- Opens the print dialog: the file comes from its "Save as PDF" destination. -->
-        <UButton
-          type="button"
-          icon="i-tabler-file-type-pdf"
-          class="archived:hidden"
-          :loading="isPreparingPrint"
-          :label="t('pressKit.cover.printAction')"
-          aria-describedby="press-kit-print-hint"
-          @click="emit('print')"
-        />
-        <UButton
-          :to="pressContactPath"
-          color="neutral"
-          variant="soft"
-          icon="i-tabler-mail"
-          :label="t('contactPage.contactType.press')"
-        />
-      </div>
-      <p id="press-kit-print-hint" class="text-muted archived:hidden mx-auto max-w-2xl text-sm">
-        {{ t('pressKit.cover.printHint') }}
-      </p>
     </div>
 
     <p class="print-only text-muted text-sm">

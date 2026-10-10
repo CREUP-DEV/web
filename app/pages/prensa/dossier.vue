@@ -131,15 +131,15 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
       ref="pressKitRef"
       class="mx-auto max-w-5xl space-y-16 print:max-w-none print:space-y-0"
     >
-      <PressKitCover
-        :hero-image="heroVisible ? heroImage : null"
-        :generated-at="generatedAt"
-        :is-preparing-print="isPreparingPrint"
-        :site-host="siteHost"
-        @print="printPressKit"
-      />
+      <div class="space-y-8 print:space-y-0">
+        <PressKitCover
+          :hero-image="heroVisible ? heroImage : null"
+          :generated-at="generatedAt"
+          :site-host="siteHost"
+        />
 
-      <PressKitToc :sections="sections" :live-url="liveUrl" :live-url-label="liveUrlLabel" />
+        <PressKitToc :sections="sections" :live-url="liveUrl" :live-url-label="liveUrlLabel" />
+      </div>
 
       <PressKitSection v-bind="sectionProps.about">
         <PressKitAbout :universities="universityCount" :years="completedYears" />
@@ -188,6 +188,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
           :committees-pending="committeesPending"
           :committees-failed="Boolean(committeesError)"
           :get-committee-name="getCommitteeName"
+          :image-loading="imageLoading"
           @retry-areas="refreshAreas()"
           @retry-committees="refreshCommittees()"
         />
@@ -199,6 +200,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
           :pending="latestPressPending"
           :failed="Boolean(latestPressError)"
           :site-url="siteUrl"
+          :image-loading="imageLoading"
           @retry="refreshLatestPress()"
         />
       </PressKitSection>
@@ -218,6 +220,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
           :events="upcomingEvents"
           :pending="eventsPending"
           :failed="Boolean(eventsError)"
+          :image-loading="imageLoading"
           @retry="refreshEvents()"
         />
       </PressKitSection>
@@ -231,6 +234,18 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
           @retry-areas="refreshAreas()"
         />
       </PressKitSection>
+
+      <div class="no-print archived:hidden border-default flex justify-center border-t pt-10">
+        <!-- Opens the print dialog: the file comes from its "Save as PDF" destination. -->
+        <UButton
+          type="button"
+          size="lg"
+          icon="i-tabler-file-type-pdf"
+          :loading="isPreparingPrint"
+          :label="t('pressKit.cover.printAction')"
+          @click="printPressKit"
+        />
+      </div>
     </article>
   </UContainer>
 </template>

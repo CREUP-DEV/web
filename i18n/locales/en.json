@@ -655,9 +655,7 @@
     "cover": {
       "organization": "Coordinator of Student Representatives of Public Universities",
       "heroAlt": "CREUP group photo",
-      "liveNote": "This press kit is built from the information published on the website, so it is always up to date. You can save it as a PDF to share it, or print it.",
       "printAction": "Save as PDF or print",
-      "printHint": "Your browser’s print dialog will open: choose “Save as PDF” as the destination to get the file.",
       "generatedOn": "Information as of {date}"
     },
     "toc": {
@@ -694,12 +692,10 @@
     },
     "organization": {
       "intro": "CREUP organizes its work in areas. Each area is led by a member of the Executive Committee, to whom the members of the Extended Executive Committee in that area report. Working committees complete the structure.",
-      "legend": "Key",
       "areas": "Working areas",
       "committeeResponsible": "Head: {committee}",
       "responsible": "Head",
-      "noResponsible": "No head assigned",
-      "memberCount": "{count} member | {count} members"
+      "noResponsible": "No head assigned"
     },
     "pressRoom": {
       "paragraph1": "The press section of CREUP's website brings together the organization's institutional communication: press releases, official statements and media appearances.",

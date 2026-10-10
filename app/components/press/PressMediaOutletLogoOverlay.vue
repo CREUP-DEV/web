@@ -12,11 +12,14 @@ const props = withDefaults(
      * (e.g. article detail). Ignored for `variant="card"`.
      */
     outletWebsite?: string
+    /** 'eager' where the page must have it loaded before printing (the press kit). */
+    loading?: 'lazy' | 'eager'
   }>(),
   {
     variant: 'card',
     standalone: false,
     outletWebsite: '',
+    loading: 'lazy',
   }
 )
 
@@ -101,7 +104,7 @@ const linkClass =
           :height="imgHeight"
           fit="inside"
           :class="[imgClass, loaded ? 'opacity-100' : 'opacity-0']"
-          loading="lazy"
+          :loading="loading"
           @load="onImgLoad"
           @error="onImgError"
         />
@@ -115,7 +118,7 @@ const linkClass =
         :height="imgHeight"
         fit="inside"
         :class="[imgClass, loaded ? 'opacity-100' : 'opacity-0']"
-        loading="lazy"
+        :loading="loading"
         @load="onImgLoad"
         @error="onImgError"
       />

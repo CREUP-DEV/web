@@ -6,6 +6,7 @@ defineProps<{
   events: CREUPEventListItem[]
   pending: boolean
   failed: boolean
+  imageLoading: 'lazy' | 'eager'
 }>()
 
 const emit = defineEmits<{
@@ -88,7 +89,7 @@ const getEventTypeLabel = (eventType: string | null) => {
       </div>
     </dl>
 
-    <div class="space-y-4 print:break-inside-avoid">
+    <div class="space-y-4">
       <h3 class="text-xl font-semibold">{{ t('pressKit.faq.upcomingTitle') }}</h3>
 
       <PressKitAsyncState
@@ -98,47 +99,77 @@ const getEventTypeLabel = (eventType: string | null) => {
         @retry="emit('retry')"
       >
         <template #skeleton>
-          <div class="space-y-3">
-            <USkeleton v-for="n in 3" :key="n" class="h-16 rounded-xl" />
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <USkeleton v-for="n in 3" :key="n" class="h-48 rounded-xl" />
           </div>
         </template>
 
         <p v-if="events.length === 0" class="text-muted">{{ t('pressKit.faq.noUpcoming') }}</p>
         <ul
           v-else
-          class="divide-default ring-default bg-default divide-y rounded-xl ring-1"
+          class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:break-inside-avoid print:grid-cols-3 print:gap-3"
           :aria-label="t('pressKit.faq.upcomingTitle')"
         >
-          <li v-for="event in events" :key="event.id" class="p-4">
+          <li v-for="event in events" :key="event.id">
             <NuxtLink
               :to="localePath(`/conocenos/eventos/${event.slug}`)"
-              class="hover:text-primary leading-snug font-semibold underline-offset-2 transition-colors hover:underline"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-default ring-default flex h-full flex-col overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
-              {{ event.name }}
-            </NuxtLink>
-            <p class="text-muted mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-              <span class="inline-flex items-center gap-1">
-                <UIcon name="i-tabler-calendar" class="size-4" aria-hidden="true" />
-                {{ formatDateRange(event.startDate, event.endDate, { includeYear: true }) }}
-              </span>
-              <template v-if="event.location">
-                <span aria-hidden="true">&middot;</span>
-                <span class="inline-flex items-center gap-1">
-                  <UIcon name="i-tabler-map-pin" class="size-4" aria-hidden="true" />
+              <div class="bg-muted aspect-7/2 overflow-hidden">
+                <AdaptiveImage
+                  v-if="event.banner.url"
+                  :src="event.banner.url"
+                  :alt="t('events.bannerAlt', { event: event.name })"
+                  width="700"
+                  height="200"
+                  sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 330px"
+                  format="webp"
+                  quality="72"
+                  class="motion-link-media size-full object-cover"
+                  :loading="imageLoading"
+                  decoding="async"
+                />
+                <div
+                  v-else
+                  class="text-muted flex size-full items-center justify-center"
+                  aria-hidden="true"
+                >
+                  <UIcon name="i-tabler-calendar-event" class="size-10" />
+                </div>
+              </div>
+
+              <div class="space-y-1 p-4 print:p-3">
+                <p class="group-hover:text-primary leading-snug font-semibold transition-colors">
+                  {{ event.name }}
+                </p>
+                <p class="text-muted text-sm">
+                  <UIcon
+                    name="i-tabler-calendar"
+                    class="mr-1 inline-block size-4 align-text-bottom"
+                    aria-hidden="true"
+                  />
+                  {{ formatDateRange(event.startDate, event.endDate, { includeYear: true }) }}
+                </p>
+                <p v-if="event.location" class="text-muted text-sm">
+                  <UIcon
+                    name="i-tabler-map-pin"
+                    class="mr-1 inline-block size-4 align-text-bottom"
+                    aria-hidden="true"
+                  />
                   {{ event.location }}
-                </span>
-              </template>
-              <template v-if="getEventTypeLabel(event.type)">
-                <span aria-hidden="true">&middot;</span>
-                <span>{{ getEventTypeLabel(event.type) }}</span>
-              </template>
-            </p>
+                </p>
+                <p v-if="getEventTypeLabel(event.type)" class="text-muted text-xs">
+                  {{ getEventTypeLabel(event.type) }}
+                </p>
+              </div>
+            </NuxtLink>
           </li>
         </ul>
 
+        <!-- Not printed: on paper it would be a label with no address. -->
         <NuxtLink
           :to="localePath('/conocenos/eventos')"
-          class="text-primary mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
+          class="text-primary mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline print:hidden"
         >
           {{ t('pressKit.faq.allEvents') }}
           <UIcon name="i-tabler-arrow-right" class="size-4" aria-hidden="true" />

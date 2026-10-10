@@ -655,9 +655,7 @@
     "cover": {
       "organization": "Unibertsitate Publikoetako Ikasleen Ordezkarien Koordinakundea",
       "heroAlt": "CREUPen talde-argazkia",
-      "liveNote": "Dosier hau webgunean argitaratutako informaziotik sortzen da; beraz, beti dago eguneratuta. PDF gisa gorde dezakezu partekatzeko, edo inprimatu.",
       "printAction": "Gorde PDF gisa edo inprimatu",
-      "printHint": "Nabigatzailearen inprimatzeko leihoa irekiko da: aukeratu «Gorde PDF gisa» helmuga gisa fitxategia lortzeko.",
       "generatedOn": "Eguneratze-data: {date}"
     },
     "toc": {
@@ -694,12 +692,10 @@
     },
     "organization": {
       "intro": "CREUPek arlotan antolatzen du bere lana. Arlo bakoitza Batzorde Exekutiboko pertsona batek zuzentzen du, eta arlo horretako Batzorde Exekutibo Zabaldua osatzen duten kideak haren mende daude. Lan-batzordeek osatzen dute egitura.",
-      "legend": "Legenda",
       "areas": "Lan-arloak",
       "committeeResponsible": "Arduraduna: {committee}",
       "responsible": "Arduraduna",
-      "noResponsible": "Ez dago arduradunik esleituta",
-      "memberCount": "{count} kide | {count} kide"
+      "noResponsible": "Ez dago arduradunik esleituta"
     },
     "pressRoom": {
       "paragraph1": "CREUPen webguneko prentsa-atalak erakundearen komunikazio instituzionala biltzen du: prentsa-oharrak, adierazpen ofizialak eta hedabideetako agerpenak.",

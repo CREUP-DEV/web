@@ -2,16 +2,13 @@
 import type { PressArticle } from '@/composables/press/usePress'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { getPressArticlePublicListPath } from '~~/shared/constants/pressRoutes'
-import {
-  CONTACT_TYPE_QUERY_KEY,
-  PRESS_CONTACT_TYPE_QUERY_VALUE,
-} from '~~/shared/utils/contactShared'
 
 defineProps<{
   articles: PressArticle[]
   pending: boolean
   failed: boolean
   siteUrl: string
+  imageLoading: 'lazy' | 'eager'
 }>()
 
 const emit = defineEmits<{
@@ -34,13 +31,6 @@ const typeIcons: Record<PressArticleType, string> = {
   media_appearance: 'i-tabler-broadcast',
 }
 
-const pressContactPath = computed(() =>
-  localePath({
-    path: '/contacto',
-    query: { [CONTACT_TYPE_QUERY_KEY]: PRESS_CONTACT_TYPE_QUERY_VALUE },
-  })
-)
-
 const getArticlePath = (article: PressArticle) =>
   localePath(`${getPressArticlePublicListPath(article.type)}/${article.slug}`)
 
@@ -55,26 +45,6 @@ const formatPublishedAt = (iso: string) =>
       <p>{{ t('pressKit.pressRoom.paragraph2') }}</p>
     </div>
 
-    <ul class="flex flex-wrap gap-3 print:block print:space-y-1">
-      <li>
-        <PressKitLink
-          :to="localePath('/prensa/noticias')"
-          icon="i-tabler-news"
-          :label="t('pressKit.pressRoom.allNews')"
-          :site-url="siteUrl"
-        />
-      </li>
-      <li>
-        <PressKitLink
-          :to="pressContactPath"
-          icon="i-tabler-mail"
-          color="neutral"
-          :label="t('contactPage.contactType.press')"
-          :site-url="siteUrl"
-        />
-      </li>
-    </ul>
-
     <div class="space-y-4">
       <h3 class="text-xl font-semibold">{{ t('pressKit.pressRoom.latestTitle') }}</h3>
 
@@ -85,8 +55,8 @@ const formatPublishedAt = (iso: string) =>
         @retry="emit('retry')"
       >
         <template #skeleton>
-          <div class="space-y-3">
-            <USkeleton v-for="n in 4" :key="n" class="h-20 rounded-xl" />
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <USkeleton v-for="n in 3" :key="n" class="h-72 rounded-xl" />
           </div>
         </template>
 
@@ -95,41 +65,81 @@ const formatPublishedAt = (iso: string) =>
         </p>
         <ul
           v-else
-          class="divide-default ring-default bg-default divide-y rounded-xl ring-1"
+          class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 print:gap-3"
           :aria-label="t('pressKit.pressRoom.latestTitle')"
         >
-          <li v-for="article in articles" :key="article.id" class="p-4 print:break-inside-avoid">
-            <p class="text-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-              <time :datetime="article.publishedAt">{{
-                formatPublishedAt(article.publishedAt)
-              }}</time>
-              <span aria-hidden="true">&middot;</span>
-              <span class="inline-flex items-center gap-1">
-                <UIcon :name="typeIcons[article.type]" class="size-3.5" aria-hidden="true" />
-                {{ t(typeLabelKeys[article.type]) }}
-              </span>
-              <template v-if="article.mediaOutlet">
-                <span aria-hidden="true">&middot;</span>
-                <span>{{ article.mediaOutlet.name }}</span>
-              </template>
-            </p>
+          <li v-for="article in articles" :key="article.id" class="print:break-inside-avoid">
             <NuxtLink
               :to="getArticlePath(article)"
-              :lang="article.titleLocale || undefined"
-              class="hover:text-primary mt-1 block leading-snug font-semibold underline-offset-2 transition-colors hover:underline"
+              class="motion-link-card group focus-visible:ring-primary/60 bg-default ring-default flex h-full flex-col overflow-hidden rounded-xl ring-1 focus:outline-none focus-visible:ring-2"
             >
-              {{ article.title }}
+              <div class="bg-muted relative aspect-video overflow-hidden">
+                <AdaptiveImage
+                  v-if="article.image"
+                  :src="article.image"
+                  :alt="article.alt || ''"
+                  width="640"
+                  height="360"
+                  sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 330px"
+                  class="motion-link-media size-full object-cover"
+                  :loading="imageLoading"
+                  decoding="async"
+                />
+                <div
+                  v-else
+                  class="text-muted flex size-full items-center justify-center"
+                  aria-hidden="true"
+                >
+                  <UIcon :name="typeIcons[article.type]" class="size-10" />
+                </div>
+                <PressMediaOutletLogoOverlay
+                  v-if="article.image && article.mediaOutlet?.logo"
+                  :logo-url="article.mediaOutlet.logo"
+                  :outlet-name="article.mediaOutlet.name"
+                  :loading="imageLoading"
+                />
+              </div>
+
+              <div class="p-4 print:p-3">
+                <p class="text-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                  <time :datetime="article.publishedAt">{{
+                    formatPublishedAt(article.publishedAt)
+                  }}</time>
+                  <span aria-hidden="true">&middot;</span>
+                  <span class="inline-flex items-center gap-1">
+                    <UIcon :name="typeIcons[article.type]" class="size-3.5" aria-hidden="true" />
+                    {{ t(typeLabelKeys[article.type]) }}
+                  </span>
+                  <template v-if="article.mediaOutlet">
+                    <span aria-hidden="true">&middot;</span>
+                    <span>{{ article.mediaOutlet.name }}</span>
+                  </template>
+                </p>
+                <p
+                  :lang="article.titleLocale || undefined"
+                  class="group-hover:text-primary mt-1.5 line-clamp-3 leading-snug font-semibold transition-colors print:line-clamp-none"
+                >
+                  {{ article.title }}
+                </p>
+                <p
+                  v-if="article.description"
+                  :lang="article.descriptionLocale || undefined"
+                  class="text-muted mt-1.5 line-clamp-2 text-sm print:line-clamp-3"
+                >
+                  {{ article.description }}
+                </p>
+              </div>
             </NuxtLink>
-            <p
-              v-if="article.description"
-              :lang="article.descriptionLocale || undefined"
-              class="text-muted mt-1 line-clamp-2 text-sm print:line-clamp-none"
-            >
-              {{ article.description }}
-            </p>
           </li>
         </ul>
       </PressKitAsyncState>
     </div>
+
+    <PressKitLink
+      :to="localePath('/prensa/noticias')"
+      icon="i-tabler-news"
+      :label="t('pressKit.pressRoom.allNews')"
+      :site-url="siteUrl"
+    />
   </div>
 </template>

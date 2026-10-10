@@ -655,9 +655,7 @@
     "cover": {
       "organization": "Coordinadora de Representantes de Estudiantes de Universidades Públicas",
       "heroAlt": "Fotografía de grupo de CREUP",
-      "liveNote": "Este dossier se genera a partir de la información publicada en la web, así que siempre está al día. Puedes guardarlo en PDF para compartirlo o imprimirlo.",
       "printAction": "Guardar en PDF o imprimir",
-      "printHint": "Se abrirá el diálogo de impresión del navegador: elige «Guardar como PDF» como destino para obtener el archivo.",
       "generatedOn": "Información actualizada a {date}"
     },
     "toc": {
@@ -694,12 +692,10 @@
     },
     "organization": {
       "intro": "CREUP organiza su trabajo en áreas. Cada área está dirigida por una persona de la Comisión Ejecutiva, de la que dependen los miembros de la Comisión Ejecutiva Ampliada que la integran. Los comités de trabajo completan la estructura.",
-      "legend": "Leyenda",
       "areas": "Áreas de trabajo",
       "committeeResponsible": "Responsable: {committee}",
       "responsible": "Responsable",
-      "noResponsible": "Sin responsable asignado",
-      "memberCount": "{count} integrante | {count} integrantes"
+      "noResponsible": "Sin responsable asignado"
     },
     "pressRoom": {
       "paragraph1": "La sección de prensa de la web de CREUP reúne la comunicación institucional de la organización: notas de prensa, comunicados oficiales y apariciones en medios de comunicación.",

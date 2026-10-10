@@ -655,9 +655,7 @@
     "cover": {
       "organization": "Coordinadora de Representants d'Estudiants d'Universitats Públiques",
       "heroAlt": "Fotografia de grup de la CREUP",
-      "liveNote": "Este dossier es genera a partir de la informació publicada en el web, de manera que sempre està al dia. Pots guardar-lo en PDF per a compartir-lo o imprimir-lo.",
       "printAction": "Guarda en PDF o imprimix",
-      "printHint": "S'obrirà el diàleg d'impressió del navegador: tria «Guarda com a PDF» com a destinació per a obtindre el fitxer.",
       "generatedOn": "Informació actualitzada a {date}"
     },
     "toc": {
@@ -694,12 +692,10 @@
     },
     "organization": {
       "intro": "La CREUP organitza el seu treball en àrees. Cada àrea està dirigida per una persona de la Comissió Executiva, de qui depenen els membres de la Comissió Executiva Ampliada que la integren. Els comités de treball completen l'estructura.",
-      "legend": "Llegenda",
       "areas": "Àrees de treball",
       "committeeResponsible": "Responsable: {committee}",
       "responsible": "Responsable",
-      "noResponsible": "Sense responsable assignat",
-      "memberCount": "{count} integrant | {count} integrants"
+      "noResponsible": "Sense responsable assignat"
     },
     "pressRoom": {
       "paragraph1": "La secció de premsa del web de la CREUP reunix la comunicació institucional de l'organització: notes de premsa, comunicats oficials i aparicions en mitjans de comunicació.",
