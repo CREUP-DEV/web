@@ -693,7 +693,6 @@
     "organization": {
       "intro": "CREUP organizes its work in areas. Each area is led by a member of the Executive Committee, to whom the members of the Extended Executive Committee in that area report. Working committees complete the structure.",
       "areas": "Working areas",
-      "committeeResponsible": "Head: {committee}",
       "responsible": "Head",
       "noResponsible": "No head assigned"
     },

@@ -693,7 +693,6 @@
     "organization": {
       "intro": "CREUPek arlotan antolatzen du bere lana. Arlo bakoitza Batzorde Exekutiboko pertsona batek zuzentzen du, eta arlo horretako Batzorde Exekutibo Zabaldua osatzen duten kideak haren mende daude. Lan-batzordeek osatzen dute egitura.",
       "areas": "Lan-arloak",
-      "committeeResponsible": "Arduraduna: {committee}",
       "responsible": "Arduraduna",
       "noResponsible": "Ez dago arduradunik esleituta"
     },

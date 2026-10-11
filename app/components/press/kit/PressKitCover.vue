@@ -20,8 +20,8 @@ const formattedGeneratedAt = computed(() =>
 
 <template>
   <!--
-    On screen, the page's title, so the contents follow right away. On paper, the cover page: the
-    same heading, with the logo, the organisation, the photo and the date around it.
+    On screen, the page's title and the photo, with the contents right after. On paper, the cover
+    page: the same heading and photo, with the logo, the organisation and the date around them.
   -->
   <header
     class="print:flex print:min-h-[240mm] print:break-after-page print:flex-col print:justify-between print:text-center"
@@ -47,13 +47,9 @@ const formattedGeneratedAt = computed(() =>
       </p>
     </div>
 
-    <!--
-      Hidden on screen, but loaded anyway at low priority: printing from the browser's own menu
-      does not wait for an image that only starts loading then.
-    -->
     <div
       v-if="heroImage"
-      class="bg-muted hidden aspect-1925/550 overflow-hidden rounded-xl border print:block"
+      class="bg-muted mt-6 aspect-1925/550 overflow-hidden rounded-3xl border print:mt-0 print:rounded-xl"
     >
       <AdaptiveImage
         :src="heroImage"
@@ -62,9 +58,9 @@ const formattedGeneratedAt = computed(() =>
         height="550"
         class="size-full object-cover"
         loading="eager"
-        fetchpriority="low"
+        fetchpriority="high"
         decoding="async"
-        sizes="1024px"
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1024px"
       />
     </div>
 

@@ -60,33 +60,16 @@ const committeeItems = computed(() =>
     return {
       id: committee.id,
       name: props.getCommitteeName(committee),
-      responsible: responsible
-        ? { name: getMemberDisplayName(responsible), role: responsible.denomination }
-        : null,
+      responsibleName: responsible ? getMemberDisplayName(responsible) : null,
     }
   })
 )
-
-const committeeNamesByResponsibleEmail = computed(() => {
-  const names = new Map<string, string[]>()
-
-  for (const committee of props.committees) {
-    const email = normalizeEmail(getCommitteeResponsible(committee)?.email)
-
-    if (email) {
-      names.set(email, [...(names.get(email) ?? []), props.getCommitteeName(committee)])
-    }
-  }
-
-  return names
-})
 
 const toPersonNode = (member: OrgMember) => ({
   id: member.id,
   name: getMemberDisplayName(member),
   role: member.denomination,
   photo: member.photo,
-  committees: committeeNamesByResponsibleEmail.value.get(normalizeEmail(member.email)) ?? [],
 })
 
 // One row per area: its responsible (Executive Committee) beside the area's other members
@@ -186,13 +169,6 @@ const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-
                     <p v-if="area.responsible.role" class="text-muted text-sm">
                       {{ area.responsible.role }}
                     </p>
-                    <p
-                      v-for="committee in area.responsible.committees"
-                      :key="committee"
-                      class="text-primary text-xs"
-                    >
-                      {{ t('pressKit.organization.committeeResponsible', { committee }) }}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -205,13 +181,6 @@ const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-
                 <li v-for="member in area.members" :key="member.id">
                   <p class="font-medium">{{ member.name }}</p>
                   <p v-if="member.role" class="text-muted">{{ member.role }}</p>
-                  <p
-                    v-for="committee in member.committees"
-                    :key="committee"
-                    class="text-primary text-xs"
-                  >
-                    {{ t('pressKit.organization.committeeResponsible', { committee }) }}
-                  </p>
                 </li>
               </ul>
             </li>
@@ -248,12 +217,7 @@ const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-
             <p class="mt-1 text-sm leading-snug">
               <span class="text-muted">{{ t('pressKit.organization.responsible') }}:</span>
               {{ ' ' }}
-              <template v-if="committee.responsible">
-                {{ committee.responsible.name }}
-                <span v-if="committee.responsible.role" class="text-muted">
-                  · {{ committee.responsible.role }}</span
-                >
-              </template>
+              <template v-if="committee.responsibleName">{{ committee.responsibleName }}</template>
               <span v-else class="text-muted">{{ t('pressKit.organization.noResponsible') }}</span>
             </p>
           </li>

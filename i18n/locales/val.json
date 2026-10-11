@@ -693,7 +693,6 @@
     "organization": {
       "intro": "La CREUP organitza el seu treball en àrees. Cada àrea està dirigida per una persona de la Comissió Executiva, de qui depenen els membres de la Comissió Executiva Ampliada que la integren. Els comités de treball completen l'estructura.",
       "areas": "Àrees de treball",
-      "committeeResponsible": "Responsable: {committee}",
       "responsible": "Responsable",
       "noResponsible": "Sense responsable assignat"
     },

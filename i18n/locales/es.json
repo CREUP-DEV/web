@@ -693,7 +693,6 @@
     "organization": {
       "intro": "CREUP organiza su trabajo en áreas. Cada área está dirigida por una persona de la Comisión Ejecutiva, de la que dependen los miembros de la Comisión Ejecutiva Ampliada que la integran. Los comités de trabajo completan la estructura.",
       "areas": "Áreas de trabajo",
-      "committeeResponsible": "Responsable: {committee}",
       "responsible": "Responsable",
       "noResponsible": "Sin responsable asignado"
     },
