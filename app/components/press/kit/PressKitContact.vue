@@ -79,7 +79,7 @@ const pressContacts = computed(() => {
 
 <template>
   <div class="space-y-8">
-    <p class="max-w-3xl leading-relaxed print:max-w-none">{{ t('pressKit.contact.intro') }}</p>
+    <p class="leading-relaxed">{{ t('pressKit.contact.intro') }}</p>
 
     <ul class="grid gap-4 sm:grid-cols-2 print:grid-cols-2">
       <li

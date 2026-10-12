@@ -40,7 +40,7 @@ const formatPublishedAt = (iso: string) =>
 
 <template>
   <div class="space-y-8">
-    <div class="max-w-3xl space-y-4 leading-relaxed print:max-w-none">
+    <div class="space-y-4 leading-relaxed">
       <p>{{ t('pressKit.pressRoom.paragraph1') }}</p>
       <p>{{ t('pressKit.pressRoom.paragraph2') }}</p>
     </div>

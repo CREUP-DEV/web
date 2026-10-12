@@ -35,7 +35,7 @@ const tiles = computed(() => {
 
 <template>
   <div class="space-y-6">
-    <p class="max-w-3xl leading-relaxed print:max-w-none">{{ t('pressKit.sectorials.intro') }}</p>
+    <p class="leading-relaxed">{{ t('pressKit.sectorials.intro') }}</p>
 
     <PressKitAsyncState
       :pending="pending"

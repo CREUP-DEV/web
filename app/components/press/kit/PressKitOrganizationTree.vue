@@ -100,7 +100,7 @@ const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-
 <template>
   <div class="space-y-10">
     <div class="space-y-6">
-      <p class="max-w-3xl leading-relaxed print:max-w-none">
+      <p class="leading-relaxed">
         {{ t('pressKit.organization.intro') }}
       </p>
 
@@ -191,7 +191,7 @@ const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-
 
     <div class="space-y-4">
       <h3 class="text-xl font-semibold">{{ t('committees.title') }}</h3>
-      <p class="text-muted max-w-3xl leading-relaxed print:max-w-none">
+      <p class="text-muted leading-relaxed">
         {{ t('committees.description') }}
       </p>
 

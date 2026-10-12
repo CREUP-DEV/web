@@ -61,7 +61,7 @@ const getEventTypeLabel = (eventType: string | null) => {
 
 <template>
   <div class="space-y-10">
-    <dl class="max-w-3xl space-y-6 print:max-w-none">
+    <dl class="space-y-6">
       <div v-for="item in faqItems" :key="item.key" class="print:break-inside-avoid">
         <dt class="text-lg font-semibold">{{ item.question }}</dt>
         <dd class="mt-2 space-y-3 leading-relaxed">

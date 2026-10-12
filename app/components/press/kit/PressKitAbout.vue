@@ -81,7 +81,7 @@ const paragraphs = computed(() => [
       </li>
     </ul>
 
-    <div class="max-w-3xl space-y-4 text-base leading-relaxed print:max-w-none">
+    <div class="space-y-4 text-base leading-relaxed">
       <p v-for="(paragraph, index) in paragraphs" :key="index">{{ paragraph }}</p>
     </div>
   </div>

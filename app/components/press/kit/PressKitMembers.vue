@@ -54,7 +54,7 @@ const tiles = computed(() => {
       </div>
     </template>
 
-    <p class="mb-6 max-w-3xl leading-relaxed">
+    <p class="mb-6 leading-relaxed">
       {{ t('pressKit.members.intro', { count: tiles.length }) }}
     </p>
 
