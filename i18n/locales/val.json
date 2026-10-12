@@ -655,8 +655,11 @@
     "cover": {
       "organization": "Coordinadora de Representants d'Estudiants d'Universitats Públiques",
       "heroAlt": "Fotografia de grup de la CREUP",
-      "printAction": "Guarda en PDF o imprimix",
       "generatedOn": "Informació actualitzada a {date}"
+    },
+    "pdf": {
+      "download": "Descarrega en PDF",
+      "error": "No s'ha pogut generar el PDF. Torna-ho a provar."
     },
     "toc": {
       "title": "Contingut",

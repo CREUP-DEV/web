@@ -88,6 +88,15 @@ const {
   refresh: refreshEvents,
 } = usePressKitUpcomingEvents()
 
+const { memberTiles, sectorialTiles, executivePeople, areaRows, committeeItems, pressContacts } =
+  usePressKitContent({
+    members: allMembers,
+    sectorials: allSectoriales,
+    areas,
+    committees,
+    getCommitteeName,
+  })
+
 // Section 1 states the figure that section 3 lists: the loaded members list's length, else the
 // members count API's figure. Null when neither is available, so it is never a made-up number.
 const universityCount = computed(() =>
@@ -96,8 +105,7 @@ const universityCount = computed(() =>
     : availableMemberCount.value
 )
 
-const pressKitRef = useTemplateRef<HTMLElement>('pressKitRef')
-const { imageLoading, isPreparingPrint, generatedAt, printPressKit } = usePressKitPrint(pressKitRef)
+const { imageLoading, generatedAt } = usePressKitPrint()
 
 const sections = computed(() =>
   SECTION_ORDER.map((key, index) => ({
@@ -114,6 +122,39 @@ const sectionProps = computed(
     ) as Record<PressKitSectionKey, { id: string; number: number; title: string }>
 )
 
+const {
+  isGenerating: isGeneratingPdf,
+  isReady: isPdfReady,
+  downloadPdf,
+} = usePressKitPdf({
+  sections,
+  heroImage: computed(() => (heroVisible.value ? heroImage.value : null)),
+  universityCount,
+  years: completedYears,
+  memberTiles,
+  sectorialTiles,
+  executivePeople,
+  areaRows,
+  committeeItems,
+  pressContacts,
+  articles: computed(() => latestPress.value?.data ?? []),
+  positionPapers,
+  upcomingEvents,
+  siteUrl,
+  loadState: computed(() => ({
+    members: { pending: membersPending.value, failed: Boolean(membersError.value) },
+    sectorials: { pending: sectorialesPending.value, failed: Boolean(sectorialesError.value) },
+    areas: { pending: areasPending.value, failed: Boolean(areasError.value) },
+    committees: { pending: committeesPending.value, failed: Boolean(committeesError.value) },
+    press: { pending: latestPressPending.value, failed: Boolean(latestPressError.value) },
+    positions: {
+      pending: positionPapersPending.value,
+      failed: Boolean(positionPapersError.value),
+    },
+    events: { pending: eventsPending.value, failed: Boolean(eventsError.value) },
+  })),
+})
+
 const siteHost = computed(() => {
   try {
     return new URL(siteUrl.value).host
@@ -127,10 +168,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
 
 <template>
   <UContainer class="press-kit py-8 sm:py-12 print:max-w-none print:px-0 print:py-0">
-    <article
-      ref="pressKitRef"
-      class="mx-auto max-w-5xl space-y-16 print:max-w-none print:space-y-0"
-    >
+    <article class="mx-auto max-w-5xl space-y-16 print:max-w-none print:space-y-0">
       <div class="space-y-8 print:space-y-0">
         <PressKitCover
           :hero-image="heroVisible ? heroImage : null"
@@ -151,7 +189,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
 
       <PressKitSection v-bind="sectionProps.members">
         <PressKitMembers
-          :members="allMembers"
+          :tiles="memberTiles"
           :pending="membersPending"
           :failed="Boolean(membersError)"
           :image-loading="imageLoading"
@@ -161,7 +199,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
 
       <PressKitSection v-bind="sectionProps.sectorials">
         <PressKitSectorials
-          :sectorials="allSectoriales"
+          :tiles="sectorialTiles"
           :pending="sectorialesPending"
           :failed="Boolean(sectorialesError)"
           :image-loading="imageLoading"
@@ -171,7 +209,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
 
       <PressKitSection v-bind="sectionProps.executive">
         <PressKitExecutive
-          :areas="areas"
+          :people="executivePeople"
           :pending="areasPending"
           :failed="Boolean(areasError)"
           :image-loading="imageLoading"
@@ -181,13 +219,12 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
 
       <PressKitSection v-bind="sectionProps.organization">
         <PressKitOrganizationTree
-          :areas="areas"
+          :areas="areaRows"
           :areas-pending="areasPending"
           :areas-failed="Boolean(areasError)"
-          :committees="committees"
+          :committees="committeeItems"
           :committees-pending="committeesPending"
           :committees-failed="Boolean(committeesError)"
-          :get-committee-name="getCommitteeName"
           :image-loading="imageLoading"
           @retry-areas="refreshAreas()"
           @retry-committees="refreshCommittees()"
@@ -227,7 +264,7 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
 
       <PressKitSection v-bind="sectionProps.contact">
         <PressKitContact
-          :areas="areas"
+          :contacts="pressContacts"
           :areas-pending="areasPending"
           :areas-failed="Boolean(areasError)"
           :site-url="siteUrl"
@@ -236,14 +273,15 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
       </PressKitSection>
 
       <div class="no-print archived:hidden border-default flex justify-center border-t pt-10">
-        <!-- Opens the print dialog: the file comes from its "Save as PDF" destination. -->
+        <!-- Builds the PDF in the browser from what the page shows, and downloads it. -->
         <UButton
           type="button"
           size="lg"
           icon="i-tabler-file-type-pdf"
-          :loading="isPreparingPrint"
-          :label="t('pressKit.cover.printAction')"
-          @click="printPressKit"
+          :loading="isGeneratingPdf"
+          :disabled="!isPdfReady"
+          :label="t('pressKit.pdf.download')"
+          @click="downloadPdf"
         />
       </div>
     </article>
@@ -252,9 +290,10 @@ const liveUrlLabel = computed(() => `${siteHost.value}${localePath(PRESS_KIT_PAT
 
 <style>
 /*
- * Print layout: printing this page is how the press kit's PDF is made. Not scoped, because it also
- * hides the chrome the layout renders around <main> and restyles the page box; every rule is keyed
- * on `.press-kit`, so the stylesheet stays inert on other pages once it has loaded.
+ * Print layout, for printing this page from the browser's own menu; the PDF the button downloads is
+ * built separately (usePressKitPdf, app/utils/pressKitPdf). Not scoped, because it also hides the
+ * chrome the layout renders around <main> and restyles the page box; every rule is keyed on
+ * `.press-kit`, so the stylesheet stays inert on other pages once it has loaded.
  *
  * Server-rendered, these rules arrive inline and nuxt-seo-utils minifies them: it drops any space
  * before a `:`, which turns `a :has(...)` (descendant) into `a:has(...)` (same element). So no

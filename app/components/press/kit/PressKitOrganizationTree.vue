@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import type { Committee } from '@/types/committees'
-import type { OrgArea, OrgMember } from '@/types/team'
+import type { PressKitAreaRow, PressKitCommitteeItem } from '@/composables/press/usePressKitContent'
 
-const props = defineProps<{
-  areas: OrgArea[]
+defineProps<{
+  areas: PressKitAreaRow[]
   areasPending: boolean
   areasFailed: boolean
-  committees: Committee[]
+  committees: PressKitCommitteeItem[]
   committeesPending: boolean
   committeesFailed: boolean
-  getCommitteeName: (committee: Committee) => string
   imageLoading: 'lazy' | 'eager'
 }>()
 
@@ -19,79 +17,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { getAreaName, getMemberDisplayName, splitAreaMembers } = useTeamDirectory({
-  areas: toRef(props, 'areas'),
-})
-
-const normalizeEmail = (email: string | null | undefined) => (email ?? '').trim().toLowerCase()
-
-/** Org chart members the Intranet flags as the responsible of some committee. */
-const committeeResponsibleEmails = computed(
-  () =>
-    new Set(
-      props.areas
-        .flatMap((area) => area.members)
-        .filter((member) => member.isCommitteeResponsible)
-        .map((member) => normalizeEmail(member.email))
-        .filter(Boolean)
-    )
-)
-
-/**
- * The committees API lists a committee's responsible first, numbered 1 (the other members follow
- * from 2), and the org chart flags that same person with `isCommitteeResponsible`: either tells.
- */
-const getCommitteeResponsible = (committee: Committee) => {
-  const [first] = committee.members
-
-  if (!first) {
-    return null
-  }
-
-  return first.order === 1 || committeeResponsibleEmails.value.has(normalizeEmail(first.email))
-    ? first
-    : null
-}
-
-const committeeItems = computed(() =>
-  props.committees.map((committee) => {
-    const responsible = getCommitteeResponsible(committee)
-
-    return {
-      id: committee.id,
-      name: props.getCommitteeName(committee),
-      responsibleName: responsible ? getMemberDisplayName(responsible) : null,
-    }
-  })
-)
-
-const toPersonNode = (member: OrgMember) => ({
-  id: member.id,
-  name: getMemberDisplayName(member),
-  role: member.denomination,
-  photo: member.photo,
-})
-
-// One row per area: its responsible (Executive Committee) beside the area's other members
-// (Extended Executive Committee), who report to them. An area left without a responsible says so.
-const areaNodes = computed(() =>
-  props.areas.flatMap((area) => {
-    const { responsible, members } = splitAreaMembers(area)
-
-    if (!responsible && members.length === 0) {
-      return []
-    }
-
-    return [
-      {
-        id: area.id,
-        name: getAreaName(area),
-        responsible: responsible ? toPersonNode(responsible) : null,
-        members: members.map(toPersonNode),
-      },
-    ]
-  })
-)
 
 /** Both columns of a row; the headings above them name the two committees. */
 const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-[2fr_3fr]'
@@ -127,7 +52,7 @@ const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-
 
           <ul class="divide-default divide-y" :aria-label="t('pressKit.organization.areas')">
             <li
-              v-for="area in areaNodes"
+              v-for="area in areas"
               :key="area.id"
               class="grid gap-4 px-5 py-4 md:gap-6 print:break-inside-avoid print:gap-6 print:px-4 print:py-3"
               :class="ROW_COLUMNS"
@@ -209,7 +134,7 @@ const ROW_COLUMNS = 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:grid-cols-
 
         <ul class="grid gap-3 sm:grid-cols-2 print:grid-cols-2" :aria-label="t('committees.title')">
           <li
-            v-for="committee in committeeItems"
+            v-for="committee in committees"
             :key="committee.id"
             class="bg-default ring-default rounded-xl p-4 ring-1 print:break-inside-avoid print:p-3"
           >

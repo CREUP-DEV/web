@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import type { OrgArea } from '@/types/team'
+import type { PressKitPressContact } from '@/composables/press/usePressKitContent'
 import { encodeObfuscatedEmail } from '@/utils/obfuscatedEmail'
 import {
   CONTACT_TYPE_QUERY_KEY,
+  GENERAL_CONTACT_EMAIL,
+  PRESS_CONTACT_EMAIL,
   PRESS_CONTACT_TYPE_QUERY_VALUE,
 } from '~~/shared/utils/contactShared'
 
-const props = defineProps<{
-  areas: OrgArea[]
+defineProps<{
+  contacts: PressKitPressContact[]
   areasPending: boolean
   areasFailed: boolean
   siteUrl: string
@@ -19,10 +21,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const { getAreaName, getMemberDisplayName } = useTeamDirectory({ areas: toRef(props, 'areas') })
-
-const GENERAL_EMAIL = 'info@creup.es'
-const PRESS_EMAIL = 'prensa@creup.es'
 
 const mailboxes = computed(() => [
   {
@@ -30,14 +28,14 @@ const mailboxes = computed(() => [
     icon: 'i-tabler-speakerphone',
     label: t('contactPage.contactType.press'),
     description: t('contactPage.contactType.pressDescription'),
-    email: PRESS_EMAIL,
+    email: PRESS_CONTACT_EMAIL,
   },
   {
     key: 'general',
     icon: 'i-tabler-mail',
     label: t('contactPage.contactType.general'),
     description: t('contactPage.contactType.generalDescription'),
-    email: GENERAL_EMAIL,
+    email: GENERAL_CONTACT_EMAIL,
   },
 ])
 
@@ -47,34 +45,6 @@ const pressContactPath = computed(() =>
     query: { [CONTACT_TYPE_QUERY_KEY]: PRESS_CONTACT_TYPE_QUERY_VALUE },
   })
 )
-
-// People the Intranet marks as press contacts, once each even if they sit in several areas.
-const pressContacts = computed(() => {
-  const seen = new Set<string>()
-
-  return props.areas.flatMap((area) =>
-    area.members.flatMap((member) => {
-      const personKey = member.email.trim().toLowerCase() || member.id
-
-      if (!member.pressContact || seen.has(personKey)) {
-        return []
-      }
-
-      seen.add(personKey)
-      const name = getMemberDisplayName(member)
-
-      return [
-        {
-          id: member.id,
-          name,
-          role: member.denomination || getAreaName(area),
-          email: member.email || null,
-          encodedPhone: member.encodedPhone,
-        },
-      ]
-    })
-  )
-})
 </script>
 
 <template>
@@ -107,7 +77,7 @@ const pressContacts = computed(() => {
     </ul>
 
     <!-- Kept while loading or failed, so the error says which list is missing. -->
-    <div v-if="areasPending || areasFailed || pressContacts.length > 0" class="space-y-4">
+    <div v-if="areasPending || areasFailed || contacts.length > 0" class="space-y-4">
       <h3 class="text-xl font-semibold">{{ t('pressKit.contact.peopleTitle') }}</h3>
       <PressKitAsyncState
         :pending="areasPending"
@@ -126,7 +96,7 @@ const pressContacts = computed(() => {
           :aria-label="t('pressKit.contact.peopleTitle')"
         >
           <li
-            v-for="contact in pressContacts"
+            v-for="contact in contacts"
             :key="contact.id"
             class="bg-default ring-default rounded-xl p-4 ring-1 print:break-inside-avoid"
           >

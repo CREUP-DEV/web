@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { OrganizationMember } from '@/types/members'
+import type { PressKitTile } from '@/composables/press/usePressKitContent'
 
-const props = defineProps<{
-  members: OrganizationMember[]
+defineProps<{
+  tiles: PressKitTile[]
   pending: boolean
   failed: boolean
   imageLoading: 'lazy' | 'eager'
@@ -12,32 +12,7 @@ const emit = defineEmits<{
   retry: []
 }>()
 
-const { t, locale } = useI18n()
-const { getLanguageTag } = useLocales()
-const { getCommunityLabel, getMemberDenominationLabel, getMemberUniversityLabel } =
-  useMembersDirectory({
-    members: toRef(props, 'members'),
-    sectoriales: computed(() => []),
-  })
-
-const tiles = computed(() => {
-  const collator = new Intl.Collator(getLanguageTag(locale.value))
-
-  return props.members
-    .map((member) => ({
-      id: member.id,
-      logo: member.logoLight ?? member.logoDark,
-      title: getMemberUniversityLabel(member),
-      subtitle: getMemberDenominationLabel(member),
-      details: [
-        member.initials,
-        getCommunityLabel(member.autonomousCommunity, member.autonomousCommunityName),
-      ]
-        .filter(Boolean)
-        .join(' · '),
-    }))
-    .sort((a, b) => collator.compare(a.title, b.title))
-})
+const { t } = useI18n()
 </script>
 
 <template>

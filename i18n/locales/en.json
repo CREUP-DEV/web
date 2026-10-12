@@ -655,8 +655,11 @@
     "cover": {
       "organization": "Coordinator of Student Representatives of Public Universities",
       "heroAlt": "CREUP group photo",
-      "printAction": "Save as PDF or print",
       "generatedOn": "Information as of {date}"
+    },
+    "pdf": {
+      "download": "Download as PDF",
+      "error": "The PDF could not be generated. Please try again."
     },
     "toc": {
       "title": "Contents",

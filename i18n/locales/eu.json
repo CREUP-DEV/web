@@ -655,8 +655,11 @@
     "cover": {
       "organization": "Unibertsitate Publikoetako Ikasleen Ordezkarien Koordinakundea",
       "heroAlt": "CREUPen talde-argazkia",
-      "printAction": "Gorde PDF gisa edo inprimatu",
       "generatedOn": "Eguneratze-data: {date}"
+    },
+    "pdf": {
+      "download": "Deskargatu PDF gisa",
+      "error": "Ezin izan da PDFa sortu. Saiatu berriro."
     },
     "toc": {
       "title": "Edukia",

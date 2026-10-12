@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import {
-  CREUP_REPRESENTED_STUDENTS,
-  CREUP_STAT_ICONS,
-  FALLBACK_MEMBER_COUNT,
-  FALLBACK_MEMBER_COUNT_LABEL,
-  type CreupStatKey,
-} from '@/composables/about/useAboutPageData'
+import { CREUP_STAT_ICONS } from '@/composables/about/useAboutPageData'
+import { usePressKitAbout } from '@/composables/press/usePressKitContent'
 
 const props = defineProps<{
   /** Member universities, or null when no count is available. */
@@ -13,48 +8,16 @@ const props = defineProps<{
   years: number
 }>()
 
-const { t, locale } = useI18n()
-const { getLanguageTag } = useLocales()
-
-const numberFormat = computed(() => new Intl.NumberFormat(getLanguageTag(locale.value)))
-const formattedStudents = computed(() => numberFormat.value.format(CREUP_REPRESENTED_STUDENTS))
-const formattedYears = computed(() => numberFormat.value.format(props.years))
-// Without a count, the tile shows the "+30" label and the prose says "more than 30".
-const formattedUniversities = computed(() =>
-  numberFormat.value.format(props.universities ?? FALLBACK_MEMBER_COUNT)
-)
+const { t } = useI18n()
+const about = usePressKitAbout({
+  universities: toRef(props, 'universities'),
+  years: toRef(props, 'years'),
+})
 
 const stats = computed(() =>
-  (
-    [
-      {
-        key: 'universities',
-        value:
-          props.universities === null ? FALLBACK_MEMBER_COUNT_LABEL : formattedUniversities.value,
-      },
-      { key: 'students', value: `+${formattedStudents.value}` },
-      {
-        key: 'years',
-        value: `${formattedYears.value} ${t('aboutPage.stats.years.suffix')}`,
-      },
-    ] satisfies Array<{ key: CreupStatKey; value: string }>
-  ).map((stat) => ({
-    ...stat,
-    label: t(`aboutPage.stats.${stat.key}.label`),
-    icon: CREUP_STAT_ICONS[stat.key],
-  }))
+  about.stats.value.map((stat) => ({ ...stat, icon: CREUP_STAT_ICONS[stat.key] }))
 )
-
-const paragraphs = computed(() => [
-  t(props.universities === null ? 'pressKit.about.paragraph1Approx' : 'pressKit.about.paragraph1', {
-    universities: formattedUniversities.value,
-    students: formattedStudents.value,
-    years: formattedYears.value,
-  }),
-  t('pressKit.about.paragraph2'),
-  t('pressKit.about.paragraph3'),
-  t('pressKit.about.paragraph4'),
-])
+const paragraphs = about.paragraphs
 </script>
 
 <template>

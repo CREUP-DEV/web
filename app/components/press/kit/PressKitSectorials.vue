@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { SectorialMember } from '@/types/members'
+import type { PressKitTile } from '@/composables/press/usePressKitContent'
 
-const props = defineProps<{
-  sectorials: SectorialMember[]
+defineProps<{
+  tiles: PressKitTile[]
   pending: boolean
   failed: boolean
   imageLoading: 'lazy' | 'eager'
@@ -12,25 +12,7 @@ const emit = defineEmits<{
   retry: []
 }>()
 
-const { t, locale } = useI18n()
-const { getLanguageTag } = useLocales()
-const { getSectorialDenominationLabel } = useMembersDirectory({
-  members: computed(() => []),
-  sectoriales: toRef(props, 'sectorials'),
-})
-
-const tiles = computed(() => {
-  const collator = new Intl.Collator(getLanguageTag(locale.value))
-
-  return props.sectorials
-    .map((sectorial) => ({
-      id: sectorial.id,
-      logo: sectorial.logoLight ?? sectorial.logoDark,
-      title: getSectorialDenominationLabel(sectorial),
-      details: sectorial.initials || null,
-    }))
-    .sort((a, b) => collator.compare(a.title, b.title))
-})
+const { t } = useI18n()
 </script>
 
 <template>
