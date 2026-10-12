@@ -85,7 +85,8 @@ export const externalOrganigramaMemberSchema = z.object({
   public_agenda: z.boolean().optional().default(false),
   social_networks: z.array(externalOrganigramaMemberSocialSchema).nullable().optional().default([]),
   // Press contacts listed in the press kit. Older Intranet deployments send neither field; `phone`
-  // (E.164) is only meant to be non-null for a press contact, which the mapping enforces again.
+  // (E.164) is only meant to be non-null for a press contact, which the mapping enforces again, and
+  // is null for one who publishes only their email.
   press_contact: z.boolean().optional().default(false),
   phone: z.string().nullable().optional(),
 })

@@ -18,7 +18,10 @@ export interface OrgMember {
   socialNetworks: SocialNetwork[]
   /** Listed as a press contact in the press kit. */
   pressContact: boolean
-  /** Base64 of the E.164 phone (`<ObfuscatedPhone>` decodes it); only press contacts have one. */
+  /**
+   * Base64 of the E.164 phone (`<ObfuscatedPhone>` decodes it). Only press contacts have one, and
+   * not all of them: some publish only their email.
+   */
   encodedPhone: string | null
 }
 

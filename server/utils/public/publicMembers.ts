@@ -75,7 +75,8 @@ export interface PublicTeamMember {
   pressContact: boolean
   /**
    * A press contact's E.164 phone, base64-encoded like the press kit's email links, so the number
-   * is in neither the HTML nor the page payload as digits. Null for anyone else.
+   * is in neither the HTML nor the page payload as digits. Null for anyone else, and for a press
+   * contact who publishes only their email.
    */
   encodedPhone: string | null
 }
