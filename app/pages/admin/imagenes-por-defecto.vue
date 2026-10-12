@@ -11,6 +11,7 @@ interface SiteDefaultImagesPayload {
   pressReleaseImage: string | null
   statementImage: string | null
   mediaAppearanceImage: string | null
+  pressKitCoverImage: string | null
   carouselSlideImage: string | null
   ogImage: string | null
   activityEntryImage: string | null
@@ -39,6 +40,7 @@ const form = reactive({
   pressReleaseImage: null as string | null,
   statementImage: null as string | null,
   mediaAppearanceImage: null as string | null,
+  pressKitCoverImage: null as string | null,
   carouselSlideImage: null as string | null,
   ogImage: null as string | null,
   activityEntryImage: null as string | null,
@@ -76,6 +78,17 @@ const mediaUpload = useAdminFileUpload({
     form.mediaAppearanceImage = storagePath
   },
   getFallbackPreview: () => form.mediaAppearanceImage,
+})
+
+const pressKitCoverUpload = useAdminFileUpload({
+  endpoint: '/api/admin/press/upload',
+  successMessage: t('admin.siteDefaultImages.imageUploaded'),
+  errorMessage: t('admin.siteDefaultImages.imageUploadFailed'),
+  onUploaded: (storagePath) => {
+    clearErrors()
+    form.pressKitCoverImage = storagePath
+  },
+  getFallbackPreview: () => form.pressKitCoverImage,
 })
 
 const carouselUpload = useAdminFileUpload({
@@ -131,6 +144,7 @@ const buildPayloadSnapshot = () =>
     pressReleaseImage: form.pressReleaseImage,
     statementImage: form.statementImage,
     mediaAppearanceImage: form.mediaAppearanceImage,
+    pressKitCoverImage: form.pressKitCoverImage,
     carouselSlideImage: form.carouselSlideImage,
     ogImage: form.ogImage,
     activityEntryImage: form.activityEntryImage,
@@ -145,6 +159,7 @@ watch(
     form.pressReleaseImage = item?.pressReleaseImage ?? null
     form.statementImage = item?.statementImage ?? null
     form.mediaAppearanceImage = item?.mediaAppearanceImage ?? null
+    form.pressKitCoverImage = item?.pressKitCoverImage ?? null
     form.carouselSlideImage = item?.carouselSlideImage ?? null
     form.ogImage = item?.ogImage ?? null
     form.activityEntryImage = item?.activityEntryImage ?? null
@@ -152,6 +167,7 @@ watch(
     releaseUpload.setPreview(item?.pressReleaseImage ?? null)
     statementUpload.setPreview(item?.statementImage ?? null)
     mediaUpload.setPreview(item?.mediaAppearanceImage ?? null)
+    pressKitCoverUpload.setPreview(item?.pressKitCoverImage ?? null)
     carouselUpload.setPreview(item?.carouselSlideImage ?? null)
     ogUpload.setPreview(item?.ogImage ?? null)
     activityUpload.setPreview(item?.activityEntryImage ?? null)
@@ -167,6 +183,7 @@ const save = async () => {
     pressReleaseImage: form.pressReleaseImage,
     statementImage: form.statementImage,
     mediaAppearanceImage: form.mediaAppearanceImage,
+    pressKitCoverImage: form.pressKitCoverImage,
     carouselSlideImage: form.carouselSlideImage,
     ogImage: form.ogImage,
     activityEntryImage: form.activityEntryImage,
@@ -454,6 +471,81 @@ const save = async () => {
             </div>
           </UCard>
         </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.pressKitHeading') }}</h2>
+        <p class="text-muted max-w-3xl text-sm">
+          {{ t('admin.siteDefaultImages.pressKitIntroBefore') }}
+          <span class="text-foreground/90">1240 × 1754 px</span>
+          {{ t('admin.siteDefaultImages.pressKitIntroAfter') }}
+        </p>
+        <UCard class="max-w-xs">
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 font-semibold">
+              <UIcon name="i-tabler-file-type-pdf" class="text-muted size-5" />
+              {{ t('admin.siteDefaultImages.pressKitCoverLabel') }}
+            </div>
+            <div
+              v-if="pressKitCoverUpload.preview.value"
+              class="relative aspect-1240/1754 w-full overflow-hidden rounded-lg border"
+            >
+              <img :src="pressKitCoverUpload.preview.value" alt="" class="size-full object-cover" />
+            </div>
+            <div
+              v-else
+              class="bg-muted/10 flex aspect-1240/1754 w-full items-center justify-center rounded-lg border-2 border-dashed"
+            >
+              <p class="text-muted px-4 text-center text-sm">
+                {{ t('admin.siteDefaultImages.noImage') }}
+              </p>
+            </div>
+            <input
+              :ref="pressKitCoverUpload.inputRef"
+              type="file"
+              accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.avif"
+              class="sr-only"
+              tabindex="-1"
+              aria-hidden="true"
+              @change="pressKitCoverUpload.handleFileSelect"
+            />
+            <div class="flex flex-wrap gap-2">
+              <UButton
+                type="button"
+                variant="outline"
+                size="sm"
+                icon="i-tabler-upload"
+                :loading="pressKitCoverUpload.isUploading.value"
+                @click="pressKitCoverUpload.triggerFileDialog()"
+              >
+                {{
+                  pressKitCoverUpload.preview.value
+                    ? t('admin.siteDefaultImages.changeImage')
+                    : t('admin.siteDefaultImages.uploadImage')
+                }}
+              </UButton>
+              <UButton
+                v-if="form.pressKitCoverImage"
+                type="button"
+                variant="ghost"
+                color="error"
+                size="sm"
+                icon="i-tabler-trash"
+                @click="
+                  () => {
+                    form.pressKitCoverImage = null
+                    pressKitCoverUpload.setPreview(null)
+                  }
+                "
+              >
+                {{ t('admin.siteDefaultImages.remove') }}
+              </UButton>
+            </div>
+            <p v-if="getFieldError('pressKitCoverImage')" class="text-error text-xs" role="alert">
+              {{ getFieldError('pressKitCoverImage') }}
+            </p>
+          </div>
+        </UCard>
       </section>
 
       <section class="space-y-4">

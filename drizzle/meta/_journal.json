@@ -134,6 +134,13 @@
       "when": 1791540155375,
       "tag": "0018_drop_press_dossier",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791796831579,
+      "tag": "0019_add_press_kit_cover_slot",
+      "breakpoints": true
     }
   ]
 }

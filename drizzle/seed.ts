@@ -316,6 +316,11 @@ async function seedDatabase(db: DbExecutor) {
       image: `${PRESS_DEFAULT_COVERS_PUBLIC_PATH}/portada-aparicion-medios.webp`,
     },
     {
+      scope: SITE_DEFAULT_IMAGE_SCOPE.press,
+      slot: SITE_DEFAULT_IMAGE_SLOT.pressKitCover,
+      image: null,
+    },
+    {
       scope: SITE_DEFAULT_IMAGE_SCOPE.carousel,
       slot: SITE_DEFAULT_IMAGE_SLOT.carouselSlide,
       image: `${HOME_CAROUSEL_SITE_DEFAULT_PUBLIC_PATH}/banner-carrusel-defecto.webp`,

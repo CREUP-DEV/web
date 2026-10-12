@@ -180,3 +180,23 @@ export async function getSiteDefaultOgImageUrlWithVersion(): Promise<string | nu
 
   return appendAssetVersion(row.image, row.updatedAt)
 }
+
+/** Versioned public URL of the photo behind the press kit PDF cover, or null when none is set. */
+export async function getPressKitCoverImageUrlWithVersion(): Promise<string | null> {
+  const row = await db.query.siteDefaultImages.findFirst({
+    where: and(
+      eq(siteDefaultImages.scope, SITE_DEFAULT_IMAGE_SCOPE.press),
+      eq(siteDefaultImages.slot, SITE_DEFAULT_IMAGE_SLOT.pressKitCover)
+    ),
+    columns: { image: true, updatedAt: true },
+  })
+
+  if (!row?.image) {
+    return null
+  }
+
+  const resolved =
+    toExternalImageProxyUrl(row.image, { publicPathBase: PRESS_IMAGE_PUBLIC_BASE }) ?? row.image
+
+  return appendAssetVersion(resolved, row.updatedAt)
+}

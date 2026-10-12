@@ -27,6 +27,7 @@ export const SITE_DEFAULT_IMAGE_SLOT = {
   pressRelease: 'press_release',
   statement: 'statement',
   mediaAppearance: 'media_appearance',
+  pressKitCover: 'press_kit_cover',
   carouselSlide: 'slide',
   ogImage: 'og_image',
   activityEntry: 'entry',
@@ -70,6 +71,15 @@ export const SITE_DEFAULT_IMAGE_SLOT_DEFINITIONS: readonly SiteDefaultImageSlotD
     scope: SITE_DEFAULT_IMAGE_SCOPE.press,
     slot: SITE_DEFAULT_IMAGE_SLOT.mediaAppearance,
     finalizeSlug: 'portada-aparicion-medios',
+    uploadDir: 'public/prensa/imagenes/portadas-por-defecto',
+    publicPath: PRESS_DEFAULT_COVERS_PUBLIC_PATH,
+    proxyPublicBase: PRESS_IMAGE_PUBLIC_BASE,
+  },
+  {
+    // Photo printed behind the cover of the downloadable press kit PDF.
+    scope: SITE_DEFAULT_IMAGE_SCOPE.press,
+    slot: SITE_DEFAULT_IMAGE_SLOT.pressKitCover,
+    finalizeSlug: 'portada-dossier-prensa',
     uploadDir: 'public/prensa/imagenes/portadas-por-defecto',
     publicPath: PRESS_DEFAULT_COVERS_PUBLIC_PATH,
     proxyPublicBase: PRESS_IMAGE_PUBLIC_BASE,

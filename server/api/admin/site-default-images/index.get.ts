@@ -27,6 +27,7 @@ export default defineEventHandler(async () => {
       pressReleaseImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.pressRelease) ?? null,
       statementImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.statement) ?? null,
       mediaAppearanceImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.mediaAppearance) ?? null,
+      pressKitCoverImage: press?.get(SITE_DEFAULT_IMAGE_SLOT.pressKitCover) ?? null,
       carouselSlideImage: carousel?.get(SITE_DEFAULT_IMAGE_SLOT.carouselSlide) ?? null,
       ogImage: seo?.get(SITE_DEFAULT_IMAGE_SLOT.ogImage) ?? null,
       activityEntryImage: activity?.get(SITE_DEFAULT_IMAGE_SLOT.activityEntry) ?? null,

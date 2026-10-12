@@ -121,7 +121,9 @@ En consecuencia:
 - **Los cambios en el `public/` local no llegan con el deploy.** Súbelos con `rsync` a
   `data/public-uploads/...` (o con `--seed`, que sincroniza `public/` entero).
 - **El dossier de prensa** ya no se sube desde el admin: es la página `/prensa/dossier`, generada
-  con el contenido del sitio. Sus direcciones antiguas redirigen (301) a ella:
+  con el contenido del sitio (la foto de portada de su PDF sí se sube, en «Imágenes por defecto», y
+  se guarda con las portadas por defecto de prensa, dentro del montaje `prensa/imagenes`: no
+  necesita carpeta propia). Sus direcciones antiguas redirigen (301) a ella:
   `/prensa/dossier-prensa.pdf` y todo lo que cuelga de `/prensa/documentos/dossier/`, la carpeta
   donde se guardaban las subidas y a la que enlazaba la cabecera. Esos PDF ya no se sirven, pero
   siguen en el volumen y nada los borra (la migración 0018 solo elimina la tabla). **Tras el primer

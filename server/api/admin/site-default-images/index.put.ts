@@ -30,6 +30,7 @@ type SlotPayloadKey =
   | 'pressReleaseImage'
   | 'statementImage'
   | 'mediaAppearanceImage'
+  | 'pressKitCoverImage'
   | 'carouselSlideImage'
   | 'ogImage'
   | 'activityEntryImage'
@@ -47,6 +48,10 @@ const SLOT_PAYLOAD_MAP: Record<SlotPayloadKey, { scope: string; slot: string }> 
   mediaAppearanceImage: {
     scope: SITE_DEFAULT_IMAGE_SCOPE.press,
     slot: SITE_DEFAULT_IMAGE_SLOT.mediaAppearance,
+  },
+  pressKitCoverImage: {
+    scope: SITE_DEFAULT_IMAGE_SCOPE.press,
+    slot: SITE_DEFAULT_IMAGE_SLOT.pressKitCover,
   },
   carouselSlideImage: {
     scope: SITE_DEFAULT_IMAGE_SCOPE.carousel,
@@ -191,6 +196,13 @@ export default defineEventHandler(async (event) => {
       previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.press, SITE_DEFAULT_IMAGE_SLOT.mediaAppearance),
       cleanupTargets,
     })
+    const nextPressKitCover = await finalizeDefaultSlot({
+      event,
+      key: 'pressKitCoverImage',
+      incoming: validated.pressKitCoverImage,
+      previous: getPrev(SITE_DEFAULT_IMAGE_SCOPE.press, SITE_DEFAULT_IMAGE_SLOT.pressKitCover),
+      cleanupTargets,
+    })
     const nextCarousel = await finalizeDefaultSlot({
       event,
       key: 'carouselSlideImage',
@@ -224,6 +236,7 @@ export default defineEventHandler(async (event) => {
       pressReleaseImage: nextPressRelease,
       statementImage: nextStatement,
       mediaAppearanceImage: nextMedia,
+      pressKitCoverImage: nextPressKitCover,
       carouselSlideImage: nextCarousel,
       ogImage: nextOgImage,
       activityEntryImage: nextActivityEntry,
@@ -306,6 +319,7 @@ export default defineEventHandler(async (event) => {
         pressReleaseImage: nextPressRelease,
         statementImage: nextStatement,
         mediaAppearanceImage: nextMedia,
+        pressKitCoverImage: nextPressKitCover,
         carouselSlideImage: nextCarousel,
         ogImage: nextOgImage,
         activityEntryImage: nextActivityEntry,

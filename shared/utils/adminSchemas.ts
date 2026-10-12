@@ -228,6 +228,7 @@ export const updateSiteDefaultImagesSchema = z
     pressReleaseImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     statementImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     mediaAppearanceImage: z.union([z.null(), pressDefaultCoverStoragePath]),
+    pressKitCoverImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     carouselSlideImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     ogImage: z.union([z.null(), pressDefaultCoverStoragePath]),
     activityEntryImage: z.union([z.null(), pressDefaultCoverStoragePath]),
