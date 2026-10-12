@@ -1,15 +1,17 @@
-import type {
-  Content,
-  CustomTableLayout,
-  StyleDictionary,
-  TDocumentDefinitions,
-  TableCell,
-} from 'pdfmake/interfaces'
+import type { Content, StyleDictionary, TDocumentDefinitions, TableCell } from 'pdfmake/interfaces'
+import {
+  CARD_RADIUS,
+  cardBackgrounds,
+  createCardRegistry,
+  type CardBox,
+  type MarkerPosition,
+} from './cards'
 
 /**
  * The press kit as a PDF document definition for pdfmake. It follows the layout of the PDF dossier
- * CREUP used to upload: a cover over the group photo tinted in CREUP red, cream pages with the
- * logo at the top, one chapter per section, the Executive Committee under red bars, and the
+ * CREUP used to upload: a cover over a photo tinted in CREUP red (the one uploaded for it from the
+ * admin panel, or the logo's rings when there is none), cream pages with the logo at the top, one
+ * chapter per section on rounded white cards, the Executive Committee under red bars, and the
  * contact details on a red back cover. Everything it prints comes translated in the model; the
  * images come already cropped and finished (see `images.ts`).
  */
@@ -158,7 +160,9 @@ const CREAM = '#F5EEE6'
 const INK = '#221B1B'
 const MUTED = '#6E6262'
 const CARD = '#FFFFFF'
-const LINE = '#E4D8CD'
+const PLACEHOLDER = '#EDE3D9'
+/** The logo's three rings, drawn over the cover's red when there is no cover photo. */
+const PATTERN = '#8E3438'
 
 const PAGE_WIDTH = 595.28
 const PAGE_HEIGHT = 841.89
@@ -169,8 +173,21 @@ const CONTENT_WIDTH = PAGE_WIDTH - MARGIN_X * 2
 /** Space between the cards of a grid. */
 const GAP = 8
 
-/** Cards per row in each grid, and the width of one card. */
+/** Width of one card in a grid of `columns` across the text column. */
 const columnWidth = (columns: number) => (CONTENT_WIDTH - GAP * (columns - 1)) / columns
+
+/**
+ * Sizes the images are drawn at, in points, so the browser can crop them to the same shape and
+ * round their corners with the cards'.
+ */
+export const PRESS_KIT_PDF_LAYOUT = {
+  contentWidth: CONTENT_WIDTH,
+  heroHeight: CONTENT_WIDTH * (550 / 1925),
+  cardImageWidth: columnWidth(3),
+  cardRadius: CARD_RADIUS,
+  pageColor: CREAM,
+  page: { width: PAGE_WIDTH, height: PAGE_HEIGHT, marginBottom: MARGIN_BOTTOM },
+} as const
 
 const styles: StyleDictionary = {
   chapterTitle: { fontSize: 21, bold: true, color: INK, characterSpacing: 0.2 },
@@ -185,60 +202,37 @@ const styles: StyleDictionary = {
   tocNumber: { fontSize: 11.5, bold: true, color: RED },
 }
 
-/**
- * Cards in a grid: a table whose rules are as wide as the gap and coloured like the page, so the
- * cells read as separate white cards of the same height in each row.
- */
-function cardGridLayout(
-  columns: number,
-  rows: number,
-  padding: number,
-  fill: string | null
-): CustomTableLayout {
-  return {
-    hLineWidth: (index) => (index === 0 || index === rows ? 0 : GAP),
-    vLineWidth: (index) => (index === 0 || index === columns ? 0 : GAP),
-    hLineColor: () => CREAM,
-    vLineColor: () => CREAM,
-    fillColor: () => fill,
-    paddingLeft: () => padding,
-    paddingRight: () => padding,
-    paddingTop: () => padding,
-    paddingBottom: () => padding,
-  }
+type CardRegistry = ReturnType<typeof createCardRegistry>
+type CardCell = Parameters<CardRegistry['cardGrid']>[0][number]
+
+/** What every chapter draws with: the model, the images and the document's card registry. */
+interface Context {
+  model: PressKitPdfModel
+  images: Record<string, string>
+  cards: CardRegistry
 }
 
-function cardGrid(
-  cells: Content[],
+/**
+ * Cards on the cream page, `columns` across the text column, after `lead` (a heading, say), which
+ * stays on the page of their first row.
+ */
+function grid(
+  context: Context,
+  cells: Array<Content | CardCell>,
   columns: number,
-  padding = 8,
-  fill: string | null = CARD
+  options: { padding?: number; bandColor?: string; lead?: Content[] } = {}
 ): Content {
-  // pdfmake still draws a table with no rows as one empty cell.
-  if (cells.length === 0) {
-    return { text: '' }
-  }
-
-  const rows: TableCell[][] = []
-
-  for (let index = 0; index < cells.length; index += columns) {
-    const row: TableCell[] = cells.slice(index, index + columns)
-
-    while (row.length < columns) {
-      row.push({ text: '', fillColor: CREAM })
+  return context.cards.cardGrid(
+    cells.map((cell) => (typeof cell === 'function' ? cell : () => cell)),
+    {
+      ...options,
+      columns,
+      gap: GAP,
+      width: CONTENT_WIDTH,
+      pageColor: CREAM,
+      cardColor: CARD,
     }
-
-    rows.push(row)
-  }
-
-  return {
-    table: {
-      widths: Array.from({ length: columns }, () => '*'),
-      body: rows,
-      dontBreakRows: true,
-    },
-    layout: cardGridLayout(columns, rows.length, padding, fill),
-  }
+  )
 }
 
 function paragraphs(texts: string[]): Content[] {
@@ -308,18 +302,37 @@ function chapterHeading(
   ]
 }
 
+/**
+ * The image under `key`, or a placeholder of the same size. Images that top a card come with their
+ * corners already rounded; the placeholder rounds the same `corners` itself.
+ */
 function imageOrPlaceholder(
   key: string | null,
   images: Record<string, string>,
   width: number,
-  height: number
+  height: number,
+  corners: 'none' | 'top' = 'none'
 ): Content {
   if (key && images[key]) {
     return { image: key, width, height }
   }
 
+  if (corners === 'none') {
+    return { canvas: [{ type: 'rect', x: 0, y: 0, w: width, h: height, color: PLACEHOLDER }] }
+  }
+
   return {
-    canvas: [{ type: 'rect', x: 0, y: 0, w: width, h: height, color: '#EDE3D9' }],
+    canvas: [
+      { type: 'rect', x: 0, y: 0, w: width, h: height, r: CARD_RADIUS, color: PLACEHOLDER },
+      {
+        type: 'rect',
+        x: 0,
+        y: height - CARD_RADIUS,
+        w: width,
+        h: CARD_RADIUS,
+        color: PLACEHOLDER,
+      },
+    ],
   }
 }
 
@@ -346,9 +359,6 @@ function tileCard(tile: PressKitPdfTile, images: Record<string, string>): Conten
   }
 }
 
-/** Height of the group photo band on the cover, full width at the banner's 1925:810 crop. */
-const COVER_PHOTO_HEIGHT = PAGE_WIDTH * (810 / 1925)
-
 /** A block of `width` set against the right margin, at `y`. */
 function rightAligned(y: number, width: number, stack: Content[]): Content {
   return {
@@ -357,9 +367,44 @@ function rightAligned(y: number, width: number, stack: Content[]): Content {
   }
 }
 
-function coverSection(model: PressKitPdfModel, assets: PressKitPdfAssets): Content {
-  const photoTop = 300
+/**
+ * CREUP red with the logo's three rings repeated across it, for a cover with no photo. It is an
+ * SVG because the rings run off the edges: an SVG clips them to the page, and pdfmake will not draw
+ * a canvas taller than the space left on it.
+ */
+function coverPattern(): string {
+  const radius = 20
+  const spacing = 92
+  const rowHeight = spacing * 0.866
+  // As in the logo: one ring above, two below that pass through each other's centres.
+  const rings = [
+    [0, -radius * 0.667],
+    [-radius * 0.5, radius * 0.333],
+    [radius * 0.5, radius * 0.333],
+  ] as const
+  const circles: string[] = []
 
+  for (let row = 0; row * rowHeight < PAGE_HEIGHT + spacing; row++) {
+    const y = row * rowHeight
+
+    for (let x = row % 2 === 0 ? 0 : spacing / 2; x < PAGE_WIDTH + spacing; x += spacing) {
+      for (const [dx, dy] of rings) {
+        circles.push(
+          `<circle cx="${(x + dx).toFixed(2)}" cy="${(y + dy).toFixed(2)}" r="${radius}"/>`
+        )
+      }
+    }
+  }
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${PAGE_WIDTH}" height="${PAGE_HEIGHT}" viewBox="0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}">`,
+    `<rect x="0" y="0" width="${PAGE_WIDTH}" height="${PAGE_HEIGHT}" fill="${RED}"/>`,
+    `<g fill="none" stroke="${PATTERN}" stroke-width="1.2">${circles.join('')}</g>`,
+    '</svg>',
+  ].join('')
+}
+
+function coverSection(model: PressKitPdfModel, assets: PressKitPdfAssets): Content {
   return {
     section: [
       rightAligned(78, 440, [
@@ -382,17 +427,7 @@ function coverSection(model: PressKitPdfModel, assets: PressKitPdfAssets): Conte
           margin: [0, 10, 0, 0],
         },
       ] as Content[]),
-      ...(assets.images.cover
-        ? [
-            {
-              image: 'cover',
-              width: PAGE_WIDTH,
-              height: COVER_PHOTO_HEIGHT,
-              absolutePosition: { x: 0, y: photoTop },
-            } as Content,
-          ]
-        : []),
-      rightAligned(photoTop + COVER_PHOTO_HEIGHT + 56, 440, [
+      rightAligned(PAGE_HEIGHT - 170, 440, [
         {
           text: model.tagline.toLocaleUpperCase(model.language),
           fontSize: 22,
@@ -413,9 +448,11 @@ function coverSection(model: PressKitPdfModel, assets: PressKitPdfAssets): Conte
     pageMargins: [0, 0, 0, 0],
     header: null,
     footer: null,
-    background: () => ({
-      canvas: [{ type: 'rect', x: 0, y: 0, w: PAGE_WIDTH, h: PAGE_HEIGHT, color: RED }],
-    }),
+    // The cover photo comes tinted in CREUP red, so the title reads over it.
+    background: () =>
+      assets.images.cover
+        ? { image: 'cover', width: PAGE_WIDTH, height: PAGE_HEIGHT }
+        : { svg: coverPattern(), width: PAGE_WIDTH, height: PAGE_HEIGHT },
   }
 }
 
@@ -463,12 +500,14 @@ function contentsChapter(model: PressKitPdfModel): Content[] {
   ]
 }
 
-function aboutChapter(model: PressKitPdfModel, images: Record<string, string>): Content[] {
+function aboutChapter(context: Context): Content[] {
+  const { model, images } = context
   const { about } = model
 
   return [
     ...chapterHeading(model, 'about'),
-    cardGrid(
+    grid(
+      context,
       about.stats.map((stat) => ({
         stack: [
           { text: stat.value, fontSize: 20, bold: true, color: RED },
@@ -476,7 +515,7 @@ function aboutChapter(model: PressKitPdfModel, images: Record<string, string>): 
         ],
       })),
       3,
-      11
+      { padding: 11 }
     ),
     { text: '', margin: [0, 0, 0, 14] },
     ...paragraphs(about.paragraphs),
@@ -485,7 +524,7 @@ function aboutChapter(model: PressKitPdfModel, images: Record<string, string>): 
           {
             image: 'hero',
             width: CONTENT_WIDTH,
-            height: CONTENT_WIDTH * (550 / 1925),
+            height: PRESS_KIT_PDF_LAYOUT.heroHeight,
             margin: [0, 8, 0, 0],
           } as Content,
         ]
@@ -493,12 +532,14 @@ function aboutChapter(model: PressKitPdfModel, images: Record<string, string>): 
   ]
 }
 
-function philosophyChapter(model: PressKitPdfModel): Content[] {
+function philosophyChapter(context: Context): Content[] {
+  const { model } = context
   const { philosophy } = model
 
   return [
     ...chapterHeading(model, 'philosophy'),
-    cardGrid(
+    grid(
+      context,
       philosophy.statements.map((statement) => ({
         stack: [
           { text: statement.title, fontSize: 13, bold: true, color: RED },
@@ -511,11 +552,10 @@ function philosophyChapter(model: PressKitPdfModel): Content[] {
         ],
       })),
       2,
-      12
+      { padding: 12 }
     ),
-    subheading(philosophy.valuesTitle),
-    { text: philosophy.valuesDescription, style: ['paragraph', 'muted'] },
-    cardGrid(
+    grid(
+      context,
       philosophy.values.map((value) => ({
         stack: [
           { text: value.title, fontSize: 10, bold: true, color: RED },
@@ -523,17 +563,19 @@ function philosophyChapter(model: PressKitPdfModel): Content[] {
         ],
       })),
       3,
-      10
+      {
+        padding: 10,
+        lead: [
+          subheading(philosophy.valuesTitle),
+          { text: philosophy.valuesDescription, style: ['paragraph', 'muted'] },
+        ],
+      }
     ),
   ]
 }
 
-function tilesChapter(
-  model: PressKitPdfModel,
-  key: 'members' | 'sectorials',
-  images: Record<string, string>,
-  empty?: string
-): Content[] {
+function tilesChapter(context: Context, key: 'members' | 'sectorials', empty?: string): Content[] {
+  const { model, images } = context
   const { intro, tiles, failed } = model[key]
 
   // A failed list says so, and nothing that depends on it (the members intro states the count).
@@ -545,85 +587,89 @@ function tilesChapter(
     ...chapterHeading(model, key),
     { text: intro, style: 'paragraph', margin: [0, 0, 0, 10] },
     tiles.length > 0
-      ? cardGrid(
+      ? grid(
+          context,
           tiles.map((tile) => tileCard(tile, images)),
           3,
-          6
+          { padding: 6 }
         )
       : { text: empty ?? '', style: 'muted' },
   ]
 }
 
-function executiveChapter(model: PressKitPdfModel, images: Record<string, string>): Content[] {
+function executiveChapter(context: Context): Content[] {
+  const { model, images } = context
   const photoSize = 60
-  const cardWidth = columnWidth(2)
 
-  const personCard = (person: PressKitPdfPerson): Content => ({
-    table: {
-      widths: [cardWidth],
-      body: [
-        [
+  const personBody = (person: PressKitPdfPerson): Content => ({
+    columns: [
+      {
+        width: photoSize,
+        stack: [imageOrPlaceholder(person.image, images, photoSize, photoSize)],
+      },
+      {
+        width: '*',
+        stack: [
           {
-            text: person.role.toLocaleUpperCase(model.language),
-            fillColor: RED,
-            color: CREAM,
+            text: person.name.toLocaleUpperCase(model.language),
+            fontSize: 11,
             bold: true,
-            fontSize: 8.2,
-            alignment: 'center',
-            margin: [8, 4, 8, 4],
+            color: INK,
           },
-        ],
-        [
-          {
-            fillColor: CARD,
-            columns: [
-              {
-                width: photoSize,
-                stack: [imageOrPlaceholder(person.image, images, photoSize, photoSize)],
-              },
-              {
-                width: '*',
-                stack: [
-                  {
-                    text: person.name.toLocaleUpperCase(model.language),
-                    fontSize: 11,
-                    bold: true,
-                    color: INK,
-                  },
-                  ...(person.degree
-                    ? [{ text: person.degree, style: 'cardText', margin: [0, 3, 0, 0] }]
-                    : []),
-                  ...(person.university ? [{ text: person.university, style: 'cardText' }] : []),
-                  ...(person.email
-                    ? [
-                        {
-                          text: person.email,
-                          link: `mailto:${person.email}`,
-                          fontSize: 8,
-                          bold: true,
-                          color: RED,
-                          margin: [0, 3, 0, 0],
-                        },
-                      ]
-                    : []),
-                ] as Content[],
-                margin: [0, 6, 0, 0],
-              },
-            ],
-            columnGap: 10,
-            margin: [10, 10, 10, 10],
-          },
-        ],
-      ],
-    },
-    layout: {
-      defaultBorder: false,
-      paddingLeft: () => 0,
-      paddingRight: () => 0,
-      paddingTop: () => 0,
-      paddingBottom: () => 0,
-    },
+          ...(person.degree
+            ? [{ text: person.degree, style: 'cardText', margin: [0, 3, 0, 0] }]
+            : []),
+          ...(person.university ? [{ text: person.university, style: 'cardText' }] : []),
+          ...(person.email
+            ? [
+                {
+                  text: person.email,
+                  link: `mailto:${person.email}`,
+                  fontSize: 8,
+                  bold: true,
+                  color: RED,
+                  margin: [0, 3, 0, 0],
+                },
+              ]
+            : []),
+        ] as Content[],
+        margin: [0, 6, 0, 0],
+      },
+    ],
+    columnGap: 10,
+    margin: [10, 10, 10, 10],
   })
+
+  const roleBar = (person: PressKitPdfPerson): Content => ({
+    text: person.role.toLocaleUpperCase(model.language),
+    color: CREAM,
+    bold: true,
+    fontSize: 8.2,
+    alignment: 'center',
+    margin: [8, 5, 8, 5],
+  })
+
+  // The red bar and the white body are the two rows of a table that only paints them when the card
+  // could not be measured; a measured card gets both, rounded, from the page background. The
+  // layout is the same either way, so both passes place everything at the same spot. The table
+  // is as wide as the card: with a flexible width, a long email would widen the whole grid.
+  const personCard =
+    (person: PressKitPdfPerson): CardCell =>
+    ({ bandEnd, measured }) => ({
+      table: {
+        widths: [columnWidth(2)],
+        body: [[roleBar(person)], [{ stack: [bandEnd, personBody(person)] }]],
+      },
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: () => 0,
+        paddingRight: () => 0,
+        paddingTop: () => 0,
+        paddingBottom: () => 0,
+        fillColor: (row) => (measured ? null : row === 0 ? RED : CARD),
+      },
+    })
 
   return [
     ...chapterHeading(model, 'executive'),
@@ -631,14 +677,22 @@ function executiveChapter(model: PressKitPdfModel, images: Record<string, string
     ...(model.executive.failed
       ? [failureNotice(model, model.executive.failed)]
       : model.executive.people.length > 0
-        ? [cardGrid(model.executive.people.map(personCard), 2, 0, null)]
+        ? [
+            grid(context, model.executive.people.map(personCard), 2, {
+              padding: 0,
+              bandColor: RED,
+            }),
+          ]
         : []),
   ]
 }
 
-function organizationChapter(model: PressKitPdfModel, images: Record<string, string>): Content[] {
+function organizationChapter(context: Context): Content[] {
+  const { model, images } = context
   const { organization } = model
   const photoSize = 26
+  const padding = 10
+  const columnGap = 12
 
   const personLine = (person: PressKitPdfAreaPerson, strong: boolean): Content => ({
     stack: [
@@ -648,139 +702,175 @@ function organizationChapter(model: PressKitPdfModel, images: Record<string, str
     margin: [0, 0, 0, strong ? 0 : 5],
   })
 
-  const headerCell = (text: string): TableCell => ({
+  const label = (text: string): Content => ({
     text: text.toLocaleUpperCase(model.language),
-    fontSize: 7.6,
+    fontSize: 7.4,
     bold: true,
-    color: CREAM,
-    fillColor: RED,
+    color: RED,
     characterSpacing: 0.3,
   })
 
-  const body: TableCell[][] = [
-    [headerCell(organization.executiveLabel), headerCell(organization.extendedLabel)],
-    ...organization.areas.map((area): TableCell[] => [
-      {
-        stack: [
-          {
-            text: area.name.toLocaleUpperCase(model.language),
-            fontSize: 7.4,
-            bold: true,
-            color: RED,
-            characterSpacing: 0.2,
-            margin: [0, 0, 0, 5],
-          },
-          area.responsible
-            ? {
-                columns: [
-                  {
-                    width: photoSize,
-                    stack: [
-                      imageOrPlaceholder(area.responsible.image, images, photoSize, photoSize),
-                    ],
-                  },
-                  { width: '*', stack: [personLine(area.responsible, true)] },
-                ],
-                columnGap: 7,
-              }
-            : { text: organization.noResponsible, fontSize: 8.4, color: MUTED },
-        ] as Content[],
-      },
-      {
-        stack: area.members.map((member) => personLine(member, false)),
-        margin: [0, 12, 0, 0],
-      },
-    ]),
+  const committeesLead: Content[] = [
+    subheading(organization.committeesTitle),
+    { text: organization.committeesDescription, style: ['paragraph', 'muted'] },
   ]
+
+  // One card per area: its responsible beside the members who report to them, under the labels of
+  // the two commissions they sit on.
+  const areaCards = organization.areas.map(
+    (area): Content => ({
+      columns: [
+        {
+          width: '40%',
+          stack: [
+            {
+              text: area.name.toLocaleUpperCase(model.language),
+              fontSize: 7.4,
+              bold: true,
+              color: RED,
+              characterSpacing: 0.2,
+              margin: [0, 0, 0, 5],
+            },
+            area.responsible
+              ? {
+                  columns: [
+                    {
+                      width: photoSize,
+                      stack: [
+                        imageOrPlaceholder(area.responsible.image, images, photoSize, photoSize),
+                      ],
+                    },
+                    { width: '*', stack: [personLine(area.responsible, true)] },
+                  ],
+                  columnGap: 7,
+                }
+              : { text: organization.noResponsible, fontSize: 8.4, color: MUTED },
+          ] as Content[],
+        },
+        {
+          width: '*',
+          stack: area.members.map((member) => personLine(member, false)),
+          margin: [0, 12, 0, 0],
+        },
+      ],
+      columnGap,
+    })
+  )
 
   return [
     ...chapterHeading(model, 'organization'),
     { text: organization.intro, style: 'paragraph', margin: [0, 0, 0, 12] },
+    // The labels are the header row of a table around the cards, which pdfmake repeats on every
+    // page the cards continue on. Only the header row is unbreakable: the cards must not be.
     organization.failed
       ? failureNotice(model, organization.failed)
       : {
-          table: { widths: ['40%', '*'], headerRows: 1, dontBreakRows: true, body },
+          table: {
+            widths: ['*'],
+            headerRows: 1,
+            body: [
+              [
+                {
+                  columns: [
+                    { width: '40%', ...(label(organization.executiveLabel) as object) },
+                    { width: '*', ...(label(organization.extendedLabel) as object) },
+                  ],
+                  columnGap,
+                  margin: [padding, 0, padding, 6],
+                } as TableCell,
+              ],
+              [grid(context, areaCards, 1, { padding })],
+            ],
+          },
           layout: {
-            hLineWidth: (index, node) =>
-              index === 0 || index === node.table.body.length ? 0 : 0.7,
+            hLineWidth: () => 0,
             vLineWidth: () => 0,
-            hLineColor: () => LINE,
-            fillColor: (rowIndex) => (rowIndex === 0 ? RED : CARD),
-            paddingLeft: () => 10,
-            paddingRight: () => 10,
-            paddingTop: (index) => (index === 0 ? 6 : 9),
-            paddingBottom: (index) => (index === 0 ? 6 : 8),
+            paddingLeft: () => 0,
+            paddingRight: () => 0,
+            paddingTop: () => 0,
+            paddingBottom: () => 0,
           },
         },
-    ...(organization.committeesFailed || organization.committees.length > 0
-      ? [
-          subheading(organization.committeesTitle),
-          { text: organization.committeesDescription, style: ['paragraph', 'muted'] },
-        ]
-      : []),
-    organization.committeesFailed
-      ? failureNotice(model, organization.committeesFailed)
-      : organization.committees.length === 0
-        ? { text: '' }
-        : cardGrid(
-            organization.committees.map((committee) => ({
-              stack: [
-                { text: committee.name, style: 'cardTitle', fontSize: 9.4 },
-                {
-                  text: [
-                    { text: `${organization.responsibleLabel}: `, color: MUTED },
-                    committee.responsibleName ?? organization.noResponsible,
-                  ],
-                  fontSize: 8.2,
-                  margin: [0, 3, 0, 0],
-                },
-              ],
-            })),
-            2,
-            10
-          ),
+    ...(organization.committeesFailed
+      ? [...committeesLead, failureNotice(model, organization.committeesFailed)]
+      : organization.committees.length > 0
+        ? [
+            grid(
+              context,
+              organization.committees.map((committee) => ({
+                stack: [
+                  { text: committee.name, style: 'cardTitle', fontSize: 9.4 },
+                  {
+                    text: [
+                      { text: `${organization.responsibleLabel}: `, color: MUTED },
+                      committee.responsibleName ?? organization.noResponsible,
+                    ],
+                    fontSize: 8.2,
+                    margin: [0, 3, 0, 0],
+                  },
+                ],
+              })),
+              2,
+              { padding: 10, lead: committeesLead }
+            ),
+          ]
+        : []),
   ]
 }
 
-function pressRoomChapter(model: PressKitPdfModel, images: Record<string, string>): Content[] {
+/** A card topped by an image that links where its title does. */
+function imageCard(
+  images: Record<string, string>,
+  image: string | null,
+  height: number,
+  url: string,
+  body: Content[]
+): Content {
+  const width = PRESS_KIT_PDF_LAYOUT.cardImageWidth
+
+  return {
+    stack: [
+      {
+        ...(imageOrPlaceholder(image, images, width, height, 'top') as object),
+        link: url,
+      } as Content,
+      { stack: body, margin: [8, 7, 8, 9] },
+    ],
+  }
+}
+
+function pressRoomChapter(context: Context): Content[] {
+  const { model, images } = context
   const { pressRoom } = model
-  const width = columnWidth(3)
-  const height = width * (9 / 16)
+  const height = PRESS_KIT_PDF_LAYOUT.cardImageWidth * (9 / 16)
 
   return [
     ...chapterHeading(model, 'pressRoom'),
     ...paragraphs(pressRoom.paragraphs),
-    subheading(pressRoom.latestTitle),
-    pressRoom.failed
-      ? failureNotice(model, pressRoom.failed)
+    ...(pressRoom.failed
+      ? [subheading(pressRoom.latestTitle), failureNotice(model, pressRoom.failed)]
       : pressRoom.articles.length > 0
-        ? cardGrid(
-            pressRoom.articles.map((article) => ({
-              stack: [
-                {
-                  ...(imageOrPlaceholder(article.image, images, width, height) as object),
-                  link: article.url,
-                } as Content,
-                {
-                  stack: [
-                    { text: article.meta, fontSize: 7, color: MUTED },
-                    {
-                      text: article.title,
-                      link: article.url,
-                      fontSize: 8.6,
-                      bold: true,
-                      lineHeight: 1.15,
-                      margin: [0, 3, 0, 0],
-                    },
-                  ],
-                  margin: [8, 7, 8, 9],
-                },
-              ],
-            })),
-            3,
-            0
-          )
-        : { text: pressRoom.empty, style: 'muted' },
+        ? [
+            grid(
+              context,
+              pressRoom.articles.map((article) =>
+                imageCard(images, article.image, height, article.url, [
+                  { text: article.meta, fontSize: 7, color: MUTED },
+                  {
+                    text: article.title,
+                    link: article.url,
+                    fontSize: 8.6,
+                    bold: true,
+                    lineHeight: 1.15,
+                    margin: [0, 3, 0, 0],
+                  },
+                ])
+              ),
+              3,
+              { padding: 0, lead: [subheading(pressRoom.latestTitle)] }
+            ),
+          ]
+        : [subheading(pressRoom.latestTitle), { text: pressRoom.empty, style: 'muted' }]),
     { text: '', margin: [0, 0, 0, 10] },
     linkLine(pressRoom.allNews),
   ]
@@ -818,10 +908,10 @@ function positionsChapter(model: PressKitPdfModel): Content[] {
   ]
 }
 
-function faqChapter(model: PressKitPdfModel, images: Record<string, string>): Content[] {
+function faqChapter(context: Context): Content[] {
+  const { model, images } = context
   const { faq } = model
-  const width = columnWidth(3)
-  const height = width * (2 / 7)
+  const height = PRESS_KIT_PDF_LAYOUT.cardImageWidth * (2 / 7)
 
   return [
     ...chapterHeading(model, 'faq'),
@@ -850,47 +940,36 @@ function faqChapter(model: PressKitPdfModel, images: Record<string, string>): Co
       })
     ),
     // The upcoming events stay on one page with their heading and the link to the rest.
-    {
+    context.cards.keepTogether({
       stack: [
         subheading(faq.upcomingTitle),
         faq.eventsFailed
           ? failureNotice(model, faq.eventsFailed)
           : faq.events.length > 0
-            ? cardGrid(
-                faq.events.map((event) => ({
-                  stack: [
+            ? grid(
+                context,
+                faq.events.map((event) =>
+                  imageCard(images, event.image, height, event.url, [
                     {
-                      ...(imageOrPlaceholder(event.image, images, width, height) as object),
+                      text: event.name,
                       link: event.url,
-                    } as Content,
-                    {
-                      stack: [
-                        {
-                          text: event.name,
-                          link: event.url,
-                          fontSize: 9,
-                          bold: true,
-                          lineHeight: 1.15,
-                        },
-                        { text: event.date, style: 'cardText', margin: [0, 3, 0, 0] },
-                        ...(event.location ? [{ text: event.location, style: 'cardText' }] : []),
-                        ...(event.type
-                          ? [{ text: event.type, style: 'cardText', bold: true }]
-                          : []),
-                      ] as Content[],
-                      margin: [8, 7, 8, 9],
+                      fontSize: 9,
+                      bold: true,
+                      lineHeight: 1.15,
                     },
-                  ],
-                })),
+                    { text: event.date, style: 'cardText', margin: [0, 3, 0, 0] },
+                    ...(event.location ? [{ text: event.location, style: 'cardText' }] : []),
+                    ...(event.type ? [{ text: event.type, style: 'cardText', bold: true }] : []),
+                  ] as Content[])
+                ),
                 3,
-                0
+                { padding: 0 }
               )
             : { text: faq.noUpcoming, style: 'muted' },
         { text: '', margin: [0, 0, 0, 10] },
         linkLine(faq.allEvents),
       ] as Content[],
-      unbreakable: true,
-    },
+    }),
   ]
 }
 
@@ -994,15 +1073,28 @@ function contactSection(model: PressKitPdfModel, assets: PressKitPdfAssets): Con
   }
 }
 
+export interface PressKitPdfBuildOptions {
+  /** Rounded backgrounds measured on a previous pass of the same model. */
+  boxes?: CardBox[]
+  /** Receives where each card marker lands, to measure the cards for the next pass. */
+  markerPositions?: Map<string, MarkerPosition>
+}
+
+/**
+ * The document definition, and the measure that turns the marker positions recorded while laying
+ * it out into the cards' rounded backgrounds for the next build of the same model.
+ */
 export function buildPressKitDocument(
   model: PressKitPdfModel,
-  assets: PressKitPdfAssets
-): TDocumentDefinitions {
-  const { images } = assets
-
+  assets: PressKitPdfAssets,
+  options: PressKitPdfBuildOptions = {}
+) {
+  const boxes = options.boxes ?? []
+  const cards = createCardRegistry(boxes)
+  const context: Context = { model, images: assets.images, cards }
   const chapterBreak = (content: Content[]): Content => ({ stack: content, pageBreak: 'before' })
 
-  return {
+  const definition: TDocumentDefinitions = {
     pageSize: 'A4',
     pageMargins: [MARGIN_X, MARGIN_TOP, MARGIN_X, MARGIN_BOTTOM],
     language: model.language,
@@ -1012,7 +1104,7 @@ export function buildPressKitDocument(
       subject: model.tagline,
       creator: 'CREUP',
     },
-    images,
+    images: assets.images,
     styles,
     defaultStyle: { font: 'Raleway', fontSize: 9.6, lineHeight: 1.3, color: INK },
     content: [
@@ -1020,15 +1112,15 @@ export function buildPressKitDocument(
       {
         section: [
           ...contentsChapter(model),
-          chapterBreak(aboutChapter(model, images)),
-          chapterBreak(philosophyChapter(model)),
-          chapterBreak(tilesChapter(model, 'members', images)),
-          chapterBreak(tilesChapter(model, 'sectorials', images, model.sectorials.empty)),
-          chapterBreak(executiveChapter(model, images)),
-          chapterBreak(organizationChapter(model, images)),
-          chapterBreak(pressRoomChapter(model, images)),
+          chapterBreak(aboutChapter(context)),
+          chapterBreak(philosophyChapter(context)),
+          chapterBreak(tilesChapter(context, 'members')),
+          chapterBreak(tilesChapter(context, 'sectorials', model.sectorials.empty)),
+          chapterBreak(executiveChapter(context)),
+          chapterBreak(organizationChapter(context)),
+          chapterBreak(pressRoomChapter(context)),
           chapterBreak(positionsChapter(model)),
-          chapterBreak(faqChapter(model, images)),
+          chapterBreak(faqChapter(context)),
         ],
         header: () => ({
           columns: [
@@ -1046,11 +1138,23 @@ export function buildPressKitDocument(
           ],
           margin: [MARGIN_X, 24, MARGIN_X, 0],
         }),
-        background: () => ({
-          canvas: [{ type: 'rect', x: 0, y: 0, w: PAGE_WIDTH, h: PAGE_HEIGHT, color: CREAM }],
+        background: (currentPage) => ({
+          canvas: [
+            { type: 'rect', x: 0, y: 0, w: PAGE_WIDTH, h: PAGE_HEIGHT, color: CREAM },
+            ...cardBackgrounds(boxes, currentPage),
+          ],
         }),
       },
       contactSection(model, assets),
     ],
+    // pdfmake calls this with every node's position once laid out, which is how the cards are
+    // measured and kept on one page.
+    pageBreakBefore: cards.pageBreakBefore(options.markerPositions),
+  }
+
+  return {
+    definition,
+    measure: (positions: Map<string, MarkerPosition>) =>
+      cards.measure(positions, PRESS_KIT_PDF_LAYOUT.page),
   }
 }

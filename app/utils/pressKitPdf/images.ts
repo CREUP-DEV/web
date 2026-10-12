@@ -1,6 +1,7 @@
 /**
  * Images for the press kit PDF, drawn on a canvas in the browser: the PDF only takes JPEG and PNG,
- * and its layout cannot crop, mask or tint, so each image is sized, cropped and finished here once.
+ * and its layout cannot crop, mask, tint or round corners, so each image is sized, cropped and
+ * finished here once.
  */
 
 export interface RasterizeOptions {
@@ -16,6 +17,11 @@ export interface RasterizeOptions {
   tint?: string
   /** Fill behind the image, for formats without transparency. */
   background?: string
+  /**
+   * Rounds the image's corners (`radius` in px) by painting `color` outside them, the colour of
+   * the page it sits on: JPEG has no transparency to cut them out with.
+   */
+  corners?: { radius: number; which: 'top' | 'all'; color: string }
 }
 
 const JPEG_QUALITY = 0.86
@@ -102,6 +108,17 @@ function drawImage(image: HTMLImageElement, options: RasterizeOptions) {
       context.strokeStyle = options.circle.ringColor
       context.stroke()
     }
+  }
+
+  if (options.corners) {
+    const { radius, which, color } = options.corners
+    const bottom = which === 'all' ? radius : 0
+    context.beginPath()
+    context.rect(0, 0, canvas.width, canvas.height)
+    context.roundRect(0, 0, canvas.width, canvas.height, [radius, radius, bottom, bottom])
+    context.fillStyle = color
+    // Even-odd fills what lies inside the rectangle but outside the rounded one: the corners.
+    context.fill('evenodd')
   }
 
   return options.format === 'jpeg'

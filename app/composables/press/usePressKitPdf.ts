@@ -12,7 +12,9 @@ import {
   type PressKitTile,
 } from '@/composables/press/usePressKitContent'
 import type { PolicyDocument } from '@/types/policy'
+import type { MarkerPosition } from '@/utils/pressKitPdf/cards'
 import {
+  PRESS_KIT_PDF_LAYOUT,
   buildPressKitDocument,
   type PressKitPdfModel,
   type PressKitPdfSectionKey,
@@ -59,7 +61,9 @@ const LOAD_ERROR_KEYS: Record<PressKitPdfSource, string> = {
 
 /** At most this many images load and get drawn at once. */
 const IMAGE_CONCURRENCY = 6
-const PHOTO_RING = '#792225'
+const CREUP_RED = '#792225'
+/** The cover photo under CREUP red, so the title reads over any photo. */
+const COVER_TINT = 'rgba(121, 34, 37, 0.8)'
 
 const PRESS_TYPE_LABEL_KEYS: Record<PressArticleType, string> = {
   press_release: 'press.releases.title',
@@ -147,7 +151,11 @@ export function usePressKitPdf(sources: {
     }
   }
 
-  /** The URL to draw an image from: the image service at the size needed, or the SVG itself. */
+  /**
+   * The URL to draw an image from: the image service at the size needed, or the SVG itself. A
+   * JPEG is asked for as WebP, which keeps transparency: the image service would flatten it onto
+   * black, and the canvas flattens it onto the image's `background` instead.
+   */
   const imageUrl = (src: string, options: RasterizeOptions) =>
     isSvgUrl(src)
       ? src
@@ -155,12 +163,34 @@ export function usePressKitPdf(sources: {
           width: options.width,
           height: options.height,
           fit: options.fit === 'cover' ? 'cover' : 'inside',
-          format: options.format === 'jpeg' ? 'jpeg' : 'png',
-          // JPEG has no transparency, and the image service flattens it onto black otherwise.
-          ...(options.format === 'jpeg' ? { background: 'ffffff' } : {}),
+          format: options.format === 'jpeg' ? 'webp' : 'png',
         })
 
-  async function loadImages() {
+  /** The photo uploaded for the cover, or null to print the cover's pattern. */
+  async function loadCoverImage() {
+    try {
+      const response = await $fetch<{ data: { image: string | null } }>('/api/press-kit-cover')
+      return response.data.image
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Rounds an image's corners with the cards': their radius, in points, scaled to the pixels the
+   * image is drawn with across `widthInPoints`.
+   */
+  const cardCorners = (
+    pixelWidth: number,
+    widthInPoints: number,
+    which: 'top' | 'all'
+  ): RasterizeOptions['corners'] => ({
+    radius: (PRESS_KIT_PDF_LAYOUT.cardRadius * pixelWidth) / widthInPoints,
+    which,
+    color: PRESS_KIT_PDF_LAYOUT.pageColor,
+  })
+
+  async function loadImages(coverImage: string | null) {
     const requests: Array<{ key: string; src: string; options: RasterizeOptions }> = []
     const queued = new Set<string>()
     const queue = (key: string, src: string | null, options: RasterizeOptions) => {
@@ -170,21 +200,22 @@ export function usePressKitPdf(sources: {
       }
     }
 
-    const hero = sources.heroImage.value
-    // The group photo is a wide banner: a band across the cover, and a strip under section 1.
-    queue('cover', hero, {
-      width: 1600,
-      height: 673,
+    // The cover photo fills the page, at 150 dpi; the group photo is a strip under section 1.
+    queue('cover', coverImage, {
+      width: 1240,
+      height: 1754,
       fit: 'cover',
       format: 'jpeg',
-      background: '#FFFFFF',
+      background: CREUP_RED,
+      tint: COVER_TINT,
     })
-    queue('hero', hero, {
+    queue('hero', sources.heroImage.value, {
       width: 1600,
       height: 457,
       fit: 'cover',
       format: 'jpeg',
       background: '#FFFFFF',
+      corners: cardCorners(1600, PRESS_KIT_PDF_LAYOUT.contentWidth, 'all'),
     })
 
     for (const tile of [...sources.memberTiles.value, ...sources.sectorialTiles.value]) {
@@ -201,7 +232,7 @@ export function usePressKitPdf(sources: {
       height: 240,
       fit: 'cover',
       format: 'png',
-      circle: { ringColor: PHOTO_RING, ringWidth: 10 },
+      circle: { ringColor: CREUP_RED, ringWidth: 10 },
     }
     for (const person of sources.executivePeople.value) {
       queue(`person:${person.id}`, person.photo, photoOptions)
@@ -212,6 +243,8 @@ export function usePressKitPdf(sources: {
       }
     }
 
+    // Publications and events top their cards, so their top corners round with the card's.
+    const cardImageWidth = PRESS_KIT_PDF_LAYOUT.cardImageWidth
     for (const article of sources.articles.value) {
       queue(`press:${article.id}`, article.image, {
         width: 480,
@@ -219,16 +252,18 @@ export function usePressKitPdf(sources: {
         fit: 'cover',
         format: 'jpeg',
         background: '#FFFFFF',
+        corners: cardCorners(480, cardImageWidth, 'top'),
       })
     }
 
     for (const event of sources.upcomingEvents.value) {
       queue(`event:${event.id}`, event.banner.url, {
-        width: 700,
-        height: 200,
+        width: 560,
+        height: 160,
         fit: 'cover',
         format: 'jpeg',
         background: '#FFFFFF',
+        corners: cardCorners(560, cardImageWidth, 'top'),
       })
     }
 
@@ -497,7 +532,7 @@ export function usePressKitPdf(sources: {
     try {
       const [{ default: pdfMake }, images, logoOnLight, logoOnDark] = await Promise.all([
         import('pdfmake/build/pdfmake'),
-        loadImages(),
+        loadCoverImage().then(loadImages),
         loadSvg('/nav/creup-site-header-logo-light.svg'),
         loadSvg('/nav/creup-site-header-logo-dark.svg'),
       ])
@@ -514,10 +549,16 @@ export function usePressKitPdf(sources: {
         },
       })
 
-      const definition = buildPressKitDocument(buildModel(images), {
-        images,
-        logoOnLight,
-        logoOnDark,
+      const model = buildModel(images)
+      const assets = { images, logoOnLight, logoOnDark }
+
+      // The cards' rounded backgrounds are drawn where a first layout of the same document put
+      // them (see `cards.ts`).
+      const markerPositions = new Map<string, MarkerPosition>()
+      const layout = buildPressKitDocument(model, assets, { markerPositions })
+      await pdfMake.createPdf(layout.definition).getBuffer()
+      const { definition } = buildPressKitDocument(model, assets, {
+        boxes: layout.measure(markerPositions),
       })
 
       await pdfMake.createPdf(definition).download(`CREUP - ${t('nav.press.pressKit')}.pdf`)
