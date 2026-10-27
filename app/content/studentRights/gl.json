@@ -1,0 +1,542 @@
+{
+  "general": {
+    "title": "Dereitos xerais",
+    "rights": {
+      "equalRights": {
+        "title": "Tes os mesmos dereitos e deberes sexa cal sexa a túa universidade, a túa titulación ou a túa modalidade",
+        "description": "Dá igual que estudes nunha universidade pública ou privada, de forma presencial ou virtual, ou onde estea o centro: a igualdade está garantida. A excepción é o voto para cargos unipersoais de goberno (como reitor ou reitora), que lle corresponde ao estudantado de títulos oficiais.",
+        "article": "Art. 2.1"
+      },
+      "noDiscrimination": {
+        "title": "Ninguén pode discriminarte",
+        "description": "Nin por orixe, sexo, relixión, discapacidade, nacionalidade, saúde, orientación ou identidade sexual, expresión de xénero, características sexuais, situación socioeconómica, lingua, ideas políticas ou sindicais, aparencia nin calquera outra circunstancia persoal ou social.",
+        "article": "Art. 4 e art. 6.1 x)"
+      },
+      "qualityEducation": {
+        "title": "Tes dereito a unha formación universitaria de calidade",
+        "description": "A universidade debe garantir unha boa programación dos estudos, profesorado dispoñible e equipamentos e instalacións adecuados para que poidas alcanzar os obxectivos de aprendizaxe da túa titulación.",
+        "article": "Arts. 5, 6.1 h) e 20.1"
+      },
+      "chooseUniversity": {
+        "title": "Tes dereito a estudar na universidade que elixas",
+        "description": "Se cumpres os requisitos legais, podes solicitar a admisión en calquera universidade española, e as universidades teñen que axudarte cos trámites e co deseño da túa matrícula.",
+        "article": "Arts. 6.1 a) e 12"
+      },
+      "informedOfRights": {
+        "title": "A túa universidade ten que informarte dos teus dereitos",
+        "description": "Debe publicalos na súa web e comunicalos polas súas canles, e indicar de forma accesible como contactar coa representación estudantil.",
+        "article": "Art. 10.2 e 10.4"
+      }
+    }
+  },
+  "evaluation": {
+    "title": "Avaliación e revisión",
+    "rights": {
+      "objectiveEvaluation": {
+        "title": "Tes dereito a unha avaliación obxectiva e transparente",
+        "description": "As normas de avaliación, o procedemento de revisión e as vías de reclamación teñen que ser públicas, e a avaliación debe responder a criterios obxectivos recollidos na guía docente.",
+        "article": "Arts. 6.1 m) e 22.3"
+      },
+      "criteriaLocked": {
+        "title": "Os criterios de avaliación non se poden cambiar unha vez feita a matrícula",
+        "description": "O que di a guía docente, incluída a ponderación de cada proba, é o que conta. Só pode modificarse con motivación, autorización e acordo do órgano de xestión académica, e comunicándoo a todo o estudantado matriculado.",
+        "article": "Art. 20.3"
+      },
+      "examDatesInAdvance": {
+        "title": "As datas das probas comunícanse con antelación suficiente",
+        "description": "Vale para a avaliación continua e para as probas finais. Ademais, a programación das probas non se pode alterar salvo imposibilidade sobrevida, e nese caso hai que consultar o profesorado e o estudantado afectado.",
+        "article": "Art. 22.4 e 22.5"
+      },
+      "rescheduleExam": {
+        "title": "Podes pedir outro día e hora para un exame por motivos xustificados",
+        "description": "Por reunións de órganos de representación, motivos de saúde significativos, coidado de persoas dependentes, falecemento ou enfermidade grave de familiares directos, coincidencia con outras probas, oposicións ou exames oficiais, citacións xudiciais e outros motivos previstos na túa normativa. Eses mesmos motivos xustifican non asistir a clase sen penalización.",
+        "article": "Art. 22.6"
+      },
+      "noTwoGlobalExams": {
+        "title": "Non te poden convocar a dúas probas globais en menos de 24 horas",
+        "description": "Debe evitarse que teñas probas globais de distintas materias do mesmo curso en menos de 24 horas, e tes dereito a que as probas globais ou finais ás que te convocan non coincidan en data e hora.",
+        "article": "Art. 22.8"
+      },
+      "twoSittings": {
+        "title": "Tes dereito a dúas convocatorias por materia e curso",
+        "description": "Unha ordinaria e outra extraordinaria. Procurarase que na extraordinaria poidas obter a totalidade da nota final da materia.",
+        "article": "Art. 22.11"
+      },
+      "examLanguage": {
+        "title": "Podes examinarte en calquera das linguas da guía docente",
+        "description": "Se a materia se imparte en varias linguas segundo a súa guía docente, podes elixir en cal realizar a túa avaliación.",
+        "article": "Art. 22.12"
+      },
+      "adaptedExams": {
+        "title": "As probas adáptanse se tes discapacidade, necesidades específicas de apoio educativo ou dificultades de aprendizaxe",
+        "description": "Os centros ou departamentos deben facer as adaptacións metodolóxicas, temporais e espaciais precisas, e a guía docente pode recoller adaptacións do sistema de avaliación.",
+        "article": "Arts. 22.15 e 20.3"
+      },
+      "proofOfSitting": {
+        "title": "Entréganche un xustificante de ter feito a proba",
+        "description": "Ao rematar unha proba de avaliación podes pedir un xustificante documental de que a realizaches.",
+        "article": "Art. 22.10"
+      },
+      "privateGrades": {
+        "title": "Só ti podes coñecer a túa nota",
+        "description": "As universidades deben garantir que cada estudante coñeza unicamente a súa propia cualificación. Só cabe publicar resultados agregados de forma anonimizada.",
+        "article": "Art. 25.5"
+      },
+      "reviewAndExplanation": {
+        "title": "Tes dereito a revisar o teu exame e a que che expliquen a cualificación",
+        "description": "A revisión é individualizada e faise ante o profesorado responsable, o coordinador ou coordinadora da materia ou un tribunal ou órgano de revisión. Nela explícanche a nota. Debe rematar antes do peche das actas.",
+        "article": "Arts. 26.1, 26.2 e 26.7"
+      },
+      "reviewedExamCopy": {
+        "title": "Tes dereito a unha copia do teu exame revisado",
+        "description": "Podes solicitar copia dos teus exercicios revisados e valorados polo profesorado. Ao incluír esas valoracións, non poden distribuírse nin difundirse.",
+        "article": "Art. 26.4"
+      },
+      "reviewCannotLowerGrade": {
+        "title": "A revisión non pode empeorar a túa nota",
+        "description": "Con carácter xeral, revisar un exame non pode supoñer unha baixada da cualificación inicial. A única excepción é corrixir erros materiais ou aritméticos.",
+        "article": "Art. 26.5"
+      },
+      "reviewNoClash": {
+        "title": "A revisión non pode coincidir con outras probas",
+        "description": "Débese garantir que o día de revisión non choque con probas de avaliación. Nas materias presenciais faise no centro onde se imparte a materia, salvo que ti e o profesorado acordedes outra cousa.",
+        "article": "Art. 26.8 e 26.9"
+      },
+      "appealDecision": {
+        "title": "Podes reclamar a decisión e resolverana persoas distintas",
+        "description": "Contra a decisión do profesorado ou do tribunal podes presentar unha reclamación motivada. As persoas que a resolvan non poden ser as que interviñeron na avaliación ou na revisión.",
+        "article": "Art. 27.1 e 27.2"
+      }
+    }
+  },
+  "guides": {
+    "title": "Guías docentes e titorías",
+    "rights": {
+      "knowGuidesBeforeEnrolling": {
+        "title": "Tes dereito a coñecer as guías docentes antes de matricularte",
+        "description": "As guías son oficiais e deben estar publicadas antes de que abra a matrícula. Como mínimo informan da lingua de impartición, a modalidade (presencial, híbrida ou virtual), os contidos, o sistema de avaliación, as prácticas externas, o horario de clases, o horario de titorías e o profesorado responsable.",
+        "article": "Arts. 6.1 i) e 20.2"
+      },
+      "virtualCourseGuides": {
+        "title": "As guías de materias virtuais inclúen o que necesitas para cursalas",
+        "description": "Deben indicar os requisitos técnicos, a plataforma tecnolóxica e como te relacionas co profesorado e cos titores ou titoras.",
+        "article": "Art. 20.4"
+      },
+      "teachingLanguage": {
+        "title": "Tes dereito a recibir a docencia na lingua que indica a guía docente",
+        "description": "A lingua de impartición que figura na guía da materia na que te matriculaches é a que debes recibir.",
+        "article": "Art. 6.1 af)"
+      },
+      "tutoringPerCourse": {
+        "title": "Todas as materias teñen titoría e un profesor ou profesora responsable",
+        "description": "En cada materia tes dereito a que te orienten de forma individual ao longo do curso, cunha persoa responsable da materia.",
+        "article": "Art. 19.1 e 19.2"
+      },
+      "tutoringSchedule": {
+        "title": "O calendario de titorías fíxase ao comezar a materia",
+        "description": "Comunícase ao estudantado, está recollido na guía docente e só pode cambiarse por motivos xustificados, coa aprobación dos responsables da docencia e avisando por medios oficiais a todo o estudantado matriculado.",
+        "article": "Art. 19.2"
+      },
+      "thesisSupervision": {
+        "title": "O teu TFG e o teu TFM teñen titorización efectiva",
+        "description": "Tes dereito a titorización académica efectiva no traballo de fin de Grao e de Mestrado, con regularidade e publicidade similares ás das materias.",
+        "article": "Arts. 6.1 ñ) e 19.2"
+      },
+      "synchronousTutoring": {
+        "title": "En estudos virtuais, podes pedir unha titoría síncrona",
+        "description": "As universidades deben garantir mecanismos efectivos de titoría, síncronos ou asíncronos, e se o solicitas a titoría poderá ser síncrona nos termos da normativa da universidade.",
+        "article": "Art. 19.3"
+      },
+      "degreeCoordination": {
+        "title": "O teu centro ten coordinación de titulación e un plan de acción titorial",
+        "description": "Os centros deben nomear coordinadores ou coordinadoras de titulación para orientarte, e as universidades ou centros deben contar cun plan de acción titorial.",
+        "article": "Art. 17.2 e 17.3"
+      },
+      "degreeOrientation": {
+        "title": "Tes dereito a orientación sobre a túa titulación",
+        "description": "Debes recibir información sobre obxectivos, recursos e equipamentos, bibliotecas, avaliación, prácticas, formas de compaxinar estudos e traballo, mobilidade, bolsas e axudas, e os servizos de saúde mental, apoio e atención ante acoso ou discriminación.",
+        "article": "Arts. 17.1 e 18.2"
+      }
+    }
+  },
+  "enrolment": {
+    "title": "Matrícula, permanencia e conciliación",
+    "rights": {
+      "enrolmentDeadlines": {
+        "title": "Tes dereito a coñecer os prazos e procedementos de matrícula e desmatrícula antes de matricularte",
+        "description": "A universidade debe informarte da normativa e dos prazos de matriculación e desmatriculación de materias antes de que comece o proceso.",
+        "article": "Art. 6.1 j)"
+      },
+      "progressRules": {
+        "title": "Tes dereito a coñecer as normas de progreso e permanencia",
+        "description": "A universidade debe informarte das normas que regulan canto podes avanzar e permanecer nos teus estudos.",
+        "article": "Art. 6.1 k)"
+      },
+      "workAndStudy": {
+        "title": "Tes dereito a compaxinar estudos e traballo",
+        "description": "A universidade debe facilitalo, tamén na avaliación, segundo a súa normativa e tendo en conta a organización académica e a natureza de cada materia.",
+        "article": "Arts. 6.1 c) e 22.2"
+      },
+      "partTime": {
+        "title": "Tes dereito a estudar a tempo parcial",
+        "description": "Podes cursar estudos oficiais a tempo parcial, e as universidades deben adoptar as medidas necesarias para garantirche docencia e avaliación de calidade nesta modalidade.",
+        "article": "Art. 6.1 ah)"
+      },
+      "workLifeBalance": {
+        "title": "Tes dereito a medidas de conciliación",
+        "description": "As actividades académicas deben deseñarse para facilitar a conciliación coa vida laboral e familiar. Tamén se garanten medidas para vítimas de violencia de xénero, violencia sexual, terrorismo, outras violencias ou acoso e catástrofes naturais. Cada universidade debe ter plans de conciliación.",
+        "article": "Art. 6.1 l)"
+      },
+      "academicExemption": {
+        "title": "Tes dereito á dispensa académica",
+        "description": "Podes solicitala na forma, coa motivación e nos prazos que estableza a normativa da túa universidade.",
+        "article": "Art. 6.1 am)"
+      },
+      "suspendStudies": {
+        "title": "Tes dereito a suspender temporalmente os teus estudos",
+        "description": "Cada universidade regula como facelo.",
+        "article": "Art. 6.1 an)"
+      },
+      "digitalDisconnection": {
+        "title": "Tes dereito á desconexión dixital",
+        "description": "Segundo a normativa da túa universidade, non deberían esixirche estar conectado ou conectada fóra de horas. Exceptúanse as urxencias académicas (cambios de data de exame ou de aula), as alertas meteorolóxicas e outras situacións excepcionais.",
+        "article": "Art. 6.1 ad)"
+      },
+      "socialSecurity": {
+        "title": "Tes dereito á protección da Seguridade Social",
+        "description": "Nos termos e condicións que estableza a lexislación vixente.",
+        "article": "Art. 6.1 aa)"
+      }
+    }
+  },
+  "wellbeing": {
+    "title": "Saúde mental, igualdade e benestar",
+    "rights": {
+      "mentalHealthCare": {
+        "title": "Tes dereito a atención psicolóxica e de saúde mental gratuíta e accesible",
+        "description": "A túa universidade debe ofrecerche orientación e atención por persoal experto, coordinada cos servizos públicos de saúde da túa comunidade autónoma, aos que te derivarán cando sexa necesario.",
+        "article": "Arts. 6.1 e) e 62.3 g)"
+      },
+      "supportUnits": {
+        "title": "A túa universidade debe ter unidades de apoio",
+        "description": "Deben existir unidades de apoio ao estudantado con discapacidade, necesidades educativas de apoio específico e dificultades de aprendizaxe, de atención psicolóxica e de saúde mental, de orientación e asesoramento sociolaboral e de igualdade de xénero.",
+        "article": "Art. 10.5"
+      },
+      "protocols": {
+        "title": "A túa universidade debe ter protocolos contra o suicidio, o acoso sexual e o bullying",
+        "description": "Tres protocolos obrigatorios: actuación, prevención e intervención ante condutas suicidas; prevención e actuación contra o acoso e ciberacoso sexual, por razón de sexo, orientación ou identidade sexual, expresión de xénero ou características sexuais; e actuación ante o acoso persoal no ámbito universitario. As universidades teñen 6 meses para telos aprobados e vixentes.",
+        "article": "Art. 10.6, 10.7 e 10.8, e disposición transitoria primeira"
+      },
+      "disabilitySupport": {
+        "title": "Tes dereito a atención, asesoramento e adaptación curricular se tes discapacidade, necesidades específicas de apoio educativo ou dificultades de aprendizaxe",
+        "description": "Segundo a normativa da túa universidade e as súas posibilidades organizativas, e en coordinación cos servizos sanitarios e sociais cando sexa adecuado. A titoría e a orientación tamén deben adaptarse.",
+        "article": "Arts. 6.1 f) e 17.4"
+      },
+      "accessibleSpaces": {
+        "title": "Os teus espazos, edificios e ferramentas deben ser accesibles",
+        "description": "As universidades deben facer accesibles os seus espazos e edificios, incluídos os virtuais, e poñer á túa disposición medios materiais, humanos e técnicos para asegurar a igualdade de oportunidades.",
+        "article": "Art. 13.2 e art. 62.7"
+      },
+      "nonSexistTreatment": {
+        "title": "Tes dereito a un trato non sexista e á igualdade de oportunidades",
+        "description": "Con independencia da túa orientación ou identidade sexual, expresión de xénero ou características sexuais, ou da túa pertenza a calquera colectivo en situación de desigualdade ou vulnerabilidade.",
+        "article": "Art. 6.1 ab)"
+      },
+      "nameAndSexRectification": {
+        "title": "O Consello de Universidades fixará criterios comúns para rectificar nome e sexo no teu expediente",
+        "description": "As universidades poderán responder ás solicitudes de rectificación da mención de sexo e nome no expediente con criterios básicos comúns, atendendo á Lei 4/2023.",
+        "article": "Art. 6.3"
+      },
+      "healthyFood": {
+        "title": "Tes dereito a unha alimentación saudable e adaptada nos servizos de restauración",
+        "description": "Os servizos de restauración da universidade, propios ou de terceiros, deben ofrecer alimentación saudable e adecuada para quen teña necesidades específicas de alimentación.",
+        "article": "Art. 6.1 al)"
+      }
+    }
+  },
+  "mobility": {
+    "title": "Mobilidade",
+    "rights": {
+      "mobilityRight": {
+        "title": "A mobilidade é un dereito e a túa universidade debe promovela e informarte",
+        "description": "Debe informarte dos programas de mobilidade nacionais e internacionais, propios ou doutras administracións e entidades, e de como afecta a mobilidade ao teu expediente, en condicións que garantan a igualdade de oportunidades, especialmente por razón socioeconómica e de discapacidade.",
+        "article": "Arts. 6.1 r), 14.1 e 14.2"
+      },
+      "mobilityDuration": {
+        "title": "A duración e o momento da túa mobilidade fíxaos a memoria do título",
+        "description": "En Grao e Mestrado xa non hai un tope xeral de semestre ou curso nin a preferencia pola segunda metade da carreira: o que conta é o que estableza a memoria da túa titulación.",
+        "article": "Art. 14.4 a)"
+      },
+      "mobilityCompatible": {
+        "title": "A mobilidade debe ser compatible coa túa actividade académica",
+        "description": "As universidades deben garantir que as accións de mobilidade encaixen temporalmente co desenvolvemento da túa actividade académica regular.",
+        "article": "Art. 14.8"
+      },
+      "learningAgreement": {
+        "title": "Coñeces antes de marchar que materias che recoñecerán",
+        "description": "Terás un titor ou titora docente, ou polo menos orientación, para elaborar o acordo de estudos, que é vinculante e reflicte as actividades que farás e a súa correspondencia coa túa universidade de orixe.",
+        "article": "Art. 15.1 e 15.2"
+      },
+      "gradesRecognised": {
+        "title": "O que aproves fóra incorpórase ao teu expediente, con táboas de correspondencia públicas",
+        "description": "As universidades deben establecer táboas de correspondencia de cualificacións en cada convenio bilateral, e deben ser públicas e accesibles para o estudantado.",
+        "article": "Art. 15.4"
+      },
+      "mobilityGrants": {
+        "title": "Podes obter axudas de mobilidade, que deberían aboarse antes de marchar",
+        "description": "Hai axudas e bolsas para aloxamento e manutención no destino, e as administracións e universidades deben traballar para que se aboen previamente á realización da acción.",
+        "article": "Art. 14.6 e 14.7"
+      },
+      "mobilitySupport": {
+        "title": "Tes dereito a apoio se sufres vulneración de dereitos ou discriminación durante a mobilidade",
+        "description": "As universidades deben establecer mecanismos de apoio e actuación para eses casos durante a túa estadía.",
+        "article": "Art. 14.10"
+      }
+    }
+  },
+  "internships": {
+    "title": "Prácticas académicas externas",
+    "rights": {
+      "qualityInternships": {
+        "title": "As túas prácticas deben facerse con calidade e titorización efectiva",
+        "description": "Vale para as curriculares e tamén para as extracurriculares. Tes dereito a titorización efectiva do profesorado e da entidade onde as realizas.",
+        "article": "Art. 6.1 n)"
+      },
+      "trainingProject": {
+        "title": "Tes dereito a un proxecto formativo claro, que coñeces antes de comezar",
+        "description": "Debe incluír as competencias que adquirirás, os créditos ECTS, os teus dereitos e deberes, o centro de realización, as actividades, o calendario e horario e o sistema de avaliación.",
+        "article": "Art. 21.5 e 21.6"
+      },
+      "internshipTutors": {
+        "title": "Tes titor ou titora académico e da entidade, con seguimento real",
+        "description": "Debe haber polo menos unha reunión inicial, unha intermedia e outra de valoración final.",
+        "article": "Art. 21.6"
+      },
+      "notAJob": {
+        "title": "As túas prácticas non poden substituír un posto de traballo",
+        "description": "Deben axustarse á túa formación e ao que establece o plan de estudos, e en ningún caso poden comprender as funcións dun posto de traballo da entidade.",
+        "article": "Art. 21.9"
+      },
+      "internshipSocialSecurity": {
+        "title": "Cotizas á Seguridade Social polas túas prácticas",
+        "description": "Realizar prácticas académicas externas, en calquera modalidade, determina a túa inclusión na Seguridade Social, nos termos que fixe a súa normativa.",
+        "article": "Art. 21.11"
+      },
+      "evaluateInternships": {
+        "title": "Podes participar na avaliación do sistema de prácticas",
+        "description": "A universidade debe ter procedementos de análise e avaliación do sistema de prácticas que incorporen a participación do estudantado.",
+        "article": "Art. 21.7"
+      },
+      "agreementsAndRatios": {
+        "title": "Os convenios deben ofrecer garantías e as ratios deben ser coherentes",
+        "description": "As universidades só poden asinar convenios con entidades que ofrezan garantías suficientes e o respecto dos teus dereitos, e deben asegurar ratios de estudantes por titor ou titora coherentes cos obxectivos formativos. Se a normativa estatal o prevé, o convenio pode contemplar compensación de gastos.",
+        "article": "Art. 21.13, 21.14 e 21.8"
+      },
+      "dualTraining": {
+        "title": "A formación dual ten normativa propia en cada universidade",
+        "description": "As universidades deben establecer unha normativa específica que garanta o equilibrio formativo e a calidade da titoría académica e da titoría na entidade.",
+        "article": "Art. 21.15"
+      }
+    }
+  },
+  "scholarships": {
+    "title": "Bolsas e axudas",
+    "rights": {
+      "noDroppingOut": {
+        "title": "Ninguén debería ter que renunciar aos seus estudos por razóns económicas",
+        "description": "As administracións e universidades deben garantir programas de bolsas e axudas co obxectivo de asegurar a igualdade de oportunidades con independencia da túa situación socioeconómica.",
+        "article": "Art. 37.1"
+      },
+      "fitSituation": {
+        "title": "As bolsas axústanse á túa situación e necesidades",
+        "description": "Aplícanse os principios de progresividade, suficiencia e equidade, e as bolsas deben orientarse a garantir a túa permanencia e continuidade nos estudos.",
+        "article": "Art. 37.2 e 37.3"
+      },
+      "livingCosts": {
+        "title": "As bolsas deberían tender a ter en conta o custo do aloxamento e da vida",
+        "description": "Progresivamente, e segundo as dispoñibilidades orzamentarias e os límites legais, deberían considerar o custo do aloxamento cando estudar implica cambiar de residencia e os distintos niveis do custo da vida segundo a provincia.",
+        "article": "Art. 37.4"
+      },
+      "applyAndPortability": {
+        "title": "Podes presentarte ás convocatorias de bolsas e levar a túa bolsa a calquera lugar",
+        "description": "Inclúe a portabilidade das bolsas e axudas nacionais a todo o territorio, con independencia do teu lugar de residencia, e das bolsas propias das universidades nos termos de cada convocatoria.",
+        "article": "Art. 6.1 t)"
+      },
+      "studentsInScholarships": {
+        "title": "O estudantado participa no deseño e na selección de bolsas",
+        "description": "A través do Consello de Estudantes Universitario do Estado nas bolsas estatais e dos órganos de representación nas das comunidades e universidades, incluídas as comisións de selección e valoración.",
+        "article": "Art. 38"
+      },
+      "swiftResolution": {
+        "title": "A túa bolsa debe resolverse coa maior axilidade posible",
+        "description": "As administracións e universidades deben resolver os expedientes canto antes, para que os recursos da bolsa cheguen cando realmente os necesitas.",
+        "article": "Art. 40.2"
+      }
+    }
+  },
+  "representation": {
+    "title": "Representación e participación",
+    "rights": {
+      "freedoms": {
+        "title": "Tes liberdade de expresión, reunión, asociación e manifestación na universidade",
+        "description": "Sen ningunha discriminación directa ou indirecta, nos termos da Constitución, a lei e a normativa da túa universidade.",
+        "article": "Art. 7.1"
+      },
+      "governingBodies": {
+        "title": "Tes dereito a estar representado nos órganos de goberno e a participar na súa elección",
+        "description": "Inclúe os consellos de estudantes da túa universidade, o Consello de Estudantes Universitario do Estado e os consellos autonómicos. Todo o estudantado de títulos oficiais matriculado é elector e elixible.",
+        "article": "Art. 7.4 e 31.2"
+      },
+      "academicStrike": {
+        "title": "Tes dereito ao paro académico",
+        "description": "Decláreo o órgano de representación do estudantado, pode ser total ou parcial nunha universidade ou nalgún dos seus centros, e a representación estudantil debe ser oída e participar na elaboración da normativa que o regule na túa universidade.",
+        "article": "Art. 7.6 e 7.7"
+      },
+      "informationAndParticipation": {
+        "title": "Tes dereito a información real e a mecanismos efectivos de participación",
+        "description": "As universidades deben garantir acceso real á información e mecanismos adecuados para exercer os teus dereitos de participación e representación, incluídos os de seguimento e avaliación.",
+        "article": "Art. 7.5 e 7.2"
+      },
+      "studentCouncil": {
+        "title": "A túa universidade debe ter un Consello de Estudantes, con espazos e recursos",
+        "description": "É un órgano colexiado de representación e coordinación do estudantado. Tamén pode haber consellos por facultade, escola ou centro. Debe defender os intereses do estudantado e velar polo cumprimento dos seus dereitos e deberes, e a universidade debe dotalo dos espazos e recursos necesarios.",
+        "article": "Art. 35"
+      },
+      "rulemaking": {
+        "title": "A túa representación participa na elaboración das normas que che afectan",
+        "description": "As universidades deben garantir a participación da representación estudantil na elaboración das normas do estudantado, e as persoas representantes teñen dereito a ser oídas.",
+        "article": "Art. 10.3 e 32 k)"
+      },
+      "commissions": {
+        "title": "A túa representación está nas comisións de calendario, horarios, plans de estudo, calidade e bolsas",
+        "description": "Segundo estableza a normativa da universidade e a xeral. Tamén participa nos sistemas internos de garantía de calidade e nas comisións que elaboran ou modifican as memorias dos títulos oficiais.",
+        "article": "Art. 32 k) e art. 6.1 ag)"
+      },
+      "representativesRights": {
+        "title": "Quen te representa pode presentarse, compatibilizar e comunicarse contigo",
+        "description": "Teñen dereito ao sufraxio pasivo, a compatibilizar os seus estudos coa representación (cun apartado específico no plan de conciliación), a poder dirixirse a todo o estudantado cos medios da universidade, e a información pública e formación sobre os órganos.",
+        "article": "Art. 32 d), e), j) e l)"
+      },
+      "representativesResources": {
+        "title": "A túa representación dispón de espazos e recursos propios",
+        "description": "Espazos físicos e medios electrónicos para difundir información e actuar como representantes, con formato accesible, e os recursos técnicos e económicos para desempeñar as súas funcións.",
+        "article": "Art. 32 f) e g)"
+      },
+      "complaintsChannel": {
+        "title": "As túas queixas e suxestións poden chegar á universidade a través da túa representación",
+        "description": "Quen te representa é unha canle para transmitir suxestións, queixas e reclamacións, sen prexuízo de que poidas elevalas directamente polas canles da túa universidade.",
+        "article": "Art. 32 h) e 33 a)"
+      },
+      "legalAdvice": {
+        "title": "O Consello de Estudantes pode consultar a asesoría xurídica da universidade",
+        "description": "A través do Consello de Estudantes e de forma colectiva, nunca individual, sobre temas da actividade académica e da vida universitaria.",
+        "article": "Art. 32 i)"
+      },
+      "associations": {
+        "title": "Podes crear asociacións e a universidade debe apoialas",
+        "description": "Promóvense asociacións, colectivos, federacións e confederacións de estudantes. As universidades deben habilitar locais e medios na medida das súas posibilidades e destinar partidas orzamentarias para subvencionar a súa xestión. As asociacións rexistradas poden integrarse en redes nacionais e internacionais.",
+        "article": "Arts. 34 e 36"
+      },
+      "ombudsman": {
+        "title": "Podes acudir á Defensoría Universitaria",
+        "description": "Se consideras lesionados os teus dereitos e liberdades, a Defensoría asesórate sobre como presentar reclamacións académicas ou da vida universitaria, con independencia, autonomía e confidencialidade, e pode mediar e conciliar.",
+        "article": "Art. 43"
+      }
+    }
+  },
+  "services": {
+    "title": "Servizos e vida universitaria",
+    "rights": {
+      "studentServices": {
+        "title": "A túa universidade debe ter servizos de atención ao estudantado",
+        "description": "Xa non é unha posibilidade senón unha obriga: unidades de atención ao estudante, accesibles e de calidade, conectadas coa acción titorial e co resto de servizos da universidade.",
+        "article": "Arts. 62.1 e 6.1 ai)"
+      },
+      "rightsAdvice": {
+        "title": "Tes dereito a asesoramento sobre os teus dereitos e como exercelos",
+        "description": "Os servizos de atención ao estudantado informan e orientan sobre asociacionismo e participación estudantil e sobre dereitos estudantís e como exercelos.",
+        "article": "Art. 62.3 f) e h)"
+      },
+      "housingInformation": {
+        "title": "Tes dereito a información detallada sobre aloxamento",
+        "description": "Aloxamento propio da universidade ou en convenio, e bolsas de aloxamento da cidade da universidade ou de cidades próximas.",
+        "article": "Art. 62.3 j)"
+      },
+      "universityHousing": {
+        "title": "O aloxamento universitario debe ser accesible, transparente e con prezos adecuados",
+        "description": "O acceso a colexios maiores e residencias de fundación propia debe réxerse por procedementos públicos, obxectivos e transparentes, con prezos adecuados para garantir a igualdade de oportunidades. Todas as instalacións deben ser accesibles a persoas con discapacidade, e os residentes participan na designación dos equipos directivos.",
+        "article": "Art. 63.2 a 63.5"
+      },
+      "administration": {
+        "title": "Tes dereito a unha administración universitaria accesible e de calidade",
+        "description": "A relación coa administración da túa universidade debe garantirse tanto de forma electrónica como física.",
+        "article": "Art. 6.1 aj)"
+      },
+      "studentSpaces": {
+        "title": "Tes dereito a espazos dedicados ao estudantado",
+        "description": "Espazos onde o estudantado participe na xestión e organización, para convivencia, formación transversal, actividades culturais, deportivas, de cooperación e sustentabilidade, participación e lecer, segundo a normativa de cada universidade.",
+        "article": "Art. 6.1 ak)"
+      },
+      "digitalSkills": {
+        "title": "Tes dereito a formación e recursos dixitais, e a seguridade dixital",
+        "description": "Acceso a formación para desenvolver capacidades dixitais e a recursos e infraestruturas dixitais coherentes coa túa titulación, á seguridade dos medios dixitais e á garantía dos teus dereitos fundamentais en Internet. Os teus datos persoais non poden usarse para outros fins que os regulados pola lei.",
+        "article": "Art. 6.1 v), z) e ac)"
+      },
+      "riskPrevention": {
+        "title": "Tes dereito a formación sobre prevención de riscos e a medios que garantan a túa saúde e seguridade",
+        "description": "Nas túas actividades de aprendizaxe e de participación na vida universitaria.",
+        "article": "Art. 6.1 y)"
+      }
+    }
+  },
+  "recognition": {
+    "title": "Recoñecemento do teu traballo e da túa participación",
+    "rights": {
+      "creditRecognition": {
+        "title": "Podes obter recoñecemento de créditos por actividades universitarias",
+        "description": "As universidades poden recoñecer desde 6 ECTS ata un máximo do 10 % dos créditos dos graos por actividades de participación e colaboración social, cooperación ao desenvolvemento, sustentabilidade, difusión do coñecemento científico, culturais e artísticas. Ademais, tes dereito a recoñecemento académico por actividades como as de representación estudantil, deportivas ou de voluntariado, segundo a normativa da túa universidade.",
+        "article": "Art. 61.3, art. 28 e art. 6.1 p)"
+      },
+      "europeanSupplement": {
+        "title": "A túa formación complementaria e a túa representación constan no Suplemento Europeo ao Título",
+        "description": "As universidades deben incluír este tipo de formación, as actividades transversais e as actividades da vida universitaria, entre elas a representación estudantil, na forma que determine a súa normativa.",
+        "article": "Art. 61.3 e art. 6.1 o)"
+      },
+      "workExperience": {
+        "title": "Tes dereito ao recoñecemento da túa experiencia laboral ou profesional",
+        "description": "A efectos académicos, de acordo coa normativa que regula os Graos e Mestrados e sen prexuízo da normativa propia da universidade.",
+        "article": "Art. 6.1 q)"
+      },
+      "authorship": {
+        "title": "Tes dereito á autoría e á propiedade intelectual dos teus traballos",
+        "description": "Inclúe os teus TFG e TFM, e o recoñecemento da túa condición de inventor ou inventora e dos teus dereitos de propiedade industrial cando proceda.",
+        "article": "Art. 6.1 ae)"
+      },
+      "publicationConsent": {
+        "title": "Os teus traballos non poden publicarse nin reproducirse sen a túa autorización",
+        "description": "Calquera uso distinto do estritamente académico dos traballos e memorias que entregas require a túa autorización expresa.",
+        "article": "Art. 23.2"
+      },
+      "volunteering": {
+        "title": "Recibes formación, acreditación e certificado polo voluntariado e a cooperación",
+        "description": "Tes dereito a participar en actividades de voluntariado e cooperación, a recibir formación cando se enmarquen en convenios da túa universidade, a unha acreditación como voluntario ou cooperante e a un certificado dos servizos prestados.",
+        "article": "Art. 61.2"
+      }
+    }
+  },
+  "doctorate": {
+    "title": "Doutoramento e formación permanente",
+    "rights": {
+      "doctorate": {
+        "title": "Se fas o Doutoramento, tes titor ou titora, director ou directora e representación",
+        "description": "Formación investigadora de calidade, unha persoa titora que oriente o teu proceso, dirección con experiencia investigadora acreditada, integración en grupos e redes de investigación, e representación do estudantado de Doutoramento no Comité de Dirección das Escolas de Doutoramento.",
+        "article": "Art. 8.1 b), c) e art. 8.2"
+      },
+      "lifelongLearning": {
+        "title": "Se fas formación permanente, tes calidade, flexibilidade e unha carta de servizos",
+        "description": "Programas con criterios de calidade, admisión flexible, horarios organizados con flexibilidade para conciliar e unha carta de servizos coa oferta formativa detallada, que inclúa tipo e duración das actividades, límites de validez académica e medios dispoñibles. As universidades determinan o resto de dereitos en estudos non oficiais.",
+        "article": "Art. 9 e art. 1.3"
+      }
+    }
+  }
+}

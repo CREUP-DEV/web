@@ -1,0 +1,542 @@
+{
+  "general": {
+    "title": "Drets generals",
+    "rights": {
+      "equalRights": {
+        "title": "Tens els mateixos drets i deures siga quina siga la teua universitat, la teua titulació o la teua modalitat",
+        "description": "Tant és que estudies en una universitat pública o privada, de manera presencial o virtual, o on estiga el centre: la igualtat està garantida. L'excepció és el vot per a càrrecs unipersonals de govern (com rector o rectora), que correspon a l'estudiantat de títols oficials.",
+        "article": "Art. 2.1"
+      },
+      "noDiscrimination": {
+        "title": "Ningú pot discriminar-te",
+        "description": "Ni per origen, sexe, religió, discapacitat, nacionalitat, salut, orientació o identitat sexual, expressió de gènere, característiques sexuals, situació socioeconòmica, llengua, idees polítiques o sindicals, aparença ni cap altra circumstància personal o social.",
+        "article": "Art. 4 i art. 6.1 x)"
+      },
+      "qualityEducation": {
+        "title": "Tens dret a una formació universitària de qualitat",
+        "description": "La universitat ha de garantir una bona programació dels estudis, professorat disponible i equipaments i instal·lacions adequats perquè pugues assolir els objectius d'aprenentatge de la teua titulació.",
+        "article": "Arts. 5, 6.1 h) i 20.1"
+      },
+      "chooseUniversity": {
+        "title": "Tens dret a estudiar en la universitat que tries",
+        "description": "Si complixes els requisits legals, pots sol·licitar l'admissió en qualsevol universitat espanyola, i les universitats han d'ajudar-te amb els tràmits i el disseny de la teua matrícula.",
+        "article": "Arts. 6.1 a) i 12"
+      },
+      "informedOfRights": {
+        "title": "La teua universitat ha d'informar-te dels teus drets",
+        "description": "Ha de publicar-los en la seua pàgina web i comunicar-los pels seus canals, i indicar de manera accessible com contactar amb la representació estudiantil.",
+        "article": "Art. 10.2 i 10.4"
+      }
+    }
+  },
+  "evaluation": {
+    "title": "Avaluació i revisió",
+    "rights": {
+      "objectiveEvaluation": {
+        "title": "Tens dret a una avaluació objectiva i transparent",
+        "description": "Les normes d'avaluació, el procediment de revisió i les vies de reclamació han de ser públics, i l'avaluació ha de respondre a criteris objectius recollits en la guia docent.",
+        "article": "Arts. 6.1 m) i 22.3"
+      },
+      "criteriaLocked": {
+        "title": "Els criteris d'avaluació no es poden canviar una vegada feta la matrícula",
+        "description": "El que diu la guia docent, inclosa la ponderació de cada prova, és el que compta. Només es pot modificar amb motivació, autorització i acord de l'òrgan de gestió acadèmica, i comunicant-ho a tot l'estudiantat matriculat.",
+        "article": "Art. 20.3"
+      },
+      "examDatesInAdvance": {
+        "title": "Les dates de les proves es comuniquen amb antelació suficient",
+        "description": "Val per a l'avaluació contínua i per a les proves finals. A més, la programació de les proves no es pot alterar llevat d'impossibilitat sobrevinguda, i en aquest cas cal consultar el professorat i l'estudiantat afectat.",
+        "article": "Art. 22.4 i 22.5"
+      },
+      "rescheduleExam": {
+        "title": "Pots demanar un altre dia i hora per a un examen per motius justificats",
+        "description": "Per reunions d'òrgans de representació, motius de salut significatius, cura de persones dependents, defunció o malaltia greu de familiars directes, coincidència amb altres proves, oposicions o exàmens oficials, citacions judicials i altres motius previstos en la teua normativa. Aquests mateixos motius justifiquen no assistir a classe sense penalització.",
+        "article": "Art. 22.6"
+      },
+      "noTwoGlobalExams": {
+        "title": "No et poden convocar a dues proves globals en menys de 24 hores",
+        "description": "S'ha d'evitar que tingues proves globals de diferents assignatures del mateix curs en menys de 24 hores, i tens dret que les proves globals o finals a les quals et convoquen no coincidisquen en data i hora.",
+        "article": "Art. 22.8"
+      },
+      "twoSittings": {
+        "title": "Tens dret a dues convocatòries per assignatura i curs",
+        "description": "Una d'ordinària i una altra d'extraordinària. Es procurarà que en l'extraordinària pugues obtindre la totalitat de la nota final de l'assignatura.",
+        "article": "Art. 22.11"
+      },
+      "examLanguage": {
+        "title": "Pots examinar-te en qualsevol de les llengües de la guia docent",
+        "description": "Si l'assignatura s'imparteix en diverses llengües segons la seua guia docent, pots triar en quina fer la teua avaluació.",
+        "article": "Art. 22.12"
+      },
+      "adaptedExams": {
+        "title": "Les proves s'adapten si tens discapacitat, necessitats específiques de suport educatiu o dificultats d'aprenentatge",
+        "description": "Els centres o departaments han de fer les adaptacions metodològiques, temporals i espacials precises, i la guia docent pot recollir adaptacions del sistema d'avaluació.",
+        "article": "Arts. 22.15 i 20.3"
+      },
+      "proofOfSitting": {
+        "title": "Et lliuren un justificant d'haver fet la prova",
+        "description": "En acabar una prova d'avaluació pots demanar un justificant documental d'haver-la realitzat.",
+        "article": "Art. 22.10"
+      },
+      "privateGrades": {
+        "title": "Només tu pots conéixer la teua nota",
+        "description": "Les universitats han de garantir que cada estudiant conega únicament la seua pròpia qualificació. Només és possible publicar resultats agregats de manera anonimitzada.",
+        "article": "Art. 25.5"
+      },
+      "reviewAndExplanation": {
+        "title": "Tens dret a revisar el teu examen i que t'expliquen la qualificació",
+        "description": "La revisió és individualitzada i es fa davant del professorat responsable, el coordinador o coordinadora de l'assignatura o un tribunal o òrgan de revisió. En ella t'expliquen la nota. Ha d'acabar abans del tancament d'actes.",
+        "article": "Arts. 26.1, 26.2 i 26.7"
+      },
+      "reviewedExamCopy": {
+        "title": "Tens dret a una còpia del teu examen revisat",
+        "description": "Pots sol·licitar còpia dels teus exercicis revisats i valorats pel professorat. Com que inclouen aquestes valoracions, no es poden distribuir ni difondre.",
+        "article": "Art. 26.4"
+      },
+      "reviewCannotLowerGrade": {
+        "title": "La revisió no pot empitjorar la teua nota",
+        "description": "Amb caràcter general, revisar un examen no pot suposar una baixada de la qualificació inicial. L'única excepció és corregir errors materials o aritmètics.",
+        "article": "Art. 26.5"
+      },
+      "reviewNoClash": {
+        "title": "La revisió no pot coincidir amb altres proves",
+        "description": "S'ha de garantir que el dia de revisió no xoque amb proves d'avaluació. En assignatures presencials es fa en el centre on s'imparteix l'assignatura, llevat que tu i el professorat acordeu una altra cosa.",
+        "article": "Art. 26.8 i 26.9"
+      },
+      "appealDecision": {
+        "title": "Pots reclamar la decisió i la resoldran persones diferents",
+        "description": "Contra la decisió del professorat o del tribunal pots presentar una reclamació motivada. Les persones que la resolguen no poden ser les que van intervindre en l'avaluació o la revisió.",
+        "article": "Art. 27.1 i 27.2"
+      }
+    }
+  },
+  "guides": {
+    "title": "Guies docents i tutories",
+    "rights": {
+      "knowGuidesBeforeEnrolling": {
+        "title": "Tens dret a conéixer les guies docents abans de matricular-te",
+        "description": "Les guies són oficials i han d'estar publicades abans que òbriga la matrícula. Com a mínim informen de la llengua d'impartició, la modalitat (presencial, híbrida o virtual), els continguts, el sistema d'avaluació, les pràctiques externes, l'horari de classes, l'horari de tutories i el professorat responsable.",
+        "article": "Arts. 6.1 i) i 20.2"
+      },
+      "virtualCourseGuides": {
+        "title": "Les guies d'assignatures virtuals inclouen el que necessites per a cursar-les",
+        "description": "Han d'indicar els requisits tècnics, la plataforma tecnològica i com et relaciones amb el professorat i amb els tutors o tutores.",
+        "article": "Art. 20.4"
+      },
+      "teachingLanguage": {
+        "title": "Tens dret a rebre la docència en la llengua que indica la guia docent",
+        "description": "La llengua d'impartició que figura en la guia de l'assignatura en què t'has matriculat és la que has de rebre.",
+        "article": "Art. 6.1 af)"
+      },
+      "tutoringPerCourse": {
+        "title": "Totes les assignatures tenen tutoria i un professor o professora responsable",
+        "description": "En cada matèria tens dret que t'orienten de manera individual al llarg del curs, amb una persona responsable de l'assignatura.",
+        "article": "Art. 19.1 i 19.2"
+      },
+      "tutoringSchedule": {
+        "title": "El calendari de tutories es fixa en començar l'assignatura",
+        "description": "Es comunica a l'estudiantat, està recollit en la guia docent i només es pot canviar per motius justificats, amb aprovació dels responsables de la docència i avisant per mitjans oficials tot l'estudiantat matriculat.",
+        "article": "Art. 19.2"
+      },
+      "thesisSupervision": {
+        "title": "El teu TFG i el teu TFM tenen tutorització efectiva",
+        "description": "Tens dret a tutorització acadèmica efectiva en el treball de fi de Grau i de Màster, amb regularitat i publicitat semblants a les de les assignatures.",
+        "article": "Arts. 6.1 ñ) i 19.2"
+      },
+      "synchronousTutoring": {
+        "title": "En estudis virtuals, pots demanar una tutoria síncrona",
+        "description": "Les universitats han de garantir mecanismes efectius de tutoria, síncrons o asíncrons, i si ho sol·licites la tutoria podrà ser síncrona en els termes de la normativa de la universitat.",
+        "article": "Art. 19.3"
+      },
+      "degreeCoordination": {
+        "title": "El teu centre té coordinació de titulació i un pla d'acció tutorial",
+        "description": "Els centres han de nomenar coordinadors o coordinadores de titulació per a orientar-te, i les universitats o centres han de comptar amb un pla d'acció tutorial.",
+        "article": "Art. 17.2 i 17.3"
+      },
+      "degreeOrientation": {
+        "title": "Tens dret a orientació sobre la teua titulació",
+        "description": "Has de rebre informació sobre objectius, recursos i equipaments, biblioteques, avaluació, pràctiques, formes de compaginar estudis i treball, mobilitat, beques i ajudes, i els serveis de salut mental, suport i atenció davant d'assetjament o discriminació.",
+        "article": "Arts. 17.1 i 18.2"
+      }
+    }
+  },
+  "enrolment": {
+    "title": "Matrícula, permanència i conciliació",
+    "rights": {
+      "enrolmentDeadlines": {
+        "title": "Tens dret a conéixer els terminis i procediments de matrícula i desmatriculació abans de matricular-te",
+        "description": "La universitat ha d'informar-te de la normativa i els terminis de matriculació i desmatriculació d'assignatures abans que comence el procés.",
+        "article": "Art. 6.1 j)"
+      },
+      "progressRules": {
+        "title": "Tens dret a conéixer les normes de progrés i permanència",
+        "description": "La universitat ha d'informar-te de les normes que regulen quant pots avançar i romandre en els teus estudis.",
+        "article": "Art. 6.1 k)"
+      },
+      "workAndStudy": {
+        "title": "Tens dret a compaginar estudis i treball",
+        "description": "La universitat ha de facilitar-ho, també en l'avaluació, segons la seua normativa i tenint en compte l'organització acadèmica i la naturalesa de cada assignatura.",
+        "article": "Arts. 6.1 c) i 22.2"
+      },
+      "partTime": {
+        "title": "Tens dret a estudiar a temps parcial",
+        "description": "Pots cursar estudis oficials a temps parcial, i les universitats han d'adoptar les mesures necessàries per a garantir-te docència i avaluació de qualitat en aquesta modalitat.",
+        "article": "Art. 6.1 ah)"
+      },
+      "workLifeBalance": {
+        "title": "Tens dret a mesures de conciliació",
+        "description": "Les activitats acadèmiques s'han de dissenyar per a facilitar la conciliació amb la vida laboral i familiar. També es garantixen mesures per a víctimes de violència de gènere, violència sexual, terrorisme, altres violències o assetjament i catàstrofes naturals. Cada universitat ha de tindre plans de conciliació.",
+        "article": "Art. 6.1 l)"
+      },
+      "academicExemption": {
+        "title": "Tens dret a la dispensa acadèmica",
+        "description": "Pots sol·licitar-la en la forma, amb la motivació i en els terminis que establisca la normativa de la teua universitat.",
+        "article": "Art. 6.1 am)"
+      },
+      "suspendStudies": {
+        "title": "Tens dret a suspendre temporalment els teus estudis",
+        "description": "Cada universitat regula com fer-ho.",
+        "article": "Art. 6.1 an)"
+      },
+      "digitalDisconnection": {
+        "title": "Tens dret a la desconnexió digital",
+        "description": "Segons la normativa de la teua universitat, no haurien d'exigir-te estar connectat o connectada fora d'hores. S'exceptuen les urgències acadèmiques (canvis de data d'examen o d'aula), les alertes meteorològiques i altres situacions excepcionals.",
+        "article": "Art. 6.1 ad)"
+      },
+      "socialSecurity": {
+        "title": "Tens dret a la protecció de la Seguretat Social",
+        "description": "En els termes i condicions que establisca la legislació vigent.",
+        "article": "Art. 6.1 aa)"
+      }
+    }
+  },
+  "wellbeing": {
+    "title": "Salut mental, igualtat i benestar",
+    "rights": {
+      "mentalHealthCare": {
+        "title": "Tens dret a atenció psicològica i de salut mental gratuïta i accessible",
+        "description": "La teua universitat ha d'oferir-te orientació i atenció per personal expert, coordinada amb els serveis públics de salut de la teua comunitat autònoma, als quals et derivaran quan siga necessari.",
+        "article": "Arts. 6.1 e) i 62.3 g)"
+      },
+      "supportUnits": {
+        "title": "La teua universitat ha de tindre unitats de suport",
+        "description": "Han d'existir unitats de suport a l'estudiantat amb discapacitat, necessitats educatives de suport específic i dificultats d'aprenentatge, d'atenció psicològica i de salut mental, d'orientació i assessorament sociolaboral i d'igualtat de gènere.",
+        "article": "Art. 10.5"
+      },
+      "protocols": {
+        "title": "La teua universitat ha de tindre protocols contra el suïcidi, l'assetjament sexual i el bullying",
+        "description": "Tres protocols obligatoris: actuació, prevenció i intervenció davant de conductes suïcides; prevenció i actuació contra l'assetjament i el ciberassetjament sexual, per raó de sexe, orientació o identitat sexual, expressió de gènere o característiques sexuals; i actuació davant de l'assetjament personal en l'àmbit universitari. Les universitats tenen 6 mesos per a tindre'ls aprovats i vigents.",
+        "article": "Art. 10.6, 10.7 i 10.8, i disposició transitòria primera"
+      },
+      "disabilitySupport": {
+        "title": "Tens dret a atenció, assessorament i adaptació curricular si tens discapacitat, necessitats específiques de suport educatiu o dificultats d'aprenentatge",
+        "description": "Segons la normativa de la teua universitat i les seues possibilitats organitzatives, i en coordinació amb els serveis sanitaris i socials quan siga adequat. La tutoria i l'orientació també s'han d'adaptar.",
+        "article": "Arts. 6.1 f) i 17.4"
+      },
+      "accessibleSpaces": {
+        "title": "Els teus espais, edificis i eines han de ser accessibles",
+        "description": "Les universitats han de fer accessibles els seus espais i edificis, inclosos els virtuals, i posar a la teua disposició mitjans materials, humans i tècnics per a assegurar la igualtat d'oportunitats.",
+        "article": "Art. 13.2 i art. 62.7"
+      },
+      "nonSexistTreatment": {
+        "title": "Tens dret a un tracte no sexista i a la igualtat d'oportunitats",
+        "description": "Amb independència de la teua orientació o identitat sexual, expressió de gènere o característiques sexuals, o de la teua pertinença a qualsevol col·lectiu en situació de desigualtat o vulnerabilitat.",
+        "article": "Art. 6.1 ab)"
+      },
+      "nameAndSexRectification": {
+        "title": "El Consell d'Universitats fixarà criteris comuns per a rectificar nom i sexe en el teu expedient",
+        "description": "Les universitats podran respondre a les sol·licituds de rectificació de la menció de sexe i nom en l'expedient amb criteris bàsics comuns, atenent la Llei 4/2023.",
+        "article": "Art. 6.3"
+      },
+      "healthyFood": {
+        "title": "Tens dret a una alimentació saludable i adaptada en els serveis de restauració",
+        "description": "Els serveis de restauració de la universitat, propis o de tercers, han d'oferir alimentació saludable i adequada per a qui tinga necessitats específiques d'alimentació.",
+        "article": "Art. 6.1 al)"
+      }
+    }
+  },
+  "mobility": {
+    "title": "Mobilitat",
+    "rights": {
+      "mobilityRight": {
+        "title": "La mobilitat és un dret i la teua universitat ha de promoure-la i informar-te",
+        "description": "Ha d'informar-te dels programes de mobilitat nacionals i internacionals, propis o d'altres administracions i entitats, i de com afecta la mobilitat el teu expedient, en condicions que garantisquen la igualtat d'oportunitats, especialment per raó socioeconòmica i de discapacitat.",
+        "article": "Arts. 6.1 r), 14.1 i 14.2"
+      },
+      "mobilityDuration": {
+        "title": "La durada i el moment de la teua mobilitat els fixa la memòria del títol",
+        "description": "En Grau i Màster ja no hi ha un límit general de semestre o curs ni la preferència per la segona meitat de la carrera: el que compta és el que establisca la memòria de la teua titulació.",
+        "article": "Art. 14.4 a)"
+      },
+      "mobilityCompatible": {
+        "title": "La mobilitat ha de ser compatible amb la teua activitat acadèmica",
+        "description": "Les universitats han de garantir que les accions de mobilitat encaixen temporalment amb el desenvolupament de la teua activitat acadèmica regular.",
+        "article": "Art. 14.8"
+      },
+      "learningAgreement": {
+        "title": "Saps abans d'anar-te'n quines assignatures et reconeixeran",
+        "description": "Tindràs un tutor o tutora docent, o almenys orientació, per a elaborar l'acord d'estudis, que és vinculant i reflecteix les activitats que faràs i la seua correspondència amb la teua universitat d'origen.",
+        "article": "Art. 15.1 i 15.2"
+      },
+      "gradesRecognised": {
+        "title": "El que aproves fora s'incorpora al teu expedient, amb taules de correspondència públiques",
+        "description": "Les universitats han d'establir taules de correspondència de qualificacions en cada conveni bilateral, i han de ser públiques i accessibles per a l'estudiantat.",
+        "article": "Art. 15.4"
+      },
+      "mobilityGrants": {
+        "title": "Pots obtindre ajudes de mobilitat, que haurien d'abonar-se abans d'anar-te'n",
+        "description": "Hi ha ajudes i beques per a allotjament i manutenció en el destí, i les administracions i universitats han de treballar perquè s'abonen prèviament a la realització de l'acció.",
+        "article": "Art. 14.6 i 14.7"
+      },
+      "mobilitySupport": {
+        "title": "Tens dret a suport si patixes vulneració de drets o discriminació durant la mobilitat",
+        "description": "Les universitats han d'establir mecanismes de suport i actuació per a aquests casos durant la teua estada.",
+        "article": "Art. 14.10"
+      }
+    }
+  },
+  "internships": {
+    "title": "Pràctiques acadèmiques externes",
+    "rights": {
+      "qualityInternships": {
+        "title": "Les teues pràctiques s'han de fer amb qualitat i tutorització efectiva",
+        "description": "Val per a les curriculars i també per a les extracurriculars. Tens dret a tutorització efectiva del professorat i de l'entitat on les realitzes.",
+        "article": "Art. 6.1 n)"
+      },
+      "trainingProject": {
+        "title": "Tens dret a un projecte formatiu clar, que coneixes abans de començar",
+        "description": "Ha d'incloure les competències que adquiriràs, els crèdits ECTS, els teus drets i deures, el centre de realització, les activitats, el calendari i horari i el sistema d'avaluació.",
+        "article": "Art. 21.5 i 21.6"
+      },
+      "internshipTutors": {
+        "title": "Tens tutor o tutora acadèmic i de l'entitat, amb seguiment real",
+        "description": "Ha d'haver-hi almenys una reunió inicial, una d'intermèdia i una altra de valoració final.",
+        "article": "Art. 21.6"
+      },
+      "notAJob": {
+        "title": "Les teues pràctiques no poden substituir un lloc de treball",
+        "description": "Han d'ajustar-se a la teua formació i al que establix el pla d'estudis, i en cap cas poden comprendre les funcions d'un lloc de treball de l'entitat.",
+        "article": "Art. 21.9"
+      },
+      "internshipSocialSecurity": {
+        "title": "Cotitzes a la Seguretat Social per les teues pràctiques",
+        "description": "Realitzar pràctiques acadèmiques externes, en qualsevol modalitat, determina la teua inclusió en la Seguretat Social, en els termes que fixe la seua normativa.",
+        "article": "Art. 21.11"
+      },
+      "evaluateInternships": {
+        "title": "Pots participar en l'avaluació del sistema de pràctiques",
+        "description": "La universitat ha de tindre procediments d'anàlisi i avaluació del sistema de pràctiques que incorporen la participació de l'estudiantat.",
+        "article": "Art. 21.7"
+      },
+      "agreementsAndRatios": {
+        "title": "Els convenis han d'oferir garanties i les ràtios han de ser coherents",
+        "description": "Les universitats només poden signar convenis amb entitats que oferisquen garanties suficients i el respecte dels teus drets, i han d'assegurar ràtios d'estudiants per tutor o tutora coherents amb els objectius formatius. Si la normativa estatal ho preveu, el conveni pot contemplar compensació de despeses.",
+        "article": "Art. 21.13, 21.14 i 21.8"
+      },
+      "dualTraining": {
+        "title": "La formació dual té normativa pròpia en cada universitat",
+        "description": "Les universitats han d'establir una normativa específica que garantisca l'equilibri formatiu i la qualitat de la tutoria acadèmica i de la tutoria en l'entitat.",
+        "article": "Art. 21.15"
+      }
+    }
+  },
+  "scholarships": {
+    "title": "Beques i ajudes",
+    "rights": {
+      "noDroppingOut": {
+        "title": "Ningú hauria d'haver de renunciar als seus estudis per raons econòmiques",
+        "description": "Les administracions i universitats han de garantir programes de beques i ajudes amb l'objectiu d'assegurar la igualtat d'oportunitats amb independència de la teua situació socioeconòmica.",
+        "article": "Art. 37.1"
+      },
+      "fitSituation": {
+        "title": "Les beques s'ajusten a la teua situació i necessitats",
+        "description": "S'apliquen els principis de progressivitat, suficiència i equitat, i les beques s'han d'orientar a garantir la teua permanència i continuïtat en els estudis.",
+        "article": "Art. 37.2 i 37.3"
+      },
+      "livingCosts": {
+        "title": "Les beques haurien de tendir a tindre en compte el cost de l'allotjament i de la vida",
+        "description": "Progressivament, i segons les disponibilitats pressupostàries i límits legals, haurien de considerar el cost de l'allotjament quan estudiar implica canviar de residència i els diferents nivells del cost de la vida segons la província.",
+        "article": "Art. 37.4"
+      },
+      "applyAndPortability": {
+        "title": "Pots presentar-te a les convocatòries de beques i emportar-te la teua beca a qualsevol lloc",
+        "description": "Inclou la portabilitat de les beques i ajudes nacionals a tot el territori, amb independència del teu lloc de residència, i de les beques pròpies de les universitats en els termes de cada convocatòria.",
+        "article": "Art. 6.1 t)"
+      },
+      "studentsInScholarships": {
+        "title": "L'estudiantat participa en el disseny i la selecció de beques",
+        "description": "A través del Consell d'Estudiants Universitari de l'Estat en les beques estatals i dels òrgans de representació en les de les comunitats i universitats, incloses les comissions de selecció i valoració.",
+        "article": "Art. 38"
+      },
+      "swiftResolution": {
+        "title": "La teua beca s'ha de resoldre amb la màxima agilitat possible",
+        "description": "Les administracions i universitats han de resoldre els expedients com més prompte millor, perquè els recursos de la beca arriben quan realment els necessites.",
+        "article": "Art. 40.2"
+      }
+    }
+  },
+  "representation": {
+    "title": "Representació i participació",
+    "rights": {
+      "freedoms": {
+        "title": "Tens llibertat d'expressió, reunió, associació i manifestació en la universitat",
+        "description": "Sense cap discriminació directa o indirecta, en els termes de la Constitució, la llei i la normativa de la teua universitat.",
+        "article": "Art. 7.1"
+      },
+      "governingBodies": {
+        "title": "Tens dret a estar representat en els òrgans de govern i a participar en la seua elecció",
+        "description": "Inclou els consells d'estudiants de la teua universitat, el Consell d'Estudiants Universitari de l'Estat i els consells autonòmics. Tot l'estudiantat de títols oficials matriculat és elector i elegible.",
+        "article": "Art. 7.4 i 31.2"
+      },
+      "academicStrike": {
+        "title": "Tens dret a l'aturada acadèmica",
+        "description": "La declara l'òrgan de representació de l'estudiantat, pot ser total o parcial en una universitat o en algun dels seus centres, i la representació estudiantil ha de ser escoltada i participar en l'elaboració de la normativa que la regule en la teua universitat.",
+        "article": "Art. 7.6 i 7.7"
+      },
+      "informationAndParticipation": {
+        "title": "Tens dret a informació real i a mecanismes efectius de participació",
+        "description": "Les universitats han de garantir accés real a la informació i mecanismes adequats per a exercir els teus drets de participació i representació, inclosos els de seguiment i avaluació.",
+        "article": "Art. 7.5 i 7.2"
+      },
+      "studentCouncil": {
+        "title": "La teua universitat ha de tindre un Consell d'Estudiants, amb espais i recursos",
+        "description": "És un òrgan col·legiat de representació i coordinació de l'estudiantat. També pot haver-hi consells per facultat, escola o centre. Ha de defendre els interessos de l'estudiantat i vetlar pel compliment dels seus drets i deures, i la universitat l'ha de dotar dels espais i recursos necessaris.",
+        "article": "Art. 35"
+      },
+      "rulemaking": {
+        "title": "La teua representació participa en l'elaboració de les normes que t'afecten",
+        "description": "Les universitats han de garantir la participació de la representació estudiantil en l'elaboració de les normes de l'estudiantat, i les persones representants tenen dret a ser escoltades.",
+        "article": "Art. 10.3 i 32 k)"
+      },
+      "commissions": {
+        "title": "La teua representació està en les comissions de calendari, horaris, plans d'estudi, qualitat i beques",
+        "description": "Segons establisca la normativa de la universitat i la general. També participa en els sistemes interns de garantia de qualitat i en les comissions que elaboren o modifiquen les memòries dels títols oficials.",
+        "article": "Art. 32 k) i art. 6.1 ag)"
+      },
+      "representativesRights": {
+        "title": "Qui et representa pot presentar-se, compatibilitzar i comunicar-se amb tu",
+        "description": "Tenen dret al sufragi passiu, a compatibilitzar els seus estudis amb la representació (amb un apartat específic en el pla de conciliació), a poder dirigir-se a tot l'estudiantat amb els mitjans de la universitat, i a informació pública i formació sobre els òrgans.",
+        "article": "Art. 32 d), e), j) i l)"
+      },
+      "representativesResources": {
+        "title": "La teua representació disposa d'espais i recursos propis",
+        "description": "Espais físics i mitjans electrònics per a difondre informació i actuar com a representants, amb format accessible, i els recursos tècnics i econòmics per a exercir les seues funcions.",
+        "article": "Art. 32 f) i g)"
+      },
+      "complaintsChannel": {
+        "title": "Les teues queixes i suggeriments poden arribar a la universitat a través de la teua representació",
+        "description": "Qui et representa és un canal per a transmetre suggeriments, queixes i reclamacions, sense perjudici que puges elevar-les directament pels canals de la teua universitat.",
+        "article": "Art. 32 h) i 33 a)"
+      },
+      "legalAdvice": {
+        "title": "El Consell d'Estudiants pot consultar l'assessoria jurídica de la universitat",
+        "description": "A través del Consell d'Estudiants i de forma col·lectiva, mai individual, sobre temes de l'activitat acadèmica i de la vida universitària.",
+        "article": "Art. 32 i)"
+      },
+      "associations": {
+        "title": "Pots crear associacions i la universitat ha de donar-los suport",
+        "description": "Es promouen associacions, col·lectius, federacions i confederacions d'estudiants. Les universitats han d'habilitar locals i mitjans en la mesura de les seues possibilitats i destinar partides pressupostàries per a subvencionar-ne la gestió. Les associacions registrades poden integrar-se en xarxes nacionals i internacionals.",
+        "article": "Arts. 34 i 36"
+      },
+      "ombudsman": {
+        "title": "Pots acudir a la Defensoria Universitària",
+        "description": "Si consideres lesionats els teus drets i llibertats, la Defensoria t'assessora sobre com presentar reclamacions acadèmiques o de la vida universitària, amb independència, autonomia i confidencialitat, i pot mediar i conciliar.",
+        "article": "Art. 43"
+      }
+    }
+  },
+  "services": {
+    "title": "Serveis i vida universitària",
+    "rights": {
+      "studentServices": {
+        "title": "La teua universitat ha de tindre serveis d'atenció a l'estudiantat",
+        "description": "Ja no és una possibilitat sinó una obligació: unitats d'atenció a l'estudiant, accessibles i de qualitat, connectades amb l'acció tutorial i amb la resta de serveis de la universitat.",
+        "article": "Arts. 62.1 i 6.1 ai)"
+      },
+      "rightsAdvice": {
+        "title": "Tens dret a assessorament sobre els teus drets i com exercir-los",
+        "description": "Els serveis d'atenció a l'estudiantat informen i orienten sobre associacionisme i participació estudiantil i sobre drets estudiantils i com exercir-los.",
+        "article": "Art. 62.3 f) i h)"
+      },
+      "housingInformation": {
+        "title": "Tens dret a informació detallada sobre allotjament",
+        "description": "Allotjament propi de la universitat o en conveni, i borses d'allotjament de la ciutat de la universitat o de ciutats pròximes.",
+        "article": "Art. 62.3 j)"
+      },
+      "universityHousing": {
+        "title": "L'allotjament universitari ha de ser accessible, transparent i amb preus adequats",
+        "description": "L'accés a col·legis majors i residències de fundació pròpia s'ha de regir per procediments públics, objectius i transparents, amb preus adequats per a garantir la igualtat d'oportunitats. Totes les instal·lacions han de ser accessibles a persones amb discapacitat, i els residents participen en la designació dels equips directius.",
+        "article": "Art. 63.2 a 63.5"
+      },
+      "administration": {
+        "title": "Tens dret a una administració universitària accessible i de qualitat",
+        "description": "La relació amb l'administració de la teua universitat s'ha de garantir tant de manera electrònica com física.",
+        "article": "Art. 6.1 aj)"
+      },
+      "studentSpaces": {
+        "title": "Tens dret a espais dedicats a l'estudiantat",
+        "description": "Espais on l'estudiantat participe en la gestió i organització, per a convivència, formació transversal, activitats culturals, esportives, de cooperació i sostenibilitat, participació i oci, segons la normativa de cada universitat.",
+        "article": "Art. 6.1 ak)"
+      },
+      "digitalSkills": {
+        "title": "Tens dret a formació i recursos digitals, i a seguretat digital",
+        "description": "Accés a formació per a desenvolupar capacitats digitals i a recursos i infraestructures digitals coherents amb la teua titulació, a la seguretat dels mitjans digitals i a la garantia dels teus drets fonamentals a Internet. Les teues dades personals no es poden usar per a altres fins que els regulats per la llei.",
+        "article": "Art. 6.1 v), z) i ac)"
+      },
+      "riskPrevention": {
+        "title": "Tens dret a formació sobre prevenció de riscos i a mitjans que garantisquen la teua salut i seguretat",
+        "description": "En les teues activitats d'aprenentatge i de participació en la vida universitària.",
+        "article": "Art. 6.1 y)"
+      }
+    }
+  },
+  "recognition": {
+    "title": "Reconeixement del teu treball i la teua participació",
+    "rights": {
+      "creditRecognition": {
+        "title": "Pots obtindre reconeixement de crèdits per activitats universitàries",
+        "description": "Les universitats poden reconéixer des de 6 ECTS fins a un màxim del 10 % dels crèdits dels graus per activitats de participació i col·laboració social, cooperació al desenvolupament, sostenibilitat, difusió del coneixement científic, culturals i artístiques. A més, tens dret a reconeixement acadèmic per activitats com les de representació estudiantil, esportives o de voluntariat, segons la normativa de la teua universitat.",
+        "article": "Art. 61.3, art. 28 i art. 6.1 p)"
+      },
+      "europeanSupplement": {
+        "title": "La teua formació complementària i la teua representació consten en el Suplement Europeu al Títol",
+        "description": "Les universitats han d'incloure aquest tipus de formació, les activitats transversals i les activitats de la vida universitària, entre elles la representació estudiantil, en la forma que determine la seua normativa.",
+        "article": "Art. 61.3 i art. 6.1 o)"
+      },
+      "workExperience": {
+        "title": "Tens dret al reconeixement de la teua experiència laboral o professional",
+        "description": "A efectes acadèmics, d'acord amb la normativa que regula els Graus i Màsters i sense perjudici de la normativa pròpia de la universitat.",
+        "article": "Art. 6.1 q)"
+      },
+      "authorship": {
+        "title": "Tens dret a l'autoria i a la propietat intel·lectual dels teus treballs",
+        "description": "Inclou els teus TFG i TFM, i el reconeixement de la teua condició d'inventor o inventora i dels teus drets de propietat industrial quan siga procedent.",
+        "article": "Art. 6.1 ae)"
+      },
+      "publicationConsent": {
+        "title": "Els teus treballs no poden publicar-se ni reproduir-se sense la teua autorització",
+        "description": "Qualsevol ús diferent de l'estrictament acadèmic dels treballs i memòries que lliures requereix la teua autorització expressa.",
+        "article": "Art. 23.2"
+      },
+      "volunteering": {
+        "title": "El voluntariat i la cooperació et donen dret a formació, acreditació i certificat",
+        "description": "Tens dret a participar en activitats de voluntariat i cooperació, a rebre formació quan s'emmarquen en convenis de la teua universitat, a una acreditació com a voluntari o cooperant i a un certificat dels serveis prestats.",
+        "article": "Art. 61.2"
+      }
+    }
+  },
+  "doctorate": {
+    "title": "Doctorat i formació permanent",
+    "rights": {
+      "doctorate": {
+        "title": "Si fas el Doctorat, tens tutor o tutora, director o directora i representació",
+        "description": "Formació investigadora de qualitat, una persona tutora que oriente el teu procés, direcció amb experiència investigadora acreditada, integració en grups i xarxes de recerca, i representació de l'estudiantat de Doctorat en el Comitè de Direcció de les Escoles de Doctorat.",
+        "article": "Art. 8.1 b), c) i art. 8.2"
+      },
+      "lifelongLearning": {
+        "title": "Si fas formació permanent, tens qualitat, flexibilitat i una carta de serveis",
+        "description": "Programes amb criteris de qualitat, admissió flexible, horaris organitzats amb flexibilitat per a conciliar i una carta de serveis amb l'oferta formativa detallada, que incloga tipus i durada de les activitats, límits de validesa acadèmica i mitjans disponibles. Les universitats determinen la resta de drets en estudis no oficials.",
+        "article": "Art. 9 i art. 1.3"
+      }
+    }
+  }
+}

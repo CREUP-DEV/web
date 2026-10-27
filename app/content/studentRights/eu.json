@@ -1,0 +1,542 @@
+{
+  "general": {
+    "title": "Eskubide orokorrak",
+    "rights": {
+      "equalRights": {
+        "title": "Eskubide eta betebehar berdinak dituzu, zeinahi dela zure unibertsitatea, zure titulazioa edo zure modalitatea",
+        "description": "Berdin dio unibertsitate publikoan edo pribatuan ikasten duzun, aurrez aurre edo modu birtualean, edo non dagoen ikastegia: berdintasuna bermatuta dago. Salbuespena gobernu-kargu unipertsonaletarako (errektorea, adibidez) botoa da, titulu ofizialetako ikasleriari dagokiona.",
+        "article": "2.1 artikulua"
+      },
+      "noDiscrimination": {
+        "title": "Inork ezin du zu diskriminatu",
+        "description": "Ez jatorriagatik, sexuagatik, erlijioagatik, desgaitasunagatik, nazionalitateagatik, osasunagatik, sexu-orientazioagatik edo -identitateagatik, genero-adierazpenagatik, sexu-ezaugarriengatik, egoera sozioekonomikoagatik, hizkuntzagatik, ideia politiko edo sindikalengatik, itxuragatik, ez eta beste inongo egoera pertsonal edo sozialagatik ere.",
+        "article": "4. artikulua eta 6.1 x) artikulua"
+      },
+      "qualityEducation": {
+        "title": "Kalitatezko unibertsitate-prestakuntzarako eskubidea duzu",
+        "description": "Unibertsitateak ikasketen programazio ona, irakasle erabilgarriak eta ekipamendu eta instalazio egokiak bermatu behar ditu, zure titulazioaren ikaskuntza-helburuak lortu ahal izan ditzazun.",
+        "article": "5, 6.1 h) eta 20.1 artikuluak"
+      },
+      "chooseUniversity": {
+        "title": "Nahi duzun unibertsitatean ikasteko eskubidea duzu",
+        "description": "Lege-baldintzak betetzen badituzu, Espainiako edozein unibertsitatetan eska dezakezu onarpena, eta unibertsitateek izapideetan eta zure matrikularen diseinuan lagundu behar dizute.",
+        "article": "6.1 a) eta 12. artikuluak"
+      },
+      "informedOfRights": {
+        "title": "Zure unibertsitateak zure eskubideen berri eman behar dizu",
+        "description": "Webgunean argitaratu eta bere kanaletatik jakinarazi behar ditu, eta ikasleen ordezkaritzarekin nola jarri harremanetan modu eskuragarrian adierazi.",
+        "article": "10.2 eta 10.4 artikuluak"
+      }
+    }
+  },
+  "evaluation": {
+    "title": "Ebaluazioa eta berrikuspena",
+    "rights": {
+      "objectiveEvaluation": {
+        "title": "Ebaluazio objektibo eta gardena izateko eskubidea duzu",
+        "description": "Ebaluazio-arauak, berrikuspen-prozedura eta erreklamazio-bideak publikoak izan behar dira, eta ebaluazioak irakasgai-gidan jasotako irizpide objektiboei erantzun behar die.",
+        "article": "6.1 m) eta 22.3 artikuluak"
+      },
+      "criteriaLocked": {
+        "title": "Matrikula egin ondoren, ebaluazio-irizpideak ezin dira aldatu",
+        "description": "Irakasgai-gidak dioena da balio duena, proba bakoitzaren haztapena barne. Soilik alda daiteke arrazoituta, kudeaketa akademikoko organoaren baimenarekin eta adostasunarekin, eta matrikulatutako ikasle guztiei jakinaraziz.",
+        "article": "20.3 artikulua"
+      },
+      "examDatesInAdvance": {
+        "title": "Probetako datak behar adinako aurrerapenez jakinarazten dira",
+        "description": "Etengabeko ebaluaziorako eta azken probetarako balio du. Gainera, proben programazioa ezin da aldatu, ustekabean ezinezkoa gertatzen denean izan ezik, eta kasu horretan irakasleei eta kaltetutako ikasleei kontsulta egin behar zaie.",
+        "article": "22.4 eta 22.5 artikuluak"
+      },
+      "rescheduleExam": {
+        "title": "Azterketa baterako beste egun eta ordu bat eska dezakezu, arrazoi justifikatuengatik",
+        "description": "Ordezkaritza-organoen bilerengatik, osasun-arrazoi esanguratsuengatik, mendeko pertsonen zaintzagatik, senide hurbilen heriotzagatik edo gaixotasun larriagatik, beste proba, oposizio edo azterketa ofizialekin bat egiteagatik, epaitegiko zitazioengatik eta zure araudian aurreikusitako beste arrazoi batzuengatik. Arrazoi horiek berberek zigorrik gabe klasera ez joatea justifikatzen dute.",
+        "article": "22.6 artikulua"
+      },
+      "noTwoGlobalExams": {
+        "title": "Ezin zaituzte 24 ordu baino gutxiagoan bi proba globaletara deitu",
+        "description": "Saihestu behar da ikasturte bereko irakasgai desberdinetako proba globalak 24 ordu baino gutxiagoan izatea, eta eskubidea duzu zu deitzen zaituzten proba global edo finalak data eta orduan bat ez etortzeko.",
+        "article": "22.8 artikulua"
+      },
+      "twoSittings": {
+        "title": "Irakasgai eta ikasturte bakoitzeko bi deialditarako eskubidea duzu",
+        "description": "Ohiko bat eta ezohiko bat. Ahalegina egingo da ezohikoan irakasgaiaren azken notaren osotasuna lortu ahal izateko.",
+        "article": "22.11 artikulua"
+      },
+      "examLanguage": {
+        "title": "Irakasgai-gidako edozein hizkuntzatan egin dezakezu azterketa",
+        "description": "Irakasgaia hainbat hizkuntzatan ematen bada irakasgai-gidaren arabera, zeinetan egin nahi duzun zure ebaluazioa aukeratu dezakezu.",
+        "article": "22.12 artikulua"
+      },
+      "adaptedExams": {
+        "title": "Probak egokitzen dira desgaitasuna, hezkuntza-laguntzarako behar bereziak edo ikasketa-zailtasunak badituzu",
+        "description": "Ikastegiek edo sailek behar diren egokitzapen metodologikoak, denborazkoak eta espazialak egin behar dituzte, eta irakasgai-gidak ebaluazio-sistemaren egokitzapenak jaso ditzake.",
+        "article": "22.15 eta 20.3 artikuluak"
+      },
+      "proofOfSitting": {
+        "title": "Proba egin duzula dioen frogagiria ematen dizute",
+        "description": "Ebaluazio-proba bat amaitzean, proba egin duzula egiaztatzen duen idatzizko frogagiria eska dezakezu.",
+        "article": "22.10 artikulua"
+      },
+      "privateGrades": {
+        "title": "Zuk bakarrik ezagut dezakezu zure nota",
+        "description": "Unibertsitateek bermatu behar dute ikasle bakoitzak bere kalifikazioa soilik ezagutzea. Emaitza agregatuak soilik argitaratu daitezke, anonimizatuta.",
+        "article": "25.5 artikulua"
+      },
+      "reviewAndExplanation": {
+        "title": "Zure azterketa berrikusteko eta kalifikazioa azal diezazuten eskubidea duzu",
+        "description": "Berrikuspena banakakoa da eta arduradun diren irakasleen aurrean egiten da, irakasgaiaren koordinatzailearen aurrean edo epaimahai edo berrikuspen-organo baten aurrean. Bertan nota azaltzen dizute. Aktak ixtea baino lehen amaitu behar da.",
+        "article": "26.1, 26.2 eta 26.7 artikuluak"
+      },
+      "reviewedExamCopy": {
+        "title": "Zure azterketa berrikusiaren kopia izateko eskubidea duzu",
+        "description": "Irakasleek berrikusi eta baloratutako zure ariketen kopia eska dezakezu. Balorazio horiek barnean dituztenez, ezin dira banatu edo zabaldu.",
+        "article": "26.4 artikulua"
+      },
+      "reviewCannotLowerGrade": {
+        "title": "Berrikuspenak ezin du zure nota okertu",
+        "description": "Orokorrean, azterketa bat berrikusteak ezin du hasierako kalifikazioa jaistea ekarri. Salbuespen bakarra akats materialak edo aritmetikoak zuzentzea da.",
+        "article": "26.5 artikulua"
+      },
+      "reviewNoClash": {
+        "title": "Berrikuspena ezin da beste probekin bat etorri",
+        "description": "Bermatu behar da berrikuspen-eguna ebaluazio-probekin talka ez egitea. Irakasgai presentzialetan irakasgaia ematen den ikastegian egiten da, zuk eta irakasleek beste ezer adosten ez baduzue.",
+        "article": "26.8 eta 26.9 artikuluak"
+      },
+      "appealDecision": {
+        "title": "Erabakiaren aurka erreklamatu dezakezu, eta beste pertsona batzuek ebatziko dute",
+        "description": "Irakasleen edo epaimahaiaren erabakiaren aurka erreklamazio arrazoitua aurkez dezakezu. Hori ebazten dutenek ezin dute izan ebaluazioan edo berrikuspenean esku hartu zutenak.",
+        "article": "27.1 eta 27.2 artikuluak"
+      }
+    }
+  },
+  "guides": {
+    "title": "Irakasgai-gidak eta tutoretzak",
+    "rights": {
+      "knowGuidesBeforeEnrolling": {
+        "title": "Matrikulatu aurretik irakasgai-gidak ezagutzeko eskubidea duzu",
+        "description": "Gidak ofizialak dira eta matrikula zabaldu baino lehen argitaratuta egon behar dute. Gutxienez, irakaskuntza-hizkuntza, modalitatea (aurrez aurrekoa, hibridoa edo birtuala), edukiak, ebaluazio-sistema, kanpoko praktikak, klaseen ordutegia, tutoretzen ordutegia eta arduradun diren irakasleak jakinarazten dituzte.",
+        "article": "6.1 i) eta 20.2 artikuluak"
+      },
+      "virtualCourseGuides": {
+        "title": "Irakasgai birtualen gidek ikasteko behar duzuna jasotzen dute",
+        "description": "Baldintza teknikoak, plataforma teknologikoa eta irakasleekin eta tutoreekin nola harremanetan jartzen zaren adierazi behar dute.",
+        "article": "20.4 artikulua"
+      },
+      "teachingLanguage": {
+        "title": "Irakasgai-gidak adierazten duen hizkuntzan irakaskuntza jasotzeko eskubidea duzu",
+        "description": "Matrikulatu zaren irakasgaiaren gidan agertzen den irakaskuntza-hizkuntza da jaso behar duzuna.",
+        "article": "6.1 af) artikulua"
+      },
+      "tutoringPerCourse": {
+        "title": "Irakasgai guztiek tutoretza eta irakasle arduraduna dute",
+        "description": "Gai bakoitzean ikasturtean zehar banaka orientatzeko eskubidea duzu, irakasgaiaren arduraduna den pertsona batekin.",
+        "article": "19.1 eta 19.2 artikuluak"
+      },
+      "tutoringSchedule": {
+        "title": "Tutoretzen egutegia irakasgaia hastean finkatzen da",
+        "description": "Ikasleei jakinarazten zaie, irakasgai-gidan jasota dago eta arrazoi justifikatuengatik bakarrik alda daiteke, irakaskuntzaren arduradunen onarpenarekin eta matrikulatutako ikasle guztiei bide ofizialen bidez abisatuta.",
+        "article": "19.2 artikulua"
+      },
+      "thesisSupervision": {
+        "title": "Zure TFG eta TFM lanek benetako tutoretza dute",
+        "description": "Graduko eta Masterreko amaierako lanean benetako tutoretza akademikoa izateko eskubidea duzu, irakasgaiek duten antzeko erregulartasun eta publizitatearekin.",
+        "article": "6.1 ñ) eta 19.2 artikuluak"
+      },
+      "synchronousTutoring": {
+        "title": "Ikasketa birtualetan, tutoretza sinkronoa eska dezakezu",
+        "description": "Unibertsitateek tutoretza-mekanismo eraginkorrak bermatu behar dituzte, sinkronoak edo asinkronoak, eta eskatzen baduzu tutoretza sinkronoa izan daiteke unibertsitatearen araudiak ezarritakoaren arabera.",
+        "article": "19.3 artikulua"
+      },
+      "degreeCoordination": {
+        "title": "Zure ikastegiak titulazio-koordinazioa eta tutoretza-ekintzako plana ditu",
+        "description": "Ikastegiek titulazio-koordinatzaileak izendatu behar dituzte zu orientatzeko, eta unibertsitateek edo ikastegiek tutoretza-ekintzako plana izan behar dute.",
+        "article": "17.2 eta 17.3 artikuluak"
+      },
+      "degreeOrientation": {
+        "title": "Zure titulazioari buruzko orientazioa jasotzeko eskubidea duzu",
+        "description": "Helburuei, baliabide eta ekipamenduei, liburutegiei, ebaluazioari, praktikei, ikasketak eta lana uztartzeko moduei, mugikortasunari, bekei eta laguntzei, eta buruko osasuneko zerbitzuei, laguntza-zerbitzuei eta jazarpenaren edo diskriminazioaren aurreko arreta-zerbitzuei buruzko informazioa jaso behar duzu.",
+        "article": "17.1 eta 18.2 artikuluak"
+      }
+    }
+  },
+  "enrolment": {
+    "title": "Matrikula, iraupena eta kontziliazioa",
+    "rights": {
+      "enrolmentDeadlines": {
+        "title": "Matrikulatu aurretik matrikulatzeko eta matrikula uzteko epeak eta prozedurak ezagutzeko eskubidea duzu",
+        "description": "Unibertsitateak prozesua hasi baino lehen irakasgaiak matrikulatzeko eta matrikula uzteko araudiaren eta epeen berri eman behar dizu.",
+        "article": "6.1 j) artikulua"
+      },
+      "progressRules": {
+        "title": "Aurrerapen- eta iraupen-arauak ezagutzeko eskubidea duzu",
+        "description": "Unibertsitateak zure ikasketetan zenbat aurrera egin dezakezun eta zenbat denbora iraun dezakezun arautzen duten arauen berri eman behar dizu.",
+        "article": "6.1 k) artikulua"
+      },
+      "workAndStudy": {
+        "title": "Ikasketak eta lana uztartzeko eskubidea duzu",
+        "description": "Unibertsitateak erraztu behar du, baita ebaluazioan ere, bere araudiaren arabera eta antolakuntza akademikoa eta irakasgai bakoitzaren izaera kontuan hartuta.",
+        "article": "6.1 c) eta 22.2 artikuluak"
+      },
+      "partTime": {
+        "title": "Denbora partzialean ikasteko eskubidea duzu",
+        "description": "Ikasketa ofizialak denbora partzialean egin ditzakezu, eta unibertsitateek behar diren neurriak hartu behar dituzte modalitate horretan kalitatezko irakaskuntza eta ebaluazioa bermatzeko.",
+        "article": "6.1 ah) artikulua"
+      },
+      "workLifeBalance": {
+        "title": "Kontziliazio-neurriak izateko eskubidea duzu",
+        "description": "Jarduera akademikoak lan- eta familia-bizitzarekin kontziliatzea errazteko diseinatu behar dira. Genero-indarkeriaren, sexu-indarkeriaren, terrorismoaren, beste indarkeria edo jazarpen batzuen eta hondamendi naturalen biktimentzako neurriak ere bermatzen dira. Unibertsitate bakoitzak kontziliazio-planak izan behar ditu.",
+        "article": "6.1 l) artikulua"
+      },
+      "academicExemption": {
+        "title": "Dispentsa akademikoa izateko eskubidea duzu",
+        "description": "Zure unibertsitatearen araudiak ezartzen dituen moduan, arrazoiekin eta epeetan eska dezakezu.",
+        "article": "6.1 am) artikulua"
+      },
+      "suspendStudies": {
+        "title": "Zure ikasketak aldi baterako eteteko eskubidea duzu",
+        "description": "Unibertsitate bakoitzak arautzen du nola egin.",
+        "article": "6.1 an) artikulua"
+      },
+      "digitalDisconnection": {
+        "title": "Deskonexio digitalerako eskubidea duzu",
+        "description": "Zure unibertsitatearen araudiaren arabera, ez lizukete lanorduetatik kanpo konektatuta egotea eskatu behar. Salbuespenak dira premia akademikoak (azterketa-dataren edo gelaren aldaketak), alerta meteorologikoak eta beste egoera salbuespenezko batzuk.",
+        "article": "6.1 ad) artikulua"
+      },
+      "socialSecurity": {
+        "title": "Gizarte Segurantzaren babesa izateko eskubidea duzu",
+        "description": "Indarrean dagoen legediak ezartzen dituen baldintzetan.",
+        "article": "6.1 aa) artikulua"
+      }
+    }
+  },
+  "wellbeing": {
+    "title": "Buruko osasuna, berdintasuna eta ongizatea",
+    "rights": {
+      "mentalHealthCare": {
+        "title": "Doako eta eskuragarri dagoen arreta psikologikoa eta buruko osasunekoa izateko eskubidea duzu",
+        "description": "Zure unibertsitateak aditu diren langileen orientazioa eta arreta eskaini behar dizu, zure autonomia-erkidegoko osasun-zerbitzu publikoekin koordinatuta, eta beharrezkoa denean zerbitzu horietara bideratuko zaituzte.",
+        "article": "6.1 e) eta 62.3 g) artikuluak"
+      },
+      "supportUnits": {
+        "title": "Zure unibertsitateak laguntza-unitateak izan behar ditu",
+        "description": "Laguntza-unitateak egon behar dira desgaitasuna, laguntza espezifikoko hezkuntza-beharrak eta ikasketa-zailtasunak dituen ikasleentzat, arreta psikologikoa eta buruko osasunekoa emateko, orientazio eta aholkularitza soziolaboralerako eta genero-berdintasunerako.",
+        "article": "10.5 artikulua"
+      },
+      "protocols": {
+        "title": "Zure unibertsitateak suizidioaren, sexu-jazarpenaren eta bullyingaren aurkako protokoloak izan behar ditu",
+        "description": "Hiru protokolo derrigorrezko dira: jokabide suizidei aurre egiteko jarduketa, prebentzioa eta esku-hartzea; sexu-jazarpenaren eta ziberjazarpenaren, sexuagatiko, sexu-orientazioagatiko edo -identitateagatiko, genero-adierazpenagatiko edo sexu-ezaugarriengatiko jazarpenaren prebentzioa eta aurkako jarduketa; eta unibertsitate-esparruko jazarpen pertsonalaren aurreko jarduketa. Unibertsitateek 6 hilabete dituzte protokoloak onartuta eta indarrean izateko.",
+        "article": "10.6, 10.7 eta 10.8 artikuluak, eta lehen xedapen iragankorra"
+      },
+      "disabilitySupport": {
+        "title": "Arreta, aholkularitza eta curriculum-egokitzapena jasotzeko eskubidea duzu, desgaitasuna, hezkuntza-laguntzarako behar bereziak edo ikasketa-zailtasunak badituzu",
+        "description": "Zure unibertsitatearen araudiaren eta bere antolakuntza-aukeren arabera, eta osasun- eta gizarte-zerbitzuekin koordinatuta egokia denean. Tutoretza eta orientazioa ere egokitu behar dira.",
+        "article": "6.1 f) eta 17.4 artikuluak"
+      },
+      "accessibleSpaces": {
+        "title": "Zure espazioak, eraikinak eta tresnak irisgarriak izan behar dira",
+        "description": "Unibertsitateek beren espazioak eta eraikinak irisgarri egin behar dituzte, birtualak barne, eta aukera-berdintasuna ziurtatzeko baliabide material, giza baliabide eta baliabide teknikoak zure esku jarri.",
+        "article": "13.2 artikulua eta 62.7 artikulua"
+      },
+      "nonSexistTreatment": {
+        "title": "Tratu ez-sexista eta aukera-berdintasuna izateko eskubidea duzu",
+        "description": "Zure sexu-orientazioa edo -identitatea, genero-adierazpena edo sexu-ezaugarriak, edo desberdintasun- edo ahultasun-egoeran dagoen edozein kolektibotakoa izatea gorabehera.",
+        "article": "6.1 ab) artikulua"
+      },
+      "nameAndSexRectification": {
+        "title": "Unibertsitate Kontseiluak irizpide komunak finkatuko ditu zure espedientean izena eta sexua zuzentzeko",
+        "description": "Unibertsitateek espedientean sexuaren eta izenaren aipamena zuzentzeko eskaerei oinarrizko irizpide komunekin erantzun ahal izango diete, 4/2023 Legea kontuan hartuta.",
+        "article": "6.3 artikulua"
+      },
+      "healthyFood": {
+        "title": "Jangela-zerbitzuetan elikadura osasungarria eta egokitua izateko eskubidea duzu",
+        "description": "Unibertsitateko jangela-zerbitzuek, propioak zein hirugarrenenak izan, elikadura osasungarria eta egokia eskaini behar dute elikadura-behar espezifikoak dituztenentzat.",
+        "article": "6.1 al) artikulua"
+      }
+    }
+  },
+  "mobility": {
+    "title": "Mugikortasuna",
+    "rights": {
+      "mobilityRight": {
+        "title": "Mugikortasuna eskubide bat da eta zure unibertsitateak sustatu eta horren berri eman behar dizu",
+        "description": "Mugikortasun-programa nazionalen eta nazioartekoen berri eman behar dizu, propioak edo beste administrazio eta erakunde batzuenak, eta mugikortasunak zure espedientean nola eragiten duen, aukera-berdintasuna bermatzen duten baldintzetan, bereziki arrazoi sozioekonomikoengatik eta desgaitasunagatik.",
+        "article": "6.1 r), 14.1 eta 14.2 artikuluak"
+      },
+      "mobilityDuration": {
+        "title": "Zure mugikortasunaren iraupena eta unea tituluaren memoriak finkatzen ditu",
+        "description": "Graduan eta Masterrean ez dago dagoeneko seihileko edo ikasturteko muga orokorrik, ez eta karreraren bigarren erdiarentzako lehentasunik ere: zure titulazioaren memoriak ezartzen duena da balio duena.",
+        "article": "14.4 a) artikulua"
+      },
+      "mobilityCompatible": {
+        "title": "Mugikortasunak zure jarduera akademikoarekin bateragarria izan behar du",
+        "description": "Unibertsitateek bermatu behar dute mugikortasun-ekintzak denboraz zure ohiko jarduera akademikoaren garapenarekin bat etortzea.",
+        "article": "14.8 artikulua"
+      },
+      "learningAgreement": {
+        "title": "Joan baino lehen jakingo duzu zein irakasgai aitortuko dizkizuten",
+        "description": "Irakasle-tutorea edo, gutxienez, orientazioa izango duzu ikasketa-akordioa egiteko; akordio hori loteslea da eta egingo dituzun jarduerak eta jatorrizko unibertsitatearekin duten korrespondentzia jasotzen ditu.",
+        "article": "15.1 eta 15.2 artikuluak"
+      },
+      "gradesRecognised": {
+        "title": "Kanpoan gainditzen duzuna zure espedientean sartzen da, korrespondentzia-taula publikoekin",
+        "description": "Unibertsitateek kalifikazioen korrespondentzia-taulak ezarri behar dituzte hitzarmen bilateral bakoitzean, eta publikoak eta ikasleriarentzat eskuragarriak izan behar dira.",
+        "article": "15.4 artikulua"
+      },
+      "mobilityGrants": {
+        "title": "Mugikortasun-laguntzak jaso ditzakezu, eta joan baino lehen ordaindu beharko lirateke",
+        "description": "Helmugako ostatuarako eta mantenurako laguntzak eta bekak daude, eta administrazioek eta unibertsitateek lan egin behar dute ekintza egin aurretik ordain daitezen.",
+        "article": "14.6 eta 14.7 artikuluak"
+      },
+      "mobilitySupport": {
+        "title": "Mugikortasunean eskubideen urraketa edo diskriminazioa jasaten baduzu, laguntza izateko eskubidea duzu",
+        "description": "Unibertsitateek horrelako kasuetarako laguntza- eta jarduketa-mekanismoak ezarri behar dituzte zure egonaldian zehar.",
+        "article": "14.10 artikulua"
+      }
+    }
+  },
+  "internships": {
+    "title": "Kanpoko praktika akademikoak",
+    "rights": {
+      "qualityInternships": {
+        "title": "Zure praktikak kalitatez eta benetako tutoretzarekin egin behar dira",
+        "description": "Curriculumeko praktikentzat eta curriculumetik kanpokoentzat balio du. Irakasleen eta praktikak egiten dituzun erakundearen benetako tutoretza izateko eskubidea duzu.",
+        "article": "6.1 n) artikulua"
+      },
+      "trainingProject": {
+        "title": "Prestakuntza-proiektu argia izateko eskubidea duzu, hasi aurretik ezagutzen duzuna",
+        "description": "Hauek jaso behar ditu: eskuratuko dituzun gaitasunak, ECTS kredituak, zure eskubide eta betebeharrak, praktikak egiteko zentroa, jarduerak, egutegia eta ordutegia eta ebaluazio-sistema.",
+        "article": "21.5 eta 21.6 artikuluak"
+      },
+      "internshipTutors": {
+        "title": "Tutore akademikoa eta erakundekoa duzu, benetako jarraipenarekin",
+        "description": "Gutxienez hasierako bilera bat, bitarteko bat eta amaierako balorazioko beste bat egon behar dira.",
+        "article": "21.6 artikulua"
+      },
+      "notAJob": {
+        "title": "Zure praktikek ezin dute lanpostu bat ordezkatu",
+        "description": "Zure prestakuntzara eta ikasketa-planak ezartzen duenera egokitu behar dira, eta inolaz ere ezin dute erakundeko lanpostu baten eginkizunak hartu.",
+        "article": "21.9 artikulua"
+      },
+      "internshipSocialSecurity": {
+        "title": "Zure praktikengatik Gizarte Segurantzan kotizatzen duzu",
+        "description": "Kanpoko praktika akademikoak egiteak, edozein modalitatetan, Gizarte Segurantzan sartzea eragiten du, bere araudiak ezarritako baldintzetan.",
+        "article": "21.11 artikulua"
+      },
+      "evaluateInternships": {
+        "title": "Praktika-sistemaren ebaluazioan parte hartu dezakezu",
+        "description": "Unibertsitateak praktika-sistema aztertu eta ebaluatzeko prozedurak izan behar ditu, ikasleriaren parte-hartzea barne hartzen dutenak.",
+        "article": "21.7 artikulua"
+      },
+      "agreementsAndRatios": {
+        "title": "Hitzarmenek bermeak eman behar dituzte eta ratioek koherenteak izan behar dute",
+        "description": "Unibertsitateek behar adinako bermeak eta zure eskubideen errespetua eskaintzen dituzten erakundeekin soilik sinatu ditzakete hitzarmenak, eta tutore bakoitzeko ikasle-ratioak prestakuntza-helburuekin koherenteak izatea ziurtatu behar dute. Estatuko araudiak aurreikusten badu, hitzarmenak gastuen konpentsazioa jaso dezake.",
+        "article": "21.13, 21.14 eta 21.8 artikuluak"
+      },
+      "dualTraining": {
+        "title": "Prestakuntza dualak araudi propioa du unibertsitate bakoitzean",
+        "description": "Unibertsitateek prestakuntza-oreka eta tutoretza akademikoaren eta erakundeko tutoretzaren kalitatea bermatzen dituen araudi espezifikoa ezarri behar dute.",
+        "article": "21.15 artikulua"
+      }
+    }
+  },
+  "scholarships": {
+    "title": "Bekak eta laguntzak",
+    "rights": {
+      "noDroppingOut": {
+        "title": "Inork ez luke bere ikasketak utzi beharko arrazoi ekonomikoengatik",
+        "description": "Administrazioek eta unibertsitateek beka- eta laguntza-programak bermatu behar dituzte, zure egoera sozioekonomikoa edozein dela ere aukera-berdintasuna ziurtatzeko helburuarekin.",
+        "article": "37.1 artikulua"
+      },
+      "fitSituation": {
+        "title": "Bekak zure egoerara eta beharretara egokitzen dira",
+        "description": "Progresibotasun-, nahikotasun- eta ekitate-printzipioak aplikatzen dira, eta bekek zure ikasketetan irauten eta jarraitzen duzula bermatzera bideratuta egon behar dute.",
+        "article": "37.2 eta 37.3 artikuluak"
+      },
+      "livingCosts": {
+        "title": "Bekek ostatuaren eta bizitzaren kostua kontuan hartzera jo beharko lukete",
+        "description": "Pixkanaka, eta aurrekontu-aukeren eta lege-mugen arabera, ostatuaren kostua kontuan hartu beharko lukete ikastea bizilekuz aldatzea dakarrenean, eta probintziaren arabera bizitzaren kostuaren maila desberdinak.",
+        "article": "37.4 artikulua"
+      },
+      "applyAndPortability": {
+        "title": "Beka-deialdietara aurkez zaitezke eta zure beka edozein lekutara eraman dezakezu",
+        "description": "Estatuko bekak eta laguntzak lurralde osora eramateko aukera barne hartzen du, zure bizilekua edozein dela ere, eta unibertsitateen beka propioak ere bai, deialdi bakoitzaren baldintzetan.",
+        "article": "6.1 t) artikulua"
+      },
+      "studentsInScholarships": {
+        "title": "Ikasleriak parte hartzen du bekak diseinatzen eta hautatzen",
+        "description": "Estatuko Unibertsitateko Ikasleen Kontseiluaren bidez, estatuko bekei dagokienez, eta ordezkaritza-organoen bidez erkidegoetako eta unibertsitateetako bekei dagokienez, hautaketa- eta balorazio-batzordeak barne.",
+        "article": "38. artikulua"
+      },
+      "swiftResolution": {
+        "title": "Zure beka ahalik eta azkarren ebatzi behar da",
+        "description": "Administrazioek eta unibertsitateek espedienteak ahalik eta lasterren ebatzi behar dituzte, bekaren baliabideak benetan behar dituzunean iristeko.",
+        "article": "40.2 artikulua"
+      }
+    }
+  },
+  "representation": {
+    "title": "Ordezkaritza eta parte-hartzea",
+    "rights": {
+      "freedoms": {
+        "title": "Adierazpen-, bilera-, elkartze- eta manifestazio-askatasuna duzu unibertsitatean",
+        "description": "Zuzeneko edo zeharkako inolako diskriminaziorik gabe, Konstituzioaren, legearen eta zure unibertsitatearen araudiaren baldintzetan.",
+        "article": "7.1 artikulua"
+      },
+      "governingBodies": {
+        "title": "Gobernu-organoetan ordezkatuta egoteko eta horien hautaketan parte hartzeko eskubidea duzu",
+        "description": "Zure unibertsitateko ikasleen kontseiluak, Estatuko Unibertsitateko Ikasleen Kontseilua eta erkidegoetako kontseiluak barne hartzen ditu. Titulu ofizialetan matrikulatutako ikasle guztiak hautesle eta hautagarri dira.",
+        "article": "7.4 eta 31.2 artikuluak"
+      },
+      "academicStrike": {
+        "title": "Ikasketa-geldialdirako eskubidea duzu",
+        "description": "Ikasleriaren ordezkaritza-organoak aldarrikatzen du, osoa edo partziala izan daiteke unibertsitate batean edo bere ikastegiren batean, eta ikasleen ordezkaritza entzun egin behar da eta zure unibertsitatean hori arautzen duen araudiaren prestaketan parte hartu behar du.",
+        "article": "7.6 eta 7.7 artikuluak"
+      },
+      "informationAndParticipation": {
+        "title": "Benetako informazioa eta parte-hartze mekanismo eraginkorrak izateko eskubidea duzu",
+        "description": "Unibertsitateek informaziorako benetako sarbidea eta zure parte-hartze- eta ordezkaritza-eskubideak baliatzeko mekanismo egokiak bermatu behar dituzte, jarraipenekoak eta ebaluaziokoak barne.",
+        "article": "7.5 eta 7.2 artikuluak"
+      },
+      "studentCouncil": {
+        "title": "Zure unibertsitateak Ikasleen Kontseilua izan behar du, espazio eta baliabideekin",
+        "description": "Ikasleriaren ordezkaritza- eta koordinazio-organo kolegiatua da. Fakultate, eskola edo ikastegi bakoitzeko kontseiluak ere egon daitezke. Ikasleriaren interesak defendatu behar ditu eta haren eskubide eta betebeharrak betetzen direla zaindu, eta unibertsitateak behar diren espazio eta baliabideekin hornitu behar du.",
+        "article": "35. artikulua"
+      },
+      "rulemaking": {
+        "title": "Zure ordezkaritzak parte hartzen du zuri eragiten dizuten arauen prestaketan",
+        "description": "Unibertsitateek bermatu behar dute ikasleen ordezkaritzak parte hartzea ikasleriaren arauen prestaketan, eta ordezkariek entzuna izateko eskubidea dute.",
+        "article": "10.3 eta 32 k) artikuluak"
+      },
+      "commissions": {
+        "title": "Zure ordezkaritza egutegi, ordutegi, ikasketa-plan, kalitate eta beka batzordeetan dago",
+        "description": "Unibertsitatearen eta araudi orokorraren arabera. Kalitatea bermatzeko barne-sistemetan eta titulu ofizialen memoriak egiten edo aldatzen dituzten batzordeetan ere parte hartzen du.",
+        "article": "32 k) artikulua eta 6.1 ag) artikulua"
+      },
+      "representativesRights": {
+        "title": "Zure ordezkariak aurkez daitezke, ikasketak ordezkaritzarekin uztartu eta zurekin komunikatu",
+        "description": "Sufragio pasiboa dute, ikasketak ordezkaritzarekin uztartzeko eskubidea (kontziliazio-planean atal espezifiko batekin), ikasle guztiei unibertsitatearen baliabideekin zuzentzeko aukera, eta organoei buruzko informazio publikoa eta prestakuntza jasotzeko eskubidea.",
+        "article": "32 d), e), j) eta l) artikulua"
+      },
+      "representativesResources": {
+        "title": "Zure ordezkaritzak espazio eta baliabide propioak ditu",
+        "description": "Informazioa zabaltzeko eta ordezkari gisa jarduteko espazio fisikoak eta baliabide elektronikoak, formatu irisgarrian, eta eginkizunak betetzeko baliabide tekniko eta ekonomikoak.",
+        "article": "32 f) eta g) artikulua"
+      },
+      "complaintsChannel": {
+        "title": "Zure kexak eta iradokizunak unibertsitatera irits daitezke zure ordezkaritzaren bidez",
+        "description": "Zure ordezkaria iradokizunak, kexak eta erreklamazioak helarazteko kanal bat da, zuk zuzenean zure unibertsitateko bideetatik aurkez ditzakezun arren.",
+        "article": "32 h) eta 33 a) artikuluak"
+      },
+      "legalAdvice": {
+        "title": "Ikasleen Kontseiluak unibertsitateko aholkularitza juridikoari kontsulta diezaioke",
+        "description": "Ikasleen Kontseiluaren bidez eta modu kolektiboan, inoiz ez banakakoan, jarduera akademikoaren eta unibertsitate-bizitzaren gaiei buruz.",
+        "article": "32 i) artikulua"
+      },
+      "associations": {
+        "title": "Elkarteak sor ditzakezu eta unibertsitateak lagundu behar ditu",
+        "description": "Ikasleen elkarteak, kolektiboak, federazioak eta konfederazioak sustatzen dira. Unibertsitateek lokalak eta baliabideak prestatu behar dituzte, ahal duten neurrian, eta aurrekontu-partidak bideratu haien kudeaketa diruz laguntzeko. Erregistratutako elkarteak sare nazional eta nazioartekoetan integra daitezke.",
+        "article": "34 eta 36. artikuluak"
+      },
+      "ombudsman": {
+        "title": "Unibertsitateko Defentsoriara jo dezakezu",
+        "description": "Zure eskubideak eta askatasunak urratuta daudela uste baduzu, Defentsoriak aholkatzen zaitu erreklamazio akademikoak edo unibertsitate-bizitzakoak nola aurkeztu, independentziaz, autonomiaz eta konfidentzialtasunez, eta bitartekaritza eta adiskidetzea egin ditzake.",
+        "article": "43. artikulua"
+      }
+    }
+  },
+  "services": {
+    "title": "Zerbitzuak eta unibertsitate-bizitza",
+    "rights": {
+      "studentServices": {
+        "title": "Zure unibertsitateak ikasleriaren arreta-zerbitzuak izan behar ditu",
+        "description": "Ez da dagoeneko aukera bat, betebehar bat baizik: ikasleentzako arreta-unitateak, irisgarriak eta kalitatezkoak, tutoretza-ekintzarekin eta unibertsitateko gainerako zerbitzuekin lotuta.",
+        "article": "62.1 eta 6.1 ai) artikuluak"
+      },
+      "rightsAdvice": {
+        "title": "Zure eskubideei buruzko eta horiek baliatzeko aholkularitza izateko eskubidea duzu",
+        "description": "Ikasleriaren arreta-zerbitzuek ikasle-elkarteei eta ikasleen parte-hartzeari buruz eta ikasleen eskubideei eta horiek nola baliatu buruz informatu eta orientatzen dute.",
+        "article": "62.3 f) eta h) artikulua"
+      },
+      "housingInformation": {
+        "title": "Ostatuari buruzko informazio zehatza izateko eskubidea duzu",
+        "description": "Unibertsitateko ostatu propioa edo hitzarmenekoa, eta unibertsitatearen hiriko edo inguruko hirietako ostatu-bolsak.",
+        "article": "62.3 j) artikulua"
+      },
+      "universityHousing": {
+        "title": "Unibertsitateko ostatuak irisgarria, gardena eta prezio egokikoa izan behar du",
+        "description": "Fundazio propioko kolegio nagusietara eta egoitzetara sartzeko prozedura publikoak, objektiboak eta gardenak erabili behar dira, aukera-berdintasuna bermatzeko prezio egokiekin. Instalazio guztiak desgaitasuna duten pertsonentzat irisgarriak izan behar dira, eta egoiliarrek parte hartzen dute zuzendaritza-taldeen izendapenean.",
+        "article": "63.2tik 63.5era bitarteko artikuluak"
+      },
+      "administration": {
+        "title": "Unibertsitateko administrazio irisgarria eta kalitatezkoa izateko eskubidea duzu",
+        "description": "Zure unibertsitateko administrazioarekiko harremana bai modu elektronikoan bai fisikoan bermatu behar da.",
+        "article": "6.1 aj) artikulua"
+      },
+      "studentSpaces": {
+        "title": "Ikasleriarentzako espazioak izateko eskubidea duzu",
+        "description": "Ikasleriak kudeaketan eta antolaketan parte hartzen duen espazioak, bizikidetzarako, zeharkako prestakuntzarako, kultura-, kirol-, lankidetza- eta iraunkortasun-jardueretarako, parte-hartzerako eta aisialdirako, unibertsitate bakoitzaren araudiaren arabera.",
+        "article": "6.1 ak) artikulua"
+      },
+      "digitalSkills": {
+        "title": "Prestakuntza eta baliabide digitalak eta segurtasun digitala izateko eskubidea duzu",
+        "description": "Gaitasun digitalak garatzeko prestakuntzarako sarbidea eta zure titulazioarekin koherenteak diren baliabide eta azpiegitura digitaletarako sarbidea, baliabide digitalen segurtasuna eta zure oinarrizko eskubideen bermea Interneten. Zure datu pertsonalak ezin dira legeak arautzen dituenaz besteko helburuetarako erabili.",
+        "article": "6.1 v), z) eta ac) artikulua"
+      },
+      "riskPrevention": {
+        "title": "Arriskuen prebentzioari buruzko prestakuntza eta zure osasuna eta segurtasuna bermatzen dituzten baliabideak izateko eskubidea duzu",
+        "description": "Zure ikaskuntza-jardueretan eta unibertsitate-bizitzan parte hartzeko jardueretan.",
+        "article": "6.1 y) artikulua"
+      }
+    }
+  },
+  "recognition": {
+    "title": "Zure lanaren eta parte-hartzearen aitorpena",
+    "rights": {
+      "creditRecognition": {
+        "title": "Unibertsitate-jardueragatik kredituen aitorpena lor dezakezu",
+        "description": "Unibertsitateek 6 ECTS-tik hasi eta graduetako kredituen % 10 arte aitor dezakete, parte-hartze eta gizarte-lankidetzako jardueragatik, garapenerako lankidetzagatik, iraunkortasunagatik, ezagutza zientifikoa zabaltzeagatik eta jarduera kulturalengatik eta artistikoengatik. Gainera, aitorpen akademikoa jasotzeko eskubidea duzu ikasle-ordezkaritza, kirol edo boluntariotza bezalako jardueretarako, zure unibertsitatearen araudiaren arabera.",
+        "article": "61.3 artikulua, 28. artikulua eta 6.1 p) artikulua"
+      },
+      "europeanSupplement": {
+        "title": "Zure prestakuntza osagarria eta zure ordezkaritza Tituluaren Europako Gehigarrian agertzen dira",
+        "description": "Unibertsitateek mota horretako prestakuntza, zeharkako jarduerak eta unibertsitate-bizitzako jarduerak sartu behar dituzte, horien artean ikasle-ordezkaritza, bere araudiak zehazten duen moduan.",
+        "article": "61.3 eta 6.1 o) artikuluak"
+      },
+      "workExperience": {
+        "title": "Zure lan- edo lanbide-esperientzia aitortzeko eskubidea duzu",
+        "description": "Ondorio akademikoetarako, Gradu eta Masterrak arautzen dituen araudiaren arabera eta unibertsitatearen araudi propioari kalterik egin gabe.",
+        "article": "6.1 q) artikulua"
+      },
+      "authorship": {
+        "title": "Zure lanen egiletza eta jabetza intelektuala izateko eskubidea duzu",
+        "description": "Zure TFG eta TFM lanak barne hartzen ditu, eta asmatzaile gisa duzun izaeraren eta jabetza industrialeko eskubideen aitorpena, hala dagokionean.",
+        "article": "6.1 ae) artikulua"
+      },
+      "publicationConsent": {
+        "title": "Zure lanak ezin dira zure baimenik gabe argitaratu edo erreproduzitu",
+        "description": "Entregatzen dituzun lan eta memorien erabilera hertsiki akademikoa ez den edozeinek zure berariazko baimena behar du.",
+        "article": "23.2 artikulua"
+      },
+      "volunteering": {
+        "title": "Boluntariotzan eta lankidetzan prestakuntza, egiaztapena eta ziurtagiria jasotzen dituzu",
+        "description": "Boluntariotza- eta lankidetza-jardueretan parte hartzeko eskubidea duzu, zure unibertsitatearen hitzarmenen esparruan daudenean prestakuntza jasotzeko, boluntario edo lankide gisa egiaztatua izateko eta emandako zerbitzuen ziurtagiria jasotzeko.",
+        "article": "61.2 artikulua"
+      }
+    }
+  },
+  "doctorate": {
+    "title": "Doktoretza eta etengabeko prestakuntza",
+    "rights": {
+      "doctorate": {
+        "title": "Doktoretza egiten baduzu, tutorea, zuzendaria eta ordezkaritza duzu",
+        "description": "Kalitatezko ikerketa-prestakuntza, zure prozesua orientatuko duen tutorea, ikertzaile-esperientzia egiaztatua duen zuzendaritza, ikerketa-talde eta -sareetan integrazioa, eta Doktorego Eskoletako Zuzendaritza Batzordean Doktoretzako ikasleriaren ordezkaritza.",
+        "article": "8.1 b), c) eta 8.2 artikuluak"
+      },
+      "lifelongLearning": {
+        "title": "Etengabeko prestakuntza egiten baduzu, kalitatea, malgutasuna eta zerbitzu-gutuna dituzu",
+        "description": "Kalitate-irizpideak dituzten programak, onarpen malgua, kontziliatzeko malgutasunez antolatutako ordutegiak eta eskaintza formatiboa zehatz-mehatz jasotzen duen zerbitzu-gutuna, jardueren mota eta iraupena, balio akademikoaren mugak eta eskura dauden baliabideak barne. Unibertsitateek ezartzen dituzte gainerako eskubideak ikasketa ez-ofizialetan.",
+        "article": "9. artikulua eta 1.3 artikulua"
+      }
+    }
+  }
+}

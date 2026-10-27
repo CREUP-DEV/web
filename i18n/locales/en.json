@@ -11,6 +11,7 @@
       "events": "Events"
     },
     "policy": {
+      "rights": "Your rights",
       "label": "University Policy",
       "positions": "Positions",
       "resolutions": "Resolutions",
@@ -348,6 +349,30 @@
     "supportDescription": "If you want to tell us about something that happened during one of our events or you need guidance, you can email the Safe Point directly. This page gives you the documents and the contact route; support itself is provided in the context of the activities we organize. In urgent situations, also use the specialized services at your university, in your area, or call 112.",
     "supportPrimary": "Email the Safe Point",
     "supportSecondary": "View the documents"
+  },
+  "studentRights": {
+    "title": "Your rights as a university student",
+    "description": "The rights in the new University Student Body Statute, explained in plain language by CREUP: assessment, enrolment, scholarships, internships, mobility and representation.",
+    "eyebrow": "CREUP guide",
+    "lead": "A CREUP guide based on the University Student Body Statute (Real Decreto 855/2026, BOE of 22 October 2026). These are the rights in the Statute that we consider most important, explained in plain language.",
+    "ctaStatute": "Read the Statute in the BOE",
+    "ctaRights": "See the rights",
+    "stats": {
+      "rights": "rights explained",
+      "sections": "thematic sections"
+    },
+    "notice": {
+      "title": "Heads up: it depends on your university",
+      "description": "Many of these rights are spelled out in each university's own regulations. If your university does not comply with them or you have doubts, you can turn to your Student Council."
+    },
+    "indexTitle": "Pick a topic",
+    "rightsCount": "{count} right | {count} rights",
+    "articleLabel": "Reference in the Statute",
+    "closing": {
+      "title": "Want to read the full text?",
+      "description": "This guide sums up the Statute in plain language. The official text is the one published in the BOE.",
+      "cta": "Open the Statute in the BOE"
+    }
   },
   "members": {
     "title": "Members",

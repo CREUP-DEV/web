@@ -1,6 +1,7 @@
 import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
 import { PRESS_KIT_PATH } from '~~/shared/constants/pressRoutes'
+import { STUDENT_RIGHTS_PATH } from '~~/shared/constants/studentRightsGuide'
 
 type LocaleItem = {
   value: Locale
@@ -156,6 +157,7 @@ export function usePublicHeaderNavigation() {
       label: t('nav.policy.label'),
       active: isSectionActive('/politica'),
       children: [
+        createNavigationChild(t('nav.policy.rights'), STUDENT_RIGHTS_PATH),
         createNavigationChild(t('nav.policy.positions'), '/politica/posicionamientos/'),
         createNavigationChild(t('nav.policy.resolutions'), '/politica/resoluciones/'),
         createNavigationChild(t('nav.policy.reports'), '/politica/informes-ejecutivos/'),
@@ -247,6 +249,11 @@ export function usePublicHeaderNavigation() {
       icon: 'i-tabler-scale',
       active: isSectionActive('/politica'),
       links: [
+        createMobileNavLink({
+          label: t('nav.policy.rights'),
+          to: localizedPath(STUDENT_RIGHTS_PATH),
+          icon: 'i-tabler-user-check',
+        }),
         createMobileNavLink({
           label: t('nav.policy.positions'),
           to: localizedPath('/politica/posicionamientos/'),

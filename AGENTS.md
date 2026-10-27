@@ -661,6 +661,15 @@ See `app/pages/prensa/comunicados/[slug].vue` for full reference implementation.
 - `useI18n().t(...)` for all static copy.
 - Canonical URLs handled automatically by `@nuxtjs/seo`.
 
+### Student Rights Guide (`/politica/tus-derechos`)
+
+A static page (no admin, no DB) that explains the Estatuto del Estudiantado Universitario (Real Decreto 855/2026) as cards, one section per theme.
+
+- The structure (sections, untranslated anchors, icons, and the keys of the rights in each) is `STUDENT_RIGHTS_SECTIONS` in `shared/constants/studentRightsGuide.ts`, next to the route and the BOE link. The page chrome (title, lead, buttons, notice) is under `studentRights.*` in the locale files; the 96 rights themselves are **not** i18n messages but plain data, one file per language in `app/content/studentRights/<locale>.json` (`<section>.title` and `<section>.rights.<rightKey>.{title,description,article}`), loaded per locale by `loadStudentRightsText` (`app/utils/studentRightsText.ts`).
+- Why not the locale files: the i18n compiler turns every message into code for the client and the Nitro build, and the ~1,900 messages of the guide pushed `nuxt build` over the 4 GB heap the Dockerfile allows (and they would load on every page). Don't move the text back into `i18n/locales/*.json`.
+- Adding or removing a right means editing the key in `STUDENT_RIGHTS_SECTIONS` and its entry in all six content files. `StudentRightsText` is derived from that constant and each file is checked against it, so `pnpm typecheck` (not `pnpm i18n:check`, which only sees the chrome) fails when a language misses a section or a right. A new locale needs its content file too: the loader map must cover every `SupportedLocaleCode`.
+- The home featured link to the guide (`STUDENT_RIGHTS_PATH`) is database content managed from admin → Enlaces. The seed only creates it on a fresh database; an existing row is changed in the admin, not by redeploying.
+
 ---
 
 ## Web Archives (Wayback Machine)

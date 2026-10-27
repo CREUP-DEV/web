@@ -11,6 +11,7 @@
       "events": "Eventos"
     },
     "policy": {
+      "rights": "Tus derechos",
       "label": "Política Universitaria",
       "positions": "Posicionamientos",
       "resolutions": "Resoluciones",
@@ -348,6 +349,30 @@
     "supportDescription": "Si quieres contarnos algo que haya pasado en uno de nuestros eventos o necesitas orientación, puedes escribir directamente al Punto Seguro. Aquí tienes la información y los documentos; la atención y el acompañamiento se prestan en el contexto de las actividades que organizamos. Si es urgente, recurre también a los servicios especializados de tu universidad, de tu territorio o al 112.",
     "supportPrimary": "Enviar correo al Punto Seguro",
     "supportSecondary": "Ver los documentos"
+  },
+  "studentRights": {
+    "title": "Tus derechos como estudiante universitario",
+    "description": "Los derechos del nuevo Estatuto del Estudiantado Universitario, explicados en claro por CREUP: evaluación, matrícula, becas, prácticas, movilidad y representación.",
+    "eyebrow": "Guía de CREUP",
+    "lead": "Guía de CREUP basada en el Estatuto del Estudiantado Universitario (Real Decreto 855/2026, BOE de 22 de octubre de 2026). Estos son los derechos que consideramos más importantes del Estatuto, explicados en claro.",
+    "ctaStatute": "Leer el Estatuto en el BOE",
+    "ctaRights": "Ver los derechos",
+    "stats": {
+      "rights": "derechos explicados",
+      "sections": "bloques temáticos"
+    },
+    "notice": {
+      "title": "Ojo: depende de tu universidad",
+      "description": "Muchos de estos derechos se concretan en la normativa de cada universidad. Si tu universidad no los cumple o tienes dudas, puedes acudir a tu Consejo de Estudiantes."
+    },
+    "indexTitle": "Elige un tema",
+    "rightsCount": "{count} derecho | {count} derechos",
+    "articleLabel": "Referencia en el Estatuto",
+    "closing": {
+      "title": "¿Quieres leer el texto completo?",
+      "description": "Esta guía resume el Estatuto en lenguaje sencillo. El texto oficial es el publicado en el BOE.",
+      "cta": "Abrir el Estatuto en el BOE"
+    }
   },
   "members": {
     "title": "Miembros",

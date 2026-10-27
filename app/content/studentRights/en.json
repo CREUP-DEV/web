@@ -1,0 +1,542 @@
+{
+  "general": {
+    "title": "General rights",
+    "rights": {
+      "equalRights": {
+        "title": "You have the same rights and duties whatever your university, your degree or your study mode",
+        "description": "It makes no difference whether you study at a public or private university, in person or online, or where the campus is: equality is guaranteed. The exception is the vote for single-person governing posts (such as rector), which belongs to students on official degrees.",
+        "article": "Art. 2.1"
+      },
+      "noDiscrimination": {
+        "title": "Nobody can discriminate against you",
+        "description": "Not on grounds of origin, sex, religion, disability, nationality, health, sexual orientation or identity, gender expression, sex characteristics, socioeconomic situation, language, political or trade union views, appearance or any other personal or social circumstance.",
+        "article": "Art. 4 and art. 6.1 x)"
+      },
+      "qualityEducation": {
+        "title": "You have the right to a quality university education",
+        "description": "The university must guarantee well-planned studies, available teaching staff, and adequate equipment and facilities so that you can reach the learning objectives of your degree.",
+        "article": "Arts. 5, 6.1 h) and 20.1"
+      },
+      "chooseUniversity": {
+        "title": "You have the right to study at the university you choose",
+        "description": "If you meet the legal requirements, you can apply for admission to any Spanish university, and universities must help you with the paperwork and with designing your enrolment.",
+        "article": "Arts. 6.1 a) and 12"
+      },
+      "informedOfRights": {
+        "title": "Your university has to inform you of your rights",
+        "description": "It must publish them on its website and communicate them through its channels, and state in an accessible way how to contact student representation.",
+        "article": "Art. 10.2 and 10.4"
+      }
+    }
+  },
+  "evaluation": {
+    "title": "Assessment and review",
+    "rights": {
+      "objectiveEvaluation": {
+        "title": "You have the right to objective and transparent assessment",
+        "description": "The assessment rules, the review procedure and the appeal routes must be public, and assessment must follow objective criteria set out in the course guide.",
+        "article": "Arts. 6.1 m) and 22.3"
+      },
+      "criteriaLocked": {
+        "title": "Assessment criteria cannot be changed once you have enrolled",
+        "description": "What the course guide says, including the weighting of each test, is what counts. It can only be modified with a justification, authorisation and the agreement of the academic management body, and by notifying all enrolled students.",
+        "article": "Art. 20.3"
+      },
+      "examDatesInAdvance": {
+        "title": "Test dates are announced with enough notice",
+        "description": "This applies to continuous assessment and to final tests. In addition, the schedule of tests cannot be altered except in the case of unforeseen impossibility, and in that case the teaching staff and the students affected must be consulted.",
+        "article": "Art. 22.4 and 22.5"
+      },
+      "rescheduleExam": {
+        "title": "You can ask for a different day and time for an exam for justified reasons",
+        "description": "For meetings of representative bodies, significant health reasons, care of dependants, the death or serious illness of close family members, clashes with other tests, public-sector competitive exams or official exams, court summonses and other reasons provided for in your regulations. Those same reasons justify missing class without penalty.",
+        "article": "Art. 22.6"
+      },
+      "noTwoGlobalExams": {
+        "title": "You cannot be called to two global exams less than 24 hours apart",
+        "description": "Having global exams for different subjects of the same year less than 24 hours apart must be avoided, and you have the right to have the global or final exams you are called to not coincide in date and time.",
+        "article": "Art. 22.8"
+      },
+      "twoSittings": {
+        "title": "You have the right to two exam sittings per subject and year",
+        "description": "One ordinary and one extraordinary. The aim will be that in the extraordinary sitting you can earn the full final grade for the subject.",
+        "article": "Art. 22.11"
+      },
+      "examLanguage": {
+        "title": "You can take exams in any of the languages in the course guide",
+        "description": "If the subject is taught in several languages according to its course guide, you can choose which one to be assessed in.",
+        "article": "Art. 22.12"
+      },
+      "adaptedExams": {
+        "title": "Tests are adapted if you have a disability, specific educational support needs or learning difficulties",
+        "description": "Schools or departments must make the necessary methodological, time and space adaptations, and the course guide may include adaptations of the assessment system.",
+        "article": "Arts. 22.15 and 20.3"
+      },
+      "proofOfSitting": {
+        "title": "You are given proof that you took the test",
+        "description": "When you finish an assessment test you can ask for written proof that you took it.",
+        "article": "Art. 22.10"
+      },
+      "privateGrades": {
+        "title": "Only you can know your grade",
+        "description": "Universities must guarantee that each student knows only their own grade. Only aggregated, anonymised results may be published.",
+        "article": "Art. 25.5"
+      },
+      "reviewAndExplanation": {
+        "title": "You have the right to review your exam and to have your grade explained",
+        "description": "The review is individual and takes place before the responsible teaching staff, the subject coordinator or a review panel or body. There they explain your grade to you. It must end before the grade records are closed.",
+        "article": "Arts. 26.1, 26.2 and 26.7"
+      },
+      "reviewedExamCopy": {
+        "title": "You have the right to a copy of your reviewed exam",
+        "description": "You can request a copy of your exercises as reviewed and marked by the teaching staff. As they include that marking, they must not be distributed or circulated.",
+        "article": "Art. 26.4"
+      },
+      "reviewCannotLowerGrade": {
+        "title": "A review cannot lower your grade",
+        "description": "As a general rule, reviewing an exam cannot result in a lower grade than the initial one. The only exception is correcting clerical or arithmetical errors.",
+        "article": "Art. 26.5"
+      },
+      "reviewNoClash": {
+        "title": "The review cannot clash with other tests",
+        "description": "It must be guaranteed that the review day does not clash with assessment tests. For in-person subjects it takes place at the school where the subject is taught, unless you and the teaching staff agree otherwise.",
+        "article": "Art. 26.8 and 26.9"
+      },
+      "appealDecision": {
+        "title": "You can appeal the decision and it will be resolved by different people",
+        "description": "You can submit a reasoned appeal against the decision of the teaching staff or the panel. Those who resolve it cannot be the people who took part in the assessment or the review.",
+        "article": "Art. 27.1 and 27.2"
+      }
+    }
+  },
+  "guides": {
+    "title": "Course guides and tutoring",
+    "rights": {
+      "knowGuidesBeforeEnrolling": {
+        "title": "You have the right to know the course guides before you enrol",
+        "description": "The guides are official and must be published before enrolment opens. At a minimum they state the language of instruction, the study mode (in-person, blended or online), the contents, the assessment system, external internships, the class timetable, the tutoring hours and the teaching staff in charge.",
+        "article": "Arts. 6.1 i) and 20.2"
+      },
+      "virtualCourseGuides": {
+        "title": "Guides for online subjects include what you need to take them",
+        "description": "They must state the technical requirements, the technology platform and how you interact with the teaching staff and with tutors.",
+        "article": "Art. 20.4"
+      },
+      "teachingLanguage": {
+        "title": "You have the right to be taught in the language stated in the course guide",
+        "description": "The language of instruction listed in the guide of the subject you have enrolled in is the one you must receive.",
+        "article": "Art. 6.1 af)"
+      },
+      "tutoringPerCourse": {
+        "title": "Every subject has tutoring and a teacher in charge",
+        "description": "In each subject you have the right to individual guidance throughout the academic year, with a person in charge of the subject.",
+        "article": "Art. 19.1 and 19.2"
+      },
+      "tutoringSchedule": {
+        "title": "The tutoring timetable is set when the subject starts",
+        "description": "It is communicated to students, included in the course guide and can only be changed for justified reasons, with the approval of those in charge of teaching and by notifying all enrolled students through official channels.",
+        "article": "Art. 19.2"
+      },
+      "thesisSupervision": {
+        "title": "Your TFG and your TFM get effective supervision",
+        "description": "You have the right to effective academic supervision in your final degree project and final master's project, with regularity and publicity similar to those of subjects.",
+        "article": "Arts. 6.1 ñ) and 19.2"
+      },
+      "synchronousTutoring": {
+        "title": "In online studies, you can ask for a synchronous tutoring session",
+        "description": "Universities must guarantee effective tutoring mechanisms, synchronous or asynchronous, and if you request it, the tutoring may be synchronous under your university's regulations.",
+        "article": "Art. 19.3"
+      },
+      "degreeCoordination": {
+        "title": "Your school has degree coordination and a tutoring action plan",
+        "description": "Schools must appoint degree coordinators to guide you, and universities or schools must have a tutoring action plan.",
+        "article": "Art. 17.2 and 17.3"
+      },
+      "degreeOrientation": {
+        "title": "You have the right to guidance on your degree",
+        "description": "You must receive information on objectives, resources and equipment, libraries, assessment, internships, ways of combining study and work, mobility, scholarships and grants, and mental health services and support and assistance services in cases of harassment or discrimination.",
+        "article": "Arts. 17.1 and 18.2"
+      }
+    }
+  },
+  "enrolment": {
+    "title": "Enrolment, continuation and work-life balance",
+    "rights": {
+      "enrolmentDeadlines": {
+        "title": "You have the right to know the enrolment and withdrawal deadlines and procedures before you enrol",
+        "description": "The university must inform you of the regulations and deadlines for enrolling in and withdrawing from subjects before the process begins.",
+        "article": "Art. 6.1 j)"
+      },
+      "progressRules": {
+        "title": "You have the right to know the rules on progress and continuation",
+        "description": "The university must inform you of the rules that govern how far you can advance and how long you can remain in your studies.",
+        "article": "Art. 6.1 k)"
+      },
+      "workAndStudy": {
+        "title": "You have the right to combine study and work",
+        "description": "The university must make this easier, including in assessment, according to its regulations and taking into account academic organisation and the nature of each subject.",
+        "article": "Arts. 6.1 c) and 22.2"
+      },
+      "partTime": {
+        "title": "You have the right to study part-time",
+        "description": "You can take official studies part-time, and universities must adopt the measures needed to guarantee you quality teaching and assessment in this mode.",
+        "article": "Art. 6.1 ah)"
+      },
+      "workLifeBalance": {
+        "title": "You have the right to work-life balance measures",
+        "description": "Academic activities must be designed to make it easier to combine them with work and family life. Measures are also guaranteed for victims of gender-based violence, sexual violence, terrorism, other violence or harassment, and natural disasters. Every university must have work-life balance plans.",
+        "article": "Art. 6.1 l)"
+      },
+      "academicExemption": {
+        "title": "You have the right to academic exemption",
+        "description": "You can request it in the form, with the justification and within the deadlines set by your university's regulations.",
+        "article": "Art. 6.1 am)"
+      },
+      "suspendStudies": {
+        "title": "You have the right to temporarily suspend your studies",
+        "description": "Each university regulates how to do it.",
+        "article": "Art. 6.1 an)"
+      },
+      "digitalDisconnection": {
+        "title": "You have the right to digital disconnection",
+        "description": "Under your university's regulations, you should not be required to be online out of hours. Exceptions are academic emergencies (changes of exam date or classroom), weather alerts and other exceptional situations.",
+        "article": "Art. 6.1 ad)"
+      },
+      "socialSecurity": {
+        "title": "You have the right to Social Security protection",
+        "description": "On the terms and conditions set by current legislation.",
+        "article": "Art. 6.1 aa)"
+      }
+    }
+  },
+  "wellbeing": {
+    "title": "Mental health, equality and wellbeing",
+    "rights": {
+      "mentalHealthCare": {
+        "title": "You have the right to free and accessible psychological and mental health care",
+        "description": "Your university must offer you guidance and care from expert staff, coordinated with the public health services of your autonomous community, to which you will be referred when necessary.",
+        "article": "Arts. 6.1 e) and 62.3 g)"
+      },
+      "supportUnits": {
+        "title": "Your university must have support units",
+        "description": "There must be support units for students with disabilities, specific educational support needs and learning difficulties, for psychological and mental health care, for social and career guidance and advice, and for gender equality.",
+        "article": "Art. 10.5"
+      },
+      "protocols": {
+        "title": "Your university must have protocols against suicide, sexual harassment and bullying",
+        "description": "Three mandatory protocols: action, prevention and intervention in cases of suicidal behaviour; prevention of and action against sexual harassment and cyberharassment, on grounds of sex, sexual orientation or identity, gender expression or sex characteristics; and action in cases of personal harassment in the university setting. Universities have 6 months to have them approved and in force.",
+        "article": "Art. 10.6, 10.7 and 10.8, and first transitional provision"
+      },
+      "disabilitySupport": {
+        "title": "You have the right to support, advice and curricular adaptation if you have a disability, specific educational support needs or learning difficulties",
+        "description": "According to your university's regulations and its organisational capacity, and in coordination with health and social services where appropriate. Tutoring and guidance must also be adapted.",
+        "article": "Arts. 6.1 f) and 17.4"
+      },
+      "accessibleSpaces": {
+        "title": "Your spaces, buildings and tools must be accessible",
+        "description": "Universities must make their spaces and buildings accessible, including virtual ones, and provide you with material, human and technical means to ensure equal opportunities.",
+        "article": "Art. 13.2 and art. 62.7"
+      },
+      "nonSexistTreatment": {
+        "title": "You have the right to non-sexist treatment and equal opportunities",
+        "description": "Regardless of your sexual orientation or identity, gender expression or sex characteristics, or your belonging to any group in a situation of inequality or vulnerability.",
+        "article": "Art. 6.1 ab)"
+      },
+      "nameAndSexRectification": {
+        "title": "The Council of Universities will set common criteria for correcting the name and sex on your academic record",
+        "description": "Universities may respond to requests to correct the sex and name entry on the academic record using common basic criteria, in accordance with Ley 4/2023.",
+        "article": "Art. 6.3"
+      },
+      "healthyFood": {
+        "title": "You have the right to healthy food adapted to your needs in catering services",
+        "description": "The university's catering services, whether run by the university itself or by third parties, must offer healthy food suited to anyone with specific dietary needs.",
+        "article": "Art. 6.1 al)"
+      }
+    }
+  },
+  "mobility": {
+    "title": "Mobility",
+    "rights": {
+      "mobilityRight": {
+        "title": "Mobility is a right and your university must promote it and inform you about it",
+        "description": "It must inform you about national and international mobility programmes, whether its own or run by other administrations and bodies, and about how mobility affects your academic record, under conditions that guarantee equal opportunities, especially on socioeconomic grounds and for disability.",
+        "article": "Arts. 6.1 r), 14.1 and 14.2"
+      },
+      "mobilityDuration": {
+        "title": "The length and timing of your mobility are set by the degree verification report",
+        "description": "In Bachelor's and Master's degrees there is no longer a general cap of a semester or an academic year, nor a preference for the second half of the degree: what counts is what the verification report of your degree sets out.",
+        "article": "Art. 14.4 a)"
+      },
+      "mobilityCompatible": {
+        "title": "Mobility must be compatible with your academic activity",
+        "description": "Universities must guarantee that mobility actions fit in time with the course of your regular academic activity.",
+        "article": "Art. 14.8"
+      },
+      "learningAgreement": {
+        "title": "Before you leave, you know which subjects will be recognised",
+        "description": "You will have an academic tutor, or at least guidance, to draw up the learning agreement, which is binding and sets out the activities you will do and how they correspond to your home university.",
+        "article": "Art. 15.1 and 15.2"
+      },
+      "gradesRecognised": {
+        "title": "What you pass elsewhere is added to your academic record, with public conversion tables",
+        "description": "Universities must set grade conversion tables in each bilateral agreement, and they must be public and accessible to students.",
+        "article": "Art. 15.4"
+      },
+      "mobilityGrants": {
+        "title": "You can get mobility grants, which should be paid before you leave",
+        "description": "There are grants and scholarships for accommodation and living costs at the destination, and administrations and universities must work to ensure they are paid before the mobility action takes place.",
+        "article": "Art. 14.6 and 14.7"
+      },
+      "mobilitySupport": {
+        "title": "You have the right to support if your rights are violated or you suffer discrimination during mobility",
+        "description": "Universities must set up support and response mechanisms for those cases during your stay.",
+        "article": "Art. 14.10"
+      }
+    }
+  },
+  "internships": {
+    "title": "External academic internships",
+    "rights": {
+      "qualityInternships": {
+        "title": "Your internships must be of good quality and have effective tutoring",
+        "description": "This applies to curricular and extracurricular ones. You have the right to effective tutoring from the teaching staff and from the organisation where you do them.",
+        "article": "Art. 6.1 n)"
+      },
+      "trainingProject": {
+        "title": "You have the right to a clear training project, which you know before you start",
+        "description": "It must include the competences you will acquire, the ECTS credits, your rights and duties, the place where it is carried out, the activities, the calendar and timetable and the assessment system.",
+        "article": "Art. 21.5 and 21.6"
+      },
+      "internshipTutors": {
+        "title": "You have an academic tutor and a tutor at the organisation, with real follow-up",
+        "description": "There must be at least an initial meeting, an intermediate one and a final assessment meeting.",
+        "article": "Art. 21.6"
+      },
+      "notAJob": {
+        "title": "Your internships cannot replace a job",
+        "description": "They must fit your training and what the curriculum establishes, and under no circumstances can they cover the duties of a job at the organisation.",
+        "article": "Art. 21.9"
+      },
+      "internshipSocialSecurity": {
+        "title": "You contribute to Social Security through your internships",
+        "description": "Doing external academic internships, in any form, means you are included in Social Security, on the terms set by its regulations.",
+        "article": "Art. 21.11"
+      },
+      "evaluateInternships": {
+        "title": "You can take part in assessing the internship system",
+        "description": "The university must have procedures to analyse and assess the internship system that include student participation.",
+        "article": "Art. 21.7"
+      },
+      "agreementsAndRatios": {
+        "title": "Agreements must offer guarantees and ratios must be coherent",
+        "description": "Universities can only sign agreements with organisations that offer sufficient guarantees and respect for your rights, and must ensure ratios of students per tutor that are consistent with the training objectives. If state regulations provide for it, the agreement may include compensation for expenses.",
+        "article": "Art. 21.13, 21.14 and 21.8"
+      },
+      "dualTraining": {
+        "title": "Dual training has its own regulations at each university",
+        "description": "Universities must set specific regulations that guarantee training balance and the quality of academic tutoring and of tutoring at the organisation.",
+        "article": "Art. 21.15"
+      }
+    }
+  },
+  "scholarships": {
+    "title": "Scholarships and grants",
+    "rights": {
+      "noDroppingOut": {
+        "title": "Nobody should have to give up their studies for financial reasons",
+        "description": "Administrations and universities must guarantee scholarship and grant programmes with the aim of ensuring equal opportunities regardless of your socioeconomic situation.",
+        "article": "Art. 37.1"
+      },
+      "fitSituation": {
+        "title": "Scholarships fit your situation and needs",
+        "description": "The principles of progressivity, sufficiency and fairness apply, and scholarships must be aimed at guaranteeing that you can stay in and continue your studies.",
+        "article": "Art. 37.2 and 37.3"
+      },
+      "livingCosts": {
+        "title": "Scholarships should tend to take into account the cost of accommodation and of living",
+        "description": "Progressively, and subject to budget availability and legal limits, they should consider the cost of accommodation when studying means changing residence, and the different levels of cost of living by province.",
+        "article": "Art. 37.4"
+      },
+      "applyAndPortability": {
+        "title": "You can apply for scholarship calls and take your scholarship anywhere",
+        "description": "This includes the portability of national scholarships and grants across the whole territory, regardless of where you live, and of universities' own scholarships on the terms of each call.",
+        "article": "Art. 6.1 t)"
+      },
+      "studentsInScholarships": {
+        "title": "Students take part in designing and selecting scholarships",
+        "description": "Through the State University Student Council for state scholarships, and through the representative bodies for those of the autonomous communities and universities, including the selection and assessment committees.",
+        "article": "Art. 38"
+      },
+      "swiftResolution": {
+        "title": "Your scholarship must be resolved as quickly as possible",
+        "description": "Administrations and universities must resolve applications as soon as possible, so that the scholarship funds arrive when you really need them.",
+        "article": "Art. 40.2"
+      }
+    }
+  },
+  "representation": {
+    "title": "Representation and participation",
+    "rights": {
+      "freedoms": {
+        "title": "You have freedom of expression, assembly, association and demonstration at university",
+        "description": "Without any direct or indirect discrimination, under the terms of the Constitution, the law and your university's regulations.",
+        "article": "Art. 7.1"
+      },
+      "governingBodies": {
+        "title": "You have the right to be represented on the governing bodies and to take part in electing them",
+        "description": "This includes the student councils of your university, the State University Student Council and the regional councils. All enrolled students on official degrees can vote and stand for election.",
+        "article": "Art. 7.4 and 31.2"
+      },
+      "academicStrike": {
+        "title": "You have the right to an academic strike",
+        "description": "It is declared by the student representative body, can be total or partial at a university or at some of its schools, and student representation must be heard and take part in drawing up the regulations governing it at your university.",
+        "article": "Art. 7.6 and 7.7"
+      },
+      "informationAndParticipation": {
+        "title": "You have the right to real information and effective participation mechanisms",
+        "description": "Universities must guarantee real access to information and adequate mechanisms for exercising your rights of participation and representation, including monitoring and assessment.",
+        "article": "Art. 7.5 and 7.2"
+      },
+      "studentCouncil": {
+        "title": "Your university must have a Student Council, with spaces and resources",
+        "description": "It is a collegiate body for student representation and coordination. There can also be councils by faculty, school or centre. It must defend students' interests and ensure that their rights and duties are respected, and the university must provide it with the spaces and resources it needs.",
+        "article": "Art. 35"
+      },
+      "rulemaking": {
+        "title": "Your representatives take part in drawing up the rules that affect you",
+        "description": "Universities must guarantee that student representation takes part in drawing up student regulations, and representatives have the right to be heard.",
+        "article": "Art. 10.3 and 32 k)"
+      },
+      "commissions": {
+        "title": "Your representatives sit on the committees for calendar, timetables, study plans, quality and scholarships",
+        "description": "As set out in the university's own regulations and in general regulations. They also take part in the internal quality assurance systems and in the committees that draw up or modify the degree verification reports of official degrees.",
+        "article": "Art. 32 k) and art. 6.1 ag)"
+      },
+      "representativesRights": {
+        "title": "Whoever represents you can stand for election, combine it with their studies and communicate with you",
+        "description": "They have the right to stand for election, to combine their studies with representation (with a specific section in the work-life balance plan), to address all students using the university's means, and to public information and training about the bodies.",
+        "article": "Art. 32 d), e), j) and l)"
+      },
+      "representativesResources": {
+        "title": "Your representatives have their own spaces and resources",
+        "description": "Physical spaces and electronic means to circulate information and act as representatives, in accessible format, and the technical and financial resources to carry out their duties.",
+        "article": "Art. 32 f) and g)"
+      },
+      "complaintsChannel": {
+        "title": "Your complaints and suggestions can reach the university through your representatives",
+        "description": "Whoever represents you is a channel for passing on suggestions, complaints and appeals, without prejudice to your right to raise them directly through your university's channels.",
+        "article": "Art. 32 h) and 33 a)"
+      },
+      "legalAdvice": {
+        "title": "The Student Council can consult the university's legal advisory service",
+        "description": "Through the Student Council and collectively, never individually, on matters of academic activity and university life.",
+        "article": "Art. 32 i)"
+      },
+      "associations": {
+        "title": "You can set up associations and the university must support them",
+        "description": "Student associations, groups, federations and confederations are promoted. Universities must provide premises and resources as far as they can and allocate budget lines to subsidise their running. Registered associations can join national and international networks.",
+        "article": "Arts. 34 and 36"
+      },
+      "ombudsman": {
+        "title": "You can turn to the University Ombudsperson",
+        "description": "If you believe your rights and freedoms have been harmed, the Ombudsperson advises you on how to submit academic or university-life appeals, with independence, autonomy and confidentiality, and can mediate and conciliate.",
+        "article": "Art. 43"
+      }
+    }
+  },
+  "services": {
+    "title": "Services and university life",
+    "rights": {
+      "studentServices": {
+        "title": "Your university must have student support services",
+        "description": "It is no longer a possibility but an obligation: accessible, quality student support units, linked to tutoring and to the university's other services.",
+        "article": "Arts. 62.1 and 6.1 ai)"
+      },
+      "rightsAdvice": {
+        "title": "You have the right to advice about your rights and how to exercise them",
+        "description": "Student support services inform and advise on associations and student participation and on student rights and how to exercise them.",
+        "article": "Art. 62.3 f) and h)"
+      },
+      "housingInformation": {
+        "title": "You have the right to detailed information on accommodation",
+        "description": "Accommodation owned by the university or under agreement, and housing listings in the university's city or in nearby cities.",
+        "article": "Art. 62.3 j)"
+      },
+      "universityHousing": {
+        "title": "University accommodation must be accessible, transparent and reasonably priced",
+        "description": "Access to halls of residence and residences run by the university's own foundation must follow public, objective and transparent procedures, with prices suited to guaranteeing equal opportunities. All facilities must be accessible to people with disabilities, and residents take part in appointing the management teams.",
+        "article": "Art. 63.2 to 63.5"
+      },
+      "administration": {
+        "title": "You have the right to an accessible, quality university administration",
+        "description": "Dealings with your university's administration must be guaranteed both electronically and in person.",
+        "article": "Art. 6.1 aj)"
+      },
+      "studentSpaces": {
+        "title": "You have the right to spaces dedicated to students",
+        "description": "Spaces where students take part in management and organisation, for socialising, cross-curricular training, cultural, sports, cooperation and sustainability activities, participation and leisure, according to each university's regulations.",
+        "article": "Art. 6.1 ak)"
+      },
+      "digitalSkills": {
+        "title": "You have the right to digital training and resources, and to digital security",
+        "description": "Access to training to develop digital skills and to digital resources and infrastructure consistent with your degree, to the security of digital media and to the guarantee of your fundamental rights on the Internet. Your personal data cannot be used for purposes other than those regulated by law.",
+        "article": "Art. 6.1 v), z) and ac)"
+      },
+      "riskPrevention": {
+        "title": "You have the right to risk prevention training and to means that guarantee your health and safety",
+        "description": "In your learning activities and in your participation in university life.",
+        "article": "Art. 6.1 y)"
+      }
+    }
+  },
+  "recognition": {
+    "title": "Recognition of your work and your participation",
+    "rights": {
+      "creditRecognition": {
+        "title": "You can get credit recognition for university activities",
+        "description": "Universities can recognise from 6 ECTS up to a maximum of 10% of the credits of bachelor's degrees for participation and social collaboration activities, development cooperation, sustainability, dissemination of scientific knowledge, and cultural and artistic activities. You also have the right to academic recognition for activities such as student representation, sports or volunteering, according to your university's regulations.",
+        "article": "Art. 61.3, art. 28 and art. 6.1 p)"
+      },
+      "europeanSupplement": {
+        "title": "Your complementary training and your representation are recorded in the European Diploma Supplement",
+        "description": "Universities must include this kind of training, cross-curricular activities and university-life activities, including student representation, in the way their regulations determine.",
+        "article": "Art. 61.3 and art. 6.1 o)"
+      },
+      "workExperience": {
+        "title": "You have the right to recognition of your work or professional experience",
+        "description": "For academic purposes, in accordance with the regulations governing Bachelor's and Master's degrees and without prejudice to the university's own regulations.",
+        "article": "Art. 6.1 q)"
+      },
+      "authorship": {
+        "title": "You have the right to authorship and intellectual property of your work",
+        "description": "This includes your TFG and TFM, and recognition of your status as an inventor and of your industrial property rights where applicable.",
+        "article": "Art. 6.1 ae)"
+      },
+      "publicationConsent": {
+        "title": "Your work cannot be published or reproduced without your permission",
+        "description": "Any use other than strictly academic use of the work and reports you submit requires your express authorisation.",
+        "article": "Art. 23.2"
+      },
+      "volunteering": {
+        "title": "You get training, accreditation and certification for volunteering and cooperation",
+        "description": "You have the right to take part in volunteering and cooperation activities, to receive training when they are part of your university's agreements, to accreditation as a volunteer or cooperation worker and to a certificate of the services provided.",
+        "article": "Art. 61.2"
+      }
+    }
+  },
+  "doctorate": {
+    "title": "Doctorate and lifelong learning",
+    "rights": {
+      "doctorate": {
+        "title": "If you do a Doctorate, you have a tutor, a supervisor and representation",
+        "description": "Quality research training, a tutor to guide your progress, supervision by someone with accredited research experience, integration into research groups and networks, and representation of doctoral students on the Steering Committee of the Doctoral Schools.",
+        "article": "Art. 8.1 b), c) and art. 8.2"
+      },
+      "lifelongLearning": {
+        "title": "If you do lifelong learning, you get quality, flexibility and a service charter",
+        "description": "Programmes with quality criteria, flexible admission, timetables organised flexibly to make work-life balance possible, and a service charter with the detailed training offer, including the type and duration of activities, limits of academic validity and available means. Universities determine the remaining rights in non-official studies.",
+        "article": "Art. 9 and art. 1.3"
+      }
+    }
+  }
+}

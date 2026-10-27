@@ -11,6 +11,7 @@
       "events": "Ekitaldiak"
     },
     "policy": {
+      "rights": "Zure eskubideak",
       "label": "Unibertsitate Politika",
       "positions": "Posizionamenduak",
       "resolutions": "Ebazpenak",
@@ -348,6 +349,30 @@
     "supportDescription": "Gure ekitaldietako batean gertatutako zerbait kontatu nahi badiguzu edo orientazioa behar baduzu, zuzenean idatz diezaiokezu Puntu Seguruari. Hemen dituzu informazioa eta dokumentuak; arreta eta laguntza antolatzen ditugun jardueren testuinguruan eskaintzen dira. Premiazkoa bada, jo zure unibertsitateko, zure lurraldeko zerbitzu espezializatuetara edo 112ra ere.",
     "supportPrimary": "Bidali mezua Puntu Seguruari",
     "supportSecondary": "Ikusi dokumentuak"
+  },
+  "studentRights": {
+    "title": "Unibertsitateko ikasle gisa dituzun eskubideak",
+    "description": "Unibertsitateko Ikasleriaren Estatutu berriaren eskubideak, CREUP-ek argi azalduta: ebaluazioa, matrikula, bekak, praktikak, mugikortasuna eta ordezkaritza.",
+    "eyebrow": "CREUP-en gida",
+    "lead": "CREUP-en gida, Unibertsitateko Ikasleriaren Estatutuan oinarritua (855/2026 Errege Dekretua, 2026ko urriaren 22ko BOE). Hauek dira Estatutuaren eskubide garrantzitsuenak, gure ustez, argi azalduta.",
+    "ctaStatute": "Irakurri Estatutua BOE-n",
+    "ctaRights": "Ikusi eskubideak",
+    "stats": {
+      "rights": "eskubide azaldu",
+      "sections": "gai-bloke"
+    },
+    "notice": {
+      "title": "Kontuz: zure unibertsitatearen araberakoa da",
+      "description": "Eskubide horietako asko unibertsitate bakoitzaren araudian zehazten dira. Zure unibertsitateak betetzen ez baditu edo zalantzak badituzu, zure Ikasleen Kontseilura jo dezakezu."
+    },
+    "indexTitle": "Aukeratu gai bat",
+    "rightsCount": "{count} eskubide | {count} eskubide",
+    "articleLabel": "Estatutuko erreferentzia",
+    "closing": {
+      "title": "Testu osoa irakurri nahi duzu?",
+      "description": "Gida honek Estatutua hizkuntza xumean laburbiltzen du. Testu ofiziala BOE-n argitaratutakoa da.",
+      "cta": "Ireki Estatutua BOE-n"
+    }
   },
   "members": {
     "title": "Kideak",

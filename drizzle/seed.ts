@@ -27,6 +27,7 @@ import {
   SITE_DEFAULT_IMAGE_SCOPE,
   SITE_DEFAULT_IMAGE_SLOT,
 } from '../shared/constants/siteDefaultImages'
+import { STUDENT_RIGHTS_PATH } from '../shared/constants/studentRightsGuide'
 import {
   getRequiredSeedTranslations,
   seedCarouselTranslations,
@@ -10329,7 +10330,7 @@ async function seedDatabase(db: DbExecutor) {
         HOME_FEATURED_LINK_IMAGE_PUBLIC_PATH,
         'Estatuto del Estudiante Universitario'
       ),
-      to: 'https://www.boe.es/buscar/doc.php?id=BOE-A-2010-20147',
+      to: STUDENT_RIGHTS_PATH,
     },
     {
       image: buildHomeImagePath(

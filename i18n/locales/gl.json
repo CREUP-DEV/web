@@ -11,6 +11,7 @@
       "events": "Eventos"
     },
     "policy": {
+      "rights": "Os teus dereitos",
       "label": "Política Universitaria",
       "positions": "Posicionamentos",
       "resolutions": "Resolucións",
@@ -348,6 +349,30 @@
     "supportDescription": "Se queres contarnos algo que pasase nun dos nosos eventos ou necesitas orientación, podes escribir directamente ao Punto Seguro. Aquí tes a información e os documentos; a atención e o acompañamento préstanse no contexto das actividades que organizamos. Se é urxente, recorre tamén aos servizos especializados da túa universidade, do teu territorio ou ao 112.",
     "supportPrimary": "Enviar correo ao Punto Seguro",
     "supportSecondary": "Ver os documentos"
+  },
+  "studentRights": {
+    "title": "Os teus dereitos como estudante universitario",
+    "description": "Os dereitos do novo Estatuto do Estudantado Universitario, explicados en claro por CREUP: avaliación, matrícula, bolsas, prácticas, mobilidade e representación.",
+    "eyebrow": "Guía de CREUP",
+    "lead": "Guía de CREUP baseada no Estatuto do Estudantado Universitario (Real decreto 855/2026, BOE do 22 de outubro de 2026). Estes son os dereitos que consideramos máis importantes do Estatuto, explicados en claro.",
+    "ctaStatute": "Ler o Estatuto no BOE",
+    "ctaRights": "Ver os dereitos",
+    "stats": {
+      "rights": "dereitos explicados",
+      "sections": "bloques temáticos"
+    },
+    "notice": {
+      "title": "Ollo: depende da túa universidade",
+      "description": "Moitos destes dereitos concrétanse na normativa de cada universidade. Se a túa universidade non os cumpre ou tes dúbidas, podes acudir ao teu Consello de Estudantes."
+    },
+    "indexTitle": "Escolle un tema",
+    "rightsCount": "{count} dereito | {count} dereitos",
+    "articleLabel": "Referencia no Estatuto",
+    "closing": {
+      "title": "Queres ler o texto completo?",
+      "description": "Esta guía resume o Estatuto en linguaxe sinxela. O texto oficial é o publicado no BOE.",
+      "cta": "Abrir o Estatuto no BOE"
+    }
   },
   "members": {
     "title": "Membros",

@@ -11,6 +11,7 @@
       "events": "Esdeveniments"
     },
     "policy": {
+      "rights": "Els teus drets",
       "label": "Política Universitària",
       "positions": "Posicionaments",
       "resolutions": "Resolucions",
@@ -348,6 +349,30 @@
     "supportDescription": "Si vols explicar-nos alguna cosa que haja passat en un dels nostres esdeveniments o necessites orientació, pots escriure directament al Punt Segur. Ací tens la informació i els documents; l'atenció i l'acompanyament es presten en el context de les activitats que organitzem. Si és urgent, recorre també als servicis especialitzats de la teua universitat, del teu territori o al 112.",
     "supportPrimary": "Enviar correu al Punt Segur",
     "supportSecondary": "Vore els documents"
+  },
+  "studentRights": {
+    "title": "Els teus drets com a estudiant universitari",
+    "description": "Els drets del nou Estatut de l'Estudiantat Universitari, explicats en clar per CREUP: avaluació, matrícula, beques, pràctiques, mobilitat i representació.",
+    "eyebrow": "Guia de CREUP",
+    "lead": "Guia de CREUP basada en l'Estatut de l'Estudiantat Universitari (Reial decret 855/2026, BOE de 22 d'octubre de 2026). Aquests són els drets que considerem més importants de l'Estatut, explicats en clar.",
+    "ctaStatute": "Llegir l'Estatut al BOE",
+    "ctaRights": "Veure els drets",
+    "stats": {
+      "rights": "drets explicats",
+      "sections": "blocs temàtics"
+    },
+    "notice": {
+      "title": "Compte: depén de la teua universitat",
+      "description": "Molts d'aquests drets es concreten en la normativa de cada universitat. Si la teua universitat no els complix o tens dubtes, pots acudir al teu Consell d'Estudiants."
+    },
+    "indexTitle": "Tria un tema",
+    "rightsCount": "{count} dret | {count} drets",
+    "articleLabel": "Referència a l'Estatut",
+    "closing": {
+      "title": "Vols llegir el text complet?",
+      "description": "Aquesta guia resumeix l'Estatut en un llenguatge senzill. El text oficial és el publicat al BOE.",
+      "cta": "Obrir l'Estatut al BOE"
+    }
   },
   "members": {
     "title": "Membres",

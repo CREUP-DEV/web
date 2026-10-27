@@ -10,6 +10,7 @@
 // equality document pdf_url).
 
 import { EQUALITY_DOCUMENTS_PUBLIC_PATH } from '../../../shared/constants/assetPaths'
+import { STUDENT_RIGHTS_PATH } from '../../../shared/constants/studentRightsGuide'
 
 export interface SeedTagTranslation {
   locale: string
@@ -210,13 +211,13 @@ export const seedFeaturedLinkTranslations: Record<string, SeedFeaturedLinkTransl
     { locale: 'gl', title: 'Igualdade e prevención do acoso' },
     { locale: 'val', title: "Igualtat i prevenció de l'assetjament" },
   ],
-  'https://www.boe.es/buscar/doc.php?id=BOE-A-2010-20147': [
-    { locale: 'es', title: 'Estatuto del Estudiante Universitario' },
-    { locale: 'en', title: 'University Student Statute' },
-    { locale: 'ca', title: "Estatut de l'Estudiant Universitari" },
-    { locale: 'eu', title: 'Unibertsitateko Ikaslearen Estatutua' },
-    { locale: 'gl', title: 'Estatuto do Estudante Universitario' },
-    { locale: 'val', title: "Estatut de l'Estudiant Universitari" },
+  [STUDENT_RIGHTS_PATH]: [
+    { locale: 'es', title: 'Tus derechos según el nuevo Estatuto' },
+    { locale: 'en', title: 'Your rights under the new Statute' },
+    { locale: 'ca', title: 'Els teus drets segons el nou Estatut' },
+    { locale: 'eu', title: 'Zure eskubideak Estatutu berriaren arabera' },
+    { locale: 'gl', title: 'Os teus dereitos segundo o novo Estatuto' },
+    { locale: 'val', title: 'Els teus drets segons el nou Estatut' },
   ],
   'https://www.becaseducacion.gob.es/': [
     { locale: 'es', title: 'Becas y ayudas para el estudiantado' },
