@@ -141,6 +141,13 @@
       "when": 1791796831579,
       "tag": "0019_add_press_kit_cover_slot",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793131354954,
+      "tag": "0020_featured_link_student_rights_guide",
+      "breakpoints": true
     }
   ]
 }
