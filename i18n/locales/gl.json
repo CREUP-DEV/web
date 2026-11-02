@@ -351,15 +351,16 @@
     "supportSecondary": "Ver os documentos"
   },
   "studentRights": {
-    "title": "Os teus dereitos como estudante universitario",
+    "title": "Os teus dereitos na universidade",
     "description": "Os dereitos do novo Estatuto do Estudantado Universitario, explicados en claro por CREUP: avaliación, matrícula, bolsas, prácticas, mobilidade e representación.",
-    "eyebrow": "Guía de CREUP",
-    "lead": "Guía de CREUP baseada no Estatuto do Estudantado Universitario (Real decreto 855/2026, BOE do 22 de outubro de 2026). Estes son os dereitos que consideramos máis importantes do Estatuto, explicados en claro.",
+    "eyebrow": "Novo Estatuto do Estudantado",
+    "lead": "O novo Estatuto do Estudantado Universitario recolle o que a túa universidade ten que garantirche. Seleccionamos os dereitos que máis che afectan e explicámolos sen tecnicismos: exames, titorías, matrícula, bolsas, prácticas, representación e moito máis.",
+    "source": "Real decreto 855/2026, publicado no BOE o 22 de outubro de 2026",
     "ctaStatute": "Ler o Estatuto no BOE",
     "ctaRights": "Ver os dereitos",
     "stats": {
-      "rights": "dereitos explicados",
-      "sections": "bloques temáticos"
+      "rights": "dereitos",
+      "sections": "temas"
     },
     "notice": {
       "title": "Ollo: depende da túa universidade",

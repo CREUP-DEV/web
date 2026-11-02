@@ -351,15 +351,16 @@
     "supportSecondary": "Vore els documents"
   },
   "studentRights": {
-    "title": "Els teus drets com a estudiant universitari",
+    "title": "Els teus drets a la universitat",
     "description": "Els drets del nou Estatut de l'Estudiantat Universitari, explicats en clar per CREUP: avaluació, matrícula, beques, pràctiques, mobilitat i representació.",
-    "eyebrow": "Guia de CREUP",
-    "lead": "Guia de CREUP basada en l'Estatut de l'Estudiantat Universitari (Reial decret 855/2026, BOE de 22 d'octubre de 2026). Aquests són els drets que considerem més importants de l'Estatut, explicats en clar.",
+    "eyebrow": "Nou Estatut de l'Estudiantat",
+    "lead": "El nou Estatut de l'Estudiantat Universitari recull el que la teua universitat t'ha de garantir. Hem seleccionat els drets que més t'afecten i te'ls expliquem sense tecnicismes: exàmens, tutories, matrícula, beques, pràctiques, representació i més.",
+    "source": "Reial decret 855/2026, publicat en el BOE el 22 d'octubre de 2026",
     "ctaStatute": "Llegir l'Estatut al BOE",
     "ctaRights": "Veure els drets",
     "stats": {
-      "rights": "drets explicats",
-      "sections": "blocs temàtics"
+      "rights": "drets",
+      "sections": "temes"
     },
     "notice": {
       "title": "Compte: depén de la teua universitat",

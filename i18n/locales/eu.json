@@ -351,15 +351,16 @@
     "supportSecondary": "Ikusi dokumentuak"
   },
   "studentRights": {
-    "title": "Unibertsitateko ikasle gisa dituzun eskubideak",
+    "title": "Zure eskubideak unibertsitatean",
     "description": "Unibertsitateko Ikasleriaren Estatutu berriaren eskubideak, CREUP-ek argi azalduta: ebaluazioa, matrikula, bekak, praktikak, mugikortasuna eta ordezkaritza.",
-    "eyebrow": "CREUP-en gida",
-    "lead": "CREUP-en gida, Unibertsitateko Ikasleriaren Estatutuan oinarritua (855/2026 Errege Dekretua, 2026ko urriaren 22ko BOE). Hauek dira Estatutuaren eskubide garrantzitsuenak, gure ustez, argi azalduta.",
+    "eyebrow": "Ikasleriaren Estatutu berria",
+    "lead": "Unibertsitateko Ikasleriaren Estatutu berriak jasotzen du zure unibertsitateak zer bermatu behar dizun. Gehien eragiten dizuten eskubideak hautatu ditugu, eta hitz teknikorik gabe azaltzen dizkizugu: azterketak, tutoretzak, matrikula, bekak, praktikak, ordezkaritza eta gehiago.",
+    "source": "855/2026 Errege Dekretua, 2026ko urriaren 22ko BOEn argitaratua",
     "ctaStatute": "Irakurri Estatutua BOE-n",
     "ctaRights": "Ikusi eskubideak",
     "stats": {
-      "rights": "eskubide azaldu",
-      "sections": "gai-bloke"
+      "rights": "eskubide",
+      "sections": "gai"
     },
     "notice": {
       "title": "Kontuz: zure unibertsitatearen araberakoa da",

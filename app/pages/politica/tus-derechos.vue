@@ -70,6 +70,10 @@ const stats = computed(() => [
             <p class="text-toned text-lg leading-relaxed text-balance">
               {{ t('studentRights.lead') }}
             </p>
+            <p class="text-muted flex items-start gap-1.5 text-sm">
+              <UIcon name="i-tabler-gavel" class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              <span>{{ t('studentRights.source') }}</span>
+            </p>
 
             <div class="flex flex-wrap gap-3 pt-2">
               <UButton

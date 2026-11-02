@@ -351,15 +351,16 @@
     "supportSecondary": "View the documents"
   },
   "studentRights": {
-    "title": "Your rights as a university student",
+    "title": "Your rights at university",
     "description": "The rights in the new University Student Body Statute, explained in plain language by CREUP: assessment, enrolment, scholarships, internships, mobility and representation.",
-    "eyebrow": "CREUP guide",
-    "lead": "A CREUP guide based on the University Student Body Statute (Real Decreto 855/2026, BOE of 22 October 2026). These are the rights in the Statute that we consider most important, explained in plain language.",
+    "eyebrow": "New University Student Body Statute",
+    "lead": "The new University Student Body Statute sets out what your university has to guarantee you. We have picked the rights that affect you most and explain them without jargon: exams, tutoring, enrolment, grants, internships, representation and more.",
+    "source": "Real Decreto 855/2026, published in the BOE on 22 October 2026",
     "ctaStatute": "Read the Statute in the BOE",
     "ctaRights": "See the rights",
     "stats": {
-      "rights": "rights explained",
-      "sections": "thematic sections"
+      "rights": "rights",
+      "sections": "topics"
     },
     "notice": {
       "title": "Heads up: it depends on your university",
