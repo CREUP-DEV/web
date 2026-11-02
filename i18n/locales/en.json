@@ -788,6 +788,10 @@
     "title": "Contact",
     "subtitle": "Have a question or proposal? Write to us and we'll get back to you as soon as possible.",
     "email": "You can also email us directly at",
+    "academicNotice": {
+      "title": "We can't handle academic issues",
+      "description": "We have no direct contact with universities, only with their student councils, so we can't resolve problems with enrolment, grades, credit recognition or the like. For that, please get in touch with your university's student council."
+    },
     "contactType": {
       "label": "Contact type",
       "general": "General contact",

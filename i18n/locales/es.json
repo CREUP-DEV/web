@@ -788,6 +788,10 @@
     "title": "Contacto",
     "subtitle": "¿Tienes alguna pregunta o propuesta? Escríbenos y te responderemos lo antes posible.",
     "email": "También puedes escribirnos directamente a",
+    "academicNotice": {
+      "title": "No gestionamos incidencias académicas",
+      "description": "No tenemos contacto directo con las universidades, solo con sus consejos de estudiantes, así que no podemos resolver problemas de matrícula, calificaciones, convalidaciones o similares. Para eso, acude al consejo de estudiantes de tu universidad."
+    },
     "contactType": {
       "label": "Tipo de contacto",
       "general": "Contacto general",

@@ -788,6 +788,10 @@
     "title": "Contacte",
     "subtitle": "Tens alguna pregunta o proposta? Escriu-nos i et respondrem al més aviat possible.",
     "email": "També pots escriure'ns directament a",
+    "academicNotice": {
+      "title": "No gestionem incidències acadèmiques",
+      "description": "No tenim contacte directe amb les universitats, només amb els seus consells d'estudiants, així que no podem resoldre problemes de matrícula, qualificacions, convalidacions o similars. Per a això, adreça't al consell d'estudiants de la teva universitat."
+    },
     "contactType": {
       "label": "Tipus de contacte",
       "general": "Contacte general",

@@ -425,6 +425,18 @@ async function handleSubmit() {
             />
           </div>
 
+          <Transition name="content-switch" mode="out-in">
+            <UAlert
+              v-if="!isPress"
+              key="academic-notice"
+              color="info"
+              variant="soft"
+              icon="i-tabler-info-circle"
+              :title="t('contactPage.academicNotice.title')"
+              :description="t('contactPage.academicNotice.description')"
+            />
+          </Transition>
+
           <ContactFormField
             v-model="form.name"
             input-id="contact-name"

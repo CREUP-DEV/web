@@ -788,6 +788,10 @@
     "title": "Harremana",
     "subtitle": "Galderaren bat edo proposamenen bat duzu? Idatzi iezaguzu eta ahalik eta lasterren erantzungo dizugu.",
     "email": "Zuzenean ere idatz diezagukezu hona",
+    "academicNotice": {
+      "title": "Ez ditugu gorabehera akademikoak kudeatzen",
+      "description": "Ez dugu unibertsitateekin harreman zuzenik, haien ikasle-kontseiluekin baino ez; beraz, ezin ditugu matrikula, kalifikazio, kredituen aitorpen edo antzeko arazoak konpondu. Horretarako, jo ezazu zure unibertsitateko ikasle-kontseiluarengana."
+    },
     "contactType": {
       "label": "Harreman mota",
       "general": "Harreman orokorra",
