@@ -151,17 +151,27 @@ cleanup_old_app_images() {
     return
   fi
 
-  mapfile -t image_ids < <(docker image ls "\$image_name" --format '{{.ID}}' | awk '!seen[\$0]++')
-
-  if [ "\${#image_ids[@]}" -le "\$keep_count" ]; then
-    echo "== App image cleanup: nothing to remove =="
-    return
+  # The deployed image and the one saved for rollback always stay, whatever their age.
+  local keep_ids kept=0 removed=0 image_id full_id
+  keep_ids=" \$(docker image inspect --format '{{.Id}}' "${IMAGE}" 2>/dev/null || true) "
+  if [ -s "\$ROLLBACK_IMAGE_FILE" ]; then
+    keep_ids+=" \$(docker image inspect --format '{{.Id}}' "\$(cat "\$ROLLBACK_IMAGE_FILE")" 2>/dev/null || true) "
   fi
 
   echo "== Remove old app images =="
-  for image_id in "\${image_ids[@]:\$keep_count}"; do
-    docker image rm "\$image_id" || true
-  done
+  # Newest first, sorted here: the containerd image store does not list them in creation order.
+  while read -r image_id; do
+    [ -n "\$image_id" ] || continue
+    full_id="\$(docker image inspect --format '{{.Id}}' "\$image_id")"
+    if [[ "\$keep_ids" == *" \$full_id "* ]] || [ "\$kept" -lt "\$keep_count" ]; then
+      kept=\$((kept + 1))
+      continue
+    fi
+    if docker image rm "\$image_id" >/dev/null 2>&1; then
+      removed=\$((removed + 1))
+    fi
+  done < <(docker image ls "\$image_name" --format '{{.CreatedAt}}|{{.ID}}' | sort -r | cut -d'|' -f2 | awk '!seen[\$0]++')
+  echo "    kept \$kept, removed \$removed"
 }
 
 resolve_current_app_image() {
@@ -172,7 +182,7 @@ resolve_current_app_image() {
   local current_image_id
   local current_digest
 
-  container_id="\$(docker compose ps -q "\$service" 2>/dev/null || true)"
+  container_id="\$(docker compose ps -q "\$service" </dev/null 2>/dev/null || true)"
   if [ -z "\$container_id" ]; then
     return 0
   fi
@@ -198,6 +208,18 @@ save_current_app_image_for_rollback() {
   local image_name="\$2"
   local rollback_file="\$3"
   local current_image
+  local container_id
+  local health
+
+  # A failed deploy leaves a broken container behind: keep the last good image instead.
+  container_id="\$(docker compose ps -q "\$service" </dev/null 2>/dev/null || true)"
+  if [ -n "\$container_id" ]; then
+    health="\$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "\$container_id")"
+    if [ "\$health" != healthy ] && [ "\$health" != none ]; then
+      echo "== Rollback image: current app is \$health, keeping \$(cat "\$rollback_file" 2>/dev/null || echo 'none') =="
+      return
+    fi
+  fi
 
   current_image="\$(resolve_current_app_image "\$service" "\$image_name")"
   if [ -z "\$current_image" ]; then
@@ -209,13 +231,18 @@ save_current_app_image_for_rollback() {
   echo "== Rollback image saved: \$current_image =="
 }
 
+# Every docker compose call below reads /dev/null: bash reads this script from stdin, and a child
+# that reads it (docker compose exec and run do, even with -T) swallows the rest of the script, which
+# then ends early with status 0. Compose reads the root .env itself, so it is not sourced here.
 cd "${COMPOSE_DIR}"
 
-if [ -f .env ]; then
-  set -a
-  . ./.env
-  set +a
-fi
+# The services the app depends on, as \`docker compose config <service>\` lists them.
+app_dependencies() {
+  docker compose config "${COMPOSE_APP_SERVICE}" </dev/null | awk '
+    /^[^ #]/ { section = \$1; next }
+    section == "services:" && /^  [A-Za-z0-9._-]+:\$/ { sub(/^  /, ""); sub(/:\$/, ""); print }
+  ' | grep -vx "${COMPOSE_APP_SERVICE}" || true
+}
 
 # Per-project var (compose reads ${WEB_IMAGE:-...}), never a bare IMAGE.
 export WEB_IMAGE="${IMAGE}"
@@ -227,31 +254,57 @@ echo "== Save current app image for rollback =="
 save_current_app_image_for_rollback "${COMPOSE_APP_SERVICE}" "${IMAGE_NAME}" "\$ROLLBACK_IMAGE_FILE"
 
 echo "== Pull images =="
-docker compose pull "${COMPOSE_APP_SERVICE}"
+docker compose pull "${COMPOSE_APP_SERVICE}" </dev/null
+
+echo "== Ensure the app's dependencies are running =="
+# Started if stopped, never recreated: postgresql is shared by every project on the VPS, and a
+# plain \`up -d\`, or a run/up of the app without --no-deps, recreates any dependency whose config
+# drifted. Everything below therefore runs with --no-deps.
+mapfile -t deps < <(app_dependencies)
+if [ "\${#deps[@]}" -gt 0 ]; then
+  echo "    \${deps[*]}"
+  docker compose up -d --no-recreate --wait --wait-timeout 120 "\${deps[@]}" </dev/null
+fi
 
 if [ "${APPLY_MIGRATIONS_ON_DEPLOY}" = "true" ]; then
-  if docker compose config --services | grep -qx "${COMPOSE_POSTGRES_SERVICE}"; then
-    echo "== Ensure postgres is running =="
-    docker compose up -d "${COMPOSE_POSTGRES_SERVICE}"
-  fi
-
   echo "== Apply database migrations =="
-  docker compose run -T --rm "${COMPOSE_APP_SERVICE}" /app/ops/migrate.mjs </dev/null
+  docker compose run -T --rm --no-deps "${COMPOSE_APP_SERVICE}" /app/ops/migrate.mjs </dev/null
 
   # Idempotent: backfills seed-content translations (tags, carousel, links, equality
   # docs) onto existing rows via onConflictDoNothing. Non-destructive and safe every
   # deploy, so new locales land without the destructive full seed (SEED_ON_DEPLOY).
   echo "== Seed content translations (idempotent) =="
-  docker compose run -T --rm "${COMPOSE_APP_SERVICE}" /app/ops/seed-content.mjs </dev/null
+  docker compose run -T --rm --no-deps "${COMPOSE_APP_SERVICE}" /app/ops/seed-content.mjs </dev/null
 fi
 
 if [ "${SEED_ON_DEPLOY}" = "true" ]; then
   echo "== Seed database =="
-  docker compose run -T --rm -e ALLOW_PRODUCTION_SEED=true "${COMPOSE_APP_SERVICE}" /app/ops/seed.mjs --confirm </dev/null
+  docker compose run -T --rm --no-deps -e ALLOW_PRODUCTION_SEED=true "${COMPOSE_APP_SERVICE}" /app/ops/seed.mjs --confirm </dev/null
 fi
 
 echo "== Recreate containers =="
-docker compose up -d "${COMPOSE_APP_SERVICE}"
+docker compose up -d --no-deps "${COMPOSE_APP_SERVICE}" </dev/null
+
+echo "== Wait for the app to be healthy =="
+container_id="\$(docker compose ps -q "${COMPOSE_APP_SERVICE}" </dev/null)"
+status=missing
+for _ in \$(seq 1 50); do
+  status="\$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "\$container_id" 2>/dev/null || echo missing)"
+  case "\$status" in
+    healthy | no-healthcheck | missing) break ;;
+  esac
+  sleep 3
+done
+case "\$status" in
+  healthy) echo "    healthy" ;;
+  no-healthcheck) echo "    no healthcheck defined, not waiting" ;;
+  *)
+    echo "ERROR: ${COMPOSE_APP_SERVICE} is \$status. Last logs:" >&2
+    docker compose logs --tail 80 "${COMPOSE_APP_SERVICE}" </dev/null >&2 || true
+    echo "Roll back with: bash ./rollback.sh" >&2
+    exit 1
+    ;;
+esac
 
 echo "== Persist WEB_IMAGE in .env =="
 # Without this, WEB_IMAGE only exists in this SSH session. Any later bare
@@ -269,18 +322,29 @@ if [ -f .env ] && grep -q '^WEB_IMAGE=' .env; then
   cat "\$TMP_ENV" > .env
   rm -f "\$TMP_ENV"
 else
+  # Never glue the line onto another project's last key.
+  if [ -s .env ] && [ -n "\$(tail -c1 .env)" ]; then
+    printf '\n' >> .env
+  fi
   printf '%s\n' "\$WEB_IMAGE_ENV_LINE" >> .env
 fi
 echo "    \$WEB_IMAGE_ENV_LINE"
 
-if docker compose config --services | grep -qx "${COMPOSE_NGINX_SERVICE}"; then
+services="\$(docker compose config --services </dev/null)"
+if grep -qx "${COMPOSE_NGINX_SERVICE}" <<< "\$services"; then
   echo "== Reload NGINX =="
-  docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload
+  docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload </dev/null
 fi
 
 cleanup_old_app_images "${IMAGE_NAME}" "${DEPLOY_IMAGE_RETENTION}"
+
+echo "${REMOTE_DONE_MARKER}"
 EOF
 }
+
+# The remote side must say it finished: a script cut short (a swallowed stdin, a dropped
+# connection) cannot pass for a successful deploy.
+REMOTE_DONE_MARKER="== Remote deploy done =="
 
 load_env_file ".env"
 
@@ -343,6 +407,12 @@ if [ "$SEED_ON_DEPLOY" = "true" ]; then
 fi
 
 log "Deploy to VPS with docker compose"
-remote_compose_up
+remote_log="$(mktemp)"
+trap 'rm -f "$remote_log"' EXIT
+remote_compose_up | tee "$remote_log"
+if ! grep -qxF "$REMOTE_DONE_MARKER" "$remote_log"; then
+  printf 'ERROR: the remote deploy stopped before its last step\n' >&2
+  exit 1
+fi
 
 printf 'Deploy finished successfully\n'

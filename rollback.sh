@@ -88,24 +88,42 @@ fi
 
 log "Rollback to: $ROLLBACK_IMAGE"
 
+remote_rollback() {
 "$SSH_BIN" "$VPS_HOST" 'bash -se' <<EOF
 set -euo pipefail
 
+# Same notes as deploy.sh: every docker compose call reads /dev/null (bash reads this script from
+# stdin), Compose reads the root .env itself, and --no-deps keeps the shared postgresql from being
+# recreated if its config drifted.
 cd "${COMPOSE_DIR}"
-
-if [ -f .env ]; then
-  set -a
-  . ./.env
-  set +a
-fi
 
 export WEB_IMAGE="${ROLLBACK_IMAGE}"
 
 echo "== Pull rollback image if needed =="
-docker compose pull "${COMPOSE_APP_SERVICE}" || true
+docker compose pull "${COMPOSE_APP_SERVICE}" </dev/null || true
 
 echo "== Recreate app container =="
-docker compose up -d "${COMPOSE_APP_SERVICE}"
+docker compose up -d --no-deps "${COMPOSE_APP_SERVICE}" </dev/null
+
+echo "== Wait for the app to be healthy =="
+container_id="\$(docker compose ps -q "${COMPOSE_APP_SERVICE}" </dev/null)"
+status=missing
+for _ in \$(seq 1 50); do
+  status="\$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "\$container_id" 2>/dev/null || echo missing)"
+  case "\$status" in
+    healthy | no-healthcheck | missing) break ;;
+  esac
+  sleep 3
+done
+case "\$status" in
+  healthy) echo "    healthy" ;;
+  no-healthcheck) echo "    no healthcheck defined, not waiting" ;;
+  *)
+    echo "ERROR: ${COMPOSE_APP_SERVICE} is \$status. Last logs:" >&2
+    docker compose logs --tail 80 "${COMPOSE_APP_SERVICE}" </dev/null >&2 || true
+    exit 1
+    ;;
+esac
 
 echo "== Persist WEB_IMAGE in .env =="
 # Same reasoning as deploy.sh: without this a later bare \`docker compose up -d\`
@@ -118,14 +136,29 @@ if [ -f .env ] && grep -q '^WEB_IMAGE=' .env; then
   cat "\$TMP_ENV" > .env
   rm -f "\$TMP_ENV"
 else
+  if [ -s .env ] && [ -n "\$(tail -c1 .env)" ]; then
+    printf '\n' >> .env
+  fi
   printf '%s\n' "\$WEB_IMAGE_ENV_LINE" >> .env
 fi
 echo "    \$WEB_IMAGE_ENV_LINE"
 
-if docker compose config --services | grep -qx "${COMPOSE_NGINX_SERVICE}"; then
+services="\$(docker compose config --services </dev/null)"
+if grep -qx "${COMPOSE_NGINX_SERVICE}" <<< "\$services"; then
   echo "== Reload NGINX =="
-  docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload
+  docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload </dev/null
 fi
+
+echo "== Remote rollback done =="
 EOF
+}
+
+remote_log="$(mktemp)"
+trap 'rm -f "$remote_log"' EXIT
+remote_rollback | tee "$remote_log"
+if ! grep -qxF "== Remote rollback done ==" "$remote_log"; then
+  printf 'ERROR: the remote rollback stopped before its last step\n' >&2
+  exit 1
+fi
 
 printf 'Rollback finished successfully\n'

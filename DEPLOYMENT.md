@@ -551,13 +551,17 @@ bash ./deploy.sh
 
 El script aplica las migraciones antes de recrear el contenedor de la app, por lo que no hay ventana de tiempo en que el nuevo código corra contra un esquema antiguo.
 
-Tras arrancar correctamente, el script limpia imágenes Docker antiguas de la app en el VPS. Por defecto conserva 2 imágenes distintas de `IMAGE_NAME`: la actual y la anterior. Puedes aumentar el margen para rollback con `DEPLOY_IMAGE_RETENTION=3` o desactivar la limpieza con `DEPLOY_IMAGE_RETENTION=0`.
+Antes arranca las dependencias de la app (el PostgreSQL compartido y Redis) solo si están paradas, con `--no-recreate`, y espera a que estén sanas. Las migraciones, los seeds y la app se lanzan con `--no-deps`: así un despliegue de la web nunca recrea el PostgreSQL que comparten todos los proyectos, aunque su configuración haya cambiado. Tras recrear la app espera hasta 150 s a que esté `healthy`; si no lo está, muestra los últimos logs y termina con error sin tocar `WEB_IMAGE`.
+
+Tras arrancar correctamente, el script limpia imágenes Docker antiguas de la app en el VPS. Por defecto conserva las 2 imágenes más recientes de `IMAGE_NAME`, y nunca borra la desplegada ni la guardada para el rollback. Puedes aumentar el margen para rollback con `DEPLOY_IMAGE_RETENTION=3` o desactivar la limpieza con `DEPLOY_IMAGE_RETENTION=0`.
+
+El script remoto se lee por la entrada estándar, así que todos los `docker compose` que lanza leen de `/dev/null`: un `docker compose exec` sin eso se come el resto del script, y la recarga de nginx o la limpieza de imágenes no llegaban a ejecutarse. Si el lado remoto no llega al final, `deploy.sh` termina con error.
 
 **Nota:** Docker Compose `up -d` para el contenedor antiguo antes de arrancar el nuevo. Para un sitio de bajo tráfico este hueco de ~2 segundos es aceptable; zero-downtime real requeriría un load balancer con réplicas.
 
 ### Rollback
 
-Cada despliegue guarda la imagen que estaba corriendo en `.last_app_image` dentro del directorio de Compose del VPS. Para volver a esa imagen desde tu ordenador:
+Cada despliegue guarda la imagen que estaba corriendo en `.last_app_image` dentro del directorio de Compose del VPS, solo si estaba sana: tras un despliegue fallido conserva la última buena. Para volver a esa imagen desde tu ordenador (el rollback espera a que la app esté sana):
 
 ```bash
 bash ./rollback.sh
