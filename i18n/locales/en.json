@@ -12,6 +12,7 @@
     },
     "policy": {
       "rights": "Your rights",
+      "elections": "2026 General Election",
       "label": "University Policy",
       "positions": "Positions",
       "resolutions": "Resolutions",
@@ -373,6 +374,31 @@
       "title": "Want to read the full text?",
       "description": "This guide sums up the Statute in plain language. The official text is the one published in the BOE.",
       "cta": "Open the Statute in the BOE"
+    }
+  },
+  "electionProposals": {
+    "title": "The university we deserve",
+    "seoTitle": "CREUP's proposals for the 2026 General Election",
+    "description": "Public university students' proposals for the 2026 General Election: funding, scholarships, housing, internships, mobility, science, governance, quality and sustainability.",
+    "eyebrow": "2026 General Election",
+    "lead": "What CREUP is asking of all political parties so that the public university is in their election manifestos: more funding, adequate scholarships, affordable housing, internships with guarantees, more science and more quality.",
+    "ctaProposals": "See the proposals",
+    "ctaContact": "Contact CREUP",
+    "stats": {
+      "proposals": "proposals",
+      "sections": "blocks"
+    },
+    "highlightsTitle": "Some key figures",
+    "introTitle": "Introduction",
+    "indexTitle": "Pick a block",
+    "proposalsCount": "{count} proposal | {count} proposals",
+    "proposalLabel": "Proposal {number}",
+    "backToIndex": "Back to the blocks",
+    "closing": {
+      "title": "Investing in the public university is investing in the future",
+      "contactTitle": "Are you part of a political party?",
+      "contactDescription": "We offer you our dialogue to develop, test and improve these proposals.",
+      "cta": "Talk to CREUP"
     }
   },
   "members": {

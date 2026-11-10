@@ -670,6 +670,14 @@ A static page (no admin, no DB) that explains the Estatuto del Estudiantado Univ
 - Adding or removing a right means editing the key in `STUDENT_RIGHTS_SECTIONS` and its entry in all six content files. `StudentRightsText` is derived from that constant and each file is checked against it, so `pnpm typecheck` (not `pnpm i18n:check`, which only sees the chrome) fails when a language misses a section or a right. A new locale needs its content file too: the loader map must cover every `SupportedLocaleCode`.
 - The home featured link to the guide (`STUDENT_RIGHTS_PATH`) is database content managed from admin → Enlaces. The seed creates it on a fresh database; migration `0020_featured_link_student_rights_guide` repointed the existing 2010 Estatuto link to it (matched by its old `to`, replacing only titles that still equal the seeded ones, so admin edits survive). The home route cache lasts 5 minutes, so the button changes at most that long after a deploy.
 
+### 2026 General Election Proposals (`/politica/elecciones-generales-2026`)
+
+A static page (no admin, no DB) with CREUP's proposals for the 2026 general election ("La universidad que merecemos"), built on the same pattern as the student rights guide.
+
+- The structure (blocks, untranslated anchors, icons, the proposal keys of each block and the header's key figures) is `ELECTION_PROPOSALS_SECTIONS` / `ELECTION_PROPOSALS_HIGHLIGHTS` in `shared/constants/electionProposals.ts`, next to the route. The page chrome is under `electionProposals.*` in the locale files; the document itself (intro, key figures, each block's context paragraphs and proposals, closing) is plain data in `app/content/electionProposals/<locale>.json`, loaded per locale by `loadElectionProposalsText` (`app/utils/electionProposalsText.ts`). Proposals are numbered in display order across the whole document.
+- `ElectionProposalsText` is derived from the constants, so `pnpm typecheck` fails when a language misses a block or a proposal. Adding or removing one means editing its key in the constant and its entry in all six content files.
+- It is linked first in the Política Universitaria menu. An announcement press article linking to it is admin content.
+
 ---
 
 ## Web Archives (Wayback Machine)

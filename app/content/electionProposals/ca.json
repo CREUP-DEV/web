@@ -1,0 +1,358 @@
+{
+  "intro": [
+    "La Coordinadora de Representants d'Estudiants d'Universitats Públiques (CREUP) és l'organització d'àmbit estatal que agrupa els Consells d'Estudiants de les universitats públiques espanyoles. Com a principal interlocutora de l'estudiantat universitari públic davant les administracions, les institucions i els agents polítics i socials, la CREUP coneix de primera mà la realitat de les nostres universitats i les necessitats de les persones que les habiten cada dia.",
+    "Cada procés electoral defineix les prioritats de les polítiques públiques per als anys següents, i les decisions que s'adoptin en matèria universitària condicionaran la trajectòria de diverses generacions d'estudiants. Per això, la CREUP presenta aquest document a totes les formacions polítiques, amb el propòsit que les propostes de l'estudiantat siguin recollides en els seus programes electorals.",
+    "El nostre punt de partida és un model d'universitat pública basat en l'accés en condicions d'igualtat, la qualitat de l'ensenyament, la recerca i els serveis, i la participació efectiva de l'estudiantat en el govern de les universitats. La universitat pública és un instrument de cohesió social i territorial i un factor determinant de mobilitat social, i la seva fortalesa és condició necessària per al desenvolupament econòmic, científic i cultural del país. Garantir-la exigeix un finançament públic suficient i estable, així com el compliment efectiu dels compromisos ja assumits, com l'objectiu d'inversió pública de l'1 % del PIB recollit a la Llei orgànica del sistema universitari.",
+    "Les propostes que es presenten a continuació són fruit de l'experiència directa de l'estudiantat i del seu treball col·lectiu. Convidem les formacions polítiques a llegir-les amb atenció i a incorporar-les als seus programes, i posem a la seva disposició la nostra interlocució per desenvolupar-les conjuntament. Invertir en la universitat pública és invertir en el futur del país."
+  ],
+  "highlights": {
+    "gdp": {
+      "value": "2 % del PIB",
+      "label": "d'inversió pública en les universitats públiques, complint abans l'1 % que fixa la LOSU"
+    },
+    "perStudent": {
+      "value": "10.000 €",
+      "label": "d'inversió pública mínima per estudiant"
+    },
+    "representation": {
+      "value": "1/3",
+      "label": "de la representació i del vot per a l'estudiantat en els òrgans de govern"
+    }
+  },
+  "sections": {
+    "funding": {
+      "title": "Finançament i preus públics",
+      "context": [
+        "El finançament públic és la base sobre la qual se sosté el conjunt del sistema universitari. D'ell depenen la qualitat de la docència, l'estabilitat de les plantilles, la recerca, els serveis a l'estudiantat i, de manera molt directa, l'accés i la permanència en els estudis. Una universitat infrafinançada trasllada les seves mancances a les persones que hi estudien, ja sigui en forma de menys recursos, de menys oportunitats o de costos més elevats per a les famílies.",
+        "La Llei orgànica del sistema universitari va fixar l'objectiu d'assolir una inversió pública de l'1 % del PIB, però un compromís sense una metodologia clara, sense seguiment i sense calendari corre el risc de quedar-se en una declaració d'intencions. Per a la CREUP, complir-lo i mesurar-lo de manera transparent és una condició indispensable perquè el sistema pugui competir amb els dels països europeus de referència, que inverteixen percentatges sensiblement superiors.",
+        "Alhora, el sistema de preus públics condiciona qui pot accedir a la universitat i en quines condicions pot continuar-hi. Les diferències entre territoris, l'elevat cost dels màsters i els recàrrecs per repetir matrícula suposen barreres econòmiques que contradiuen el caràcter públic i redistributiu de la universitat. Les propostes d'aquest bloc busquen, per tant, assegurar un finançament suficient i verificable i uns preus que no penalitzin l'estudiantat."
+      ],
+      "proposals": {
+        "gdpTarget": {
+          "title": "Assolir el 2 % del PIB en finançament de les universitats públiques",
+          "description": "Garantir el compliment efectiu del compromís de la Llei orgànica del sistema universitari d'assolir una inversió pública de l'1 % del PIB en les universitats públiques, amb l'ambició d'arribar al 2 %, per acostar-nos a altres països europeus."
+        },
+        "fundingObservatory": {
+          "title": "Observatori estatal del finançament de les universitats públiques",
+          "description": "Crear un observatori que faci un seguiment rigorós i transparent del finançament, un cop l'administració i els actors universitaris, inclòs l'estudiantat, hagin establert què es computa com a 1 % del PIB, i que ofereixi les dades desglossades per comunitat autònoma, de manera que se'n pugui verificar el compliment real de l'objectiu."
+        },
+        "minimumPerStudent": {
+          "title": "Inversió mínima per estudiant",
+          "description": "Incorporar al mesurament del finançament indicadors complementaris, com la despesa pública per estudiant, i fixar una inversió mínima de 10.000 euros per estudiant."
+        },
+        "lowerFees": {
+          "title": "Reducció dels preus públics",
+          "description": "Impulsar una rebaixa dels preus públics de matrícula a les universitats públiques, com a via per garantir la igualtat d'oportunitats en l'accés i la permanència."
+        },
+        "nonQualifyingMasters": {
+          "title": "Equiparació dels màsters universitaris no habilitants",
+          "description": "Equiparar els preus dels màsters universitaris no habilitants als de grau."
+        },
+        "repeatEnrolmentSurcharges": {
+          "title": "Eliminació dels recàrrecs per segones matrícules i successives",
+          "description": "Suprimir l'increment de preu en segones, terceres, quartes i posteriors matrícules, que suposa una penalització econòmica per a l'estudiant que no supera una assignatura."
+        },
+        "morePlaces": {
+          "title": "Ampliació de places a les universitats públiques",
+          "description": "Destinar una part de l'increment del finançament públic a ampliar el nombre de places a les universitats públiques, de manera que l'oferta respongui a les necessitats de la societat i a les aspiracions de l'estudiantat. Aquesta ampliació s'hauria de traduir en una reducció de les notes de tall i en una menor exclusió de les persones que, havent superat les proves d'accés, no aconsegueixen una plaça en la titulació que desitgen. Tot això garantint que el creixement de l'oferta vagi acompanyat dels recursos docents i materials necessaris per mantenir-ne la qualitat."
+        }
+      }
+    },
+    "scholarships": {
+      "title": "Beques",
+      "context": [
+        "El sistema de beques i ajuts és el principal instrument de què disposa l'Estat perquè l'estudi no depengui de l'origen familiar ni del lloc de residència. Tanmateix, el seu disseny actual deixa fora una part de l'estudiantat que el necessita i, en alguns casos, hi afegeix penalitzacions que contradiuen la seva pròpia finalitat: exigències de rendiment acadèmic que no tenen en compte les circumstàncies de cada persona, devolucions d'imports que se sumen a la pèrdua de l'ajut, o quanties d'habitatge que no reflecteixen el que costa realment estudiar a cada ciutat.",
+        "L'equitat en l'accés no s'esgota en les beques. També exigeix incorporar la perspectiva de renda al conjunt dels ajuts universitaris, reconèixer les situacions d'especial vulnerabilitat, garantir l'acollida d'estudiants refugiats i d'altres països, i disposar de dades fiables que permetin conèixer qui accedeix a la universitat, qui hi roman i qui l'abandona. Les propostes d'aquest bloc busquen un sistema d'ajuts més just, més suficient i més sensible a les desigualtats reals."
+      ],
+      "proposals": {
+        "updateAmounts": {
+          "title": "Actualització de les beques i de les seves quanties",
+          "description": "Continuar impulsant l'increment de les beques i de les seves quanties, de manera que cobreixin efectivament el cost real d'estudiar."
+        },
+        "moreIncomeThresholds": {
+          "title": "Més llindars de renda",
+          "description": "Ampliar el nombre de llindars de renda en les beques estatals, perquè l'ajut s'ajusti millor a la situació econòmica de cada família i s'eviti el salt brusc entre les persones que el reben i les que no."
+        },
+        "removeExcellenceShare": {
+          "title": "Eliminació del percentatge d'excel·lència acadèmica",
+          "description": "Suprimir el percentatge d'excel·lència acadèmica com a factor en el sistema de beques. No és coherent destinar una part dels fons públics a premiar els expedients acadèmics més brillants quan encara hi ha estudiants que s'enfronten a dificultats econòmiques i personals que limiten les seves possibilitats d'accedir a l'educació i de continuar els estudis en igualtat de condicions."
+        },
+        "reviewPerformanceRequirements": {
+          "title": "Revisió dels percentatges de rendiment acadèmic",
+          "description": "Rebaixar i revisar els percentatges mínims de rendiment acadèmic exigits per mantenir la beca, de manera que no penalitzin l'estudiantat amb més dificultats econòmiques o personals, ni l'estudiantat d'un àmbit de coneixement o d'una etapa educativa diferents."
+        },
+        "noRepayment": {
+          "title": "Eliminació del reintegrament de la beca",
+          "description": "Suprimir l'obligació de retornar la beca quan no s'assoleixen els requisits acadèmics. No és admissible que una mateixa circumstància comporti una doble penalització: perdre l'ajut l'any següent i, a més, haver-lo de reintegrar. Subsidiàriament, en cas que es mantingui l'obligació de retornar-la, se sol·licita l'eliminació dels interessos associats al reintegrament, amb la finalitat d'evitar una càrrega econòmica addicional per a l'estudiantat."
+        },
+        "housingAmountByTerritory": {
+          "title": "Quantia d'habitatge adaptada al territori",
+          "description": "Incrementar la quantia destinada a l'habitatge i revisar-ne els criteris en funció del lloc d'estudi i del seu cost, per reflectir les diferències reals entre territoris."
+        }
+      }
+    },
+    "equality": {
+      "title": "Igualtat",
+      "context": [
+        "La universitat ha de garantir la igualtat d'oportunitats i la inclusió efectiva de tot l'estudiantat, independentment de la seva situació socioeconòmica, el seu origen o les seves circumstàncies personals. Per fer-ho, cal eliminar les barreres que dificulten l'accés, la permanència i el desenvolupament acadèmic, així com disposar de dades que permetin identificar les desigualtats existents i orientar les polítiques públiques."
+      ],
+      "proposals": {
+        "positiveDiscrimination": {
+          "title": "Mecanismes de discriminació positiva en l'accés",
+          "description": "Estudiar l'establiment de mecanismes de discriminació positiva en l'accés a la universitat per a les persones en risc d'exclusió social."
+        },
+        "refugeeStudents": {
+          "title": "Programa i beques per a estudiants refugiats",
+          "description": "Crear un programa específic d'accés i un sistema de beques per a estudiants refugiats coordinat a escala estatal."
+        },
+        "equalityTraining": {
+          "title": "Formació en igualtat, diversitat i inclusió",
+          "description": "Garantir la formació del personal docent i investigador (PDI) i del personal tècnic, de gestió i d'administració i serveis (PTGAS) en matèria d'igualtat, diversitat i inclusió."
+        },
+        "equityData": {
+          "title": "Recollida de dades sobre equitat i accés universitari",
+          "description": "Establir mecanismes estatals de recopilació i anàlisi de dades que permetin conèixer les desigualtats en l'accés, la permanència i la finalització dels estudis universitaris, atenent variables com el gènere, l'origen i la situació socioeconòmica."
+        },
+        "mentalHealthStudy": {
+          "title": "Estudi estatal sobre la salut mental de l'estudiantat universitari",
+          "description": "Fer un estudi periòdic que permeti conèixer la situació de la salut mental de l'estudiantat, identificar els principals factors que afecten el seu benestar i orientar el desenvolupament de mesures de prevenció, atenció i suport en l'àmbit universitari."
+        },
+        "scienceSocialDimension": {
+          "title": "Igualtat i dimensió social en la política científica",
+          "description": "Incorporar criteris d'igualtat de gènere, inclusió, sostenibilitat, cohesió territorial i memòria democràtica en la planificació de la política científica i en les convocatòries estatals de finançament, respectant la independència acadèmica i els criteris d'avaluació científica."
+        }
+      }
+    },
+    "housing": {
+      "title": "Habitatge",
+      "context": [
+        "L'accés a un habitatge digne s'ha convertit en una de les principals barreres per estudiar a la universitat pública. L'augment sostingut dels preus del lloguer, l'escassetat d'oferta assequible i la pressió de l'habitatge d'ús turístic han fet que, en moltes ciutats universitàries, el cost de l'allotjament superi amb escreix la quantia de les beques i ajuts, i que la decisió de què estudiar i on depengui cada vegada més de la capacitat econòmica de les famílies.",
+        "A aquesta situació s'hi suma la insuficiència d'allotjament públic i assequible dins del mateix sistema universitari, i la manca de protecció jurídica de les persones que lloguen una habitació, una de les fórmules més habituals entre l'estudiantat, que avui queda al marge de la regulació general dels arrendaments. Les propostes d'aquest bloc busquen que l'habitatge deixi de ser un factor d'exclusió i es converteixi en una part de les garanties d'accés i permanència a la universitat."
+      ],
+      "proposals": {
+        "rentCaps": {
+          "title": "Limitació dels preus del lloguer",
+          "description": "Establir topalls als lloguers a les zones tensionades. Aquests topalls no s'haurien de limitar a aquestes zones, sinó que s'haurien d'estendre a tot el territori de l'Estat, adaptant-se a les circumstàncies particulars de cada regió i a l'evolució dels seus preus."
+        },
+        "touristRentals": {
+          "title": "Regulació de l'habitatge d'ús turístic",
+          "description": "Regular l'habitatge d'ús turístic, perquè la seva expansió no redueixi l'oferta de lloguer residencial a les ciutats universitàries ni pressioni els preus a l'alça."
+        },
+        "publicResidences": {
+          "title": "Finançament per a la creació de col·legis majors i residències públiques",
+          "description": "Impulsar la creació de col·legis majors i residències públiques, de gestió directa, amb preus assequibles i places suficients per a l'estudiantat."
+        },
+        "residentialRehabilitation": {
+          "title": "Rehabilitació d'espais per a ús residencial",
+          "description": "Dotar partides pressupostàries per rehabilitar i adaptar espais de les universitats que es puguin convertir en allotjament universitari, així com per millorar els que ja existeixen."
+        },
+        "roomRentals": {
+          "title": "Lloguer d'habitacions i Llei d'arrendaments urbans",
+          "description": "Incloure el lloguer d'habitacions a la Llei d'arrendaments urbans (LAU), o dotar-lo d'un estatut jurídic equivalent, perquè les persones que hi recorren tinguin una protecció similar a la de la resta d'arrendataris."
+        }
+      }
+    },
+    "internships": {
+      "title": "Pràctiques acadèmiques externes",
+      "context": [
+        "Les pràctiques acadèmiques externes són una part essencial de la formació universitària: permeten aplicar els coneixements adquirits en un entorn real i faciliten la transició al món professional. Perquè compleixin aquesta funció han de ser, abans de res, formatives, i no han de suposar una càrrega econòmica per a qui les fa ni un espai de desprotecció.",
+        "El marc que les regula, el Reial decret 592/2014, té ja més d'una dècada i no sempre respon a la realitat actual de l'estudiantat. A més, els desplaçaments, l'allotjament o la manutenció associats a les pràctiques recauen avui, en la majoria dels casos, sobre el mateix estudiant, la qual cosa genera desigualtats en funció de la capacitat econòmica de cada família. D'altra banda, les pràctiques en serveis públics, com els sanitaris o els educatius, formen part de la mateixa funció formativa de la universitat pública i han de quedar protegides. Les propostes d'aquest bloc busquen unes pràctiques de qualitat, accessibles i amb garanties."
+      ],
+      "proposals": {
+        "reformDecree": {
+          "title": "Reforma del Reial decret 592/2014",
+          "description": "Reformar el Reial decret 592/2014, d'11 de juliol, pel qual es regulen les pràctiques acadèmiques externes dels estudiants universitaris, per adaptar-lo a la realitat actual i reforçar els drets de l'estudiantat."
+        },
+        "expenseCompensation": {
+          "title": "Compensació de les despeses derivades de les pràctiques",
+          "description": "Establir mecanismes de compensació de les despeses associades a la realització de les pràctiques, com les de transport, allotjament o manutenció, perquè fer-les no depengui de la capacitat econòmica de l'estudiantat."
+        },
+        "vulnerableStudentGrants": {
+          "title": "Beques per a la realització de pràctiques d'estudiants vulnerables",
+          "description": "Posar en marxa una borsa de beques per a l'estudiantat vulnerable que vulgui fer pràctiques però que, a causa del cost d'oportunitat, no les pugui fer. Pot ser una quantia dins de les beques estatals a l'estudi o una altra de diferenciada."
+        },
+        "publicServicesExclusivity": {
+          "title": "Exclusivitat de les pràctiques en serveis públics per a les universitats públiques",
+          "description": "Blindar l'exclusivitat de les places de pràctiques en els serveis públics per a l'estudiantat de les universitats públiques. Aquesta mesura busca assegurar que les infraestructures, els professionals i els recursos finançats amb fons públics es destinin a la formació de l'estudiantat del sistema públic universitari, prioritzant la sostenibilitat d'aquest model i l'aprofitament dels seus recursos."
+        }
+      }
+    },
+    "mobility": {
+      "title": "Internacionalització i mobilitat",
+      "context": [
+        "La mobilitat internacional és una de les experiències més valuoses que ofereix la universitat: amplia la formació acadèmica, millora les perspectives professionals i enforteix la ciutadania europea i global. Precisament pel seu valor, no es pot convertir en un privilegi reservat a qui disposa de recursos propis per costejar-la.",
+        "Avui, les quanties dels ajuts no sempre cobreixen el cost real de viure a l'estranger, els criteris de concessió no tenen prou en compte la situació socioeconòmica de l'estudiantat, la informació disponible és dispersa i la mobilitat entre universitats espanyoles ha perdut el suport estatal amb què comptava. A això s'hi suma la necessitat d'obrir la mobilitat a altres espais, en particular a l'iberoamericà, amb el qual compartim llengua, història i vincles acadèmics. Les propostes d'aquest bloc busquen una mobilitat finançada, accessible, transparent, més sostenible i oberta a nous horitzons."
+      ],
+      "proposals": {
+        "mobilityFunding": {
+          "title": "Finançament dels programes de mobilitat internacional",
+          "description": "Incrementar els recursos destinats als programes estatals de suport a la mobilitat internacional, per garantir que l'accés a aquestes oportunitats no depengui de la capacitat econòmica de l'estudiantat."
+        },
+        "iberoamericanMobility": {
+          "title": "Mobilitat iberoamericana",
+          "description": "Impulsar la mobilitat de l'estudiantat amb les universitats dels països iberoamericans, mitjançant programes i ajuts que facilitin els intercanvis."
+        },
+        "segibCooperation": {
+          "title": "Cooperació de l'estudiantat iberoamericà en el marc de la SEGIB",
+          "description": "Estudiar fórmules per posar en relació l'estudiantat iberoamericà, i les seves organitzacions representatives, en el marc de l'Espai Iberoamericà del Coneixement (EIC)."
+        },
+        "iberoamericanRepresentation": {
+          "title": "Reconeixement de la representació estudiantil a escala iberoamericana en la presa de decisions",
+          "description": "Promoure mecanismes que garanteixin la participació i el reconeixement de les organitzacions de representació estudiantil iberoamericanes en els espais de diàleg i de presa de decisions sobre educació superior i cooperació universitària."
+        },
+        "bolognaFollowUp": {
+          "title": "Seguiment del Procés de Bolonya amb la representació estudiantil espanyola",
+          "description": "Establir reunions periòdiques entre el ministeri competent en matèria d'universitats i la representació estudiantil espanyola per fer el seguiment del Bologna Follow-Up Group (BFUG), compartir informació sobre els avenços de l'Espai Europeu d'Educació Superior i traslladar les demandes de l'estudiantat als processos de decisió."
+        },
+        "studentVisas": {
+          "title": "Agilització dels visats d'estudiants",
+          "description": "Agilitzar la tramitació de visats per a l'estudiantat admès a les universitats espanyoles."
+        },
+        "internshipMobilityGrants": {
+          "title": "Millora de les condicions de les beques de mobilitat per a pràctiques",
+          "description": "Cal millorar les condicions i promoure les beques per a la mobilitat durant les pràctiques si pretenem formar generacions capaces de viure en un món globalitzat com el que tenim. Per a la majoria d'estudiants, les pràctiques són el primer contacte amb el món laboral, i poder fer-les en mobilitat suposa un aprenentatge més gran en totes les fases de l'etapa de pràctiques."
+        }
+      }
+    },
+    "science": {
+      "title": "Ciència",
+      "context": [
+        "La recerca és una de les missions essencials de la universitat pública i una de les principals vies per les quals aquesta retorna a la societat el que en rep. Un sistema científic sòlid genera coneixement, innovació i ocupació qualificada, i és condició necessària perquè el país pugui afrontar els reptes econòmics, socials i ambientals de les properes dècades.",
+        "Per a l'estudiantat, la ciència també és una qüestió d'oportunitats. Les persones que volen dedicar-se a la recerca es troben amb un finançament insuficient i desigual entre àrees de coneixement, amb criteris d'avaluació que no sempre s'ajusten a les particularitats de cada disciplina, amb contractes predoctorals i postdoctorals escassos i amb carreres professionals inestables que empenyen moltes persones formades a Espanya a abandonar la recerca o el país. Les propostes d'aquest bloc busquen un finançament públic creixent i previsible, un accés a la carrera investigadora que no depengui de la situació econòmica i una política científica que contempli totes les àrees de coneixement."
+      ],
+      "proposals": {
+        "sustainedFunding": {
+          "title": "Finançament sostingut en R+D+I",
+          "description": "Establir una trajectòria plurianual d'increment de la inversió pública en recerca, desenvolupament i innovació, amb objectius verificables, mecanismes de seguiment de l'execució pressupostària i mesures destinades a reduir la distància respecte als països del nostre entorn europeu."
+        },
+        "allKnowledgeAreas": {
+          "title": "Finançament de la recerca en totes les àrees de coneixement",
+          "description": "Garantir que les convocatòries estatals de recerca contemplin de manera equilibrada les diferents àrees de coneixement, incloses les ciències socials, les humanitats, les arts i les disciplines científiques i tecnològiques, atenent les seves particularitats metodològiques."
+        },
+        "researchContracts": {
+          "title": "Més ajuts i contractes predoctorals i postdoctorals",
+          "description": "Ampliar progressivament les convocatòries estatals destinades a finançar la formació investigadora, els contractes predoctorals i la incorporació de personal investigador, afavorint la continuïtat de les carreres científiques i la retenció del talent."
+        },
+        "evaluationCriteria": {
+          "title": "Revisió dels criteris d'avaluació dels ajuts a la recerca",
+          "description": "Adequar els criteris de concessió dels contractes predoctorals i d'iniciació a la recerca a les particularitats de les diferents disciplines, valorant de manera proporcionada les publicacions, la transferència del coneixement, la innovació i altres contribucions rellevants per a cada àrea, així com la renda."
+        },
+        "simplerAdministration": {
+          "title": "Simplificació de la gestió administrativa de la recerca",
+          "description": "Revisar els procediments estatals de contractació, justificació i execució de fons destinats a la R+D+I per reduir càrregues burocràtiques innecessàries, mantenint les garanties de transparència, control de la despesa i prevenció del frau."
+        },
+        "openScience": {
+          "title": "Ciència oberta",
+          "description": "Impulsar el compliment de les obligacions d'accés obert a publicacions i resultats de recerca finançats amb fons públics, així com el desenvolupament d'infraestructures que facilitin l'accés de la ciutadania al coneixement científic."
+        }
+      }
+    },
+    "governance": {
+      "title": "Governança i participació democràtica",
+      "context": [
+        "La universitat pública és una institució en què les decisions afecten directament les persones que en formen part. Per això, és important garantir la participació de tots els seus col·lectius, especialment de l'estudiantat, que és el grup més nombrós. No obstant això, la composició actual d'alguns òrgans de govern té marge de millora per reflectir millor la pluralitat de la comunitat universitària, reforçar la participació estudiantil i afavorir una representació més àmplia de la societat en els espais destinats a connectar la universitat amb el seu entorn.",
+        "La participació estudiantil exigeix, a més, mitjans materials, però avui el seu treball depèn de recursos insuficients i d'una normativa que no s'ajusta a la seva realitat. Les propostes d'aquest bloc busquen una universitat més autònoma, més transparent i més democràtica, en què la representació estudiantil compti amb les garanties necessàries per exercir-se plenament."
+      ],
+      "proposals": {
+        "oneThirdRepresentation": {
+          "title": "Un terç de representació i de vot per a l'estudiantat",
+          "description": "Garantir que l'estudiantat tingui, com a mínim, un terç de la representació en els òrgans col·legiats de govern i de representació de la universitat. Així mateix, assegurar que el vot estudiantil representi, com a mínim, un terç del pes total del vot ponderat en les eleccions al rectorat, així com en els altres processos electorals universitaris en què s'estableixi un sistema de vot ponderat."
+        },
+        "universityAutonomy": {
+          "title": "Garantia de l'autonomia universitària",
+          "description": "Garantir l'autonomia universitària davant d'ingerències externes i assegurar que les universitats es puguin governar d'acord amb els seus propis òrgans i estatuts."
+        },
+        "socialCouncil": {
+          "title": "Transformació del Consell Social",
+          "description": "Transformar el Consell Social en un òrgan de caràcter consultiu, sense capacitat decisòria, i garantir que la seva composició reflecteixi de veritat la pluralitat de la ciutadania."
+        },
+        "conflictsOfInterest": {
+          "title": "Conflictes d'interès",
+          "description": "Revisar i reforçar el règim d'incompatibilitats dels càrrecs universitaris per prevenir possibles conflictes d'interès i garantir la transparència i la independència en la presa de decisions. Aquesta revisió hauria de contemplar, entre altres supòsits, la compatibilitat entre l'exercici de càrrecs en universitats públiques i privades, així com els vincles amb entitats empresarials que puguin generar conflictes d'interès."
+        },
+        "studentCouncilFunding": {
+          "title": "Finançament dels consells d'estudiants",
+          "description": "Garantir finançament per als consells d'estudiants en el marc de la LOSU, de manera que puguin desenvolupar la seva tasca de representació amb independència i amb recursos suficients."
+        }
+      }
+    },
+    "quality": {
+      "title": "Garantia de la qualitat del sistema universitari espanyol",
+      "context": [
+        "La qualitat és la garantia que el sistema universitari ofereix a l'estudiantat i a la societat: que darrere d'un títol hi ha un professorat adequat, uns recursos suficients i un projecte acadèmic sòlid. Perquè aquesta garantia sigui creïble, les entitats que la verifiquen han de ser independents, els controls s'han de mantenir un cop concedida l'acreditació i els resultats han de ser públics i comprensibles.",
+        "En els darrers anys, l'expansió de noves institucions privades i la simplificació de determinats procediments administratius han posat de manifest la necessitat de reforçar la supervisió del sistema. Quan el creixement no respon a una planificació i els controls són insuficients, qui ho pateix és l'estudiantat: titulacions amb condicions deficients, informació publicitària que indueix a error o, en el pitjor dels casos, tancaments que deixen sense empara les persones que han invertit anys i recursos en els seus estudis. Les propostes d'aquest bloc busquen un sistema planificat, transparent i amb garanties reals per a les persones que hi estudien."
+      ],
+      "proposals": {
+        "agencyIndependence": {
+          "title": "Independència de les agències d'avaluació de la qualitat",
+          "description": "Reforçar l'autonomia funcional i institucional de les agències de qualitat, especialment les autonòmiques, mitjançant un marc jurídic que n'asseguri la independència davant de possibles ingerències polítiques, institucionals o corporatives, així com procediments de selecció basats en el mèrit i la capacitat."
+        },
+        "continuousEvaluation": {
+          "title": "Avaluació externa contínua de la qualitat universitària",
+          "description": "Reforçar els mecanismes d'avaluació i supervisió de la qualitat dels ensenyaments universitaris, incorporant controls periòdics i aleatoris que permetin comprovar que les titulacions i les institucions mantenen les condicions de qualitat exigides, mitjançant entrevistes a la comunitat universitària i els indicadors i resultats recollits pels Sistemes Interns de Garantia de la Qualitat, entre d'altres."
+        },
+        "teachingQuality": {
+          "title": "Qualitat docent com a element determinant de l'avaluació",
+          "description": "Reforçar el pes dels indicadors de qualitat docent en els procediments estatals d'avaluació i acreditació institucional, evitant que la simplificació administrativa es tradueixi en una reducció de les garanties acadèmiques."
+        },
+        "qualityTransparency": {
+          "title": "Transparència dels resultats de qualitat",
+          "description": "Establir obligacions comunes de publicació d'informació comprensible, comparable i actualitzada sobre la qualitat de les titulacions, els resultats de les avaluacions externes i les mesures adoptades davant dels incompliments detectats."
+        },
+        "degreeMap": {
+          "title": "Mapa estatal de titulacions",
+          "description": "Elaborar un mapa de titulacions a escala estatal que permeti identificar necessitats, duplicitats i mancances en l'oferta, com a base per a la planificació del sistema universitari."
+        },
+        "stricterRequirements": {
+          "title": "Enduriment dels requisits per a la creació, el reconeixement i l'autorització d'universitats, així com per a la seva acreditació institucional",
+          "description": "Revisar els requisits bàsics de creació i reconeixement per garantir, com a mínim, que els projectes disposin d'un model acadèmic viable, recursos suficients, professorat adequat i infraestructures d'acord amb l'oferta formativa prevista."
+        },
+        "closureGuarantees": {
+          "title": "Garanties econòmiques davant del tancament o l'incompliment d'una universitat privada",
+          "description": "Introduir mecanismes de garantia financera, proporcionats a la mida i als riscos del projecte, que permetin afrontar les obligacions pendents, facilitar la continuïtat dels estudis i protegir l'estudiantat davant de situacions d'insolvència o de cessament d'activitat."
+        },
+        "privateUniversityInspection": {
+          "title": "Inspecció i supervisió especial de les universitats privades",
+          "description": "Reforçar els mecanismes d'inspecció i seguiment de les universitats privades mitjançant controls periòdics que permetin verificar el compliment dels requisits legals, acadèmics i de qualitat, així com inspeccions extraordinàries quan hi hagi indicis de possibles irregularitats. Atès que les universitats privades poden estar subjectes a incentius econòmics i objectius empresarials que no es donen de la mateixa manera a les universitats públiques, és especialment important establir mecanismes de supervisió que evitin que aquests interessos puguin anteposar-se a la qualitat de l'ensenyament i al compliment de la seva funció educativa. Aquests controls hauran d'incloure procediments d'esmena i un règim de sancions proporcionals a la gravetat i la reiteració dels incompliments."
+        },
+        "privateUniversityMoratorium": {
+          "title": "Moratòria en l'autorització de noves universitats privades",
+          "description": "Establir una moratòria temporal en l'autorització de noves universitats privades fins que es faci una planificació estratègica del sistema universitari, per evitar un creixement desordenat d'institucions privades que fragmenta el sistema i desvia recursos públics."
+        },
+        "privateAffiliatedCentres": {
+          "title": "Eliminació dels centres adscrits de titularitat privada",
+          "description": "Suprimir progressivament els centres adscrits de titularitat privada, amb l'objectiu de garantir que la impartició de titulacions universitàries es desenvolupi en un marc de supervisió, qualitat i garanties equivalent a l'exigit al conjunt del sistema universitari. L'existència de centres privats que imparteixen titulacions vinculades a universitats públiques pot generar diferències en les condicions d'accés, finançament, gestió i control acadèmic, per la qual cosa cal revisar aquest model per assegurar una coherència més gran en la prestació del servei públic d'educació superior i una supervisió efectiva de la qualitat de les titulacions."
+        },
+        "privateUniversityTransparency": {
+          "title": "Reforç de les obligacions de transparència de les universitats privades",
+          "description": "Establir obligacions de publicitat activa per a les universitats privades, especialment les de titularitat mercantil, que incloguin la publicació periòdica d'informació econòmica i financera verificada, els comptes anuals auditats, l'estructura de propietat i els recursos destinats a docència, recerca i beques. A diferència de les universitats públiques, que estan subjectes a obligacions de transparència pròpies de la seva naturalesa pública, les universitats privades han de disposar de mecanismes específics de rendició de comptes que garanteixin l'accés a informació rellevant, especialment tenint en compte que també exerceixen una funció d'interès general com és l'educació superior."
+        }
+      }
+    },
+    "sustainability": {
+      "title": "Sostenibilitat",
+      "context": [
+        "L'emergència climàtica és un dels grans reptes de la nostra generació, i les universitats públiques hi tenen una doble responsabilitat: generar el coneixement que permeti afrontar-la i actuar com a exemple en els seus propis campus. Les persones que avui estudien en viuran les conseqüències amb més intensitat, i esperen de la seva universitat un compromís a l'altura.",
+        "A més, els campus estan cada vegada més exposats a episodis de calor extrema i a altres fenòmens meteorològics adversos, i molts dels seus edificis no hi estan preparats. Adaptar-los i dotar-los dels recursos necessaris no només protegeix la comunitat universitària, sinó que els pot convertir en espais útils per al conjunt de la ciutadania. Les propostes d'aquest bloc busquen que la sostenibilitat deixi de ser una declaració de principis i compti amb finançament, línies de recerca i una planificació efectives."
+      ],
+      "proposals": {
+        "climateShelters": {
+          "title": "Universitats com a refugis climàtics",
+          "description": "Dotar de finançament les universitats perquè puguin adaptar les seves instal·lacions i convertir-se en refugis climàtics, tant per a la comunitat universitària com per a la ciutadania."
+        },
+        "sustainabilityResearch": {
+          "title": "Recerca en sostenibilitat",
+          "description": "Finançar línies de recerca orientades a la sostenibilitat, la mitigació del canvi climàtic i l'adaptació a aquest canvi."
+        },
+        "sustainabilityPlans": {
+          "title": "Plans de sostenibilitat en el marc de la LOSU",
+          "description": "Impulsar el desenvolupament de plans de sostenibilitat a les universitats en el marc de la Llei orgànica del sistema universitari, amb el suport pressupostari necessari per dur-los a terme."
+        }
+      }
+    }
+  },
+  "closing": [
+    "Les propostes recollides en aquest document responen a una mateixa convicció: la universitat pública és un bé comú que mereix una protecció i una inversió d'acord amb el seu paper en la societat. De l'accés en condicions d'igualtat a la qualitat de l'ensenyament, de la participació de l'estudiantat en el govern de les universitats a la recerca, cadascuna d'elles busca que estudiar a la universitat pública sigui una oportunitat real per a totes les persones, amb independència del seu origen, el seu territori o la seva situació econòmica.",
+    "La CREUP trasllada aquestes propostes a totes les formacions polítiques amb la voluntat que siguin considerades, debatudes i, en la mesura del possible, assumides en els seus programes electorals. Com a organització representativa de l'estudiantat de les universitats públiques, ens posem a disposició dels grups polítics per desenvolupar-les, contrastar-les i millorar-les, i per continuar treballant amb ells durant la legislatura. Invertir en la universitat pública és invertir en el futur del país, i l'estudiantat hi serà per acompanyar-lo."
+  ]
+}

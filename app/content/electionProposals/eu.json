@@ -1,0 +1,358 @@
+{
+  "intro": [
+    "Unibertsitate Publikoetako Ikasleen Ordezkarien Koordinakundea (CREUP) Espainiako unibertsitate publikoetako Ikasle Kontseiluak biltzen dituen estatu-mailako erakundea da. Administrazioen, erakundeen eta eragile politiko eta sozialen aurrean unibertsitate publikoetako ikasleriaren solaskide nagusia denez, CREUPek zuzenean ezagutzen ditu gure unibertsitateen errealitatea eta egunero bertan bizi direnen beharrak.",
+    "Hauteskunde-prozesu bakoitzak hurrengo urteetako politika publikoen lehentasunak zehazten ditu, eta unibertsitateen arloan hartzen diren erabakiek ikasleen hainbat belaunaldiren ibilbidea baldintzatuko dute. Horregatik, CREUPek dokumentu hau aurkezten die alderdi politiko guztiei, ikasleriaren proposamenak haien hauteskunde-programetan jaso daitezen.",
+    "Gure abiapuntua unibertsitate publikoaren eredu bat da, honako hauetan oinarritua: berdintasun-baldintzetan sartzeko aukera, irakaskuntzaren, ikerketaren eta zerbitzuen kalitatea, eta ikasleriak unibertsitateen gobernuan benetan parte hartzea. Unibertsitate publikoa gizarte- eta lurralde-kohesiorako tresna bat da eta gizarte-mugikortasunaren faktore erabakigarria, eta haren sendotasuna ezinbesteko baldintza da herrialdearen garapen ekonomiko, zientifiko eta kulturalerako. Hori bermatzeko, finantzaketa publiko nahikoa eta egonkorra behar da, bai eta dagoeneko hartutako konpromisoak benetan betetzea ere, hala nola Unibertsitate Sistemaren Lege Organikoan jasotako BPGaren % 1eko inbertsio publikoaren helburua.",
+    "Jarraian aurkezten diren proposamenak ikasleriaren zuzeneko esperientziaren eta lan kolektiboaren emaitza dira. Alderdi politikoak gonbidatzen ditugu arretaz irakurtzera eta beren programetan txertatzera, eta gure solaskidetza eskaintzen diegu elkarrekin garatzeko. Unibertsitate publikoan inbertitzea herrialdearen etorkizunean inbertitzea da."
+  ],
+  "highlights": {
+    "gdp": {
+      "value": "BPGaren % 2",
+      "label": "unibertsitate publikoetako inbertsio publiko gisa, aurretik LOSUk ezartzen duen % 1a beteta"
+    },
+    "perStudent": {
+      "value": "10.000 €",
+      "label": "gutxieneko inbertsio publiko gisa ikasle bakoitzeko"
+    },
+    "representation": {
+      "value": "1/3",
+      "label": "gobernu-organoetako ordezkaritzatik eta botoetatik, ikasleriarentzat"
+    }
+  },
+  "sections": {
+    "funding": {
+      "title": "Finantzaketa eta prezio publikoak",
+      "context": [
+        "Finantzaketa publikoa da unibertsitate-sistema osoaren euskarria. Haren mende daude irakaskuntzaren kalitatea, plantillen egonkortasuna, ikerketa, ikasleentzako zerbitzuak eta, oso zuzenean, ikasketetara sartzeko eta haietan jarraitzeko aukera. Gutxiegi finantzatutako unibertsitate batek bertan ikasten dutenei helarazten dizkie bere gabeziak, baliabide gutxiago, aukera gutxiago edo familientzako kostu handiagoak direla medio.",
+        "Unibertsitate Sistemaren Lege Organikoak BPGaren % 1eko inbertsio publikora iristeko helburua finkatu zuen, baina metodologia argirik, jarraipenik eta egutegirik gabeko konpromiso batek asmo-adierazpen hutsean geratzeko arriskua du. CREUPen ustez, konpromiso hori betetzea eta modu gardenean neurtzea ezinbesteko baldintza da sistemak erreferentziazko Europako herrialdeetakoekin lehiatu ahal izateko, horiek ehuneko nabarmen handiagoak inbertitzen baitituzte.",
+        "Aldi berean, prezio publikoen sistemak baldintzatzen du nork sar daitekeen unibertsitatera eta zein baldintzatan jarrai dezakeen. Lurraldeen arteko aldeak, masterren kostu handia eta matrikula errepikatzeagatiko errekarguak oztopo ekonomikoak dira, eta unibertsitatearen izaera publiko eta birbanatzailearekin talka egiten dute. Beraz, bloke honetako proposamenek finantzaketa nahikoa eta egiaztagarria bermatu nahi dute, bai eta ikasleria zigortuko ez duten prezioak ere."
+      ],
+      "proposals": {
+        "gdpTarget": {
+          "title": "BPGaren % 2ra iristea unibertsitate publikoen finantzaketan",
+          "description": "Unibertsitate Sistemaren Lege Organikoaren konpromisoa benetan betetzen dela bermatzea, hau da, unibertsitate publikoetan BPGaren % 1eko inbertsio publikora iristea, % 2ra iristeko asmoarekin, Europako beste herrialde batzuetara hurbilduz."
+        },
+        "fundingObservatory": {
+          "title": "Unibertsitate publikoen finantzaketaren estatuko behatokia",
+          "description": "Finantzaketaren jarraipen zorrotza eta gardena egingo duen behatoki bat sortzea; aurrez, administrazioak eta unibertsitateko eragileek, ikasleria barne, zehaztuko dute zer zenbatzen den BPGaren % 1 gisa, eta datuak autonomia-erkidegoen arabera banakatuta eskainiko dira, helburua benetan betetzen den egiaztatu ahal izateko."
+        },
+        "minimumPerStudent": {
+          "title": "Ikasle bakoitzeko gutxieneko inbertsioa",
+          "description": "Finantzaketaren neurketan adierazle osagarriak txertatzea, hala nola ikasle bakoitzeko gastu publikoa, eta ikasle bakoitzeko 10.000 euroko gutxieneko inbertsioa ezartzea."
+        },
+        "lowerFees": {
+          "title": "Prezio publikoak murriztea",
+          "description": "Unibertsitate publikoetako matrikulen prezio publikoak jaistea sustatzea, ikasketetara sartzeko eta haietan jarraitzeko aukera-berdintasuna bermatzeko bide gisa."
+        },
+        "nonQualifyingMasters": {
+          "title": "Gaitzen ez duten unibertsitate-masterrak parekatzea",
+          "description": "Gaitzen ez duten unibertsitate-masterren prezioak graduenekin parekatzea."
+        },
+        "repeatEnrolmentSurcharges": {
+          "title": "Bigarren eta ondorengo matrikulengatiko errekarguak ezabatzea",
+          "description": "Bigarren, hirugarren, laugarren eta ondorengo matrikuletako prezio-igoera kentzea, irakasgai bat gainditzen ez duen ikaslearentzat zigor ekonomikoa baita."
+        },
+        "morePlaces": {
+          "title": "Unibertsitate publikoetako plazak gehitzea",
+          "description": "Finantzaketa publikoaren igoeraren zati bat unibertsitate publikoetako plaza kopurua handitzera bideratzea, eskaintzak gizartearen beharrei eta ikasleriaren nahiei erantzun diezaien. Handitze horrek sarbide-noten jaitsiera ekarri beharko luke, bai eta bazterketa txikiagoa ere sarbide-probak gainditu arren nahi duten titulazioan plazarik lortzen ez dutenentzat. Hori guztia, eskaintzaren hazkundearekin batera kalitateari eusteko behar diren irakaskuntza-baliabideak eta baliabide materialak bermatuz."
+        }
+      }
+    },
+    "scholarships": {
+      "title": "Bekak",
+      "context": [
+        "Beka eta laguntzen sistema da Estatuak duen tresna nagusia ikastea familia-jatorriaren edo bizilekuaren mende egon ez dadin. Hala ere, egungo diseinuak kanpoan uzten du behar duen ikasleriaren zati bat, eta, zenbait kasutan, bere xedearen aurkako zigorrak gehitzen ditu: pertsona bakoitzaren egoera kontuan hartzen ez duten errendimendu akademikoko eskakizunak, laguntza galtzeari gehitzen zaizkion zenbatekoen itzulketak, edo hiri bakoitzean ikasteak benetan zenbat kostatzen duen islatzen ez duten etxebizitzarako zenbatekoak.",
+        "Sarbidearen ekitatea ez da bekekin agortzen. Horrez gain, beharrezkoa da errentaren ikuspegia unibertsitateko laguntza guztietan txertatzea, ahultasun bereziko egoerak aitortzea, errefuxiatuen eta beste herrialde batzuetako ikasleen harrera bermatzea, eta nork sartzen den, nork jarraitzen duen eta nork uzten duen unibertsitatea jakiteko aukera ematen duten datu fidagarriak izatea. Bloke honetako proposamenek laguntza-sistema bidezkoagoa, nahikoagoa eta benetako desberdintasunekiko sentikorragoa lortu nahi dute."
+      ],
+      "proposals": {
+        "updateAmounts": {
+          "title": "Bekak eta haien zenbatekoak eguneratzea",
+          "description": "Bekak eta haien zenbatekoak handitzen jarraitzea, ikasteak benetan duen kostua modu eraginkorrean estal dezaten."
+        },
+        "moreIncomeThresholds": {
+          "title": "Errenta-atalase gehiago",
+          "description": "Estatuko beketako errenta-atalaseen kopurua handitzea, laguntza familia bakoitzaren egoera ekonomikora hobeto egokitu dadin eta laguntza jasotzen dutenen eta jasotzen ez dutenen arteko jauzi bortitza saihesteko."
+        },
+        "removeExcellenceShare": {
+          "title": "Bikaintasun akademikoaren ehunekoa ezabatzea",
+          "description": "Bikaintasun akademikoaren ehunekoa beka-sistemako faktore gisa kentzea. Ez da koherentea funts publikoen zati bat espediente akademiko bikainenak saritzera bideratzea, oraindik badaudenean hezkuntzara sartzeko eta ikasketekin baldintza berdinetan jarraitzeko aukerak mugatzen dizkieten zailtasun ekonomiko eta pertsonalei aurre egin behar dieten ikasleak."
+        },
+        "reviewPerformanceRequirements": {
+          "title": "Errendimendu akademikoko ehunekoak berrikustea",
+          "description": "Beka mantentzeko eskatzen diren errendimendu akademikoko gutxieneko ehunekoak jaistea eta berrikustea, zailtasun ekonomiko edo pertsonal handienak dituen ikasleria zigor ez dezaten, ezta beste ezagutza-arlo edo hezkuntza-etapa bateko ikasleria ere."
+        },
+        "noRepayment": {
+          "title": "Beka itzultzeko betebeharra ezabatzea",
+          "description": "Baldintza akademikoak betetzen ez direnean beka itzultzeko betebeharra kentzea. Ez da onargarria egoera berak zigor bikoitza ekartzea: hurrengo urtean laguntza galtzea eta, gainera, hura itzuli behar izatea. Ordezko gisa, itzultzeko betebeharrari eusten bazaio, itzulketari lotutako interesak ezabatzea eskatzen da, ikasleriarentzat karga ekonomiko gehigarririk ez sortzeko."
+        },
+        "housingAmountByTerritory": {
+          "title": "Lurraldera egokitutako etxebizitza-zenbatekoa",
+          "description": "Etxebizitzarako zenbatekoa handitzea eta haren irizpideak ikasketa-lekuaren eta haren kostuaren arabera berrikustea, lurraldeen arteko benetako aldeak islatzeko."
+        }
+      }
+    },
+    "equality": {
+      "title": "Berdintasuna",
+      "context": [
+        "Unibertsitateak aukera-berdintasuna eta ikasleria osoaren benetako inklusioa bermatu behar ditu, egoera sozioekonomikoa, jatorria edo inguruabar pertsonalak edozein direla ere. Horretarako, beharrezkoa da sarbidea, iraupena eta garapen akademikoa zailtzen dituzten oztopoak ezabatzea, bai eta dauden desberdintasunak identifikatzeko eta politika publikoak bideratzeko aukera ematen duten datuak izatea ere."
+      ],
+      "proposals": {
+        "positiveDiscrimination": {
+          "title": "Sarbidean diskriminazio positiboko mekanismoak",
+          "description": "Gizarte-bazterketa arriskuan dauden pertsonentzat unibertsitatera sartzeko diskriminazio positiboko mekanismoak ezartzea aztertzea."
+        },
+        "refugeeStudents": {
+          "title": "Ikasle errefuxiatuentzako programa eta bekak",
+          "description": "Ikasle errefuxiatuentzat sarbide-programa berariazko bat eta beka-sistema bat sortzea, estatu-mailan koordinatuta."
+        },
+        "equalityTraining": {
+          "title": "Berdintasunari, aniztasunari eta inklusioari buruzko prestakuntza",
+          "description": "Irakasle eta ikertzaileen (PDI) eta teknikako, kudeaketako eta administrazio eta zerbitzuetako langileen (PTGAS) prestakuntza bermatzea berdintasun, aniztasun eta inklusio arloan."
+        },
+        "equityData": {
+          "title": "Ekitateari eta unibertsitatera sartzeari buruzko datu-bilketa",
+          "description": "Datuak biltzeko eta aztertzeko estatu-mailako mekanismoak ezartzea, unibertsitate-ikasketetara sartzean, haietan jarraitzean eta haiek amaitzean dauden desberdintasunak ezagutzeko, generoa, jatorria eta egoera sozioekonomikoa bezalako aldagaiak kontuan hartuta."
+        },
+        "mentalHealthStudy": {
+          "title": "Unibertsitateko ikasleriaren osasun mentalari buruzko estatuko azterketa",
+          "description": "Aldizkako azterketa bat egitea, ikasleriaren osasun mentalaren egoera ezagutzeko, haren ongizatean eragiten duten faktore nagusiak identifikatzeko eta unibertsitate-esparruan prebentzio-, arreta- eta laguntza-neurrien garapena bideratzeko."
+        },
+        "scienceSocialDimension": {
+          "title": "Berdintasuna eta dimentsio soziala politika zientifikoan",
+          "description": "Genero-berdintasuneko, inklusioko, iraunkortasuneko, lurralde-kohesioko eta memoria demokratikoko irizpideak txertatzea politika zientifikoaren plangintzan eta estatuko finantzaketa-deialdietan, independentzia akademikoa eta ebaluazio zientifikoko irizpideak errespetatuz."
+        }
+      }
+    },
+    "housing": {
+      "title": "Etxebizitza",
+      "context": [
+        "Etxebizitza duin bat eskuratzea unibertsitate publikoan ikasteko oztopo nagusietako bat bihurtu da. Alokairu-prezioen etengabeko igoerak, eskaintza merkearen eskasiak eta erabilera turistikoko etxebizitzen presioak eragin dute unibertsitate-hiri askotan ostatuaren kostuak beken eta laguntzen zenbatekoa nabarmen gainditzea, eta zer eta non ikasi erabakitzea gero eta gehiago familien ahalmen ekonomikoaren mende egotea.",
+        "Egoera horri gehitu behar zaizkio unibertsitate-sistemaren barruan ostatu publiko eta merke nahikorik ez egotea, eta gela bat alokatzen dutenen babes juridikorik eza; hori da ikasleriaren artean ohikoenetako formula, eta gaur egun errentamenduen araudi orokorretik kanpo geratzen da. Bloke honetako proposamenen helburua da etxebizitza bazterketa-faktore izateari uztea eta unibertsitatera sartzeko eta bertan jarraitzeko bermeen parte bihurtzea."
+      ],
+      "proposals": {
+        "rentCaps": {
+          "title": "Alokairu-prezioak mugatzea",
+          "description": "Tentsioa duten eremuetan alokairuei mugak ezartzea. Muga horiek ez lukete eremu horietara mugatu behar, baizik eta Estatuko lurralde osora zabaldu, eskualde bakoitzaren berariazko inguruabarretara eta haren prezioen bilakaerara egokituz."
+        },
+        "touristRentals": {
+          "title": "Erabilera turistikoko etxebizitza arautzea",
+          "description": "Erabilera turistikoko etxebizitza arautzea, haren hedapenak unibertsitate-hirietako bizitegi-alokairuaren eskaintza murriztu ez dezan eta prezioak gora bultza ez ditzan."
+        },
+        "publicResidences": {
+          "title": "Ikastetxe nagusiak eta egoitza publikoak sortzeko finantzaketa",
+          "description": "Kudeaketa zuzeneko ikastetxe nagusiak eta egoitza publikoak sortzea sustatzea, prezio eskuragarriekin eta ikasleriarentzako plaza nahikoekin."
+        },
+        "residentialRehabilitation": {
+          "title": "Espazioak bizitegi-erabilerarako birgaitzea",
+          "description": "Aurrekontu-partidak bideratzea unibertsitate-ostatu bihur daitezkeen unibertsitateetako espazioak birgaitu eta egokitzeko, bai eta dagoeneko daudenak hobetzeko ere."
+        },
+        "roomRentals": {
+          "title": "Gelen alokairua eta Hiri Errentamenduen Legea",
+          "description": "Gelen alokairua Hiri Errentamenduen Legean (LAU) sartzea, edo estatutu juridiko baliokide bat ematea, hura erabiltzen dutenek gainerako errentarien antzeko babesa izan dezaten."
+        }
+      }
+    },
+    "internships": {
+      "title": "Kanpoko praktika akademikoak",
+      "context": [
+        "Kanpoko praktika akademikoak unibertsitate-prestakuntzaren funtsezko zati dira: eskuratutako ezagutzak benetako ingurune batean aplikatzeko aukera ematen dute eta mundu profesionalerako trantsizioa errazten dute. Funtzio hori bete dezaten, prestakuntzakoak izan behar dute, batez ere, eta ez dute izan behar ez karga ekonomiko bat egiten dituenarentzat, ez babesgabetasun-gune bat.",
+        "Praktikak arautzen dituen esparruak, 592/2014 Errege Dekretuak, hamarkada bat baino gehiago du dagoeneko, eta ez dio beti erantzuten ikasleriaren egungo errealitateari. Gainera, praktikei lotutako joan-etorriak, ostatua edo mantenua ikaslearen beraren gain geratzen dira gaur egun, kasu gehienetan, eta horrek desberdintasunak sortzen ditu familia bakoitzaren ahalmen ekonomikoaren arabera. Bestalde, zerbitzu publikoetako praktikak, osasun- edo hezkuntza-zerbitzuetakoak kasu, unibertsitate publikoaren prestakuntza-funtzioaren beraren parte dira, eta babestuta geratu behar dute. Bloke honetako proposamenek kalitatezko praktikak, eskuragarriak eta bermeekin lortu nahi dituzte."
+      ],
+      "proposals": {
+        "reformDecree": {
+          "title": "592/2014 Errege Dekretua aldatzea",
+          "description": "Unibertsitateko ikasleen kanpoko praktika akademikoak arautzen dituen uztailaren 11ko 592/2014 Errege Dekretua aldatzea, egungo errealitatera egokitzeko eta ikasleriaren eskubideak indartzeko."
+        },
+        "expenseCompensation": {
+          "title": "Praktiketatik eratorritako gastuen konpentsazioa",
+          "description": "Praktikak egiteari lotutako gastuak konpentsatzeko mekanismoak ezartzea, hala nola garraioa, ostatua edo mantenua, praktikak egitea ikasleriaren ahalmen ekonomikoaren mende egon ez dadin."
+        },
+        "vulnerableStudentGrants": {
+          "title": "Ikasle ahulek praktikak egiteko bekak",
+          "description": "Praktikak egin nahi dituen baina aukera-kostuagatik egin ezin dituen ikasleria ahularentzako beka-poltsa bat abian jartzea. Ikasteko estatuko beken barruko zenbateko bat izan daiteke, edo bestelako beka bereizi bat."
+        },
+        "publicServicesExclusivity": {
+          "title": "Zerbitzu publikoetako praktikak unibertsitate publikoentzat soilik",
+          "description": "Zerbitzu publikoetako praktika-plazak unibertsitate publikoetako ikasleriarentzat soilik izatea blindatzea. Neurri honen helburua da funts publikoekin finantzatutako azpiegiturak, profesionalak eta baliabideak unibertsitate-sistema publikoko ikasleriaren prestakuntzara bideratzea, eredu horren iraunkortasuna eta haren baliabideen aprobetxamendua lehenetsiz."
+        }
+      }
+    },
+    "mobility": {
+      "title": "Nazioartekotzea eta mugikortasuna",
+      "context": [
+        "Nazioarteko mugikortasuna unibertsitateak eskaintzen dituen esperientziarik baliotsuenetako bat da: prestakuntza akademikoa zabaltzen du, aukera profesionalak hobetzen ditu eta Europako eta mundu mailako herritartasuna sendotzen du. Hain zuzen ere, duen balioagatik, ezin da bihurtu hura ordaintzeko baliabide propioak dituztenentzat gordetako pribilegio.",
+        "Gaur egun, laguntzen zenbatekoek ez dute beti estaltzen atzerrian bizitzearen benetako kostua, emateko irizpideek ez dute behar adina kontuan hartzen ikasleriaren egoera sozioekonomikoa, eskura dagoen informazioa sakabanatuta dago, eta Espainiako unibertsitateen arteko mugikortasunak galdu egin du lehen zuen estatuaren babesa. Horri gehitu behar zaio mugikortasuna beste esparru batzuetara zabaltzeko beharra, bereziki iberoamerikarrera, harekin hizkuntza, historia eta lotura akademikoak partekatzen baititugu. Bloke honetako proposamenek mugikortasun finantzatua, eskuragarria, gardena, iraunkorragoa eta zerumuga berrietara irekia lortu nahi dute."
+      ],
+      "proposals": {
+        "mobilityFunding": {
+          "title": "Nazioarteko mugikortasun-programen finantzaketa",
+          "description": "Nazioarteko mugikortasuna babesteko estatuko programetara bideratutako baliabideak handitzea, aukera horietara sartzea ikasleriaren ahalmen ekonomikoaren mende egon ez dadin bermatzeko."
+        },
+        "iberoamericanMobility": {
+          "title": "Mugikortasun iberoamerikarra",
+          "description": "Ikasleriaren mugikortasuna sustatzea herrialde iberoamerikarretako unibertsitateekin, trukeak errazten dituzten programen eta laguntzen bidez."
+        },
+        "segibCooperation": {
+          "title": "Ikasleria iberoamerikarraren lankidetza SEGIBen esparruan",
+          "description": "Ikasleria iberoamerikarra eta haren ordezkaritza-erakundeak elkarrekin harremanetan jartzeko formulak aztertzea, Ezagutzaren Esparru Iberoamerikarraren (EIC) barruan."
+        },
+        "iberoamericanRepresentation": {
+          "title": "Ikasle-ordezkaritza iberoamerikarra erabakiak hartzean aitortzea",
+          "description": "Ikasleen ordezkaritza-erakunde iberoamerikarren parte-hartzea eta aitorpena bermatuko duten mekanismoak sustatzea, goi-mailako hezkuntzari eta unibertsitate-lankidetzari buruzko elkarrizketa- eta erabaki-guneetan."
+        },
+        "bolognaFollowUp": {
+          "title": "Boloniako Prozesuaren jarraipena Espainiako ikasle-ordezkaritzarekin",
+          "description": "Unibertsitateen arloko eskumena duen Ministerioaren eta Espainiako ikasle-ordezkaritzaren arteko aldizkako bilerak ezartzea, Bologna Follow-Up Group (BFUG) delakoaren jarraipena egiteko, Goi Mailako Hezkuntzaren Europako Esparruaren aurrerapenei buruzko informazioa partekatzeko eta ikasleriaren eskaerak erabaki-prozesuetara eramateko."
+        },
+        "studentVisas": {
+          "title": "Ikasle-bisak bizkortzea",
+          "description": "Espainiako unibertsitateetan onartutako ikasleriaren bisen izapidetzea bizkortzea."
+        },
+        "internshipMobilityGrants": {
+          "title": "Praktiketarako mugikortasun-beken baldintzak hobetzea",
+          "description": "Praktiketan zehar mugikortasunerako beken baldintzak hobetu eta bekak sustatu behar dira, gurea bezalako mundu globalizatu batean bizitzeko gai diren belaunaldiak prestatu nahi baditugu. Ikasle gehienentzat, praktikak dira lan-munduarekin duten lehen harremana, eta mugikortasunean egin ahal izateak ikaskuntza handiagoa dakar praktika-aldiaren fase guztietan."
+        }
+      }
+    },
+    "science": {
+      "title": "Zientzia",
+      "context": [
+        "Ikerketa unibertsitate publikoaren funtsezko eginkizunetako bat da, eta gizarteari harengandik jasotzen duena itzultzeko bide nagusietako bat. Sistema zientifiko sendo batek ezagutza, berrikuntza eta enplegu kualifikatua sortzen ditu, eta ezinbesteko baldintza da herrialdeak datozen hamarkadetako erronka ekonomiko, sozial eta ingurumenekoei aurre egin ahal izateko.",
+        "Ikasleriarentzat, zientzia aukera-kontua ere bada. Ikerketan aritu nahi dutenek honako hauek aurkitzen dituzte: finantzaketa nahikoa ez dena eta ezagutza-arloen artean desberdina, diziplina bakoitzaren berezitasunetara beti egokitzen ez diren ebaluazio-irizpideak, doktoretza aurreko eta ondoko kontratu urriak, eta Espainian prestatutako pertsona askok ikerketa edo herrialdea uztera bultzatzen dituzten karrera profesional ezegonkorrak. Bloke honetako proposamenek finantzaketa publiko gero eta handiagoa eta aurreikusgarria lortu nahi dute, egoera ekonomikoaren mende egongo ez den ikertzaile-karrerarako sarbidea, eta ezagutza-arlo guztiak kontuan hartuko dituen politika zientifikoa."
+      ],
+      "proposals": {
+        "sustainedFunding": {
+          "title": "I+G+Bko finantzaketa iraunkorra",
+          "description": "Ikerketan, garapenean eta berrikuntzan inbertsio publikoa handitzeko urte anitzeko ibilbide bat ezartzea, helburu egiaztagarriekin, aurrekontu-betearazpenaren jarraipena egiteko mekanismoekin eta gure Europako inguruko herrialdeekiko aldea murrizteko neurriekin."
+        },
+        "allKnowledgeAreas": {
+          "title": "Ezagutza-arlo guztietako ikerketaren finantzaketa",
+          "description": "Estatuko ikerketa-deialdiek ezagutza-arlo desberdinak modu orekatuan kontuan har ditzaten bermatzea, gizarte-zientziak, giza zientziak, arteak eta diziplina zientifiko eta teknologikoak barne, haien berezitasun metodologikoei erreparatuz."
+        },
+        "researchContracts": {
+          "title": "Doktoretza aurreko eta ondoko laguntza eta kontratu gehiago",
+          "description": "Ikertzaile-prestakuntza, doktoretza aurreko kontratuak eta ikertzaileen kontratazioa finantzatzeko estatuko deialdiak pixkanaka zabaltzea, karrera zientifikoen jarraitutasuna eta talentuari eustea erraztuz."
+        },
+        "evaluationCriteria": {
+          "title": "Ikerketarako laguntzen ebaluazio-irizpideak berrikustea",
+          "description": "Doktoretza aurreko kontratuak eta ikerketan hasteko kontratuak emateko irizpideak diziplina desberdinen berezitasunetara egokitzea, argitalpenak, ezagutzaren transferentzia, berrikuntza eta arlo bakoitzerako garrantzitsuak diren beste ekarpen batzuk modu proportzionalean baloratuz, bai eta errenta ere."
+        },
+        "simplerAdministration": {
+          "title": "Ikerketaren kudeaketa administratiboa sinplifikatzea",
+          "description": "I+G+Bra bideratutako funtsen kontratazio-, justifikazio- eta betearazpen-prozedura estatalak berrikustea, alferrikako karga burokratikoak murrizteko, gardentasun-, gastu-kontrol- eta iruzur-prebentzio-bermeei eutsiz."
+        },
+        "openScience": {
+          "title": "Zientzia irekia",
+          "description": "Funts publikoekin finantzatutako argitalpenetarako eta ikerketa-emaitzetarako sarbide irekiko betebeharrak betetzea sustatzea, bai eta herritarrek ezagutza zientifikoa eskuratzea errazten duten azpiegiturak garatzea ere."
+        }
+      }
+    },
+    "governance": {
+      "title": "Gobernantza eta parte-hartze demokratikoa",
+      "context": [
+        "Unibertsitate publikoa erakunde bat da, eta bertan hartzen diren erabakiek zuzenean eragiten diete haren parte direnei. Horregatik, garrantzitsua da haren kolektibo guztien parte-hartzea bermatzea, bereziki ikasleriarena, talderik handiena baita. Hala ere, zenbait gobernu-organoren egungo osaerak baditu hobetzeko aukerak, unibertsitate-komunitatearen aniztasuna hobeto islatzeko, ikasleen parte-hartzea indartzeko eta gizartearen ordezkaritza zabalagoa errazteko unibertsitatea bere ingurunearekin lotzeko diren guneetan.",
+        "Ikasleen parte-hartzeak, gainera, baliabide materialak behar ditu, baina gaur egun haren lana baliabide nahikorik gabe eta bere errealitatera egokitzen ez den araudi batekin egiten da. Bloke honetako proposamenek unibertsitate autonomoagoa, gardenagoa eta demokratikoagoa lortu nahi dute, non ikasle-ordezkaritzak erabat jarduteko behar diren bermeak izango dituen."
+      ],
+      "proposals": {
+        "oneThirdRepresentation": {
+          "title": "Ordezkaritzaren eta botoaren herena ikasleriarentzat",
+          "description": "Ikasleriak, gutxienez, ordezkaritzaren herena izan dezala bermatzea unibertsitateko gobernu- eta ordezkaritza-organo kolegiatuetan. Era berean, ziurtatzea ikasleen botoak, gutxienez, boto haztatuaren pisu osoaren herena ordezkatzen duela errektoretzarako hauteskundeetan, bai eta boto haztatuko sistema ezartzen den gainerako unibertsitate-hauteskundeetan ere."
+        },
+        "universityAutonomy": {
+          "title": "Unibertsitate-autonomiaren bermea",
+          "description": "Unibertsitate-autonomia bermatzea kanpoko esku-hartzeen aurrean, eta ziurtatzea unibertsitateak beren organo eta estatutuen arabera gobernatu ahal izango direla."
+        },
+        "socialCouncil": {
+          "title": "Gizarte Kontseilua eraldatzea",
+          "description": "Gizarte Kontseilua organo aholku-emaile bihurtzea, erabakitzeko ahalmenik gabe, eta haren osaerak herritarren aniztasuna benetan isla dezala bermatzea."
+        },
+        "conflictsOfInterest": {
+          "title": "Interes-gatazkak",
+          "description": "Unibertsitateko karguen bateraezintasun-araubidea berrikustea eta indartzea, balizko interes-gatazkak saihesteko eta erabakiak hartzean gardentasuna eta independentzia bermatzeko. Berrikuspen horrek, besteak beste, kontuan hartu beharko lituzke unibertsitate publiko eta pribatuetan karguak aldi berean betetzearen bateragarritasuna, bai eta interes-gatazkak sor ditzaketen enpresa-erakundeekiko loturak ere."
+        },
+        "studentCouncilFunding": {
+          "title": "Ikasle-kontseiluen finantzaketa",
+          "description": "Ikasle-kontseiluentzako finantzaketa bermatzea LOSUren esparruan, beren ordezkaritza-lana independentziaz eta baliabide nahikoekin garatu ahal izan dezaten."
+        }
+      }
+    },
+    "quality": {
+      "title": "Espainiako unibertsitate-sistemaren kalitatearen bermea",
+      "context": [
+        "Kalitatea da unibertsitate-sistemak ikasleriari eta gizarteari eskaintzen dion bermea: titulu baten atzean irakasle egokiak, baliabide nahikoak eta proiektu akademiko sendo bat daudela. Berme hori sinesgarria izan dadin, hura egiaztatzen dutenek independenteak izan behar dute, kontrolei eutsi behar zaie egiaztapena eman ondoren ere, eta emaitzek publikoak eta ulergarriak izan behar dute.",
+        "Azken urteotan, erakunde pribatu berrien hedapenak eta zenbait prozedura administratiboren sinplifikazioak agerian utzi dute sistemaren gainbegiratzea indartzeko beharra. Hazkundeak plangintzari erantzuten ez dionean eta kontrolak nahikoak ez direnean, ikasleriak jasaten ditu ondorioak: baldintza eskasak dituzten titulazioak, engainura eramaten duen publizitate-informazioa edo, kasurik txarrenean, ikasketetan urteak eta baliabideak inbertitu dituztenak babesik gabe uzten dituzten itxierak. Bloke honetako proposamenek sistema planifikatu eta garden bat lortu nahi dute, bertan ikasten dutenentzat benetako bermeak dituena."
+      ],
+      "proposals": {
+        "agencyIndependence": {
+          "title": "Kalitatea ebaluatzeko agentzien independentzia",
+          "description": "Kalitate-agentzien autonomia funtzional eta instituzionala indartzea, bereziki autonomia-erkidegoetakoena, balizko esku-hartze politiko, instituzional edo korporatiboen aurrean haien independentzia ziurtatuko duen esparru juridiko baten bidez, bai eta merezimenduan eta gaitasunean oinarritutako hautaketa-prozeduren bidez ere."
+        },
+        "continuousEvaluation": {
+          "title": "Unibertsitate-kalitatearen kanpoko ebaluazio jarraitua",
+          "description": "Unibertsitate-irakaskuntzen kalitatea ebaluatzeko eta gainbegiratzeko mekanismoak indartzea, aldizkako kontrol eta ausazko kontrolak txertatuz, titulazioek eta erakundeek eskatutako kalitate-baldintzei eusten dietela egiaztatzeko, besteak beste, unibertsitate-komunitateari egindako elkarrizketen bidez eta Kalitatea Bermatzeko Barne Sistemen bidez bildutako adierazle eta emaitzen bidez."
+        },
+        "teachingQuality": {
+          "title": "Irakaskuntza-kalitatea ebaluazioaren elementu erabakigarri gisa",
+          "description": "Irakaskuntza-kalitatearen adierazleen pisua indartzea ebaluazio eta egiaztapen instituzionaleko estatuko prozeduretan, sinplifikazio administratiboak berme akademikoen murrizketa ekar ez dezan."
+        },
+        "qualityTransparency": {
+          "title": "Kalitate-emaitzen gardentasuna",
+          "description": "Titulazioen kalitateari, kanpoko ebaluazioen emaitzei eta antzemandako ez-betetzeen aurrean hartutako neurriei buruzko informazio ulergarri, konparagarri eta eguneratua argitaratzeko betebehar komunak ezartzea."
+        },
+        "degreeMap": {
+          "title": "Titulazioen estatuko mapa",
+          "description": "Estatu-mailako titulazio-mapa bat egitea, eskaintzako beharrak, bikoiztasunak eta gabeziak identifikatzeko aukera emango duena, unibertsitate-sistemaren plangintzaren oinarri gisa."
+        },
+        "stricterRequirements": {
+          "title": "Unibertsitateak sortu, aitortu eta baimentzeko baldintzak gogortzea, bai eta haien egiaztapen instituzionalerakoak ere",
+          "description": "Sortzeko eta aitortzeko oinarrizko baldintzak berrikustea, gutxienez bermatzeko proiektuek eredu akademiko bideragarria, baliabide nahikoak, irakasle egokiak eta aurreikusitako prestakuntza-eskaintzarekin bat datozen azpiegiturak dituztela."
+        },
+        "closureGuarantees": {
+          "title": "Berme ekonomikoak unibertsitate pribatu bat ixten denean edo betebeharrak betetzen ez dituenean",
+          "description": "Finantza-bermeko mekanismoak ezartzea, proiektuaren tamainaren eta arriskuen araberakoak, ordaintzeke dauden betebeharrei aurre egiteko, ikasketen jarraitutasuna errazteko eta ikasleria babesteko kaudimengabezia- edo jarduera-uzte egoeretan."
+        },
+        "privateUniversityInspection": {
+          "title": "Unibertsitate pribatuen ikuskapen eta gainbegiratze berezia",
+          "description": "Unibertsitate pribatuen ikuskapen- eta jarraipen-mekanismoak indartzea, betekizun legal, akademiko eta kalitatezkoak betetzen direla egiaztatzeko aukera emango duten aldizkako kontrolen bidez, bai eta ezohiko ikuskapenen bidez ere, balizko irregulartasunen zantzuak daudenean. Unibertsitate pribatuak unibertsitate publikoetan modu berean gertatzen ez diren pizgarri ekonomiko eta enpresa-helburuen mende egon daitezkeenez, bereziki garrantzitsua da interes horiek irakaskuntzaren kalitatearen eta haien hezkuntza-funtzioa betetzearen gainetik jartzea saihestuko duten gainbegiratze-mekanismoak ezartzea. Kontrol horiek zuzenketa-prozedurak eta ez-betetzeen larritasunaren eta errepikapenaren araberako zigor-araubide proportzionala jaso beharko dituzte."
+        },
+        "privateUniversityMoratorium": {
+          "title": "Unibertsitate pribatu berriak baimentzeko luzamendua",
+          "description": "Unibertsitate pribatu berriak baimentzeko aldi baterako luzamendu bat ezartzea, unibertsitate-sistemaren plangintza estrategiko bat egin arte, sistema zatikatzen duen eta baliabide publikoak desbideratzen dituen erakunde pribatuen hazkunde nahasia saihestuz."
+        },
+        "privateAffiliatedCentres": {
+          "title": "Titulartasun pribatuko ikastegi atxikiak ezabatzea",
+          "description": "Titulartasun pribatuko ikastegi atxikiak pixkanaka kentzea, unibertsitate-titulazioak unibertsitate-sistema osoari eskatzen zaionaren baliokidea den gainbegiratze-, kalitate- eta berme-esparru baten barruan ematen direla bermatzeko. Unibertsitate publikoei lotutako titulazioak ematen dituzten ikastegi pribatuak egoteak aldeak sor ditzake sarbide-, finantzaketa-, kudeaketa- eta kontrol akademikoko baldintzetan; beraz, eredu hori berrikusi behar da, goi-mailako hezkuntzaren zerbitzu publikoa ematean koherentzia handiagoa eta titulazioen kalitatearen gainbegiratze eraginkorra ziurtatzeko."
+        },
+        "privateUniversityTransparency": {
+          "title": "Unibertsitate pribatuen gardentasun-betebeharrak indartzea",
+          "description": "Unibertsitate pribatuentzat publizitate aktiboko betebeharrak ezartzea, bereziki titulartasun merkantilekoentzat, honako hauek barne hartuko dituztenak: informazio ekonomiko eta finantzario egiaztatuaren aldizkako argitalpena, urteko kontu ikuskatuak, jabetza-egitura eta irakaskuntzara, ikerketara eta beketara bideratutako baliabideak. Izaera publikoari dagozkion gardentasun-betebeharren mende dauden unibertsitate publikoek ez bezala, unibertsitate pribatuek kontuak emateko berariazko mekanismoak izan behar dituzte, informazio garrantzitsurako sarbidea bermatuko dutenak, batez ere kontuan hartuta haiek ere interes orokorreko funtzio bat betetzen dutela, goi-mailako hezkuntza alegia."
+        }
+      }
+    },
+    "sustainability": {
+      "title": "Iraunkortasuna",
+      "context": [
+        "Larrialdi klimatikoa gure belaunaldiaren erronka handietako bat da, eta unibertsitate publikoek erantzukizun bikoitza dute haren aurrean: hari aurre egiteko ezagutza sortzea eta beren campusetan eredu izatea. Gaur ikasten dutenek biziago jasango dituzte haren ondorioak, eta beren unibertsitateari maila bereko konpromisoa eskatzen diote.",
+        "Gainera, campusak gero eta gehiago daude bero handiko aldien eta beste fenomeno meteorologiko kaltegarri batzuen mende, eta haien eraikin asko ez daude horretarako prestatuta. Campusak egokitzeak eta behar diren baliabideak emateak unibertsitate-komunitatea babesteaz gain, herritar guztientzako gune erabilgarri bihur ditzake. Bloke honetako proposamenen helburua da iraunkortasuna printzipio-adierazpen bat izateari uztea eta finantzaketa, ikerketa-ildo eta plangintza eraginkorrak izatea."
+      ],
+      "proposals": {
+        "climateShelters": {
+          "title": "Unibertsitateak babesleku klimatiko gisa",
+          "description": "Unibertsitateei finantzaketa ematea, beren instalazioak egokitu eta babesleku klimatiko bihurtu ahal izan daitezen, bai unibertsitate-komunitatearentzat, bai herritarrentzat."
+        },
+        "sustainabilityResearch": {
+          "title": "Iraunkortasunari buruzko ikerketa",
+          "description": "Iraunkortasunera eta klima-aldaketaren arintzera eta hari egokitzera bideratutako ikerketa-ildoak finantzatzea."
+        },
+        "sustainabilityPlans": {
+          "title": "Iraunkortasun-planak LOSUren esparruan",
+          "description": "Unibertsitateetan iraunkortasun-planak garatzea sustatzea, Unibertsitate Sistemaren Lege Organikoaren esparruan, haiek gauzatzeko behar den aurrekontu-babesarekin."
+        }
+      }
+    }
+  },
+  "closing": [
+    "Dokumentu honetan jasotako proposamenek uste sendo berari erantzuten diote: unibertsitate publikoa ondasun komuna da, eta gizartean duen zereginaren araberako babesa eta inbertsioa merezi ditu. Berdintasun-baldintzetan sartzetik irakaskuntzaren kalitatera, eta ikasleriak unibertsitateen gobernuan parte hartzetik ikerketara, proposamen bakoitzaren helburua da unibertsitate publikoan ikastea benetako aukera izatea pertsona guztientzat, jatorria, lurraldea edo egoera ekonomikoa edozein dela ere.",
+    "CREUPek proposamen hauek alderdi politiko guztiei helarazten dizkie, kontuan har ditzaten, eztabaida ditzaten eta, ahal den neurrian, beren hauteskunde-programetan bere egin ditzaten. Unibertsitate publikoetako ikasleriaren ordezkaritza-erakunde gisa, talde politikoen eskura jartzen gara proposamen horiek garatzeko, kontrastatzeko eta hobetzeko, bai eta legegintzaldian zehar haiekin lanean jarraitzeko ere. Unibertsitate publikoan inbertitzea herrialdearen etorkizunean inbertitzea da, eta ikasleria hor egongo da bide horretan laguntzeko."
+  ]
+}

@@ -12,6 +12,7 @@
     },
     "policy": {
       "rights": "Els teus drets",
+      "elections": "Eleccions Generals 2026",
       "label": "Política Universitària",
       "positions": "Posicionaments",
       "resolutions": "Resolucions",
@@ -373,6 +374,31 @@
       "title": "Vols llegir el text complet?",
       "description": "Aquesta guia resumeix l'Estatut en llenguatge senzill. El text oficial és el publicat al BOE.",
       "cta": "Obrir l'Estatut al BOE"
+    }
+  },
+  "electionProposals": {
+    "title": "La universitat que mereixem",
+    "seoTitle": "Propostes de la CREUP per a les Eleccions Generals 2026",
+    "description": "Les propostes de l'estudiantat de les universitats públiques per a les Eleccions Generals 2026: finançament, beques, habitatge, pràctiques, mobilitat, ciència, governança, qualitat i sostenibilitat.",
+    "eyebrow": "Eleccions Generals 2026",
+    "lead": "El que la CREUP demana a totes les formacions polítiques perquè la universitat pública sigui als seus programes electorals: més finançament, beques suficients, habitatge assequible, pràctiques amb garanties, més ciència i més qualitat.",
+    "ctaProposals": "Veure les propostes",
+    "ctaContact": "Contactar amb la CREUP",
+    "stats": {
+      "proposals": "propostes",
+      "sections": "blocs"
+    },
+    "highlightsTitle": "Algunes xifres clau",
+    "introTitle": "Presentació",
+    "indexTitle": "Tria un bloc",
+    "proposalsCount": "{count} proposta | {count} propostes",
+    "proposalLabel": "Proposta {number}",
+    "backToIndex": "Tornar als blocs",
+    "closing": {
+      "title": "Invertir en la universitat pública és invertir en el futur",
+      "contactTitle": "Formes part d'una formació política?",
+      "contactDescription": "Posem a la teva disposició la nostra interlocució per desenvolupar, contrastar i millorar aquestes propostes.",
+      "cta": "Parlar amb la CREUP"
     }
   },
   "members": {

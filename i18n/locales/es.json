@@ -12,6 +12,7 @@
     },
     "policy": {
       "rights": "Tus derechos",
+      "elections": "Elecciones Generales 2026",
       "label": "Política Universitaria",
       "positions": "Posicionamientos",
       "resolutions": "Resoluciones",
@@ -373,6 +374,31 @@
       "title": "¿Quieres leer el texto completo?",
       "description": "Esta guía resume el Estatuto en lenguaje sencillo. El texto oficial es el publicado en el BOE.",
       "cta": "Abrir el Estatuto en el BOE"
+    }
+  },
+  "electionProposals": {
+    "title": "La universidad que merecemos",
+    "seoTitle": "Propuestas de CREUP para las Elecciones Generales 2026",
+    "description": "Las propuestas del estudiantado de las universidades públicas para las Elecciones Generales 2026: financiación, becas, vivienda, prácticas, movilidad, ciencia, gobernanza, calidad y sostenibilidad.",
+    "eyebrow": "Elecciones Generales 2026",
+    "lead": "Lo que CREUP pide a todas las formaciones políticas para que la universidad pública esté en sus programas electorales: más financiación, becas suficientes, vivienda asequible, prácticas con garantías, más ciencia y más calidad.",
+    "ctaProposals": "Ver las propuestas",
+    "ctaContact": "Contactar con CREUP",
+    "stats": {
+      "proposals": "propuestas",
+      "sections": "bloques"
+    },
+    "highlightsTitle": "Algunas cifras clave",
+    "introTitle": "Presentación",
+    "indexTitle": "Elige un bloque",
+    "proposalsCount": "{count} propuesta | {count} propuestas",
+    "proposalLabel": "Propuesta {number}",
+    "backToIndex": "Volver a los bloques",
+    "closing": {
+      "title": "Invertir en la universidad pública es invertir en el futuro",
+      "contactTitle": "¿Formas parte de una formación política?",
+      "contactDescription": "Ponemos a tu disposición nuestra interlocución para desarrollar, contrastar y mejorar estas propuestas.",
+      "cta": "Hablar con CREUP"
     }
   },
   "members": {

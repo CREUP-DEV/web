@@ -12,6 +12,7 @@
     },
     "policy": {
       "rights": "Zure eskubideak",
+      "elections": "2026ko Hauteskunde Orokorrak",
       "label": "Unibertsitate Politika",
       "positions": "Posizionamenduak",
       "resolutions": "Ebazpenak",
@@ -373,6 +374,31 @@
       "title": "Testu osoa irakurri nahi duzu?",
       "description": "Gida honek Estatutua hizkuntza xumean laburbiltzen du. Testu ofiziala BOE-n argitaratutakoa da.",
       "cta": "Ireki Estatutua BOE-n"
+    }
+  },
+  "electionProposals": {
+    "title": "Merezi dugun unibertsitatea",
+    "seoTitle": "CREUPen proposamenak 2026ko Hauteskunde Orokorretarako",
+    "description": "Unibertsitate publikoetako ikasleriaren proposamenak 2026ko Hauteskunde Orokorretarako: finantzaketa, bekak, etxebizitza, praktikak, mugikortasuna, zientzia, gobernantza, kalitatea eta iraunkortasuna.",
+    "eyebrow": "2026ko Hauteskunde Orokorrak",
+    "lead": "CREUPek alderdi politiko guztiei eskatzen diena, unibertsitate publikoa haien hauteskunde-programetan egon dadin: finantzaketa handiagoa, beka nahikoak, etxebizitza eskuragarria, bermeak dituzten praktikak, zientzia gehiago eta kalitate handiagoa.",
+    "ctaProposals": "Ikusi proposamenak",
+    "ctaContact": "Jarri harremanetan CREUPekin",
+    "stats": {
+      "proposals": "proposamen",
+      "sections": "bloke"
+    },
+    "highlightsTitle": "Zenbait datu gako",
+    "introTitle": "Aurkezpena",
+    "indexTitle": "Aukeratu bloke bat",
+    "proposalsCount": "{count} proposamen | {count} proposamen",
+    "proposalLabel": "{number}. proposamena",
+    "backToIndex": "Itzuli blokeetara",
+    "closing": {
+      "title": "Unibertsitate publikoan inbertitzea etorkizunean inbertitzea da",
+      "contactTitle": "Alderdi politiko bateko kide zara?",
+      "contactDescription": "Gure solaskidetza eskaintzen dizugu proposamen hauek garatzeko, kontrastatzeko eta hobetzeko.",
+      "cta": "Hitz egin CREUPekin"
     }
   },
   "members": {

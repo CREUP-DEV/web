@@ -1,5 +1,6 @@
 import type { DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 import type { Locale } from 'vue-i18n'
+import { ELECTION_PROPOSALS_PATH } from '~~/shared/constants/electionProposals'
 import { PRESS_KIT_PATH } from '~~/shared/constants/pressRoutes'
 import { STUDENT_RIGHTS_PATH } from '~~/shared/constants/studentRightsGuide'
 
@@ -157,6 +158,7 @@ export function usePublicHeaderNavigation() {
       label: t('nav.policy.label'),
       active: isSectionActive('/politica'),
       children: [
+        createNavigationChild(t('nav.policy.elections'), ELECTION_PROPOSALS_PATH),
         createNavigationChild(t('nav.policy.rights'), STUDENT_RIGHTS_PATH),
         createNavigationChild(t('nav.policy.positions'), '/politica/posicionamientos/'),
         createNavigationChild(t('nav.policy.resolutions'), '/politica/resoluciones/'),
@@ -249,6 +251,11 @@ export function usePublicHeaderNavigation() {
       icon: 'i-tabler-scale',
       active: isSectionActive('/politica'),
       links: [
+        createMobileNavLink({
+          label: t('nav.policy.elections'),
+          to: localizedPath(ELECTION_PROPOSALS_PATH),
+          icon: 'i-tabler-checklist',
+        }),
         createMobileNavLink({
           label: t('nav.policy.rights'),
           to: localizedPath(STUDENT_RIGHTS_PATH),

@@ -11,6 +11,7 @@ import {
 } from './shared/constants/assetPaths'
 import { NEWSLETTER_CLICK_BASE_PATH } from './shared/constants/newsletterCampaigns'
 import { LEGACY_PRESS_DOSSIER_PDF_PATH } from './shared/constants/pressRoutes'
+import { ELECTION_PROPOSALS_PATH } from './shared/constants/electionProposals'
 import { STUDENT_RIGHTS_PATH } from './shared/constants/studentRightsGuide'
 import {
   DEFAULT_LOCALE_CODE,
@@ -33,6 +34,7 @@ const productionPublicSWRPagePaths = [
   '/transparencia/mic',
   '/legal',
   STUDENT_RIGHTS_PATH,
+  ELECTION_PROPOSALS_PATH,
 ] as const
 const productionFastChangingPagePaths = [
   '/conocenos/comites',

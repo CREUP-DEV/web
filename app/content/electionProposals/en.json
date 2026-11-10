@@ -1,0 +1,358 @@
+{
+  "intro": [
+    "The Coordinator of Student Representatives of Public Universities (CREUP) is the national organisation that brings together the Student Councils of Spain's public universities. As the main interlocutor of public university students before public administrations, institutions and political and social stakeholders, CREUP has first-hand knowledge of the reality of our universities and of the needs of those who live in them every day.",
+    "Every election sets the priorities of public policy for the years that follow, and the decisions taken on universities will shape the path of several generations of students. That is why CREUP presents this document to all political parties, with the aim of having students' proposals included in their election manifestos.",
+    "Our starting point is a model of public university based on access on equal terms, the quality of teaching, research and services, and the effective participation of students in university governance. The public university is an instrument of social and territorial cohesion and a decisive factor in social mobility, and its strength is a necessary condition for the country's economic, scientific and cultural development. Guaranteeing it requires sufficient and stable public funding, as well as the effective fulfilment of commitments already made, such as the public investment target of 1% of GDP set out in the Organic Law of the University System.",
+    "The proposals set out below are the result of students' direct experience and collective work. We invite political parties to read them carefully and to incorporate them into their manifestos, and we offer them our dialogue to develop them together. Investing in the public university is investing in the country's future."
+  ],
+  "highlights": {
+    "gdp": {
+      "value": "2% of GDP",
+      "label": "in public investment in public universities, first meeting the 1% set by the LOSU"
+    },
+    "perStudent": {
+      "value": "€10,000",
+      "label": "minimum public investment per student"
+    },
+    "representation": {
+      "value": "1/3",
+      "label": "of representation and of the vote for students on governing bodies"
+    }
+  },
+  "sections": {
+    "funding": {
+      "title": "Funding and public fees",
+      "context": [
+        "Public funding is the foundation on which the entire university system rests. The quality of teaching, the stability of staff, research, student services and, very directly, access to and continuation of studies all depend on it. An underfunded university passes its shortcomings on to those who study there, whether in the form of fewer resources, fewer opportunities or higher costs for families.",
+        "The Organic Law of the University System set the target of reaching public investment of 1% of GDP, but a commitment without a clear methodology, without monitoring and without a timetable risks remaining a mere statement of intent. For CREUP, meeting it and measuring it transparently is an essential condition for the system to be able to compete with those of the benchmark European countries, which invest considerably higher percentages.",
+        "At the same time, the system of public fees determines who can access university and under what conditions they can continue. Differences between regions, the high cost of master's degrees and surcharges for repeat enrolments are economic barriers that contradict the public and redistributive nature of the university. The proposals in this block therefore seek to ensure sufficient and verifiable funding and fees that do not penalise students."
+      ],
+      "proposals": {
+        "gdpTarget": {
+          "title": "Reach 2% of GDP in funding for public universities",
+          "description": "Guarantee effective fulfilment of the commitment in the Organic Law of the University System to reach public investment of 1% of GDP in public universities, with the ambition of reaching 2%, bringing us closer to other European countries."
+        },
+        "fundingObservatory": {
+          "title": "National observatory on public university funding",
+          "description": "Create an observatory that monitors funding rigorously and transparently, with the administration and university stakeholders, including students, first establishing what counts towards the 1% of GDP, and that provides data broken down by autonomous community, so that real fulfilment of the target can be verified."
+        },
+        "minimumPerStudent": {
+          "title": "Minimum investment per student",
+          "description": "Add complementary indicators, such as public spending per student, to the measurement of funding, and set a minimum investment of €10,000 per student."
+        },
+        "lowerFees": {
+          "title": "Reduction of public fees",
+          "description": "Promote a reduction in public tuition fees at public universities as a way of guaranteeing equal opportunities in access and continuation of studies."
+        },
+        "nonQualifyingMasters": {
+          "title": "Equal fees for non-qualifying university master's degrees",
+          "description": "Bring the fees for university master's degrees that do not qualify for a regulated profession into line with those for bachelor's degrees."
+        },
+        "repeatEnrolmentSurcharges": {
+          "title": "Removal of surcharges for second and subsequent enrolments",
+          "description": "Abolish the price increase for second, third, fourth and later enrolments, which amounts to a financial penalty for students who do not pass a subject."
+        },
+        "morePlaces": {
+          "title": "More places at public universities",
+          "description": "Allocate part of the increase in public funding to expanding the number of places at public universities so that provision meets the needs of society and the aspirations of students. This expansion should translate into lower cut-off marks and less exclusion of those who, having passed the entrance exams, do not obtain a place on the degree they want. All of this while guaranteeing that the growth in provision is accompanied by the teaching and material resources needed to maintain quality."
+        }
+      }
+    },
+    "scholarships": {
+      "title": "Scholarships",
+      "context": [
+        "The system of scholarships and grants is the State's main instrument for ensuring that studying does not depend on family background or place of residence. However, its current design leaves out some of the students who need it and, in some cases, adds penalties that contradict its very purpose: academic performance requirements that do not take each person's circumstances into account, repayments of amounts on top of losing the grant, or housing amounts that do not reflect what it really costs to study in each city.",
+        "Equity in access does not end with scholarships. It also requires bringing an income perspective to all university grants, recognising situations of particular vulnerability, guaranteeing the reception of refugee students and students from other countries, and having reliable data showing who accesses, who stays at and who drops out of university. The proposals in this block seek a system of grants that is fairer, more adequate and more sensitive to real inequalities."
+      ],
+      "proposals": {
+        "updateAmounts": {
+          "title": "Updating scholarships and their amounts",
+          "description": "Keep pushing to increase scholarships and their amounts, so that they effectively cover the real cost of studying."
+        },
+        "moreIncomeThresholds": {
+          "title": "More income thresholds",
+          "description": "Increase the number of income thresholds in State scholarships, so that support better matches each family's financial situation and the sharp cliff between those who receive it and those who do not is avoided."
+        },
+        "removeExcellenceShare": {
+          "title": "Removal of the academic excellence percentage",
+          "description": "Abolish the academic excellence percentage as a factor in the scholarship system. It is not consistent to allocate part of public funds to rewarding the most outstanding academic records while there are still students facing financial and personal difficulties that limit their chances of accessing education and continuing their studies on equal terms."
+        },
+        "reviewPerformanceRequirements": {
+          "title": "Review of the academic performance percentages",
+          "description": "Lower and review the minimum academic performance percentages required to keep the scholarship, so that they do not penalise students with greater financial or personal difficulties, nor students from a different field of knowledge or stage of education."
+        },
+        "noRepayment": {
+          "title": "Removal of scholarship repayment",
+          "description": "Abolish the obligation to repay the scholarship when the academic requirements are not met. It is unacceptable for the same circumstance to entail a double penalty: losing the grant the following year and, on top of that, having to pay it back. Alternatively, if the repayment obligation is kept, we call for the removal of the interest associated with repayment, in order to avoid an additional financial burden for students."
+        },
+        "housingAmountByTerritory": {
+          "title": "Housing amount adapted to the region",
+          "description": "Increase the amount allocated to housing and review its criteria according to the place of study and its cost, to reflect the real differences between regions."
+        }
+      }
+    },
+    "equality": {
+      "title": "Equality",
+      "context": [
+        "The university must guarantee equal opportunities and the effective inclusion of all students, regardless of their socioeconomic situation, background or personal circumstances. To do so, it is necessary to remove the barriers that hinder access, continuation and academic progress, and to have data that make it possible to identify existing inequalities and guide public policy."
+      ],
+      "proposals": {
+        "positiveDiscrimination": {
+          "title": "Positive discrimination mechanisms in access",
+          "description": "Study the establishment of positive discrimination mechanisms in access to university for people at risk of social exclusion."
+        },
+        "refugeeStudents": {
+          "title": "Programme and scholarships for refugee students",
+          "description": "Create a specific access programme and a scholarship system for refugee students, coordinated at national level."
+        },
+        "equalityTraining": {
+          "title": "Training in equality, diversity and inclusion",
+          "description": "Guarantee training for teaching and research staff (PDI) and for technical, management, administration and services staff (PTGAS) in equality, diversity and inclusion."
+        },
+        "equityData": {
+          "title": "Data collection on equity and university access",
+          "description": "Establish national mechanisms for collecting and analysing data that reveal inequalities in access to, continuation of and completion of university studies, taking into account variables such as gender, background and socioeconomic situation."
+        },
+        "mentalHealthStudy": {
+          "title": "National study on university students' mental health",
+          "description": "Carry out a periodic study to understand the state of students' mental health, identify the main factors affecting their wellbeing and guide the development of prevention, care and support measures in universities."
+        },
+        "scienceSocialDimension": {
+          "title": "Equality and the social dimension in science policy",
+          "description": "Incorporate criteria of gender equality, inclusion, sustainability, territorial cohesion and democratic memory into the planning of science policy and into national funding calls, while respecting academic independence and scientific evaluation criteria."
+        }
+      }
+    },
+    "housing": {
+      "title": "Housing",
+      "context": [
+        "Access to decent housing has become one of the main barriers to studying at a public university. The sustained rise in rents, the shortage of affordable supply and the pressure from tourist accommodation have meant that, in many university cities, the cost of accommodation far exceeds the amount of scholarships and grants, and that the decision of what and where to study depends more and more on families' financial means.",
+        "Added to this is the shortage of public and affordable accommodation within the university system itself, and the lack of legal protection for those who rent a room, one of the most common arrangements among students and one that currently falls outside the general regulation of tenancies. The proposals in this block seek to ensure that housing stops being a factor of exclusion and becomes part of the guarantees of access to and continuation at university."
+      ],
+      "proposals": {
+        "rentCaps": {
+          "title": "Limits on rental prices",
+          "description": "Set caps on rents in stressed housing-market areas. These caps should not be limited to those areas but extended to the whole of the country, adapting to the particular circumstances of each region and to how its prices evolve."
+        },
+        "touristRentals": {
+          "title": "Regulation of tourist accommodation",
+          "description": "Regulate tourist accommodation, so that its expansion does not reduce the supply of residential rentals in university cities or push prices up."
+        },
+        "publicResidences": {
+          "title": "Funding to create public halls of residence and student residences",
+          "description": "Promote the creation of directly managed public halls of residence and student residences, with affordable prices and enough places for students."
+        },
+        "residentialRehabilitation": {
+          "title": "Refurbishment of spaces for residential use",
+          "description": "Allocate budget lines to refurbish and adapt university spaces that can be turned into student accommodation, as well as to improve existing accommodation."
+        },
+        "roomRentals": {
+          "title": "Room rentals and the Urban Leases Act",
+          "description": "Bring room rentals under the Urban Leases Act (LAU), or give them an equivalent legal status, so that those who rent rooms enjoy protection similar to that of other tenants."
+        }
+      }
+    },
+    "internships": {
+      "title": "External academic internships",
+      "context": [
+        "External academic internships are an essential part of university education: they make it possible to apply the knowledge acquired in a real setting and ease the transition to the professional world. For them to fulfil that role they must be, above all, educational, and must not become a financial burden for those who do them or a space without protection.",
+        "The framework that regulates them, Royal Decree 592/2014, is now more than a decade old and does not always reflect students' current reality. Moreover, the travel, accommodation and living costs associated with internships currently fall, in most cases, on the students themselves, which creates inequalities depending on each family's financial means. Furthermore, internships in public services, such as healthcare or education, are part of the public university's own educational function and must be protected. The proposals in this block seek internships that are high-quality, accessible and come with guarantees."
+      ],
+      "proposals": {
+        "reformDecree": {
+          "title": "Reform of Royal Decree 592/2014",
+          "description": "Reform Royal Decree 592/2014 of 11 July, regulating external academic internships for university students, to adapt it to current reality and strengthen students' rights."
+        },
+        "expenseCompensation": {
+          "title": "Compensation for internship-related expenses",
+          "description": "Establish mechanisms to compensate the expenses associated with doing internships, such as transport, accommodation or living costs, so that doing them does not depend on students' financial means."
+        },
+        "vulnerableStudentGrants": {
+          "title": "Internship scholarships for vulnerable students",
+          "description": "Set up a pool of scholarships for vulnerable students who want to do internships but cannot do so because of the opportunity cost. This could be an amount within the State study scholarships or a separate one."
+        },
+        "publicServicesExclusivity": {
+          "title": "Internships in public services reserved for public universities",
+          "description": "Firmly guarantee that internship places in public services are reserved exclusively for students of public universities. This measure seeks to ensure that infrastructure, professionals and resources funded with public money are devoted to the education of students in the public university system, prioritising the sustainability of this model and the best use of its resources."
+        }
+      }
+    },
+    "mobility": {
+      "title": "Internationalisation and mobility",
+      "context": [
+        "International mobility is one of the most valuable experiences that university offers: it broadens academic education, improves career prospects and strengthens European and global citizenship. Precisely because of its value, it cannot become a privilege reserved for those with their own means to pay for it.",
+        "Today, grant amounts do not always cover the real cost of living abroad, award criteria do not take sufficient account of students' socioeconomic situation, the information available is scattered, and mobility between Spanish universities has lost the State support it used to have. Added to this is the need to open mobility up to other areas, in particular the Ibero-American one, with which we share a language, history and academic ties. The proposals in this block seek mobility that is funded, accessible, transparent, more sustainable and open to new horizons."
+      ],
+      "proposals": {
+        "mobilityFunding": {
+          "title": "Funding for international mobility programmes",
+          "description": "Increase the resources allocated to State programmes supporting international mobility, to guarantee that access to these opportunities does not depend on students' financial means."
+        },
+        "iberoamericanMobility": {
+          "title": "Ibero-American mobility",
+          "description": "Promote student mobility with universities in Ibero-American countries, through programmes and grants that facilitate exchanges."
+        },
+        "segibCooperation": {
+          "title": "Cooperation among Ibero-American students within the framework of SEGIB",
+          "description": "Explore ways of bringing Ibero-American students, and their representative organisations, together within the framework of the Ibero-American Knowledge Area (EIC)."
+        },
+        "iberoamericanRepresentation": {
+          "title": "Recognition of student representation at Ibero-American level in decision-making",
+          "description": "Promote mechanisms that guarantee the participation and recognition of Ibero-American student representative organisations in forums for dialogue and decision-making on higher education and university cooperation."
+        },
+        "bolognaFollowUp": {
+          "title": "Follow-up of the Bologna Process with Spanish student representation",
+          "description": "Hold regular meetings between the ministry responsible for universities and Spanish student representation to follow the work of the Bologna Follow-Up Group (BFUG), share information on progress in the European Higher Education Area and bring students' demands into decision-making processes."
+        },
+        "studentVisas": {
+          "title": "Faster student visas",
+          "description": "Speed up the processing of visas for students admitted to Spanish universities."
+        },
+        "internshipMobilityGrants": {
+          "title": "Better conditions for internship mobility grants",
+          "description": "Improving the conditions and the promotion of grants for mobility during internships is necessary if we intend to train generations able to live in a globalised world such as ours. For most students, internships are their first contact with the world of work, and being able to do them abroad means greater learning at every stage of the internship."
+        }
+      }
+    },
+    "science": {
+      "title": "Science",
+      "context": [
+        "Research is one of the essential missions of the public university and one of the main ways in which it gives back to society what it receives from it. A strong science system generates knowledge, innovation and skilled employment, and is a necessary condition for the country to be able to face the economic, social and environmental challenges of the coming decades.",
+        "For students, science is also a matter of opportunities. Those who wish to pursue research face insufficient funding that is uneven across fields of knowledge, evaluation criteria that do not always fit the particularities of each discipline, scarce predoctoral and postdoctoral contracts, and unstable careers that push many people trained in Spain to leave research or the country. The proposals in this block seek growing and predictable public funding, access to a research career that does not depend on one's financial situation, and a science policy that covers all fields of knowledge."
+      ],
+      "proposals": {
+        "sustainedFunding": {
+          "title": "Sustained funding for R&D&I",
+          "description": "Establish a multi-year path of increasing public investment in research, development and innovation, with verifiable targets, mechanisms to monitor budget execution and measures to narrow the gap with the countries around us in Europe."
+        },
+        "allKnowledgeAreas": {
+          "title": "Research funding in all fields of knowledge",
+          "description": "Guarantee that national research calls cover the different fields of knowledge in a balanced way, including the social sciences, the humanities, the arts and the scientific and technological disciplines, taking into account their methodological particularities."
+        },
+        "researchContracts": {
+          "title": "More predoctoral and postdoctoral grants and contracts",
+          "description": "Progressively expand the national calls that fund research training, predoctoral contracts and the recruitment of research staff, supporting the continuity of scientific careers and the retention of talent."
+        },
+        "evaluationCriteria": {
+          "title": "Review of the evaluation criteria for research grants",
+          "description": "Adapt the criteria for awarding predoctoral and early-stage research contracts to the particularities of the different disciplines, giving proportionate weight to publications, knowledge transfer, innovation and other contributions relevant to each field, as well as to income."
+        },
+        "simplerAdministration": {
+          "title": "Simpler administrative management of research",
+          "description": "Review the national procedures for contracting, justifying and executing R&D&I funds to reduce unnecessary red tape, while maintaining guarantees of transparency, spending control and fraud prevention."
+        },
+        "openScience": {
+          "title": "Open science",
+          "description": "Promote compliance with open-access obligations for publications and research results funded with public money, as well as the development of infrastructure that makes it easier for the public to access scientific knowledge."
+        }
+      }
+    },
+    "governance": {
+      "title": "Governance and democratic participation",
+      "context": [
+        "The public university is an institution in which decisions directly affect those who are part of it. It is therefore important to guarantee the participation of all its groups, especially students, who are the largest group. However, the current composition of some governing bodies leaves room for improvement in better reflecting the plurality of the university community, strengthening student participation and encouraging broader representation of society in the spaces intended to connect the university with its surroundings.",
+        "Student participation also requires material means, yet its work currently depends on insufficient resources and on regulations that do not fit its reality. The proposals in this block seek a more autonomous, more transparent and more democratic university, in which student representation has the guarantees it needs to be exercised in full."
+      ],
+      "proposals": {
+        "oneThirdRepresentation": {
+          "title": "One third of representation and of the vote for students",
+          "description": "Guarantee that students hold at least one third of the representation on the university's collegiate governing and representative bodies. Likewise, ensure that the student vote accounts for at least one third of the total weight of the weighted vote in rector elections, as well as in other university elections in which a weighted voting system is established."
+        },
+        "universityAutonomy": {
+          "title": "Guaranteeing university autonomy",
+          "description": "Guarantee university autonomy against outside interference and ensure that universities can govern themselves in accordance with their own bodies and statutes."
+        },
+        "socialCouncil": {
+          "title": "Transformation of the Social Council",
+          "description": "Transform the Social Council into an advisory body, without decision-making powers, and guarantee that its composition truly reflects the plurality of society."
+        },
+        "conflictsOfInterest": {
+          "title": "Conflicts of interest",
+          "description": "Review and strengthen the rules on incompatibilities for university office-holders to prevent possible conflicts of interest and guarantee transparency and independence in decision-making. This review should cover, among other cases, holding office at public and private universities at the same time, as well as links with business entities that may give rise to conflicts of interest."
+        },
+        "studentCouncilFunding": {
+          "title": "Funding for student councils",
+          "description": "Guarantee funding for student councils within the framework of the LOSU, so that they can carry out their representative work independently and with sufficient resources."
+        }
+      }
+    },
+    "quality": {
+      "title": "Quality assurance in the Spanish university system",
+      "context": [
+        "Quality is the guarantee that the university system offers students and society: that behind a degree there are suitable teaching staff, sufficient resources and a solid academic project. For that guarantee to be credible, those who verify it must be independent, checks must continue once accreditation has been granted, and the results must be public and understandable.",
+        "In recent years, the expansion of new private institutions and the simplification of certain administrative procedures have highlighted the need to strengthen oversight of the system. When growth does not follow planning and checks are insufficient, it is students who suffer: degrees with deficient conditions, misleading advertising or, in the worst cases, closures that leave without protection those who have invested years and resources in their studies. The proposals in this block seek a system that is planned, transparent and offers real guarantees to those who study in it."
+      ],
+      "proposals": {
+        "agencyIndependence": {
+          "title": "Independence of quality assessment agencies",
+          "description": "Strengthen the functional and institutional autonomy of quality agencies, especially regional ones, through a legal framework that ensures their independence from possible political, institutional or corporate interference, as well as selection procedures based on merit and ability."
+        },
+        "continuousEvaluation": {
+          "title": "Continuous external assessment of university quality",
+          "description": "Strengthen the mechanisms for assessing and overseeing the quality of university education, adding periodic and random checks to verify that degrees and institutions maintain the required quality conditions, through interviews with the university community and the indicators and results gathered through Internal Quality Assurance Systems, among others."
+        },
+        "teachingQuality": {
+          "title": "Teaching quality as a decisive element of assessment",
+          "description": "Increase the weight of teaching quality indicators in national institutional assessment and accreditation procedures, preventing administrative simplification from leading to weaker academic guarantees."
+        },
+        "qualityTransparency": {
+          "title": "Transparency of quality results",
+          "description": "Establish common obligations to publish understandable, comparable and up-to-date information on the quality of degrees, the results of external assessments and the measures taken in response to any non-compliance detected."
+        },
+        "degreeMap": {
+          "title": "National map of degrees",
+          "description": "Draw up a national map of degrees to identify needs, duplications and gaps in provision, as a basis for planning the university system."
+        },
+        "stricterRequirements": {
+          "title": "Tighten the requirements for the creation, recognition and authorisation of universities, as well as for their institutional accreditation",
+          "description": "Review the basic requirements for creation and recognition to guarantee, at a minimum, that projects have a viable academic model, sufficient resources, suitable teaching staff and infrastructure in line with the planned range of programmes."
+        },
+        "closureGuarantees": {
+          "title": "Financial guarantees in case of closure or default of a private university",
+          "description": "Introduce financial guarantee mechanisms, proportionate to the size and risks of the project, that make it possible to meet outstanding obligations, facilitate the continuation of studies and protect students in situations of insolvency or cessation of activity."
+        },
+        "privateUniversityInspection": {
+          "title": "Special inspection and oversight of private universities",
+          "description": "Strengthen the inspection and monitoring mechanisms for private universities through periodic checks to verify compliance with legal, academic and quality requirements, as well as extraordinary inspections where there are signs of possible irregularities. Since private universities may be subject to economic incentives and business objectives that do not arise in the same way at public universities, it is especially important to establish oversight mechanisms that prevent these interests from taking precedence over the quality of teaching and the fulfilment of their educational function. These checks should include remediation procedures and a system of penalties proportionate to the seriousness and recurrence of the non-compliance."
+        },
+        "privateUniversityMoratorium": {
+          "title": "Moratorium on authorising new private universities",
+          "description": "Establish a temporary moratorium on the authorisation of new private universities until strategic planning of the university system has been carried out, avoiding a disorderly growth of private institutions that fragments the system and diverts public resources."
+        },
+        "privateAffiliatedCentres": {
+          "title": "Elimination of privately owned affiliated centres",
+          "description": "Progressively abolish privately owned affiliated centres, with the aim of guaranteeing that university degrees are delivered under a framework of oversight, quality and guarantees equivalent to that required of the university system as a whole. The existence of private centres that deliver degrees linked to public universities can create differences in the conditions of access, funding, management and academic control, so this model needs to be reviewed to ensure greater coherence in the provision of the public higher education service and effective oversight of the quality of degrees."
+        },
+        "privateUniversityTransparency": {
+          "title": "Stronger transparency obligations for private universities",
+          "description": "Establish proactive disclosure obligations for private universities, especially for-profit ones, including the regular publication of verified economic and financial information, audited annual accounts, ownership structure and the resources devoted to teaching, research and scholarships. Unlike public universities, which are subject to transparency obligations inherent to their public nature, private universities must have specific accountability mechanisms that guarantee access to relevant information, especially bearing in mind that they too perform a function of general interest, namely higher education."
+        }
+      }
+    },
+    "sustainability": {
+      "title": "Sustainability",
+      "context": [
+        "The climate emergency is one of the great challenges of our generation, and public universities have a dual responsibility in the face of it: to generate the knowledge needed to tackle it and to set an example on their own campuses. Today's students will live through its consequences more intensely, and they expect a matching commitment from their university.",
+        "Campuses are also increasingly exposed to episodes of extreme heat and other adverse weather events, and many of their buildings are not prepared for them. Adapting them and providing them with the necessary resources not only protects the university community but can also turn them into useful spaces for the public as a whole. The proposals in this block seek to ensure that sustainability is no longer a statement of principles and is backed by effective funding, lines of research and planning."
+      ],
+      "proposals": {
+        "climateShelters": {
+          "title": "Universities as climate shelters",
+          "description": "Provide universities with funding so that they can adapt their facilities and become climate shelters, both for the university community and for the public."
+        },
+        "sustainabilityResearch": {
+          "title": "Research on sustainability",
+          "description": "Fund lines of research focused on sustainability and on climate change mitigation and adaptation."
+        },
+        "sustainabilityPlans": {
+          "title": "Sustainability plans within the framework of the LOSU",
+          "description": "Promote the development of sustainability plans at universities within the framework of the Organic Law of the University System, with the budgetary backing needed to carry them out."
+        }
+      }
+    }
+  },
+  "closing": [
+    "The proposals in this document stem from a single conviction: the public university is a common good that deserves protection and investment in keeping with its role in society. From access on equal terms to the quality of teaching, from student participation in university governance to research, each of them seeks to make studying at a public university a real opportunity for everyone, regardless of their background, their region or their financial situation.",
+    "CREUP submits these proposals to all political parties in the hope that they will be considered, debated and, as far as possible, taken up in their election manifestos. As the representative organisation of public university students, we make ourselves available to political groups to develop, test and improve them, and to keep working with them throughout the parliamentary term. Investing in the public university is investing in the country's future, and students will be there to help build it."
+  ]
+}

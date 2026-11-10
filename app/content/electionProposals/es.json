@@ -1,0 +1,358 @@
+{
+  "intro": [
+    "La Coordinadora de Representantes de Estudiantes de las Universidades Públicas (CREUP) es la organización de ámbito estatal que agrupa a los Consejos de Estudiantes de las universidades públicas españolas. Como principal interlocutor del estudiantado universitario público ante las administraciones, las instituciones y los agentes políticos y sociales, CREUP conoce de primera mano la realidad de nuestras universidades y las necesidades de quienes las habitan cada día.",
+    "Cada proceso electoral define las prioridades de las políticas públicas para los años siguientes, y las decisiones que se adopten en materia universitaria condicionarán la trayectoria de varias generaciones de estudiantes. Por ello, CREUP presenta este documento a todas las formaciones políticas, con el propósito de que las propuestas del estudiantado sean recogidas en sus programas electorales.",
+    "Nuestro punto de partida es un modelo de universidad pública basado en el acceso en condiciones de igualdad, la calidad de la enseñanza, la investigación y los servicios, y la participación efectiva del estudiantado en el gobierno de las universidades. La universidad pública es un instrumento de cohesión social y territorial y un factor determinante de movilidad social, y su fortaleza es condición necesaria para el desarrollo económico, científico y cultural del país. Garantizarla exige una financiación pública suficiente y estable, así como el cumplimiento efectivo de los compromisos ya asumidos, como el objetivo de inversión pública del 1 % del PIB recogido en la Ley Orgánica del Sistema Universitario.",
+    "Las propuestas que se presentan a continuación son fruto de la experiencia directa del estudiantado y de su trabajo colectivo. Invitamos a las formaciones políticas a leerlas con atención y a incorporarlas a sus programas, y ponemos a su disposición nuestra interlocución para desarrollarlas conjuntamente. Invertir en la universidad pública es invertir en el futuro del país."
+  ],
+  "highlights": {
+    "gdp": {
+      "value": "2 % del PIB",
+      "label": "de inversión pública en las universidades públicas, cumpliendo antes el 1 % que fija la LOSU"
+    },
+    "perStudent": {
+      "value": "10.000 €",
+      "label": "de inversión pública mínima por estudiante"
+    },
+    "representation": {
+      "value": "1/3",
+      "label": "de la representación y del voto para el estudiantado en los órganos de gobierno"
+    }
+  },
+  "sections": {
+    "funding": {
+      "title": "Financiación y precios públicos",
+      "context": [
+        "La financiación pública es la base sobre la que se sostiene el conjunto del sistema universitario. De ella dependen la calidad de la docencia, la estabilidad de las plantillas, la investigación, los servicios al estudiantado y, de forma muy directa, el acceso y la permanencia en los estudios. Una universidad infrafinanciada traslada sus carencias a quienes la cursan, ya sea en forma de menos recursos, de menos oportunidades o de mayores costes para las familias.",
+        "La Ley Orgánica del Sistema Universitario fijó el objetivo de alcanzar una inversión pública del 1 % del PIB, pero un compromiso sin metodología clara, sin seguimiento y sin calendario corre el riesgo de quedarse en una declaración de intenciones. Para CREUP, cumplirlo y medirlo de forma transparente es una condición indispensable para que el sistema pueda competir con los de los países europeos de referencia, que invierten porcentajes sensiblemente superiores.",
+        "A la vez, el sistema de precios públicos condiciona quién puede acceder a la universidad y en qué condiciones puede continuar. Las diferencias entre territorios, el elevado coste de los másteres y los recargos por repetir matrícula suponen barreras económicas que contradicen el carácter público y redistributivo de la universidad. Las propuestas de este bloque buscan, por tanto, asegurar una financiación suficiente y verificable y unos precios que no penalicen al estudiantado."
+      ],
+      "proposals": {
+        "gdpTarget": {
+          "title": "Alcanzar el 2 % del PIB en financiación a las universidades públicas",
+          "description": "Garantizar el cumplimiento efectivo del compromiso de la Ley Orgánica del Sistema Universitario de alcanzar una inversión pública del 1 % del PIB en las universidades públicas, con la ambición de llegar al 2 %, acercándonos a otros países europeos."
+        },
+        "fundingObservatory": {
+          "title": "Observatorio estatal de financiación de las universidades públicas",
+          "description": "Crear un observatorio que realice un seguimiento riguroso y transparente de la financiación, estableciéndose anteriormente por parte de la administración y los actores universitarios, incluyendo al estudiantado, qué se computa como 1 % del PIB y ofreciendo los datos desglosados por comunidad autónoma, de modo que pueda verificarse el cumplimiento real del objetivo."
+        },
+        "minimumPerStudent": {
+          "title": "Inversión mínima por estudiante",
+          "description": "Incorporar a la medición de la financiación indicadores complementarios, como el gasto público por estudiante, y fijar una inversión mínima de 10.000 euros por estudiante."
+        },
+        "lowerFees": {
+          "title": "Reducción de los precios públicos",
+          "description": "Impulsar una bajada de los precios públicos de matrícula en las universidades públicas, como vía para garantizar la igualdad de oportunidades en el acceso y la permanencia."
+        },
+        "nonQualifyingMasters": {
+          "title": "Equiparación de los másteres universitarios no habilitantes",
+          "description": "Equiparar los precios de los másteres universitarios no habilitantes a los de grado."
+        },
+        "repeatEnrolmentSurcharges": {
+          "title": "Eliminación de los recargos por segundas y sucesivas matrículas",
+          "description": "Suprimir el incremento de precio en segundas, terceras, cuartas y posteriores matrículas, que supone una penalización económica para el estudiante que no supera una asignatura."
+        },
+        "morePlaces": {
+          "title": "Ampliación de plazas en las universidades públicas",
+          "description": "Destinar parte del incremento de la financiación pública a ampliar el número de plazas en las universidades públicas de modo que la oferta responda a las necesidades de la sociedad y a las aspiraciones del estudiantado. Esta ampliación debería traducirse en una reducción de las notas de corte y en una menor exclusión de quienes, habiendo superado las pruebas de acceso, no logran una plaza en la titulación que desean. Todo ello garantizando que el crecimiento de la oferta vaya acompañado de los recursos docentes y materiales necesarios para mantener la calidad."
+        }
+      }
+    },
+    "scholarships": {
+      "title": "Becas",
+      "context": [
+        "El sistema de becas y ayudas es el principal instrumento con el que cuenta el Estado para que el estudio no dependa del origen familiar ni del lugar de residencia. Sin embargo, su diseño actual deja fuera a parte del estudiantado que lo necesita y, en algunos casos, añade penalizaciones que contradicen su propia finalidad: exigencias de rendimiento académico que no tienen en cuenta las circunstancias de cada persona, devoluciones de cuantías que se suman a la pérdida de la ayuda, o cuantías de vivienda que no reflejan lo que cuesta realmente estudiar en cada ciudad.",
+        "La equidad en el acceso no se agota en las becas. Exige también incorporar la perspectiva de renta al conjunto de las ayudas universitarias, reconocer las situaciones de especial vulnerabilidad, garantizar la acogida de estudiantes refugiados y de otros países, y contar con datos fiables que permitan conocer quién accede, quién permanece y quién abandona la universidad. Las propuestas de este bloque buscan un sistema de ayudas más justo, más suficiente y más sensible a las desigualdades reales."
+      ],
+      "proposals": {
+        "updateAmounts": {
+          "title": "Actualización de las becas y sus cuantías",
+          "description": "Seguir impulsando el incremento de las becas y de sus cuantías, de forma que cubran de manera efectiva el coste real de estudiar."
+        },
+        "moreIncomeThresholds": {
+          "title": "Más umbrales de renta",
+          "description": "Ampliar el número de umbrales de renta en las becas estatales, para que la ayuda se ajuste mejor a la situación económica de cada familia y se evite el salto brusco entre quienes la reciben y quienes no."
+        },
+        "removeExcellenceShare": {
+          "title": "Eliminación del porcentaje de excelencia académica",
+          "description": "Suprimir el porcentaje de excelencia académica como factor en el sistema de becas. No resulta coherente destinar una parte de los fondos públicos a premiar los expedientes académicos más brillantes cuando todavía existen estudiantes que se enfrentan a dificultades económicas y personales que limitan sus posibilidades de acceder a la educación y continuar sus estudios en igualdad de condiciones."
+        },
+        "reviewPerformanceRequirements": {
+          "title": "Revisión de los porcentajes de rendimiento académico",
+          "description": "Rebajar y revisar los porcentajes mínimos de rendimiento académico exigidos para mantener la beca, de modo que no penalicen al estudiantado con mayores dificultades económicas o personales, ni al estudiantado de un ámbito de conocimiento o etapa educativa distinta."
+        },
+        "noRepayment": {
+          "title": "Eliminación de la devolución de la beca",
+          "description": "Suprimir la obligación de devolver la beca cuando no se alcanzan los requisitos académicos. No es admisible que una misma circunstancia conlleve una doble penalización: perder la ayuda al año siguiente y, además, tener que reintegrarla. Subsidiariamente, en caso de mantenerse la obligación de devolución, se solicita la eliminación de los intereses asociados al reintegro, con el fin de evitar una carga económica adicional para el estudiantado."
+        },
+        "housingAmountByTerritory": {
+          "title": "Cuantía de vivienda adaptada al territorio",
+          "description": "Incrementar la cuantía destinada a vivienda y revisar sus criterios en función del lugar de estudio y de su coste, para reflejar las diferencias reales entre territorios."
+        }
+      }
+    },
+    "equality": {
+      "title": "Igualdad",
+      "context": [
+        "La universidad debe garantizar la igualdad de oportunidades y la inclusión efectiva de todo el estudiantado, independientemente de su situación socioeconómica, origen o circunstancias personales. Para ello, es necesario eliminar las barreras que dificultan el acceso, la permanencia y el desarrollo académico, así como disponer de datos que permitan identificar las desigualdades existentes y orientar las políticas públicas."
+      ],
+      "proposals": {
+        "positiveDiscrimination": {
+          "title": "Mecanismos de discriminación positiva en el acceso",
+          "description": "Estudiar el establecimiento de mecanismos de discriminación positiva en el acceso a la universidad para las personas en riesgo de exclusión social."
+        },
+        "refugeeStudents": {
+          "title": "Programa y becas para estudiantes refugiados",
+          "description": "Crear un programa específico de acceso y un sistema de becas para estudiantes refugiados coordinado a nivel estatal."
+        },
+        "equalityTraining": {
+          "title": "Formación en igualdad, diversidad e inclusión",
+          "description": "Garantizar la formación del personal docente e investigador (PDI) y del personal técnico, de gestión y de administración y servicios (PTGAS) en materia de igualdad, diversidad e inclusión."
+        },
+        "equityData": {
+          "title": "Recogida de datos sobre equidad y acceso universitario",
+          "description": "Establecer mecanismos estatales de recopilación y análisis de datos que permitan conocer las desigualdades en el acceso, la permanencia y la finalización de los estudios universitarios, atendiendo a variables como el género, el origen y la situación socioeconómica."
+        },
+        "mentalHealthStudy": {
+          "title": "Estudio estatal sobre la salud mental del estudiantado universitario",
+          "description": "Realizar un estudio periódico que permita conocer la situación de la salud mental del estudiantado, identificar los principales factores que afectan a su bienestar y orientar el desarrollo de medidas de prevención, atención y apoyo en el ámbito universitario."
+        },
+        "scienceSocialDimension": {
+          "title": "Igualdad y dimensión social en la política científica",
+          "description": "Incorporar criterios de igualdad de género, inclusión, sostenibilidad, cohesión territorial y memoria democrática en la planificación de la política científica y en las convocatorias estatales de financiación, respetando la independencia académica y los criterios de evaluación científica."
+        }
+      }
+    },
+    "housing": {
+      "title": "Vivienda",
+      "context": [
+        "El acceso a una vivienda digna se ha convertido en una de las principales barreras para estudiar en la universidad pública. El aumento sostenido de los precios del alquiler, la escasez de oferta asequible y la presión de la vivienda de uso turístico han hecho que, en muchas ciudades universitarias, el coste del alojamiento supere con creces la cuantía de las becas y ayudas, y que la decisión de qué estudiar y dónde dependa cada vez más de la capacidad económica de las familias.",
+        "A esta situación se suma la insuficiencia de alojamiento público y asequible dentro del propio sistema universitario, y la falta de protección jurídica de quienes alquilan una habitación, una de las fórmulas más habituales entre el estudiantado y que hoy queda al margen de la regulación general de los arrendamientos. Las propuestas de este bloque buscan que la vivienda deje de ser un factor de exclusión y se convierta en una parte de las garantías de acceso y permanencia en la universidad."
+      ],
+      "proposals": {
+        "rentCaps": {
+          "title": "Limitación de los precios del alquiler",
+          "description": "Establecer topes a los alquileres en las zonas tensionadas. Estos topes no deberían limitarse a ellas, sino extenderse a todo el territorio del Estado, adaptándose a las circunstancias particulares de cada región y a la evolución de sus precios."
+        },
+        "touristRentals": {
+          "title": "Regulación de la vivienda de uso turístico",
+          "description": "Regular la vivienda de uso turístico, para que su expansión no reduzca la oferta de alquiler residencial en las ciudades universitarias ni presione al alza los precios."
+        },
+        "publicResidences": {
+          "title": "Financiación para la creación de colegios mayores y residencias públicas",
+          "description": "Impulsar la creación de colegios mayores y residencias públicas, de gestión directa, con precios asequibles y plazas suficientes para el estudiantado."
+        },
+        "residentialRehabilitation": {
+          "title": "Rehabilitación de espacios para uso residencial",
+          "description": "Dotar partidas presupuestarias para rehabilitar y adaptar espacios de las universidades que puedan convertirse en alojamiento universitario, así como para mejorar los ya existentes."
+        },
+        "roomRentals": {
+          "title": "Alquiler de habitaciones y Ley de Arrendamientos Urbanos",
+          "description": "Incluir el alquiler de habitaciones en la Ley de Arrendamientos Urbanos (LAU), o dotarlo de un estatuto jurídico equivalente, para que quienes lo utilizan cuenten con una protección similar a la del resto de arrendatarios."
+        }
+      }
+    },
+    "internships": {
+      "title": "Prácticas académicas externas",
+      "context": [
+        "Las prácticas académicas externas son una parte esencial de la formación universitaria: permiten aplicar los conocimientos adquiridos en un entorno real y facilitan la transición al mundo profesional. Para que cumplan esa función deben ser, ante todo, formativas, y no suponer una carga económica para quien las realiza ni un espacio de desprotección.",
+        "El marco que las regula, el Real Decreto 592/2014, tiene ya más de una década y no siempre responde a la realidad actual del estudiantado. Además, los desplazamientos, el alojamiento o la manutención asociados a las prácticas recaen hoy, en la mayoría de los casos, sobre el propio estudiante, lo que genera desigualdades en función de la capacidad económica de cada familia. Por otra parte, las prácticas en servicios públicos, como los sanitarios o los educativos, forman parte de la propia función formativa de la universidad pública y deben quedar protegidas. Las propuestas de este bloque buscan unas prácticas de calidad, accesibles y con garantías."
+      ],
+      "proposals": {
+        "reformDecree": {
+          "title": "Reforma del Real Decreto 592/2014",
+          "description": "Reformar el Real Decreto 592/2014, de 11 de julio, por el que se regulan las prácticas académicas externas de los estudiantes universitarios, para adaptarlo a la realidad actual y reforzar los derechos del estudiantado."
+        },
+        "expenseCompensation": {
+          "title": "Compensación de los gastos derivados de las prácticas",
+          "description": "Establecer mecanismos de compensación de los gastos asociados a la realización de las prácticas, como los de transporte, alojamiento o manutención, para que su realización no dependa de la capacidad económica del estudiantado."
+        },
+        "vulnerableStudentGrants": {
+          "title": "Becas para la realización de prácticas de estudiantes vulnerables",
+          "description": "Poner en marcha una bolsa de becas para el estudiantado vulnerable que quiera realizar prácticas pero que, debido al coste de oportunidad, no pueda realizarlas. Puede ser una cuantía dentro de las becas estatales al estudio u otra diferenciada."
+        },
+        "publicServicesExclusivity": {
+          "title": "Exclusividad de las prácticas en servicios públicos para las universidades públicas",
+          "description": "Blindar la exclusividad de las plazas de prácticas en los servicios públicos para el estudiantado de las universidades públicas. Esta medida busca asegurar que las infraestructuras, los profesionales y los recursos financiados con fondos públicos se destinen a la formación del estudiantado del sistema público universitario, priorizando la sostenibilidad de este modelo y el aprovechamiento de sus recursos."
+        }
+      }
+    },
+    "mobility": {
+      "title": "Internacionalización y movilidad",
+      "context": [
+        "La movilidad internacional es una de las experiencias más valiosas que ofrece la universidad: amplía la formación académica, mejora las perspectivas profesionales y fortalece la ciudadanía europea y global. Precisamente por su valor, no puede convertirse en un privilegio reservado a quienes cuentan con recursos propios para costearla.",
+        "Hoy, las cuantías de las ayudas no siempre cubren el coste real de vivir en el extranjero, los criterios de concesión no tienen suficientemente en cuenta la situación socioeconómica del estudiantado, la información disponible es dispersa y la movilidad entre universidades españolas ha perdido el apoyo estatal con el que contaba. A ello se suma la necesidad de abrir la movilidad a otros espacios, en particular al iberoamericano, con el que compartimos lengua, historia y vínculos académicos. Las propuestas de este bloque buscan una movilidad financiada, accesible, transparente, más sostenible y abierta a nuevos horizontes."
+      ],
+      "proposals": {
+        "mobilityFunding": {
+          "title": "Financiación de los programas de movilidad internacional",
+          "description": "Incrementar los recursos destinados a los programas estatales de apoyo a la movilidad internacional, para garantizar que el acceso a estas oportunidades no dependa de la capacidad económica del estudiantado."
+        },
+        "iberoamericanMobility": {
+          "title": "Movilidad iberoamericana",
+          "description": "Impulsar la movilidad del estudiantado con las universidades de los países iberoamericanos, mediante programas y ayudas que faciliten los intercambios."
+        },
+        "segibCooperation": {
+          "title": "Cooperación del estudiantado iberoamericano en el marco de la SEGIB",
+          "description": "Estudiar fórmulas para poner en relación al estudiantado iberoamericano, y a sus organizaciones representativas, en el marco del Espacio Iberoamericano del Conocimiento (EIC)."
+        },
+        "iberoamericanRepresentation": {
+          "title": "Reconocimiento de la representación estudiantil a nivel iberoamericano en la toma de decisiones",
+          "description": "Promover mecanismos que garanticen la participación y el reconocimiento de las organizaciones de representación estudiantil iberoamericanas en los espacios de diálogo y toma de decisiones sobre educación superior y cooperación universitaria."
+        },
+        "bolognaFollowUp": {
+          "title": "Seguimiento del Proceso de Bolonia con la representación estudiantil española",
+          "description": "Establecer reuniones periódicas entre el Ministerio competente en materia de universidades y la representación estudiantil española para hacer seguimiento del Bologna Follow-Up Group (BFUG), compartir información sobre los avances del Espacio Europeo de Educación Superior y trasladar las demandas del estudiantado a los procesos de decisión."
+        },
+        "studentVisas": {
+          "title": "Agilización de los visados de estudiantes",
+          "description": "Agilizar la tramitación de visados para el estudiantado admitido en las universidades españolas."
+        },
+        "internshipMobilityGrants": {
+          "title": "Mejora de las condiciones de las becas de movilidad para prácticas",
+          "description": "Es necesaria la mejora de las condiciones y la promoción de las becas para la movilidad durante las prácticas si pretendemos formar a generaciones capaces de vivir en un mundo globalizado como el que tenemos. Para la mayoría de estudiantes las prácticas suponen su primer contacto con el mundo laboral, y poder hacerlo en movilidad supone un mayor aprendizaje en todas las fases de la etapa de prácticas."
+        }
+      }
+    },
+    "science": {
+      "title": "Ciencia",
+      "context": [
+        "La investigación es una de las misiones esenciales de la universidad pública y una de las principales vías por las que esta devuelve a la sociedad lo que recibe de ella. Un sistema científico sólido genera conocimiento, innovación y empleo cualificado, y es condición necesaria para que el país pueda afrontar los retos económicos, sociales y ambientales de las próximas décadas.",
+        "Para el estudiantado, la ciencia es también una cuestión de oportunidades. Quienes desean dedicarse a la investigación se encuentran con una financiación insuficiente y desigual entre áreas de conocimiento, con criterios de evaluación que no siempre se ajustan a las particularidades de cada disciplina, con contratos predoctorales y posdoctorales escasos y con carreras profesionales inestables que empujan a muchas personas formadas en España a abandonar la investigación o el país. Las propuestas de este bloque buscan una financiación pública creciente y previsible, un acceso a la carrera investigadora que no dependa de la situación económica y una política científica que contemple todas las áreas de conocimiento."
+      ],
+      "proposals": {
+        "sustainedFunding": {
+          "title": "Financiación sostenida en I+D+i",
+          "description": "Establecer una senda plurianual de incremento de la inversión pública en investigación, desarrollo e innovación, con objetivos verificables, mecanismos de seguimiento de la ejecución presupuestaria y medidas destinadas a reducir la distancia respecto a los países de nuestro entorno europeo."
+        },
+        "allKnowledgeAreas": {
+          "title": "Financiación de la investigación en todas las áreas de conocimiento",
+          "description": "Garantizar que las convocatorias estatales de investigación contemplen de manera equilibrada las distintas áreas de conocimiento, incluidas las ciencias sociales, las humanidades, las artes y las disciplinas científicas y tecnológicas, atendiendo a sus particularidades metodológicas."
+        },
+        "researchContracts": {
+          "title": "Más ayudas y contratos predoctorales y posdoctorales",
+          "description": "Ampliar progresivamente las convocatorias estatales destinadas a financiar la formación investigadora, los contratos predoctorales y la incorporación de personal investigador, favoreciendo la continuidad de las carreras científicas y la retención del talento."
+        },
+        "evaluationCriteria": {
+          "title": "Revisión de los criterios de evaluación de las ayudas a la investigación",
+          "description": "Adecuar los criterios de concesión de los contratos predoctorales y de iniciación a la investigación a las particularidades de las distintas disciplinas, valorando de manera proporcionada las publicaciones, la transferencia del conocimiento, la innovación y otras contribuciones relevantes para cada área, así como la renta."
+        },
+        "simplerAdministration": {
+          "title": "Simplificación de la gestión administrativa de la investigación",
+          "description": "Revisar los procedimientos estatales de contratación, justificación y ejecución de fondos destinados a la I+D+i para reducir cargas burocráticas innecesarias, manteniendo las garantías de transparencia, control del gasto y prevención del fraude."
+        },
+        "openScience": {
+          "title": "Ciencia abierta",
+          "description": "Impulsar el cumplimiento de las obligaciones de acceso abierto a publicaciones y resultados de investigación financiados con fondos públicos, así como el desarrollo de infraestructuras que faciliten el acceso de la ciudadanía al conocimiento científico."
+        }
+      }
+    },
+    "governance": {
+      "title": "Gobernanza y participación democrática",
+      "context": [
+        "La universidad pública es una institución en la que las decisiones afectan directamente a quienes forman parte de ella. Por ello, es importante garantizar la participación de todos sus colectivos, especialmente del estudiantado, que constituye el grupo más numeroso. No obstante, la composición actual de algunos órganos de gobierno ofrece margen de mejora para reflejar mejor la pluralidad de la comunidad universitaria, reforzar la participación estudiantil y favorecer una representación más amplia de la sociedad en aquellos espacios destinados a conectar la universidad con su entorno.",
+        "La participación estudiantil exige, además, medios materiales, pero su trabajo depende hoy de recursos insuficientes y de una normativa que no se ajusta a su realidad. Las propuestas de este bloque buscan una universidad más autónoma, más transparente y más democrática, en la que la representación estudiantil cuente con las garantías necesarias para ejercerse con plenitud."
+      ],
+      "proposals": {
+        "oneThirdRepresentation": {
+          "title": "Un tercio de representación y de voto para el estudiantado",
+          "description": "Garantizar que el estudiantado cuente con, al menos, un tercio de la representación en los órganos colegiados de gobierno y representación en la universidad. Asimismo, asegurar que el voto estudiantil represente, como mínimo, un tercio del peso total del voto ponderado en las elecciones al rectorado, así como en los demás procesos electorales universitarios en los que se establezca un sistema de voto ponderado."
+        },
+        "universityAutonomy": {
+          "title": "Garantía de la autonomía universitaria",
+          "description": "Garantizar la autonomía universitaria frente a injerencias externas y asegurar que las universidades puedan gobernarse conforme a sus propios órganos y estatutos."
+        },
+        "socialCouncil": {
+          "title": "Transformación del Consejo Social",
+          "description": "Transformar el Consejo Social en un órgano de carácter consultivo, sin capacidad decisoria, y garantizar que su composición refleje de verdad la pluralidad de la ciudadanía."
+        },
+        "conflictsOfInterest": {
+          "title": "Conflictos de interés",
+          "description": "Revisar y reforzar el régimen de incompatibilidades de los cargos universitarios para prevenir posibles conflictos de interés y garantizar la transparencia e independencia en la toma de decisiones. Esta revisión debería contemplar, entre otros supuestos, la compatibilidad entre el ejercicio de cargos en universidades públicas y privadas, así como los vínculos con entidades empresariales que puedan generar conflictos de interés."
+        },
+        "studentCouncilFunding": {
+          "title": "Financiación de los consejos de estudiantes",
+          "description": "Garantizar financiación para los consejos de estudiantes en el marco de la LOSU, de modo que puedan desarrollar su labor de representación con independencia y con recursos suficientes."
+        }
+      }
+    },
+    "quality": {
+      "title": "Garantía de la calidad del sistema universitario español",
+      "context": [
+        "La calidad es la garantía que el sistema universitario ofrece al estudiantado y a la sociedad: que un título tiene detrás un profesorado adecuado, unos recursos suficientes y un proyecto académico sólido. Para que esa garantía sea creíble, quienes la verifican deben ser independientes, los controles deben mantenerse una vez concedida la acreditación y los resultados deben ser públicos y comprensibles.",
+        "En los últimos años, la expansión de nuevas instituciones privadas y la simplificación de determinados procedimientos administrativos han puesto de manifiesto la necesidad de reforzar la supervisión del sistema. Cuando el crecimiento no responde a una planificación y los controles son insuficientes, quien lo sufre es el estudiantado: titulaciones con condiciones deficientes, información publicitaria que induce a error o, en el peor de los casos, cierres que dejan sin amparo a quienes han invertido años y recursos en sus estudios. Las propuestas de este bloque buscan un sistema planificado, transparente y con garantías reales para quienes lo cursan."
+      ],
+      "proposals": {
+        "agencyIndependence": {
+          "title": "Independencia de las agencias de evaluación de la calidad",
+          "description": "Reforzar la autonomía funcional e institucional de las agencias de calidad, especialmente las autonómicas, mediante un marco jurídico que asegure su independencia frente a posibles injerencias políticas, institucionales o corporativas, así como procedimientos de selección basados en el mérito y la capacidad."
+        },
+        "continuousEvaluation": {
+          "title": "Evaluación externa continua de la calidad universitaria",
+          "description": "Reforzar los mecanismos de evaluación y supervisión de la calidad de las enseñanzas universitarias, incorporando controles periódicos y aleatorios que permitan comprobar que las titulaciones y las instituciones mantienen las condiciones de calidad exigidas, a través de entrevistas a la comunidad universitaria y de los indicadores y resultados recogidos mediante los Sistemas Internos de Garantía de la Calidad, entre otros."
+        },
+        "teachingQuality": {
+          "title": "Calidad docente como elemento determinante de la evaluación",
+          "description": "Reforzar el peso de los indicadores de calidad docente en los procedimientos estatales de evaluación y acreditación institucional, evitando que la simplificación administrativa se traduzca en una reducción de las garantías académicas."
+        },
+        "qualityTransparency": {
+          "title": "Transparencia de los resultados de calidad",
+          "description": "Establecer obligaciones comunes de publicación de información comprensible, comparable y actualizada sobre la calidad de las titulaciones, los resultados de las evaluaciones externas y las medidas adoptadas ante los incumplimientos detectados."
+        },
+        "degreeMap": {
+          "title": "Mapa estatal de titulaciones",
+          "description": "Elaborar un mapa de titulaciones a nivel estatal que permita identificar necesidades, duplicidades y carencias en la oferta, como base para la planificación del sistema universitario."
+        },
+        "stricterRequirements": {
+          "title": "Endurecer los requisitos para la creación, reconocimiento y autorización de universidades, así como de su acreditación institucional",
+          "description": "Revisar los requisitos básicos de creación y reconocimiento para garantizar como mínimo que los proyectos dispongan de un modelo académico viable, recursos suficientes, profesorado adecuado e infraestructuras acordes con la oferta formativa prevista."
+        },
+        "closureGuarantees": {
+          "title": "Garantías económicas ante el cierre o el incumplimiento de una universidad privada",
+          "description": "Introducir mecanismos de garantía financiera, proporcionados al tamaño y a los riesgos del proyecto, que permitan afrontar las obligaciones pendientes, facilitar la continuidad de los estudios y proteger al estudiantado ante situaciones de insolvencia o cese de actividad."
+        },
+        "privateUniversityInspection": {
+          "title": "Inspección y supervisión especial de las universidades privadas",
+          "description": "Reforzar los mecanismos de inspección y seguimiento de las universidades privadas mediante controles periódicos que permitan verificar el cumplimiento de los requisitos legales, académicos y de calidad, así como inspecciones extraordinarias cuando existan indicios de posibles irregularidades. Dado que las universidades privadas pueden estar sujetas a incentivos económicos y objetivos empresariales que no se dan de la misma manera en las universidades públicas, resulta especialmente importante establecer mecanismos de supervisión que eviten que estos intereses puedan anteponerse a la calidad de la enseñanza y al cumplimiento de su función educativa. Estos controles deberán incluir procedimientos de subsanación y un régimen de sanciones proporcionales a la gravedad y reiteración de los incumplimientos."
+        },
+        "privateUniversityMoratorium": {
+          "title": "Moratoria en la autorización de nuevas universidades privadas",
+          "description": "Establecer una moratoria temporal en la autorización de nuevas universidades privadas hasta que se realice una planificación estratégica del sistema universitario, evitando un crecimiento desordenado de instituciones privadas que fragmenta el sistema y desvía recursos públicos."
+        },
+        "privateAffiliatedCentres": {
+          "title": "Eliminación de los centros adscritos de titularidad privada",
+          "description": "Suprimir progresivamente los centros adscritos de titularidad privada, con el objetivo de garantizar que la impartición de titulaciones universitarias se desarrolle bajo un marco de supervisión, calidad y garantías equivalente al exigido al conjunto del sistema universitario. La existencia de centros privados que imparten titulaciones vinculadas a universidades públicas puede generar diferencias en las condiciones de acceso, financiación, gestión y control académico, por lo que resulta necesario revisar este modelo para asegurar una mayor coherencia en la prestación del servicio público de educación superior y una supervisión efectiva de la calidad de las titulaciones."
+        },
+        "privateUniversityTransparency": {
+          "title": "Refuerzo de las obligaciones de transparencia de las universidades privadas",
+          "description": "Establecer obligaciones de publicidad activa para las universidades privadas, especialmente las de titularidad mercantil, que incluyan la publicación periódica de información económica y financiera verificada, las cuentas anuales auditadas, la estructura de propiedad y los recursos destinados a docencia, investigación y becas. A diferencia de las universidades públicas, que están sujetas a obligaciones de transparencia propias de su naturaleza pública, las universidades privadas deben contar con mecanismos específicos de rendición de cuentas que garanticen el acceso a información relevante, especialmente teniendo en cuenta que también desempeñan una función de interés general como es la educación superior."
+        }
+      }
+    },
+    "sustainability": {
+      "title": "Sostenibilidad",
+      "context": [
+        "La emergencia climática es uno de los grandes desafíos de nuestra generación, y las universidades públicas tienen una doble responsabilidad ante ella: generar el conocimiento que permita afrontarla y actuar como ejemplo en sus propios campus. Quienes hoy estudian vivirán con mayor intensidad sus consecuencias, y esperan de su universidad un compromiso a la altura.",
+        "Los campus, además, están cada vez más expuestos a episodios de calor extremo y a otros fenómenos meteorológicos adversos, y muchos de sus edificios no están preparados para ello. Adaptarlos y dotarlos de los recursos necesarios no solo protege a la comunidad universitaria, sino que puede convertirlos en espacios útiles para el conjunto de la ciudadanía. Las propuestas de este bloque buscan que la sostenibilidad deje de ser una declaración de principios y cuente con financiación, líneas de investigación y planificación efectivas."
+      ],
+      "proposals": {
+        "climateShelters": {
+          "title": "Universidades como refugios climáticos",
+          "description": "Dotar de financiación a las universidades para que puedan adaptar sus instalaciones y convertirse en refugios climáticos, tanto para la comunidad universitaria como para la ciudadanía."
+        },
+        "sustainabilityResearch": {
+          "title": "Investigación en sostenibilidad",
+          "description": "Financiar líneas de investigación orientadas a la sostenibilidad, la mitigación y la adaptación al cambio climático."
+        },
+        "sustainabilityPlans": {
+          "title": "Planes de sostenibilidad en el marco de la LOSU",
+          "description": "Impulsar el desarrollo de planes de sostenibilidad en las universidades en el marco de la Ley Orgánica del Sistema Universitario, con el respaldo presupuestario necesario para llevarlos a cabo."
+        }
+      }
+    }
+  },
+  "closing": [
+    "Las propuestas recogidas en este documento responden a una misma convicción: la universidad pública es un bien común que merece una protección y una inversión acordes con su papel en la sociedad. Del acceso en condiciones de igualdad a la calidad de la enseñanza, de la participación del estudiantado en el gobierno de las universidades a la investigación, cada una de ellas busca que estudiar en la universidad pública sea una oportunidad real para todas las personas, con independencia de su origen, su territorio o su situación económica.",
+    "CREUP traslada estas propuestas a todas las formaciones políticas con la voluntad de que sean consideradas, debatidas y, en la medida de lo posible, asumidas en sus programas electorales. Como organización representativa del estudiantado de las universidades públicas, nos ponemos a disposición de los grupos políticos para desarrollarlas, contrastarlas y mejorarlas, y para seguir trabajando con ellos durante la legislatura. Invertir en la universidad pública es invertir en el futuro del país, y el estudiantado estará ahí para acompañarlo."
+  ]
+}
