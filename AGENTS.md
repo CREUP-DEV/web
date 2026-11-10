@@ -677,6 +677,7 @@ A static page (no admin, no DB) with CREUP's proposals for the 2026 general elec
 - The structure (blocks, untranslated anchors, icons, the proposal keys of each block and the header's key figures) is `ELECTION_PROPOSALS_SECTIONS` / `ELECTION_PROPOSALS_HIGHLIGHTS` in `shared/constants/electionProposals.ts`, next to the route. The page chrome is under `electionProposals.*` in the locale files; the document itself (intro, key figures, each block's context paragraphs and proposals, closing) is plain data in `app/content/electionProposals/<locale>.json`, loaded per locale by `loadElectionProposalsText` (`app/utils/electionProposalsText.ts`). Proposals are numbered in display order across the whole document.
 - `ElectionProposalsText` is derived from the constants, so `pnpm typecheck` fails when a language misses a block or a proposal. Adding or removing one means editing its key in the constant and its entry in all six content files.
 - It is linked first in the Política Universitaria menu. An announcement press article linking to it is admin content.
+- Its share image is a static file, `public/politica/elecciones-generales-2026-compartir.jpg` (`ELECTION_PROPOSALS_SHARE_IMAGE_PATH`). A page's own `ogImage` must not live under `/og`: that is the admin upload base for the site default image, stripped from the build.
 
 ---
 
@@ -702,6 +703,13 @@ Every page/section that loads async data must have:
 3. `v-else` — actual content.
 
 `PublicAgenda.vue` and `app/pages/conocenos/equipo/index.vue` are reference implementations. Do not show empty states during loading — always use skeletons to prevent layout shift.
+
+---
+
+## Public Page Layout
+
+- Left-aligned body text (intros, section context paragraphs) spans the page's content column. Don't cap it with `max-w-2xl`/`max-w-3xl` inside a wider `max-w-5xl`/`max-w-6xl` article: on wide screens it stops at two thirds of the column, short of the card grids and section rules around it, and leaves an empty band on the right.
+- A narrow measure is fine where the block is centred (`mx-auto text-center` page headers) or shares a row with something else (a header lead next to its stats, a closing card's text next to its button).
 
 ---
 

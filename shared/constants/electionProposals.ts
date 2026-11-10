@@ -1,6 +1,13 @@
 /** Route of CREUP's proposals for the 2026 general election (the page under `app/pages/politica/`). */
 export const ELECTION_PROPOSALS_PATH = '/politica/elecciones-generales-2026'
 
+/**
+ * The page's share image (1200×630). A static file in `public/politica/`, not under `/og`, which
+ * is an admin upload base stripped from the build.
+ */
+export const ELECTION_PROPOSALS_SHARE_IMAGE_PATH =
+  '/politica/elecciones-generales-2026-compartir.jpg'
+
 export interface ElectionProposalsSection {
   /** Key of the block in the proposals text (`ElectionProposalsText`). */
   key: string

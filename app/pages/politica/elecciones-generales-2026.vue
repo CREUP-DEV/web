@@ -3,6 +3,7 @@ import {
   ELECTION_PROPOSALS_HIGHLIGHTS,
   ELECTION_PROPOSALS_PATH,
   ELECTION_PROPOSALS_SECTIONS,
+  ELECTION_PROPOSALS_SHARE_IMAGE_PATH,
   type ElectionProposalsText,
 } from '~~/shared/constants/electionProposals'
 import { loadElectionProposalsText } from '@/utils/electionProposalsText'
@@ -22,6 +23,7 @@ watch(locale, async (newLocale) => {
 
 usePageSeo('electionProposals.seoTitle', 'electionProposals.description', {
   webPageType: 'CollectionPage',
+  ogImage: ELECTION_PROPOSALS_SHARE_IMAGE_PATH,
   breadcrumbs: () => [
     { name: t('nav.home'), path: localePath('/') },
     { name: t('nav.policy.label'), path: localePath('/politica-universitaria') },
@@ -144,7 +146,7 @@ const highlights = computed(() =>
         </ul>
       </section>
 
-      <section aria-labelledby="election-proposals-intro-title" class="mx-auto max-w-3xl space-y-4">
+      <section aria-labelledby="election-proposals-intro-title" class="space-y-4">
         <h2 id="election-proposals-intro-title" class="text-2xl font-semibold">
           {{ t('electionProposals.introTitle') }}
         </h2>
@@ -216,7 +218,7 @@ const highlights = computed(() =>
           </h2>
         </header>
 
-        <div class="max-w-3xl space-y-4">
+        <div class="space-y-4">
           <p
             v-for="(paragraph, index) in section.context"
             :key="index"
