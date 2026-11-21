@@ -1,3 +1,4 @@
+import { stat } from 'node:fs/promises'
 import { and, eq } from 'drizzle-orm'
 import { db } from '../../db'
 import { siteDefaultImages } from '../../db/schema/shared'
@@ -7,9 +8,11 @@ import {
   getSiteDefaultSlotDefinition,
 } from '~~/shared/constants/siteDefaultImages'
 import { toExternalImageProxyUrl } from '../external/externalAssetUrl'
-import { PRESS_IMAGE_PUBLIC_BASE } from '~~/shared/constants/assetPaths'
+import { PRESS_IMAGE_PUBLIC_BASE, SITE_OG_IMAGE_PUBLIC_PATH } from '~~/shared/constants/assetPaths'
 import type { PressArticleType } from '~~/shared/constants/pressTypes'
 import { appendAssetVersion } from '../core/assetVersion'
+import { logWarn } from '../core/logger'
+import { resolveAdminStoredAbsolutePath } from './adminStoredFile'
 
 export interface SiteDefaultImageEntry {
   image: string | null
@@ -165,6 +168,26 @@ export async function getSiteDefaultImageRaw(scope: string, slot: string): Promi
   return row?.image ?? null
 }
 
+/** Missing OG files already logged by this process, so a lost file warns once, not per render. */
+const reportedMissingOgImages = new Set<string>()
+
+async function isLocalOgImageAvailable(image: string): Promise<boolean> {
+  if (!image.startsWith(`${SITE_OG_IMAGE_PUBLIC_PATH}/`)) {
+    return true
+  }
+
+  try {
+    return (await stat(resolveAdminStoredAbsolutePath(image))).isFile()
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Versioned URL of the admin-chosen OG image, or null (the shipped default) when none is set or
+ * its file is gone from the uploads volume: every page without an image of its own shares this
+ * one, so a lost file would otherwise leave all their link previews pointing at a 404.
+ */
 export async function getSiteDefaultOgImageUrlWithVersion(): Promise<string | null> {
   const row = await db.query.siteDefaultImages.findFirst({
     where: and(
@@ -175,6 +198,14 @@ export async function getSiteDefaultOgImageUrlWithVersion(): Promise<string | nu
   })
 
   if (!row?.image) {
+    return null
+  }
+
+  if (!(await isLocalOgImageAvailable(row.image))) {
+    if (!reportedMissingOgImages.has(row.image)) {
+      reportedMissingOgImages.add(row.image)
+      logWarn('site-default-images.og-image-missing', { image: row.image })
+    }
     return null
   }
 
