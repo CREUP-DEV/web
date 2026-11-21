@@ -974,6 +974,7 @@
       "add": "Afig",
       "cancel": "Cancel·la",
       "save": "Guarda",
+      "unsavedChangesPrompt": "Hi ha canvis sense guardar. Si ixes ara, es perdran.",
       "create": "Crea",
       "delete": "Elimina",
       "retry": "Torna-ho a provar",

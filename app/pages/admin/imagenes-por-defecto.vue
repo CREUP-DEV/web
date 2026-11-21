@@ -153,6 +153,11 @@ const buildPayloadSnapshot = () =>
 
 const { hasFormChanges, resetFormSnapshot } = useFormSnapshot(buildPayloadSnapshot)
 
+useUnsavedChangesGuard(
+  () => hasFormChanges.value,
+  () => t('admin.common.unsavedChangesPrompt')
+)
+
 watch(
   serverItem,
   (item) => {
@@ -223,17 +228,18 @@ const save = async () => {
 
 <template>
   <div class="space-y-10">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <section>
-        <h1 class="text-2xl font-bold">{{ t('admin.siteDefaultImages.title') }}</h1>
-        <p class="text-muted mt-1 max-w-3xl text-sm">
-          {{ t('admin.siteDefaultImages.intro') }}
-        </p>
-      </section>
+    <!-- A direct child of the page root: sticky only holds within its parent's box. Its mb-3
+         overrides the root's space-y gap (a zero-specificity margin in Tailwind v4). -->
+    <div
+      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-3 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
+    >
+      <h1 class="min-w-0 text-xl font-bold sm:text-2xl">
+        {{ t('admin.siteDefaultImages.title') }}
+      </h1>
       <UButton
         v-if="!defaultsPending && !defaultsError"
         type="button"
-        class="shrink-0 self-start sm:self-center"
+        class="shrink-0"
         icon="i-tabler-device-floppy"
         :loading="isSaving"
         :disabled="!hasFormChanges"
@@ -242,6 +248,9 @@ const save = async () => {
         {{ t('admin.siteDefaultImages.saveChanges') }}
       </UButton>
     </div>
+    <p class="text-muted max-w-3xl text-sm">
+      {{ t('admin.siteDefaultImages.intro') }}
+    </p>
 
     <div v-if="defaultsPending" class="space-y-3" aria-hidden="true">
       <USkeleton class="h-40 w-full rounded-2xl" />

@@ -974,6 +974,7 @@
       "add": "Gehitu",
       "cancel": "Utzi",
       "save": "Gorde",
+      "unsavedChangesPrompt": "Gorde gabeko aldaketak daude. Orain irteten bazara, galdu egingo dira.",
       "create": "Sortu",
       "delete": "Ezabatu",
       "retry": "Saiatu berriro",

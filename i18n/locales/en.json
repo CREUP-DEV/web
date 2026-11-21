@@ -974,6 +974,7 @@
       "add": "Add",
       "cancel": "Cancel",
       "save": "Save",
+      "unsavedChangesPrompt": "You have unsaved changes. If you leave now, they will be lost.",
       "create": "Create",
       "delete": "Delete",
       "retry": "Retry",

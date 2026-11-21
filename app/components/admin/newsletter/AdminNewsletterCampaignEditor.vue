@@ -203,25 +203,25 @@ const handleCancel = () => {
 
 <template>
   <div>
-    <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-      <div class="min-w-0">
-        <div class="flex items-center gap-2">
-          <UButton
-            :to="localePath(ADMIN_ROUTES.newsletter)"
-            icon="i-tabler-arrow-left"
-            variant="ghost"
-            color="neutral"
-            size="sm"
-            :aria-label="t('admin.common.back')"
-          />
-          <h1 class="truncate text-2xl font-bold">
-            {{ defaultTranslation?.subject.trim() || t('admin.newsletterCampaigns.list.untitled') }}
-          </h1>
-        </div>
-        <p class="text-muted mt-1 text-sm">{{ t('admin.newsletterCampaigns.editor.subtitle') }}</p>
+    <!-- A direct child of the editor root: sticky only holds within its parent's box. -->
+    <div
+      class="bg-default/90 sticky top-0 z-10 -mx-1 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
+    >
+      <div class="flex min-w-0 items-center gap-2">
+        <UButton
+          :to="localePath(ADMIN_ROUTES.newsletter)"
+          icon="i-tabler-arrow-left"
+          variant="ghost"
+          color="neutral"
+          size="sm"
+          :aria-label="t('admin.common.back')"
+        />
+        <h1 class="truncate text-2xl font-bold">
+          {{ defaultTranslation?.subject.trim() || t('admin.newsletterCampaigns.list.untitled') }}
+        </h1>
       </div>
 
-      <div class="flex shrink-0 flex-wrap gap-2">
+      <div class="flex shrink-0 flex-wrap justify-end gap-2">
         <UButton variant="outline" color="neutral" @click="handleCancel">
           {{ t('admin.common.cancel') }}
         </UButton>
@@ -235,6 +235,7 @@ const handleCancel = () => {
         </UButton>
       </div>
     </div>
+    <p class="text-muted mt-3 mb-6 text-sm">{{ t('admin.newsletterCampaigns.editor.subtitle') }}</p>
 
     <AdminFormErrorSummary :errors="formErrors" />
 

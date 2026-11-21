@@ -974,6 +974,7 @@
       "add": "Afegeix",
       "cancel": "Cancel·la",
       "save": "Desa",
+      "unsavedChangesPrompt": "Hi ha canvis sense desar. Si surts ara, es perdran.",
       "create": "Crea",
       "delete": "Elimina",
       "retry": "Torna-ho a provar",

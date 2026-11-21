@@ -457,7 +457,7 @@ const confirmCancel = () => {
     <AdminFormErrorSummary :errors="formErrors" />
 
     <div
-      class="bg-background/80 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
+      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
     >
       <div class="flex min-w-0 items-center gap-3">
         <UButton

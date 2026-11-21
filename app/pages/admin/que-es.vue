@@ -75,6 +75,11 @@ const currentHeroName = computed(() => contentForm.heroImage?.split('/').pop() ?
 const { hasFormChanges: hasPendingHeroChanges, resetFormSnapshot: resetContentSnapshot } =
   useFormSnapshot(buildContentSnapshot)
 
+useUnsavedChangesGuard(
+  () => hasPendingHeroChanges.value,
+  () => t('admin.common.unsavedChangesPrompt')
+)
+
 watch(
   contentItem,
   (item) => {
@@ -157,12 +162,25 @@ const saveContent = async () => {
 
 <template>
   <div class="space-y-8">
-    <section>
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.about.title') }}</h1>
-        <p class="text-muted mt-1 text-sm">{{ t('admin.about.subtitle') }}</p>
-      </div>
-    </section>
+    <!-- A direct child of the page root: sticky only holds within its parent's box. Its mb-3
+         overrides the root's space-y gap (a zero-specificity margin in Tailwind v4). -->
+    <div
+      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-3 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
+    >
+      <h1 class="min-w-0 text-xl font-bold sm:text-2xl">{{ t('admin.about.title') }}</h1>
+      <UButton
+        v-if="!contentPending && !contentError"
+        type="button"
+        class="shrink-0"
+        icon="i-tabler-device-floppy"
+        :loading="isSavingContent"
+        :disabled="!hasPendingHeroChanges"
+        @click="saveContent"
+      >
+        {{ t('admin.about.saveChanges') }}
+      </UButton>
+    </div>
+    <p class="text-muted text-sm">{{ t('admin.about.subtitle') }}</p>
 
     <div v-if="contentPending" class="space-y-3" aria-hidden="true">
       <USkeleton class="h-72 w-full rounded-2xl" />
@@ -306,18 +324,6 @@ const saveContent = async () => {
           class="hidden"
           @change="heroUpload.handleFileSelect"
         />
-
-        <div class="flex justify-end">
-          <UButton
-            type="button"
-            icon="i-tabler-device-floppy"
-            :loading="isSavingContent"
-            :disabled="!hasPendingHeroChanges"
-            @click="saveContent"
-          >
-            {{ t('admin.about.saveChanges') }}
-          </UButton>
-        </div>
 
         <p class="text-muted text-sm leading-relaxed">{{ t('admin.about.recommendedRatio') }}</p>
       </div>

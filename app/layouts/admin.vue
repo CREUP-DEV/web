@@ -369,7 +369,7 @@ useHead({
       </USidebar>
 
       <div
-        class="bg-default flex min-w-0 flex-1 flex-col overflow-hidden transition-[width] duration-300 ease-in-out"
+        class="bg-default flex min-w-0 flex-1 flex-col overflow-x-clip transition-[width] duration-300 ease-in-out"
       >
         <header
           class="border-default flex h-(--ui-header-height) shrink-0 items-center gap-3 border-b px-4"

@@ -974,6 +974,7 @@
       "add": "Engadir",
       "cancel": "Cancelar",
       "save": "Gardar",
+      "unsavedChangesPrompt": "Hai cambios sen gardar. Se saes agora, perderanse.",
       "create": "Crear",
       "delete": "Eliminar",
       "retry": "Reintentar",
