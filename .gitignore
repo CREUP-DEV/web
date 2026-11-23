@@ -77,10 +77,10 @@ public/fonts/
 ops/seed.mjs
 ops/seed-content.mjs
 
-# Claude Code settings and instructions — machine-local, not part of the app
+# Claude Code settings — machine-local, not part of the app (CLAUDE.md, the project's instructions,
+# is tracked)
 .claude/
 .mcp.json
-CLAUDE.md
 
 # Local agent CLI configs (Codex, etc.) — machine-local, not part of the app
 .agents/
