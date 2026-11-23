@@ -46,28 +46,60 @@ resolve_ssh_bin
 IMAGE_NAME="${IMAGE_NAME:-ghcr.io/creup-dev/web}"
 COMPOSE_DIR="${COMPOSE_DIR:-$REMOTE_DIR}"
 COMPOSE_APP_SERVICE="${COMPOSE_APP_SERVICE:-app}"
+COMPOSE_POSTGRES_SERVICE="${COMPOSE_POSTGRES_SERVICE:-postgres}"
 COMPOSE_NGINX_SERVICE="${COMPOSE_NGINX_SERVICE:-nginx}"
 ROLLBACK_IMAGE_FILE="${ROLLBACK_IMAGE_FILE:-.last_app_image}"
+# Same as deploy.sh and clone-prod-db.sh: the VPS env file with the app's DATABASE_URL.
+PROD_ENV_FILE="${PROD_ENV_FILE:-web/.env}"
+case "$PROD_ENV_FILE" in
+  /*) PROD_ENV_FILE_ABS="$PROD_ENV_FILE" ;;
+  *) PROD_ENV_FILE_ABS="$COMPOSE_DIR/$PROD_ENV_FILE" ;;
+esac
 
-if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+usage() {
   cat <<'EOF'
 Usage:
-  bash ./rollback.sh
-  IMAGE_TAG=<tag> bash ./rollback.sh
-  WEB_IMAGE=<image-ref> bash ./rollback.sh
+  bash ./rollback.sh [--force] [<tag>]
+  IMAGE_TAG=<tag> bash ./rollback.sh [--force]
+  WEB_IMAGE=<image-ref> bash ./rollback.sh [--force]
 
-Without WEB_IMAGE or IMAGE_TAG, the script uses the image saved by the last deploy.
+Without a tag, WEB_IMAGE or IMAGE_TAG, the script uses the image saved by the last deploy.
+Migrations are not reverted, so it refuses an image older than the database (one that does not
+know every migration applied) unless --force.
 EOF
-  exit 0
-fi
+}
 
-if [ -n "${1:-}" ]; then
+FORCE=false
+TAG_ARG=""
+for arg in "$@"; do
+  case "$arg" in
+    --force) FORCE=true ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -*)
+      printf 'ERROR: unknown argument: %s\n' "$arg" >&2
+      usage >&2
+      exit 1
+      ;;
+    *)
+      if [ -n "$TAG_ARG" ]; then
+        printf 'ERROR: only one image tag may be given\n' >&2
+        exit 1
+      fi
+      TAG_ARG="$arg"
+      ;;
+  esac
+done
+
+if [ -n "$TAG_ARG" ]; then
   if [ -n "${WEB_IMAGE:-}" ] || [ -n "${IMAGE_TAG:-}" ]; then
     printf 'ERROR: pass either an argument, WEB_IMAGE, or IMAGE_TAG; not multiple image selectors\n' >&2
     exit 1
   fi
 
-  IMAGE_TAG="$1"
+  IMAGE_TAG="$TAG_ARG"
 fi
 
 if [ -n "${WEB_IMAGE:-}" ]; then
@@ -101,6 +133,48 @@ export WEB_IMAGE="${ROLLBACK_IMAGE}"
 
 echo "== Pull rollback image if needed =="
 docker compose pull "${COMPOSE_APP_SERVICE}" </dev/null || true
+
+echo "== Compare migrations: image and database =="
+# Drizzle records each migration by its journal timestamp (created_at = the journal's \`when\`). An
+# image whose journal ends before the database's last migration predates the schema it would run
+# on, and may misread or break on it. Images before 2026-11 are node:24-slim, with node on PATH;
+# later ones are distroless, with /nodejs/bin/node.
+read_journal='const j=require("/app/drizzle/meta/_journal.json");console.log(Math.max(...j.entries.map((e)=>e.when)))'
+image_last="\$(docker run --rm --network none --entrypoint /nodejs/bin/node "${ROLLBACK_IMAGE}" -e "\$read_journal" </dev/null 2>/dev/null ||
+  docker run --rm --network none --entrypoint node "${ROLLBACK_IMAGE}" -e "\$read_journal" </dev/null 2>/dev/null || true)"
+image_last="\${image_last//\$'\r'/}"
+db_applied=""
+url="\$(sed -n 's/^DATABASE_URL=//p' "${PROD_ENV_FILE_ABS}" 2>/dev/null | tail -n1)"
+url="\${url%\"}"; url="\${url#\"}"; url="\${url%\'}"; url="\${url#\'}"
+db_name="\${url##*@}"; db_name="\${db_name#*/}"; db_name="\${db_name%%\?*}"
+if [ -n "\$db_name" ]; then
+  db_applied="\$(docker compose exec -T -e TARGET_DB="\$db_name" "${COMPOSE_POSTGRES_SERVICE}" \
+    sh -c 'exec psql -X -A -t -v ON_ERROR_STOP=1 -U "\$POSTGRES_USER" -d "\$TARGET_DB" -c "SELECT created_at FROM drizzle.__drizzle_migrations ORDER BY created_at"' \
+    </dev/null 2>/dev/null | tr -d '\r' || true)"
+fi
+if ! [[ "\$image_last" =~ ^[0-9]+\$ ]] || [ -z "\$db_applied" ]; then
+  if [ "${FORCE}" != true ]; then
+    echo "ERROR: could not read the migrations of the image or of the database (${PROD_ENV_FILE_ABS}); nothing changed. Check them, or pass --force" >&2
+    exit 1
+  fi
+  echo "    could not compare them; going on (--force)"
+else
+  ahead=0
+  while read -r applied; do
+    if [[ "\$applied" =~ ^[0-9]+\$ ]] && [ "\$applied" -gt "\$image_last" ]; then
+      ahead=\$((ahead + 1))
+    fi
+  done <<<"\$db_applied"
+  if [ "\$ahead" -gt 0 ]; then
+    if [ "${FORCE}" != true ]; then
+      echo "ERROR: the database has \$ahead migration(s) newer than ${ROLLBACK_IMAGE} knows; it could misread the data. Nothing changed. Restore the pre-deploy dump first (DEPLOYMENT.md, Rollback), or pass --force" >&2
+      exit 1
+    fi
+    echo "    the database has \$ahead migration(s) newer than the image; going on (--force)"
+  else
+    echo "    the image knows every migration applied"
+  fi
+fi
 
 echo "== Recreate app container =="
 docker compose up -d --no-deps "${COMPOSE_APP_SERVICE}" </dev/null

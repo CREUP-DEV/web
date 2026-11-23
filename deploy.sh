@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Each step says when it started, counted from the script's start, so a slow deploy shows which
+# step took the time.
 log() {
-  printf '== %s ==\n' "$1"
+  printf '== %s (+%ss) ==\n' "$1" "$SECONDS"
 }
 
 require_command() {
@@ -36,75 +38,146 @@ load_env_file() {
   fi
 }
 
-build_and_push_image() {
-  local latest_image="${IMAGE_NAME}:latest"
-  # Embed public origin in the bundle at build time. When local .env keeps
-  # NUXT_SITE_URL on localhost, set NUXT_DEPLOY_SITE_URL to the production URL.
-  local build_site_url="${NUXT_DEPLOY_SITE_URL:-$NUXT_SITE_URL}"
-
-  if docker buildx version >/dev/null 2>&1; then
-    docker buildx build \
-      --platform "$DOCKER_PLATFORM" \
-      --build-arg "NUXT_SITE_URL=$build_site_url" \
-      --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
-      --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
-      -t "$IMAGE" \
-      -t "$latest_image" \
-      --push \
-      .
-
-    if [ "${BUILD_DEBUG:-false}" = "true" ]; then
-      docker buildx build \
-        --target runner-debug \
-        --platform "$DOCKER_PLATFORM" \
-        --build-arg "NUXT_SITE_URL=$build_site_url" \
-        --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
-        --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
-        -t "${IMAGE}-debug" \
-        -t "${IMAGE_NAME}:latest-debug" \
-        --push \
-        .
-    fi
+# CI's checks minus the build, which the image does (scripts/verify.mjs). Under WSL the tree's
+# node_modules were installed by Windows' pnpm, with Windows native binaries (esbuild, rollup), so
+# it runs through Windows too.
+run_verify() {
+  if [ -n "${WSL_DISTRO_NAME:-}" ] && command -v cmd.exe >/dev/null 2>&1; then
+    cmd.exe /c pnpm verify
     return
   fi
+  require_command pnpm
+  pnpm verify
+}
 
-  docker build \
-    --platform "$DOCKER_PLATFORM" \
-    --build-arg "NUXT_SITE_URL=$build_site_url" \
-    --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
-    --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
-    -t "$IMAGE" \
-    -t "$latest_image" \
-    .
-  docker push "$IMAGE"
-  docker push "$latest_image"
+# Where a passing `pnpm verify` leaves the tree it checked (scripts/verify.mjs).
+VERIFIED_TREE_FILE=node_modules/.cache/verify/tree
 
-  if [ "${BUILD_DEBUG:-false}" = "true" ]; then
-    docker build \
-      --target runner-debug \
-      --platform "$DOCKER_PLATFORM" \
-      --build-arg "NUXT_SITE_URL=$build_site_url" \
-      --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
-      --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
-      -t "${IMAGE}-debug" \
-      -t "${IMAGE_NAME}:latest-debug" \
-      .
-    docker push "${IMAGE}-debug"
-    docker push "${IMAGE_NAME}:latest-debug"
+# The git tree of the working directory as it is, uncommitted and untracked files included, built
+# in a copy of the index (the real one is never touched); scripts/verify.mjs works it out the same
+# way. Fails when git cannot tell.
+working_tree_hash() {
+  local index tree status=1
+  index="$(mktemp)"
+  if cp "$(git rev-parse --git-path index)" "$index" 2>/dev/null &&
+    GIT_INDEX_FILE="$index" git add -A >/dev/null 2>&1 &&
+    tree="$(GIT_INDEX_FILE="$index" git write-tree 2>/dev/null)"; then
+    printf '%s\n' "$tree"
+    status=0
   fi
+  rm -f "$index"
+  return "$status"
+}
+
+# True when `pnpm verify` already passed on this very tree: a deploy that failed on the VPS and is
+# run again, or a verify run by hand just before. Under WSL the stamp comes from Windows' git, whose
+# line endings may differ: then the hashes never match and it verifies again, the safe side.
+already_verified() {
+  local tree
+  [ "${DEPLOY_REVERIFY:-}" != 1 ] || return 1
+  [ -s "$VERIFIED_TREE_FILE" ] || return 1
+  tree="$(working_tree_hash)" || return 1
+  [ "$tree" = "$(tr -d '\r\n' <"$VERIFIED_TREE_FILE")" ]
+}
+
+# The image is built into the local Docker, in the background, while verify runs, and pushed only
+# once both have passed: nothing that failed verify reaches the registry. Its output goes to
+# BUILD_LOG, so the two logs never interleave.
+BUILD_PID=
+BUILD_LOG=
+BUILD_STARTED=
+
+image_build_args() {
+  # Embed public origin in the bundle at build time. When local .env keeps
+  # NUXT_SITE_URL on localhost, set NUXT_DEPLOY_SITE_URL to the production URL.
+  printf '%s\n' \
+    --platform "$DOCKER_PLATFORM" \
+    --build-arg "NUXT_SITE_URL=${NUXT_DEPLOY_SITE_URL:-$NUXT_SITE_URL}" \
+    --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
+    --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}"
+}
+
+start_build() {
+  local args
+  mapfile -t args < <(image_build_args)
+  args+=(-t "$IMAGE")
+  # :latest only ever names a committed build.
+  if [ "$DIRTY" = false ]; then
+    args+=(-t "${IMAGE_NAME}:latest")
+  fi
+
+  BUILD_LOG="$(mktemp)"
+  BUILD_STARTED=$SECONDS
+  log "Build $IMAGE in the background, log in $BUILD_LOG"
+  if docker buildx version >/dev/null 2>&1; then
+    docker buildx build "${args[@]}" --load . >"$BUILD_LOG" 2>&1 &
+  else
+    docker build "${args[@]}" . >"$BUILD_LOG" 2>&1 &
+  fi
+  BUILD_PID=$!
+}
+
+# Stops a build still running (verify failed, Ctrl-C, any error). Under Git Bash the docker client
+# is a Windows process that a signal does not reach, so its whole tree goes through taskkill;
+# BuildKit cancels the build when its client goes.
+stop_build() {
+  [ -n "$BUILD_PID" ] || return 0
+  if kill -0 "$BUILD_PID" 2>/dev/null; then
+    printf 'Stopping the image build\n' >&2
+    if [ -r "/proc/$BUILD_PID/winpid" ] && command -v taskkill >/dev/null 2>&1; then
+      taskkill //T //F //PID "$(cat "/proc/$BUILD_PID/winpid")" >/dev/null 2>&1 || true
+    else
+      pkill -TERM -P "$BUILD_PID" 2>/dev/null || true
+      kill "$BUILD_PID" 2>/dev/null || true
+    fi
+  fi
+  wait "$BUILD_PID" 2>/dev/null || true
+  BUILD_PID=
+}
+
+finish_build() {
+  local status=0
+  if kill -0 "$BUILD_PID" 2>/dev/null; then
+    log "Wait for the image build"
+  fi
+  wait "$BUILD_PID" || status=$?
+  BUILD_PID=
+  if [ "$status" -ne 0 ]; then
+    printf 'ERROR: the image build failed (exit %s); its last lines, the whole log in %s:\n' "$status" "$BUILD_LOG" >&2
+    tail -n 60 "$BUILD_LOG" >&2
+    exit 1
+  fi
+  printf '    image built in %ss\n' $((SECONDS - BUILD_STARTED))
+  rm -f "$BUILD_LOG"
+}
+
+push_image() {
+  log "Push $IMAGE"
+  docker push "$IMAGE"
+  if [ "$DIRTY" = false ]; then
+    docker push "${IMAGE_NAME}:latest"
+  fi
+}
+
+# The debug variant (Dockerfile runner-debug), built and pushed after the real image: with a shell
+# and curl, for inspecting a problem on the VPS by hand. Never what the deploy runs.
+build_and_push_debug_image() {
+  local args
+  mapfile -t args < <(image_build_args)
+  args+=(--target runner-debug -t "${IMAGE}-debug" -t "${IMAGE_NAME}:latest-debug")
+
+  log "Build and push ${IMAGE}-debug"
+  if docker buildx version >/dev/null 2>&1; then
+    docker buildx build "${args[@]}" --push .
+    return
+  fi
+  docker build "${args[@]}" .
+  docker push "${IMAGE}-debug"
+  docker push "${IMAGE_NAME}:latest-debug"
 }
 
 sync_public_uploads() {
   rsync -avz --mkpath -e "$SSH_BIN" public/ "$VPS_HOST:${REMOTE_DIR}/data/public-uploads/"
-}
-
-build_seed() {
-  pnpm exec esbuild drizzle/seed.ts \
-    --bundle \
-    --platform=node \
-    --format=esm \
-    --outfile=ops/seed.mjs \
-    --packages=external
 }
 
 remote_compose_up() {
@@ -253,7 +326,7 @@ ensure_host_data_dirs
 echo "== Save current app image for rollback =="
 save_current_app_image_for_rollback "${COMPOSE_APP_SERVICE}" "${IMAGE_NAME}" "\$ROLLBACK_IMAGE_FILE"
 
-echo "== Pull images =="
+echo "== Pull images (+\${SECONDS}s) =="
 docker compose pull "${COMPOSE_APP_SERVICE}" </dev/null
 
 echo "== Ensure the app's dependencies are running =="
@@ -266,8 +339,68 @@ if [ "\${#deps[@]}" -gt 0 ]; then
   docker compose up -d --no-recreate --wait --wait-timeout 120 "\${deps[@]}" </dev/null
 fi
 
+# The web database's name, read from DATABASE_URL in the app's env file as clone-prod-db.sh does.
+web_db_name() {
+  local url netloc name
+  [ -f "${PROD_ENV_FILE_ABS}" ] || return 1
+  url="\$(sed -n 's/^DATABASE_URL=//p' "${PROD_ENV_FILE_ABS}" | tail -n1)"
+  url="\${url%\"}"; url="\${url#\"}"; url="\${url%\'}"; url="\${url#\'}"
+  netloc="\${url##*@}"     # strip scheme + user:pass@ (the password may contain @)
+  name="\${netloc#*/}"     # host[:port]/NAME?params -> NAME?params
+  name="\${name%%\?*}"     # drop ?params
+  [ -n "\$name" ] || return 1
+  printf '%s\n' "\$name"
+}
+
+# A query on the web database, as the postgres container's own superuser over its local socket
+# (what clone-prod-db.sh dumps with), so it sees every table whatever role owns it.
+psql_web_db() {
+  docker compose exec -T -e TARGET_DB="\$DB_NAME" "${COMPOSE_POSTGRES_SERVICE}" \
+    sh -c 'exec psql -X -A -t -v ON_ERROR_STOP=1 -U "\$POSTGRES_USER" -d "\$TARGET_DB" -c "\$1"' sh "\$1" \
+    </dev/null 2>/dev/null | tr -d '\r'
+}
+
+applied_migrations() {
+  psql_web_db 'SELECT count(*) FROM drizzle.__drizzle_migrations' || true
+}
+
+dump_file=""
+migrations_before=""
 if [ "${APPLY_MIGRATIONS_ON_DEPLOY}" = "true" ]; then
-  echo "== Apply database migrations =="
+  echo "== Dump the database before migrating (+\${SECONDS}s) =="
+  # A migration that succeeds but transforms data wrongly cannot be undone: no dump, no deploy.
+  # Retention only ever touches this script's own files, as the directory may be shared with other
+  # dumps and manual copies.
+  if ! DB_NAME="\$(web_db_name)"; then
+    echo "ERROR: no database name in DATABASE_URL of ${PROD_ENV_FILE_ABS} (set PROD_ENV_FILE); nothing was migrated" >&2
+    exit 1
+  fi
+  mkdir -p "${DEPLOY_DUMP_DIR}"
+  # Left by a dump cut short (a dropped connection, Ctrl-C): never a usable one.
+  find "${DEPLOY_DUMP_DIR}" -maxdepth 1 -type f -name "\${DB_NAME}-predeploy-*.dump.partial" -delete
+  dump_file="${DEPLOY_DUMP_DIR}/\${DB_NAME}-predeploy-\$(date -u +%Y%m%d-%H%M%S).dump"
+  if ! (umask 077 && docker compose exec -T -e TARGET_DB="\$DB_NAME" "${COMPOSE_POSTGRES_SERVICE}" \
+    sh -c 'exec pg_dump -U "\$POSTGRES_USER" -Fc "\$TARGET_DB"' </dev/null >"\$dump_file.partial") ||
+    [ ! -s "\$dump_file.partial" ]; then
+    rm -f "\$dump_file.partial"
+    echo "ERROR: pg_dump of \$DB_NAME failed; nothing was migrated" >&2
+    exit 1
+  fi
+  mv "\$dump_file.partial" "\$dump_file"
+  echo "    \$dump_file (\$(du -h "\$dump_file" | cut -f1))"
+  if [[ "${DEPLOY_DUMP_RETENTION}" =~ ^[0-9]+\$ ]] && [ "${DEPLOY_DUMP_RETENTION}" -ge 1 ]; then
+    removed=0
+    # The UTC timestamp in the name sorts by date.
+    while read -r old_dump; do
+      [ -n "\$old_dump" ] || continue
+      rm -f "\$old_dump"
+      removed=\$((removed + 1))
+    done < <(find "${DEPLOY_DUMP_DIR}" -maxdepth 1 -type f -name "\${DB_NAME}-predeploy-*.dump" | sort -r | tail -n +\$((${DEPLOY_DUMP_RETENTION} + 1)))
+    echo "    kept the last ${DEPLOY_DUMP_RETENTION}, removed \$removed"
+  fi
+
+  echo "== Apply database migrations (+\${SECONDS}s) =="
+  migrations_before="\$(applied_migrations)"
   docker compose run -T --rm --no-deps "${COMPOSE_APP_SERVICE}" /app/ops/migrate.mjs </dev/null
 
   # Idempotent: backfills seed-content translations (tags, carousel, links, equality
@@ -301,6 +434,17 @@ case "\$status" in
   *)
     echo "ERROR: ${COMPOSE_APP_SERVICE} is \$status. Last logs:" >&2
     docker compose logs --tail 80 "${COMPOSE_APP_SERVICE}" </dev/null >&2 || true
+    # rollback.sh refuses an image older than the database's migrations, so say which way out
+    # applies, with the dump this deploy just wrote.
+    if [ -n "\$dump_file" ]; then
+      echo "Pre-deploy dump: \$dump_file" >&2
+      migrations_after="\$(applied_migrations)"
+      if [[ "\$migrations_before" =~ ^[0-9]+\$ ]] && [[ "\$migrations_after" =~ ^[0-9]+\$ ]] &&
+        [ "\$migrations_after" -gt "\$migrations_before" ]; then
+        echo "This deploy applied \$((migrations_after - migrations_before)) migration(s), so bash ./rollback.sh refuses: restore \$dump_file first (DEPLOYMENT.md, Rollback), then roll back; or bash ./rollback.sh --force if the previous release works with them" >&2
+        exit 1
+      fi
+    fi
     echo "Roll back with: bash ./rollback.sh" >&2
     exit 1
     ;;
@@ -333,11 +477,19 @@ echo "    \$WEB_IMAGE_ENV_LINE"
 services="\$(docker compose config --services </dev/null)"
 if grep -qx "${COMPOSE_NGINX_SERVICE}" <<< "\$services"; then
   echo "== Reload NGINX =="
+  # \`nginx -s reload\` exits 0 even when the new config is broken (the old one stays loaded), so
+  # the config is tested first to make a bad one fail the deploy instead of passing unnoticed.
+  if ! docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -t </dev/null; then
+    echo "ERROR: the NGINX config does not pass nginx -t; NGINX keeps the config it had loaded." >&2
+    echo "The app itself is deployed and healthy: fix the NGINX config, do not roll back." >&2
+    exit 1
+  fi
   docker compose exec -T "${COMPOSE_NGINX_SERVICE}" nginx -s reload </dev/null
 fi
 
 cleanup_old_app_images "${IMAGE_NAME}" "${DEPLOY_IMAGE_RETENTION}"
 
+echo "    the VPS took \${SECONDS}s"
 echo "${REMOTE_DONE_MARKER}"
 EOF
 }
@@ -348,13 +500,30 @@ REMOTE_DONE_MARKER="== Remote deploy done =="
 
 load_env_file ".env"
 
+usage() {
+  cat <<'USAGE'
+Usage: bash ./deploy.sh [--seed] [--debug]
+  --seed    also run the destructive full seed (first deploy only)
+  --debug   also build and push the runner-debug image (<tag>-debug)
+
+Environment:
+  DEPLOY_SKIP_VERIFY=1         skip `pnpm verify` (lint, types, i18n)
+  DEPLOY_REVERIFY=1            run `pnpm verify` even when it already passed on this exact tree
+  DEPLOY_BUILD_AFTER_VERIFY=1  build the image after verify instead of during it (both share the
+                               CPU and memory: for a machine short of either)
+  DEPLOY_SKIP_BUILD=1          deploy IMAGE (or IMAGE_TAG) without building it; it must already be
+                               in the registry
+USAGE
+}
+
 SEED_ON_DEPLOY=false
 BUILD_DEBUG=false
 for arg in "$@"; do
   case "$arg" in
     --seed) SEED_ON_DEPLOY=true ;;
     --debug) BUILD_DEBUG=true ;;
-    *) printf 'ERROR: unknown argument: %s\n' "$arg" >&2; exit 1 ;;
+    -h | --help) usage; exit 0 ;;
+    *) printf 'ERROR: unknown argument: %s\n' "$arg" >&2; usage >&2; exit 1 ;;
   esac
 done
 
@@ -371,7 +540,23 @@ if [ "$SEED_ON_DEPLOY" = "true" ]; then
 fi
 
 IMAGE_NAME="${IMAGE_NAME:-ghcr.io/creup-dev/web}"
-IMAGE_TAG="${IMAGE_TAG:-$(git rev-parse --short HEAD)}"
+# Untracked files count too: they are in the build context, so they change the image.
+DIRTY=false
+if [ -n "$(git status --porcelain)" ]; then
+  DIRTY=true
+fi
+if [ -z "${IMAGE_TAG:-}" ]; then
+  IMAGE_TAG="$(git rev-parse --short HEAD)"
+  # The image carries the working tree, not the commit. Tagged as the bare commit, a build with
+  # uncommitted changes would overwrite the tag a clean deploy of that commit (and the rollback file
+  # on the VPS) points at.
+  if [ "$DIRTY" = true ]; then
+    IMAGE_TAG="${IMAGE_TAG}-dirty-$(date +%Y%m%d%H%M%S)"
+    if [ "${DEPLOY_SKIP_BUILD:-}" != 1 ]; then
+      printf 'WARNING: uncommitted changes; deploying them as %s\n' "$IMAGE_TAG" >&2
+    fi
+  fi
+fi
 IMAGE="${IMAGE:-${IMAGE_NAME}:${IMAGE_TAG}}"
 DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64}"
 APPLY_MIGRATIONS_ON_DEPLOY="${APPLY_MIGRATIONS_ON_DEPLOY:-true}"
@@ -381,38 +566,84 @@ COMPOSE_POSTGRES_SERVICE="${COMPOSE_POSTGRES_SERVICE:-postgres}"
 COMPOSE_NGINX_SERVICE="${COMPOSE_NGINX_SERVICE:-nginx}"
 DEPLOY_IMAGE_RETENTION="${DEPLOY_IMAGE_RETENTION:-2}"
 ROLLBACK_IMAGE_FILE="${ROLLBACK_IMAGE_FILE:-.last_app_image}"
+# The env file on the VPS that holds the app's DATABASE_URL, as in clone-prod-db.sh: on the CREUP
+# VPS the app lives in a subdirectory of a shared Compose project.
+PROD_ENV_FILE="${PROD_ENV_FILE:-web/.env}"
+case "$PROD_ENV_FILE" in
+  /*) PROD_ENV_FILE_ABS="$PROD_ENV_FILE" ;;
+  *) PROD_ENV_FILE_ABS="$COMPOSE_DIR/$PROD_ENV_FILE" ;;
+esac
+# Pre-migration dumps, relative to COMPOSE_DIR, and how many of them to keep.
+DEPLOY_DUMP_DIR="${DEPLOY_DUMP_DIR:-backups/db}"
+DEPLOY_DUMP_RETENTION="${DEPLOY_DUMP_RETENTION:-10}"
 
-if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
-  log "GHCR login"
-  echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+VERIFY=true
+if [ "${DEPLOY_SKIP_VERIFY:-}" = 1 ]; then
+  printf 'WARNING: DEPLOY_SKIP_VERIFY=1: lint, types and i18n not checked\n' >&2
+  VERIFY=false
+elif already_verified; then
+  log "Verify: skipped, pnpm verify already passed on this exact tree (DEPLOY_REVERIFY=1 runs it again)"
+  VERIFY=false
 fi
 
-if [ "$SEED_ON_DEPLOY" = "true" ]; then
-  log "Build seed script"
-  build_seed
-fi
+verify() {
+  log "Verify: pnpm verify"
+  if ! run_verify; then
+    printf 'ERROR: pnpm verify failed; nothing was pushed nor deployed\n' >&2
+    exit 1
+  fi
+}
 
-log "Build and push: $IMAGE"
-if [ -n "${NUXT_DEPLOY_SITE_URL:-}" ]; then
-  log "Docker build embeds $NUXT_DEPLOY_SITE_URL (VPS runtime still uses its Compose NUXT_SITE_URL)"
+remote_log=""
+trap 'stop_build; rm -f "$remote_log"' EXIT
+
+if [ "${DEPLOY_SKIP_BUILD:-}" = 1 ]; then
+  log "Skip build: $IMAGE must already be in the registry"
+  if [ "$VERIFY" = true ]; then
+    verify
+  fi
+else
+  if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
+    log "GHCR login"
+    echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+  fi
+
+  if [ -n "${NUXT_DEPLOY_SITE_URL:-}" ]; then
+    log "Docker build embeds $NUXT_DEPLOY_SITE_URL (VPS runtime still uses its Compose NUXT_SITE_URL)"
+  fi
+  if [ "$VERIFY" = true ] && [ "${DEPLOY_BUILD_AFTER_VERIFY:-}" = 1 ]; then
+    verify
+    VERIFY=false
+  fi
+  start_build
+  if [ "$VERIFY" = true ]; then
+    verify
+  fi
+  finish_build
+  push_image
+
+  if [ "$BUILD_DEBUG" = "true" ]; then
+    build_and_push_debug_image
+  fi
 fi
-build_and_push_image
 
 if [ "$SEED_ON_DEPLOY" = "true" ]; then
   log "Sync public uploads to VPS"
   sync_public_uploads
 
+  # The image already carries the seed, bundled with its packages (pnpm build:ops). The copy beside
+  # the Compose project is the same self-contained bundle, so it runs wherever it is mounted.
   log "Copy seed script to VPS"
-  rsync -az --mkpath -e "$SSH_BIN" ops/seed.mjs "$VPS_HOST:${REMOTE_DIR}/ops/seed.mjs"
+  pnpm run build:ops
+  rsync -az --mkpath -e "$SSH_BIN" dist/ops/seed.mjs "$VPS_HOST:${REMOTE_DIR}/ops/seed.mjs"
 fi
 
 log "Deploy to VPS with docker compose"
 remote_log="$(mktemp)"
-trap 'rm -f "$remote_log"' EXIT
 remote_compose_up | tee "$remote_log"
 if ! grep -qxF "$REMOTE_DONE_MARKER" "$remote_log"; then
   printf 'ERROR: the remote deploy stopped before its last step\n' >&2
   exit 1
 fi
 
-printf 'Deploy finished successfully\n'
+printf 'Deploy finished successfully in %ss\n' "$SECONDS"

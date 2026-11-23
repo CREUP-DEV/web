@@ -549,13 +549,24 @@ Para cada nueva versión:
 bash ./deploy.sh
 ```
 
-El script aplica las migraciones antes de recrear el contenedor de la app, por lo que no hay ventana de tiempo en que el nuevo código corra contra un esquema antiguo.
+Mientras `pnpm verify` comprueba el árbol (lint, tipos e i18n, en paralelo), el script construye la imagen en segundo plano en el Docker local, y solo la sube a GHCR cuando las dos cosas han ido bien: nada que falle la verificación llega al registro. Si `pnpm verify` ya pasó sobre ese mismo árbol (un deploy que falló en el VPS y se repite, o un verify lanzado a mano justo antes), no lo repite. Variables útiles:
+
+| Variable | Efecto |
+| --- | --- |
+| `DEPLOY_SKIP_VERIFY=1` | no ejecuta `pnpm verify` |
+| `DEPLOY_REVERIFY=1` | lo ejecuta aunque ya pasara sobre este árbol |
+| `DEPLOY_BUILD_AFTER_VERIFY=1` | construye la imagen después de verificar, no a la vez (para un equipo justo de memoria) |
+| `DEPLOY_SKIP_BUILD=1` | despliega `IMAGE`/`IMAGE_TAG` sin construirla; tiene que estar ya en el registro |
+
+El script aplica las migraciones antes de recrear el contenedor de la app, por lo que no hay ventana de tiempo en que el nuevo código corra contra un esquema antiguo. Justo antes de migrar hace un `pg_dump -Fc` de la base de datos de la web (su nombre sale del `DATABASE_URL` de `PROD_ENV_FILE`, por defecto `web/.env` dentro de `COMPOSE_DIR`, igual que en `clone-prod-db.sh`) en `DEPLOY_DUMP_DIR` (por defecto `backups/db`, relativo a `COMPOSE_DIR`), como `<bd>-predeploy-<fecha UTC>.dump`, y conserva los últimos `DEPLOY_DUMP_RETENTION` (10). Sin dump no hay migración: si `pg_dump` falla, el despliegue se detiene antes de tocar el esquema. Si la app no arranca sano después de migrar, el script dice qué dump usar y si `rollback.sh` lo va a rechazar.
 
 Antes arranca las dependencias de la app (el PostgreSQL compartido y Redis) solo si están paradas, con `--no-recreate`, y espera a que estén sanas. Las migraciones, los seeds y la app se lanzan con `--no-deps`: así un despliegue de la web nunca recrea el PostgreSQL que comparten todos los proyectos, aunque su configuración haya cambiado. Tras recrear la app espera hasta 150 s a que esté `healthy`; si no lo está, muestra los últimos logs y termina con error sin tocar `WEB_IMAGE`.
 
 Tras arrancar correctamente, el script limpia imágenes Docker antiguas de la app en el VPS. Por defecto conserva las 2 imágenes más recientes de `IMAGE_NAME`, y nunca borra la desplegada ni la guardada para el rollback. Puedes aumentar el margen para rollback con `DEPLOY_IMAGE_RETENTION=3` o desactivar la limpieza con `DEPLOY_IMAGE_RETENTION=0`.
 
 El script remoto se lee por la entrada estándar, así que todos los `docker compose` que lanza leen de `/dev/null`: un `docker compose exec` sin eso se come el resto del script, y la recarga de nginx o la limpieza de imágenes no llegaban a ejecutarse. Si el lado remoto no llega al final, `deploy.sh` termina con error.
+
+La imagen se etiqueta con el commit (`git rev-parse --short HEAD`). Si hay cambios sin commitear, la etiqueta pasa a ser `<commit>-dirty-<fecha>` y el script lo avisa, para no pisar la imagen de un despliegue limpio de ese commit (la que puede apuntar el fichero de rollback). Cada paso indica los segundos transcurridos desde el inicio, y el lado remoto los suyos. Antes de recargar NGINX se comprueba su configuración con `nginx -t`: `nginx -s reload` sale con 0 aunque la nueva no valga, así que un error de configuración hace fallar el despliegue en vez de pasar inadvertido.
 
 La imagen de producción es la etapa `runner` del `Dockerfile` (distroless, sin shell ni `node` en el `PATH`: el binario es `/nodejs/bin/node`), y debe seguir siendo la última etapa, porque un build sin `--target` construye la última. Hasta noviembre de 2026 la última era `runner-debug`, así que producción corría la imagen de depuración con el `node_modules` entero (1,2 GB frente a 312 MB). La imagen no lleva `node_modules` aparte del que Nitro copia en `.output`: las migraciones, los seeds y la purga de caché van empaquetados con sus dependencias (`pnpm build:ops`, `scripts/build-ops.mjs`).
 
@@ -586,6 +597,21 @@ WEB_IMAGE=ghcr.io/CREUP-DEV/web:<etiqueta-anterior> docker compose up -d "$COMPO
 ```
 
 Las migraciones son **unidireccionales** (nunca edites archivos de migración existentes). Si una migración debe revertirse, escribe una nueva migración que deshaga el cambio.
+
+Por eso `rollback.sh` compara el journal de migraciones de la imagen (`/app/drizzle/meta/_journal.json`) con las aplicadas en la base de datos (`drizzle.__drizzle_migrations`), y se niega a volver a una imagen que no conoce alguna de ellas: podría leer mal los datos o romperse con el esquema nuevo. Hay dos salidas:
+
+- Restaurar primero el dump previo al despliegue y después hacer el rollback:
+
+  ```bash
+  # En el VPS, en COMPOSE_DIR, con la app parada
+  docker compose stop app
+  docker compose exec -T postgres sh -c 'exec pg_restore -U "$POSTGRES_USER" -d <bd> --clean --if-exists' \
+    < backups/db/<bd>-predeploy-<fecha>.dump
+  ```
+
+  Luego, desde tu ordenador, `bash ./rollback.sh`.
+
+- `bash ./rollback.sh --force`, si sabes que la versión anterior funciona con las migraciones nuevas (por ejemplo, una que solo añade una tabla).
 
 ---
 

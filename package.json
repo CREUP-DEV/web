@@ -11,6 +11,8 @@
     "lint": "eslint . --cache --cache-strategy content --cache-location node_modules/.cache/eslint/",
     "lint:fix": "eslint . --fix --cache --cache-strategy content --cache-location node_modules/.cache/eslint/",
     "typecheck": "nuxt typecheck",
+    "typecheck:tsc": "vue-tsc -b --noEmit",
+    "verify": "node scripts/verify.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node ./ops/migrate.mjs",
     "db:studio": "drizzle-kit studio",
