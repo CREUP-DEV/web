@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { detailModalUi } from '@/utils/detailModalUi'
 import type { SocialNetworkEntry } from '~~/shared/utils/social'
-import { buildSocialUrl } from '~~/shared/utils/social'
+import { buildSocialUrl, getSocialButtons, socialNetworkIcons } from '~~/shared/utils/social'
 import { pickLocalizedValue } from '~~/shared/utils/locale'
 import { serializeJsonForHtmlScript } from '~~/shared/utils/json'
 import { toAbsoluteUrl } from '~~/shared/utils/url'
@@ -247,6 +247,49 @@ const modalAssignmentDuration = computed(() =>
     ? getDurationText(selectedAssignment.value.startDate, selectedAssignment.value.endDate)
     : null
 )
+
+// The member modal's content as native popovers for web archive replays, where the modal can't
+// open. One per assignment, not per person: someone can hold posts in several areas of a mandate,
+// each with its own period.
+const getArchivePopoverId = (assignment: Pick<Assignment, 'id'>) => `cargo-${assignment.id}`
+const archiveAssignmentDetails = computed(() =>
+  areas.value.flatMap((area) =>
+    area.assignments.map((assignment) => {
+      const member = assignment.member
+      const displayName = getDisplayName(member)
+      const period = `${formatCompactDate(assignment.startDate)} - ${
+        assignment.endDate ? formatCompactDate(assignment.endDate) : t('mandates.present')
+      }`
+
+      return {
+        id: getArchivePopoverId(assignment),
+        eyebrow: member.denomination,
+        heading: displayName,
+        imageSrc: member.photo,
+        imageAlt: displayName,
+        imageShape: 'round' as const,
+        facts: [
+          { label: t('team.period'), value: period, icon: 'i-tabler-calendar-event' },
+          {
+            label: t('team.duration'),
+            value: getDurationText(assignment.startDate, assignment.endDate),
+            icon: 'i-tabler-clock-hour-4',
+          },
+          { label: t('team.university'), value: member.university, icon: 'i-tabler-school' },
+          { label: t('team.degree'), value: member.degree, icon: 'i-tabler-book' },
+        ].flatMap((fact) => (fact.value ? [{ ...fact, value: fact.value }] : [])),
+        aboutTitle: t('team.about', { name: member.name.trim() || displayName }),
+        description: member.description,
+        linksTitle: t('members.socialNetworks'),
+        links: getSocialButtons(member.socialNetworks).map((button) => ({
+          label: t(`members.networks.${button.network}`),
+          href: button.href,
+          icon: socialNetworkIcons[button.network],
+        })),
+      }
+    })
+  )
+)
 </script>
 
 <template>
@@ -353,6 +396,7 @@ const modalAssignmentDuration = computed(() =>
                 )
               "
               :aria-label="getViewProfileAriaLabel(getDisplayName(assignment.member))"
+              :data-archive-popover="getArchivePopoverId(assignment)"
               @click="openMemberModal(assignment)"
             >
               <div class="mb-4 flex justify-center">
@@ -422,5 +466,14 @@ const modalAssignmentDuration = computed(() =>
         />
       </template>
     </UModal>
+
+    <template v-if="status !== 'pending'">
+      <LazyArchiveDetailPopover
+        v-for="detail in archiveAssignmentDetails"
+        :key="detail.id"
+        v-bind="detail"
+        hydrate-never
+      />
+    </template>
   </div>
 </template>

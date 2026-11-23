@@ -161,6 +161,9 @@ const tabItems = computed(() => [
   { label: t('team.hierarchyView'), value: 'hierarchy' as ViewMode, icon: 'i-tabler-hierarchy-2' },
   { label: t('team.areaView'), value: 'area' as ViewMode, icon: 'i-tabler-layout-grid' },
 ])
+
+const getViewModePath = (mode: ViewMode) =>
+  localePath({ path: '/conocenos/equipo', query: mode === 'hierarchy' ? {} : { view: mode } })
 </script>
 
 <template>
@@ -197,8 +200,24 @@ const tabItems = computed(() => [
         <UTabs
           :items="tabItems"
           :model-value="viewMode"
+          class="archived:hidden!"
           @update:model-value="viewMode = $event as ViewMode"
         />
+        <!-- The tabs need the app, which never mounts in a web archive. There each view is its own
+             capture, reached through a real link that crawlers can follow. -->
+        <div class="bg-elevated archived:flex hidden gap-1 rounded-lg p-1">
+          <UButton
+            v-for="item in tabItems"
+            :key="item.value"
+            :to="getViewModePath(item.value)"
+            :icon="item.icon"
+            :color="item.value === viewMode ? 'primary' : 'neutral'"
+            :variant="item.value === viewMode ? 'solid' : 'ghost'"
+            :aria-current="item.value === viewMode ? 'page' : undefined"
+          >
+            {{ item.label }}
+          </UButton>
+        </div>
       </div>
 
       <div v-if="pending" aria-hidden="true" class="space-y-8">
