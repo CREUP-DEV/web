@@ -18,3 +18,28 @@ npm-debug.log
 # Database dumps and archived files, production's included (clone-prod-db.sh writes here). No
 # build step reads them, and they carry personal data.
 backups
+.nitro
+coverage
+*.log
+.claude
+.vscode
+.idea
+# Admin uploads kept locally under public/ (gitignored). The `nitro:build:public-assets` hook in
+# nuxt.config.ts strips them from the output anyway, so they only slowed the context transfer and
+# Nitro's copy. Mirrors ADMIN_UPLOAD_PUBLIC_PATH_BASES (shared/constants/assetPaths.ts) and the
+# legacy dossier PDF: a base added there belongs here too.
+public/og/*
+!public/og/default.jpg
+public/inicio/imagenes
+public/conocenos/imagenes
+public/eventos/imagenes
+public/eventos/documentos
+public/prensa/imagenes
+public/prensa/documentos
+public/prensa/actividad/imagenes
+public/prensa/informes-areas/imagenes
+public/prensa/dossier-prensa.pdf
+public/documentos/externos
+public/documentos/igualdad
+public/documentos/informes-economicos
+public/**/_tmp

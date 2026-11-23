@@ -258,6 +258,16 @@ const siteDescription =
 export default defineNuxtConfig({
   compatibilityDate: '2026-04-09',
   devtools: { enabled: isDev },
+  // Server sourcemaps only in development, or when a build asks for them (deploy-local.sh, whose
+  // stack runs Node with --enable-source-maps). Production never reads them, and writing them is
+  // the costliest part of the server and Nitro bundles in both time and heap.
+  sourcemap: { server: isDev || process.env.NUXT_SERVER_SOURCEMAPS === 'true', client: false },
+  // Repeat `nuxt typecheck` runs only re-read the files that changed.
+  typescript: {
+    tsConfig: { compilerOptions: { incremental: true } },
+    sharedTsConfig: { compilerOptions: { incremental: true } },
+    nodeTsConfig: { compilerOptions: { incremental: true } },
+  },
   vite: {
     plugins: [tailwindcss()],
     server: {

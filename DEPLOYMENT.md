@@ -557,6 +557,10 @@ Tras arrancar correctamente, el script limpia imágenes Docker antiguas de la ap
 
 El script remoto se lee por la entrada estándar, así que todos los `docker compose` que lanza leen de `/dev/null`: un `docker compose exec` sin eso se come el resto del script, y la recarga de nginx o la limpieza de imágenes no llegaban a ejecutarse. Si el lado remoto no llega al final, `deploy.sh` termina con error.
 
+La imagen de producción es la etapa `runner` del `Dockerfile` (distroless, sin shell ni `node` en el `PATH`: el binario es `/nodejs/bin/node`), y debe seguir siendo la última etapa, porque un build sin `--target` construye la última. Hasta noviembre de 2026 la última era `runner-debug`, así que producción corría la imagen de depuración con el `node_modules` entero (1,2 GB frente a 312 MB). La imagen no lleva `node_modules` aparte del que Nitro copia en `.output`: las migraciones, los seeds y la purga de caché van empaquetados con sus dependencias (`pnpm build:ops`, `scripts/build-ops.mjs`).
+
+El build de producción no genera sourcemaps del servidor (nada los lee y eran la parte más pesada del bundle de Nitro, en tiempo y en memoria). `deploy-local.sh` sí los pide (`NUXT_SERVER_SOURCEMAPS=true`), porque su stack arranca Node con `--enable-source-maps`.
+
 **Nota:** Docker Compose `up -d` para el contenedor antiguo antes de arrancar el nuevo. Para un sitio de bajo tráfico este hueco de ~2 segundos es aceptable; zero-downtime real requeriría un load balancer con réplicas.
 
 ### Rollback
@@ -697,20 +701,20 @@ La web guarda en Redis dos capas de caché: respuestas públicas de Nitro y resp
 ```bash
 # En el VPS
 cd /opt/creup-web
-docker compose exec app node /app/ops/cache-purge.mjs
+docker compose exec app /nodejs/bin/node /app/ops/cache-purge.mjs
 ```
 
 Para comprobar antes cuántas claves se borrarían:
 
 ```bash
-docker compose exec app node /app/ops/cache-purge.mjs --dry-run
+docker compose exec app /nodejs/bin/node /app/ops/cache-purge.mjs --dry-run
 ```
 
 Si solo quieres purgar una capa:
 
 ```bash
-docker compose exec app node /app/ops/cache-purge.mjs --external-only
-docker compose exec app node /app/ops/cache-purge.mjs --nitro-only
+docker compose exec app /nodejs/bin/node /app/ops/cache-purge.mjs --external-only
+docker compose exec app /nodejs/bin/node /app/ops/cache-purge.mjs --nitro-only
 ```
 
 ---
@@ -803,8 +807,10 @@ estar en la cola o en el SMTP, así que descarta primero la cola:
 5. Verifica las variables `NUXT_SMTP_*`. Puedes testear con:
 
 ```bash
-docker compose exec app node -e "
-  const nodemailer = require('nodemailer');
+# La imagen es distroless: sin shell, con Node en /nodejs/bin/node y nodemailer solo en el
+# node_modules que Nitro copia a .output/server.
+docker compose exec app /nodejs/bin/node -e "
+  const nodemailer = require('/app/.output/server/node_modules/nodemailer');
   const t = nodemailer.createTransport({
     host: process.env.NUXT_SMTP_HOST,
     port: Number(process.env.NUXT_SMTP_PORT),

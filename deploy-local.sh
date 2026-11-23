@@ -44,6 +44,8 @@ resolve_env_file() {
 }
 
 build_local_image() {
+  # With server sourcemaps, which production builds leave out: this stack runs Node with
+  # --enable-source-maps (docker-compose.local-deploy.yml).
   local build_site_url="${NUXT_DEPLOY_SITE_URL:-${NUXT_SITE_URL:-${LOCAL_DEPLOY_SITE_URL:-http://localhost:8080}}}"
 
   if docker buildx version >/dev/null 2>&1; then
@@ -52,6 +54,7 @@ build_local_image() {
       --build-arg "NUXT_SITE_URL=$build_site_url" \
       --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
       --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
+      --build-arg "NUXT_SERVER_SOURCEMAPS=true" \
       -t "$IMAGE" \
       --load \
       .
@@ -63,6 +66,7 @@ build_local_image() {
     --build-arg "NUXT_SITE_URL=$build_site_url" \
     --build-arg "NUXT_UMAMI_HOST=${NUXT_UMAMI_HOST:-}" \
     --build-arg "NUXT_UMAMI_ID=${NUXT_UMAMI_ID:-}" \
+    --build-arg "NUXT_SERVER_SOURCEMAPS=true" \
     -t "$IMAGE" \
     .
 }
