@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
-
 definePageMeta({
   layout: 'admin',
-  title: 'Áreas de informes',
 })
 
 const { t } = useI18n()
-const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 const { formatDateTime } = useLocaleFormatting()
 const { getTranslation } = useLocales()
@@ -72,25 +68,9 @@ const mandateRange = (mandate: AreaCatalogMandate) =>
 </script>
 
 <template>
-  <div>
-    <UButton
-      :to="localePath(ADMIN_ROUTES.activityReports)"
-      variant="ghost"
-      icon="i-tabler-arrow-left"
-      size="sm"
-      class="mb-3"
-    >
-      {{ t('admin.common.back') }}
-    </UButton>
-
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold">{{ t('admin.areaCatalog.title') }}</h1>
-      <p class="text-muted mt-1 text-sm">{{ t('admin.areaCatalog.subheading') }}</p>
-    </div>
-
+  <AdminPage :title="t('admin.areaCatalog.title')" :description="t('admin.areaCatalog.subheading')">
     <UAlert
       v-if="syncFailedRecently"
-      class="mb-6"
       color="warning"
       variant="soft"
       icon="i-tabler-alert-triangle"
@@ -105,17 +85,22 @@ const mandateRange = (mandate: AreaCatalogMandate) =>
       <USkeleton class="h-32 w-full rounded-xl" />
     </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.areaCatalog.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.areaCatalog.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
     <div v-else class="space-y-6">
       <section
@@ -135,7 +120,7 @@ const mandateRange = (mandate: AreaCatalogMandate) =>
           <li
             v-for="area in mandate.areas"
             :key="area.id"
-            class="bg-surface ring-default flex items-center gap-3 rounded-lg p-3 ring-1"
+            class="bg-default ring-default flex items-center gap-3 rounded-lg p-3 ring-1"
           >
             <span class="text-muted w-6 shrink-0 text-center text-sm tabular-nums">
               {{ area.order }}
@@ -148,5 +133,5 @@ const mandateRange = (mandate: AreaCatalogMandate) =>
         </ol>
       </section>
     </div>
-  </div>
+  </AdminPage>
 </template>

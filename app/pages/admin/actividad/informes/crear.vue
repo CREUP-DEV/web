@@ -4,7 +4,6 @@ import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Crear informe de área',
 })
 
 const { t } = useI18n()
@@ -19,18 +18,7 @@ const allowNavigationWithoutPrompt = ref(false)
 const hasUnsavedChanges = () =>
   !allowNavigationWithoutPrompt.value && Boolean(reportFormRef.value?.hasUnsavedChanges)
 
-const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-  if (!hasUnsavedChanges()) return
-  event.preventDefault()
-  event.returnValue = ''
-}
-
-onMounted(() => window.addEventListener('beforeunload', beforeUnloadHandler))
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnloadHandler))
-onBeforeRouteLeave(() => {
-  if (!hasUnsavedChanges()) return true
-  return window.confirm(t('admin.areaReports.unsavedChangesPrompt'))
-})
+useUnsavedChangesGuard(hasUnsavedChanges, () => t('admin.areaReports.unsavedChangesPrompt'))
 
 const handleSubmit = async (payload: Record<string, unknown>) => {
   isSubmitting.value = true
@@ -59,12 +47,10 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <div>
-    <AdminAreaReportForm
-      ref="reportFormRef"
-      :submitting="isSubmitting"
-      @submit="handleSubmit"
-      @cancel="handleCancel"
-    />
-  </div>
+  <AdminAreaReportForm
+    ref="reportFormRef"
+    :submitting="isSubmitting"
+    @submit="handleSubmit"
+    @cancel="handleCancel"
+  />
 </template>

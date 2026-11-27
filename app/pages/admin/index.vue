@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
-import type { AdminSectionKey } from '~~/shared/constants/adminSections'
-import { ADMIN_SECTION_DEFINITIONS } from '~~/shared/constants/adminSections'
+import {
+  ADMIN_NAV_GROUPS,
+  ADMIN_SECTION_DEFINITIONS,
+  type AdminSectionKey,
+} from '~~/shared/constants/adminSections'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Inicio',
 })
 
 interface DashboardRecentActivityItem {
@@ -41,15 +43,16 @@ const {
 const { formatDateTime } = useLocaleFormatting()
 const { t } = useI18n()
 const localePath = useLocalePath()
+const adminIsEnvAdmin = useState<boolean>('admin-is-env-admin', () => false)
 
-const sectionByKey = Object.fromEntries(
-  ADMIN_SECTION_DEFINITIONS.map((section) => [section.key, section] as const)
-) as Record<AdminSectionKey, (typeof ADMIN_SECTION_DEFINITIONS)[number]>
+const sectionIcons = Object.fromEntries(
+  ADMIN_SECTION_DEFINITIONS.map((section) => [section.key, section.icon] as const)
+) as Record<AdminSectionKey, string>
 
 const recentActivity = computed(() => summaryData.value?.recentActivity ?? [])
 const subscribers = computed(() => summaryData.value?.subscribers ?? { total: 0, active: 0 })
 
-const primaryActions: DashboardAction[] = [
+const primaryActions = computed<DashboardAction[]>(() => [
   {
     title: t('admin.dashboard.newPressRelease'),
     to: `${localePath(ADMIN_ROUTES.pressCreate)}?type=press_release`,
@@ -65,9 +68,29 @@ const primaryActions: DashboardAction[] = [
     to: `${localePath(ADMIN_ROUTES.pressCreate)}?type=media_appearance`,
     icon: 'i-tabler-broadcast',
   },
-]
+  {
+    title: t('admin.activity.list.newCreup'),
+    to: `${localePath(ADMIN_ROUTES.activityCreate)}?kind=creup`,
+    icon: 'i-tabler-calendar-plus',
+  },
+])
 
-const getSectionMeta = (key: AdminSectionKey) => sectionByKey[key]
+/** Every section the account may open, under the same groups as the sidebar. */
+const sectionGroups = computed(() =>
+  ADMIN_NAV_GROUPS.map((group) => ({
+    key: group,
+    label: t(`admin.nav.groups.${group}`),
+    sections: ADMIN_SECTION_DEFINITIONS.filter(
+      (section) => section.group === group && (!section.envOnly || adminIsEnvAdmin.value)
+    ).map((section) => ({
+      key: section.key,
+      title: t(`admin.nav.${section.key}.name`),
+      description: t(`admin.nav.${section.key}.description`),
+      icon: section.icon,
+      to: localePath(section.to),
+    })),
+  })).filter((group) => group.sections.length > 0)
+)
 
 const formatActivityDate = (value: string) =>
   formatDateTime(value, {
@@ -77,146 +100,154 @@ const formatActivityDate = (value: string) =>
 </script>
 
 <template>
-  <div class="space-y-6">
+  <AdminPage :title="t('admin.nav.dashboard.name')">
     <template v-if="summaryPending">
-      <section
-        class="from-primary/10 to-warning/10 overflow-hidden rounded-3xl border bg-linear-to-br via-transparent"
-      >
-        <div class="space-y-4 p-5 sm:p-6">
-          <USkeleton class="h-9 w-56" />
-          <div class="grid gap-3 lg:grid-cols-2 xl:grid-cols-[17rem_repeat(3,minmax(0,1fr))]">
-            <USkeleton class="h-40 rounded-2xl" />
-            <USkeleton class="h-32 rounded-2xl" />
-            <USkeleton class="h-32 rounded-2xl" />
-            <USkeleton class="h-32 rounded-2xl" />
-          </div>
-        </div>
-      </section>
-
-      <UCard>
-        <div class="space-y-4">
-          <USkeleton class="h-7 w-52" />
-          <USkeleton class="h-5 w-72" />
-          <USkeleton class="h-18 rounded-2xl" />
-          <USkeleton class="h-18 rounded-2xl" />
-        </div>
-      </UCard>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-hidden="true">
+        <USkeleton class="h-36 rounded-lg" />
+        <USkeleton v-for="index in 4" :key="index" class="h-36 rounded-lg" />
+      </div>
+      <USkeleton class="h-64 rounded-lg" aria-hidden="true" />
     </template>
 
-    <div v-else-if="summaryError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.dashboard.loadError')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshSummary()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="summaryError"
+      color="error"
+      variant="soft"
+      :title="t('admin.dashboard.loadError')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refreshSummary(),
+        },
+      ]"
+    />
 
     <template v-else>
-      <section
-        class="from-primary/10 to-warning/10 overflow-hidden rounded-3xl border bg-linear-to-br via-transparent"
-      >
-        <div class="space-y-4 p-5 sm:p-6">
-          <h1 class="text-2xl font-semibold sm:text-3xl">
-            {{ t('admin.dashboard.quickActions') }}
-          </h1>
+      <section aria-labelledby="admin-dashboard-quick-actions" class="space-y-3">
+        <h2 id="admin-dashboard-quick-actions" class="text-highlighted text-base font-semibold">
+          {{ t('admin.dashboard.quickActions') }}
+        </h2>
 
-          <div class="grid gap-3 lg:grid-cols-2 xl:grid-cols-[17rem_repeat(3,minmax(0,1fr))]">
-            <div class="bg-background/80 flex h-full flex-col rounded-2xl border p-4 shadow-sm">
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <UCard :ui="{ body: 'flex h-full flex-col gap-3 p-4 sm:p-4' }">
+            <div>
               <p class="text-muted text-sm">{{ t('admin.dashboard.newsletter') }}</p>
-              <div class="mt-3">
-                <p class="text-2xl font-semibold sm:text-3xl">{{ subscribers.total }}</p>
-                <p class="text-muted text-sm">{{ t('admin.dashboard.subscribers') }}</p>
-              </div>
-
-              <div class="mt-4 flex flex-wrap gap-2">
-                <UButton :to="`${localePath(ADMIN_ROUTES.newsletter)}?open=create`" size="sm">
-                  {{ t('admin.dashboard.newNewsletter') }}
-                </UButton>
-                <UButton
-                  :to="localePath(ADMIN_ROUTES.newsletterSubscribers)"
-                  variant="outline"
-                  color="neutral"
-                  size="sm"
-                >
-                  {{ t('admin.dashboard.viewSubscribers') }}
-                </UButton>
-              </div>
+              <p class="text-highlighted text-2xl font-semibold">{{ subscribers.total }}</p>
+              <p class="text-muted text-sm">{{ t('admin.dashboard.subscribers') }}</p>
             </div>
+            <div class="mt-auto flex flex-wrap gap-2">
+              <UButton :to="`${localePath(ADMIN_ROUTES.newsletter)}?open=create`" size="sm">
+                {{ t('admin.dashboard.newNewsletter') }}
+              </UButton>
+              <UButton
+                :to="localePath(ADMIN_ROUTES.newsletterSubscribers)"
+                variant="outline"
+                color="neutral"
+                size="sm"
+              >
+                {{ t('admin.dashboard.viewSubscribers') }}
+              </UButton>
+            </div>
+          </UCard>
 
-            <NuxtLink
-              v-for="action in primaryActions"
-              :key="action.to"
-              :to="action.to"
-              class="group bg-background/80 flex min-h-32 rounded-2xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div class="flex h-full flex-col">
-                <div
-                  class="bg-muted text-primary mb-4 flex size-10 items-center justify-center rounded-xl"
-                >
-                  <UIcon :name="action.icon" class="size-5" />
-                </div>
-                <h2 class="text-lg leading-snug font-semibold">{{ action.title }}</h2>
-              </div>
-            </NuxtLink>
-          </div>
+          <UPageCard
+            v-for="action in primaryActions"
+            :key="action.to"
+            :title="action.title"
+            :icon="action.icon"
+            :to="action.to"
+            variant="outline"
+            class="h-full"
+            :ui="{ leadingIcon: 'text-primary', title: 'text-base' }"
+          />
         </div>
       </section>
 
-      <UCard>
-        <div class="space-y-4">
-          <div>
-            <h2 class="text-lg font-semibold">{{ t('admin.dashboard.recentActivity') }}</h2>
-            <p class="text-muted mt-1 text-sm">{{ t('admin.dashboard.recentActivityHint') }}</p>
-          </div>
+      <section aria-labelledby="admin-dashboard-recent" class="space-y-3">
+        <div>
+          <h2 id="admin-dashboard-recent" class="text-highlighted text-base font-semibold">
+            {{ t('admin.dashboard.recentActivity') }}
+          </h2>
+          <p class="text-muted text-sm">{{ t('admin.dashboard.recentActivityHint') }}</p>
+        </div>
 
-          <div v-if="recentActivity.length" class="space-y-3">
+        <ul v-if="recentActivity.length" class="divide-default divide-y rounded-lg border">
+          <li
+            v-for="item in recentActivity"
+            :key="`${item.sectionKey}-${item.updatedAt}-${item.title}`"
+          >
             <NuxtLink
-              v-for="item in recentActivity"
-              :key="`${item.sectionKey}-${item.updatedAt}-${item.title}`"
               :to="localePath(item.to)"
-              class="group hover:border-primary/40 hover:bg-primary/5 block rounded-2xl border p-4 transition"
+              class="group hover:bg-elevated/50 focus-visible:outline-primary flex flex-col gap-2 p-4 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 lg:flex-row lg:items-center lg:justify-between"
             >
-              <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div class="flex min-w-0 items-start gap-3">
-                  <div
-                    class="bg-muted text-primary flex size-10 shrink-0 items-center justify-center rounded-xl"
-                  >
-                    <UIcon :name="getSectionMeta(item.sectionKey).icon" class="size-5" />
-                  </div>
-
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <h3 class="truncate font-medium">{{ item.title }}</h3>
-                      <UBadge color="neutral" variant="subtle" size="sm">
-                        {{ t('admin.nav.' + item.sectionKey + '.name') }}
-                      </UBadge>
-                    </div>
-                    <p class="text-muted mt-1 text-sm leading-5">{{ item.description }}</p>
-                  </div>
+              <div class="flex min-w-0 items-start gap-3">
+                <div
+                  class="bg-elevated text-primary flex size-9 shrink-0 items-center justify-center rounded-md"
+                >
+                  <UIcon :name="sectionIcons[item.sectionKey]" class="size-5" />
                 </div>
 
-                <div class="flex shrink-0 items-center gap-3 self-start lg:self-auto">
-                  <p class="text-muted text-xs sm:text-sm">
-                    {{ formatActivityDate(item.updatedAt) }}
-                  </p>
-                  <UIcon
-                    name="i-tabler-arrow-up-right"
-                    class="text-muted group-hover:text-primary size-4 transition"
-                  />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-highlighted truncate font-medium">{{ item.title }}</h3>
+                    <UBadge color="neutral" variant="subtle" size="sm">
+                      {{ t('admin.nav.' + item.sectionKey + '.name') }}
+                    </UBadge>
+                  </div>
+                  <p class="text-muted mt-0.5 text-sm">{{ item.description }}</p>
                 </div>
               </div>
-            </NuxtLink>
-          </div>
 
-          <div v-else class="rounded-2xl border px-4 py-10 text-center text-sm">
-            <p class="text-muted">{{ t('admin.dashboard.noRecentActivity') }}</p>
-          </div>
+              <div class="flex shrink-0 items-center gap-3 ps-12 lg:ps-0">
+                <p class="text-muted text-xs sm:text-sm">
+                  {{ formatActivityDate(item.updatedAt) }}
+                </p>
+                <UIcon
+                  name="i-tabler-arrow-up-right"
+                  class="text-muted group-hover:text-primary size-4 transition-colors"
+                  aria-hidden="true"
+                />
+              </div>
+            </NuxtLink>
+          </li>
+        </ul>
+
+        <UEmpty
+          v-else
+          variant="outline"
+          icon="i-tabler-history"
+          :description="t('admin.dashboard.noRecentActivity')"
+        />
+      </section>
+
+      <section aria-labelledby="admin-dashboard-sections" class="space-y-4">
+        <h2 id="admin-dashboard-sections" class="text-highlighted text-base font-semibold">
+          {{ t('admin.dashboard.sections') }}
+        </h2>
+
+        <div v-for="group in sectionGroups" :key="group.key" class="space-y-2">
+          <h3 class="text-muted text-xs font-medium tracking-wide uppercase">
+            {{ group.label }}
+          </h3>
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" :aria-label="group.label">
+            <li v-for="section in group.sections" :key="section.key">
+              <UPageCard
+                :title="section.title"
+                :description="section.description"
+                :icon="section.icon"
+                :to="section.to"
+                variant="outline"
+                class="h-full"
+                :ui="{ leadingIcon: 'text-primary' }"
+              />
+            </li>
+          </ul>
         </div>
-      </UCard>
+      </section>
     </template>
-  </div>
+  </AdminPage>
 </template>

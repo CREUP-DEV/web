@@ -255,7 +255,7 @@ const handleAdd = () => {
     <template #body>
       <div class="space-y-4">
         <div
-          class="flex gap-2 overflow-x-auto"
+          class="flex max-w-full gap-2 overflow-x-auto"
           role="group"
           :aria-label="t('admin.newsletterCampaigns.picker.tabsAria')"
         >

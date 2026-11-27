@@ -989,7 +989,9 @@
       "uploadRequestTooLarge": "O ficheiro ou a solicitude supera o tamaño máximo permitido",
       "fileUploaded": "Ficheiro subido correctamente",
       "fileUploadFailed": "Non se puido subir o ficheiro",
-      "back": "Volver"
+      "back": "Volver",
+      "new": "Novo",
+      "more": "Máis accións"
     },
     "media": {
       "title": "Medios de comunicación",
@@ -1076,6 +1078,30 @@
       "activity": {
         "name": "A nosa actividade",
         "description": "Entradas de actividade e informes mensuais de áreas."
+      },
+      "groups": {
+        "content": "Contido",
+        "site": "Páxinas do sitio",
+        "catalogs": "Catálogos e axustes",
+        "system": "Sistema"
+      },
+      "activityEntries": {
+        "name": "Entradas"
+      },
+      "areaReports": {
+        "name": "Informes de áreas"
+      },
+      "memberOrgCatalog": {
+        "name": "Organizacións"
+      },
+      "areaCatalog": {
+        "name": "Áreas"
+      },
+      "newsletterCampaigns": {
+        "name": "Campañas"
+      },
+      "newsletterSubscribers": {
+        "name": "Subscritores"
       }
     },
     "layout": {
@@ -1083,16 +1109,26 @@
       "signOut": "Pechar sesión",
       "viewSite": "Ver sitio",
       "viewSiteAria": "Ver sitio (ábrese nunha nova lapela)",
-      "collapseSidebar": "Contraer menú lateral",
-      "expandSidebar": "Expandir menú lateral",
-      "closeSidebar": "Pechar menú lateral",
       "skipToNav": "Ir ao menú principal",
       "skipToContent": "Ir ao contido principal",
       "mainNavLabel": "Navegación principal",
-      "userMenu": "Menú de usuario",
-      "loadingSession": "Cargando sesión...",
-      "userAvatar": "Avatar de {name}",
-      "userAvatarFallback": "Avatar de usuario"
+      "brandHome": "Inicio do panel de administración",
+      "brandProduct": "Admin",
+      "sidebarTitle": "Menú de administración",
+      "sidebarDescription": "Seccións do panel e a túa conta",
+      "breadcrumbLabel": "Ruta de navegación",
+      "backTo": "Volver a {label}",
+      "userMenuFor": "Menú da conta de {name}",
+      "preferences": "Preferencias",
+      "preferencesDescription": "Idioma e tema do panel. Os cambios aplícanse ao momento.",
+      "done": "Feito",
+      "language": "Idioma",
+      "theme": "Tema",
+      "themes": {
+        "system": "Segundo o sistema",
+        "light": "Claro",
+        "dark": "Escuro"
+      }
     },
     "carousel": {
       "title": "Carrusel",
@@ -1408,7 +1444,6 @@
         "pdfUploaded": "PDF subido correctamente",
         "pdfUploadError": "Non se puido subir o PDF",
         "pdfTooLarge": "O PDF supera o tamaño máximo (20MB)",
-        "back": "Volver",
         "editingLabel": "Editando",
         "newLabel": "Novo",
         "saveChanges": "Gardar cambios",
@@ -1544,7 +1579,6 @@
       "list": {
         "title": "Campañas de newsletter",
         "subtitle": "Cada campaña é un correo montado con contido xa publicado na web.",
-        "subscribers": "Subscritores",
         "newCampaign": "Nova campaña",
         "loadErrorTitle": "Non se puideron cargar as campañas",
         "empty": "Aínda non hai campañas.",
@@ -1809,7 +1843,8 @@
       "recentActivity": "Actividade recente",
       "recentActivityHint": "O último que se tocou no panel.",
       "noRecentActivity": "Aínda non hai actividade recente que mostrar.",
-      "loadError": "Non se puido cargar o resumo do panel"
+      "loadError": "Non se puido cargar o resumo do panel",
+      "sections": "Seccións do panel"
     },
     "login": {
       "title": "Administración",
@@ -1905,11 +1940,6 @@
         "confirm": "Crear igualmente"
       },
       "unsavedChangesPrompt": "Hai cambios sen gardar. Se saes agora, perderanse.",
-      "subnav": {
-        "aria": "Subseccións de Actividade",
-        "entries": "Entradas",
-        "reports": "Informes de áreas"
-      },
       "kinds": {
         "creup": "CREUP",
         "member": "Membro"
@@ -1932,8 +1962,7 @@
         "clearSearch": "Limpar busca",
         "emptyState": "Aínda non hai entradas de actividade",
         "createFirst": "Crear primeira entrada",
-        "paginationAria": "Paxinación de entradas",
-        "manageOrganisers": "Xestionar organizacións"
+        "paginationAria": "Paxinación de entradas"
       },
       "toast": {
         "deleted": "Entrada eliminada",
@@ -1949,7 +1978,6 @@
         "snapshotRefreshError": "Non se puideron actualizar os datos do organizador"
       },
       "form": {
-        "back": "Volver",
         "editingLabel": "Editando actividade",
         "newLabel": "Nova actividade",
         "saveChanges": "Gardar cambios",
@@ -2024,8 +2052,7 @@
         "emptyState": "Aínda non hai informes de áreas",
         "createFirst": "Crear primeiro informe",
         "paginationAria": "Paxinación de informes",
-        "unknownArea": "Área sen nome",
-        "manageAreas": "Xestionar áreas"
+        "unknownArea": "Área sen nome"
       },
       "toast": {
         "deleted": "Informe eliminado",
@@ -2038,7 +2065,6 @@
         "conflictFallback": "Non se puido gardar o informe por un conflito. Revisa o mes, a área e o período."
       },
       "form": {
-        "back": "Volver",
         "editingLabel": "Editando informe",
         "newLabel": "Novo informe",
         "saveChanges": "Gardar cambios",
@@ -2353,7 +2379,7 @@
         },
         "auth": {
           "label": "Cookies de autenticación e sesión (better-auth)",
-          "desc": " Utilízanse exclusivamente cando un administrador inicia sesión no panel de administración. Inclúen tokens de sesión e autenticación OAuth. Non se empregan para os visitantes públicos do sitio. "
+          "desc": " Utilízanse exclusivamente cando un administrador inicia sesión no panel de administración. Inclúen tokens de sesión e autenticación OAuth. Non se empregan para os visitantes públicos do sitio. O panel garda ademais na cookie admin-dashboard-sidebar-admin se o menú lateral está pregado e a súa anchura. "
         },
         "prefs": {
           "label": "Almacenamento local de preferencias de interface",

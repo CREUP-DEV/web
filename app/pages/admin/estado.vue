@@ -1,7 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'admin',
-  title: 'Estado',
 })
 
 // The response shape is inferred from the /api/admin/metrics handler so the
@@ -124,22 +123,14 @@ const formatUptime = (seconds: number | null) => {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <section class="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.stats.title') }}</h1>
-        <p class="text-muted mt-1 text-sm">
-          {{ t('admin.stats.subtitle') }}
-        </p>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-3">
-        <USwitch v-model="autoRefresh" :label="t('admin.stats.autoLabel')" :disabled="pending" />
-        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-          {{ t('admin.stats.refresh') }}
-        </UButton>
-      </div>
-    </section>
+  <AdminPage :title="t('admin.stats.title')" :description="t('admin.stats.subtitle')">
+    <template #actions>
+      <USwitch v-model="autoRefresh" :label="t('admin.stats.autoLabel')" :disabled="pending" />
+      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
+        <span class="hidden sm:inline">{{ t('admin.stats.refresh') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.stats.refresh') }}</span>
+      </UButton>
+    </template>
 
     <template v-if="pending && !stats">
       <div class="grid gap-4 xl:grid-cols-4">
@@ -152,17 +143,22 @@ const formatUptime = (seconds: number | null) => {
       <USkeleton class="h-72 rounded-2xl" />
     </template>
 
-    <div v-else-if="error && !stats" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.stats.loadErrorTitle')"
-        :description="t('admin.stats.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="error && !stats"
+      color="error"
+      variant="soft"
+      :title="t('admin.stats.loadErrorTitle')"
+      :description="t('admin.stats.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
     <template v-else-if="stats">
       <UAlert
@@ -646,5 +642,5 @@ const formatUptime = (seconds: number | null) => {
         </div>
       </UCard>
     </template>
-  </div>
+  </AdminPage>
 </template>

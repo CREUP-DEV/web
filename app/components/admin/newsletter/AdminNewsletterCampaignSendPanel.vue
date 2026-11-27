@@ -169,7 +169,7 @@ const handleSend = async () => {
 </script>
 
 <template>
-  <section class="bg-surface ring-default space-y-4 rounded-xl p-5 shadow-sm ring-1">
+  <section class="bg-default ring-default space-y-4 rounded-xl p-5 shadow-sm ring-1">
     <h2 class="text-lg font-semibold">{{ t('admin.newsletterCampaigns.send.title') }}</h2>
 
     <div class="flex items-baseline gap-2">

@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { type AdminReorderResponse, applyAdminReorder } from '@/utils/adminReorder'
-import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 import { createMemberOrgCatalogEntrySchema } from '~~/shared/utils/adminSchemas'
 import type { MemberOrgSource } from '~~/shared/constants/activity'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Organizaciones miembro',
 })
 
 const { t } = useI18n()
-const localePath = useLocalePath()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
 const { formatDateTime } = useLocaleFormatting()
@@ -473,25 +470,55 @@ const handleClearSupersede = async (item: MemberOrgCatalogEntry) => {
 </script>
 
 <template>
-  <div>
-    <UButton
-      :to="localePath(ADMIN_ROUTES.activity)"
-      variant="ghost"
-      icon="i-tabler-arrow-left"
-      size="sm"
-      class="mb-3"
-    >
-      {{ t('admin.common.back') }}
-    </UButton>
+  <AdminPage
+    :title="t('admin.memberOrgCatalog.title')"
+    :description="t('admin.memberOrgCatalog.subheading')"
+  >
+    <template v-if="!pending && !fetchError" #actions>
+      <template v-if="reorderBySource(activeSource).hasOrderChanges.value">
+        <UButton
+          color="neutral"
+          variant="outline"
+          @click="reorderBySource(activeSource).cancelOrderChanges()"
+        >
+          {{ t('admin.common.cancel') }}
+        </UButton>
+        <UButton
+          icon="i-tabler-check"
+          :loading="reorderBySource(activeSource).isSavingOrder.value"
+          @click="saveOrder(activeSource)"
+        >
+          {{ t('admin.common.saveOrder') }}
+        </UButton>
+      </template>
+      <UButton v-else icon="i-tabler-plus" @click="openCreate(activeSource)">
+        <span class="hidden sm:inline">{{ t('admin.memberOrgCatalog.addManual') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.memberOrgCatalog.addManual') }}</span>
+      </UButton>
+    </template>
 
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold">{{ t('admin.memberOrgCatalog.title') }}</h1>
-      <p class="text-muted mt-1 text-sm">{{ t('admin.memberOrgCatalog.subheading') }}</p>
-    </div>
+    <template v-if="!pending && !fetchError" #toolbar>
+      <div
+        class="flex max-w-full gap-2 overflow-x-auto"
+        role="group"
+        :aria-label="t('admin.memberOrgCatalog.sourceTabsAria')"
+      >
+        <UButton
+          v-for="source in MEMBER_ORG_SOURCE_TABS"
+          :key="source"
+          :variant="activeSource === source ? 'solid' : 'outline'"
+          :icon="source === 'asociado' ? 'i-tabler-building-community' : 'i-tabler-users-group'"
+          size="sm"
+          :aria-pressed="activeSource === source"
+          @click="activeSource = source"
+        >
+          {{ sourceGroupLabel(source) }}
+        </UButton>
+      </div>
+    </template>
 
     <UAlert
       v-if="syncFailedRecently"
-      class="mb-6"
       color="warning"
       variant="soft"
       icon="i-tabler-cloud-off"
@@ -511,63 +538,30 @@ const handleClearSupersede = async (item: MemberOrgCatalogEntry) => {
       <USkeleton class="h-20 w-full rounded-xl" />
     </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.memberOrgCatalog.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.memberOrgCatalog.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
     <template v-else>
-      <div
-        class="mb-6 flex gap-2 border-b"
-        role="group"
-        :aria-label="t('admin.memberOrgCatalog.sourceTabsAria')"
-      >
-        <UButton
-          v-for="source in MEMBER_ORG_SOURCE_TABS"
-          :key="source"
-          :variant="activeSource === source ? 'solid' : 'ghost'"
-          :icon="source === 'asociado' ? 'i-tabler-building-community' : 'i-tabler-users-group'"
-          size="sm"
-          :aria-pressed="activeSource === source"
-          class="rounded-b-none"
-          @click="activeSource = source"
-        >
-          {{ sourceGroupLabel(source) }}
-        </UButton>
-      </div>
-
       <section v-for="source in visibleSources" :key="source" class="mb-10">
-        <div class="mb-3 flex items-center justify-end">
-          <div class="flex gap-2">
-            <template v-if="reorderBySource(source).hasOrderChanges.value">
-              <UButton variant="outline" @click="reorderBySource(source).cancelOrderChanges()">{{
-                t('admin.common.cancel')
-              }}</UButton>
-              <UButton
-                :loading="reorderBySource(source).isSavingOrder.value"
-                @click="saveOrder(source)"
-              >
-                {{ t('admin.common.saveOrder') }}
-              </UButton>
-            </template>
-            <UButton v-else icon="i-tabler-plus" size="sm" @click="openCreate(source)">
-              {{ t('admin.memberOrgCatalog.addManual') }}
-            </UButton>
-          </div>
-        </div>
-
         <div :ref="(el) => setListRef(source, el as Element | null)" class="space-y-2">
           <div
             v-for="item in reorderBySource(source).localItems.value"
             :key="item.id"
-            class="bg-surface ring-default flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1"
+            class="bg-default ring-default flex items-center gap-4 rounded-xl p-4 shadow-sm ring-1"
           >
             <div class="drag-handle cursor-grab active:cursor-grabbing">
               <UIcon name="i-tabler-grip-vertical" class="text-muted size-5" />
@@ -579,7 +573,7 @@ const handleClearSupersede = async (item: MemberOrgCatalogEntry) => {
               class="size-10 shrink-0 rounded object-contain"
             />
             <div class="min-w-0 flex-1">
-              <h3 class="wrap-break-words font-medium">
+              <h3 class="font-medium wrap-break-word">
                 {{ item.denomination }} <span class="text-muted">({{ item.initials }})</span>
               </h3>
               <div class="mt-1 flex flex-wrap items-center gap-2">
@@ -652,10 +646,10 @@ const handleClearSupersede = async (item: MemberOrgCatalogEntry) => {
             <div
               v-for="item in source === 'asociado' ? historicalAsociados : historicalSectoriales"
               :key="item.id"
-              class="bg-surface ring-default flex items-center gap-4 rounded-xl p-4 opacity-75 shadow-sm ring-1"
+              class="bg-default ring-default flex items-center gap-4 rounded-xl p-4 opacity-75 shadow-sm ring-1"
             >
               <div class="min-w-0 flex-1">
-                <h3 class="wrap-break-words font-medium">
+                <h3 class="font-medium wrap-break-word">
                   {{ item.denomination }} <span class="text-muted">({{ item.initials }})</span>
                 </h3>
                 <div class="mt-1 flex flex-wrap items-center gap-2">
@@ -946,5 +940,5 @@ const handleClearSupersede = async (item: MemberOrgCatalogEntry) => {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

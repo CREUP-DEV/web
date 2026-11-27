@@ -3,11 +3,11 @@ import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { ACTIVITY_KINDS, ACTIVITY_PUBLIC_BASE_PATH } from '~~/shared/constants/activity'
 import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiError'
 import { isActivityEntryPublic } from '~~/shared/utils/publicVisibility'
+import type { DropdownMenuItem } from '@nuxt/ui'
 import type { AdminActivityEntry, AdminActivityKind } from '@/composables/admin/useAdminActivity'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Nuestra actividad',
 })
 
 const { t } = useI18n()
@@ -121,6 +121,19 @@ const tabItems = computed(() => [
   ...ACTIVITY_KINDS.map((kind) => ({ key: kind, label: kindLabels[kind], icon: kindIcons[kind] })),
 ])
 
+const createItems = computed<DropdownMenuItem[]>(() => [
+  {
+    label: t('admin.activity.list.newCreup'),
+    icon: kindIcons.creup,
+    to: `${localePath(ADMIN_ROUTES.activityCreate)}?kind=creup`,
+  },
+  {
+    label: t('admin.activity.list.newMember'),
+    icon: kindIcons.member,
+    to: `${localePath(ADMIN_ROUTES.activityCreate)}?kind=member`,
+  },
+])
+
 const activeTab = computed({
   get: () => currentKind.value ?? 'all',
   set: (val: string) => {
@@ -130,51 +143,29 @@ const activeTab = computed({
 </script>
 
 <template>
-  <div>
-    <AdminActivitySubnav active="entries" />
-
-    <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.activity.list.heading') }}</h1>
-        <p class="text-muted mt-1 text-sm">{{ t('admin.activity.list.subheading') }}</p>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <UButton
-          :to="localePath(ADMIN_ROUTES.memberOrgCatalog)"
-          icon="i-tabler-building-community"
-          variant="outline"
-        >
-          {{ t('admin.activity.list.manageOrganisers') }}
+  <AdminPage
+    :title="t('admin.activity.list.heading')"
+    :description="t('admin.activity.list.subheading')"
+  >
+    <template #actions>
+      <UDropdownMenu :items="createItems" :content="{ align: 'end' }">
+        <UButton icon="i-tabler-plus">
+          <span class="hidden sm:inline">{{ t('admin.common.new') }}</span>
+          <span class="sr-only sm:hidden">{{ t('admin.common.new') }}</span>
         </UButton>
-        <UButton
-          :to="`${localePath(ADMIN_ROUTES.activityCreate)}?kind=creup`"
-          icon="i-tabler-building-bank"
-          variant="outline"
-          color="neutral"
-        >
-          {{ t('admin.activity.list.newCreup') }}
-        </UButton>
-        <UButton
-          :to="`${localePath(ADMIN_ROUTES.activityCreate)}?kind=member`"
-          icon="i-tabler-building-community"
-          variant="outline"
-          color="neutral"
-        >
-          {{ t('admin.activity.list.newMember') }}
-        </UButton>
-      </div>
-    </div>
+      </UDropdownMenu>
+    </template>
 
-    <div class="mb-6 space-y-4">
+    <template #toolbar>
       <div
-        class="flex gap-2 overflow-x-auto"
+        class="flex max-w-full gap-2 overflow-x-auto"
         role="group"
         :aria-label="t('admin.activity.list.filterByKindAria')"
       >
         <UButton
           v-for="tab in tabItems"
           :key="tab.key"
+          class="shrink-0 whitespace-nowrap"
           :icon="tab.icon"
           :variant="activeTab === tab.key ? 'solid' : 'outline'"
           :aria-pressed="activeTab === tab.key"
@@ -189,21 +180,35 @@ const activeTab = computed({
         v-model="searchQuery"
         icon="i-tabler-search"
         :placeholder="t('admin.activity.list.searchPlaceholder')"
-        class="max-w-sm"
+        :aria-label="t('admin.activity.list.searchPlaceholder')"
+        class="w-full max-w-sm"
       />
-    </div>
+    </template>
 
-    <div v-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.activity.list.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <template #toolbar-right>
+      <p class="text-muted text-sm whitespace-nowrap" aria-live="polite">
+        <template v-if="!isLoading && !fetchError">
+          {{ t('accessibility.resultsCount', { count: total }, total) }}
+        </template>
+      </p>
+    </template>
+
+    <UAlert
+      v-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.activity.list.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
     <div v-else ref="resultsRef" class="space-y-3" :aria-busy="pending || undefined">
       <div v-if="isLoading" aria-hidden="true" class="space-y-3">
@@ -332,27 +337,35 @@ const activeTab = computed({
           </article>
         </div>
 
-        <div v-if="!items.length && searchQuery.trim()" class="py-16 text-center">
-          <UIcon name="i-tabler-search-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />
-          <p class="text-muted text-sm">
-            {{ t('admin.activity.list.noSearchResults', { query: searchQuery }) }}
-          </p>
-          <UButton variant="link" size="sm" class="mt-2" @click="searchQuery = ''">
-            {{ t('admin.activity.list.clearSearch') }}
-          </UButton>
-        </div>
+        <UEmpty
+          v-if="!items.length && searchQuery.trim()"
+          variant="naked"
+          icon="i-tabler-search-off"
+          :description="t('admin.activity.list.noSearchResults', { query: searchQuery })"
+          :actions="[
+            {
+              label: t('admin.activity.list.clearSearch'),
+              variant: 'link',
+              onClick: () => {
+                searchQuery = ''
+              },
+            },
+          ]"
+        />
 
-        <div v-else-if="!items.length" class="py-16 text-center">
-          <UIcon name="i-tabler-calendar-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />
-          <p class="text-muted mb-4 text-sm">{{ t('admin.activity.list.emptyState') }}</p>
-          <UButton
-            :to="`${localePath(ADMIN_ROUTES.activityCreate)}?kind=creup`"
-            icon="i-tabler-plus"
-            size="sm"
-          >
-            {{ t('admin.activity.list.createFirst') }}
-          </UButton>
-        </div>
+        <UEmpty
+          v-else-if="!items.length"
+          variant="naked"
+          icon="i-tabler-calendar-off"
+          :description="t('admin.activity.list.emptyState')"
+          :actions="[
+            {
+              label: t('admin.activity.list.createFirst'),
+              icon: 'i-tabler-plus',
+              to: `${localePath(ADMIN_ROUTES.activityCreate)}?kind=creup`,
+            },
+          ]"
+        />
 
         <nav
           v-if="pageCount > 1"
@@ -392,5 +405,5 @@ const activeTab = computed({
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

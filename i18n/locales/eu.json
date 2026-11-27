@@ -989,7 +989,9 @@
       "uploadRequestTooLarge": "Fitxategiak edo eskaerak gehienezko tamaina baimendua gainditzen du",
       "fileUploaded": "Fitxategia behar bezala igo da",
       "fileUploadFailed": "Ezin izan da fitxategia igo",
-      "back": "Itzuli"
+      "back": "Itzuli",
+      "new": "Berria",
+      "more": "Ekintza gehiago"
     },
     "media": {
       "title": "Hedabideak",
@@ -1076,6 +1078,30 @@
       "activity": {
         "name": "Gure jarduera",
         "description": "Jarduera-sarrerak eta arloen hileroko txostenak."
+      },
+      "groups": {
+        "content": "Edukia",
+        "site": "Guneko orriak",
+        "catalogs": "Katalogoak eta ezarpenak",
+        "system": "Sistema"
+      },
+      "activityEntries": {
+        "name": "Sarrerak"
+      },
+      "areaReports": {
+        "name": "Arloen txostenak"
+      },
+      "memberOrgCatalog": {
+        "name": "Erakundeak"
+      },
+      "areaCatalog": {
+        "name": "Arloak"
+      },
+      "newsletterCampaigns": {
+        "name": "Kanpainak"
+      },
+      "newsletterSubscribers": {
+        "name": "Harpidedunak"
       }
     },
     "layout": {
@@ -1083,16 +1109,26 @@
       "signOut": "Itxi saioa",
       "viewSite": "Ikusi gunea",
       "viewSiteAria": "Ikusi gunea (fitxa berri batean irekitzen da)",
-      "collapseSidebar": "Tolestu alboko menua",
-      "expandSidebar": "Zabaldu alboko menua",
-      "closeSidebar": "Itxi alboko menua",
       "skipToNav": "Joan menu nagusira",
       "skipToContent": "Joan eduki nagusira",
       "mainNavLabel": "Nabigazio nagusia",
-      "userMenu": "Erabiltzailearen menua",
-      "loadingSession": "Saioa kargatzen...",
-      "userAvatar": "{name}(r)en abatarra",
-      "userAvatarFallback": "Erabiltzailearen abatarra"
+      "brandHome": "Administrazio-panelaren hasiera",
+      "brandProduct": "Admin",
+      "sidebarTitle": "Administrazio-menua",
+      "sidebarDescription": "Panelaren atalak eta zure kontua",
+      "breadcrumbLabel": "Nabigazio-bidea",
+      "backTo": "Itzuli hona: {label}",
+      "userMenuFor": "{name}(r)en kontuaren menua",
+      "preferences": "Hobespenak",
+      "preferencesDescription": "Panelaren hizkuntza eta gaia. Aldaketak berehala aplikatzen dira.",
+      "done": "Eginda",
+      "language": "Hizkuntza",
+      "theme": "Gaia",
+      "themes": {
+        "system": "Sistemaren arabera",
+        "light": "Argia",
+        "dark": "Iluna"
+      }
     },
     "carousel": {
       "title": "Karrusela",
@@ -1408,7 +1444,6 @@
         "pdfUploaded": "PDFa behar bezala igo da",
         "pdfUploadError": "Ezin izan da PDFa igo",
         "pdfTooLarge": "PDFak gehienezko tamaina gainditzen du (20MB)",
-        "back": "Itzuli",
         "editingLabel": "Editatzen",
         "newLabel": "Berria",
         "saveChanges": "Gorde aldaketak",
@@ -1544,7 +1579,6 @@
       "list": {
         "title": "Buletinaren kanpainak",
         "subtitle": "Kanpaina bakoitza webgunean argitaratutako edukiarekin osatutako mezu bat da.",
-        "subscribers": "Harpidedunak",
         "newCampaign": "Kanpaina berria",
         "loadErrorTitle": "Ezin izan dira kanpainak kargatu",
         "empty": "Oraindik ez dago kanpainarik.",
@@ -1809,7 +1843,8 @@
       "recentActivity": "Azken jarduera",
       "recentActivityHint": "Panelean ukitu den azkena.",
       "noRecentActivity": "Oraindik ez dago azken jarduerarik erakusteko.",
-      "loadError": "Ezin izan da panelaren laburpena kargatu"
+      "loadError": "Ezin izan da panelaren laburpena kargatu",
+      "sections": "Panelaren atalak"
     },
     "login": {
       "title": "Administrazioa",
@@ -1905,11 +1940,6 @@
         "confirm": "Sortu hala ere"
       },
       "unsavedChangesPrompt": "Gorde gabeko aldaketak daude. Orain irtetzen bazara, galdu egingo dira.",
-      "subnav": {
-        "aria": "Jardueraren azpiatalak",
-        "entries": "Sarrerak",
-        "reports": "Arloen txostenak"
-      },
       "kinds": {
         "creup": "CREUP",
         "member": "Kidea"
@@ -1932,8 +1962,7 @@
         "clearSearch": "Garbitu bilaketa",
         "emptyState": "Oraindik ez dago jarduera-sarrerarik",
         "createFirst": "Sortu lehen sarrera",
-        "paginationAria": "Sarreren orrikatzea",
-        "manageOrganisers": "Kudeatu erakundeak"
+        "paginationAria": "Sarreren orrikatzea"
       },
       "toast": {
         "deleted": "Sarrera ezabatuta",
@@ -1949,7 +1978,6 @@
         "snapshotRefreshError": "Ezin izan dira antolatzailearen datuak eguneratu"
       },
       "form": {
-        "back": "Itzuli",
         "editingLabel": "Jarduera editatzen",
         "newLabel": "Jarduera berria",
         "saveChanges": "Gorde aldaketak",
@@ -2024,8 +2052,7 @@
         "emptyState": "Oraindik ez dago arloen txostenik",
         "createFirst": "Sortu lehen txostena",
         "paginationAria": "Txostenen orrikatzea",
-        "unknownArea": "Izenik gabeko arloa",
-        "manageAreas": "Kudeatu arloak"
+        "unknownArea": "Izenik gabeko arloa"
       },
       "toast": {
         "deleted": "Txostena ezabatuta",
@@ -2038,7 +2065,6 @@
         "conflictFallback": "Gatazka bat dela eta ezin izan da txostena gorde. Egiaztatu hilabetea, arloa eta aldia."
       },
       "form": {
-        "back": "Itzuli",
         "editingLabel": "Txostena editatzen",
         "newLabel": "Txosten berria",
         "saveChanges": "Gorde aldaketak",
@@ -2353,7 +2379,7 @@
         },
         "auth": {
           "label": "Autentifikazio- eta saio-cookieak (better-auth)",
-          "desc": " Administratzaile batek administrazio-panelean saioa hasten duenean soilik erabiltzen dira. Saio-tokenak eta OAuth autentifikazioa barne hartzen dituzte. Ez dira erabiltzen webguneko bisitari publikoentzat. "
+          "desc": " Administratzaile batek administrazio-panelean saioa hasten duenean soilik erabiltzen dira. Saio-tokenak eta OAuth autentifikazioa barne hartzen dituzte. Ez dira erabiltzen webguneko bisitari publikoentzat. Panelak, gainera, admin-dashboard-sidebar-admin cookiean gordetzen du alboko menua tolestuta dagoen eta zein zabalera duen. "
         },
         "prefs": {
           "label": "Interfaze-hobespenen tokiko biltegiratzea",

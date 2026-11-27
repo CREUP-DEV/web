@@ -4,7 +4,6 @@ import { updateAboutPageContentSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Qué es CREUP',
 })
 
 interface AboutContent {
@@ -161,17 +160,10 @@ const saveContent = async () => {
 </script>
 
 <template>
-  <div class="space-y-8">
-    <!-- A direct child of the page root: sticky only holds within its parent's box. Its mb-3
-         overrides the root's space-y gap (a zero-specificity margin in Tailwind v4). -->
-    <div
-      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-3 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
-    >
-      <h1 class="min-w-0 text-xl font-bold sm:text-2xl">{{ t('admin.about.title') }}</h1>
+  <AdminPage :title="t('admin.about.title')" :description="t('admin.about.subtitle')">
+    <template v-if="!contentPending && !contentError" #actions>
       <UButton
-        v-if="!contentPending && !contentError"
         type="button"
-        class="shrink-0"
         icon="i-tabler-device-floppy"
         :loading="isSavingContent"
         :disabled="!hasPendingHeroChanges"
@@ -179,8 +171,7 @@ const saveContent = async () => {
       >
         {{ t('admin.about.saveChanges') }}
       </UButton>
-    </div>
-    <p class="text-muted text-sm">{{ t('admin.about.subtitle') }}</p>
+    </template>
 
     <div v-if="contentPending" class="space-y-3" aria-hidden="true">
       <USkeleton class="h-72 w-full rounded-2xl" />
@@ -188,17 +179,22 @@ const saveContent = async () => {
       <USkeleton class="h-10 w-32 rounded-lg" />
     </div>
 
-    <div v-else-if="contentError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.about.loadError')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshContent()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="contentError"
+      color="error"
+      variant="soft"
+      :title="t('admin.about.loadError')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refreshContent(),
+        },
+      ]"
+    />
 
     <UCard v-else>
       <div class="space-y-6">
@@ -357,5 +353,5 @@ const saveContent = async () => {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

@@ -5,7 +5,6 @@ import { createEqualityDocumentSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Igualdad',
 })
 
 interface EqualityDocumentTranslation {
@@ -264,28 +263,21 @@ const handleDelete = async () => {
 </script>
 
 <template>
-  <div>
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.equality.title') }}</h1>
-        <p class="text-muted mt-1 text-sm">
-          {{ t('admin.equality.subtitle') }}
-        </p>
-      </div>
-      <div class="flex gap-2">
-        <template v-if="hasOrderChanges">
-          <UButton variant="outline" @click="cancelOrderChanges">{{
-            t('admin.common.cancel')
-          }}</UButton>
-          <UButton :loading="isSavingOrder" @click="saveOrder">{{
-            t('admin.common.saveOrder')
-          }}</UButton>
-        </template>
-        <UButton v-else icon="i-tabler-plus" @click="openCreate">{{
-          t('admin.equality.newDocument')
-        }}</UButton>
-      </div>
-    </div>
+  <AdminPage :title="t('admin.equality.title')" :description="t('admin.equality.subtitle')">
+    <template #actions>
+      <template v-if="hasOrderChanges">
+        <UButton color="neutral" variant="outline" @click="cancelOrderChanges">
+          {{ t('admin.common.cancel') }}
+        </UButton>
+        <UButton icon="i-tabler-check" :loading="isSavingOrder" @click="saveOrder">
+          {{ t('admin.common.saveOrder') }}
+        </UButton>
+      </template>
+      <UButton v-else icon="i-tabler-plus" @click="openCreate">
+        <span class="hidden sm:inline">{{ t('admin.equality.newDocument') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.equality.newDocument') }}</span>
+      </UButton>
+    </template>
 
     <div v-if="pending" class="space-y-3" aria-hidden="true">
       <USkeleton class="h-24 w-full rounded-xl" />
@@ -293,33 +285,43 @@ const handleDelete = async () => {
       <USkeleton class="h-24 w-full rounded-xl" />
     </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.equality.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.equality.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
-    <UCard v-else-if="items.length === 0" class="text-center">
-      <div class="flex flex-col items-center gap-3 py-8">
-        <UIcon name="i-tabler-files-off" class="text-muted size-10" />
-        <p class="text-muted">{{ t('admin.equality.empty') }}</p>
-        <UButton variant="soft" icon="i-tabler-plus" @click="openCreate">
-          {{ t('admin.equality.addFirst') }}
-        </UButton>
-      </div>
-    </UCard>
+    <UEmpty
+      v-else-if="items.length === 0"
+      variant="outline"
+      icon="i-tabler-files-off"
+      :description="t('admin.equality.empty')"
+      :actions="[
+        {
+          label: t('admin.equality.addFirst'),
+          icon: 'i-tabler-plus',
+          variant: 'soft',
+          onClick: openCreate,
+        },
+      ]"
+    />
 
     <div v-else ref="listRef" class="space-y-4">
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface ring-default rounded-xl p-4 shadow-sm ring-1"
+        class="bg-default ring-default rounded-xl p-4 shadow-sm ring-1"
       >
         <div class="hidden items-start gap-4 md:flex">
           <div class="drag-handle flex cursor-grab items-center self-center active:cursor-grabbing">
@@ -577,5 +579,5 @@ const handleDelete = async () => {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

@@ -6,7 +6,6 @@ import type { AdminAreaReport } from '@/composables/admin/useAdminAreaReports'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Informes de áreas',
 })
 
 const { t, locale } = useI18n()
@@ -15,12 +14,14 @@ const toast = useAdminToast()
 const { refreshAllClientAsyncData } = usePublicCmsCacheRefresh()
 
 const monthFilter = ref('')
+const isMonthPopoverOpen = ref(false)
 
 // AdminMonthPicker emits 'YYYY-MM-01'; the filter / API param use 'YYYY-MM'. Bridge both.
 const monthPickerValue = computed({
   get: () => (monthFilter.value ? `${monthFilter.value}-01` : ''),
   set: (value: string) => {
     monthFilter.value = value ? value.slice(0, 7) : ''
+    isMonthPopoverOpen.value = false
   },
 })
 
@@ -118,61 +119,68 @@ const formatPeriod = (item: AdminAreaReport) => {
 </script>
 
 <template>
-  <div>
-    <AdminActivitySubnav active="reports" />
+  <AdminPage
+    :title="t('admin.areaReports.list.heading')"
+    :description="t('admin.areaReports.list.subheading')"
+  >
+    <template #actions>
+      <UButton :to="localePath(ADMIN_ROUTES.activityReportsCreate)" icon="i-tabler-plus">
+        <span class="hidden sm:inline">{{ t('admin.areaReports.list.newReport') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.areaReports.list.newReport') }}</span>
+      </UButton>
+    </template>
 
-    <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.areaReports.list.heading') }}</h1>
-        <p class="text-muted mt-1 text-sm">{{ t('admin.areaReports.list.subheading') }}</p>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
+    <template #toolbar>
+      <!-- The month grid is too tall for the toolbar, so it opens from a button. -->
+      <UPopover v-model:open="isMonthPopoverOpen">
         <UButton
-          :to="localePath(ADMIN_ROUTES.areaCatalog)"
-          icon="i-tabler-list-details"
-          variant="outline"
           color="neutral"
+          variant="outline"
+          icon="i-tabler-calendar-month"
+          trailing-icon="i-tabler-chevron-down"
+          :aria-label="
+            monthFilter
+              ? `${t('admin.areaReports.list.monthFilterLabel')}: ${monthFilter}`
+              : t('admin.areaReports.list.monthFilterLabel')
+          "
         >
-          {{ t('admin.areaReports.list.manageAreas') }}
+          {{ monthFilter || t('admin.areaReports.list.monthFilterLabel') }}
         </UButton>
-        <UButton :to="localePath(ADMIN_ROUTES.activityReportsCreate)" icon="i-tabler-plus">
-          {{ t('admin.areaReports.list.newReport') }}
-        </UButton>
-      </div>
-    </div>
-
-    <div class="mb-6 flex flex-wrap items-start gap-3">
-      <UFormField :label="t('admin.areaReports.list.monthFilterLabel')">
-        <ClientOnly>
-          <AdminMonthPicker v-model="monthPickerValue" hint="" />
-          <template #fallback>
-            <UInput
-              :model-value="monthFilter"
-              placeholder="YYYY-MM"
-              icon="i-tabler-calendar-month"
-              class="max-w-[12rem]"
-              @update:model-value="monthFilter = String($event)"
-            />
-          </template>
-        </ClientOnly>
-      </UFormField>
+        <template #content>
+          <div class="w-72 p-2">
+            <AdminMonthPicker v-model="monthPickerValue" hint="" />
+          </div>
+        </template>
+      </UPopover>
       <UButton v-if="monthFilter" variant="ghost" size="sm" @click="monthFilter = ''">
         {{ t('admin.areaReports.list.clearFilter') }}
       </UButton>
-    </div>
+    </template>
 
-    <div v-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.areaReports.list.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <template #toolbar-right>
+      <p class="text-muted text-sm whitespace-nowrap" aria-live="polite">
+        <template v-if="!isLoading && !fetchError">
+          {{ t('accessibility.resultsCount', { count: total }, total) }}
+        </template>
+      </p>
+    </template>
+
+    <UAlert
+      v-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.areaReports.list.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
     <div v-else ref="resultsRef" class="space-y-3" :aria-busy="pending || undefined">
       <div v-if="isLoading" aria-hidden="true" class="space-y-3">
@@ -321,5 +329,5 @@ const formatPeriod = (item: AdminAreaReport) => {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

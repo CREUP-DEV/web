@@ -4,7 +4,6 @@ import { updateSiteDefaultImagesSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Imágenes por defecto',
 })
 
 interface SiteDefaultImagesPayload {
@@ -227,47 +226,44 @@ const save = async () => {
 </script>
 
 <template>
-  <div class="space-y-10">
-    <!-- A direct child of the page root: sticky only holds within its parent's box. Its mb-3
-         overrides the root's space-y gap (a zero-specificity margin in Tailwind v4). -->
-    <div
-      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-3 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
-    >
-      <h1 class="min-w-0 text-xl font-bold sm:text-2xl">
-        {{ t('admin.siteDefaultImages.title') }}
-      </h1>
+  <AdminPage
+    :title="t('admin.siteDefaultImages.title')"
+    :description="t('admin.siteDefaultImages.intro')"
+  >
+    <template v-if="!defaultsPending && !defaultsError" #actions>
       <UButton
-        v-if="!defaultsPending && !defaultsError"
         type="button"
-        class="shrink-0"
         icon="i-tabler-device-floppy"
         :loading="isSaving"
         :disabled="!hasFormChanges"
         @click="save"
       >
-        {{ t('admin.siteDefaultImages.saveChanges') }}
+        <span class="hidden sm:inline">{{ t('admin.siteDefaultImages.saveChanges') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.siteDefaultImages.saveChanges') }}</span>
       </UButton>
-    </div>
-    <p class="text-muted max-w-3xl text-sm">
-      {{ t('admin.siteDefaultImages.intro') }}
-    </p>
+    </template>
 
     <div v-if="defaultsPending" class="space-y-3" aria-hidden="true">
       <USkeleton class="h-40 w-full rounded-2xl" />
       <USkeleton class="h-40 w-full rounded-2xl" />
     </div>
 
-    <div v-else-if="defaultsError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.siteDefaultImages.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refreshDefaults()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="defaultsError"
+      color="error"
+      variant="soft"
+      :title="t('admin.siteDefaultImages.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refreshDefaults(),
+        },
+      ]"
+    />
 
     <div v-else class="space-y-10">
       <AdminFormErrorSummary :errors="formErrors" />
@@ -486,7 +482,7 @@ const save = async () => {
         <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.pressKitHeading') }}</h2>
         <p class="text-muted max-w-3xl text-sm">
           {{ t('admin.siteDefaultImages.pressKitIntroBefore') }}
-          <span class="text-foreground/90">1240 × 1754 px</span>
+          <span class="text-default">1240 × 1754 px</span>
           {{ t('admin.siteDefaultImages.pressKitIntroAfter') }}
         </p>
         <UCard class="max-w-xs">
@@ -561,7 +557,7 @@ const save = async () => {
         <h2 class="text-lg font-semibold">{{ t('admin.siteDefaultImages.carouselHeading') }}</h2>
         <p class="text-muted max-w-3xl text-sm">
           {{ t('admin.siteDefaultImages.carouselIntroBefore') }}
-          <span class="text-foreground/90">1925×550 px</span>
+          <span class="text-default">1925×550 px</span>
           {{ t('admin.siteDefaultImages.carouselIntroAfter') }}
         </p>
         <UCard>
@@ -636,7 +632,7 @@ const save = async () => {
         <h2 class="text-base font-semibold">{{ t('admin.siteDefaultImages.seoHeading') }}</h2>
         <p class="text-muted max-w-xl text-xs">
           {{ t('admin.siteDefaultImages.seoIntroBefore') }}
-          <span class="text-foreground/90">1200×630 px</span>
+          <span class="text-default">1200×630 px</span>
           {{ t('admin.siteDefaultImages.seoIntroAfter') }}
         </p>
         <UCard class="max-w-md">
@@ -848,5 +844,5 @@ const save = async () => {
         </div>
       </section>
     </div>
-  </div>
+  </AdminPage>
 </template>

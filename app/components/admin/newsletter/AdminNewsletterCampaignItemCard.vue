@@ -48,7 +48,7 @@ const canMoveDown = computed(() => props.index < props.total - 1)
 
 <template>
   <li
-    class="bg-surface ring-default rounded-xl p-3 shadow-sm ring-1"
+    class="bg-default ring-default rounded-xl p-3 shadow-sm ring-1"
     :class="isUnavailable || unavailableReason ? 'ring-error/60' : ''"
   >
     <div class="flex items-start gap-3">

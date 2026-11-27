@@ -989,7 +989,9 @@
       "uploadRequestTooLarge": "El fitxer o la sol·licitud supera la mida màxima permesa",
       "fileUploaded": "Fitxer pujat correctament",
       "fileUploadFailed": "No s'ha pogut pujar el fitxer",
-      "back": "Torna"
+      "back": "Torna",
+      "new": "Nou",
+      "more": "Més accions"
     },
     "media": {
       "title": "Mitjans de comunicació",
@@ -1076,6 +1078,30 @@
       "activity": {
         "name": "La nostra activitat",
         "description": "Entrades d’activitat i informes mensuals d’àrees."
+      },
+      "groups": {
+        "content": "Contingut",
+        "site": "Pàgines del lloc",
+        "catalogs": "Catàlegs i ajustos",
+        "system": "Sistema"
+      },
+      "activityEntries": {
+        "name": "Entrades"
+      },
+      "areaReports": {
+        "name": "Informes d'àrees"
+      },
+      "memberOrgCatalog": {
+        "name": "Organitzacions"
+      },
+      "areaCatalog": {
+        "name": "Àrees"
+      },
+      "newsletterCampaigns": {
+        "name": "Campanyes"
+      },
+      "newsletterSubscribers": {
+        "name": "Subscriptors"
       }
     },
     "layout": {
@@ -1083,16 +1109,26 @@
       "signOut": "Tanca la sessió",
       "viewSite": "Veure el lloc",
       "viewSiteAria": "Veure el lloc (s'obre en una pestanya nova)",
-      "collapseSidebar": "Contreu el menú lateral",
-      "expandSidebar": "Expandeix el menú lateral",
-      "closeSidebar": "Tanca el menú lateral",
       "skipToNav": "Ves al menú principal",
       "skipToContent": "Ves al contingut principal",
       "mainNavLabel": "Navegació principal",
-      "userMenu": "Menú d'usuari",
-      "loadingSession": "Carregant sessió...",
-      "userAvatar": "Avatar de {name}",
-      "userAvatarFallback": "Avatar d'usuari"
+      "brandHome": "Inici del tauler d'administració",
+      "brandProduct": "Admin",
+      "sidebarTitle": "Menú d'administració",
+      "sidebarDescription": "Seccions del tauler i el teu compte",
+      "breadcrumbLabel": "Ruta de navegació",
+      "backTo": "Torna a {label}",
+      "userMenuFor": "Menú del compte de {name}",
+      "preferences": "Preferències",
+      "preferencesDescription": "Idioma i tema del tauler. Els canvis s'apliquen a l'instant.",
+      "done": "Fet",
+      "language": "Idioma",
+      "theme": "Tema",
+      "themes": {
+        "system": "Segons el sistema",
+        "light": "Clar",
+        "dark": "Fosc"
+      }
     },
     "carousel": {
       "title": "Carrusel",
@@ -1408,7 +1444,6 @@
         "pdfUploaded": "PDF pujat correctament",
         "pdfUploadError": "No s'ha pogut pujar el PDF",
         "pdfTooLarge": "El PDF supera la mida màxima (20MB)",
-        "back": "Torna",
         "editingLabel": "Editant",
         "newLabel": "Nou",
         "saveChanges": "Desa els canvis",
@@ -1544,7 +1579,6 @@
       "list": {
         "title": "Campanyes de newsletter",
         "subtitle": "Cada campanya és un correu muntat amb contingut ja publicat al web.",
-        "subscribers": "Subscriptors",
         "newCampaign": "Nova campanya",
         "loadErrorTitle": "No s’han pogut carregar les campanyes",
         "empty": "Encara no hi ha campanyes.",
@@ -1809,7 +1843,8 @@
       "recentActivity": "Activitat recent",
       "recentActivityHint": "L'últim que s'ha tocat al tauler.",
       "noRecentActivity": "Encara no hi ha activitat recent per mostrar.",
-      "loadError": "No s'ha pogut carregar el resum del tauler"
+      "loadError": "No s'ha pogut carregar el resum del tauler",
+      "sections": "Seccions del tauler"
     },
     "login": {
       "title": "Administració",
@@ -1905,11 +1940,6 @@
         "confirm": "Crea-la igualment"
       },
       "unsavedChangesPrompt": "Hi ha canvis sense desar. Si surts ara, es perdran.",
-      "subnav": {
-        "aria": "Subseccions d’Activitat",
-        "entries": "Entrades",
-        "reports": "Informes d’àrees"
-      },
       "kinds": {
         "creup": "CREUP",
         "member": "Membre"
@@ -1932,8 +1962,7 @@
         "clearSearch": "Neteja la cerca",
         "emptyState": "Encara no hi ha entrades d’activitat",
         "createFirst": "Crea la primera entrada",
-        "paginationAria": "Paginació d’entrades",
-        "manageOrganisers": "Gestiona les organitzacions"
+        "paginationAria": "Paginació d’entrades"
       },
       "toast": {
         "deleted": "Entrada eliminada",
@@ -1949,7 +1978,6 @@
         "snapshotRefreshError": "No s’han pogut actualitzar les dades de l’organitzador"
       },
       "form": {
-        "back": "Torna",
         "editingLabel": "Editant activitat",
         "newLabel": "Nova activitat",
         "saveChanges": "Desa els canvis",
@@ -2024,8 +2052,7 @@
         "emptyState": "Encara no hi ha informes d’àrees",
         "createFirst": "Crea el primer informe",
         "paginationAria": "Paginació d’informes",
-        "unknownArea": "Àrea sense nom",
-        "manageAreas": "Gestiona les àrees"
+        "unknownArea": "Àrea sense nom"
       },
       "toast": {
         "deleted": "Informe eliminat",
@@ -2038,7 +2065,6 @@
         "conflictFallback": "No s’ha pogut desar l’informe per un conflicte. Revisa el mes, l’àrea i el període."
       },
       "form": {
-        "back": "Torna",
         "editingLabel": "Editant informe",
         "newLabel": "Nou informe",
         "saveChanges": "Desa els canvis",
@@ -2353,7 +2379,7 @@
         },
         "auth": {
           "label": "Galetes d'autenticació i sessió (better-auth)",
-          "desc": " S'utilitzen exclusivament quan un administrador inicia sessió al panell d'administració. Inclouen tokens de sessió i autenticació OAuth. No s'empren per als visitants públics del lloc. "
+          "desc": " S'utilitzen exclusivament quan un administrador inicia sessió al panell d'administració. Inclouen tokens de sessió i autenticació OAuth. No s'empren per als visitants públics del lloc. El tauler també desa a la galeta admin-dashboard-sidebar-admin si el menú lateral està plegat i la seva amplada. "
         },
         "prefs": {
           "label": "Emmagatzematge local de preferències d'interfície",

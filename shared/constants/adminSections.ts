@@ -15,107 +15,146 @@ export type AdminSectionKey =
   | 'financialReports'
   | 'activity'
 
-export interface AdminSectionDefinition {
-  key: AdminSectionKey
-  name: string
-  description: string
+export type AdminSubsectionKey =
+  | 'activityEntries'
+  | 'areaReports'
+  | 'memberOrgCatalog'
+  | 'areaCatalog'
+  | 'newsletterCampaigns'
+  | 'newsletterSubscribers'
+
+/** The labelled groups of the admin sidebar, in the order they show. */
+export type AdminNavGroupKey = 'content' | 'site' | 'catalogs' | 'system'
+
+export const ADMIN_NAV_GROUPS: readonly AdminNavGroupKey[] = [
+  'content',
+  'site',
+  'catalogs',
+  'system',
+]
+
+export interface AdminSubsectionDefinition {
+  key: AdminSubsectionKey
   to: string
   icon: string
-  envOnly?: boolean
 }
 
+/**
+ * One admin section: its sidebar entry, its card on the dashboard and the first level of the
+ * breadcrumb trail of every page under `to`. Names and descriptions are i18n keys
+ * (`admin.nav.<key>.name` / `.description`), never literals here.
+ *
+ * `children` are the section's own pages, listed under it in the sidebar; the first one is the
+ * section's landing page and shares its `to`.
+ */
+export interface AdminSectionDefinition {
+  key: AdminSectionKey
+  group: AdminNavGroupKey
+  to: string
+  icon: string
+  /** Only shown to the admins listed in `NUXT_ADMIN_EMAILS`; the server enforces it too. */
+  envOnly?: boolean
+  children?: AdminSubsectionDefinition[]
+}
+
+/** Ordered by group, then by how often each section is used. */
 export const ADMIN_SECTION_DEFINITIONS: AdminSectionDefinition[] = [
   {
+    key: 'press',
+    group: 'content',
+    to: ADMIN_ROUTES.press,
+    icon: 'i-tabler-news',
+  },
+  {
+    key: 'activity',
+    group: 'content',
+    to: ADMIN_ROUTES.activity,
+    icon: 'i-tabler-calendar-event',
+    children: [
+      { key: 'activityEntries', to: ADMIN_ROUTES.activity, icon: 'i-tabler-list-details' },
+      { key: 'areaReports', to: ADMIN_ROUTES.activityReports, icon: 'i-tabler-report' },
+      {
+        key: 'memberOrgCatalog',
+        to: ADMIN_ROUTES.memberOrgCatalog,
+        icon: 'i-tabler-building-community',
+      },
+      { key: 'areaCatalog', to: ADMIN_ROUTES.areaCatalog, icon: 'i-tabler-category' },
+    ],
+  },
+  {
+    key: 'newsletter',
+    group: 'content',
+    to: ADMIN_ROUTES.newsletter,
+    icon: 'i-tabler-mail',
+    children: [
+      { key: 'newsletterCampaigns', to: ADMIN_ROUTES.newsletter, icon: 'i-tabler-send' },
+      {
+        key: 'newsletterSubscribers',
+        to: ADMIN_ROUTES.newsletterSubscribers,
+        icon: 'i-tabler-users',
+      },
+    ],
+  },
+  {
+    key: 'carousel',
+    group: 'site',
+    to: ADMIN_ROUTES.carousel,
+    icon: 'i-tabler-photo',
+  },
+  {
+    key: 'links',
+    group: 'site',
+    to: ADMIN_ROUTES.links,
+    icon: 'i-tabler-link',
+  },
+  {
+    key: 'about',
+    group: 'site',
+    to: ADMIN_ROUTES.about,
+    icon: 'i-tabler-info-circle',
+  },
+  {
+    key: 'equality',
+    group: 'site',
+    to: ADMIN_ROUTES.equality,
+    icon: 'i-tabler-scale',
+  },
+  {
+    key: 'financialReports',
+    group: 'site',
+    to: ADMIN_ROUTES.financialReports,
+    icon: 'i-tabler-file-analytics',
+  },
+  {
+    key: 'tags',
+    group: 'catalogs',
+    to: ADMIN_ROUTES.tags,
+    icon: 'i-tabler-tags',
+  },
+  {
+    key: 'media',
+    group: 'catalogs',
+    to: ADMIN_ROUTES.media,
+    icon: 'i-tabler-broadcast',
+  },
+  {
+    key: 'siteDefaultImages',
+    group: 'catalogs',
+    to: ADMIN_ROUTES.siteDefaultImages,
+    icon: 'i-tabler-photo-scan',
+  },
+  {
     key: 'access',
-    name: 'Accesos',
-    description: 'Personas autorizadas para entrar al panel.',
+    group: 'system',
     to: ADMIN_ROUTES.access,
     icon: 'i-tabler-shield-lock',
     envOnly: true,
   },
   {
     key: 'stats',
-    name: 'Estado',
-    description: 'Métricas operativas y salud básica del servicio.',
+    group: 'system',
     to: ADMIN_ROUTES.stats,
     icon: 'i-tabler-activity-heartbeat',
     envOnly: true,
-  },
-  {
-    key: 'carousel',
-    name: 'Carrusel',
-    description: 'Slides destacados de la portada.',
-    to: ADMIN_ROUTES.carousel,
-    icon: 'i-tabler-photo',
-  },
-  {
-    key: 'about',
-    name: 'Qué es CREUP',
-    description: 'Banner principal de la página.',
-    to: ADMIN_ROUTES.about,
-    icon: 'i-tabler-info-circle',
-  },
-  {
-    key: 'equality',
-    name: 'Igualdad',
-    description: 'Documentos y tarjetas de la página de igualdad.',
-    to: ADMIN_ROUTES.equality,
-    icon: 'i-tabler-scale',
-  },
-  {
-    key: 'newsletter',
-    name: 'Newsletter',
-    description: 'Campañas de contenido y suscriptores.',
-    to: ADMIN_ROUTES.newsletter,
-    icon: 'i-tabler-mail',
-  },
-  {
-    key: 'press',
-    name: 'Noticias',
-    description: 'Artículos, comunicados y apariciones en medios.',
-    to: ADMIN_ROUTES.press,
-    icon: 'i-tabler-news',
-  },
-  {
-    key: 'siteDefaultImages',
-    name: 'Imágenes por defecto',
-    description: 'Portadas de prensa, actividad y carrusel cuando no hay imagen propia.',
-    to: ADMIN_ROUTES.siteDefaultImages,
-    icon: 'i-tabler-photo-scan',
-  },
-  {
-    key: 'links',
-    name: 'Enlaces',
-    description: 'Bloques destacados y accesos rápidos.',
-    to: ADMIN_ROUTES.links,
-    icon: 'i-tabler-link',
-  },
-  {
-    key: 'tags',
-    name: 'Etiquetas',
-    description: 'Taxonomía usada para clasificar prensa.',
-    to: ADMIN_ROUTES.tags,
-    icon: 'i-tabler-tags',
-  },
-  {
-    key: 'media',
-    name: 'Medios',
-    description: 'Medios asociados a apariciones en prensa.',
-    to: ADMIN_ROUTES.media,
-    icon: 'i-tabler-broadcast',
-  },
-  {
-    key: 'financialReports',
-    name: 'Informes económicos',
-    description: 'Informes aprobados por la Asamblea General.',
-    to: ADMIN_ROUTES.financialReports,
-    icon: 'i-tabler-file-analytics',
-  },
-  {
-    key: 'activity',
-    name: 'Nuestra actividad',
-    description: 'Entradas de actividad e informes mensuales de áreas.',
-    to: ADMIN_ROUTES.activity,
-    icon: 'i-tabler-calendar-event',
   },
 ]

@@ -29,7 +29,7 @@ const mobileOpenSections = ref<string[]>([])
 const getMobilePrimaryIconClass = (isActive?: boolean) =>
   isActive ? 'bg-primary/12 text-primary' : 'bg-primary/10 text-primary'
 const getMobileChildIconClass = (isActive?: boolean) =>
-  isActive ? 'bg-primary/12 text-primary' : 'bg-muted text-muted-foreground'
+  isActive ? 'bg-primary/12 text-primary' : 'bg-muted text-muted'
 
 watch(menuOpen, (isOpen) => {
   if (!isOpen || import.meta.server) {

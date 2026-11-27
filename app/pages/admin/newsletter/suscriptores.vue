@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
-import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Suscriptores de newsletter',
 })
 
 interface Subscriber {
@@ -18,7 +16,6 @@ interface Subscriber {
 const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const toast = useAdminToast()
-const localePath = useLocalePath()
 const { formatDate: formatLocaleDate } = useLocaleFormatting()
 const LIMIT = 20
 const page = ref(1)
@@ -198,33 +195,15 @@ function formatDate(iso: string) {
 </script>
 
 <template>
-  <div>
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2">
-          <UButton
-            :to="localePath(ADMIN_ROUTES.newsletter)"
-            icon="i-tabler-arrow-left"
-            variant="ghost"
-            size="sm"
-          />
-          <h1 class="text-2xl font-bold">{{ t('admin.newsletter.subscribers.title') }}</h1>
-        </div>
-        <p class="text-muted mt-1 text-sm">
-          {{
-            t('admin.newsletter.subscribers.activeOfTotal', {
-              active: activeCount,
-              total: totalCount,
-            })
-          }}
-        </p>
-      </div>
-      <UButton icon="i-tabler-plus" @click="showAddModal = true">{{
-        t('admin.common.add')
-      }}</UButton>
-    </div>
+  <AdminPage :title="t('admin.newsletter.subscribers.title')">
+    <template #actions>
+      <UButton icon="i-tabler-plus" @click="showAddModal = true">
+        <span class="hidden sm:inline">{{ t('admin.common.add') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.common.add') }}</span>
+      </UButton>
+    </template>
 
-    <div class="mb-4 flex flex-wrap items-center gap-3">
+    <template #toolbar>
       <UInput
         v-model="search"
         icon="i-tabler-search"
@@ -240,7 +219,18 @@ function formatDate(iso: string) {
       >
         {{ t('admin.newsletter.subscribers.activeOnly') }}
       </UButton>
-    </div>
+    </template>
+
+    <template #toolbar-right>
+      <span class="text-muted text-sm" aria-live="polite">
+        {{
+          t('admin.newsletter.subscribers.activeOfTotal', {
+            active: activeCount,
+            total: totalCount,
+          })
+        }}
+      </span>
+    </template>
 
     <div ref="resultsRef" aria-live="polite" :aria-busy="pending || undefined">
       <div v-if="isLoading" class="space-y-3" aria-hidden="true">
@@ -249,17 +239,22 @@ function formatDate(iso: string) {
         <USkeleton class="h-16 w-full rounded-xl" />
       </div>
 
-      <div v-else-if="fetchError" class="space-y-3">
-        <UAlert
-          color="error"
-          variant="soft"
-          :title="t('admin.newsletter.subscribers.loadErrorTitle')"
-          :description="t('admin.common.loadErrorDescription')"
-        />
-        <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-          {{ t('admin.common.retry') }}
-        </UButton>
-      </div>
+      <UAlert
+        v-else-if="fetchError"
+        color="error"
+        variant="soft"
+        :title="t('admin.newsletter.subscribers.loadErrorTitle')"
+        :description="t('admin.common.loadErrorDescription')"
+        :actions="[
+          {
+            label: t('admin.common.retry'),
+            icon: 'i-tabler-refresh',
+            color: 'neutral',
+            variant: 'outline',
+            onClick: () => refresh(),
+          },
+        ]"
+      />
 
       <div v-else-if="filteredItems.length === 0" class="py-12 text-center">
         <p class="text-muted">
@@ -288,7 +283,7 @@ function formatDate(iso: string) {
         <div
           v-for="item in filteredItems"
           :key="item.id"
-          class="bg-surface ring-default flex items-center gap-4 rounded-lg px-4 py-3 ring-1"
+          class="bg-default ring-default flex items-center gap-4 rounded-lg px-4 py-3 ring-1"
         >
           <div class="flex-1 overflow-hidden">
             <p class="truncate font-medium">{{ item.email }}</p>
@@ -326,6 +321,11 @@ function formatDate(iso: string) {
                 :icon="item.active ? 'i-tabler-user-minus' : 'i-tabler-user-plus'"
                 variant="ghost"
                 size="sm"
+                :aria-label="
+                  item.active
+                    ? t('admin.newsletter.subscribers.deactivate')
+                    : t('admin.newsletter.subscribers.reactivate')
+                "
                 @click="toggleActive(item)"
               />
             </UTooltip>
@@ -335,6 +335,7 @@ function formatDate(iso: string) {
                 variant="ghost"
                 color="error"
                 size="sm"
+                :aria-label="t('admin.common.delete')"
                 @click="confirmDelete(item)"
               />
             </UTooltip>
@@ -409,5 +410,5 @@ function formatDate(iso: string) {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

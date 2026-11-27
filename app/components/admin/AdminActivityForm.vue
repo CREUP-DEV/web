@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
+import type { DropdownMenuItem } from '@nuxt/ui'
 import type { AdminActivityEntry, AdminActivityKind } from '@/composables/admin/useAdminActivity'
 import type { AdminMemberOrg } from '@/components/admin/activity/AdminActivityOrganiserPanel.vue'
 import { activityEntryClientSchema } from './activityFormSchema'
@@ -43,7 +44,7 @@ interface ActivityFormTranslation {
 const { t } = useI18n()
 const localeApiHeaders = useLocaleApiHeaders()
 const localePath = useLocalePath()
-const { createEmptyTranslations } = useLocales()
+const { createEmptyTranslations, getDefaultTranslationValue } = useLocales()
 const { clearErrors, getFieldError, validate } = useFormValidation()
 
 const {
@@ -181,6 +182,20 @@ const savedEntryLink = computed(() => {
  */
 const canRefreshSnapshot = computed(() => props.entry?.kind === 'member')
 
+/** The «Más» menu: the re-snapshot, with the reason it is locked as its description. */
+const moreItems = computed<DropdownMenuItem[]>(() => [
+  {
+    label: t('admin.activity.form.refreshSnapshot'),
+    icon: 'i-tabler-refresh',
+    description: hasUnsavedChanges.value
+      ? t('admin.activity.form.refreshSnapshotUnsaved')
+      : t('admin.activity.form.refreshSnapshotHint'),
+    loading: props.refreshingSnapshot,
+    disabled: hasUnsavedChanges.value || props.submitting || props.refreshingSnapshot,
+    onSelect: () => emit('refreshSnapshot'),
+  },
+])
+
 const clearImage = () => {
   form.image = ''
   imageUpload.setPreview(null)
@@ -225,6 +240,20 @@ const canSubmit = computed(() => !(orgsError.value && form.kind === 'member'))
 const submitDisabledReason = computed(() =>
   canSubmit.value ? '' : t('admin.activity.form.organiserLoadError')
 )
+
+/** The form element's id, so the navbar's submit button (outside it) can submit it. */
+const formId = useId()
+
+/** The navbar names the saved entry; a new one by its kind, as «Nueva actividad · CREUP». */
+const pageTitle = computed(() => {
+  const savedTitle = props.entry
+    ? getDefaultTranslationValue(props.entry.translations, 'title')
+    : ''
+  return (
+    savedTitle ||
+    `${isEditing.value ? t('admin.activity.form.editingLabel') : t('admin.activity.form.newLabel')} · ${kindLabels[form.kind]}`
+  )
+})
 
 const handleSubmit = () => {
   if (!canSubmit.value) return
@@ -319,144 +348,130 @@ const confirmCancel = () => {
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit">
-    <UAlert
-      v-if="orgsError && form.kind === 'member'"
-      color="error"
-      variant="soft"
-      :title="t('admin.activity.form.organiserLoadError')"
-      :description="t('admin.activity.form.organiserLoadErrorDescription')"
-      class="mb-6"
-    />
-
-    <div
-      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
-    >
-      <div class="flex min-w-0 items-center gap-3">
+  <AdminPage :title="pageTitle">
+    <template #actions>
+      <UDropdownMenu v-if="canRefreshSnapshot" :items="moreItems" :content="{ align: 'end' }">
         <UButton
           type="button"
-          variant="ghost"
-          icon="i-tabler-arrow-left"
-          size="sm"
-          @click="handleCancel"
-        >
-          {{ t('admin.activity.form.back') }}
-        </UButton>
-        <USeparator orientation="vertical" class="h-5 shrink-0" />
-        <UIcon :name="kindIcons[form.kind]" class="text-muted size-4 shrink-0" />
-        <span class="text-muted truncate text-sm">
-          {{
-            isEditing ? t('admin.activity.form.editingLabel') : t('admin.activity.form.newLabel')
-          }}
-          · {{ kindLabels[form.kind] }}
-        </span>
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <UButton
-          v-if="canRefreshSnapshot"
-          type="button"
-          variant="outline"
           color="neutral"
-          icon="i-tabler-refresh"
-          size="sm"
-          :loading="refreshingSnapshot"
-          :disabled="hasUnsavedChanges || submitting"
-          :title="
-            hasUnsavedChanges
-              ? t('admin.activity.form.refreshSnapshotUnsaved')
-              : t('admin.activity.form.refreshSnapshotHint')
-          "
-          @click="emit('refreshSnapshot')"
-        >
-          {{ t('admin.activity.form.refreshSnapshot') }}
-        </UButton>
-        <UButton
-          v-if="savedEntryLink"
-          type="button"
           variant="ghost"
-          :icon="savedEntryLink.icon"
-          size="sm"
-          :to="savedEntryLink.to"
-          target="_blank"
-          :title="savedEntryLink.label"
-          :aria-label="savedEntryLink.label"
+          square
+          icon="i-tabler-dots"
+          :loading="refreshingSnapshot"
+          :title="t('admin.common.more')"
+          :aria-label="t('admin.common.more')"
         />
-        <UButton
-          type="submit"
-          icon="i-tabler-check"
-          :loading="submitting"
-          :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
-          :title="submitDisabledReason || undefined"
-        >
+      </UDropdownMenu>
+      <UButton type="button" color="neutral" variant="ghost" @click="handleCancel">
+        {{ t('admin.common.cancel') }}
+      </UButton>
+      <UButton
+        v-if="savedEntryLink"
+        type="button"
+        color="neutral"
+        variant="ghost"
+        :icon="savedEntryLink.icon"
+        :to="savedEntryLink.to"
+        target="_blank"
+        :title="savedEntryLink.label"
+        :aria-label="savedEntryLink.label"
+      />
+      <UButton
+        type="submit"
+        :form="formId"
+        icon="i-tabler-check"
+        :loading="submitting"
+        :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
+        :title="submitDisabledReason || undefined"
+      >
+        <span class="hidden sm:inline">
           {{
             isEditing ? t('admin.activity.form.saveChanges') : t('admin.activity.form.createEntry')
           }}
-        </UButton>
+        </span>
+        <span class="sr-only sm:hidden">
+          {{
+            isEditing ? t('admin.activity.form.saveChanges') : t('admin.activity.form.createEntry')
+          }}
+        </span>
+      </UButton>
+    </template>
+
+    <form :id="formId" @submit.prevent="handleSubmit">
+      <UAlert
+        v-if="orgsError && form.kind === 'member'"
+        color="error"
+        variant="soft"
+        :title="t('admin.activity.form.organiserLoadError')"
+        :description="t('admin.activity.form.organiserLoadErrorDescription')"
+        class="mb-6"
+      />
+
+      <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
+        <div class="min-w-0 space-y-6">
+          <AdminLocaleTabs
+            v-model="activeLocale"
+            :id-prefix="idPrefix"
+            :status="status"
+            :invalid-locales="invalidLocales"
+          />
+
+          <AdminActivityTranslationCard
+            v-for="(trans, index) in form.translations"
+            v-show="index === activeIndex"
+            :id="panelId(trans.locale)"
+            :key="trans.locale"
+            v-model:title="trans.title"
+            v-model:excerpt="trans.excerpt"
+            v-model:content-html="trans.contentHtml"
+            v-model:image-caption="trans.imageCaption"
+            v-model:alt="trans.alt"
+            role="tabpanel"
+            :aria-labelledby="panelLabelledBy(trans.locale)"
+            :translation="trans"
+            :index="index"
+            :title-error="getFieldError(`translations.${index}.title`)"
+            :excerpt-error="getFieldError(`translations.${index}.excerpt`)"
+            :content-error="getFieldError(`translations.${index}.contentHtml`)"
+          />
+        </div>
+
+        <aside class="space-y-6 xl:sticky xl:top-0 xl:self-start">
+          <AdminActivityConfigPanel
+            v-model:kind="form.kind"
+            v-model:start-date="startDate"
+            v-model:end-date="endDate"
+            v-model:is-online="form.isOnline"
+            v-model:location="form.location"
+            v-model:active="form.active"
+            :is-editing="isEditing"
+            :kind-labels="kindLabels"
+            :kind-icons="kindIcons"
+            :start-date-error="getFieldError('startDate')"
+            :end-date-error="getFieldError('endDate')"
+          />
+
+          <AdminActivityOrganiserPanel
+            v-if="form.kind === 'member'"
+            v-model:selected-key="form.organiserKey"
+            :organisations="organisations"
+            :has-error="Boolean(orgsError)"
+            :organiser-error="getFieldError('memberOrgId')"
+            :frozen-snapshot="entry?.memberOrgSnapshot ?? null"
+          />
+
+          <AdminActivityImagePanel
+            :upload="imageUpload"
+            :has-image="Boolean(form.image)"
+            :image-error="getFieldError('image')"
+            @clear="clearImage"
+          />
+        </aside>
       </div>
-    </div>
 
-    <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
-      <div class="min-w-0 space-y-6">
-        <AdminLocaleTabs
-          v-model="activeLocale"
-          :id-prefix="idPrefix"
-          :status="status"
-          :invalid-locales="invalidLocales"
-        />
+      <AdminActivityCancelModal v-model:open="showCancelModal" @confirm="confirmCancel" />
+    </form>
 
-        <AdminActivityTranslationCard
-          v-for="(trans, index) in form.translations"
-          v-show="index === activeIndex"
-          :id="panelId(trans.locale)"
-          :key="trans.locale"
-          v-model:title="trans.title"
-          v-model:excerpt="trans.excerpt"
-          v-model:content-html="trans.contentHtml"
-          v-model:image-caption="trans.imageCaption"
-          v-model:alt="trans.alt"
-          role="tabpanel"
-          :aria-labelledby="panelLabelledBy(trans.locale)"
-          :translation="trans"
-          :index="index"
-          :title-error="getFieldError(`translations.${index}.title`)"
-          :excerpt-error="getFieldError(`translations.${index}.excerpt`)"
-          :content-error="getFieldError(`translations.${index}.contentHtml`)"
-        />
-      </div>
-
-      <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
-        <AdminActivityConfigPanel
-          v-model:kind="form.kind"
-          v-model:start-date="startDate"
-          v-model:end-date="endDate"
-          v-model:is-online="form.isOnline"
-          v-model:location="form.location"
-          v-model:active="form.active"
-          :is-editing="isEditing"
-          :kind-labels="kindLabels"
-          :kind-icons="kindIcons"
-          :start-date-error="getFieldError('startDate')"
-          :end-date-error="getFieldError('endDate')"
-        />
-
-        <AdminActivityOrganiserPanel
-          v-if="form.kind === 'member'"
-          v-model:selected-key="form.organiserKey"
-          :organisations="organisations"
-          :has-error="Boolean(orgsError)"
-          :organiser-error="getFieldError('memberOrgId')"
-          :frozen-snapshot="entry?.memberOrgSnapshot ?? null"
-        />
-
-        <AdminActivityImagePanel
-          :upload="imageUpload"
-          :has-image="Boolean(form.image)"
-          :image-error="getFieldError('image')"
-          @clear="clearImage"
-        />
-      </aside>
-    </div>
-
-    <AdminActivityCancelModal v-model:open="showCancelModal" @confirm="confirmCancel" />
-  </form>
+    <slot />
+  </AdminPage>
 </template>

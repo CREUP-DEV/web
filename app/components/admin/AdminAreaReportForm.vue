@@ -287,6 +287,20 @@ const snapshotAreaName = computed(() => {
   return pickLocalizedValue(snapshot, locale.value, fallbackLocale) ?? null
 })
 
+/** The form element's id, so the navbar's submit button (outside it) can submit it. */
+const formId = useId()
+
+/**
+ * Reports have no title of their own: the navbar names a saved one by its area and month, as the
+ * list does, and a new one by the «new» label.
+ */
+const pageTitle = computed(() => {
+  if (!props.report) return t('admin.areaReports.form.newLabel')
+  return snapshotAreaName.value
+    ? `${snapshotAreaName.value} · ${props.report.monthKey}`
+    : t('admin.areaReports.form.editingLabel')
+})
+
 const showCancelModal = ref(false)
 const handleCancel = () => {
   if (hasUnsavedChanges.value) {
@@ -302,169 +316,165 @@ const confirmCancel = () => {
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit">
-    <UAlert
-      v-if="!isEditing && areasError"
-      color="error"
-      variant="soft"
-      :title="t('admin.areaReports.form.areasLoadError')"
-      :description="t('admin.areaReports.form.areasLoadErrorDescription')"
-      class="mb-6"
-    />
-
-    <div
-      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
-    >
-      <div class="flex min-w-0 items-center gap-3">
-        <UButton
-          type="button"
-          variant="ghost"
-          icon="i-tabler-arrow-left"
-          size="sm"
-          @click="handleCancel"
-        >
-          {{ t('admin.areaReports.form.back') }}
-        </UButton>
-        <USeparator orientation="vertical" class="h-5 shrink-0" />
-        <span class="text-muted truncate text-sm">
-          {{
-            isEditing
-              ? t('admin.areaReports.form.editingLabel')
-              : t('admin.areaReports.form.newLabel')
-          }}
-        </span>
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <UButton
-          type="submit"
-          icon="i-tabler-check"
-          :loading="submitting"
-          :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
-          :title="submitDisabledReason || undefined"
-        >
+  <AdminPage :title="pageTitle">
+    <template #actions>
+      <UButton type="button" color="neutral" variant="ghost" @click="handleCancel">
+        {{ t('admin.common.cancel') }}
+      </UButton>
+      <UButton
+        type="submit"
+        :form="formId"
+        icon="i-tabler-check"
+        :loading="submitting"
+        :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
+        :title="submitDisabledReason || undefined"
+      >
+        <span class="hidden sm:inline">
           {{
             isEditing
               ? t('admin.areaReports.form.saveChanges')
               : t('admin.areaReports.form.createReport')
           }}
-        </UButton>
-      </div>
-    </div>
+        </span>
+        <span class="sr-only sm:hidden">
+          {{
+            isEditing
+              ? t('admin.areaReports.form.saveChanges')
+              : t('admin.areaReports.form.createReport')
+          }}
+        </span>
+      </UButton>
+    </template>
 
-    <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
-      <div class="min-w-0 space-y-6">
-        <AdminLocaleTabs
-          v-model="activeLocale"
-          :id-prefix="idPrefix"
-          :status="status"
-          :invalid-locales="invalidLocales"
-        />
+    <form :id="formId" @submit.prevent="handleSubmit">
+      <UAlert
+        v-if="!isEditing && areasError"
+        color="error"
+        variant="soft"
+        :title="t('admin.areaReports.form.areasLoadError')"
+        :description="t('admin.areaReports.form.areasLoadErrorDescription')"
+        class="mb-6"
+      />
 
-        <AdminActivityAreaReportTranslationCard
-          v-for="(trans, index) in form.translations"
-          v-show="index === activeIndex"
-          :id="panelId(trans.locale)"
-          :key="trans.locale"
-          v-model:content-html="trans.contentHtml"
-          v-model:image-caption="trans.imageCaption"
-          v-model:alt="trans.alt"
-          role="tabpanel"
-          :aria-labelledby="panelLabelledBy(trans.locale)"
-          :translation="trans"
-          :index="index"
-          :content-error="getFieldError(`translations.${index}.contentHtml`)"
-        />
-      </div>
+      <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
+        <div class="min-w-0 space-y-6">
+          <AdminLocaleTabs
+            v-model="activeLocale"
+            :id-prefix="idPrefix"
+            :status="status"
+            :invalid-locales="invalidLocales"
+          />
 
-      <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
-        <div class="space-y-5 rounded-xl border p-5">
-          <h3 class="flex items-center gap-2 text-sm font-semibold">
-            <UIcon name="i-tabler-settings" class="text-muted size-4" />
-            {{ t('admin.areaReports.form.configTitle') }}
-          </h3>
-
-          <UFormField
-            :label="`${t('admin.areaReports.form.areaLabel')} *`"
-            :error="getFieldError('areaId')"
-          >
-            <USelectMenu
-              v-if="!isEditing"
-              :model-value="form.areaId ?? undefined"
-              :items="areaSelectItems"
-              value-key="value"
-              class="w-full"
-              :placeholder="t('admin.areaReports.form.areaPlaceholder')"
-              :disabled="Boolean(areasError)"
-              @update:model-value="form.areaId = ($event as number | undefined) ?? null"
-            />
-            <!-- The area is fixed once the report exists, so on edit it is shown read-only. -->
-            <p v-else class="text-sm">{{ snapshotAreaName ?? '—' }}</p>
-          </UFormField>
-
-          <UFormField
-            :label="`${t('admin.areaReports.form.monthLabel')} *`"
-            :error="getFieldError('monthKey')"
-          >
-            <ClientOnly>
-              <AdminMonthPicker
-                v-model="monthPickerValue"
-                :hint="t('admin.areaReports.form.monthHint')"
-                :taken-label="t('admin.areaReports.form.monthTaken')"
-              />
-              <template #fallback>
-                <UInput
-                  :model-value="form.monthKey"
-                  placeholder="YYYY-MM"
-                  class="w-full"
-                  @update:model-value="form.monthKey = String($event)"
-                />
-              </template>
-            </ClientOnly>
-          </UFormField>
-
-          <UFormField
-            :label="t('admin.areaReports.form.coversFromLabel')"
-            :error="getFieldError('coversFrom')"
-          >
-            <div class="mb-2 flex items-center gap-2">
-              <USwitch :model-value="hasCoversFrom" @update:model-value="toggleCoversFrom" />
-              <span class="text-muted text-sm">{{
-                t('admin.areaReports.form.coversFromToggle')
-              }}</span>
-            </div>
-            <ClientOnly v-if="hasCoversFrom">
-              <AdminMonthPicker v-model="coversFromPickerValue" hint="" />
-              <template #fallback>
-                <UInput
-                  :model-value="form.coversFrom"
-                  placeholder="YYYY-MM"
-                  class="w-full"
-                  @update:model-value="form.coversFrom = String($event)"
-                />
-              </template>
-            </ClientOnly>
-            <p class="text-muted mt-1 text-xs">{{ t('admin.areaReports.form.coversFromHint') }}</p>
-          </UFormField>
-
-          <UFormField :label="t('admin.areaReports.form.statusLabel')">
-            <div class="flex items-center gap-2">
-              <USwitch v-model="form.active" />
-              <span class="text-sm">{{
-                form.active ? t('admin.common.active') : t('admin.common.inactive')
-              }}</span>
-            </div>
-          </UFormField>
+          <AdminActivityAreaReportTranslationCard
+            v-for="(trans, index) in form.translations"
+            v-show="index === activeIndex"
+            :id="panelId(trans.locale)"
+            :key="trans.locale"
+            v-model:content-html="trans.contentHtml"
+            v-model:image-caption="trans.imageCaption"
+            v-model:alt="trans.alt"
+            role="tabpanel"
+            :aria-labelledby="panelLabelledBy(trans.locale)"
+            :translation="trans"
+            :index="index"
+            :content-error="getFieldError(`translations.${index}.contentHtml`)"
+          />
         </div>
 
-        <AdminActivityImagePanel
-          :upload="imageUpload"
-          :has-image="Boolean(form.image)"
-          :image-error="getFieldError('image')"
-          @clear="clearImage"
-        />
-      </aside>
-    </div>
+        <aside class="space-y-6 xl:sticky xl:top-0 xl:self-start">
+          <div class="space-y-5 rounded-xl border p-5">
+            <h3 class="flex items-center gap-2 text-sm font-semibold">
+              <UIcon name="i-tabler-settings" class="text-muted size-4" />
+              {{ t('admin.areaReports.form.configTitle') }}
+            </h3>
 
-    <AdminActivityCancelModal v-model:open="showCancelModal" @confirm="confirmCancel" />
-  </form>
+            <UFormField
+              :label="`${t('admin.areaReports.form.areaLabel')} *`"
+              :error="getFieldError('areaId')"
+            >
+              <USelectMenu
+                v-if="!isEditing"
+                :model-value="form.areaId ?? undefined"
+                :items="areaSelectItems"
+                value-key="value"
+                class="w-full"
+                :placeholder="t('admin.areaReports.form.areaPlaceholder')"
+                :disabled="Boolean(areasError)"
+                @update:model-value="form.areaId = ($event as number | undefined) ?? null"
+              />
+              <!-- The area is fixed once the report exists, so on edit it is shown read-only. -->
+              <p v-else class="text-sm">{{ snapshotAreaName ?? '—' }}</p>
+            </UFormField>
+
+            <UFormField
+              :label="`${t('admin.areaReports.form.monthLabel')} *`"
+              :error="getFieldError('monthKey')"
+            >
+              <ClientOnly>
+                <AdminMonthPicker
+                  v-model="monthPickerValue"
+                  :hint="t('admin.areaReports.form.monthHint')"
+                  :taken-label="t('admin.areaReports.form.monthTaken')"
+                />
+                <template #fallback>
+                  <UInput
+                    :model-value="form.monthKey"
+                    placeholder="YYYY-MM"
+                    class="w-full"
+                    @update:model-value="form.monthKey = String($event)"
+                  />
+                </template>
+              </ClientOnly>
+            </UFormField>
+
+            <UFormField
+              :label="t('admin.areaReports.form.coversFromLabel')"
+              :error="getFieldError('coversFrom')"
+            >
+              <div class="mb-2 flex items-center gap-2">
+                <USwitch :model-value="hasCoversFrom" @update:model-value="toggleCoversFrom" />
+                <span class="text-muted text-sm">{{
+                  t('admin.areaReports.form.coversFromToggle')
+                }}</span>
+              </div>
+              <ClientOnly v-if="hasCoversFrom">
+                <AdminMonthPicker v-model="coversFromPickerValue" hint="" />
+                <template #fallback>
+                  <UInput
+                    :model-value="form.coversFrom"
+                    placeholder="YYYY-MM"
+                    class="w-full"
+                    @update:model-value="form.coversFrom = String($event)"
+                  />
+                </template>
+              </ClientOnly>
+              <p class="text-muted mt-1 text-xs">
+                {{ t('admin.areaReports.form.coversFromHint') }}
+              </p>
+            </UFormField>
+
+            <UFormField :label="t('admin.areaReports.form.statusLabel')">
+              <div class="flex items-center gap-2">
+                <USwitch v-model="form.active" />
+                <span class="text-sm">{{
+                  form.active ? t('admin.common.active') : t('admin.common.inactive')
+                }}</span>
+              </div>
+            </UFormField>
+          </div>
+
+          <AdminActivityImagePanel
+            :upload="imageUpload"
+            :has-image="Boolean(form.image)"
+            :image-error="getFieldError('image')"
+            @clear="clearImage"
+          />
+        </aside>
+      </div>
+
+      <AdminActivityCancelModal v-model:open="showCancelModal" @confirm="confirmCancel" />
+    </form>
+
+    <slot />
+  </AdminPage>
 </template>

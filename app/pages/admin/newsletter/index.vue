@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { DEFAULT_LOCALE_CODE } from '~~/shared/constants/locales'
 import { createNewsletterCampaignSchema } from '~~/shared/utils/adminSchemas'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
@@ -14,7 +13,6 @@ import {
 
 definePageMeta({
   layout: 'admin',
-  title: 'Campañas de newsletter',
 })
 
 const { t } = useI18n()
@@ -142,51 +140,51 @@ const deleteTargetSubject = computed(
 </script>
 
 <template>
-  <div>
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.newsletterCampaigns.list.title') }}</h1>
-        <p class="text-muted mt-1 text-sm">{{ t('admin.newsletterCampaigns.list.subtitle') }}</p>
-      </div>
-
-      <div class="flex flex-wrap gap-2">
-        <UButton
-          :to="localePath(ADMIN_ROUTES.newsletterSubscribers)"
-          icon="i-tabler-users"
-          variant="outline"
-          color="neutral"
-        >
-          {{ t('admin.newsletterCampaigns.list.subscribers') }}
-        </UButton>
-        <UButton icon="i-tabler-plus" @click="openCreate">
-          {{ t('admin.newsletterCampaigns.list.newCampaign') }}
-        </UButton>
-      </div>
-    </div>
+  <AdminPage
+    :title="t('admin.newsletterCampaigns.list.title')"
+    :description="t('admin.newsletterCampaigns.list.subtitle')"
+  >
+    <template #actions>
+      <UButton icon="i-tabler-plus" @click="openCreate">
+        <span class="hidden sm:inline">{{ t('admin.newsletterCampaigns.list.newCampaign') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.newsletterCampaigns.list.newCampaign') }}</span>
+      </UButton>
+    </template>
 
     <div v-if="pending && !items.length" class="space-y-3" aria-hidden="true">
       <USkeleton v-for="n in 4" :key="n" class="h-28 w-full rounded-xl" />
     </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.newsletterCampaigns.list.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.newsletterCampaigns.list.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
-    <div v-else-if="!items.length" class="py-16 text-center">
-      <UIcon name="i-tabler-mail-off" class="text-muted mx-auto mb-3 size-10 opacity-40" />
-      <p class="text-muted mb-4 text-sm">{{ t('admin.newsletterCampaigns.list.empty') }}</p>
-      <UButton icon="i-tabler-plus" size="sm" @click="openCreate">
-        {{ t('admin.newsletterCampaigns.list.createFirst') }}
-      </UButton>
-    </div>
+    <UEmpty
+      v-else-if="!items.length"
+      variant="naked"
+      icon="i-tabler-mail-off"
+      :description="t('admin.newsletterCampaigns.list.empty')"
+      :actions="[
+        {
+          label: t('admin.newsletterCampaigns.list.createFirst'),
+          icon: 'i-tabler-plus',
+          onClick: openCreate,
+        },
+      ]"
+    />
 
     <div v-else class="space-y-3">
       <AdminNewsletterCampaignListRow
@@ -269,5 +267,5 @@ const deleteTargetSubject = computed(
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

@@ -5,7 +5,6 @@ import { getInitials } from '@/utils/initials'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Accesos',
 })
 
 const { t } = useI18n()
@@ -313,32 +312,32 @@ const handleDelete = async () => {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.access.title') }}</h1>
-        <i18n-t keypath="admin.access.intro" tag="p" class="text-muted mt-2 max-w-2xl text-sm">
-          <template #env>
-            <code>.env</code>
-          </template>
-        </i18n-t>
-      </div>
+  <AdminPage :title="t('admin.access.title')">
+    <template #description>
+      <i18n-t keypath="admin.access.intro">
+        <template #env>
+          <code>.env</code>
+        </template>
+      </i18n-t>
+    </template>
 
-      <UButton v-if="adminIsEnvAdmin" icon="i-tabler-plus" @click="openCreate">{{
-        t('admin.access.addEmail')
-      }}</UButton>
-    </div>
+    <template v-if="adminIsEnvAdmin" #actions>
+      <UButton icon="i-tabler-plus" @click="openCreate">
+        <span class="hidden sm:inline">{{ t('admin.access.addEmail') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.access.addEmail') }}</span>
+      </UButton>
+    </template>
 
     <div class="grid gap-4 sm:grid-cols-3">
-      <div class="bg-surface rounded-2xl p-4">
+      <div class="bg-default rounded-2xl p-4">
         <p class="text-muted text-sm">{{ t('admin.access.totalAccesses') }}</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.total }}</p>
       </div>
-      <div class="bg-surface rounded-2xl p-4">
+      <div class="bg-default rounded-2xl p-4">
         <p class="text-muted text-sm">{{ t('admin.access.activeAccesses') }}</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.active }}</p>
       </div>
-      <div class="bg-surface rounded-2xl p-4">
+      <div class="bg-default rounded-2xl p-4">
         <p class="text-muted text-sm">{{ t('admin.access.envProtected') }}</p>
         <p class="mt-2 text-2xl font-semibold">{{ summary.env }}</p>
       </div>
@@ -346,14 +345,14 @@ const handleDelete = async () => {
 
     <div v-if="isInitialLoading" aria-hidden="true" class="space-y-6">
       <div class="grid gap-4 sm:grid-cols-3">
-        <div v-for="n in 3" :key="n" class="bg-surface rounded-2xl p-4">
+        <div v-for="n in 3" :key="n" class="bg-default rounded-2xl p-4">
           <USkeleton class="h-4 w-24" />
           <USkeleton class="mt-3 h-8 w-16" />
         </div>
       </div>
 
       <div class="space-y-4">
-        <div v-for="n in 4" :key="n" class="bg-surface rounded-2xl p-5 shadow-sm">
+        <div v-for="n in 4" :key="n" class="bg-default rounded-2xl p-5 shadow-sm">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex items-start gap-4">
               <USkeleton class="size-14 shrink-0 rounded-full" />
@@ -380,17 +379,22 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.access.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.access.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
     <div v-else class="space-y-4">
       <TransitionGroup
@@ -402,12 +406,12 @@ const handleDelete = async () => {
         <div
           v-for="item in items"
           :key="item.id"
-          class="bg-surface rounded-2xl p-5 shadow-sm transition-opacity"
+          class="bg-default rounded-2xl p-5 shadow-sm transition-opacity"
         >
           <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex items-start gap-4">
               <div
-                class="bg-muted text-muted-foreground relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full"
+                class="bg-muted text-muted relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full"
               >
                 <span class="text-sm font-semibold">
                   {{ getAccessInitials(item) }}
@@ -475,18 +479,17 @@ const handleDelete = async () => {
         </div>
       </TransitionGroup>
 
-      <div v-if="!items.length" class="py-12 text-center">
-        <p class="text-muted">{{ t('admin.access.empty') }}</p>
-        <UButton
-          v-if="adminIsEnvAdmin"
-          class="mt-4"
-          size="sm"
-          icon="i-tabler-plus"
-          @click="openCreate"
-        >
-          {{ t('admin.access.addItem') }}
-        </UButton>
-      </div>
+      <UEmpty
+        v-if="!items.length"
+        variant="naked"
+        icon="i-tabler-shield-lock"
+        :description="t('admin.access.empty')"
+        :actions="
+          adminIsEnvAdmin
+            ? [{ label: t('admin.access.addItem'), icon: 'i-tabler-plus', onClick: openCreate }]
+            : []
+        "
+      />
     </div>
 
     <UModal
@@ -562,7 +565,7 @@ const handleDelete = async () => {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>
 
 <style scoped>

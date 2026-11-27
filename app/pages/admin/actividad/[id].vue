@@ -5,7 +5,6 @@ import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiEr
 
 definePageMeta({
   layout: 'admin',
-  title: 'Editar entrada de actividad',
 })
 
 const { t } = useI18n()
@@ -42,18 +41,7 @@ const entry = computed(() => data.value?.data ?? null)
 const hasUnsavedChanges = () =>
   !allowNavigationWithoutPrompt.value && Boolean(activityFormRef.value?.hasUnsavedChanges)
 
-const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-  if (!hasUnsavedChanges()) return
-  event.preventDefault()
-  event.returnValue = ''
-}
-
-onMounted(() => window.addEventListener('beforeunload', beforeUnloadHandler))
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnloadHandler))
-onBeforeRouteLeave(() => {
-  if (!hasUnsavedChanges()) return true
-  return window.confirm(t('admin.activity.unsavedChangesPrompt'))
-})
+useUnsavedChangesGuard(hasUnsavedChanges, () => t('admin.activity.unsavedChangesPrompt'))
 
 const showConflictToast = () =>
   toast.add({
@@ -139,15 +127,13 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <div>
-    <AdminActivityForm
-      ref="activityFormRef"
-      :entry="entry"
-      :submitting="isSubmitting"
-      :refreshing-snapshot="isRefreshingSnapshot"
-      @submit="handleSubmit"
-      @refresh-snapshot="handleRefreshSnapshot"
-      @cancel="handleCancel"
-    />
-  </div>
+  <AdminActivityForm
+    ref="activityFormRef"
+    :entry="entry"
+    :submitting="isSubmitting"
+    :refreshing-snapshot="isRefreshingSnapshot"
+    @submit="handleSubmit"
+    @refresh-snapshot="handleRefreshSnapshot"
+    @cancel="handleCancel"
+  />
 </template>

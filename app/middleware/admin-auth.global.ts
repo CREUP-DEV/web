@@ -1,25 +1,7 @@
-import { DEFAULT_LOCALE_CODE, SUPPORTED_LOCALE_CODES } from '~~/shared/constants/locales'
+import { toCanonicalAdminPath } from '~/utils/adminNavigation'
 
 const ADMIN_LOGIN_PATH = '/admin/login'
 const SESSION_RECHECK_INTERVAL_MS = 2 * 60 * 1000
-
-const localePrefixes = new Set<string>(
-  SUPPORTED_LOCALE_CODES.filter((code) => code !== DEFAULT_LOCALE_CODE)
-)
-
-/**
- * Strip a leading non-default locale segment so the guard matches both `/admin/...` and
- * `/en/admin/...`. Under `prefix_except_default` the localized admin routes exist, and without this
- * normalization `startsWith('/admin')` would skip auth on them entirely.
- */
-function toCanonicalAdminPath(path: string) {
-  const [, firstSegment, ...rest] = path.split('/')
-  if (firstSegment && localePrefixes.has(firstSegment.toLowerCase())) {
-    const stripped = `/${rest.join('/')}`
-    return stripped === '/' ? '/' : stripped
-  }
-  return path
-}
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const localePath = useLocalePath()

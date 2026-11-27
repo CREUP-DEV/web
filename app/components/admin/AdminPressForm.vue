@@ -229,6 +229,20 @@ const savedArticleLink = computed(() => {
 
 const canSubmit = computed(() => !supportDataError.value)
 
+/** The form element's id, so the navbar's submit button (outside it) can submit it. */
+const formId = useId()
+
+/** The navbar names the saved article; a new one by its type, as «Nuevo · Comunicado». */
+const pageTitle = computed(() => {
+  const savedTitle = props.article
+    ? getDefaultTranslationValue(props.article.translations, 'title')
+    : ''
+  return (
+    savedTitle ||
+    `${isEditing.value ? t('admin.press.form.editingLabel') : t('admin.press.form.newLabel')} · ${typeLabels[form.type]}`
+  )
+})
+
 const clearCoverImage = () => {
   form.image = ''
   imageUpload.setPreview(null)
@@ -442,176 +456,168 @@ const confirmCancel = () => {
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit">
-    <UAlert
-      v-if="supportDataError"
-      color="error"
-      variant="soft"
-      :title="supportDataErrorTitle"
-      :description="
-        getApiErrorMessage(supportDataError, t('admin.press.form.supportLoadErrorDescription'))
-      "
-      class="mb-6"
-    />
-
-    <AdminFormErrorSummary :errors="formErrors" />
-
-    <div
-      class="bg-default/90 sticky top-0 z-10 -mx-1 mb-6 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
-    >
-      <div class="flex min-w-0 items-center gap-3">
-        <UButton
-          type="button"
-          variant="ghost"
-          icon="i-tabler-arrow-left"
-          size="sm"
-          @click="handleCancel"
-        >
-          {{ t('admin.press.form.back') }}
-        </UButton>
-        <USeparator orientation="vertical" class="h-5 shrink-0" />
-        <UIcon :name="typeIcons[form.type]" class="text-muted size-4 shrink-0" />
-        <span class="text-muted truncate text-sm">
-          {{ isEditing ? t('admin.press.form.editingLabel') : t('admin.press.form.newLabel') }} ·
-          {{ typeLabels[form.type] }}
-        </span>
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <UButton
-          v-if="savedArticleLink"
-          type="button"
-          variant="ghost"
-          :icon="savedArticleLink.icon"
-          size="sm"
-          :to="savedArticleLink.to"
-          target="_blank"
-          :title="savedArticleLink.label"
-          :aria-label="savedArticleLink.label"
-        />
-        <UButton
-          type="submit"
-          icon="i-tabler-check"
-          :loading="submitting"
-          :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
-          :title="submitDisabledReason || undefined"
-        >
+  <AdminPage :title="pageTitle">
+    <template #actions>
+      <UButton type="button" color="neutral" variant="ghost" @click="handleCancel">
+        {{ t('admin.common.cancel') }}
+      </UButton>
+      <UButton
+        v-if="savedArticleLink"
+        type="button"
+        color="neutral"
+        variant="ghost"
+        :icon="savedArticleLink.icon"
+        :to="savedArticleLink.to"
+        target="_blank"
+        :title="savedArticleLink.label"
+        :aria-label="savedArticleLink.label"
+      />
+      <UButton
+        type="submit"
+        :form="formId"
+        icon="i-tabler-check"
+        :loading="submitting"
+        :disabled="!canSubmit || submitting || (isEditing && !hasUnsavedChanges)"
+        :title="submitDisabledReason || undefined"
+      >
+        <span class="hidden sm:inline">
           {{ isEditing ? t('admin.press.form.saveChanges') : t('admin.press.form.createArticle') }}
-        </UButton>
-      </div>
-    </div>
+        </span>
+        <span class="sr-only sm:hidden">
+          {{ isEditing ? t('admin.press.form.saveChanges') : t('admin.press.form.createArticle') }}
+        </span>
+      </UButton>
+    </template>
 
-    <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
-      <div class="min-w-0 space-y-6">
-        <AdminPressMediaAppearanceFields
-          v-if="form.type === 'media_appearance'"
-          v-model:external-url="form.externalUrl"
-          v-model:media-outlet-id="form.mediaOutletId"
-          :media-outlet-items="mediaOutletSelectItems"
-          :has-support-error="Boolean(supportDataError)"
-          :external-url-error="getFieldError('externalUrl')"
-          :media-outlet-error="getFieldError('mediaOutletId')"
-        />
-        <AdminLocaleTabs
-          v-model="activeLocale"
-          :id-prefix="idPrefix"
-          :status="status"
-          :invalid-locales="invalidLocales"
-        />
+    <form :id="formId" @submit.prevent="handleSubmit">
+      <UAlert
+        v-if="supportDataError"
+        color="error"
+        variant="soft"
+        :title="supportDataErrorTitle"
+        :description="
+          getApiErrorMessage(supportDataError, t('admin.press.form.supportLoadErrorDescription'))
+        "
+        class="mb-6"
+      />
 
-        <AdminPressTranslationCard
-          v-for="(trans, index) in form.translations"
-          v-show="index === activeIndex"
-          :id="panelId(trans.locale)"
-          :key="trans.locale"
-          v-model:title="trans.title"
-          v-model:description="trans.description"
-          v-model:content-html="trans.contentHtml"
-          v-model:alt="trans.alt"
-          role="tabpanel"
-          :aria-labelledby="panelLabelledBy(trans.locale)"
-          :translation="trans"
-          :index="index"
-          :type="form.type"
-          :title-error="getFieldError(`translations.${index}.title`)"
-          :description-error="getFieldError(`translations.${index}.description`)"
-          :content-error="getFieldError(`translations.${index}.contentHtml`)"
-        />
-      </div>
+      <AdminFormErrorSummary :errors="formErrors" />
 
-      <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
-        <AdminPressConfigPanel
-          v-model:type="form.type"
-          v-model:published-at="publishedAt"
-          v-model:active="form.active"
-          v-model:tag-ids="form.tagIds"
-          :is-editing="isEditing"
-          :type-labels="typeLabels"
-          :type-icons="typeIcons"
-          :tag-items="tagSelectItems"
-          :has-support-error="Boolean(supportDataError)"
-        />
+      <div class="grid gap-8 xl:grid-cols-[1fr_320px]">
+        <div class="min-w-0 space-y-6">
+          <AdminPressMediaAppearanceFields
+            v-if="form.type === 'media_appearance'"
+            v-model:external-url="form.externalUrl"
+            v-model:media-outlet-id="form.mediaOutletId"
+            :media-outlet-items="mediaOutletSelectItems"
+            :has-support-error="Boolean(supportDataError)"
+            :external-url-error="getFieldError('externalUrl')"
+            :media-outlet-error="getFieldError('mediaOutletId')"
+          />
+          <AdminLocaleTabs
+            v-model="activeLocale"
+            :id-prefix="idPrefix"
+            :status="status"
+            :invalid-locales="invalidLocales"
+          />
 
-        <AdminPressCoverImagePanel
-          :upload="imageUpload"
-          :has-image="Boolean(form.image)"
-          :image-error="getFieldError('image')"
-          @clear="clearCoverImage"
-        />
+          <AdminPressTranslationCard
+            v-for="(trans, index) in form.translations"
+            v-show="index === activeIndex"
+            :id="panelId(trans.locale)"
+            :key="trans.locale"
+            v-model:title="trans.title"
+            v-model:description="trans.description"
+            v-model:content-html="trans.contentHtml"
+            v-model:alt="trans.alt"
+            role="tabpanel"
+            :aria-labelledby="panelLabelledBy(trans.locale)"
+            :translation="trans"
+            :index="index"
+            :type="form.type"
+            :title-error="getFieldError(`translations.${index}.title`)"
+            :description-error="getFieldError(`translations.${index}.description`)"
+            :content-error="getFieldError(`translations.${index}.contentHtml`)"
+          />
+        </div>
 
-        <div
-          v-if="form.type === 'press_release' || form.type === 'statement'"
-          class="space-y-4 rounded-xl border p-5"
-        >
-          <h3 class="flex items-center gap-2 text-sm font-semibold">
-            <UIcon name="i-tabler-file-type-pdf" class="text-muted size-4" />
-            {{ t('admin.press.form.pdfTitle') }}
-          </h3>
+        <aside class="space-y-6 xl:sticky xl:top-0 xl:self-start">
+          <AdminPressConfigPanel
+            v-model:type="form.type"
+            v-model:published-at="publishedAt"
+            v-model:active="form.active"
+            v-model:tag-ids="form.tagIds"
+            :is-editing="isEditing"
+            :type-labels="typeLabels"
+            :type-icons="typeIcons"
+            :tag-items="tagSelectItems"
+            :has-support-error="Boolean(supportDataError)"
+          />
+
+          <AdminPressCoverImagePanel
+            :upload="imageUpload"
+            :has-image="Boolean(form.image)"
+            :image-error="getFieldError('image')"
+            @clear="clearCoverImage"
+          />
 
           <div
-            v-if="pdfUpload.fileName.value"
-            class="bg-muted/30 flex items-center gap-2 rounded-lg border p-3"
+            v-if="form.type === 'press_release' || form.type === 'statement'"
+            class="space-y-4 rounded-xl border p-5"
           >
-            <UIcon name="i-tabler-file-type-pdf" class="text-error size-5 shrink-0" />
-            <span class="flex-1 truncate text-sm">{{ pdfUpload.fileName.value }}</span>
+            <h3 class="flex items-center gap-2 text-sm font-semibold">
+              <UIcon name="i-tabler-file-type-pdf" class="text-muted size-4" />
+              {{ t('admin.press.form.pdfTitle') }}
+            </h3>
+
+            <div
+              v-if="pdfUpload.fileName.value"
+              class="bg-muted/30 flex items-center gap-2 rounded-lg border p-3"
+            >
+              <UIcon name="i-tabler-file-type-pdf" class="text-error size-5 shrink-0" />
+              <span class="flex-1 truncate text-sm">{{ pdfUpload.fileName.value }}</span>
+              <UButton
+                type="button"
+                variant="ghost"
+                color="error"
+                icon="i-tabler-x"
+                size="xs"
+                :aria-label="t('admin.press.form.removePdfAria')"
+                @click="handleRemovePdf"
+              />
+            </div>
+            <input
+              :ref="pdfUpload.inputRef"
+              type="file"
+              accept=".pdf"
+              class="hidden"
+              @change="pdfUpload.handleFileSelect"
+            />
             <UButton
               type="button"
-              variant="ghost"
-              color="error"
-              icon="i-tabler-x"
-              size="xs"
-              :aria-label="t('admin.press.form.removePdfAria')"
-              @click="handleRemovePdf"
-            />
+              variant="outline"
+              icon="i-tabler-upload"
+              size="sm"
+              block
+              :loading="pdfUpload.isUploading.value"
+              @click="pdfUpload.triggerFileDialog"
+            >
+              {{
+                pdfUpload.fileName.value
+                  ? t('admin.press.form.changePdf')
+                  : t('admin.press.form.uploadPdf')
+              }}
+            </UButton>
+            <p class="text-muted text-xs">
+              {{ t('admin.press.form.pdfHint') }}
+            </p>
           </div>
-          <input
-            :ref="pdfUpload.inputRef"
-            type="file"
-            accept=".pdf"
-            class="hidden"
-            @change="pdfUpload.handleFileSelect"
-          />
-          <UButton
-            type="button"
-            variant="outline"
-            icon="i-tabler-upload"
-            size="sm"
-            block
-            :loading="pdfUpload.isUploading.value"
-            @click="pdfUpload.triggerFileDialog"
-          >
-            {{
-              pdfUpload.fileName.value
-                ? t('admin.press.form.changePdf')
-                : t('admin.press.form.uploadPdf')
-            }}
-          </UButton>
-          <p class="text-muted text-xs">
-            {{ t('admin.press.form.pdfHint') }}
-          </p>
-        </div>
-      </aside>
-    </div>
+        </aside>
+      </div>
 
-    <AdminPressCancelModal v-model:open="showCancelModal" @confirm="confirmCancel" />
-  </form>
+      <AdminPressCancelModal v-model:open="showCancelModal" @confirm="confirmCancel" />
+    </form>
+
+    <slot />
+  </AdminPage>
 </template>

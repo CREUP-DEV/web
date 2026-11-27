@@ -61,7 +61,7 @@ drizzle/            Migrations and seed scripts
 ### Code vs UI Text
 
 - **All code and code comments MUST be written in English**.
-- **Admin UI is bilingual** (`es` default + `en`), like the public site. New admin pages, layouts,
+- **Admin UI is localized** in every site locale (`es` default), like the public site. New admin pages, layouts,
   components, and admin-facing API error messages MUST be locale-aware — no new hardcoded Spanish.
   (Migration in progress: some admin pages still hold Spanish literals pending the page-by-page
   rollout; convert them as you touch them.)
@@ -69,10 +69,12 @@ drizzle/            Migrations and seed scripts
 ### Admin i18n (URL-prefix mechanism)
 
 - Admin uses the **same `prefix_except_default` URL mechanism as the public site**: `/admin/...`
-  for `es`, `/en/admin/...` for `en`. Locale persists via the URL — no cookie. Do **not** add
+  for `es`, `/en/admin/...`, `/ca/admin/...` and so on for the others. Locale persists via the URL — no cookie. Do **not** add
   `defineI18nRoute(false)` to admin pages.
-- The switcher in `app/layouts/admin.vue` uses `useSwitchLocalePath()` + `navigateTo` (mirrors the
-  public header). Admin nav links go through `useLocalePath()` so they keep the active prefix.
+- The switcher lives in «Preferencias» (`app/components/admin/shell/AdminShellPreferences.vue`, opened
+  from the account menu in the sidebar footer) and uses `useSwitchLocalePath()` + `navigateTo`
+  (mirrors the public header). It offers every locale in `LOCALE_DEFINITIONS`, like the public site.
+  Admin nav links and breadcrumbs go through `useLocalePath()` so they keep the active prefix.
 - `app/middleware/admin-auth.global.ts` strips the locale prefix before its `/admin` guard so both
   `/admin/...` and `/en/admin/...` are protected; the login redirect goes through `localePath`.
   Both prefixes are excluded from indexing (`routeRules` + robots disallow).
@@ -723,6 +725,36 @@ Every page/section that loads async data must have:
 ---
 
 ## Admin UI Patterns
+
+### Shell and Page Anatomy
+
+- `app/layouts/admin.vue` is a `UDashboardGroup`: a collapsible, resizable `UDashboardSidebar` (a
+  drawer on phones) with the brand, the grouped navigation and the account menu
+  (`app/components/admin/shell/*`), and `<main>` holding the page. The window never scrolls; each
+  page's panel body does. Folded state and width persist in the functional `admin-dashboard-sidebar-admin` cookie
+  (listed on the legal page).
+- **Every admin page renders exactly one `<AdminPage>`** (`app/components/admin/AdminPage.vue`) as
+  its root, directly or through the one form/detail component it renders: `title` (the navbar's
+  `<h1>` and the document title), `description` (one muted line), `#actions` (one or two main
+  actions in the navbar, labels `sr-only` below `sm`; several «create» variants go in one «Nuevo»
+  dropdown, rare actions in a «Más» menu), `#toolbar` / `#toolbar-right` (search, filters, result
+  count) and the body. Never hand-write a page `<h1>`, header row or sticky save bar.
+- Breadcrumbs are automatic (`adminBreadcrumbAncestors` in `app/utils/adminNavigation.ts`, from the
+  route and `ADMIN_SECTION_DEFINITIONS`); a page with nothing above it gets no row. Never add a
+  «Volver» button that goes up the hierarchy.
+- Sections are single-sourced in `ADMIN_SECTION_DEFINITIONS` (`shared/constants/adminSections.ts`):
+  group, route, icon, `envOnly` and sub-pages (`children`, the first one being the section's landing
+  page). The sidebar, the dashboard's section cards and the breadcrumbs all read it; names and
+  descriptions are `admin.nav.<key>.*` i18n keys. Add a section there, never in a component.
+- Full-page editors: the form component renders `AdminPage`; its submit button sits in `#actions`
+  with `:form="formId"` (`useId()`), beside «Cancelar» and the view/preview link, so it is always in
+  view. Asides that follow the scroll use `xl:sticky xl:top-0` (the panel body is the scroller).
+  The page wrapper guards unsaved work with `useUnsavedChangesGuard`, keeping its
+  `allowNavigationWithoutPrompt` flag in the predicate so a save that redirects does not prompt.
+- Errors use `UAlert` with a «Reintentar» entry in `actions`; empty lists use `UEmpty`.
+- Use Nuxt UI's semantic colour classes (`bg-default`, `bg-elevated`, `text-muted`,
+  `text-inverted`…). `bg-surface`, `bg-background` and `text-*-foreground` are not defined in this
+  theme and compile to nothing.
 
 ### Form Mutations (Modal-based)
 

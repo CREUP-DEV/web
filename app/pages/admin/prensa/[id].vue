@@ -5,7 +5,6 @@ import { getApiErrorMessage, getApiErrorStatusCode } from '~~/shared/utils/apiEr
 
 definePageMeta({
   layout: 'admin',
-  title: 'Editar artículo de prensa',
 })
 
 const { t } = useI18n()
@@ -42,28 +41,7 @@ const article = computed(() => data.value?.data ?? null)
 const hasUnsavedPressChanges = () =>
   !allowNavigationWithoutPrompt.value && Boolean(pressFormRef.value?.hasUnsavedChanges)
 
-const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-  if (!hasUnsavedPressChanges()) return
-
-  event.preventDefault()
-  event.returnValue = ''
-}
-
-onMounted(() => {
-  window.addEventListener('beforeunload', beforeUnloadHandler)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', beforeUnloadHandler)
-})
-
-onBeforeRouteLeave(() => {
-  if (!hasUnsavedPressChanges()) {
-    return true
-  }
-
-  return window.confirm(t('admin.press.unsavedChangesPrompt'))
-})
+useUnsavedChangesGuard(hasUnsavedPressChanges, () => t('admin.press.unsavedChangesPrompt'))
 
 const handleSubmit = async (payload: Record<string, unknown>) => {
   isSubmitting.value = true
@@ -103,13 +81,11 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <div>
-    <AdminPressForm
-      ref="pressFormRef"
-      :article="article"
-      :submitting="isSubmitting"
-      @submit="handleSubmit"
-      @cancel="handleCancel"
-    />
-  </div>
+  <AdminPressForm
+    ref="pressFormRef"
+    :article="article"
+    :submitting="isSubmitting"
+    @submit="handleSubmit"
+    @cancel="handleCancel"
+  />
 </template>

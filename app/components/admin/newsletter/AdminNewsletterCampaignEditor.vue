@@ -199,150 +199,149 @@ const handleSent = (campaign: AdminCampaign) => {
 const handleCancel = () => {
   router.push(localePath(ADMIN_ROUTES.newsletter))
 }
+
+/** The form element's id, so the navbar's submit button (outside it) can submit it. */
+const formId = useId()
+
+/** The navbar names the campaign by its saved Spanish subject, not the one being typed. */
+const pageTitle = computed(
+  () =>
+    props.campaign.translations
+      .find((translation) => translation.locale === DEFAULT_LOCALE_CODE)
+      ?.subject.trim() || t('admin.newsletterCampaigns.list.untitled')
+)
 </script>
 
 <template>
-  <div>
-    <!-- A direct child of the editor root: sticky only holds within its parent's box. -->
-    <div
-      class="bg-default/90 sticky top-0 z-10 -mx-1 flex items-center justify-between gap-4 border-b px-1 py-3 backdrop-blur-sm"
-    >
-      <div class="flex min-w-0 items-center gap-2">
-        <UButton
-          :to="localePath(ADMIN_ROUTES.newsletter)"
-          icon="i-tabler-arrow-left"
-          variant="ghost"
-          color="neutral"
-          size="sm"
-          :aria-label="t('admin.common.back')"
-        />
-        <h1 class="truncate text-2xl font-bold">
-          {{ defaultTranslation?.subject.trim() || t('admin.newsletterCampaigns.list.untitled') }}
-        </h1>
-      </div>
-
-      <div class="flex shrink-0 flex-wrap justify-end gap-2">
-        <UButton variant="outline" color="neutral" @click="handleCancel">
-          {{ t('admin.common.cancel') }}
-        </UButton>
-        <UButton
-          icon="i-tabler-check"
-          :loading="isSaving"
-          :disabled="isSaving || !hasFormChanges"
-          @click="handleSave"
-        >
-          {{ t('admin.common.save') }}
-        </UButton>
-      </div>
-    </div>
-    <p class="text-muted mt-3 mb-6 text-sm">{{ t('admin.newsletterCampaigns.editor.subtitle') }}</p>
-
-    <AdminFormErrorSummary :errors="formErrors" />
+  <AdminPage :title="pageTitle" :description="t('admin.newsletterCampaigns.editor.subtitle')">
+    <template #actions>
+      <UButton type="button" color="neutral" variant="ghost" @click="handleCancel">
+        {{ t('admin.common.cancel') }}
+      </UButton>
+      <UButton
+        type="submit"
+        :form="formId"
+        icon="i-tabler-check"
+        :loading="isSaving"
+        :disabled="isSaving || !hasFormChanges"
+      >
+        <span class="hidden sm:inline">{{ t('admin.common.save') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.common.save') }}</span>
+      </UButton>
+    </template>
 
     <div class="grid gap-8 xl:grid-cols-[1fr_360px]">
-      <div class="min-w-0 space-y-8">
-        <section class="space-y-4">
-          <div>
-            <h2 class="text-lg font-semibold">
-              {{ t('admin.newsletterCampaigns.editor.textsTitle') }}
-            </h2>
-            <p class="text-muted mt-0.5 text-sm">
-              {{ t('admin.newsletterCampaigns.editor.textsHint') }}
-            </p>
-          </div>
+      <!--
+        Only the main column is the form: the aside's send panel holds its own test-send form, and
+        forms cannot nest.
+      -->
+      <form :id="formId" class="min-w-0" @submit.prevent="handleSave">
+        <AdminFormErrorSummary :errors="formErrors" />
 
-          <AdminLocaleTabs
-            v-model="activeLocale"
-            :id-prefix="idPrefix"
-            :status="status"
-            :invalid-locales="invalidLocales"
-          />
+        <div class="space-y-8">
+          <section class="space-y-4">
+            <div>
+              <h2 class="text-lg font-semibold">
+                {{ t('admin.newsletterCampaigns.editor.textsTitle') }}
+              </h2>
+              <p class="text-muted mt-0.5 text-sm">
+                {{ t('admin.newsletterCampaigns.editor.textsHint') }}
+              </p>
+            </div>
 
-          <AdminNewsletterCampaignTranslationCard
-            v-for="(translation, index) in translations"
-            v-show="index === activeIndex"
-            :id="panelId(translation.locale)"
-            :key="translation.locale"
-            v-model:subject="translation.subject"
-            v-model:preheader="translation.preheader"
-            v-model:intro-html="translation.introHtml"
-            role="tabpanel"
-            :aria-labelledby="panelLabelledBy(translation.locale)"
-            :locale="translation.locale"
-            :default-translation="defaultTranslation"
-            :subject-error="getFieldError(`translations.${index}.subject`)"
-            :preheader-error="getFieldError(`translations.${index}.preheader`)"
-          />
-        </section>
+            <AdminLocaleTabs
+              v-model="activeLocale"
+              :id-prefix="idPrefix"
+              :status="status"
+              :invalid-locales="invalidLocales"
+            />
 
-        <section class="space-y-4">
-          <AdminNewsletterCampaignBlockedAlert
-            :items="blockedItems"
-            :editor-items="items"
-            @remove="handleRemoveBlocked"
-            @remove-all="handleRemoveAllBlocked"
-            @dismiss="blockedItems = []"
-          />
+            <AdminNewsletterCampaignTranslationCard
+              v-for="(translation, index) in translations"
+              v-show="index === activeIndex"
+              :id="panelId(translation.locale)"
+              :key="translation.locale"
+              v-model:subject="translation.subject"
+              v-model:preheader="translation.preheader"
+              v-model:intro-html="translation.introHtml"
+              role="tabpanel"
+              :aria-labelledby="panelLabelledBy(translation.locale)"
+              :locale="translation.locale"
+              :default-translation="defaultTranslation"
+              :subject-error="getFieldError(`translations.${index}.subject`)"
+              :preheader-error="getFieldError(`translations.${index}.preheader`)"
+            />
+          </section>
 
-          <UAlert
-            v-if="oversizedRows.length"
-            color="error"
-            variant="soft"
-            icon="i-tabler-file-alert"
-            :title="t('admin.newsletterCampaigns.oversized.title')"
-          >
-            <template #description>
-              <p class="mb-2">{{ t('admin.newsletterCampaigns.oversized.description') }}</p>
-              <ul class="list-disc space-y-1 pl-4">
-                <li v-for="row in oversizedRows" :key="row.locale">
-                  {{
-                    t('admin.newsletterCampaigns.oversized.row', {
-                      locale: row.name,
-                      kb: row.kb,
-                      limitKb: row.limitKb,
-                    })
-                  }}
-                </li>
-              </ul>
-              <UButton
-                class="mt-3"
-                size="xs"
-                variant="ghost"
-                color="neutral"
-                @click="oversizedLocales = []"
-              >
-                {{ t('admin.newsletterCampaigns.blocked.dismiss') }}
-              </UButton>
-            </template>
-          </UAlert>
+          <section class="space-y-4">
+            <AdminNewsletterCampaignBlockedAlert
+              :items="blockedItems"
+              :editor-items="items"
+              @remove="handleRemoveBlocked"
+              @remove-all="handleRemoveAllBlocked"
+              @dismiss="blockedItems = []"
+            />
 
-          <UAlert
-            v-if="showsItemCountWarning"
-            color="warning"
-            variant="soft"
-            icon="i-tabler-alert-triangle"
-            :description="
-              t('admin.newsletterCampaigns.editor.tooManyItems', {
-                max: NEWSLETTER_CAMPAIGN_ITEM_COUNT_WARNING,
-              })
-            "
-          />
+            <UAlert
+              v-if="oversizedRows.length"
+              color="error"
+              variant="soft"
+              icon="i-tabler-file-alert"
+              :title="t('admin.newsletterCampaigns.oversized.title')"
+            >
+              <template #description>
+                <p class="mb-2">{{ t('admin.newsletterCampaigns.oversized.description') }}</p>
+                <ul class="list-disc space-y-1 pl-4">
+                  <li v-for="row in oversizedRows" :key="row.locale">
+                    {{
+                      t('admin.newsletterCampaigns.oversized.row', {
+                        locale: row.name,
+                        kb: row.kb,
+                        limitKb: row.limitKb,
+                      })
+                    }}
+                  </li>
+                </ul>
+                <UButton
+                  class="mt-3"
+                  size="xs"
+                  variant="ghost"
+                  color="neutral"
+                  @click="oversizedLocales = []"
+                >
+                  {{ t('admin.newsletterCampaigns.blocked.dismiss') }}
+                </UButton>
+              </template>
+            </UAlert>
 
-          <AdminNewsletterCampaignItemList
-            :items="items"
-            :unavailable-reasons="blockedReasonsByKey"
-            :loading="isResolvingItems"
-            @move="moveItem"
-            @remove="removeItemAt"
-            @reorder="setOrder"
-            @add="showPicker = true"
-          />
-        </section>
+            <UAlert
+              v-if="showsItemCountWarning"
+              color="warning"
+              variant="soft"
+              icon="i-tabler-alert-triangle"
+              :description="
+                t('admin.newsletterCampaigns.editor.tooManyItems', {
+                  max: NEWSLETTER_CAMPAIGN_ITEM_COUNT_WARNING,
+                })
+              "
+            />
 
-        <AdminNewsletterCampaignPreview :campaign-id="campaign.id" :draft="previewDraft" />
-      </div>
+            <AdminNewsletterCampaignItemList
+              :items="items"
+              :unavailable-reasons="blockedReasonsByKey"
+              :loading="isResolvingItems"
+              @move="moveItem"
+              @remove="removeItemAt"
+              @reorder="setOrder"
+              @add="showPicker = true"
+            />
+          </section>
 
-      <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
+          <AdminNewsletterCampaignPreview :campaign-id="campaign.id" :draft="previewDraft" />
+        </div>
+      </form>
+
+      <aside class="space-y-6 xl:sticky xl:top-0 xl:self-start">
         <!--
           The panel's controls disable themselves from the subscriber count, which is fetched
           client-side only (the admin cookie does not travel on the SSR call). That made the server
@@ -373,5 +372,7 @@ const handleCancel = () => {
       :existing-keys="existingKeys"
       @add="handleAddEntries"
     />
-  </div>
+
+    <slot />
+  </AdminPage>
 </template>

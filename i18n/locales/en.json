@@ -989,7 +989,9 @@
       "uploadRequestTooLarge": "The file or request exceeds the maximum allowed size",
       "fileUploaded": "File uploaded successfully",
       "fileUploadFailed": "Could not upload the file",
-      "back": "Back"
+      "back": "Back",
+      "new": "New",
+      "more": "More actions"
     },
     "media": {
       "title": "Media outlets",
@@ -1076,6 +1078,30 @@
       "activity": {
         "name": "Our activity",
         "description": "Activity entries and monthly area reports."
+      },
+      "groups": {
+        "content": "Content",
+        "site": "Site pages",
+        "catalogs": "Catalogues and settings",
+        "system": "System"
+      },
+      "activityEntries": {
+        "name": "Entries"
+      },
+      "areaReports": {
+        "name": "Area reports"
+      },
+      "memberOrgCatalog": {
+        "name": "Organisations"
+      },
+      "areaCatalog": {
+        "name": "Areas"
+      },
+      "newsletterCampaigns": {
+        "name": "Campaigns"
+      },
+      "newsletterSubscribers": {
+        "name": "Subscribers"
       }
     },
     "layout": {
@@ -1083,16 +1109,26 @@
       "signOut": "Sign out",
       "viewSite": "View site",
       "viewSiteAria": "View site (opens in a new tab)",
-      "collapseSidebar": "Collapse sidebar",
-      "expandSidebar": "Expand sidebar",
-      "closeSidebar": "Close sidebar",
       "skipToNav": "Skip to main menu",
       "skipToContent": "Skip to main content",
       "mainNavLabel": "Main navigation",
-      "userMenu": "User menu",
-      "loadingSession": "Loading session...",
-      "userAvatar": "{name}'s avatar",
-      "userAvatarFallback": "User avatar"
+      "brandHome": "Admin panel home",
+      "brandProduct": "Admin",
+      "sidebarTitle": "Admin menu",
+      "sidebarDescription": "Panel sections and your account",
+      "breadcrumbLabel": "Breadcrumb",
+      "backTo": "Back to {label}",
+      "userMenuFor": "Account menu for {name}",
+      "preferences": "Preferences",
+      "preferencesDescription": "Language and theme of the panel. Changes apply straight away.",
+      "done": "Done",
+      "language": "Language",
+      "theme": "Theme",
+      "themes": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      }
     },
     "carousel": {
       "title": "Carousel",
@@ -1408,7 +1444,6 @@
         "pdfUploaded": "PDF uploaded successfully",
         "pdfUploadError": "Could not upload the PDF",
         "pdfTooLarge": "The PDF exceeds the maximum size (20MB)",
-        "back": "Back",
         "editingLabel": "Editing",
         "newLabel": "New",
         "saveChanges": "Save changes",
@@ -1544,7 +1579,6 @@
       "list": {
         "title": "Newsletter campaigns",
         "subtitle": "Each campaign is one email assembled from content already published on the site.",
-        "subscribers": "Subscribers",
         "newCampaign": "New campaign",
         "loadErrorTitle": "Campaigns could not be loaded",
         "empty": "There are no campaigns yet.",
@@ -1809,7 +1843,8 @@
       "recentActivity": "Recent activity",
       "recentActivityHint": "The latest changes made in the panel.",
       "noRecentActivity": "There is no recent activity to show yet.",
-      "loadError": "Could not load the panel summary"
+      "loadError": "Could not load the panel summary",
+      "sections": "Panel sections"
     },
     "login": {
       "title": "Administration",
@@ -1905,11 +1940,6 @@
         "confirm": "Create anyway"
       },
       "unsavedChangesPrompt": "You have unsaved changes. If you leave now, they will be lost.",
-      "subnav": {
-        "aria": "Activity subsections",
-        "entries": "Entries",
-        "reports": "Area reports"
-      },
       "kinds": {
         "creup": "CREUP",
         "member": "Member"
@@ -1932,8 +1962,7 @@
         "clearSearch": "Clear search",
         "emptyState": "No activity entries yet",
         "createFirst": "Create first entry",
-        "paginationAria": "Entries pagination",
-        "manageOrganisers": "Manage organisations"
+        "paginationAria": "Entries pagination"
       },
       "toast": {
         "deleted": "Entry deleted",
@@ -1949,7 +1978,6 @@
         "snapshotRefreshError": "Could not update the organiser data"
       },
       "form": {
-        "back": "Back",
         "editingLabel": "Editing activity",
         "newLabel": "New activity",
         "saveChanges": "Save changes",
@@ -2024,8 +2052,7 @@
         "emptyState": "No area reports yet",
         "createFirst": "Create first report",
         "paginationAria": "Reports pagination",
-        "unknownArea": "Unnamed area",
-        "manageAreas": "Manage areas"
+        "unknownArea": "Unnamed area"
       },
       "toast": {
         "deleted": "Report deleted",
@@ -2038,7 +2065,6 @@
         "conflictFallback": "Could not save the report due to a conflict. Check the month, area and period."
       },
       "form": {
-        "back": "Back",
         "editingLabel": "Editing report",
         "newLabel": "New report",
         "saveChanges": "Save changes",
@@ -2353,7 +2379,7 @@
         },
         "auth": {
           "label": "Authentication and session cookies (better-auth)",
-          "desc": " Used exclusively when an administrator signs in to the administration panel. Includes session tokens and OAuth authentication. Not used for public site visitors. "
+          "desc": " Used exclusively when an administrator signs in to the administration panel. Includes session tokens and OAuth authentication. Not used for public site visitors. The panel also keeps in the admin-dashboard-sidebar-admin cookie whether its sidebar is folded and how wide it is. "
         },
         "prefs": {
           "label": "Interface preference local storage",

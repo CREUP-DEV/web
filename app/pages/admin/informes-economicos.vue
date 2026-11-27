@@ -10,7 +10,6 @@ import {
 
 definePageMeta({
   layout: 'admin',
-  title: 'Informes económicos',
 })
 
 interface FinancialReportTranslation {
@@ -273,18 +272,16 @@ const handleDelete = async () => {
 </script>
 
 <template>
-  <div>
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">{{ t('admin.financialReports.title') }}</h1>
-        <p class="text-muted mt-1 text-sm">
-          {{ t('admin.financialReports.subtitle') }}
-        </p>
-      </div>
-      <UButton icon="i-tabler-plus" @click="openCreate">{{
-        t('admin.financialReports.newReport')
-      }}</UButton>
-    </div>
+  <AdminPage
+    :title="t('admin.financialReports.title')"
+    :description="t('admin.financialReports.subtitle')"
+  >
+    <template #actions>
+      <UButton icon="i-tabler-plus" @click="openCreate">
+        <span class="hidden sm:inline">{{ t('admin.financialReports.newReport') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.financialReports.newReport') }}</span>
+      </UButton>
+    </template>
 
     <div v-if="pending" class="space-y-3" aria-hidden="true">
       <USkeleton class="h-24 w-full rounded-xl" />
@@ -292,27 +289,37 @@ const handleDelete = async () => {
       <USkeleton class="h-24 w-full rounded-xl" />
     </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.financialReports.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.financialReports.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
-    <UCard v-else-if="items.length === 0" class="text-center">
-      <div class="flex flex-col items-center gap-3 py-8">
-        <UIcon name="i-tabler-file-analytics" class="text-muted size-10" />
-        <p class="text-muted">{{ t('admin.financialReports.empty') }}</p>
-        <UButton variant="soft" icon="i-tabler-plus" @click="openCreate">
-          {{ t('admin.financialReports.createFirst') }}
-        </UButton>
-      </div>
-    </UCard>
+    <UEmpty
+      v-else-if="items.length === 0"
+      variant="outline"
+      icon="i-tabler-file-analytics"
+      :description="t('admin.financialReports.empty')"
+      :actions="[
+        {
+          label: t('admin.financialReports.createFirst'),
+          icon: 'i-tabler-plus',
+          variant: 'soft',
+          onClick: openCreate,
+        },
+      ]"
+    />
 
     <div v-else class="space-y-3">
       <UCard v-for="item in items" :key="item.id">
@@ -543,5 +550,5 @@ const handleDelete = async () => {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

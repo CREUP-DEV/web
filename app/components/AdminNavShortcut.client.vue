@@ -34,7 +34,7 @@ const adminPath = computed(() => localePath('/admin'))
 
   <UButton
     v-else-if="isAdminUser"
-    to="/admin"
+    :to="adminPath"
     icon="i-tabler-settings-2"
     color="neutral"
     variant="ghost"

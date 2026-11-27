@@ -14,12 +14,33 @@ import type { Ref } from 'vue'
  */
 const SETTLE_TIMEOUT_MS = 700
 
+/**
+ * The element that scrolls the anchor: the admin panel body it sits in (UDashboardGroup `admin-dashboard`: the admin layout never
+ * scrolls the window), else the nearest ancestor that scrolls vertically on its own, else null for
+ * the window (public pages). An `overflow-x: hidden` wrapper computes `overflow-y: auto` too, so a
+ * generic ancestor only counts when its content overflows it.
+ */
+function getScrollContainer(el: HTMLElement): HTMLElement | null {
+  const panelBody = el.closest<HTMLElement>('[id^="admin-dashboard-panel-"] > [data-slot="body"]')
+  if (panelBody) return panelBody
+
+  for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node)
+    const scrollable = overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay'
+    if (scrollable && node.scrollHeight > node.clientHeight) {
+      return node
+    }
+  }
+  return null
+}
+
 export function usePaginationAnchor(page: Ref<number>, anchorRef: Ref<HTMLElement | null>) {
   if (import.meta.server) {
     return
   }
 
   let anchorTop: number | null = null
+  let scroller: HTMLElement | null = null
   let observer: ResizeObserver | null = null
   let settleTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -46,7 +67,7 @@ export function usePaginationAnchor(page: Ref<number>, anchorRef: Ref<HTMLElemen
       return
     }
 
-    window.scrollBy({ top: delta, behavior: 'instant' })
+    ;(scroller ?? window).scrollBy({ top: delta, behavior: 'instant' })
   }
 
   watch(page, async () => {
@@ -57,9 +78,13 @@ export function usePaginationAnchor(page: Ref<number>, anchorRef: Ref<HTMLElemen
 
     stopFollowing()
     anchorTop = el.getBoundingClientRect().top
+    scroller = getScrollContainer(el)
 
+    // A scroll container keeps its own height while its content grows, so watch what it holds.
     observer = new ResizeObserver(realign)
-    observer.observe(document.body)
+    for (const target of scroller ? Array.from(scroller.children) : [document.body]) {
+      observer.observe(target)
+    }
 
     settleTimer = setTimeout(() => {
       // A last correction before letting go, in case the observer missed the final frame.

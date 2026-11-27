@@ -125,7 +125,7 @@ const displayOrg = computed(() => {
       />
       <div
         v-else
-        class="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded text-xs font-semibold"
+        class="bg-muted text-muted flex size-10 shrink-0 items-center justify-center rounded text-xs font-semibold"
         aria-hidden="true"
       >
         {{ displayOrg.initials }}

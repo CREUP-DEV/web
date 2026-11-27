@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ADMIN_ROUTES } from '~~/shared/constants/adminRoutes'
 import { DEFAULT_LOCALE_CODE } from '~~/shared/constants/locales'
 import { getApiErrorMessage } from '~~/shared/utils/apiError'
 import type { NewsletterCampaignItemType } from '~~/shared/constants/newsletterCampaigns'
@@ -47,6 +46,12 @@ const isActive = computed(
 /** `sent` is terminal — nothing is outstanding, so no retry is offered there. */
 const canResume = computed(
   () => props.campaign.status === 'paused' || props.campaign.status === 'failed'
+)
+
+const resumeLabel = computed(() =>
+  props.campaign.status === 'failed'
+    ? t('admin.newsletterCampaigns.detail.retryPending')
+    : t('admin.newsletterCampaigns.detail.resume')
 )
 
 const delivery = computed(() => props.campaign.stats.delivery)
@@ -211,68 +216,45 @@ const handleDuplicate = async () => {
 </script>
 
 <template>
-  <div>
-    <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-      <div class="min-w-0">
-        <div class="flex items-center gap-2">
-          <UButton
-            :to="localePath(ADMIN_ROUTES.newsletter)"
-            icon="i-tabler-arrow-left"
-            variant="ghost"
-            color="neutral"
-            size="sm"
-            :aria-label="t('admin.common.back')"
-          />
-          <h1 class="truncate text-2xl font-bold">{{ subject }}</h1>
-        </div>
-        <div class="mt-2 flex flex-wrap items-center gap-2">
-          <UBadge :color="statusColor(campaign.status)" variant="subtle">
-            <UIcon :name="statusIcon(campaign.status)" class="mr-1 size-3" aria-hidden="true" />
-            {{ statusLabel(campaign.status) }}
-          </UBadge>
-          <span class="text-muted text-sm">
-            {{ t('admin.newsletterCampaigns.detail.readOnly') }}
-          </span>
-        </div>
-      </div>
+  <AdminPage :title="subject" :description="t('admin.newsletterCampaigns.detail.readOnly')">
+    <template #actions>
+      <UButton
+        icon="i-tabler-copy"
+        variant="outline"
+        color="neutral"
+        :loading="isDuplicating"
+        @click="handleDuplicate"
+      >
+        <span class="hidden sm:inline">{{ t('admin.newsletterCampaigns.list.duplicate') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.newsletterCampaigns.list.duplicate') }}</span>
+      </UButton>
+      <UButton v-if="canResume" icon="i-tabler-refresh" :loading="isResuming" @click="handleResume">
+        <span class="hidden sm:inline">{{ resumeLabel }}</span>
+        <span class="sr-only sm:hidden">{{ resumeLabel }}</span>
+      </UButton>
+      <UButton
+        v-if="isActive"
+        icon="i-tabler-player-stop"
+        color="error"
+        variant="outline"
+        @click="showCancelModal = true"
+      >
+        <span class="hidden sm:inline">{{ t('admin.newsletterCampaigns.detail.cancelSend') }}</span>
+        <span class="sr-only sm:hidden">{{
+          t('admin.newsletterCampaigns.detail.cancelSend')
+        }}</span>
+      </UButton>
+    </template>
 
-      <div class="flex shrink-0 flex-wrap gap-2">
-        <UButton
-          icon="i-tabler-copy"
-          variant="outline"
-          color="neutral"
-          :loading="isDuplicating"
-          @click="handleDuplicate"
-        >
-          {{ t('admin.newsletterCampaigns.list.duplicate') }}
-        </UButton>
-        <UButton
-          v-if="canResume"
-          icon="i-tabler-refresh"
-          :loading="isResuming"
-          @click="handleResume"
-        >
-          {{
-            campaign.status === 'failed'
-              ? t('admin.newsletterCampaigns.detail.retryPending')
-              : t('admin.newsletterCampaigns.detail.resume')
-          }}
-        </UButton>
-        <UButton
-          v-if="isActive"
-          icon="i-tabler-player-stop"
-          color="error"
-          variant="outline"
-          @click="showCancelModal = true"
-        >
-          {{ t('admin.newsletterCampaigns.detail.cancelSend') }}
-        </UButton>
-      </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <UBadge :color="statusColor(campaign.status)" variant="subtle">
+        <UIcon :name="statusIcon(campaign.status)" class="mr-1 size-3" aria-hidden="true" />
+        {{ statusLabel(campaign.status) }}
+      </UBadge>
     </div>
 
     <UAlert
       v-if="campaign.status === 'failed'"
-      class="mb-6"
       color="warning"
       variant="soft"
       icon="i-tabler-alert-triangle"
@@ -282,7 +264,7 @@ const handleDuplicate = async () => {
 
     <div class="grid gap-8 xl:grid-cols-[1fr_360px]">
       <div class="min-w-0 space-y-8">
-        <section class="bg-surface ring-default rounded-xl p-5 shadow-sm ring-1">
+        <section class="bg-default ring-default rounded-xl p-5 shadow-sm ring-1">
           <h2 class="mb-4 text-lg font-semibold">
             {{ t('admin.newsletterCampaigns.detail.deliveryTitle') }}
           </h2>
@@ -342,7 +324,7 @@ const handleDuplicate = async () => {
           </div>
         </section>
 
-        <section class="bg-surface ring-default rounded-xl p-5 shadow-sm ring-1">
+        <section class="bg-default ring-default rounded-xl p-5 shadow-sm ring-1">
           <h2 class="mb-1 text-lg font-semibold">
             {{ t('admin.newsletterCampaigns.detail.clicksTitle') }}
           </h2>
@@ -389,8 +371,8 @@ const handleDuplicate = async () => {
         <AdminNewsletterCampaignPreview v-if="hasFrozenContent" :campaign-id="campaign.id" />
       </div>
 
-      <aside class="space-y-6 xl:sticky xl:top-20 xl:self-start">
-        <section class="bg-surface ring-default space-y-3 rounded-xl p-5 shadow-sm ring-1">
+      <aside class="space-y-6 xl:sticky xl:top-0 xl:self-start">
+        <section class="bg-default ring-default space-y-3 rounded-xl p-5 shadow-sm ring-1">
           <h2 class="text-lg font-semibold">
             {{ t('admin.newsletterCampaigns.detail.summaryTitle') }}
           </h2>
@@ -445,5 +427,7 @@ const handleDuplicate = async () => {
         </div>
       </template>
     </UModal>
-  </div>
+
+    <slot />
+  </AdminPage>
 </template>

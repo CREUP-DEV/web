@@ -5,7 +5,6 @@ import { PRESS_ARTICLE_TYPES } from '~~/shared/constants/pressTypes'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Crear artículo de prensa',
 })
 
 const { t } = useI18n()
@@ -32,28 +31,7 @@ const initialType = computed<PressArticleType>(() => {
 const hasUnsavedPressChanges = () =>
   !allowNavigationWithoutPrompt.value && Boolean(pressFormRef.value?.hasUnsavedChanges)
 
-const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-  if (!hasUnsavedPressChanges()) return
-
-  event.preventDefault()
-  event.returnValue = ''
-}
-
-onMounted(() => {
-  window.addEventListener('beforeunload', beforeUnloadHandler)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', beforeUnloadHandler)
-})
-
-onBeforeRouteLeave(() => {
-  if (!hasUnsavedPressChanges()) {
-    return true
-  }
-
-  return window.confirm(t('admin.press.unsavedChangesPrompt'))
-})
+useUnsavedChangesGuard(hasUnsavedPressChanges, () => t('admin.press.unsavedChangesPrompt'))
 
 const possibleDuplicate = useAdminPossibleDuplicate<Record<string, unknown>>()
 const { duplicate: duplicateArticle, isOpen: isDuplicateModalOpen } = possibleDuplicate
@@ -93,19 +71,18 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <div>
-    <AdminPressForm
-      ref="pressFormRef"
-      :initial-type="initialType"
-      :submitting="isSubmitting"
-      @submit="handleSubmit"
-      @cancel="handleCancel"
-    />
+  <AdminPressForm
+    ref="pressFormRef"
+    :initial-type="initialType"
+    :submitting="isSubmitting"
+    @submit="handleSubmit"
+    @cancel="handleCancel"
+  >
     <AdminPossibleDuplicateModal
       v-model:open="isDuplicateModalOpen"
       kind="press"
       :duplicate="duplicateArticle"
       @confirm="handleDuplicateConfirm"
     />
-  </div>
+  </AdminPressForm>
 </template>

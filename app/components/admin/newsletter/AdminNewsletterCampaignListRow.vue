@@ -58,7 +58,7 @@ const failedCount = computed(() => props.campaign.lastDeliveryErrorCount ?? 0)
 
 <template>
   <article
-    class="bg-surface ring-default rounded-xl p-4 shadow-sm ring-1 transition-shadow hover:shadow-md"
+    class="bg-default ring-default rounded-xl p-4 shadow-sm ring-1 transition-shadow hover:shadow-md"
   >
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
       <div class="min-w-0 flex-1">

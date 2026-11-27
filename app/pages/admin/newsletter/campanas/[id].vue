@@ -5,7 +5,6 @@ import { CAMPAIGNS_API_BASE } from '@/composables/admin/useAdminNewsletterCampai
 
 definePageMeta({
   layout: 'admin',
-  title: 'Campaña de newsletter',
 })
 
 const { t } = useI18n()
@@ -46,19 +45,9 @@ const allowNavigationWithoutPrompt = ref(false)
 const hasUnsavedChanges = () =>
   !allowNavigationWithoutPrompt.value && Boolean(editorRef.value?.hasUnsavedChanges)
 
-const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-  if (!hasUnsavedChanges()) return
-
-  event.preventDefault()
-  event.returnValue = ''
-}
-
-onMounted(() => window.addEventListener('beforeunload', beforeUnloadHandler))
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnloadHandler))
-onBeforeRouteLeave(() => {
-  if (!hasUnsavedChanges()) return true
-  return window.confirm(t('admin.newsletterCampaigns.editor.unsavedChangesPrompt'))
-})
+useUnsavedChangesGuard(hasUnsavedChanges, () =>
+  t('admin.newsletterCampaigns.editor.unsavedChangesPrompt')
+)
 
 /**
  * A save, a send, a cancel or a resume all return the campaign reloaded, so the page re-seeds from
@@ -89,23 +78,23 @@ useCampaignSendPolling(
 </script>
 
 <template>
-  <div>
-    <template v-if="campaign">
-      <AdminNewsletterCampaignEditor
-        v-if="isDraft"
-        ref="editorRef"
-        :key="campaign.id"
-        :campaign="campaign"
-        @updated="handleUpdated"
-      />
-      <AdminNewsletterCampaignDetail v-else :campaign="campaign" @updated="handleUpdated" />
-    </template>
-
-    <div v-else class="py-16 text-center">
-      <p class="text-muted text-sm">{{ t('admin.newsletterCampaigns.editor.notFound') }}</p>
-      <UButton :to="localePath(ADMIN_ROUTES.newsletter)" variant="link" size="sm" class="mt-2">
-        {{ t('admin.common.back') }}
-      </UButton>
-    </div>
-  </div>
+  <AdminNewsletterCampaignEditor
+    v-if="campaign && isDraft"
+    ref="editorRef"
+    :key="campaign.id"
+    :campaign="campaign"
+    @updated="handleUpdated"
+  />
+  <AdminNewsletterCampaignDetail
+    v-else-if="campaign"
+    :campaign="campaign"
+    @updated="handleUpdated"
+  />
+  <AdminPage v-else :title="t('admin.newsletterCampaigns.editor.notFound')">
+    <UEmpty
+      variant="naked"
+      icon="i-tabler-mail-off"
+      :description="t('admin.newsletterCampaigns.editor.notFound')"
+    />
+  </AdminPage>
 </template>

@@ -6,7 +6,6 @@ import type { AdminActivityKind } from '@/composables/admin/useAdminActivity'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Crear entrada de actividad',
 })
 
 const { t } = useI18n()
@@ -30,18 +29,7 @@ const initialKind = computed<AdminActivityKind>(() => {
 const hasUnsavedChanges = () =>
   !allowNavigationWithoutPrompt.value && Boolean(activityFormRef.value?.hasUnsavedChanges)
 
-const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
-  if (!hasUnsavedChanges()) return
-  event.preventDefault()
-  event.returnValue = ''
-}
-
-onMounted(() => window.addEventListener('beforeunload', beforeUnloadHandler))
-onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnloadHandler))
-onBeforeRouteLeave(() => {
-  if (!hasUnsavedChanges()) return true
-  return window.confirm(t('admin.activity.unsavedChangesPrompt'))
-})
+useUnsavedChangesGuard(hasUnsavedChanges, () => t('admin.activity.unsavedChangesPrompt'))
 
 const possibleDuplicate = useAdminPossibleDuplicate<Record<string, unknown>>()
 const { duplicate: duplicateEntry, isOpen: isDuplicateModalOpen } = possibleDuplicate
@@ -78,19 +66,18 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <div>
-    <AdminActivityForm
-      ref="activityFormRef"
-      :initial-kind="initialKind"
-      :submitting="isSubmitting"
-      @submit="handleSubmit"
-      @cancel="handleCancel"
-    />
+  <AdminActivityForm
+    ref="activityFormRef"
+    :initial-kind="initialKind"
+    :submitting="isSubmitting"
+    @submit="handleSubmit"
+    @cancel="handleCancel"
+  >
     <AdminPossibleDuplicateModal
       v-model:open="isDuplicateModalOpen"
       kind="activity"
       :duplicate="duplicateEntry"
       @confirm="handleDuplicateConfirm"
     />
-  </div>
+  </AdminActivityForm>
 </template>

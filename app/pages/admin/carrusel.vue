@@ -5,7 +5,6 @@ import { createCarouselItemSchema } from '~~/shared/utils/adminSchemas'
 
 definePageMeta({
   layout: 'admin',
-  title: 'Carrusel',
 })
 
 interface Translation {
@@ -268,23 +267,21 @@ const handleDelete = async () => {
 </script>
 
 <template>
-  <div>
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">{{ t('admin.carousel.title') }}</h1>
-      <div class="flex gap-2">
-        <template v-if="hasOrderChanges">
-          <UButton variant="outline" @click="cancelOrderChanges">{{
-            t('admin.common.cancel')
-          }}</UButton>
-          <UButton :loading="isSavingOrder" @click="saveOrder">{{
-            t('admin.common.saveOrder')
-          }}</UButton>
-        </template>
-        <UButton v-else icon="i-tabler-plus" @click="openCreate">{{
-          t('admin.common.add')
-        }}</UButton>
-      </div>
-    </div>
+  <AdminPage :title="t('admin.carousel.title')" :description="t('admin.nav.carousel.description')">
+    <template #actions>
+      <template v-if="hasOrderChanges">
+        <UButton color="neutral" variant="outline" @click="cancelOrderChanges">
+          {{ t('admin.common.cancel') }}
+        </UButton>
+        <UButton icon="i-tabler-check" :loading="isSavingOrder" @click="saveOrder">
+          {{ t('admin.common.saveOrder') }}
+        </UButton>
+      </template>
+      <UButton v-else icon="i-tabler-plus" @click="openCreate">
+        <span class="hidden sm:inline">{{ t('admin.common.add') }}</span>
+        <span class="sr-only sm:hidden">{{ t('admin.common.add') }}</span>
+      </UButton>
+    </template>
 
     <div v-if="pending" class="space-y-3" aria-hidden="true">
       <USkeleton class="h-24 w-full rounded-xl" />
@@ -292,23 +289,28 @@ const handleDelete = async () => {
       <USkeleton class="h-24 w-full rounded-xl" />
     </div>
 
-    <div v-else-if="fetchError" class="space-y-3">
-      <UAlert
-        color="error"
-        variant="soft"
-        :title="t('admin.carousel.loadErrorTitle')"
-        :description="t('admin.common.loadErrorDescription')"
-      />
-      <UButton variant="outline" color="neutral" icon="i-tabler-refresh" @click="refresh()">
-        {{ t('admin.common.retry') }}
-      </UButton>
-    </div>
+    <UAlert
+      v-else-if="fetchError"
+      color="error"
+      variant="soft"
+      :title="t('admin.carousel.loadErrorTitle')"
+      :description="t('admin.common.loadErrorDescription')"
+      :actions="[
+        {
+          label: t('admin.common.retry'),
+          icon: 'i-tabler-refresh',
+          color: 'neutral',
+          variant: 'outline',
+          onClick: () => refresh(),
+        },
+      ]"
+    />
 
     <div v-else ref="listRef" class="space-y-4">
       <div
         v-for="item in localItems"
         :key="item.id"
-        class="bg-surface ring-default rounded-xl p-4 shadow-sm ring-1"
+        class="bg-default ring-default rounded-xl p-4 shadow-sm ring-1"
       >
         <div class="hidden items-center gap-4 md:flex">
           <div class="drag-handle cursor-grab active:cursor-grabbing">
@@ -362,7 +364,7 @@ const handleDelete = async () => {
               <UIcon name="i-tabler-grip-horizontal" class="text-muted size-5" />
             </div>
           </div>
-          <h3 class="wrap-break-words font-medium">{{ item.translations[0]?.title }}</h3>
+          <h3 class="font-medium wrap-break-word">{{ item.translations[0]?.title }}</h3>
           <div class="bg-muted aspect-1925/550 w-full overflow-hidden rounded-lg">
             <img
               v-if="item.image || siteDefaultSlide"
@@ -403,12 +405,15 @@ const handleDelete = async () => {
         </div>
       </div>
 
-      <div v-if="!localItems.length" class="py-12 text-center">
-        <p class="text-muted">{{ t('admin.carousel.empty') }}</p>
-        <UButton class="mt-4" size="sm" icon="i-tabler-plus" @click="openCreate">
-          {{ t('admin.carousel.addItem') }}
-        </UButton>
-      </div>
+      <UEmpty
+        v-if="!localItems.length"
+        variant="naked"
+        icon="i-tabler-photo"
+        :description="t('admin.carousel.empty')"
+        :actions="[
+          { label: t('admin.carousel.addItem'), icon: 'i-tabler-plus', onClick: openCreate },
+        ]"
+      />
     </div>
 
     <UModal
@@ -579,5 +584,5 @@ const handleDelete = async () => {
         </div>
       </template>
     </UModal>
-  </div>
+  </AdminPage>
 </template>

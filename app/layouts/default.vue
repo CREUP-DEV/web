@@ -62,13 +62,13 @@ useHead(() => {
   <div class="flex min-h-screen flex-col">
     <a
       href="#main-navigation"
-      class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
+      class="bg-primary text-inverted sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
     >
       {{ t('accessibility.skipToNavigation') }}
     </a>
     <a
       href="#main-content"
-      class="bg-primary text-primary-foreground sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-20"
+      class="bg-primary text-inverted sr-only z-50 rounded px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-20"
     >
       {{ t('accessibility.skipToMain') }}
     </a>

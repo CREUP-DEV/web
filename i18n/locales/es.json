@@ -989,7 +989,9 @@
       "uploadRequestTooLarge": "El archivo o la solicitud supera el tamaño máximo permitido",
       "fileUploaded": "Archivo subido correctamente",
       "fileUploadFailed": "No se pudo subir el archivo",
-      "back": "Volver"
+      "back": "Volver",
+      "new": "Nuevo",
+      "more": "Más acciones"
     },
     "media": {
       "title": "Medios de comunicación",
@@ -1076,6 +1078,30 @@
       "activity": {
         "name": "Nuestra actividad",
         "description": "Entradas de actividad e informes mensuales de áreas."
+      },
+      "groups": {
+        "content": "Contenido",
+        "site": "Páginas del sitio",
+        "catalogs": "Catálogos y ajustes",
+        "system": "Sistema"
+      },
+      "activityEntries": {
+        "name": "Entradas"
+      },
+      "areaReports": {
+        "name": "Informes de áreas"
+      },
+      "memberOrgCatalog": {
+        "name": "Organizaciones"
+      },
+      "areaCatalog": {
+        "name": "Áreas"
+      },
+      "newsletterCampaigns": {
+        "name": "Campañas"
+      },
+      "newsletterSubscribers": {
+        "name": "Suscriptores"
       }
     },
     "layout": {
@@ -1083,16 +1109,26 @@
       "signOut": "Cerrar sesión",
       "viewSite": "Ver sitio",
       "viewSiteAria": "Ver sitio (se abre en una nueva pestaña)",
-      "collapseSidebar": "Contraer menú lateral",
-      "expandSidebar": "Expandir menú lateral",
-      "closeSidebar": "Cerrar menú lateral",
       "skipToNav": "Ir al menú principal",
       "skipToContent": "Ir al contenido principal",
       "mainNavLabel": "Navegación principal",
-      "userMenu": "Menú de usuario",
-      "loadingSession": "Cargando sesión...",
-      "userAvatar": "Avatar de {name}",
-      "userAvatarFallback": "Avatar de usuario"
+      "brandHome": "Inicio del panel de administración",
+      "brandProduct": "Admin",
+      "sidebarTitle": "Menú de administración",
+      "sidebarDescription": "Secciones del panel y tu cuenta",
+      "breadcrumbLabel": "Ruta de navegación",
+      "backTo": "Volver a {label}",
+      "userMenuFor": "Menú de la cuenta de {name}",
+      "preferences": "Preferencias",
+      "preferencesDescription": "Idioma y tema del panel. Los cambios se aplican al momento.",
+      "done": "Listo",
+      "language": "Idioma",
+      "theme": "Tema",
+      "themes": {
+        "system": "Según el sistema",
+        "light": "Claro",
+        "dark": "Oscuro"
+      }
     },
     "carousel": {
       "title": "Carrusel",
@@ -1408,7 +1444,6 @@
         "pdfUploaded": "PDF subido correctamente",
         "pdfUploadError": "No se pudo subir el PDF",
         "pdfTooLarge": "El PDF supera el tamaño máximo (20MB)",
-        "back": "Volver",
         "editingLabel": "Editando",
         "newLabel": "Nuevo",
         "saveChanges": "Guardar cambios",
@@ -1544,7 +1579,6 @@
       "list": {
         "title": "Campañas de newsletter",
         "subtitle": "Cada campaña es un correo montado con contenido ya publicado en la web.",
-        "subscribers": "Suscriptores",
         "newCampaign": "Nueva campaña",
         "loadErrorTitle": "No se pudieron cargar las campañas",
         "empty": "Todavía no hay campañas.",
@@ -1809,7 +1843,8 @@
       "recentActivity": "Actividad reciente",
       "recentActivityHint": "Lo último que se ha tocado en el panel.",
       "noRecentActivity": "Todavía no hay actividad reciente que mostrar.",
-      "loadError": "No se pudo cargar el resumen del panel"
+      "loadError": "No se pudo cargar el resumen del panel",
+      "sections": "Secciones del panel"
     },
     "login": {
       "title": "Administración",
@@ -1905,11 +1940,6 @@
         "confirm": "Crear de todos modos"
       },
       "unsavedChangesPrompt": "Hay cambios sin guardar. Si sales ahora, se perderán.",
-      "subnav": {
-        "aria": "Subsecciones de Actividad",
-        "entries": "Entradas",
-        "reports": "Informes de áreas"
-      },
       "kinds": {
         "creup": "CREUP",
         "member": "Miembro"
@@ -1932,8 +1962,7 @@
         "clearSearch": "Limpiar búsqueda",
         "emptyState": "No hay entradas de actividad todavía",
         "createFirst": "Crear primera entrada",
-        "paginationAria": "Paginación de entradas",
-        "manageOrganisers": "Gestionar organizaciones"
+        "paginationAria": "Paginación de entradas"
       },
       "toast": {
         "deleted": "Entrada eliminada",
@@ -1949,7 +1978,6 @@
         "snapshotRefreshError": "No se pudieron actualizar los datos del organizador"
       },
       "form": {
-        "back": "Volver",
         "editingLabel": "Editando actividad",
         "newLabel": "Nueva actividad",
         "saveChanges": "Guardar cambios",
@@ -2024,8 +2052,7 @@
         "emptyState": "No hay informes de áreas todavía",
         "createFirst": "Crear primer informe",
         "paginationAria": "Paginación de informes",
-        "unknownArea": "Área sin nombre",
-        "manageAreas": "Gestionar áreas"
+        "unknownArea": "Área sin nombre"
       },
       "toast": {
         "deleted": "Informe eliminado",
@@ -2038,7 +2065,6 @@
         "conflictFallback": "No se pudo guardar el informe por un conflicto. Revisa el mes, el área y el periodo."
       },
       "form": {
-        "back": "Volver",
         "editingLabel": "Editando informe",
         "newLabel": "Nuevo informe",
         "saveChanges": "Guardar cambios",
@@ -2353,7 +2379,7 @@
         },
         "auth": {
           "label": "Cookies de autenticación y sesión (better-auth)",
-          "desc": " Se utilizan exclusivamente cuando un administrador inicia sesión en el panel de administración. Incluyen tokens de sesión y autenticación OAuth. No se emplean para los visitantes públicos del sitio. "
+          "desc": " Se utilizan exclusivamente cuando un administrador inicia sesión en el panel de administración. Incluyen tokens de sesión y autenticación OAuth. No se emplean para los visitantes públicos del sitio. El panel guarda además en la cookie admin-dashboard-sidebar-admin si el menú lateral está plegado y su anchura. "
         },
         "prefs": {
           "label": "Almacenamiento local de preferencias de interfaz",
