@@ -15,6 +15,20 @@ function isAdminApiRequest(request: RequestInfo | URL) {
   return rawUrl.startsWith('/api/admin/') || rawUrl.includes('/api/admin/')
 }
 
+/**
+ * The CSRF token as the browser holds it right now. Read per request rather than captured once at
+ * setup: the cookie can arrive after the app booted (an `/api/admin` response issues it when the
+ * page response did not), and a stale capture would send no token.
+ */
+function readCsrfCookie() {
+  const prefix = `${ADMIN_CSRF_COOKIE_NAME}=`
+  for (const part of document.cookie.split(';')) {
+    const entry = part.trim()
+    if (entry.startsWith(prefix)) return decodeURIComponent(entry.slice(prefix.length)).trim()
+  }
+  return null
+}
+
 function resolveRequestMethod(request: RequestInfo | URL, options: { method?: string }) {
   return (
     options.method ||
@@ -39,8 +53,6 @@ export default defineNuxtPlugin({
   name: 'admin-fetch',
   dependsOn: ['i18n:plugin'],
   setup(nuxtApp) {
-    const csrfToken = useCookie<string | null>(ADMIN_CSRF_COOKIE_NAME)
-
     const enhancedFetch = $fetch.create({
       onRequest({ request, options }) {
         if (!isAdminApiRequest(request)) {
@@ -55,7 +67,7 @@ export default defineNuxtPlugin({
         }
 
         if (UNSAFE_ADMIN_METHODS.has(resolveRequestMethod(request, options))) {
-          const token = csrfToken.value?.trim()
+          const token = readCsrfCookie()
           if (token && !headers.has(ADMIN_CSRF_HEADER_NAME)) {
             headers.set(ADMIN_CSRF_HEADER_NAME, token)
           }

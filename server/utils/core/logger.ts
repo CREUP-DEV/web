@@ -31,6 +31,46 @@ function sanitizeLogString(value: string) {
   return value.replace(EMAIL_VALUE_PATTERN, '[REDACTED_EMAIL]')
 }
 
+/**
+ * drizzle-orm wraps every driver error in a DrizzleQueryError whose message (and so its stack)
+ * reads `Failed query: <sql>` then `params: <values>` on the next line. The values are user data
+ * — tokens, IPs, names, whole rich-text bodies — so the SQL is kept and the values are dropped.
+ */
+const QUERY_PARAMS_PATTERN = /(^|\n)params: [\s\S]*?(?=\n\s+at |$)/g
+
+function sanitizeErrorText(value: string) {
+  return sanitizeLogString(value.replace(QUERY_PARAMS_PATTERN, '$1params: [REDACTED]'))
+}
+
+/**
+ * An error and its causes, each with its message, name and stack scrubbed, plus the Postgres
+ * code and constraint when it has them (never `detail`, which quotes the offending values).
+ */
+function serializeErrorChain(error: Error, seen = new Set<Error>()): Record<string, unknown> {
+  seen.add(error)
+  const pg = error as Error & { code?: unknown; constraint?: unknown; cause?: unknown }
+  const cause = pg.cause
+  let serializedCause: unknown
+  if (cause instanceof Error) {
+    // A cause chain can loop (`err.cause = err`); stop at a repeat or after a few levels.
+    serializedCause =
+      seen.has(cause) || seen.size >= 5
+        ? { name: cause.name, message: '[cause chain truncated]' }
+        : serializeErrorChain(cause, seen)
+  } else if (cause !== undefined) {
+    serializedCause = sanitizeLogValue(cause)
+  }
+
+  return {
+    message: sanitizeErrorText(error.message),
+    name: error.name,
+    ...(typeof pg.code === 'string' ? { code: pg.code } : {}),
+    ...(typeof pg.constraint === 'string' ? { constraint: pg.constraint } : {}),
+    stack: error.stack ? sanitizeErrorText(error.stack) : undefined,
+    ...(serializedCause !== undefined ? { cause: serializedCause } : {}),
+  }
+}
+
 function sanitizeLogValue(value: unknown): unknown {
   if (value === null || value === undefined) {
     return value
@@ -53,11 +93,7 @@ function sanitizeLogValue(value: unknown): unknown {
   }
 
   if (value instanceof Error) {
-    return {
-      message: sanitizeLogString(value.message),
-      name: value.name,
-      stack: value.stack ? sanitizeLogString(value.stack) : undefined,
-    }
+    return serializeErrorChain(value)
   }
 
   if (!isPlainObject(value)) {
@@ -84,15 +120,7 @@ function serializeError(error: unknown) {
     return sanitizeLogValue(error)
   }
 
-  const cause =
-    'cause' in error ? sanitizeLogValue((error as Error & { cause?: unknown }).cause) : undefined
-
-  return {
-    message: sanitizeLogString(error.message),
-    name: error.name,
-    stack: error.stack ? sanitizeLogString(error.stack) : undefined,
-    ...(cause !== undefined ? { cause } : {}),
-  }
+  return serializeErrorChain(error)
 }
 
 function getEventPath(event: LogEvent): string | null {

@@ -40,8 +40,8 @@ app/
   middleware/       admin-auth.global.ts
 server/
   api/              Nitro route handlers (admin/** protected, public routes)
-  handlers/         admin-auth.ts (global admin middleware)
-  middleware/       locale.ts
+  middleware/       admin-auth.ts (admin API guard), admin-csrf-cookie.ts, locale.ts, ipx-rate-limit.ts,
+                    legacy-redirects.ts
   plugins/          background-jobs.ts, admin-asset-publication.ts, startup-config-validation.ts
   routes/           Non-API server routes (health.ts, asset proxy routes)
   services/         pressArticleService.ts, newsletterCampaignDelivery*.ts (complex mutations)
@@ -546,7 +546,15 @@ If handler exceeds ~50 lines of logic, extract to `server/utils/` or `server/ser
 
 ### Admin Auth
 
-- `/api/admin/**` protected globally by `server/handlers/admin-auth.ts` (configured in `nuxt.config.ts`).
+- `/api/admin/**` protected globally by `server/middleware/admin-auth.ts` (session, same-origin and
+  CSRF). It matches the prefix on the path as h3 routes it (`getRoutedRequestPath` in
+  `server/utils/core/requestPath.ts`: percent-decoded, slashes collapsed, lower-cased), never on the
+  raw URL, which once let `/api/%61dmin/...` reach the handlers anonymously. Any other middleware
+  that gates a path prefix uses the same helper. `pnpm check:admin-auth` asserts the 401 against the
+  built server, encoded spellings included.
+- `server/middleware/admin-csrf-cookie.ts` issues the admin CSRF cookie on the admin pages' own
+  responses: during SSR, `Set-Cookie` from the internal `/api/admin` fetches never reaches the
+  browser.
 - `requireAuth(event)` returns the verified session inside handlers — do not re-check auth per route.
 - Session cached on `event.context.adminSession`.
 - Better Auth cookie session cache is intentionally disabled for admin auth. Admin session checks must read from the DB so revoked sessions and allowlist changes take effect immediately.

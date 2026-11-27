@@ -55,7 +55,11 @@ const BOOT_TIMEOUT_MS = 60_000
  */
 const READINESS_PATH = '/api/admin/summary'
 
-/** A read, a write and a nested route: the guard has to cover the whole prefix, not just the root. */
+/**
+ * A read, a write and a nested route: the guard has to cover the whole prefix, not just the root.
+ * The spellings h3 still routes to an admin handler (percent-escapes, doubled slashes) must be
+ * refused too: the guard once compared the raw URL and let `/api/%61dmin/...` through.
+ */
 const CASES = [
   { method: 'GET', path: READINESS_PATH },
   { method: 'GET', path: '/api/admin/member-org-catalog' },
@@ -63,6 +67,10 @@ const CASES = [
   { method: 'GET', path: '/api/admin/area-catalog' },
   { method: 'DELETE', path: '/api/admin/member-org-catalog/does-not-exist' },
   { method: 'POST', path: '/api/admin/member-org-catalog' },
+  { method: 'GET', path: '/api/%61dmin/summary' },
+  { method: 'GET', path: '/api/%61%64%6d%69%6e/areas' },
+  { method: 'POST', path: '/api/%61dmin/member-org-catalog' },
+  { method: 'GET', path: '//api//admin/summary' },
 ]
 
 if (!existsSync(SERVER_ENTRY)) {

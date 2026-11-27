@@ -1,4 +1,4 @@
-import { defineEventHandler, getRequestURL, setHeader } from 'h3'
+import { defineEventHandler, setHeader } from 'h3'
 import { requireAuth, type AdminAuthEventContext } from '../utils/auth/requireAuth'
 import {
   assertAdminCsrfMutationRequest,
@@ -6,6 +6,7 @@ import {
   ensureAdminCsrfCookie,
 } from '../utils/admin/adminRequestProtection'
 import { seedRequestLocale } from '../utils/locale/requestLocale'
+import { getRoutedRequestPath, isUnderPathPrefix } from '../utils/core/requestPath'
 
 const ADMIN_API_PREFIX = '/api/admin'
 
@@ -17,11 +18,14 @@ const ADMIN_API_PREFIX = '/api/admin'
  * middleware, so the guard never ran and every admin endpoint answered anonymously. Middleware here
  * runs for every request, hence the explicit prefix check before anything else.
  *
+ * The prefix is matched on the path as the router sees it (getRoutedRequestPath), not on the raw
+ * URL: h3 decodes the path before routing, so a raw comparison let `/api/%61dmin/...` reach the
+ * handlers with no session.
+ *
  * `scripts/check-admin-auth.mjs` asserts the 401 against a production build.
  */
 export default defineEventHandler(async (event) => {
-  const { pathname } = getRequestURL(event)
-  if (pathname !== ADMIN_API_PREFIX && !pathname.startsWith(`${ADMIN_API_PREFIX}/`)) {
+  if (!isUnderPathPrefix(getRoutedRequestPath(event), ADMIN_API_PREFIX)) {
     return
   }
 

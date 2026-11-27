@@ -73,16 +73,23 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: false,
   },
+  // The panel only signs in with Google, reads the session and signs out. Names and photos come
+  // from Google, so the self-service account endpoints stay off: otherwise any signed-in admin
+  // could rewrite the name and image the access list shows.
+  disabledPaths: [
+    '/update-user',
+    '/change-email',
+    '/change-password',
+    '/delete-user',
+    '/delete-user/callback',
+    '/update-session',
+  ],
   rateLimit: {
     enabled: true,
     storage: 'secondary-storage',
     window: 60,
     max: 100,
     customRules: {
-      '/sign-in/email': {
-        window: 60,
-        max: 10,
-      },
       '/sign-in/social': {
         window: 60,
         max: 20,
@@ -101,6 +108,9 @@ export const auth = betterAuth({
     google: {
       clientId: requireConfigString(process.env.GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_ID'),
       clientSecret: requireConfigString(process.env.GOOGLE_CLIENT_SECRET, 'GOOGLE_CLIENT_SECRET'),
+      // Lets someone signed in to Google with an account the allowlist refuses pick the right one
+      // instead of being sent back with the same account.
+      prompt: 'select_account',
     },
   },
   session: {

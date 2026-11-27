@@ -1,7 +1,8 @@
-import { defineEventHandler, getRequestURL } from 'h3'
+import { defineEventHandler } from 'h3'
 import { enforceRateLimit } from '../utils/public/rateLimit'
 import { getClientIp, isIpTrusted } from '../utils/core/urlBuilder'
 import { getPublicApiErrorMessage } from '../utils/locale/apiErrorMessages'
+import { getRoutedRequestPath } from '../utils/core/requestPath'
 
 // /_ipx has nuxt-security's rate limiter disabled because a single page legitimately
 // fires dozens of optimized-image requests at once. That left /_ipx as an uncapped
@@ -18,7 +19,7 @@ const IPX_RATE_LIMIT_MAX = 1000
 const IPX_RATE_LIMIT_WINDOW_MS = 60_000
 
 export default defineEventHandler(async (event) => {
-  if (!getRequestURL(event).pathname.startsWith('/_ipx/')) {
+  if (!getRoutedRequestPath(event).startsWith('/_ipx/')) {
     return
   }
 
