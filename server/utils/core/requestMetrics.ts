@@ -1,6 +1,14 @@
 const REQUEST_RATE_WINDOW_MINUTES = 15
 const SLOW_REQUEST_THRESHOLD_MS = 1_000
 const MAX_SLOW_ENDPOINTS = 8
+/** How far back an endpoint's last 5xx still makes it «needs attention» on the status page. */
+const RECENT_SERVER_ERROR_WINDOW_MINUTES = 60
+/**
+ * How many endpoints the per-endpoint stats keep. Scanners probe thousands of made-up paths, and
+ * each would otherwise stay in memory for the life of the process; past this the least recently
+ * seen one is dropped (a Map iterates in insertion order and a hit re-inserts its key).
+ */
+const MAX_TRACKED_ENDPOINTS = 300
 
 interface RequestRateBucket {
   admin: number
@@ -9,13 +17,16 @@ interface RequestRateBucket {
   minute: number
   public: number
   serverError: number
+  slow: number
   total: number
+  totalDurationMs: number
 }
 
 interface EndpointStats {
   averageDurationMs: number
   key: string
   lastSeenAt: string
+  lastServerErrorAt: string | null
   maxDurationMs: number
   method: string
   path: string
@@ -28,6 +39,7 @@ interface EndpointStats {
 
 interface MutableEndpointStats {
   lastSeenAt: string
+  lastServerErrorAt: string | null
   maxDurationMs: number
   method: string
   path: string
@@ -56,7 +68,9 @@ function createEmptyBucket(minute: number): RequestRateBucket {
     minute,
     public: 0,
     serverError: 0,
+    slow: 0,
     total: 0,
+    totalDurationMs: 0,
   }
 }
 
@@ -90,7 +104,17 @@ function shouldTrackPath(path: string) {
   return true
 }
 
-function normalizePath(path: string) {
+/**
+ * The endpoint a request hit, as one key for all its calls: no query string (search terms and
+ * per-subscriber tokens must never reach the stats, and every distinct query would be a key of its
+ * own), every optimized image under one `/_ipx/*` key, and ids replaced by `:id`.
+ */
+function normalizePath(rawPath: string) {
+  const path = rawPath.split(/[?#]/, 1)[0] || '/'
+  if (path.startsWith('/_ipx/')) {
+    return '/_ipx/*'
+  }
+
   return path
     .replace(UUID_PATTERN, ':id')
     .replace(CUID_LIKE_PATTERN, ':id')
@@ -119,6 +143,10 @@ export function recordRequestMetric(input: {
   const isSlow = input.durationMs >= SLOW_REQUEST_THRESHOLD_MS
 
   bucket.total += 1
+  bucket.totalDurationMs += input.durationMs
+  if (isSlow) {
+    bucket.slow += 1
+  }
   bucket[category] += 1
   if (isServerError) {
     bucket.serverError += 1
@@ -127,10 +155,17 @@ export function recordRequestMetric(input: {
   }
   rateBuckets.set(minute, bucket)
 
+  // A 404 is no endpoint of ours: it counts in the rate buckets above, but tracking each probed path
+  // would only fill the map with scanner noise.
+  if (input.statusCode === 404) {
+    return
+  }
+
   const normalizedPath = normalizePath(input.path)
   const endpointKey = `${input.method} ${normalizedPath}`
   const endpoint = endpointStats.get(endpointKey) ?? {
     lastSeenAt: new Date(now).toISOString(),
+    lastServerErrorAt: null,
     maxDurationMs: 0,
     method: input.method,
     path: normalizedPath,
@@ -151,9 +186,30 @@ export function recordRequestMetric(input: {
 
   if (isServerError) {
     endpoint.serverErrorCount += 1
+    endpoint.lastServerErrorAt = endpoint.lastSeenAt
   }
 
+  endpointStats.delete(endpointKey)
   endpointStats.set(endpointKey, endpoint)
+  if (endpointStats.size > MAX_TRACKED_ENDPOINTS) {
+    evictLeastUsefulEndpoint()
+  }
+}
+
+/**
+ * Drops the least recently seen endpoint that was never slow nor failed, so the ones the status
+ * page exists to show survive busy traffic; only when every entry is one of those does the least
+ * recently seen of all go.
+ */
+function evictLeastUsefulEndpoint() {
+  for (const [key, endpoint] of endpointStats) {
+    if (endpoint.slowCount === 0 && endpoint.serverErrorCount === 0) {
+      endpointStats.delete(key)
+      return
+    }
+  }
+  const leastRecent = endpointStats.keys().next().value
+  if (leastRecent !== undefined) endpointStats.delete(leastRecent)
 }
 
 function buildRateWindowSummary(minutes: number) {
@@ -167,18 +223,33 @@ function buildRateWindowSummary(minutes: number) {
       acc.public += bucket.public
       acc.clientError += bucket.clientError
       acc.serverError += bucket.serverError
+      acc.slow += bucket.slow
       acc.total += bucket.total
+      acc.totalDurationMs += bucket.totalDurationMs
       return acc
     },
-    { admin: 0, api: 0, clientError: 0, public: 0, serverError: 0, total: 0 }
+    {
+      admin: 0,
+      api: 0,
+      clientError: 0,
+      public: 0,
+      serverError: 0,
+      slow: 0,
+      total: 0,
+      totalDurationMs: 0,
+    }
   )
 
   return {
     adminPerMinute: Number((totals.admin / minutes).toFixed(2)),
     apiPerMinute: Number((totals.api / minutes).toFixed(2)),
+    /** Mean response time over the window, null with no requests. */
+    averageDurationMs:
+      totals.total > 0 ? Number((totals.totalDurationMs / totals.total).toFixed(1)) : null,
     clientError: totals.clientError,
     publicPerMinute: Number((totals.public / minutes).toFixed(2)),
     serverError: totals.serverError,
+    slow: totals.slow,
     total: totals.total,
     totalPerMinute: Number((totals.total / minutes).toFixed(2)),
   }
@@ -211,20 +282,22 @@ export function getRequestMetricsSummary() {
   const lastMinuteBucket =
     rateBuckets.get(getCurrentMinute()) ?? createEmptyBucket(getCurrentMinute())
 
-  const slowEndpoints: EndpointStats[] = [...endpointStats.entries()]
-    .map(([key, endpoint]) => ({
-      averageDurationMs: Number((endpoint.totalDurationMs / endpoint.totalCount).toFixed(2)),
-      key,
-      lastSeenAt: endpoint.lastSeenAt,
-      maxDurationMs: endpoint.maxDurationMs,
-      method: endpoint.method,
-      path: endpoint.path,
-      serverErrorCount: endpoint.serverErrorCount,
-      serverErrorRate: Number(((endpoint.serverErrorCount / endpoint.totalCount) * 100).toFixed(1)),
-      slowCount: endpoint.slowCount,
-      slowRate: Number(((endpoint.slowCount / endpoint.totalCount) * 100).toFixed(1)),
-      totalCount: endpoint.totalCount,
-    }))
+  const endpoints: EndpointStats[] = [...endpointStats.entries()].map(([key, endpoint]) => ({
+    averageDurationMs: Number((endpoint.totalDurationMs / endpoint.totalCount).toFixed(2)),
+    key,
+    lastSeenAt: endpoint.lastSeenAt,
+    lastServerErrorAt: endpoint.lastServerErrorAt,
+    maxDurationMs: endpoint.maxDurationMs,
+    method: endpoint.method,
+    path: endpoint.path,
+    serverErrorCount: endpoint.serverErrorCount,
+    serverErrorRate: Number(((endpoint.serverErrorCount / endpoint.totalCount) * 100).toFixed(1)),
+    slowCount: endpoint.slowCount,
+    slowRate: Number(((endpoint.slowCount / endpoint.totalCount) * 100).toFixed(1)),
+    totalCount: endpoint.totalCount,
+  }))
+
+  const slowEndpoints = endpoints
     .filter((endpoint) => endpoint.slowCount > 0 || endpoint.serverErrorCount > 0)
     // Sort by a combined problem score so error-heavy endpoints are not buried
     // under merely-slow ones (server errors weighted above slow responses).
@@ -244,7 +317,24 @@ export function getRequestMetricsSummary() {
     })
     .slice(0, MAX_SLOW_ENDPOINTS)
 
+  // The endpoints that answered with a 5xx lately, newest first, from the whole map: the problem
+  // list above is cumulative since the process started and capped, so it cannot say what is
+  // failing now.
+  const recentErrorSince = Date.now() - RECENT_SERVER_ERROR_WINDOW_MINUTES * 60_000
+  const recentServerErrorEndpoints = endpoints
+    .filter(
+      (endpoint) =>
+        endpoint.lastServerErrorAt !== null &&
+        Date.parse(endpoint.lastServerErrorAt) >= recentErrorSince
+    )
+    .sort((left, right) =>
+      (right.lastServerErrorAt ?? '').localeCompare(left.lastServerErrorAt ?? '')
+    )
+    .slice(0, MAX_SLOW_ENDPOINTS)
+
   return {
+    recentServerErrorEndpoints,
+    recentServerErrorWindowMinutes: RECENT_SERVER_ERROR_WINDOW_MINUTES,
     requestRate: {
       last5Minutes: buildRateWindowSummary(5),
       last15Minutes: buildRateWindowSummary(15),

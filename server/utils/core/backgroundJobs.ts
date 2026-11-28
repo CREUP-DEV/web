@@ -201,6 +201,18 @@ export interface FailedJobSummary {
   name: string
 }
 
+/**
+ * A failed job's reason as the status page may show it. BullMQ keeps the error's message, and a
+ * drizzle query error's message ends with `params: <values>` — user data such as tokens or emails —
+ * so everything from that line on is dropped before the length cap.
+ */
+function summarizeFailedReason(reason: string | undefined) {
+  if (!reason) return null
+  const paramsAt = reason.search(/\nparams:/)
+  const withoutParams = paramsAt === -1 ? reason : reason.slice(0, paramsAt)
+  return withoutParams.slice(0, MAX_FAILED_REASON_LENGTH)
+}
+
 export async function getRecentFailedJobs(
   queueName: BackgroundQueueName,
   limit = 5
@@ -210,7 +222,7 @@ export async function getRecentFailedJobs(
   return jobs.map((job) => ({
     attemptsMade: job.attemptsMade,
     failedAt: job.finishedOn ? new Date(job.finishedOn).toISOString() : null,
-    failedReason: job.failedReason ? job.failedReason.slice(0, MAX_FAILED_REASON_LENGTH) : null,
+    failedReason: summarizeFailedReason(job.failedReason),
     id: String(job.id ?? ''),
     name: job.name,
   }))

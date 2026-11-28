@@ -1,5 +1,7 @@
-import { sql } from 'drizzle-orm'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import { db, getDatabasePoolStats } from '../../db'
+import { newsletterCampaignTranslations } from '../../db/schema/newsletterCampaigns'
+import { DEFAULT_LOCALE_CODE } from '~~/shared/constants/locales'
 import { getNewsletterCampaignDeliveryRuntimeState } from '../../services/newsletterCampaignDeliveryService'
 import {
   BACKGROUND_QUEUE_NAMES,
@@ -14,6 +16,18 @@ import { getRedisClient, getRedisServerStats } from '../cache/redis'
 import { getOptionalRuntimeConfigString } from '../core/runtimeConfig'
 
 const RECENT_INCIDENT_WINDOW_MS = 5 * 60 * 1000
+const PROCESS_STARTED_AT = new Date(Date.now() - process.uptime() * 1000).toISOString()
+
+/**
+ * Why the verdict is not `ok`, as codes the admin translates (with `count` for its plural), never
+ * as text built here.
+ */
+export type AdminHealthReason =
+  | { code: 'databaseDown' }
+  | { code: 'redisDown' }
+  | { code: 'serverErrors'; count: number }
+  | { code: 'poolError' }
+  | { code: 'jobFailures'; count: number }
 
 async function getInfrastructureStatus() {
   const runtimeConfig = useRuntimeConfig()
@@ -97,6 +111,8 @@ function getProcessVitals() {
     heapTotalBytes: memory.heapTotal,
     heapUsedBytes: memory.heapUsed,
     rssBytes: memory.rss,
+    /** When this process started: the last deploy or restart. */
+    startedAt: PROCESS_STARTED_AT,
     uptimeSeconds: Math.round(process.uptime()),
   }
 }
@@ -119,32 +135,33 @@ function isRecent(timestamp: string | null, nowMs: number) {
 function deriveHealth(input: {
   databaseStatus: 'ok' | 'error'
   redisStatus: 'ok' | 'error' | 'unconfigured'
-  lastMinuteServerErrors: number
+  /** 5xx responses in the last five minutes, the same window as the job failures. */
+  recentServerErrors: number
   poolLastErrorAt: string | null
   recentFailures: FailedJobSummary[]
 }) {
   const nowMs = Date.now()
-  const reasons: string[] = []
+  const reasons: AdminHealthReason[] = []
 
   if (input.databaseStatus === 'error') {
-    reasons.push('Base de datos sin respuesta')
+    reasons.push({ code: 'databaseDown' })
   }
 
   if (input.redisStatus === 'error') {
-    reasons.push('Redis sin respuesta')
+    reasons.push({ code: 'redisDown' })
   }
 
-  if (input.lastMinuteServerErrors > 0) {
-    reasons.push(`${input.lastMinuteServerErrors} error(es) 5xx en el último minuto`)
+  if (input.recentServerErrors > 0) {
+    reasons.push({ code: 'serverErrors', count: input.recentServerErrors })
   }
 
   if (isRecent(input.poolLastErrorAt, nowMs)) {
-    reasons.push('Error reciente en el pool de base de datos')
+    reasons.push({ code: 'poolError' })
   }
 
   const recentJobFailures = input.recentFailures.filter((job) => isRecent(job.failedAt, nowMs))
   if (recentJobFailures.length > 0) {
-    reasons.push(`${recentJobFailures.length} trabajo(s) fallido(s) en los últimos 5 min`)
+    reasons.push({ code: 'jobFailures', count: recentJobFailures.length })
   }
 
   const status: 'ok' | 'degraded' | 'down' =
@@ -153,23 +170,53 @@ function deriveHealth(input: {
   return { reasons, status }
 }
 
+/**
+ * The campaigns the newsletter worker is sending right now, by their default-locale subject, so the
+ * page can name and link them instead of showing bare ids.
+ */
+async function getActiveCampaigns(ids: string[]) {
+  if (ids.length === 0) return []
+
+  const rows = await db
+    .select({
+      id: newsletterCampaignTranslations.campaignId,
+      subject: newsletterCampaignTranslations.subject,
+    })
+    .from(newsletterCampaignTranslations)
+    .where(
+      and(
+        inArray(newsletterCampaignTranslations.campaignId, ids),
+        eq(newsletterCampaignTranslations.locale, DEFAULT_LOCALE_CODE)
+      )
+    )
+    .catch(() => [])
+  const subjects = new Map(rows.map((row) => [row.id, row.subject]))
+
+  return ids.map((id) => ({ id, subject: subjects.get(id) ?? null }))
+}
+
 export async function getAdminOperationalStats() {
   const [infrastructure, queues] = await Promise.all([getInfrastructureStatus(), getQueueStats()])
   const requestMetrics = getRequestMetricsSummary()
 
   const health = deriveHealth({
     databaseStatus: infrastructure.database.status,
-    lastMinuteServerErrors: requestMetrics.requestRate.lastMinute.serverError,
+    recentServerErrors: requestMetrics.requestRate.last5Minutes.serverError,
     poolLastErrorAt: infrastructure.database.pool.lastErrorAt,
     recentFailures: [...queues.newsletter.recentFailures, ...queues.maintenance.recentFailures],
     redisStatus: infrastructure.redis.status,
   })
 
+  const newsletterWorker = getNewsletterCampaignDeliveryRuntimeState()
+
   return {
     generatedAt: new Date().toISOString(),
     health,
     infrastructure,
-    newsletterWorker: getNewsletterCampaignDeliveryRuntimeState(),
+    newsletterWorker: {
+      ...newsletterWorker,
+      activeCampaigns: await getActiveCampaigns(newsletterWorker.activeCampaignIds),
+    },
     process: getProcessVitals(),
     queues,
     ...requestMetrics,
