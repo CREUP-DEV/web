@@ -21,6 +21,12 @@ const sidebarOpen = useState<boolean>('admin-sidebar-open', () => false)
 const signingOut = ref(false)
 
 const user = computed(() => session.value.data?.user ?? null)
+/**
+ * The session is read on the client, so the server and the first client render have no user yet:
+ * a skeleton stands in for the name and avatar while it is being read, instead of a generic label.
+ * Once read without a user (an expired session, a failed request) the generic label shows.
+ */
+const loadingUser = computed(() => !user.value && session.value.isPending)
 const name = computed(
   () => user.value?.name?.trim() || user.value?.email || t('admin.layout.adminTitle')
 )
@@ -95,8 +101,17 @@ const items = computed<DropdownMenuItem[][]>(() => [
         :class="props.collapsed ? 'justify-center' : ''"
         :aria-label="t('admin.layout.userMenuFor', { name })"
       >
-        <UAvatar v-bind="avatar" class="shrink-0" />
-        <span v-if="!props.collapsed" class="min-w-0 flex-1 text-start">
+        <USkeleton v-if="loadingUser" class="size-8 shrink-0 rounded-full" aria-hidden="true" />
+        <UAvatar v-else v-bind="avatar" class="shrink-0" />
+        <span
+          v-if="!props.collapsed && loadingUser"
+          class="min-w-0 flex-1 space-y-1.5"
+          aria-hidden="true"
+        >
+          <USkeleton class="h-3.5 w-28" />
+          <USkeleton class="h-3 w-36" />
+        </span>
+        <span v-else-if="!props.collapsed" class="min-w-0 flex-1 text-start">
           <span
             class="text-highlighted line-clamp-2 text-sm font-medium wrap-break-word"
             :title="name"

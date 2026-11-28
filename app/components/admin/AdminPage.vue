@@ -41,10 +41,18 @@ const id = computed(
 )
 
 useHead({ title: () => props.title })
+
+/**
+ * The body is a scrolling flex column. Its children must keep their content height: a flex item
+ * with `overflow: hidden` (UAlert, UCard) has no automatic minimum height, so once a page is taller
+ * than the body they were squashed to a sliver instead of scrolling. `relative` keeps absolutely
+ * positioned descendants (every `sr-only` text) inside the scroller, as in asambleas.
+ */
+const panelUi = { body: 'relative *:shrink-0' }
 </script>
 
 <template>
-  <UDashboardPanel :id="id">
+  <UDashboardPanel :id="id" :ui="panelUi">
     <template #header>
       <UDashboardNavbar :title="props.title" :ui="{ title: 'truncate' }">
         <template #leading>
